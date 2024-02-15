@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import { SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -68,11 +68,6 @@ const Root = () => {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/data/ingestion/csv"
-          component={IngestionCsv}
-        />
-        <BoundaryRoute
-          exact
           path="/dashboard/data/ingestion/connectors"
           component={Connectors}
         />
@@ -110,7 +105,7 @@ const Root = () => {
           render={() => (
             <Security
               needs={[SETTINGS_SETACCESSES]}
-              placeholder={<Redirect to="/dashboard/data/processing/tasks" />}
+              placeholder={<Redirect to="/dashboard" />}
             >
               <Redirect to="/dashboard/data/processing/automation" />
             </Security>
@@ -129,7 +124,14 @@ const Root = () => {
         <BoundaryRoute
           exact
           path="/dashboard/data/processing/csv_mapper"
-          component={CsvMappers}
+          render={() => (
+            <Security
+              needs={[TAXIIAPI_SETCSVMAPPERS]}
+              placeholder={<Redirect to="/dashboard" />}
+            >
+              <CsvMappers/>
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
