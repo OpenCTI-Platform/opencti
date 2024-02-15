@@ -12,7 +12,7 @@ import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/repr
 import CsvMapperRepresentationAttributeOptions from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributeOptions';
 import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
-import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
+import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
