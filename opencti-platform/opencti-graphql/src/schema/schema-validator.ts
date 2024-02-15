@@ -14,6 +14,7 @@ import type { AttributeDefinition } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
+import { schemaRelationsRefDefinition } from './schema-relationsRef';
 
 const ajv = new Ajv();
 
@@ -190,7 +191,9 @@ export const validateInputCreation = async (
 const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
   Object.entries(input).forEach(([key]) => {
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
-    if (!attribute || attribute.update === false) {
+    const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
+    const schemaAttribute = attribute || reference;
+    if (!schemaAttribute || schemaAttribute.update === false) {
       throw ValidationError(key, { message: 'You cannot update incompatible attribute' });
     }
   });
