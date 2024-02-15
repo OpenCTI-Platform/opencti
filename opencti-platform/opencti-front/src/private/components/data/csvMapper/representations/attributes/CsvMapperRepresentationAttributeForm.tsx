@@ -9,7 +9,7 @@ import { FieldProps } from 'formik';
 import CsvMapperRepresentationDialogOption from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationDialogOption';
 import CsvMapperRepresentionAttributeSelectedConfigurations from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentionAttributeSelectedConfigurations';
 import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
-import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
+import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 
