@@ -72,9 +72,13 @@ const userTwoCapability = {
   capabilities: [{ name: KNOWLEDGE_KNUPDATE }, { name: EXPLORE_EXUPDATE }],
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AdminContext: any = { me: userAdmin, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ZeroCapabilityContext: any = { me: userZeroCapability, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OneCapabilityContext: any = { me: userOneCapability, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TwoCapabilityContext: any = { me: userTwoCapability, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
 
 let container: HTMLDivElement | null;
