@@ -3,7 +3,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { Field, FormikProps } from 'formik';
 import DefaultValueField from '@components/common/form/DefaultValueField';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
-import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
+import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import CsvMapperDefaultMarking from '@components/data/csvMapper/representations/attributes/CsvMapperDefaultMarking';
 import CsvMapperRepresentationAttributeOption from './CsvMapperRepresentationAttributeOption';
 import { useFormatter } from '../../../../../../components/i18n';
