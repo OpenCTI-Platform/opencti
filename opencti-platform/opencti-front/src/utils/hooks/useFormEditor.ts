@@ -200,6 +200,11 @@ const useFormEditor = (
     commitFieldPatch(args);
   };
 
+  const checkAndCommitChangeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
+    if (!checkConfidenceForEntity(data, true)) return;
+    changeField(name, value);
+  };
+
   return {
     changeMarking,
     changeAssignee,
@@ -208,7 +213,7 @@ const useFormEditor = (
     changeKillChainPhases,
     changeExternalReferences,
     changeFocus,
-    changeField,
+    changeField: checkAndCommitChangeField,
     fieldPatch: checkAndCommitFieldPatch,
     changeGrantableGroups,
   };
