@@ -229,9 +229,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
     const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const optionsValues = subKey ? filterValues.find((f) => f.key === subKey).values : filterValues;
+    const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
-
     const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
     const groupByEntities = (option: OptionValue) => {
