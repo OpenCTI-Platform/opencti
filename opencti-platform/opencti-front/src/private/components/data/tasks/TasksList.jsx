@@ -479,7 +479,6 @@ const TasksList = ({ data }) => {
                   <TableRow>
                     <TableCell>{t_i18n('Timestamp')}</TableCell>
                     <TableCell>{t_i18n('Message')}</TableCell>
-                    <TableCell>{t_i18n('Source')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -487,7 +486,6 @@ const TasksList = ({ data }) => {
                     <TableRow key={error.timestamp}>
                       <TableCell>{nsdt(error.timestamp)}</TableCell>
                       <TableCell>{error.message}</TableCell>
-                      <TableCell>{error.source}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
