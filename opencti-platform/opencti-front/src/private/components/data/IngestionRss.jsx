@@ -58,9 +58,12 @@ const IngestionRss = () => {
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <Alert severity="info">
-        {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
-      </Alert>
+      <div className={classes.container}>
+        <Alert severity="info">
+          {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+        </Alert>
+        <IngestionMenu/>
+      </div>
     );
   }
   return (

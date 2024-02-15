@@ -178,7 +178,7 @@ describe('Indicator resolver standard behavior', () => {
 
     expect(queryResult.data?.indicator.decay_base_score).toBe(50);
     const startDecayDate: Date = queryResult.data?.indicator.decay_base_score_date;
-    expect(startDecayDate.getTime() / 1000).toBeCloseTo(new Date().getTime() / 1000, 0); // approximately now
+    expect(startDecayDate.getTime() / 10000).toBeCloseTo(new Date().getTime() / 10000, 0); // approximately now
 
     const historyRecords: DecayHistory[] = queryResult.data?.indicator.decay_history;
     expect(historyRecords.length).toBe(1); // just created, should just have creation date

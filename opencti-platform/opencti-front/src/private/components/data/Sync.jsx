@@ -64,9 +64,12 @@ const Sync = () => {
   };
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
-      <Alert severity="info">
-        {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
-      </Alert>
+      <div className={classes.container}>
+        <Alert severity="info">
+          {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
+        </Alert>
+        <IngestionMenu/>
+      </div>
     );
   }
   return (
