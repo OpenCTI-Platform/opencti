@@ -38,7 +38,7 @@ import StixItemLabels from '../../../../../components/StixItemLabels';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
 import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
-import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
 import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
@@ -807,8 +807,8 @@ const WorkbenchFileContentComponent = ({
                 history.push('/dashboard/data/import');
               }
             },
-            onError: ({ res }) => {
-              MESSAGING$.notifyError(res.errors?.[0]?.message || t_i18n('An unknown error has occurred! Please try again later.'));
+            onError: (error) => {
+              handleError(error);
               setSubmitting(false);
               resetForm();
               setDisplayValidate(false);

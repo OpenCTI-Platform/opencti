@@ -5,7 +5,6 @@ import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
 import { commitLocalUpdate as CLU, commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ } from 'react-relay';
 import * as PropTypes from 'prop-types';
-import { map, isEmpty, filter, pathOr, isNil } from 'ramda';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
@@ -29,7 +28,7 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
+const isEmptyPath = R.isNil(window.BASE_PATH) || R.isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
@@ -89,10 +88,10 @@ QueryRenderer.propTypes = {
   query: PropTypes.object,
 };
 
-const buildErrorMessages = (error) => map(
+const buildErrorMessages = (error) => R.map(
   (e) => ({
     type: 'error',
-    text: pathOr(e.message, ['data', 'reason'], e),
+    text: R.pathOr(e.message, ['data', 'reason'], e),
   }),
   error.res.errors,
 );
@@ -126,11 +125,11 @@ export const commitMutation = ({
   onError: (error) => {
     if (setSubmitting) setSubmitting(false);
     if (error && error.res && error.res.errors) {
-      const authRequired = filter(
-        (e) => pathOr(e.message, ['data', 'type'], e) === 'authentication',
+      const authRequired = R.filter(
+        (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
         error.res.errors,
       );
-      if (!isEmpty(authRequired)) {
+      if (!R.isEmpty(authRequired)) {
         MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
       } else if (onError) {
         const messages = buildErrorMessages(error);
@@ -157,10 +156,10 @@ export const handleErrorInForm = (error, setErrors) => {
         formattedError.data.message || formattedError.data.reason,
     });
   } else {
-    const messages = map(
+    const messages = R.map(
       (e) => ({
         type: 'error',
-        text: pathOr(e.message, ['data', 'reason'], e),
+        text: R.pathOr(e.message, ['data', 'reason'], e),
       }),
       error.res.errors,
     );
@@ -170,10 +169,10 @@ export const handleErrorInForm = (error, setErrors) => {
 
 export const handleError = (error) => {
   if (error && error.res && error.res.errors) {
-    const messages = map(
+    const messages = R.map(
       (e) => ({
         type: 'error',
-        text: pathOr(e.message, ['data', 'message'], e),
+        text: R.pathOr(e.message, ['data', 'message'], e),
       }),
       error.res.errors,
     );
