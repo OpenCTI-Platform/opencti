@@ -2644,6 +2644,7 @@
   "Remove this reaction point": "Entfernen Sie diesen Reaktionspunkt",
   "Create a decay rule": "Erstellen einer Zerfallsregel",
   "Update a decay rule": "Aktualisieren einer Zerfallsregel",
+  "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Abklingregeln werden auf Indikatoren in der Reihenfolge ihrer Priorität angewandt (vom höchsten zum niedrigsten Wert, wobei der niedrigste Wert 0 ist). Es gibt integrierte Regeln, die standardmäßig angewendet werden und nicht bearbeitet werden können. Sie können eine benutzerdefinierte Abklingregel hinzufügen und ihre Prioritätsreihenfolge festlegen.",
   "Activate": "Aktivieren Sie",
   "Deactivate": "Deaktivieren",
   "Impacted indicators": "Beeinflusste Indikatoren",

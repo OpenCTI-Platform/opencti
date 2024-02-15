@@ -2658,6 +2658,7 @@
   "Remove this reaction point": "Remove this reaction point",
   "Create a decay rule": "Create a decay rule",
   "Update a decay rule": "Update a decay rule",
+  "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.",
   "Activate": "Activate",
   "Deactivate": "Deactivate",
   "Impacted indicators": "Impacted indicators",

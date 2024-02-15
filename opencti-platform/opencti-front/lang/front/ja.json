@@ -2658,6 +2658,7 @@
   "Remove this reaction point": "この反応点を削除する",
   "Create a decay rule": "崩壊ルールの作成",
   "Update a decay rule": "崩壊ルールの更新",
+  "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "ディケイ・ルールは、優先順位（最大から最小へ、最小は0）によってインジケータに適用されます。デフォルトで適用される組み込みのルールは編集できませんが、カスタム減衰ルールを追加し、その優先順位を定義することができます。",
   "Activate": "アクティブ化",
   "Deactivate": "無効化",
   "Impacted indicators": "影響を受ける指標",
