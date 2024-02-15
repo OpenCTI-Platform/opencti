@@ -8,6 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useParams } from 'react-router-dom';
 import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRuleQuery.graphql';
+import { Icon } from '@mui/material';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -118,6 +119,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         {!decayRule.built_in && (
           <div className={classes.popover}>
             <DecayRulePopover decayRule={decayRule} />
+          </div>
+        )}
+        {decayRule.built_in && (
+          <div className={classes.popover}>
+            <Icon />
           </div>
         )}
       </div>

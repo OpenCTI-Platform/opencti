@@ -92,12 +92,12 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     active: Yup.boolean(),
-    order: Yup.number().min(1),
-    decay_lifetime: Yup.number().min(1),
-    decay_pound: Yup.number().min(0),
-    decay_revoke_score: Yup.number().min(0),
+    order: Yup.number().min(1).max(Number.MAX_SAFE_INTEGER),
+    decay_lifetime: Yup.number().min(1).max(Number.MAX_SAFE_INTEGER),
+    decay_pound: Yup.number().min(0).max(Number.MAX_SAFE_INTEGER),
+    decay_revoke_score: Yup.number().min(0).max(Number.MAX_SAFE_INTEGER),
     decay_observable_types: Yup.array().of(Yup.string()),
-    decay_points: Yup.array().of(Yup.number().min(0)),
+    decay_points: Yup.array().of(Yup.number().min(0).max(Number.MAX_SAFE_INTEGER)),
   });
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (
