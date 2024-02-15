@@ -88,7 +88,6 @@ Ensuring a secure and well-organized environment is paramount in OpenCTI. Here a
 
 By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
 
-
 ## Digest
 
 Users can streamline the data ingestion process using various automated import capabilities. Each method proves beneficial in specific circumstances.

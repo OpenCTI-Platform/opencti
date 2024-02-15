@@ -70,10 +70,8 @@ For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the
 ## Update behavior
 
 In cases where an entity already exists in the platform, incoming creations can trigger updates to the existing entity's attributes.
-
-!!! note "Policy for handling entity updates"
-    
-    If `confidence_level` of the created entity is >= (greater than or equal) to the `confidence_level` of the existing entity, the attributes will be updated. Notably, the `confidence_level` will also be increased with the new one.
-
 This logic has been implemented to converge the knowledge base towards the highest confidence and quality levels for both entities and relationships.
 
+To understand in details how the deduplication mechanism works in context of the maximum confidence level, you can navigate through this diagram (section deduplication):
+
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>

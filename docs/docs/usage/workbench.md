@@ -38,3 +38,7 @@ Once the content within the workbench is deemed acceptable, the analyst must ini
     Until the workbench is validated, the contained data remains in draft form and is not recorded in the knowledge base. This ensures that only reviewed and approved data is officially integrated into the platform.
 
 For more information on importing files, refer to the [Import from files](import-files.md) documentation page.
+
+**Confidence level of created knowledge through workbench**
+
+The confidence level of knowledge created through workbench is affected by the confidence level of the user. Please navigate to this [page](reliability-confidence.md) to understand in more details.

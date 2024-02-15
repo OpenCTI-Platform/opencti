@@ -100,6 +100,30 @@ It is always possible to modify an existing template to define a custom scale ad
 
     If you use the Admiralty code setting for both reliability and Confidence, you will find yourself with the equivalent of NATO confidence notation in the Overview of your different entities (A1, B2, C3, etc.)
 
+### Max confidence level
+
+#### Overview
+
+We know that in organizations, different users do not always have the same expertise or seniority.  As a result, some specific users can be more "trusted" when creating or updating knowledge than others. Additionnaly, because connectors, TAXII feeds and streams are all linked to respectively one user, it is important to be able to differentiate which connector, stream or TAXII feed is more trustable than others.
+
+This is why we have introduced the concept of max confidence level to tackle this use case.
+
+Max confidence level per user allows organizations to fine tune their users to ensure knowledge updated and created stays as consistent as possible.
+
+#### Overall way of working
+
+The overall idea is that users with a max confidence level lower than a confidence level of an entity cannot update or delete this entity.
+
+Also, in a conservative approach, when 2 confidence levels are possible, we would always take the lowest one.
+
+To have a detailed understanding of the concept, please browse through this diagram:
+
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>
+
+
+#### How to set a confidence level
+
+To see how to set up the confidence level, please go in this [page](../administration/users.md).
 
 ## Usage in OpenCTI
 

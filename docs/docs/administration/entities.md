@@ -62,3 +62,7 @@ Confidence scale can be customized for each entity type by selecting another sca
 Once you have customized your scale, click on "Update" to save your configuration.
 
 ![Mandatory attributes and default values](./assets/confidence_scale_configuration.png)
+
+!!! note "Max confidence level"
+
+  The above scale also needs to take into account the confidence level per user. To understand the concept, please navigate to this [page](../usage/reliability-confidence.md)

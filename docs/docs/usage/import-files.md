@@ -62,6 +62,7 @@ Expanding the scope of file imports, users can seamlessly add files in the `Cont
 
 In order to initiate file imports, users must possess the requisite [capability](../administration/users.md): "Upload knowledge files." This capability ensures that only authorized users can contribute and manage knowledge files within the OpenCTI platform, maintaining a controlled and secure environment for data uploads.
 
+
 !!! warning "Deprecation warning"
 
     Using the `ImportDocument` connector to parse CSV file is now disallowed as it produces inconsistent results.

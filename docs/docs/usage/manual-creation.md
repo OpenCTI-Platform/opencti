@@ -60,3 +60,7 @@ While the aforementioned methods are primary for creating entities and relations
 - Inside a workbench: [The workbench](workbench.md) serves as another interactive space where users can create entities and relationships efficiently.
 
 These supplementary methods offer users flexibility and convenience, allowing them to adapt their workflow to various contexts within the OpenCTI platform. As users explore the platform, they will naturally discover additional means of creating entities and relationships.
+
+!!! note "Max confidence level"
+
+  When creating knowledge in the platform, the maximum confidence level of the users is used. Please navigate to this [page](reliability-confidence.md) to understand this concept and the impact it can have on the knowledge creation.

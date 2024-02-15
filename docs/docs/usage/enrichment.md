@@ -23,3 +23,7 @@ Clicking on this icon unveils a side panel displaying a list of available connec
 Activation of an enrichment connector triggers a contact with the designated remote source, importing a set of data into OpenCTI to enrich the selected object. Each enrichment connector operates uniquely, focusing on a specific set of object types it can enrich and a distinct set of data it imports. Depending on the connectors, they may, establish relationships, add external references, or complete object information, thereby contributing to the comprehensiveness of information within the platform.
 
 The list of available connectors can be found in our [connectors catalog](https://www.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76). In addition, further documentation on connectors is available on [the dedicated documentation page](../deployment/connectors.md).
+
+!!! note "Impact of the max confidence level"
+
+  The maximum confidence level per user can have an impact on enrichment connectors, not being able to update data in the platform. To understand the concept and the potential issues you could face, please navigate to this [page](reliability-confidence.md) to understand.
