@@ -1,18 +1,15 @@
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../../src/schema/stixDomainObject';
 import { RELATION_PART_OF } from '../../../../src/schema/stixCoreRelationship';
-import {
-  type BasicStoreEntityCsvMapper,
-  CsvMapperRepresentationType
-} from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 
-export const csvMapperMockSimpleRelationship: Partial<BasicStoreEntityCsvMapper> = {
+export const csvMapperMockSimpleRelationship: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-relationship',
   has_header: true,
   separator: ';',
   representations: [
     {
       id: 'representation01',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
       },
@@ -32,7 +29,7 @@ export const csvMapperMockSimpleRelationship: Partial<BasicStoreEntityCsvMapper>
       ]
     }, {
       id: 'representation02',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
       },
@@ -53,7 +50,7 @@ export const csvMapperMockSimpleRelationship: Partial<BasicStoreEntityCsvMapper>
     },
     {
       id: 'representation01-PART_OF-representation02',
-      type: CsvMapperRepresentationType.relationship,
+      type: CsvMapperRepresentationType.Relationship,
       target: {
         entity_type: RELATION_PART_OF,
       },
@@ -79,4 +76,4 @@ export const csvMapperMockSimpleRelationship: Partial<BasicStoreEntityCsvMapper>
       ]
     },
   ]
-}
+};

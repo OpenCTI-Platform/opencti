@@ -3,7 +3,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDoma
 
 export const repIndividual: CsvMapperRepresentation = {
   id: 'representation-individual',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   },

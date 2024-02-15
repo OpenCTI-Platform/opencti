@@ -5,6 +5,7 @@ import { parsingProcess } from '../../../src/parser/csv-parser';
 import { mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { csvMapperFile } from './files-hashes/mapper-files';
 import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
 
 const ENTITY_SETTINGS_UPDATE = `
@@ -132,6 +133,24 @@ describe('CSV-MAPPER', () => {
         key: 'attributes_configuration',
         value: JSON.stringify(malwareDefaultValues)
       }
+    });
+  });
+
+  describe('Manage hashes for files', () => {
+    it('should map files hashes correctly', async () => {
+      const filePath = './tests/02-integration/05-parser/files-hashes/data.csv';
+      const data = (await mapData(filePath, csvMapperFile)).flat();
+
+      const { MD5 } = data[0].hashes;
+      const sha1Value = data[0].hashes['SHA-1'];
+      const sha256Value = data[0].hashes['SHA-256'];
+
+      expect(MD5).toBeDefined();
+      expect(MD5).toBe('ba69669818ef9ccec174d647a8021a7b');
+      expect(sha1Value).toBeDefined();
+      expect(sha1Value).toBe('b8e74921d7923c808a0423e6e46807c4f0699b6e');
+      expect(sha256Value).toBeDefined();
+      expect(sha256Value).toBe('9e403e07a54437e37fe5dc47f10e93370e4b685fda8bf6fe00013a519bd228ce');
     });
   });
 

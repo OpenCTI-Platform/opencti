@@ -26,10 +26,28 @@ export const CsvMapperRepresentationAttributesFormFragment = graphql`
           name
           id
         }
+        mappings {
+          name
+          type
+          multiple
+          label
+          mandatory
+          editDefault
+        }
       }
     }
   }
 `;
+
+export interface SchemaAttribute {
+  type: string
+  name: string
+  label: string | null | undefined
+  mandatory: boolean
+  defaultValues: { readonly id: string, readonly name: string }[] | null
+  multiple: boolean
+  editDefault: boolean
+}
 
 interface CsvMapperRepresentationAttributesFormProps {
   handleErrors: (key: string, value: string | null) => void;
@@ -57,9 +75,27 @@ CsvMapperRepresentationAttributesFormProps
     (schema) => schema.name === representation.target_type,
   )?.attributes ?? [];
 
+  const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
+    if (schema.name === 'hashes') {
+      return (schema.mappings ?? []).map((mapping) => ({
+        ...mapping,
+        defaultValues: null,
+      }));
+    }
+    return [{
+      type: schema.type,
+      name: schema.name,
+      label: schema.label,
+      mandatory: schema.mandatory,
+      multiple: schema.multiple,
+      editDefault: schema.editDefault,
+      defaultValues: schema.defaultValues ? [...schema.defaultValues] : null,
+    }];
+  }).flat();
+
   return (
     <>
-      {[...entitySchemaAttributes]
+      {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {
           if (schemaAttribute.type === 'ref') {

@@ -7,6 +7,7 @@ import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/repr
 import {
   CsvMapperRepresentationAttributesForm_allSchemaAttributes$data,
 } from '@components/data/csvMapper/representations/attributes/__generated__/CsvMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { SchemaAttribute } from './CsvMapperRepresentationAttributesForm';
 import { isNotEmptyField } from '../../../../../../utils/utils';
 import { defaultValuesToStringArray } from '../../../../../../utils/defaultValues';
 import { useComputeDefaultValues } from '../../../../../../utils/hooks/useDefaultValues';
@@ -28,9 +29,7 @@ export const alphabet = (size = 0) => {
 
 // try to compute a label from the attribute schema
 // Cascading attempts if the following fields exist : label, then name
-export const getAttributeLabel = (
-  schemaAttribute: CsvMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number],
-) => {
+export const getAttributeLabel = (schemaAttribute: SchemaAttribute) => {
   return schemaAttribute.label ?? schemaAttribute.name;
 };
 

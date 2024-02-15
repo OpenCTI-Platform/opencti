@@ -1,21 +1,15 @@
-import {
-  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP
-} from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
-import {
-  type BasicStoreEntityCsvMapper,
-  CsvMapperRepresentationType
-} from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 
-export const csvMapperMockSimpleEntityWithRef: Partial<BasicStoreEntityCsvMapper> = {
+export const csvMapperMockSimpleEntityWithRef: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-entity',
   has_header: true,
   separator: ';',
   representations: [
     {
       id: 'representation01',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
       },
@@ -42,7 +36,7 @@ export const csvMapperMockSimpleEntityWithRef: Partial<BasicStoreEntityCsvMapper
     },
     {
       id: 'representation02',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_IDENTITY_INDIVIDUAL,
       },
@@ -57,7 +51,7 @@ export const csvMapperMockSimpleEntityWithRef: Partial<BasicStoreEntityCsvMapper
     },
     {
       id: 'representation03',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_LABEL,
       },
@@ -77,4 +71,4 @@ export const csvMapperMockSimpleEntityWithRef: Partial<BasicStoreEntityCsvMapper
       ]
     }
   ]
-}
+};

@@ -11,6 +11,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
+import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -101,9 +102,10 @@ export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar:
 };
 
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csv_mapper_id: string): Promise<CsvMapperTestResult> => {
-  const csvMapper: BasicStoreEntityCsvMapper = await findCsvMapperById(context, user, csv_mapper_id);
+  const csvMapper = await findCsvMapperById(context, user, csv_mapper_id);
+  const parsedMapper = parseCsvMapper(csvMapper);
   const csvBuffer = await fetchCsvExtractFromUrl(uri, csvMapper.skipLineChar);
-  const bundle = await bundleProcess(context, user, csvBuffer, csvMapper);
+  const bundle = await bundleProcess(context, user, csvBuffer, parsedMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,

@@ -2,18 +2,18 @@ import { assert, describe, expect, it } from 'vitest';
 import { csvMapperMockSimpleDifferentEntities } from '../../data/csv-mapper-mock-simple-different-entities';
 import { validate } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import type { BasicStoreEntityCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 
 describe('CSV Mapper', () => {
   it('validate a valid mapper', async () => {
     await validate(testContext, ADMIN_USER, {
-      ...csvMapperMockSimpleDifferentEntities as BasicStoreEntityCsvMapper,
+      ...csvMapperMockSimpleDifferentEntities as CsvMapperParsed,
       name: 'Valid Mapper'
     });
     assert(true);
   });
   it('invalidate a invalid mapper', async () => {
-    const mapper = csvMapperMockSimpleDifferentEntities as BasicStoreEntityCsvMapper;
+    const mapper = csvMapperMockSimpleDifferentEntities as CsvMapperParsed;
     await expect(() => validate(testContext, ADMIN_USER, {
       ...mapper,
       name: 'Invalid Mapper',

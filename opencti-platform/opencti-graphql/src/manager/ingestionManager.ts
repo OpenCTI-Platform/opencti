@@ -25,11 +25,12 @@ import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicS
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
-import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
+import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
+import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -308,7 +309,7 @@ const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvR
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
-const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: BasicStoreEntityCsvMapper, context: AuthContext) => {
+const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
   const entitiesData = data.split('\n');
   const csvBuffer = await fetchCsvFromUrl(ingestion.uri, csvMapper.skipLineChar);
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
@@ -323,7 +324,8 @@ const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngesti
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const { data, addedLast } = await csvHttpGet(ingestion);
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper: BasicStoreEntityCsvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapperParsed = parseCsvMapper(csvMapper);
   const csvMappingTestResult = await testCsvIngestionMapping(context, user, ingestion.uri, ingestion.csv_mapper_id);
 
   if (!csvMappingTestResult.nbEntities) {
@@ -336,7 +338,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     return;
   }
 
-  const objects = await csvDataToObjects(data, ingestion, csvMapper, context);
+  const objects = await csvDataToObjects(data, ingestion, csvMapperParsed, context);
   const bundleSize = 1000;
   for (let index = 0; index < objects.length; index += bundleSize) {
     // Filter objects already added to queue

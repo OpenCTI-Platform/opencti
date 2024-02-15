@@ -1,17 +1,14 @@
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../../../src/schema/stixDomainObject';
-import {
-  type BasicStoreEntityCsvMapper,
-  CsvMapperRepresentationType
-} from '../../../../src/modules/internal/csvMapper/csvMapper-types';
+import { type CsvMapperParsed, CsvMapperRepresentationType } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
 
-export const csvMapperMockSimpleEntity: Partial<BasicStoreEntityCsvMapper> = {
+export const csvMapperMockSimpleEntity: Partial<CsvMapperParsed> = {
   id: 'mapper-mock-simple-entity',
   has_header: true,
   separator: ';',
   representations: [
     {
       id: 'representation01',
-      type: CsvMapperRepresentationType.entity,
+      type: CsvMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_THREAT_ACTOR_GROUP,
       },
@@ -34,4 +31,4 @@ export const csvMapperMockSimpleEntity: Partial<BasicStoreEntityCsvMapper> = {
       ]
     }
   ]
-}
+};

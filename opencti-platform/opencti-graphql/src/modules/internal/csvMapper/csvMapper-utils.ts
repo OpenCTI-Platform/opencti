@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreEntityCsvMapper, CsvMapperRepresentation } from './csvMapper-types';
+import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
@@ -11,7 +11,7 @@ import { INTERNAL_REFS } from '../../../domain/attribute-utils';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import type { BasicStoreEntity } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
-import type { MandatoryType } from '../../../schema/attribute-definition';
+import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 
 export interface CsvMapperSchemaAttribute {
@@ -22,7 +22,8 @@ export interface CsvMapperSchemaAttribute {
   editDefault: boolean
   multiple: boolean
   defaultValues?: { id: string, name:string }[]
-  label?: string
+  label: string
+  mappings?: CsvMapperSchemaAttribute[]
 }
 
 export interface CsvMapperSchemaAttributes {
@@ -38,14 +39,14 @@ const representationLabel = (idx: number, representation: CsvMapperRepresentatio
   return `${number} ${representation.target.entity_type}`;
 };
 
-export const parseCsvMapper = (entity: any): BasicStoreEntityCsvMapper => {
+export const parseCsvMapper = (entity: any): CsvMapperParsed => {
   return {
     ...entity,
     representations: typeof entity.representations === 'string' ? JSON.parse(entity.representations) : entity.representations,
   };
 };
 
-export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user: AuthUser, entity: any) => {
+export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user: AuthUser, entity: any): Promise<CsvMapperResolved> => {
   if (typeof entity?.representations !== 'string') {
     return entity;
   }
@@ -93,18 +94,18 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
 };
 
 export const isValidTargetType = (representation: CsvMapperRepresentation) => {
-  if (representation.type === CsvMapperRepresentationType.relationship) {
+  if (representation.type === CsvMapperRepresentationType.Relationship) {
     if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
       throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
     }
-  } else if (representation.type === CsvMapperRepresentationType.entity) {
+  } else if (representation.type === CsvMapperRepresentationType.Entity) {
     if (!isStixObject(representation.target.entity_type)) {
       throw FunctionalError('Unknown entity', { type: representation.target.entity_type });
     }
   }
 };
 
-export const validate = async (context: AuthContext, user: AuthUser, mapper: BasicStoreEntityCsvMapper) => {
+export const validate = async (context: AuthContext, user: AuthUser, mapper: CsvMapperParsed) => {
   // consider empty csv mapper as invalid to avoid being used in the importer
   if (mapper.representations.length === 0) {
     throw Error(`CSV Mapper '${mapper.name}' has no representation`);
@@ -182,7 +183,7 @@ export const errors = async (context: AuthContext, user: AuthUser, csvMapper: Ba
   }
 };
 
-export const sanitized = (mapper: BasicStoreEntityCsvMapper) => {
+export const sanitized = (mapper: CsvMapperParsed): CsvMapperParsed => {
   return {
     ...mapper,
     representations: mapper.representations.map((r) => {
@@ -198,4 +199,13 @@ export const sanitized = (mapper: BasicStoreEntityCsvMapper) => {
       };
     })
   };
+};
+
+export const getHashesNames = (entityType: string) => {
+  const definition = schemaAttributesDefinition.getAttributes(entityType);
+  const hashesDefinition = definition.get('hashes');
+  if (!hashesDefinition) {
+    return [];
+  }
+  return (hashesDefinition as ObjectAttribute).mappings.map((mapping) => (mapping.name));
 };

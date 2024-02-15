@@ -1,6 +1,6 @@
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { CsvMapperWithUserMarkings } from '../modules/internal/csvMapper/csvMapper-types';
+import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { sanitized, validate } from '../modules/internal/csvMapper/csvMapper-utils';
 import { BundleBuilder } from './bundle-creator';
 import { type InputType, mappingProcess } from './csv-mapper';
@@ -30,7 +30,7 @@ export const bundleProcess = async (
   context: AuthContext,
   user: AuthUser,
   content: Buffer | string,
-  mapper: CsvMapperWithUserMarkings,
+  mapper: CsvMapperParsed,
   entity?: BasicStoreBase
 ) => {
   await validate(context, user, mapper);

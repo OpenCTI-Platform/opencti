@@ -11068,7 +11068,8 @@ type CsvMapperSchemaAttribute {
   editDefault: Boolean!
   multiple: Boolean!
   defaultValues: [DefaultValue!]
-  label: String
+  label: String!
+  mappings: [CsvMapperSchemaAttribute!]
 }
 
 type CsvMapperSchemaAttributes {

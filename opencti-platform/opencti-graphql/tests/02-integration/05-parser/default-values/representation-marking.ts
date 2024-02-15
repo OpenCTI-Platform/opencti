@@ -4,7 +4,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../../src/module
 
 export const repMarking = {
   id: 'representation-marking',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_MARKING_DEFINITION,
   },
@@ -32,7 +32,7 @@ export const repMarking = {
 
 export const repAreaMarking: (policy: string | undefined) => CsvMapperRepresentation = (policy) => ({
   id: 'representation-area-marking',
-  type: CsvMapperRepresentationType.entity,
+  type: CsvMapperRepresentationType.Entity,
   target: {
     entity_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
   },

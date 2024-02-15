@@ -3,7 +3,7 @@ import { RELATION_TARGETS } from '../../../../src/schema/stixCoreRelationship';
 
 export const repRelTargets: CsvMapperRepresentation = {
   id: 'representation-targets',
-  type: CsvMapperRepresentationType.relationship,
+  type: CsvMapperRepresentationType.Relationship,
   target: {
     entity_type: RELATION_TARGETS,
   },

@@ -4715,9 +4715,10 @@ export type CsvMapperSchemaAttribute = {
   __typename?: 'CsvMapperSchemaAttribute';
   defaultValues?: Maybe<Array<DefaultValue>>;
   editDefault: Scalars['Boolean']['output'];
-  label?: Maybe<Scalars['String']['output']>;
+  label: Scalars['String']['output'];
   mandatory: Scalars['Boolean']['output'];
   mandatoryType: Scalars['String']['output'];
+  mappings?: Maybe<Array<CsvMapperSchemaAttribute>>;
   multiple: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   type: Scalars['String']['output'];
@@ -30737,9 +30738,10 @@ export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, Pare
 export type CsvMapperSchemaAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperSchemaAttribute'] = ResolversParentTypes['CsvMapperSchemaAttribute']> = ResolversObject<{
   defaultValues?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
   editDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   mandatoryType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mappings?: Resolver<Maybe<Array<ResolversTypes['CsvMapperSchemaAttribute']>>, ParentType, ContextType>;
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
