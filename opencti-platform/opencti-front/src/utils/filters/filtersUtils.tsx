@@ -89,15 +89,12 @@ export const useIsUniqFilter = (key: string) => {
   return false;
 };
 
-export const isTextFilter = (
+export const isStringFilter = (
   filterDefinition: FilterDefinition | undefined,
 ) => {
   return filterDefinition
     && !entityTypesFilters.includes(filterDefinition.filterKey)
-    && (
-      filterDefinition.type === 'string'
-    || filterDefinition.type === 'text'
-    );
+    && filterDefinition.type === 'string';
 };
 
 export const isNumericFilter = (
@@ -545,10 +542,10 @@ export const getDefaultOperatorFilter = (
   if (type === 'boolean') {
     return 'eq';
   }
-  if (isTextFilter(filterDefinition)) {
+  if (isStringFilter(filterDefinition)) {
     return 'starts_with';
   }
-  if (longTextFilters.includes(filterKey)) {
+  if (type === 'text') {
     return 'search';
   }
   return 'eq';
@@ -600,7 +597,7 @@ export const getAvailableOperatorForFilterKey = (
   }
   const { type: filterType } = filterDefinition;
   if (filterType === 'text') {
-    return ['eq', 'not_eq'];
+    return ['search', 'nil', 'not_nil'];
   }
   if (filterType === 'date') {
     return ['gt', 'gte', 'lt', 'lte'];
@@ -611,12 +608,9 @@ export const getAvailableOperatorForFilterKey = (
   if (filterType === 'boolean') {
     return ['eq', 'not_eq'];
   }
-  if (isTextFilter(filterDefinition)) {
+  if (isStringFilter(filterDefinition)) {
     return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
-      'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'];
-  }
-  if (longTextFilters.includes(filterKey)) {
-    return ['search'];
+      'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
   }
 
   return ['eq', 'not_eq', 'nil', 'not_nil']; // vocabulary or id

@@ -9,7 +9,15 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { isNumericFilter, isTextFilter, useFilterDefinition, Filter, getAvailableOperatorForFilter, getSelectedOptions, isStixObjectTypes } from '../../utils/filters/filtersUtils';
+import {
+  isNumericFilter,
+  isStringFilter,
+  useFilterDefinition,
+  Filter,
+  getAvailableOperatorForFilter,
+  getSelectedOptions,
+  isStixObjectTypes,
+} from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
@@ -210,9 +218,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const filterType = fDef?.type;
     return (
       filterType === 'date'
+      || filterType === 'text'
       || isNumericFilter(filterType)
-      || isTextFilter(fDef)
-      || longTextFilters.includes(fKey)
+      || isStringFilter(fDef)
     );
   };
 
@@ -327,7 +335,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         />
       );
     }
-    if (isTextFilter(filterDefinition) || longTextFilters.includes(fKey)) {
+    if (isStringFilter(filterDefinition) || filterDefinition?.type === 'text') {
       return (
         <BasicTextInput
           filter={filter}
