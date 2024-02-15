@@ -4,7 +4,6 @@ import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
-import useConfidenceLevel from '../utils/hooks/useConfidenceLevel';
 
 interface InputSliderFieldProps {
   label: string;
@@ -21,11 +20,10 @@ interface InputSliderFieldProps {
   entityType: string;
   attributeName: string;
   disabled?: boolean;
+  maxLimit?: number;
 }
 
-const InputSliderField: FunctionComponent<
-InputSliderFieldProps & FieldProps
-> = ({
+const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
   form: { setFieldValue },
   field: { name, value },
   label,
@@ -36,18 +34,19 @@ InputSliderFieldProps & FieldProps
   entityType,
   attributeName,
   disabled,
+  maxLimit,
 }) => {
-  const { effectiveConfidenceLevel } = useConfidenceLevel();
   const {
     level: { color },
-    marks,
+    marks: defaultMarks,
     scale,
   } = useLevel(entityType, attributeName, value);
   const min = scale?.min ? scale.min.value : 0;
   const defaultMaxValue = scale?.max ? scale.max.value : 0;
-  const max = effectiveConfidenceLevel
-    ? effectiveConfidenceLevel.max_confidence
+  const max = maxLimit !== undefined && Number.isFinite(maxLimit) && maxLimit <= defaultMaxValue
+    ? maxLimit
     : defaultMaxValue;
+  const marks = defaultMarks.filter((mark) => mark.value <= max);
   const sliderStyle = {
     color,
     '& .MuiSlider-rail': {

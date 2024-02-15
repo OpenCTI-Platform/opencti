@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import UserConfidenceLevel from './UserConfidenceLevel';
 import type { Theme } from '../../../../components/Theme';
 import SwitchField from '../../../../components/SwitchField';
+import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
 const useStyles = makeStyles((theme: Theme) => ({
   alert: {
@@ -57,6 +58,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
   const classes = useStyles();
   const { setFieldValue, initialValues } = useFormikContext<Record<string, boolean>>();
   const [switchValue, setSwitchValue] = useState(Number.isInteger(initialValues[name]));
+  const { effectiveConfidenceLevel } = useConfidenceLevel();
 
   const handleSwitchChange = async () => {
     if (switchValue) {
@@ -128,6 +130,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         editContext={editContext}
         disabled={!switchValue || disabled}
         variant="edit"
+        maxLimit={effectiveConfidenceLevel?.max_confidence ?? 0}
       />
     </Alert>
   );
