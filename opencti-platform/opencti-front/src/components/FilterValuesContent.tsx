@@ -10,6 +10,8 @@ export const filterValuesContentQuery = graphql`
         filtersRepresentatives(filters: $filters) {
             id
             value
+            entity_type
+            color
         }
     }
 `;

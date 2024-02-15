@@ -1,8 +1,11 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
+import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../components/i18n';
 
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import { capitalizeFirstLetter } from '../String';
+import { FilterRepresentative } from '../../components/filters/FiltersModel';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -737,3 +740,38 @@ export const isStixObjectTypes = [
   'contextEntityId',
   'id',
 ];
+
+export const getSelectedOptions = (
+  entitiesOptions: OptionValue[],
+  filterValues: string[],
+  filtersRepresentativesMap: Map<string,
+  FilterRepresentative>,
+  t_i18n: (s: string) => string,
+): OptionValue[] => {
+  // we try to get first the element from the search
+  // and if we did not find we tried one from filterReprensentative
+  // Most of the time element from search should be sufficient
+  const mapFilterValues: OptionValue[] = [];
+  filterValues.forEach((value: string) => {
+    const mapRepresentative = entitiesOptions.find((f) => f.value === value);
+    if (mapRepresentative) {
+      mapFilterValues.push({
+        ...mapRepresentative,
+        group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else {
+      const filterRepresentative = filtersRepresentativesMap.get(value);
+      if (filterRepresentative) {
+        mapFilterValues.push({
+          value,
+          type: filterRepresentative?.entity_type || t_i18n('deleted'),
+          parentTypes: [],
+          group: capitalizeFirstLetter(t_i18n('selected')),
+          label: filterRepresentative?.value ?? t_i18n('deleted'),
+          color: filterRepresentative?.color ?? undefined,
+        });
+      }
+    }
+  });
+  return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
+};

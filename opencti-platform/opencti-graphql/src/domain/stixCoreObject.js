@@ -537,7 +537,12 @@ export const findFiltersRepresentatives = async (context, user, inputFilters) =>
       entity = await findStatusById(context, user, entity.id);
     }
     // add the entity representative in 'value', or null for deleted/restricted entities
-    filtersRepresentatives.push({ id: idsToResolve[index], value: (entity ? extractEntityRepresentativeName(entity) : null) });
+    filtersRepresentatives.push({
+      id: idsToResolve[index],
+      value: (entity ? extractEntityRepresentativeName(entity) : null),
+      entity_type: entity?.entity_type ?? null,
+      color: entity?.color || entity?.x_opencti_color || null
+    });
   }
   // add ids that don't require a resolution
   return filtersRepresentatives.concat(otherIds.map((id) => ({ id, value: id })));

@@ -1,19 +1,20 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import Popover from '@mui/material/Popover';
-import MUIAutocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
-import { MenuItem, Select } from '@mui/material';
+import { Autocomplete, MenuItem, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
-import { dateFilters, Filter, getAvailableOperatorForFilter, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
+import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { dateFilters, Filter, getAvailableOperatorForFilter, getSelectedOptions, integerFilters, isStixObjectTypes, textFilters } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
+import { FilterRepresentative } from './FiltersModel';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -22,6 +23,7 @@ interface FilterChipMenuProps {
   filters: Filter[];
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
 }
 
 export interface FilterChipsParameter {
@@ -128,6 +130,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filters,
   helpers,
   availableRelationFilterTypes,
+  filtersRepresentativesMap,
 }) => {
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
@@ -225,23 +228,23 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   );
 
   const buildAutocompleteFilter = (fKey: string, subKey?: string): ReactNode => {
+    const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
+    const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+    const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
+    const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+
+    const groupByEntities = (option: OptionValue) => {
+      return t_i18n(option?.group ? option?.group : fKey);
+    };
     return (
-      <MUIAutocomplete
-        disableCloseOnSelect
+      <Autocomplete
+        multiple
         key={fKey}
-        selectOnFocus={true}
-        autoSelect={false}
-        autoHighlight={true}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
-        options={getOptionsFromEntities(entities, searchScope, fKey)}
-        groupBy={
-          isStixObjectTypes.includes(fKey)
-            ? (option) => option.type
-            : (option) => t_i18n(option.group ? option.group : fKey)
-        }
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)
-        }
+        options={[...selectedOptions, ...entitiesOptions]}
+        groupBy={(option) => groupByEntities(option)}
+        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}

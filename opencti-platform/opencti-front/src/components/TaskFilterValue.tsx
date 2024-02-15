@@ -46,7 +46,7 @@ const TaskFilterValue = ({
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n?.value]),
+    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
   );
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
@@ -93,7 +93,7 @@ const TaskFilterValue = ({
                           <FilterValuesContent
                             filterKey={currentFilter.key}
                             id={o}
-                            value={filtersRepresentativesMap.get(o)}
+                            value={filtersRepresentativesMap.get(o)?.value ?? o}
                           />
                           {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>
