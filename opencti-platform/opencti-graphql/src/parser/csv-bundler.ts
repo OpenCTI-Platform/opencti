@@ -38,10 +38,7 @@ export const bundleProcess = async (
 
   const bundleBuilder = new BundleBuilder();
   let skipLine = sanitizedMapper.has_header;
-  let records = await parsingProcess(content, mapper.separator);
-  if (mapper.skipLineChar) {
-    records = records.filter((record) => !record[0].startsWith(mapper.skipLineChar));
-  }
+  const records = await parsingProcess(content, mapper.separator, mapper.skipLineChar);
   if (records) {
     await Promise.all((records.map(async (record: string[]) => {
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
