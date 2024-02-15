@@ -231,8 +231,7 @@ const PlaybookAddComponentsContent = ({
                 value: n.value,
                 patch_value: n.value,
               })),
-            )
-                        }
+            )}
           />
         );
       case 'objectLabel':
@@ -248,8 +247,7 @@ const PlaybookAddComponentsContent = ({
                 value: n.value,
                 patch_value: n.label,
               })),
-            )
-                        }
+            )}
           />
         );
       case 'createdBy':
@@ -263,8 +261,7 @@ const PlaybookAddComponentsContent = ({
                 value: value.value,
                 patch_value: value.value,
               },
-            ])
-                        }
+            ])}
           />
         );
       case 'x_opencti_workflow_id':
@@ -278,8 +275,7 @@ const PlaybookAddComponentsContent = ({
                 value: value.value,
                 patch_value: value.value,
               },
-            ])
-                        }
+            ])}
           />
         );
       case 'x_opencti_detection':
@@ -300,19 +296,14 @@ const PlaybookAddComponentsContent = ({
           <Field
             component={TextField}
             disabled={disabled}
-            type={
-                            numberAttributes.includes(actionsInputs[i]?.attribute)
-                              ? 'number'
-                              : 'text'
-                        }
+            type={numberAttributes.includes(actionsInputs[i]?.attribute) ? 'number' : 'text'}
             variant="standard"
             name={`actions-${i}-value`}
             label={t_i18n('Value')}
             fullWidth={true}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
-            ])
-                        }
+            ])}
           />
         );
     }
@@ -392,10 +383,7 @@ const PlaybookAddComponentsContent = ({
     });
     const initialValues = currentConfig
       ? {
-        name:
-                    selectedNode?.data?.component?.id === selectedComponent.id
-                      ? selectedNode?.data?.name
-                      : selectedComponent.name,
+        name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
         ...currentConfig,
       }
       : {
@@ -516,12 +504,7 @@ const PlaybookAddComponentsContent = ({
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(
-                                        i,
-                                        'op',
-                                        event.target.value,
-                                      )
-                                      }
+                                      onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
                                     >
                                       {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
                                         <MenuItem key={op} value={op}>
