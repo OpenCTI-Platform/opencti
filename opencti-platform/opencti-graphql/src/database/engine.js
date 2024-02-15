@@ -1924,7 +1924,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
 const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys.length > 1) {
+  if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys[0] !== X_OPENCTI_WORKFLOW_ID || arrayKeys.length > 1) {
     throw UnsupportedError(`A filter with these multiple keys is not supported: ${arrayKeys}`);
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
