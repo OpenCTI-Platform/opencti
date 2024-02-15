@@ -130,7 +130,6 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         editContext={editContext}
         disabled={!switchValue || disabled}
         variant="edit"
-        maxLimit={effectiveConfidenceLevel?.max_confidence ?? 0}
       />
     </Alert>
   );
