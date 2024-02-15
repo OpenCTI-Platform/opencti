@@ -715,48 +715,50 @@ const LeftBar = () => {
             )}
           </MenuList>
         </Security>
-        <Security needs={[EXPLORE]}>
+        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, TAXIIAPI_SETCSVMAPPERS]}>
           <Divider />
           <MenuList component="nav">
-            <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
-              <MenuItem
-                component={Link}
-                to="/dashboard/workspaces/dashboards"
-                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <InsertChartOutlinedOutlined />
-                </ListItemIcon>
-                {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Dashboards')}
-                />
-                )}
-              </MenuItem>
-            </StyledTooltip>
-            <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
-              <MenuItem
-                component={Link}
-                to="/dashboard/workspaces/investigations"
-                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <ExploreOutlined />
-                </ListItemIcon>
-                {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Investigations')}
-                />
-                )}
-              </MenuItem>
-            </StyledTooltip>
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+            <Security needs={[EXPLORE]}>
+              <StyledTooltip title={!navOpen && t_i18n('Dashboards')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/workspaces/dashboards"
+                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <InsertChartOutlinedOutlined />
+                  </ListItemIcon>
+                  {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Dashboards')}
+                  />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+              <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/workspaces/investigations"
+                  selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <ExploreOutlined />
+                  </ListItemIcon>
+                  {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Investigations')}
+                  />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            </Security>
+            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, TAXIIAPI_SETCSVMAPPERS]}>
               <MenuItem
                 ref={anchors.data}
                 selected={!navOpen && location.pathname.includes('/dashboard/data')}

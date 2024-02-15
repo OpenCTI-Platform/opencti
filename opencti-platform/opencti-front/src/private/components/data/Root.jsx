@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import { SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -104,7 +104,7 @@ const Root = () => {
           path="/dashboard/data/processing"
           render={() => (
             <Security
-              needs={[SETTINGS_SETACCESSES]}
+              needs={[KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS]}
               placeholder={<Redirect to="/dashboard" />}
             >
               <Redirect to="/dashboard/data/processing/automation" />
