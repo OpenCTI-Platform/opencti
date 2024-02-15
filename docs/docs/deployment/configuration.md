@@ -104,17 +104,18 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### ElasticSearch
 
-| Parameter                              | Environment variable                    | Default value         | Description                                                                             |
-|:---------------------------------------|:----------------------------------------|:----------------------|:----------------------------------------------------------------------------------------|
-| elasticsearch:engine_selector          | ELASTICSEARCH__ENGINE_SELECTOR          | auto                  | `elk` or `opensearch`, default is `auto`, please put `elk` if you use token auth.       |
-| elasticsearch:url                      | ELASTICSEARCH__URL                      | http://localhost:9200 | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
-| elasticsearch:username                 | ELASTICSEARCH__USERNAME                 |                       | Username can be put in the URL or with this parameter                                   |
-| elasticsearch:password                 | ELASTICSEARCH__PASSWORD                 |                       | Password can be put in the URL or with this parameter                                   |
-| elasticsearch:api_key                  | ELASTICSEARCH__API_KEY                  |                       | API key for ElasticSearch token auth. Please set also `engine_selector` to `elk`        |
-| elasticsearch:index_prefix             | ELASTICSEARCH__INDEX_PREFIX             | opencti               | Prefix for the indices                                                                  |
-| elasticsearch:ssl:reject_unauthorized  | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                | Enable TLS certificate check                                                            |
-| elasticsearch:ssl:ca                   | ELASTICSEARCH__SSL__CA                  |                       | Custom certificate path or content                                                      |
-| elasticsearch:ssl:ca_plain (depecated) | ELASTICSEARCH__SSL__CA_PLAIN            |                       | @depecated, use ca directly                                                             |
+| Parameter                             | Environment variable                    | Default value         | Description                                                                             |
+|:--------------------------------------|:----------------------------------------|:----------------------|:----------------------------------------------------------------------------------------|
+| elasticsearch:engine_selector         | ELASTICSEARCH__ENGINE_SELECTOR          | auto                  | `elk` or `opensearch`, default is `auto`, please put `elk` if you use token auth.       |
+| elasticsearch:url                     | ELASTICSEARCH__URL                      | http://localhost:9200 | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
+| elasticsearch:username                | ELASTICSEARCH__USERNAME                 |                       | Username can be put in the URL or with this parameter                                   |
+| elasticsearch:password                | ELASTICSEARCH__PASSWORD                 |                       | Password can be put in the URL or with this parameter                                   |
+| elasticsearch:api_key                 | ELASTICSEARCH__API_KEY                  |                       | API key for ElasticSearch token auth. Please set also `engine_selector` to `elk`        |
+| elasticsearch:index_prefix            | ELASTICSEARCH__INDEX_PREFIX             | opencti               | Prefix for the indices                                                                  |
+| elasticsearch:ssl:reject_unauthorized | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                | Enable TLS certificate check                                                            |
+| elasticsearch:ssl:ca                  | ELASTICSEARCH__SSL__CA                  |                       | Custom certificate path or content                                                      |
+| elasticsearch:search_wildcard_prefix  | ELASTICSEARCH__SEARCH_WILDCARD_PREFIX   | `false`               | Search includes words with automatic fuzzy comparison                                   |
+| elasticsearch:search_fuzzy            | ELASTICSEARCH__SEARCH_FUZZY             | `false`               | Search will include words not starting with the search keyword                          |
 
 #### Redis
 
@@ -176,6 +177,17 @@ Here are the configuration keys, for both containers (environment variables) and
 | smtp:reject_unauthorized | SMTP__REJECT_UNAUTHORIZED | `false`       | Enable TLS certificate check              |
 | smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed |
 | smtp:password            | SMTP__PASSWORD            |               | SMTP Password if authentication is needed |
+
+#### AI Service
+
+| Parameter       | Environment variable | Default value | Description                                               |
+|:----------------|:---------------------|:--------------|:----------------------------------------------------------|
+| ai:enabled      | AI__ENABLED          | true          | Enable AI capabilities                                    |
+| ai:type         | AI__TYPE             | mistralai     | AI type (`mistralai` or `openai`)                         |
+| ai:endpoint     | AI__ENDPOINT         |               | Endpoint URL (empty means default cloud service)          |
+| ai:token        | AI__TOKEN            |               | Token for endpoint credentials                            |
+| ai:model        | AI__MODEL            |               | Model to be used for text generation (depending on type)  |
+| ai:model_images | AI__MODEL_IMAGES     |               | Model to be used for image generation (depending on type) |
 
 ### Engines, Schedules and Managers
 
