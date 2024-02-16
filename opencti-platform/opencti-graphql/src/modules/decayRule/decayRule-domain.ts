@@ -247,8 +247,8 @@ export const getDecaySettingsChartData = async (context: AuthContext, user: Auth
 
 // region init built-in decay rules
 export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
-  name: 'Default Decay Rule',
-  description: 'Built-in decay rule for all indicators that does not match any other decay rules.',
+  name: 'Built-in default',
+  description: 'Built-in decay rule for all indicators that do not match any other decay rule.',
   decay_lifetime: 470, // 1 year
   decay_pound: 0.35,
   decay_points: [80, 50],
@@ -258,8 +258,8 @@ export const FALLBACK_DECAY_RULE: DecayRuleConfiguration = {
   active: true,
 };
 export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
-  name: 'Built-in files and artefact decay rule.',
-  description: 'Built-in decay rule for indicator with files or artefact for main observable.',
+  name: 'Built-in files and artifact',
+  description: 'Built-in decay rule for indicators with files or artefact as main observable type.',
   decay_lifetime: 460,
   decay_pound: 0.3,
   decay_points: [80],
@@ -273,8 +273,8 @@ export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
 };
 
 export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
-  name: 'Built-in IP and URL decay rule.',
-  description: 'Built-in decay rule for indicator with IP or URL for main observable.',
+  name: 'Built-in IP and URL',
+  description: 'Built-in decay rule for indicators with IP or URL as main observable type.',
   decay_lifetime: 47,
   decay_pound: 0.55,
   decay_points: [80, 50],
@@ -289,8 +289,8 @@ export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
 };
 
 export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
-  name: 'Built-in domain-name decay rule.',
-  description: 'Built-in decay rule for indicator with domain-name for main observable.',
+  name: 'Built-in domain name',
+  description: 'Built-in decay rule for indicators with domain name as main observable type.',
   decay_lifetime: 300,
   decay_pound: 0.7,
   decay_points: [80, 50],

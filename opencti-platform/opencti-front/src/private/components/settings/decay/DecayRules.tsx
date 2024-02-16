@@ -119,7 +119,7 @@ const DecayRules = () => {
         numberOfElements={numberOfElements}
         message={t_i18n(
           'Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). '
-          + 'There are three built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.',
+          + 'There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.',
         )}
       >
         {queryRef && (
