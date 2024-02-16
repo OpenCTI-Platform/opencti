@@ -54,14 +54,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@analytics/core@npm:^0.12.7":
-  version: 0.12.7
-  resolution: "@analytics/core@npm:0.12.7"
+"@analytics/core@npm:^0.12.9":
+  version: 0.12.9
+  resolution: "@analytics/core@npm:0.12.9"
   dependencies:
     "@analytics/global-storage-utils": "npm:^0.1.7"
     "@analytics/type-utils": "npm:^0.6.2"
     analytics-utils: "npm:^1.0.12"
-  checksum: 10/fa3575e864aa37f6d508cdc8336bc5bdc27088e6a0c7c9ad6927d89fd68d211d84d04d045591507b3841692e98dab8bbaa7eedc1c693db6adfccf417c6e0813e
+  checksum: 10/9ac7894d51f17ee8611c4038eca9081a5546265f7dacbde037b259582f764004ebce1651ad6d01076b22d5bde2fa48db14459a77648124c24ef477238108f645
   languageName: node
   linkType: hard
 
@@ -6121,13 +6121,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"analytics@npm:0.8.9":
-  version: 0.8.9
-  resolution: "analytics@npm:0.8.9"
+"analytics@npm:0.8.11":
+  version: 0.8.11
+  resolution: "analytics@npm:0.8.11"
   dependencies:
-    "@analytics/core": "npm:^0.12.7"
+    "@analytics/core": "npm:^0.12.9"
     "@analytics/storage-utils": "npm:^0.4.2"
-  checksum: 10/6144fe28f95cfd6bc270fb8662cb23a83f04bbf58e88ab30211edde3f4d1ba7faa73a8c748c790babd00a4a9f2ba172d2fcbc77e9732400baab726e1245f73db
+  checksum: 10/e2d3af2f3e5ea6d3afa558cb6dcc3fa05fbb72c903872a3a697999328eae7c5eb15eaea0a3de2c62a1408ba35886688d4163f53b228f49e7d72cb9bf68d369ce
   languageName: node
   linkType: hard
 
@@ -15182,7 +15182,7 @@ __metadata:
     "@types/relay-test-utils": "npm:14.1.4"
     "@types/uuid": "npm:9.0.8"
     "@vitejs/plugin-react": "npm:4.2.1"
-    analytics: "npm:0.8.9"
+    analytics: "npm:0.8.11"
     apexcharts: "npm:3.45.2"
     axios: "npm:1.6.7"
     babel-plugin-relay: "npm:16.2.0"
