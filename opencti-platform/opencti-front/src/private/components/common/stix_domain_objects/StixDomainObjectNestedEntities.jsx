@@ -5,8 +5,8 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import List from '@mui/material/List';
-import inject18n from '../../../../components/i18n';
 import StixNestedRefRelationshipCreationFromEntity from '../stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromEntity';
+import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -197,6 +197,8 @@ StixDomainObjectNestedEntities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default compose(
