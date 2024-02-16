@@ -2127,7 +2127,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (arrayKeys.includes(INSTANCE_RELATION_FILTER)) {
         const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested });
+        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (arrayKeys.includes(RELATION_FROM_FILTER) || arrayKeys.includes(RELATION_TO_FILTER) || arrayKeys.includes(RELATION_TO_SIGHTING_FILTER)) {
         const side = arrayKeys.includes(RELATION_FROM_FILTER) ? 'from' : 'to';
@@ -2135,7 +2135,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           { key: 'internal_id', operator: filter.operator, values: filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
         ];
-        finalFilters.push({ key: 'connections', nested });
+        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (arrayKeys.includes(RELATION_FROM_TYPES_FILTER) || arrayKeys.includes(RELATION_TO_TYPES_FILTER)) {
         const side = arrayKeys.includes(RELATION_FROM_TYPES_FILTER) ? 'from' : 'to';
@@ -2143,18 +2143,18 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           { key: 'types', operator: filter.operator, values: filter.values },
           { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
         ];
-        finalFilters.push({ key: 'connections', nested });
+        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (arrayKeys.includes(INSTANCE_FILTER_TARGET_TYPES)) {
         const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested });
+        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (arrayKeys.includes(RELATION_FROM_ROLE_FILTER) || arrayKeys.includes(RELATION_TO_ROLE_FILTER)) {
         const side = arrayKeys.includes(RELATION_FROM_ROLE_FILTER) ? 'from' : 'to';
         // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
         const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
         const nested = [{ key: 'role', operator: filter.operator, values }];
-        finalFilters.push({ key: 'connections', nested });
+        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
     } else if (arrayKeys.some((fiterKey) => isObjectAttribute(fiterKey)) && !arrayKeys.some((fiterKey) => fiterKey === 'connections')) {
       if (arrayKeys.length > 1) {
@@ -2171,7 +2171,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           filterGroups: []
         });
       } else if (definition.format === 'nested') {
-        finalFilters.push({ key, operator: filter.operator, nested: filter.values });
+        finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode });
       } else {
         throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
       }
