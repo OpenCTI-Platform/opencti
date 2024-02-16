@@ -4,10 +4,12 @@ import { fieldToTextField, type TextFieldProps } from 'formik-mui';
 import { isNil } from 'ramda';
 import { TextFieldProps as MuiTextFieldProps } from '@mui/material/TextField/TextField';
 import { useField } from 'formik';
+import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 interface CustomProps {
   detectDuplicate?: string[];
+  askAi: boolean;
 }
 
 interface ExtendedTextFieldProps extends TextFieldProps, CustomProps {}
@@ -19,7 +21,9 @@ const TextField: FunctionComponent<ExtendedTextFieldProps> = (
     form: { setFieldValue, setFieldTouched },
     field: { name, onChange, onBlur },
     onFocus,
+    onSubmit,
     detectDuplicate,
+    askAi,
   } = props;
 
   const [, meta] = useField(name);
@@ -69,6 +73,22 @@ const TextField: FunctionComponent<ExtendedTextFieldProps> = (
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      InputProps={{
+        endAdornment: askAi && (
+          <TextFieldAskAI
+            currentValue={value}
+            setFieldValue={(val) => {
+              setFieldValue(name, val);
+              if (typeof onSubmit === 'function') {
+                onSubmit(name, val || '');
+              }
+            }}
+            format="text"
+            disabled={props.disabled}
+            variant={}
+          />
+        ),
+      }}
     />
   );
 };
