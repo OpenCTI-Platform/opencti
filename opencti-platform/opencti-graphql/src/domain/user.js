@@ -1441,6 +1441,10 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       description: 'Principal admin account',
       api_token: tokenValue,
       password,
+      user_confidence_level: {
+        max_confidence: 100,
+        overrides: [],
+      },
     };
     await addUser(context, SYSTEM_USER, userToCreate);
     await userSessionRefresh(OPENCTI_ADMIN_UUID);
