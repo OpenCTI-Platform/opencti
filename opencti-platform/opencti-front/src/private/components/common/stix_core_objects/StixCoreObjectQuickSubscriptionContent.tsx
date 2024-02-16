@@ -15,7 +15,7 @@ import { makeStyles } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
@@ -124,14 +124,19 @@ StixCoreObjectQuickSubscriptionContentProps
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
 
+  const existingInstanceTriggersData = usePreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
+    stixCoreObjectQuickSubscriptionContentQuery,
+    queryRef,
+  );
   const initialExistingInstanceTriggersEdges = () => {
-    const existingInstanceTriggersData = usePreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
-      stixCoreObjectQuickSubscriptionContentQuery,
-      queryRef,
-    );
     return existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
   };
+
   const [existingInstanceTriggersEdges, setExistingInstanceTriggersEdges] = useState(initialExistingInstanceTriggersEdges());
+
+  useEffect(() => {
+    setExistingInstanceTriggersEdges(initialExistingInstanceTriggersEdges());
+  }, [existingInstanceTriggersData]);
 
   const triggerUpdate = existingInstanceTriggersEdges.length > 0;
 
