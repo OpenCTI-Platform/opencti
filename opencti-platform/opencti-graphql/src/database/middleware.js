@@ -1354,13 +1354,9 @@ const innerUpdateAttribute = (instance, rawInput) => {
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
-  if (R.isEmpty(input)) return undefined;
-  // const updatedInputs = [input];
-  // // Specific case for Report
-  // if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
-  //   const createdInput = { key: 'created', value: input.value };
-  //   updatedInputs.push(createdInput);
-  // }
+  if (R.isEmpty(input)) {
+    return undefined;
+  }
   return input;
 };
 const prepareAttributesForUpdate = (instance, elements, upsert) => {
@@ -1434,10 +1430,7 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return {
-        key: input.key,
-        value: uniqAliases
-      };
+      return { key: input.key, value: uniqAliases };
     }
     // No need to rework the input
     return input;
@@ -1702,9 +1695,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
     throw FunctionalError('Cant find element references for commit', { id: initial.internal_id, references: opts.references });
   }
-  // Validate input attributes
-  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-  await validateInputUpdate(context, user, initial.entity_type, initial, updates, entitySetting);
   // Endregion
   // Individual check
   const { bypassIndividualUpdate } = opts;
@@ -1742,6 +1732,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
     const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
@@ -2011,12 +2002,21 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
+  // Validate input attributes
+  const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+  await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
+  // Continue update
   return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
 
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
   return updateAttribute(context, user, id, type, inputs, opts);
+};
+
+export const patchAttributeFromLoadedWithRefs = async (context, user, initial, patch, opts = {}) => {
+  const inputs = transformPatchToInput(patch, opts.operations);
+  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
 // endregion
 
@@ -2090,7 +2090,7 @@ const createRuleDataPatch = (instance) => {
   }
   return patch;
 };
-const upsertEntityRule = async (context, instance, input, opts = {}) => {
+const upsertEntityRule = async (context, user, instance, input, opts = {}) => {
   logApp.info('Upsert inferred entity', { input });
   const { fromRule } = opts;
   const updatedRule = input[fromRule];
@@ -2098,9 +2098,10 @@ const upsertEntityRule = async (context, instance, input, opts = {}) => {
   const ruleInstance = R.mergeRight(instance, rulePatch);
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
-const upsertRelationRule = async (context, instance, input, opts = {}) => {
+const upsertRelationRule = async (context, user, instance, input, opts = {}) => {
   const { fromRule, ruleOverride = false } = opts;
   // 01 - Update the rule
   const updatedRule = input[fromRule];
@@ -2114,7 +2115,8 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   const patch = { ...rulePatch, ...innerPatch };
   logApp.info('Upsert inferred relation', { id: instance.id, relation: patch });
-  return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
+  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
 // endregion
 
@@ -2786,7 +2788,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     if (existingRelationship) {
       // If upsert come from a rule, do a specific upsert.
       if (fromRule) {
-        return await upsertRelationRule(context, existingRelationship, input, { ...opts, locks: participantIds });
+        return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
@@ -3094,7 +3096,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           throw UnsupportedError('Cant upsert inferred entity. Too many entities resolved', { input, entityIds });
         }
         // If upsert come from a rule, do a specific upsert.
-        return await upsertEntityRule(context, R.head(filteredEntities), input, { ...opts, locks: participantIds });
+        return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
@@ -3345,13 +3347,13 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
       logApp.info('Cleanup inferred element', { rule, id: instance.id });
       const input = { [completeRuleName]: null };
       const upsertOpts = { fromRule, ruleOverride: true };
-      await upsertRelationRule(context, instance, input, upsertOpts);
+      await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, upsertOpts);
     } else {
       logApp.info('Upsert inferred element', { rule, id: instance.id });
       // Rule still have other explanation, update the rule
       const input = { [completeRuleName]: rebuildRuleContent };
       const ruleOpts = { fromRule, ruleOverride: true };
-      await upsertRelationRule(context, instance, input, ruleOpts);
+      await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
   } catch (err) {
     if (err.name === ALREADY_DELETED_ERROR) {

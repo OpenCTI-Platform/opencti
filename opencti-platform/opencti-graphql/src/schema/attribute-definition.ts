@@ -29,13 +29,12 @@ type BasicDefinition = {
   name: string // name in the database
   label: string // label for front display
   description?: string // Description of the attribute
-  ignoreInCreationForm?: boolean // If this attribute will be part of auto generated creation form in the UI
   multiple: boolean, // If attribute can have multiple values
   mandatoryType: MandatoryType // If attribute is mandatory
   upsert: boolean // If attribute can be upsert by the integration
   isFilterable: boolean // If attribute can be used as a filter key in the UI
   editDefault: boolean // TO CHECK ?????
-  update?: boolean // TO CHECK ?????
+  update?: boolean // If attribute can be updated (null = true)
 };
 
 type BasicObjectDefinition = BasicDefinition & {
@@ -65,12 +64,12 @@ export const id: AttributeDefinition = {
   label: 'Id',
   type: 'string',
   format: 'short',
+  update: false,
   mandatoryType: 'no',
   multiple: false,
   editDefault: false,
   upsert: false,
   isFilterable: false,
-  ignoreInCreationForm: true,
 };
 
 export const internalId: AttributeDefinition = {
@@ -78,6 +77,7 @@ export const internalId: AttributeDefinition = {
   label: 'Internal id',
   type: 'string',
   format: 'short',
+  update: false,
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
@@ -90,6 +90,7 @@ export const creators: AttributeDefinition = {
   label: 'Creators',
   type: 'string',
   format: 'id',
+  update: false,
   entityTypes: [ENTITY_TYPE_USER],
   mandatoryType: 'no',
   editDefault: false,
@@ -103,6 +104,7 @@ export const standardId: AttributeDefinition = {
   label: 'Id',
   type: 'string',
   format: 'short',
+  update: false,
   mandatoryType: 'internal',
   editDefault: false,
   multiple: false,
@@ -115,6 +117,7 @@ export const iAliasedIds: AttributeDefinition = {
   label: 'Internal aliases',
   type: 'string',
   format: 'short', // Not ID as alias is not really an entity
+  update: false,
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
@@ -182,6 +185,7 @@ export const parentTypes: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: true,
   upsert: false,
@@ -194,6 +198,7 @@ export const baseType: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -206,6 +211,7 @@ export const entityType: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -218,6 +224,7 @@ export const entityLocationType: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -230,6 +237,7 @@ export const relationshipType: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -242,6 +250,7 @@ export const xOpenctiType: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'no',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -337,6 +346,7 @@ export const createdAt: AttributeDefinition = {
   label: 'Created at',
   type: 'date',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -347,6 +357,7 @@ export const updatedAt: AttributeDefinition = {
   label: 'Updated at',
   type: 'date',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,
@@ -407,6 +418,7 @@ export const identityClass: AttributeDefinition = {
   type: 'string',
   format: 'short',
   mandatoryType: 'no',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,

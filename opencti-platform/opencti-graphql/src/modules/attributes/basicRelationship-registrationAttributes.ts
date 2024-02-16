@@ -28,7 +28,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   creators,
   { name: 'fromType', label: 'Source entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove ?
   { name: 'toType', label: 'Target entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove?
-  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
+  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'connections',
     label: 'Relations connections',
@@ -38,6 +38,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
     mandatoryType: 'internal',
     multiple: true,
     upsert: false,
+    update: false,
     isFilterable: true,
     mappings: [
       { ...internalId,
