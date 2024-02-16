@@ -15,6 +15,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -54,6 +55,7 @@ const incidentEditionDetailsFragment = graphql`
     source
     objective
     is_inferred
+    confidence
   }
 `;
 
@@ -176,6 +178,7 @@ IncidentEditionDetailsProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={incident} />
           <Field
             component={DateTimePickerField}
             name="first_seen"

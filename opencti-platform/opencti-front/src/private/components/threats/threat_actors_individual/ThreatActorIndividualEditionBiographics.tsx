@@ -2,6 +2,11 @@ import React from 'react';
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
+import {
+  ThreatActorIndividualEditionOverviewFocus,
+  ThreatActorIndividualMutationRelationDelete,
+  threatActorIndividualRelationAddMutation,
+} from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
@@ -12,6 +17,9 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const threatActorIndividualEditionBiographicsFocus = graphql`
   mutation ThreatActorIndividualEditionBiographicsFocusMutation(
@@ -51,19 +59,16 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
       date_seen
       measure
     }
+    confidence
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
   }
 `;
-
-const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object().shape({
-  eye_color: Yup.string()
-    .nullable()
-    .typeError(t('The value must be a string')),
-  hair_color: Yup.string()
-    .nullable()
-    .typeError(t('The value must be a string')),
-  weight: Yup.array(),
-  height: Yup.array(),
-});
 
 interface ThreatActorIndividualEditionBiographicsComponentProps {
   threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key;
@@ -85,6 +90,34 @@ ThreatActorIndividualEditionBiographicsComponentProps
     threatActorIndividualRef,
   );
 
+  const basicShape = {
+    eye_color: Yup.string()
+      .nullable()
+      .typeError(t_i18n('The value must be a string')),
+    hair_color: Yup.string()
+      .nullable()
+      .typeError(t_i18n('The value must be a string')),
+    weight: Yup.array(),
+    height: Yup.array(),
+  };
+  const threatActorIndividualValidator = useSchemaEditionValidation(
+    'Threat-Actor-Individual',
+    basicShape,
+  );
+
+  const queries = {
+    fieldPatch: threatActorIndividualMutationFieldPatch,
+    relationAdd: threatActorIndividualRelationAddMutation,
+    relationDelete: ThreatActorIndividualMutationRelationDelete,
+    editionFocus: ThreatActorIndividualEditionOverviewFocus,
+  };
+  const editor = useFormEditor(
+    threatActorIndividual as GenericData,
+    enableReferences,
+    queries,
+    threatActorIndividualValidator,
+  );
+
   const handleChangeFocus = (name: string) => commitMutation({
     ...defaultCommitMutation,
     mutation: threatActorIndividualEditionBiographicsFocus,
@@ -96,12 +129,10 @@ ThreatActorIndividualEditionBiographicsComponentProps
     },
   });
   const handleSubmitField = (name: string, value: string | string[]) => {
-    threatActorIndividualValidation(t_i18n)
+    threatActorIndividualValidator
       .validateAt(name, { [name]: value })
       .then(() => {
-        commitMutation({
-          ...defaultCommitMutation,
-          mutation: threatActorIndividualMutationFieldPatch,
+        editor.fieldPatch({
           variables: {
             id: threatActorIndividual.id,
             input: { key: name, value },
@@ -123,7 +154,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={threatActorIndividualValidation(t_i18n)}
+        validationSchema={threatActorIndividualValidator}
         onSubmit={() => {}}
       >
         {({
@@ -136,6 +167,7 @@ ThreatActorIndividualEditionBiographicsComponentProps
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
+              <AlertConfidenceForEntity entity={threatActorIndividual} />
               <OpenVocabField
                 name="eye_color"
                 label={t_i18n('Eye Color')}

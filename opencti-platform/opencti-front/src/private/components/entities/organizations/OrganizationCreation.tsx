@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -45,6 +46,7 @@ const organizationMutation = graphql`
       id
       standard_id
       name
+      confidence
       description
       entity_type
       parent_types
@@ -58,6 +60,7 @@ const ORGANIZATION_TYPE = 'Organization';
 interface OrganizationAddInput {
   name: string
   description: string
+  confidence: number | undefined
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
   createdBy: Option | undefined
@@ -91,6 +94,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
+    confidence: Yup.number().nullable(),
     x_opencti_organization_type: Yup.string()
       .nullable(),
     x_opencti_reliability: Yup.string()
@@ -111,6 +115,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       x_opencti_reliability: values.x_opencti_reliability,
       x_opencti_organization_type: values.x_opencti_organization_type,
       createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -147,6 +152,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       x_opencti_reliability: undefined,
       x_opencti_organization_type: undefined,
       createdBy: defaultCreatedBy,
+      confidence: undefined,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -184,6 +190,10 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           multiline={true}
           rows="4"
           style={fieldSpacingContainerStyle}
+        />
+        <ConfidenceField
+          entityType="Organization"
+          containerStyle={fieldSpacingContainerStyle}
         />
         { /* TODO Improve customization (vocab with letter range) 2662 */}
         <OpenVocabField

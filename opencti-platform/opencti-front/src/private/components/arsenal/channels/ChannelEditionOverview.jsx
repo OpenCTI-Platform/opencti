@@ -18,6 +18,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const channelMutationFieldPatch = graphql`
   mutation ChannelEditionOverviewFieldPatchMutation(
@@ -180,6 +181,7 @@ const ChannelEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={channel} />
           <Field
             component={TextField}
             name="name"

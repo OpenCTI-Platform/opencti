@@ -19,6 +19,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
@@ -188,6 +189,7 @@ const ToolEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={tool} />
           <Field
             component={TextField}
             variant="standard"

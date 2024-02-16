@@ -18,6 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -203,6 +204,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
       }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
+            <AlertConfidenceForEntity entity={observedData} />
             <Field
               component={DateTimePickerField}
               name="first_observed"

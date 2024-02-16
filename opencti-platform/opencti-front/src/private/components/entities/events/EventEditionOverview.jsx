@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -19,6 +20,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -79,6 +81,7 @@ const EventEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     stop_time: Yup.date()
@@ -105,6 +108,7 @@ const EventEditionOverviewComponent = (props) => {
       R.dissoc('message'),
       R.dissoc('references'),
       R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('start_time', parse(values.start_time).format()),
       R.assoc('stop_time', parse(values.stop_time).format()),
@@ -158,6 +162,7 @@ const EventEditionOverviewComponent = (props) => {
       'description',
       'start_time',
       'stop_time',
+      'confidence',
       'createdBy',
       'objectMarking',
       'x_opencti_workflow_id',
@@ -179,6 +184,7 @@ const EventEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={event} />
           <Field
             component={TextField}
             variant="standard"
@@ -247,6 +253,14 @@ const EventEditionOverviewComponent = (props) => {
               ),
             }}
           />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Event"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
           {event.workflowEnabled && (
           <StatusField
             name="x_opencti_workflow_id"
@@ -302,6 +316,7 @@ export default createFragmentContainer(EventEditionOverviewComponent, {
         event_types
         description
         start_time
+        confidence
         stop_time
         createdBy {
           ... on Identity {

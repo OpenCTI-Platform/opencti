@@ -21,6 +21,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const dataSourceMutationFieldPatch = graphql`
   mutation DataSourceEditionOverviewFieldPatchMutation(
@@ -255,6 +256,7 @@ DataSourceEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={dataSource} />
           <Field
             component={TextField}
             name="name"

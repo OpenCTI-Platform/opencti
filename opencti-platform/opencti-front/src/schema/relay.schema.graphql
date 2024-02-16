@@ -1457,6 +1457,8 @@ type MeUser implements BasicObject & InternalObject {
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
   default_hidden_types: [String]!
+  user_confidence_level: ConfidenceLevel
+  effective_confidence_level: EffectiveConfidenceLevel
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   otp_mandatory: Boolean

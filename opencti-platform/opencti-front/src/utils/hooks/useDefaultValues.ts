@@ -9,6 +9,7 @@ import useVocabularyCategory from './useVocabularyCategory';
 import { isEmptyField } from '../utils';
 import { now } from '../Time';
 import { AuthorizedMembers, authorizedMembersToOptions, INPUT_AUTHORIZED_MEMBERS } from '../authorizedMembers';
+import useConfidenceLevel from './useConfidenceLevel';
 
 export const useComputeDefaultValues = () => {
   const { fieldToCategory } = useVocabularyCategory();
@@ -81,6 +82,7 @@ const useDefaultValues = <Values extends FormikValues>(
   notEmptyValues?: Partial<Values>,
 ) => {
   const computeDefaultValues = useComputeDefaultValues();
+  const { effectiveConfidenceLevel } = useConfidenceLevel();
 
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
@@ -115,7 +117,7 @@ const useDefaultValues = <Values extends FormikValues>(
 
   // Default confidence
   if (keys.includes('confidence') && isEmptyField(initialValues.confidence) && isEmptyField(defaultValues.confidence)) {
-    defaultValues.confidence = 75;
+    defaultValues.confidence = effectiveConfidenceLevel?.max_confidence ?? 75;
   }
 
   // Default published

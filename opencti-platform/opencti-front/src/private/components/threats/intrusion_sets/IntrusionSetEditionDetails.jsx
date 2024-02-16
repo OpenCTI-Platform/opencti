@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { intrusionSetEditionOverviewFocus, intrusionSetMutationRelationAdd, intrusionSetMutationRelationDelete } from './IntrusionSetEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -13,6 +14,9 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionDetailsFieldPatchMutation(
@@ -47,27 +51,46 @@ const intrusionSetEditionDetailsFocus = graphql`
   }
 `;
 
-const intrusionSetValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .min(
-      Yup.ref('first_seen'),
-      "The last seen date can't be before first seen date",
-    )
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  resource_level: Yup.string().nullable(),
-  primary_motivation: Yup.string().nullable(),
-  secondary_motivations: Yup.array().nullable(),
-  goals: Yup.string().nullable(),
-  references: Yup.array(),
-});
-
 const IntrusionSetEditionDetailsComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
+
+  const basicShape = {
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .min(
+        Yup.ref('first_seen'),
+        "The last seen date can't be before first seen date",
+      )
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    resource_level: Yup.string().nullable(),
+    primary_motivation: Yup.string().nullable(),
+    secondary_motivations: Yup.array().nullable(),
+    goals: Yup.string().nullable(),
+    references: Yup.array(),
+  };
+
+  const intrusionSetValidator = useSchemaEditionValidation(
+    'Intrusion-Set',
+    basicShape,
+  );
+
+  const queries = {
+    fieldPatch: intrusionSetMutationFieldPatch,
+    relationAdd: intrusionSetMutationRelationAdd,
+    relationDelete: intrusionSetMutationRelationDelete,
+    editionFocus: intrusionSetEditionOverviewFocus,
+  };
+
+  const editor = useFormEditor(
+    intrusionSet,
+    enableReferences,
+    queries,
+    intrusionSetValidator,
+  );
 
   const handleChangeFocus = (name) => commitMutation({
     mutation: intrusionSetEditionDetailsFocus,
@@ -100,8 +123,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: intrusionSetMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: intrusionSet.id,
         input: inputValues,
@@ -123,8 +145,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      commitMutation({
-        mutation: intrusionSetMutationFieldPatch,
+      editor.fieldPatch({
         variables: {
           id: intrusionSet.id,
           input: { key: name, value: finalValue || '' },
@@ -161,7 +182,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={intrusionSetValidation(t_i18n)}
+      validationSchema={intrusionSetValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -173,6 +194,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={intrusionSet} />
           <Field
             component={DateTimePickerField}
             name="first_seen"
@@ -278,6 +300,7 @@ export default createFragmentContainer(IntrusionSetEditionDetailsComponent, {
       primary_motivation
       secondary_motivations
       goals
+      confidence
     }
   `,
 });

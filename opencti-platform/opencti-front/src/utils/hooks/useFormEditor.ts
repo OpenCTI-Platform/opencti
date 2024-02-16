@@ -1,11 +1,14 @@
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
-import { useMutation } from 'react-relay';
+import { useMutation, UseMutationConfig } from 'react-relay';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
-import { Option } from '../../private/components/common/form/ReferenceField';
+import { MutationParameters } from 'relay-runtime';
+import { Option } from '@components/common/form/ReferenceField';
 import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
+import useConfidenceLevel from './useConfidenceLevel';
 
 export interface GenericData {
   id: string;
+  confidence?: number;
   readonly objectMarking: {
     readonly edges: ReadonlyArray<{
       readonly node: {
@@ -190,6 +193,18 @@ const useFormEditor = (
     });
   };
 
+  const { checkConfidenceForEntity } = useConfidenceLevel();
+
+  const checkAndCommitFieldPatch = (args: UseMutationConfig<MutationParameters>) => {
+    if (!checkConfidenceForEntity(data, true)) return;
+    commitFieldPatch(args);
+  };
+
+  const checkAndCommitChangeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
+    if (!checkConfidenceForEntity(data, true)) return;
+    changeField(name, value);
+  };
+
   return {
     changeMarking,
     changeAssignee,
@@ -198,8 +213,8 @@ const useFormEditor = (
     changeKillChainPhases,
     changeExternalReferences,
     changeFocus,
-    changeField,
-    fieldPatch: commitFieldPatch,
+    changeField: checkAndCommitChangeField,
+    fieldPatch: checkAndCommitFieldPatch,
     changeGrantableGroups,
   };
 };

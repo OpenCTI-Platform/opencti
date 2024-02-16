@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -20,6 +20,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -85,6 +86,7 @@ const countryEditionOverviewFragment = graphql`
     id
     name
     description
+    confidence
     createdBy {
       ... on Identity {
         id
@@ -121,6 +123,7 @@ interface CountryEditionOverviewProps {
 interface CountryEditionFormValues {
   name: string;
   description: string | null;
+  confidence: number | undefined | null;
   createdBy: Option | undefined;
   objectMarking: Option[];
   x_opencti_workflow_id: Option;
@@ -136,6 +139,7 @@ CountryEditionOverviewProps
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -156,27 +160,23 @@ CountryEditionOverviewProps
     values,
     { setSubmitting },
   ) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: country.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -207,6 +207,7 @@ CountryEditionOverviewProps
     name: country.name,
     description: country.description ?? '',
     references: [],
+    confidence: country.confidence,
     createdBy: convertCreatedBy(country) as Option,
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
@@ -227,6 +228,7 @@ CountryEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={country} />
           <Field
             component={TextField}
             variant="standard"
@@ -252,6 +254,14 @@ CountryEditionOverviewProps
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Country"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           {country?.workflowEnabled && (
             <StatusField

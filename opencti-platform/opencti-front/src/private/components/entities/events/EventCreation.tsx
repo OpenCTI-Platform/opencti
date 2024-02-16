@@ -7,6 +7,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -45,6 +46,7 @@ const eventMutation = graphql`
       standard_id
       name
       description
+      confidence
       entity_type
       parent_types
       ...EventLine_node
@@ -57,6 +59,7 @@ const EVENT_TYPE = 'Event';
 interface EventAddInput {
   name: string;
   description: string;
+  confidence: number | undefined;
   event_types: string[];
   start_time: Date | null;
   stop_time: Date | null;
@@ -89,6 +92,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -110,6 +114,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       name: values.name,
       description: values.description,
       event_types: values.event_types,
+      confidence: parseInt(String(values.confidence), 10),
       start_time: values.start_time ? parse(values.start_time).format() : null,
       stop_time: values.stop_time ? parse(values.stop_time).format() : null,
       createdBy: values.createdBy?.value,
@@ -146,6 +151,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     description: '',
     event_types: [],
     start_time: null,
+    confidence: undefined,
     stop_time: null,
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
@@ -207,6 +213,10 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               fullWidth: true,
               style: { marginTop: 20 },
             }}
+          />
+          <ConfidenceField
+            entityType="Event"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

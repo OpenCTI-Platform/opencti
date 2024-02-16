@@ -15,6 +15,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const opinionMutationFieldPatch = graphql`
     mutation OpinionEditionOverviewFieldPatchMutation(
@@ -126,6 +127,7 @@ const OpinionEditionOverviewComponent = (props) => {
       {({ setFieldValue }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
+            <AlertConfidenceForEntity entity={opinion} />
             <OpenVocabField
               label={t_i18n('Opinion')}
               type="opinion-ov"

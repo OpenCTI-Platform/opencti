@@ -21,6 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -52,7 +53,7 @@ export const ThreatActorIndividualEditionOverviewFocus = graphql`
   }
 `;
 
-const threatActorIndividualRelationAddMutation = graphql`
+export const threatActorIndividualRelationAddMutation = graphql`
   mutation ThreatActorIndividualEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -65,7 +66,7 @@ const threatActorIndividualRelationAddMutation = graphql`
   }
 `;
 
-const ThreatActorIndividualMutationRelationDelete = graphql`
+export const ThreatActorIndividualMutationRelationDelete = graphql`
   mutation ThreatActorIndividualEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -247,6 +248,7 @@ ThreatActorIndividualEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={threatActorIndividual} />
           <Field
             component={TextField}
             name="name"

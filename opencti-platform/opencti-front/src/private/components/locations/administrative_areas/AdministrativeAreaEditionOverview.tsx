@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -19,6 +20,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const administrativeAreaMutationFieldPatch = graphql`
   mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -87,6 +89,7 @@ export const administrativeAreaEditionOverviewFragment = graphql`
     description
     latitude
     longitude
+    confidence
     createdBy {
       ... on Identity {
         id
@@ -145,6 +148,7 @@ AdministrativeAreaEditionOverviewProps
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
@@ -219,6 +223,7 @@ AdministrativeAreaEditionOverviewProps
     description: administrativeArea.description,
     latitude: administrativeArea.latitude,
     longitude: administrativeArea.longitude,
+    confidence: administrativeArea.confidence,
     createdBy: convertCreatedBy(administrativeArea),
     objectMarking: convertMarkings(administrativeArea),
     x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as Option,
@@ -240,6 +245,7 @@ AdministrativeAreaEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={administrativeArea} />
           <Field
             component={TextField}
             variant="standard"
@@ -265,6 +271,14 @@ AdministrativeAreaEditionOverviewProps
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Administrative-Area"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <Field
             component={TextField}

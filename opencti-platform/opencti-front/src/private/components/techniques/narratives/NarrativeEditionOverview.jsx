@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,6 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const narrativeMutationFieldPatch = graphql`
   mutation NarrativeEditionOverviewFieldPatchMutation(
@@ -84,6 +86,7 @@ const NarrativeEditionOverviewComponent = (props) => {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
+    confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const narrativeValidator = useSchemaEditionValidation(
@@ -110,6 +113,7 @@ const NarrativeEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
@@ -165,6 +169,7 @@ const NarrativeEditionOverviewComponent = (props) => {
       'description',
       'createdBy',
       'objectMarking',
+      'confidence',
       'x_opencti_workflow_id',
     ]),
   )(narrative);
@@ -184,6 +189,7 @@ const NarrativeEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={narrative} />
           <Field
             component={TextField}
             name="name"
@@ -208,6 +214,14 @@ const NarrativeEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Narratives"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           {narrative.workflowEnabled && (
             <StatusField
@@ -265,6 +279,7 @@ export default createFragmentContainer(NarrativeEditionOverviewComponent, {
       id
       name
       description
+      confidence
       createdBy {
         ... on Identity {
           id

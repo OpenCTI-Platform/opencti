@@ -23,6 +23,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -224,6 +225,7 @@ const IndicatorEditionOverviewComponent = ({
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={indicator} />
           <Field
             component={TextField}
             variant="standard"

@@ -19,6 +19,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const dataComponentMutationFieldPatch = graphql`
   mutation DataComponentEditionOverviewFieldPatchMutation(
@@ -244,6 +245,7 @@ DataComponentEditionOverviewComponentProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={dataComponent} />
           <Field
             component={TextField}
             name="name"

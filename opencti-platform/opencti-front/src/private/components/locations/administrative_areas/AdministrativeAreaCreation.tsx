@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -43,6 +44,7 @@ const administrativeAreaMutation = graphql`
       standard_id
       name
       description
+      confidence
       entity_type
       parent_types
       ...AdministrativeAreaLine_node
@@ -55,6 +57,7 @@ interface AdministrativeAreaAddInput {
   description: string;
   latitude: string;
   longitude: string;
+  confidence: number | undefined
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -86,6 +89,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
       .nullable(),
@@ -107,6 +111,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
       description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -138,6 +143,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       description: '',
       latitude: '',
       longitude: '',
+      confidence: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -170,6 +176,10 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             multiline={true}
             rows={4}
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Administrative-Area"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={TextField}

@@ -32,6 +32,7 @@ import {
 import { Option } from '../form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -331,6 +332,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
             dirty,
           }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
+              <AlertConfidenceForEntity entity={stixCoreRelationship} />
               <ConfidenceField
                 variant="edit"
                 onFocus={editor.changeFocus}

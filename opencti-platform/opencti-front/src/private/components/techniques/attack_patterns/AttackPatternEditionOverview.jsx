@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +18,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -51,7 +53,7 @@ export const attackPatternEditionOverviewFocus = graphql`
   }
 `;
 
-const attackPatternMutationRelationAdd = graphql`
+export const attackPatternMutationRelationAdd = graphql`
   mutation AttackPatternEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -66,7 +68,7 @@ const attackPatternMutationRelationAdd = graphql`
   }
 `;
 
-const attackPatternMutationRelationDelete = graphql`
+export const attackPatternMutationRelationDelete = graphql`
   mutation AttackPatternEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -89,6 +91,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
     x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
+    confidence: Yup.number().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const attackPatternValidator = useSchemaEditionValidation(
@@ -117,6 +120,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
       R.dissoc('references'),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
@@ -169,6 +173,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
       'description',
       'createdBy',
       'killChainPhases',
+      'confidence',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
@@ -189,6 +194,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={attackPattern} />
           <Field
             component={TextField}
             name="name"
@@ -225,6 +231,14 @@ const AttackPatternEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Attack-Pattern"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <KillChainPhasesField
             name="killChainPhases"
@@ -295,6 +309,7 @@ export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
       name
       x_mitre_id
       description
+      confidence
       createdBy {
         ... on Identity {
           id

@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -16,6 +17,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const courseOfActionMutationFieldPatch = graphql`
   mutation CourseOfActionEditionOverviewFieldPatchMutation(
@@ -86,6 +88,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
     x_opencti_log_sources: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
@@ -116,6 +119,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -180,6 +184,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       'x_opencti_log_sources',
       'createdBy',
       'objectMarking',
+      'confidence',
       'x_opencti_workflow_id',
       'x_mitre_id',
     ]),
@@ -200,6 +205,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={courseOfAction} />
           <Field
             component={TextField}
             name="name"
@@ -236,6 +242,14 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Course-Of-Action"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <Field
             component={MarkdownField}
@@ -327,6 +341,7 @@ export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
       id
       name
       description
+      confidence
       x_opencti_threat_hunting
       x_opencti_log_sources
       x_mitre_id

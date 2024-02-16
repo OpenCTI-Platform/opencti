@@ -13,6 +13,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -60,6 +61,7 @@ const courseOfActionMutation = graphql`
       description
       entity_type
       parent_types
+      confidence
       ...CourseOfActionLine_node
     }
   }
@@ -107,6 +109,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
       .required(t_i18n('This field is required')),
     description: Yup.string()
       .nullable(),
+    confidence: Yup.number().nullable(),
   };
   const courseOfActionValidator = useSchemaCreationValidation(
     COURSE_OF_ACTION_TYPE,
@@ -202,6 +205,10 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Course-Of-Action"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

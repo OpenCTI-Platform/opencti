@@ -22,6 +22,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -244,6 +245,7 @@ FeedbackEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={feedbackData} />
           <Field
             component={TextField}
             variant="standard"

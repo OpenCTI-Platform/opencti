@@ -2564,7 +2564,6 @@
   "Copy link": "Copier le lien",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Veuillez vérifier la validité du mappeur CSV sélectionné pour l'URL donnée.",
   "Only successful tests allow the ingestion creation.": "Seuls les tests réussis permettent la création de l'ingestion.",
-  "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",
   "Public dashboards": "Tableaux de bord publics",
   "Existing public dashboards": "Tableaux de bord publics existants",
   "No public dashboard created yet": "Aucun tableau de bord public n'a encore été créé",
@@ -2575,7 +2574,6 @@
   "Delete public dashboard": "Supprimer le tableau de bord public",
   "Are you sure you want to delete this public dashboard?": "Êtes-vous sûr de vouloir supprimer ce tableau de bord public ?",
   "A public dashboard is a snapshot...": "Un tableau de bord public est un instantané d'un tableau de bord privé à un moment précis. Si vous modifiez le tableau de bord privé, les tableaux de bord publics déjà créés ne seront pas modifiés.",
-  "Home": "Accueil",
   "Request for takedown date": "Date de la demande de démontage",
   "Enable AI powered platform": "Activer la plateforme alimentée par l'IA",
   "To use AI, please enable it in the configuration of your platform.": "Pour utiliser l'IA, veuillez l'activer dans la configuration de votre plateforme.",
@@ -2662,5 +2660,8 @@
   "AI Powered": "AI Powered",
   "Missing token": "Jeton manquant",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "L'IA générative est une fonction bêta, car nous sommes en train d'affiner nos modèles. Pensez à vérifier les informations importantes.",
-  "Accept": "Accepter"
+  "Accept": "Accepter",
+  "Home": "Accueil",
+  "Your confidence level is insufficient to edit this object.": "Votre niveau de confiance est insuffisant pour éditer cet objet.",
+  "You need a confidence level to edit objects in the platform.": "Vous avez besoin d'un niveau de confiance pour éditer des objets sur la plateforme."
 }

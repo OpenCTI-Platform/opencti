@@ -18,6 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionOverviewFieldPatchMutation(
@@ -52,7 +53,7 @@ export const ThreatActorGroupEditionOverviewFocus = graphql`
   }
 `;
 
-const ThreatActorGroupMutationRelationAdd = graphql`
+export const ThreatActorGroupMutationRelationAdd = graphql`
   mutation ThreatActorGroupEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -67,7 +68,7 @@ const ThreatActorGroupMutationRelationAdd = graphql`
   }
 `;
 
-const ThreatActorGroupMutationRelationDelete = graphql`
+export const ThreatActorGroupMutationRelationDelete = graphql`
   mutation ThreatActorGroupEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -193,6 +194,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={threatActorGroup} />
           <Field
             component={TextField}
             name="name"

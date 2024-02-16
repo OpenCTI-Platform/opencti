@@ -8,6 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import makeStyles from '@mui/styles/makeStyles';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -22,6 +23,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const useStyles = makeStyles(() => ({
   formContainer: {
@@ -113,6 +115,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
@@ -205,6 +208,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
         dirty,
       }) => (
         <Form className={classes.formContainer}>
+          <AlertConfidenceForEntity entity={organization} />
           <Field
             component={TextField}
             variant="standard"
@@ -230,6 +234,14 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Organization"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <Field
             component={TextField}
@@ -323,6 +335,7 @@ export default createFragmentContainer(OrganizationEditionOverviewComponent, {
         id
         name
         description
+        confidence
         contact_information
         x_opencti_organization_type
         x_opencti_reliability

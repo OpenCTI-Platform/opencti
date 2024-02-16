@@ -17,6 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -51,7 +52,7 @@ export const campaignEditionOverviewFocus = graphql`
   }
 `;
 
-const campaignMutationRelationAdd = graphql`
+export const campaignMutationRelationAdd = graphql`
   mutation CampaignEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -66,7 +67,7 @@ const campaignMutationRelationAdd = graphql`
   }
 `;
 
-const campaignMutationRelationDelete = graphql`
+export const campaignMutationRelationDelete = graphql`
   mutation CampaignEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -181,6 +182,7 @@ const CampaignEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={campaign} />
           <Field
             component={TextField}
             name="name"

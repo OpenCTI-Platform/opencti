@@ -2662,5 +2662,7 @@
   "AI Powered": "AI Powered",
   "Missing token": "Missing token",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.",
-  "Accept": "Accept"
+  "Accept": "Accept",
+  "Your confidence level is insufficient to edit this object.": "Your confidence level is insufficient to edit this object.",
+  "You need a confidence level to edit objects in the platform.": "You need a confidence level to edit objects in the platform."
 }

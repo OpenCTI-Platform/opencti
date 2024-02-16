@@ -39,8 +39,6 @@ class OrganizationComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview
               stixDomainObject={organization}
-              displayConfidence={false}
-              displayReliability={false}
             />
           </Grid>
           {viewAs === 'knowledge' && (

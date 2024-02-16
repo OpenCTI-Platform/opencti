@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,6 +18,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const systemMutationFieldPatch = graphql`
   mutation SystemEditionOverviewFieldPatchMutation(
@@ -84,6 +86,7 @@ const SystemEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
@@ -105,6 +108,7 @@ const SystemEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -160,6 +164,7 @@ const SystemEditionOverviewComponent = (props) => {
       'x_opencti_reliability',
       'createdBy',
       'objectMarking',
+      'confidence',
       'x_opencti_workflow_id',
     ]),
   )(system);
@@ -179,6 +184,7 @@ const SystemEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={system} />
           <Field
             component={TextField}
             variant="standard"
@@ -205,6 +211,14 @@ const SystemEditionOverviewComponent = (props) => {
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
               }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="System"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <Field
             component={TextField}
@@ -286,6 +300,7 @@ export default createFragmentContainer(SystemEditionOverviewComponent, {
         id
         name
         description
+        confidence
         contact_information
         x_opencti_reliability
         createdBy {

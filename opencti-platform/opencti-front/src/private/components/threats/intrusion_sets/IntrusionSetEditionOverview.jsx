@@ -17,6 +17,7 @@ import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const intrusionSetMutationFieldPatch = graphql`
   mutation IntrusionSetEditionOverviewFieldPatchMutation(
@@ -51,7 +52,7 @@ export const intrusionSetEditionOverviewFocus = graphql`
   }
 `;
 
-const intrusionSetMutationRelationAdd = graphql`
+export const intrusionSetMutationRelationAdd = graphql`
   mutation IntrusionSetEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -66,7 +67,7 @@ const intrusionSetMutationRelationAdd = graphql`
   }
 `;
 
-const intrusionSetMutationRelationDelete = graphql`
+export const intrusionSetMutationRelationDelete = graphql`
   mutation IntrusionSetEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
@@ -190,6 +191,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={intrusionSet} />
           <Field
             component={TextField}
             name="name"

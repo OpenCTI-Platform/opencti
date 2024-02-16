@@ -20,11 +20,10 @@ interface InputSliderFieldProps {
   entityType: string;
   attributeName: string;
   disabled?: boolean;
+  maxLimit?: number;
 }
 
-const InputSliderField: FunctionComponent<
-InputSliderFieldProps & FieldProps
-> = ({
+const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
   form: { setFieldValue },
   field: { name, value },
   label,
@@ -35,14 +34,19 @@ InputSliderFieldProps & FieldProps
   entityType,
   attributeName,
   disabled,
+  maxLimit,
 }) => {
   const {
     level: { color },
-    marks,
+    marks: defaultMarks,
     scale,
   } = useLevel(entityType, attributeName, value);
   const min = scale?.min ? scale.min.value : 0;
-  const max = scale?.max ? scale.max.value : 0;
+  const defaultMaxValue = scale?.max ? scale.max.value : 0;
+  const max = maxLimit !== undefined && Number.isFinite(maxLimit) && maxLimit <= defaultMaxValue
+    ? maxLimit
+    : defaultMaxValue;
+  const marks = defaultMarks.filter((mark) => mark.value <= max);
   const sliderStyle = {
     color,
     '& .MuiSlider-rail': {
@@ -68,7 +72,7 @@ InputSliderFieldProps & FieldProps
               label={label}
               onSubmit={onSubmit}
               onFocus={onFocus}
-              disabled={disabled}
+              disabled={disabled || value > max}
               helpertext={
                 <SubscriptionFocus context={editContext} fieldName={name} />
               }
@@ -80,7 +84,7 @@ InputSliderFieldProps & FieldProps
               labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
-              disabled={disabled}
+              disabled={disabled || value > max}
               sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
@@ -107,7 +111,7 @@ InputSliderFieldProps & FieldProps
           valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
-          disabled={disabled}
+          disabled={disabled || value > max}
         />
       </>
     );

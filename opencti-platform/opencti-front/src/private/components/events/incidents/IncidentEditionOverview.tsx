@@ -23,6 +23,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -255,6 +256,7 @@ IncidentEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={incident} />
           <Field
             component={TextField}
             variant="standard"

@@ -3,14 +3,17 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { attackPatternMutationRelationAdd, attackPatternMutationRelationDelete } from './AttackPatternEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionDetailsFieldPatchMutation(
@@ -45,18 +48,33 @@ export const attackPatternEditionDetailsFocus = graphql`
   }
 `;
 
-const attackPatternValidation = () => Yup.object().shape({
-  x_mitre_platforms: Yup.array(),
-  x_mitre_permissions_required: Yup.array(),
-  x_mitre_detection: Yup.string().nullable(),
-});
-
 const AttackPatternEditionDetailsComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: attackPatternEditionDetailsFocus,
+  const basicShape = {
+    x_mitre_platforms: Yup.array(),
+    x_mitre_permissions_required: Yup.array(),
+    x_mitre_detection: Yup.string().nullable(),
+  };
+
+  const attackPatternEditionDetailsValidator = useSchemaEditionValidation('Attack-Pattern', basicShape);
+
+  const queries = {
+    fieldPatch: attackPatternMutationFieldPatch,
+    relationAdd: attackPatternMutationRelationAdd,
+    relationDelete: attackPatternMutationRelationDelete,
+    editionFocus: attackPatternEditionDetailsFocus,
+  };
+
+  const editor = useFormEditor(
+    attackPattern,
+    enableReferences,
+    queries,
+    attackPatternEditionDetailsValidator,
+  );
+
+  const handleChangeFocus = (name) => editor.changeFocus({
     variables: {
       id: attackPattern.id,
       input: {
@@ -77,8 +95,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: attackPatternMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: attackPattern.id,
         input: inputValues,
@@ -96,11 +113,10 @@ const AttackPatternEditionDetailsComponent = (props) => {
 
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
-      attackPatternValidation()
+      attackPatternEditionDetailsValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: attackPatternMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: attackPattern.id,
               input: { key: name, value: value || '' },
@@ -135,7 +151,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={attackPatternValidation()}
+      validationSchema={attackPatternEditionDetailsValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -147,6 +163,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={attackPattern} />
           <OpenVocabField
             label={t_i18n('Platforms')}
             type="platforms_ov"
@@ -209,6 +226,7 @@ export default createFragmentContainer(AttackPatternEditionDetailsComponent, {
       x_mitre_platforms
       x_mitre_permissions_required
       x_mitre_detection
+      confidence
     }
   `,
 });

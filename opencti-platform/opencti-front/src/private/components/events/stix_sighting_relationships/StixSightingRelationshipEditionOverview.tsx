@@ -33,6 +33,7 @@ import {
 import CommitMessage from '../../common/form/CommitMessage';
 import type { Theme } from '../../../../components/Theme';
 import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/StixSightingRelationshipEditionOverviewQuery.graphql';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -306,6 +307,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
         >
           {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
+              <AlertConfidenceForEntity entity={stixSightingRelationship} />
               <Field
                 component={TextField}
                 variant="standard"

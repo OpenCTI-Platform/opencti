@@ -22,6 +22,7 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
@@ -155,6 +156,7 @@ NoteEditionOverviewProps
     >
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={note} />
           <Field
             component={DateTimePickerField}
             name="created"

@@ -24,6 +24,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -268,6 +269,7 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={infrastructure} />
           <Field
             component={TextField}
             variant="standard"

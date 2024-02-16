@@ -22,6 +22,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -209,6 +210,7 @@ const ReportEditionOverviewComponent = (props) => {
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={report} />
           <Field
             component={TextField}
             name="name"

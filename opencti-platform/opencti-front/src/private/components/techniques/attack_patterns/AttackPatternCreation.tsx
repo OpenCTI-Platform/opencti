@@ -7,6 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -211,6 +212,10 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Attack-Pattern"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <KillChainPhasesField
             name="killChainPhases"

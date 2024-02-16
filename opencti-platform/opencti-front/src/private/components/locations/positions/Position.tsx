@@ -70,7 +70,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
             stixDomainObject={position}
-            displayConfidence={false}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

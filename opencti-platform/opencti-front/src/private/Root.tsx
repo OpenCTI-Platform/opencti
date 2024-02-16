@@ -78,6 +78,9 @@ const rootPrivateQuery = graphql`
       theme
       user_email
       individual_id
+      effective_confidence_level {
+        max_confidence
+      }
       capabilities {
         name
       }
@@ -91,6 +94,9 @@ const rootPrivateQuery = graphql`
       }
       default_time_field
       default_hidden_types
+      effective_confidence_level {
+        max_confidence
+      }
       default_marking {
         entity_type
         values {

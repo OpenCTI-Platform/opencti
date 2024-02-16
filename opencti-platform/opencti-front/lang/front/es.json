@@ -2568,7 +2568,6 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user’s groups.": "El nivel de confianza máximo se define actualmente a nivel de usuario. Anula el nivel de confianza máximo de los grupos de usuarios.",
   "Please, verify the validity of the selected CSV mapper for the given URL.": "Por favor, verifique la validez del asignador CSV seleccionado para la URL proporcionada.",
   "Only successful tests allow the ingestion creation.": "Sólo las pruebas exitosas permiten la creación de la ingesta.",
-  "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingesta.",
   "Request for takedown date": "Fecha de solicitud de retirada",
   "Enable AI powered platform": "Habilitar plataforma con IA",
   "To use AI, please enable it in the configuration of your platform.": "Para utilizar la IA, por favor, habilítela en la configuración de su plataforma.",
@@ -2666,5 +2665,7 @@
   "Disable public dashboard": "Desactivar panel público",
   "Delete public dashboard": "Borrar panel público",
   "Are you sure you want to delete this public dashboard?": "¿Está seguro de que desea eliminar este panel público?",
-  "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán."
+  "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
+  "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
+  "You need a confidence level to edit objects in the platform.": "Necesitas un nivel de confianza para editar objetos en la plataforma."
 }

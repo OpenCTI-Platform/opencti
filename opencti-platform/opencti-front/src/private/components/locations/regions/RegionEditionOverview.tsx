@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import * as R from 'ramda';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -20,6 +20,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
@@ -85,6 +86,7 @@ const regionEditionOverviewFragment = graphql`
     id
     name
     description
+    confidence
     createdBy {
       ... on Identity {
         id
@@ -122,6 +124,7 @@ interface RegionEditionFormValues {
   name: string;
   description: string | null;
   createdBy: Option | undefined;
+  confidence: number | undefined | null;
   objectMarking: Option[];
   x_opencti_workflow_id: Option;
   message?: string;
@@ -136,6 +139,7 @@ RegionEdititionOverviewProps
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -156,27 +160,23 @@ RegionEdititionOverviewProps
     values,
     { setSubmitting },
   ) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+    const inputValues = Object.entries({
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      confidence: parseInt(String(values.confidence), 10),
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: region.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -206,6 +206,7 @@ RegionEdititionOverviewProps
   const initialValues = {
     name: region.name,
     description: region.description,
+    confidence: region.confidence,
     createdBy: convertCreatedBy(region),
     objectMarking: convertMarkings(region),
     x_opencti_workflow_id: convertStatus(t_i18n, region) as Option,
@@ -227,6 +228,7 @@ RegionEdititionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={region} />
           <Field
             component={TextField}
             variant="standard"
@@ -252,6 +254,14 @@ RegionEdititionOverviewProps
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }
+          />
+          <ConfidenceField
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            entityType="Region"
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           {region.workflowEnabled && (
             <StatusField

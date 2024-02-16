@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
+import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -13,6 +14,9 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionDetailsFieldPatchMutation(
@@ -47,23 +51,6 @@ const ThreatActorGroupEditionDetailsFocus = graphql`
   }
 `;
 
-const ThreatActorGroupValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  sophistication: Yup.string().nullable(),
-  resource_level: Yup.string().nullable(),
-  roles: Yup.array().nullable(),
-  primary_motivation: Yup.string().nullable(),
-  secondary_motivations: Yup.array().nullable(),
-  personal_motivations: Yup.array().nullable(),
-  goals: Yup.string().nullable(),
-  references: Yup.array(),
-});
-
 const ThreatActorGroupEditionDetailsComponent = ({
   threatActorGroup,
   enableReferences,
@@ -71,6 +58,39 @@ const ThreatActorGroupEditionDetailsComponent = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const basicShape = {
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    sophistication: Yup.string().nullable(),
+    resource_level: Yup.string().nullable(),
+    roles: Yup.array().nullable(),
+    primary_motivation: Yup.string().nullable(),
+    secondary_motivations: Yup.array().nullable(),
+    personal_motivations: Yup.array().nullable(),
+    goals: Yup.string().nullable(),
+    references: Yup.array(),
+  };
+  const threatActorGroupValidator = useSchemaEditionValidation(
+    'Threat-Actor-Group',
+    basicShape,
+  );
+
+  const queries = {
+    fieldPatch: ThreatActorGroupMutationFieldPatch,
+    relationAdd: ThreatActorGroupMutationRelationAdd,
+    relationDelete: ThreatActorGroupMutationRelationDelete,
+    editionFocus: ThreatActorGroupEditionOverviewFocus,
+  };
+  const editor = useFormEditor(
+    threatActorGroup,
+    enableReferences,
+    queries,
+    threatActorGroupValidator,
+  );
   const handleChangeFocus = (name) => commitMutation({
     mutation: ThreatActorGroupEditionDetailsFocus,
     variables: {
@@ -104,8 +124,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: ThreatActorGroupMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: threatActorGroup.id,
         input: inputValues,
@@ -126,11 +145,10 @@ const ThreatActorGroupEditionDetailsComponent = ({
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      ThreatActorGroupValidation(t_i18n)
+      threatActorGroupValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: ThreatActorGroupMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: threatActorGroup.id,
               input: { key: name, value: finalValue || '' },
@@ -177,7 +195,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ThreatActorGroupValidation(t_i18n)}
+        validationSchema={threatActorGroupValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -190,6 +208,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
+              <AlertConfidenceForEntity entity={threatActorGroup} />
               <Field
                 component={DateTimePickerField}
                 name="first_seen"
@@ -344,6 +363,7 @@ export default createFragmentContainer(
         personal_motivations
         goals
         roles
+        confidence
       }
     `,
   },

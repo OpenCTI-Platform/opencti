@@ -18,6 +18,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -191,6 +192,7 @@ const GroupingEditionOverviewComponent = (props) => {
       }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
+            <AlertConfidenceForEntity entity={grouping} />
             <Field
               component={TextField}
               name="name"

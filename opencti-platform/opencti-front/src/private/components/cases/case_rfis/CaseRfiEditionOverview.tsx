@@ -25,6 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseRfiEditionOverview_case$key } from './__generated__/CaseRfiEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const caseRfiMutationFieldPatch = graphql`
   mutation CaseRfiEditionOverviewCaseFieldPatchMutation(
@@ -265,6 +266,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
             variant="standard"
