@@ -72,6 +72,7 @@ export const labelsLinesQuery = graphql`
     $cursor: ID
     $orderBy: LabelsOrdering
     $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
     ...LabelsLines_data
       @arguments(
@@ -80,6 +81,7 @@ export const labelsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -95,6 +97,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "LabelsOrdering", defaultValue: value }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "FilterGroup" }
       ) {
         labels(
           search: $search
@@ -102,6 +105,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_labels") {
           edges {
             node {

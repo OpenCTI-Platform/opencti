@@ -56,7 +56,7 @@ export const insertNode = (
       ConnectionHandler.insertEdgeBefore(conn, newEdge);
     }
   } else {
-    throw new Error(`Cant insert node on not found connection ${key}`);
+    throw new Error(`Cant insert node on not found connection ${key} with filters ${JSON.stringify(params)}`);
   }
 };
 
