@@ -231,8 +231,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.info('[SAML] Successfully logged', { profile });
         const samlAttributes = profile.attributes ? profile.attributes : profile;
-        const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
-        const groupAttributes = mappedConfig.groups_management?.group_attributes || ['Group'];
+        const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
+        const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
         const userName = samlAttributes[mappedConfig.account_attribute] || '';
         const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
         const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
