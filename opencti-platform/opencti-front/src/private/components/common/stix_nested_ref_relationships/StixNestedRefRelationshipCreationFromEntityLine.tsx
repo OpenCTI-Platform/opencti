@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -265,12 +264,11 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
   const { t_i18n } = useFormatter();
   const data = useFragment(stixNestedRefRelationshipCreationFromEntityLineFragment, node);
   const flag = data.entity_type === 'Country'
-    && R.head((data.x_opencti_aliases ?? []).filter((n) => n?.length === 2));
+    && (data.x_opencti_aliases ?? []).filter((n) => n?.length === 2)[0];
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       onClick={(event) => (event.shiftKey
         ? onToggleShiftEntity(index, data, event)
         : onToggleEntity(data, event))
@@ -331,7 +329,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {R.pathOr('', ['createdBy', 'name'], data)}
+              {data?.createdBy?.name ?? ''}
             </div>
             <div
               className={classes.bodyItem}
@@ -433,7 +431,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={100}
+                width="100%"
                 height="100%"
               />
             </div>

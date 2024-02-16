@@ -60,6 +60,7 @@ class StixNestedRefRelationshipCreationFromEntityLinesContainer extends Componen
       containerRef,
       selectAll,
       relay,
+      data,
       dataColumns,
       selectedElements,
       deSelectedElements,
@@ -70,18 +71,10 @@ class StixNestedRefRelationshipCreationFromEntityLinesContainer extends Componen
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data)}
-        globalCount={R.pathOr(
-          nbOfRowsToLoad,
-          ['stixCoreObjects', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={
-          <StixNestedRefRelationshipCreationFromEntityLine />
-        }
-        DummyLineComponent={
-          <StixNestedRefRelationshipCreationFromEntityLineDummy />
-        }
+        dataList={data?.stixCoreObjects?.edges ?? []}
+        globalCount={data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        LineComponent={StixNestedRefRelationshipCreationFromEntityLine}
+        DummyLineComponent={StixNestedRefRelationshipCreationFromEntityLineDummy}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         selectedElements={selectedElements}
