@@ -24,7 +24,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { MESSAGING$ } from '../../../../relay/environment';
 import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
@@ -137,12 +137,7 @@ StixCoreObjectQuickSubscriptionContentProps
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
   const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
 
-  const searchInstanceTriggers = () => {
-    fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions);
-  };
-
   const handleOpen = () => {
-    searchInstanceTriggers();
     setOpen(true);
   };
 
@@ -199,7 +194,6 @@ StixCoreObjectQuickSubscriptionContentProps
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         MESSAGING$.notifySuccess(
           'Instance trigger successfully created. You can click again on the bell to edit the options.',
         );
@@ -228,7 +222,6 @@ StixCoreObjectQuickSubscriptionContentProps
         input: finalValues,
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setSubmitting(false);
         handleClose();
       },
@@ -250,7 +243,6 @@ StixCoreObjectQuickSubscriptionContentProps
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setDeleting(false);
         handleClose();
       },
@@ -306,7 +298,6 @@ StixCoreObjectQuickSubscriptionContentProps
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setDeleting(false);
         handleClose();
       },
