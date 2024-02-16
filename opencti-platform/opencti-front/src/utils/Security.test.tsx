@@ -7,10 +7,10 @@ import ReactDOM from 'react-dom/client';
 import { createMockEnvironment } from 'relay-test-utils';
 import Alert from '@mui/material/Alert';
 import { act } from '@testing-library/react';
-import Security from '../../utils/Security';
-import AppIntlProvider from '../../components/AppIntlProvider';
-import { BYPASS, EXPLORE_EXUPDATE, KNOWLEDGE_KNUPDATE } from '../../utils/hooks/useGranted';
-import { UserContext } from '../../utils/hooks/useAuth';
+import Security from './Security';
+import AppIntlProvider from '../components/AppIntlProvider';
+import { BYPASS, EXPLORE_EXUPDATE, KNOWLEDGE_KNUPDATE } from './hooks/useGranted';
+import { UserContext } from './hooks/useAuth';
 
 const userAdmin = {
   name: 'admin',
