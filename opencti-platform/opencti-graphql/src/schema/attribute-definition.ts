@@ -357,6 +357,7 @@ export const updatedAt: AttributeDefinition = {
   label: 'Updated at',
   type: 'date',
   mandatoryType: 'internal',
+  update: false,
   editDefault: false,
   multiple: false,
   upsert: false,

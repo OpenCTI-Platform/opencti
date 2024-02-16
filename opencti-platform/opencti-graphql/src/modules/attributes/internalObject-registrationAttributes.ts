@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, errors, id } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, errors, id, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -332,6 +332,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_CONNECTOR]: [
+    { ...updatedAt, update: true },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'auto', label: 'Auto', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
