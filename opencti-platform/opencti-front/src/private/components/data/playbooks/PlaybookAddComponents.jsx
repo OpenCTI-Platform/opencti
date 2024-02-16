@@ -37,6 +37,7 @@ import SwitchField from '../../../../components/SwitchField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
 
@@ -165,12 +166,6 @@ const PlaybookAddComponentsContent = ({
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
-        {
-          label: t_i18n('Marking definitions'),
-          value: 'objectMarking',
-          isMultiple: true,
-        },
-        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
@@ -236,8 +231,7 @@ const PlaybookAddComponentsContent = ({
                 value: n.value,
                 patch_value: n.value,
               })),
-            )
-                        }
+            )}
           />
         );
       case 'objectLabel':
@@ -253,8 +247,7 @@ const PlaybookAddComponentsContent = ({
                 value: n.value,
                 patch_value: n.label,
               })),
-            )
-                        }
+            )}
           />
         );
       case 'createdBy':
@@ -268,8 +261,7 @@ const PlaybookAddComponentsContent = ({
                 value: value.value,
                 patch_value: value.value,
               },
-            ])
-                        }
+            ])}
           />
         );
       case 'x_opencti_workflow_id':
@@ -283,8 +275,7 @@ const PlaybookAddComponentsContent = ({
                 value: value.value,
                 patch_value: value.value,
               },
-            ])
-                        }
+            ])}
           />
         );
       case 'x_opencti_detection':
@@ -305,19 +296,14 @@ const PlaybookAddComponentsContent = ({
           <Field
             component={TextField}
             disabled={disabled}
-            type={
-                            numberAttributes.includes(actionsInputs[i]?.attribute)
-                              ? 'number'
-                              : 'text'
-                        }
+            type={numberAttributes.includes(actionsInputs[i]?.attribute) ? 'number' : 'text'}
             variant="standard"
             name={`actions-${i}-value`}
             label={t_i18n('Value')}
             fullWidth={true}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
-            ])
-                        }
+            ])}
           />
         );
     }
@@ -397,10 +383,7 @@ const PlaybookAddComponentsContent = ({
     });
     const initialValues = currentConfig
       ? {
-        name:
-                    selectedNode?.data?.component?.id === selectedComponent.id
-                      ? selectedNode?.data?.name
-                      : selectedComponent.name,
+        name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
         ...currentConfig,
       }
       : {
@@ -521,22 +504,13 @@ const PlaybookAddComponentsContent = ({
                                     <Select
                                       variant="standard"
                                       value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(
-                                        i,
-                                        'op',
-                                        event.target.value,
-                                      )
-                                      }
+                                      onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
                                     >
-                                      <MenuItem value="add">
-                                        {t_i18n('Add')}
-                                      </MenuItem>
-                                      <MenuItem value="replace">
-                                        {t_i18n('Replace')}
-                                      </MenuItem>
-                                      <MenuItem value="remove">
-                                        {t_i18n('Remove')}
-                                      </MenuItem>
+                                      {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
+                                        <MenuItem key={op} value={op}>
+                                          {t_i18n(capitalizeFirstLetter(op))}
+                                        </MenuItem>
+                                      ))}
                                     </Select>
                                   </FormControl>
                                 </Grid>
