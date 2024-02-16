@@ -119,6 +119,7 @@ interface FilterIconButtonContainerProps {
   setHasRenderedRef: () => void;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
+  restrictedFilters?: string[];
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -138,6 +139,7 @@ FilterIconButtonContainerProps
   setHasRenderedRef,
   availableRelationFilterTypes,
   entityTypes,
+  restrictedFilters,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -309,6 +311,7 @@ FilterIconButtonContainerProps
                   helpers={helpers}
                   redirection={redirection}
                   entityTypes={entityTypes}
+                  restrictedFilters={restrictedFilters}
                 />
               }
             >
@@ -341,13 +344,14 @@ FilterIconButtonContainerProps
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
                       entityTypes={entityTypes}
+                      restrictedFilters={restrictedFilters}
                     />
                   }
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
-                    isReadWriteFilter
+                    (isReadWriteFilter && !(restrictedFilters?.includes(filterKey)))
                       ? () => manageRemoveFilter(
                         currentFilter.id,
                         filterKey,

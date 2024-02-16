@@ -454,10 +454,10 @@ TriggerEditionOverviewProps
                   helpers={{
                     ...helpers,
                     handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-                    handleRemoveFilterById: () => undefined, // the initial empty instance filter shouldn't be removed
                   }}
                   redirection
                   entityTypes={['Instance']}
+                  restrictedFilters={['connectedToId']}
                 />
               : <FilterIconButton
                   filters={filters}

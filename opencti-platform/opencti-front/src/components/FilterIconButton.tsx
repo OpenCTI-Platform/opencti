@@ -22,6 +22,7 @@ interface FilterIconButtonProps {
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
+  restrictedFilters?: string[];
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -43,6 +44,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   hasRenderedRef,
   setHasRenderedRef,
   entityTypes,
+  restrictedFilters,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -69,6 +71,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             setHasRenderedRef={setHasRenderedRef}
             availableRelationFilterTypes={availableRelationFilterTypes}
             entityTypes={entityTypes}
+            restrictedFilters={restrictedFilters}
           />
         </React.Suspense>
       )}
@@ -96,6 +99,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   helpers,
   availableRelationFilterTypes,
   entityTypes,
+  restrictedFilters,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -121,6 +125,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         hasRenderedRef={hasRenderedRef.current}
         setHasRenderedRef={setHasRenderedRef}
         entityTypes={entityTypes}
+        restrictedFilters={restrictedFilters}
       />
     );
   }

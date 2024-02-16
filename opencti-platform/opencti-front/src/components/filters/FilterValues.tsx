@@ -58,6 +58,7 @@ interface FilterValuesProps {
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
   entityTypes?: string[];
+  restrictedFilters?: string[];
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -73,6 +74,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   chipColor,
   noLabelDisplay,
   entityTypes,
+  restrictedFilters, // restricted filters can't be removed and their local mode can't be modified
 }) => {
   const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
@@ -99,8 +101,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
-    const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
-    const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;
+    const isLocalModeSwitchable = isReadWriteFilter && handleSwitchLocalMode && !restrictedFilters?.includes(filterKey);
+    const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
+    const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
       <Fragment key={id}>
         <FilterValuesContent

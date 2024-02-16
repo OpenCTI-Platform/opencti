@@ -308,8 +308,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             helpers={{
               ...instanceTriggerFiltersHelpers,
               handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-              handleRemoveFilterById: () => undefined, // the initial empty instance filter shouldn't be removed
             }}
+            restrictedFilters={['connectedToId']}
           />
         : <FilterIconButton
             filters={filters}
