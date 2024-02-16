@@ -104,8 +104,15 @@ const Root = () => {
           path="/dashboard/data/processing"
           render={() => (
             <Security
-              needs={[KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS]}
-              placeholder={<Redirect to="/dashboard" />}
+              needs={[KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES]}
+              placeholder={(
+                <Security
+                  needs={[TAXIIAPI_SETCSVMAPPERS]}
+                  placeholder={<Redirect to="/dashboard/data/processing/tasks" />}
+                >
+                  <Redirect to="/dashboard/data/processing/csv_mapper" />
+                </Security>
+              )}
             >
               <Redirect to="/dashboard/data/processing/automation" />
             </Security>
