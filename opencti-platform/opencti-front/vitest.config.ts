@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react(), relay],
   test: {
     environment: 'jsdom',
-    setupFiles: 'src/__tests__/setup-relay-for-vitest.ts',
+    setupFiles: 'setup-relay-for-vitest.ts',
     include: ['src/**/**/*.test.{ts,tsx}']
   },
 })

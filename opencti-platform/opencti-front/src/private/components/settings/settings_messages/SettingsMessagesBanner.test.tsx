@@ -6,8 +6,8 @@ import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import { createMockEnvironment, MockPayloadGenerator } from 'relay-test-utils';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
-import SettingsMessagesBanner, { settingsMessagesQuery } from '../../../private/components/settings/settings_messages/SettingsMessagesBanner';
-import AppIntlProvider from '../../../components/AppIntlProvider';
+import SettingsMessagesBanner, { settingsMessagesQuery } from './SettingsMessagesBanner';
+import AppIntlProvider from '../../../../components/AppIntlProvider';
 
 let container: HTMLDivElement | null;
 
