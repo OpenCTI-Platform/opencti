@@ -9277,7 +9277,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-proxy-agent@npm:7.0.0, http-proxy-agent@npm:^7.0.0":
+"http-proxy-agent@npm:7.0.2":
+  version: 7.0.2
+  resolution: "http-proxy-agent@npm:7.0.2"
+  dependencies:
+    agent-base: "npm:^7.1.0"
+    debug: "npm:^4.3.4"
+  checksum: 10/d062acfa0cb82beeb558f1043c6ba770ea892b5fb7b28654dbc70ea2aeea55226dd34c02a294f6c1ca179a5aa483c4ea641846821b182edbd9cc5d89b54c6848
+  languageName: node
+  linkType: hard
+
+"http-proxy-agent@npm:^7.0.0":
   version: 7.0.0
   resolution: "http-proxy-agent@npm:7.0.0"
   dependencies:
@@ -11443,7 +11453,7 @@ __metadata:
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:16.0.2"
     helmet: "npm:7.1.0"
-    http-proxy-agent: "npm:7.0.0"
+    http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.2"
     ioredis: "npm:5.3.2"
     ipaddr.js: "npm:2.1.0"
