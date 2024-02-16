@@ -329,7 +329,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {data?.createdBy?.name ?? ''}
+              {data.createdBy?.name ?? ''}
             </div>
             <div
               className={classes.bodyItem}
