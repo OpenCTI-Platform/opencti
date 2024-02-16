@@ -358,7 +358,6 @@ export const updatedAt: AttributeDefinition = {
   type: 'date',
   mandatoryType: 'internal',
   editDefault: false,
-  update: false,
   multiple: false,
   upsert: false,
   isFilterable: true,
