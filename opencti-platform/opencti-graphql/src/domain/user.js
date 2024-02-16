@@ -12,7 +12,7 @@ import {
   ENABLED_DEMO_MODE,
   logApp,
   OPENCTI_SESSION,
-  PLATFORM_VERSION
+  PLATFORM_VERSION,
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -28,14 +28,14 @@ import {
   listAllToEntitiesThroughRelations,
   listEntities,
   listEntitiesThroughRelationsPaginated,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import {
@@ -44,7 +44,7 @@ import {
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO
+  RELATION_PARTICIPATE_TO,
 } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -58,7 +58,7 @@ import {
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
-  VIRTUAL_ORGANIZATION_ADMIN
+  VIRTUAL_ORGANIZATION_ADMIN,
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -167,13 +167,13 @@ export const findAll = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // TODO JRI REPLACE BY listEntities with filter?????
     const organisationIds = user.administrated_organizations.map((organization) => organization.id);
-    const users = await listAllFromEntitiesThroughRelations(
+    const users = (await listAllFromEntitiesThroughRelations(
       context,
       user,
       organisationIds,
       RELATION_PARTICIPATE_TO,
       ENTITY_TYPE_USER,
-    ).map((n) => ({ node: n }));
+    )).map((n) => ({ node: n }));
     return buildPagination(0, null, users, users.length);
   }
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
@@ -946,7 +946,16 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
+
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  if (to.authorized_authorities.includes(userId)) {
+    const indexOfMember = to.authorized_authorities.indexOf(userId);
+    to.authorized_authorities.splice(indexOfMember, 1);
+    const patch = { authorized_authorities: to.authorized_authorities };
+    const { element } = await patchAttribute(context, user, toId, ENTITY_TYPE_IDENTITY_ORGANIZATION, patch);
+    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+  }
+
   const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : targetUser.user_email;
   await publishUserAction({
