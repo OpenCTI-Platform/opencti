@@ -105,7 +105,7 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   filteredFilters.forEach((f) => {
     // regardingOf key is a composite filter id+type, values are [{ key: 'id', ...}, { key: 'type', ... }]
     if (f.key.includes(INSTANCE_REGARDING_OF)) {
-      const regardingIds = f.values.find((v) => v.key === 'id').values ?? [];
+      const regardingIds = f.values.find((v) => v.key === 'id')?.values ?? [];
       ids.push(...regardingIds);
     } else {
       ids.push(...f.values);
