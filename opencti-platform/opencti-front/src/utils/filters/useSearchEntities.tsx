@@ -160,6 +160,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           }
           ... on MalwareAnalysis {
             product
+            result_name
             operatingSystem {
               name
             }

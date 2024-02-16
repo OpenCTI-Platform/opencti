@@ -72,6 +72,8 @@ export const extractEntityRepresentativeName = (entityData) => {
     mainValue = `${from} - ${to}`;
   } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
     return entityData.description;
+  } else if (isNotEmptyField(entityData.result_name)) { // MALWARE-ANALYSES
+    mainValue = entityData.result_name;
   } else if (isNotEmptyField(entityData.name)) {
     mainValue = entityData.name;
     if (isNotEmptyField(entityData.x_mitre_id)) { // Attack Pattern
