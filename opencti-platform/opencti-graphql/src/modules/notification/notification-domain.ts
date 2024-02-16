@@ -297,6 +297,10 @@ export const myUnreadNotificationsCount = async (context: AuthContext, user: Aut
   const queryArgs = { filters: queryFilters, types: [ENTITY_TYPE_NOTIFICATION] };
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, queryArgs);
 };
+export const notifyNotificationNumberSubscriptions = async (context: AuthContext, user: AuthUser) => {
+  const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
+  await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: user.id }, user);
+};
 export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
   const notification = await notificationGet(context, user, notificationId);
   await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
@@ -316,4 +320,5 @@ export const addNotification = async (context: AuthContext, user: AuthUser, noti
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: created.user_id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC, created, user);
 };
+
 // endregion

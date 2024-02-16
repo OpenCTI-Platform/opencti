@@ -58,6 +58,8 @@ import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { notifyNotificationNumberSubscriptions } from '../modules/notification/notification-domain';
+import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -343,6 +345,7 @@ const executeUnshare = async (context, user, actionContext, element) => {
 };
 const executeProcessing = async (context, user, job) => {
   const errors = [];
+  const postExecutionCallbacks = new Map();
   for (let index = 0; index < job.actions.length; index += 1) {
     const { type, context: actionContext } = job.actions[index];
     const { field, values, options } = actionContext ?? {};
@@ -426,16 +429,48 @@ const executeProcessing = async (context, user, job) => {
           if (type === ACTION_TYPE_UNSHARE) {
             await executeUnshare(context, user, actionContext, element);
           }
+          // if the action executed is eligible to a subscription, we register the callback for later
+          const postExecutionCallback = getPostExecutionCallbackForAction(context, user, actionContext, element);
+          if (postExecutionCallback !== null) {
+            // ... without duplicate with respect to the entity_type
+            postExecutionCallbacks.set(element.entity_type, postExecutionCallback);
+          }
         } catch (err) {
           errors.push({ id: element.id, message: `${err.message} - ${err.data?.reason ?? err.reason ?? 'no reason provided'}` });
         }
       }
     }
   }
+
+  // call all post-execution callbacks (errors are non-blocking)
+  postExecutionCallbacks.forEach(async (callback, entity_type) => {
+    try {
+      await callback();
+    } catch (error) {
+      logApp.error('Post-execution callbacks failure', { source: { entity_type } });
+      logApp.error(error);
+    }
+  });
+
   if (errors.length > 0) {
     logApp.error(UnknownError('Tasks execution failure', { executions: errors }));
   }
   return errors;
+};
+
+/**
+ * Returns a callback to run after the execution of the job
+ * if the action/element combination does not require any specific post-execution callback, return null
+ */
+const getPostExecutionCallbackForAction = (context, user, actionContext, element) => {
+  // case entity_type: Notification
+  if (element.entity_type === ENTITY_TYPE_NOTIFICATION && actionContext?.field === 'is_read') {
+    // publish update of the notification counter on is_read changed
+    return async () => await notifyNotificationNumberSubscriptions(context, user);
+  }
+  // add other cases...
+
+  return null; // no callback to run for this kind of action/element combination
 };
 
 const taskHandler = async () => {
