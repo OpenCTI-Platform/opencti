@@ -105,7 +105,7 @@ type CsvMapperSchemaAttributes {
 
 # Queries
 type Query {
-  csvMapper(id: String!): CsvMapper @auth
+  csvMapper(id: String!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
   csvMappers(
     first: Int
     after: ID
@@ -113,7 +113,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): CsvMapperConnection @auth
+  ): CsvMapperConnection @auth(for: [TAXIIAPI_SETCSVMAPPERS])
   csvMapperTest(
     configuration: String!
     content: String!

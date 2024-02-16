@@ -149,6 +149,7 @@
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
+    "test:watch": "vitest watch",
     "check-ts": "tsc --noEmit",
     "i18n-checker": "node i18n-checker.js",
     "extract-translation": "node script/extract-i18n-keyword.js && node script/extract-label-keyword.js",

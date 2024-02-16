@@ -7,10 +7,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import { CompatRouter } from 'react-router-dom-v5-compat';
 import { describe, afterEach, it, expect } from 'vitest';
-import AppIntlProvider from '../components/AppIntlProvider';
-import Profile, { profileQuery } from '../private/components/profile/Profile';
-import { APP_BASE_PATH } from '../relay/environment';
-import { UserContext } from '../utils/hooks/useAuth';
+import AppIntlProvider from './components/AppIntlProvider';
+import Profile, { profileQuery } from './private/components/profile/Profile';
+import { APP_BASE_PATH } from './relay/environment';
+import { UserContext } from './utils/hooks/useAuth';
 
 const me = {
   name: 'admin',

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import {ADMIN_USER, participantQuery, queryAsAdmin, USER_PARTICIPATE} from '../../utils/testQuery';
+import {FORBIDDEN_ACCESS} from '../../../src/config/errors';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -163,5 +164,61 @@ describe('CSV ingestion resolver standard behavior', () => {
       variables: CSV_FEED_INGESTER_TO_DELETE
     });
     expect(deleteSingleColumnCsvFeedsIngesterQueryResultSingleColumnCsvFeedsIngesterQueryResult.data?.ingestionCsvDelete).toBe(singleColumnCsvFeedIngesterId);
+  });
+
+  it('should participant forbidden to create csv mapper', async () => {
+    const CSV_FEED_INGESTER_TO_CREATE = {
+      input: {
+        authentication_type: 'none',
+        name: 'Single column',
+        uri: 'https://lists.blocklist.de/lists/all.txt',
+        csv_mapper_id: singleColumnCsvMapperId,
+        user_id: USER_PARTICIPATE.id
+      }
+    };
+    const participantCreateResult = await participantQuery({
+      query: gql`
+        mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
+          ingestionCsvAdd(input: $input) {
+            id
+            entity_type
+            ingestion_running
+          }
+        },
+      `,
+      variables: CSV_FEED_INGESTER_TO_CREATE
+    });
+    expect(participantCreateResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to create csv mapper.').toBe(1);
+    expect(participantCreateResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
+  });
+
+  it('should participant forbidden to list csv mapper', async () => {
+    const participantListResult = await participantQuery({
+      query: gql`
+        query listCsvMappers(
+          $first: Int
+          $after: ID
+          $orderBy: CsvMapperOrdering
+          $orderMode: OrderingMode
+          $filters: FilterGroup
+          $search: String) {
+          csvMappers(
+            first: $first
+            after: $after
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+            search: $search) {
+              edges {
+                  node {
+                      id
+                  }
+              }
+          }
+        }
+      `
+    });
+    expect(participantListResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to list csv mapper.').toBe(1);
+    expect(participantListResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
   });
 });
