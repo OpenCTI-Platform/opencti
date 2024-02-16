@@ -28,10 +28,10 @@ const userAdmin = {
 };
 
 const userZeroCapability = {
-  name: 'admin',
-  user_email: 'admin@opencti.io',
-  firstname: 'Admin',
-  lastname: 'OpenCTI',
+  name: 'no capability',
+  user_email: 'nocapa@opencti.io',
+  firstname: 'Zero',
+  lastname: 'Capability',
   language: 'auto',
   unit_system: 'auto',
   theme: 'default',
@@ -43,10 +43,10 @@ const userZeroCapability = {
 };
 
 const userOneCapability = {
-  name: 'admin',
-  user_email: 'admin@opencti.io',
-  firstname: 'Admin',
-  lastname: 'OpenCTI',
+  name: 'knowledge',
+  user_email: 'knowledge@opencti.io',
+  firstname: 'Knowledge',
+  lastname: 'Update',
   language: 'auto',
   unit_system: 'auto',
   theme: 'default',
@@ -57,11 +57,11 @@ const userOneCapability = {
   capabilities: [{ name: KNOWLEDGE_KNUPDATE }],
 };
 
-const userTwoCapability = {
-  name: 'admin',
-  user_email: 'admin@opencti.io',
-  firstname: 'Admin',
-  lastname: 'OpenCTI',
+const userTwoCapabilities = {
+  name: 'twocapa',
+  user_email: 'twocapa@opencti.io',
+  firstname: 'Two',
+  lastname: 'Capabilities',
   language: 'auto',
   unit_system: 'auto',
   theme: 'default',
@@ -79,7 +79,7 @@ const ZeroCapabilityContext: any = { me: userZeroCapability, settings: {}, banne
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OneCapabilityContext: any = { me: userOneCapability, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const TwoCapabilityContext: any = { me: userTwoCapability, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
+const TwoCapabilityContext: any = { me: userTwoCapabilities, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {} };
 
 let container: HTMLDivElement | null;
 describe('Security validations', () => {
