@@ -13,7 +13,7 @@ import { NoteLineDummy } from './notes/NoteLine';
 import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -37,7 +37,7 @@ const Notes: FunctionComponent = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('note_types', ['Note'])]),
+        filters: useGetDefaultFilterObject(['note_types'], ['Note']),
       },
     },
   );

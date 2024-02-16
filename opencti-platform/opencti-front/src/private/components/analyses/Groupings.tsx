@@ -12,7 +12,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -39,7 +39,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('context', ['Grouping'])]),
+        filters: useGetDefaultFilterObject(['context'], ['Grouping']),
       },
       searchTerm: '',
       sortBy: 'created',

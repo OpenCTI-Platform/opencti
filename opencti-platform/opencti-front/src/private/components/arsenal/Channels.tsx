@@ -8,7 +8,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ChannelLineDummy } from './channels/ChannelLine';
 import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from './channels/__generated__/ChannelsLinesPaginationQuery.graphql';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -25,7 +25,7 @@ const Channels = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('channel_types', ['Channel'])]),
+        filters: useGetDefaultFilterObject(['channel_types'], ['Channel']),
       },
     },
   );

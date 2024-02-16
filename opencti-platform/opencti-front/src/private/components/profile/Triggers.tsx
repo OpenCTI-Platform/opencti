@@ -6,7 +6,7 @@ import TriggersLines, { triggersLinesQuery } from './triggers/TriggersLines';
 import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
-import { emptyFilterGroup, getDefaultFilterObjFromFilterDefinitions, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -22,7 +22,7 @@ const Triggers: FunctionComponent = () => {
       orderAsc: true,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('trigger_type', ['Trigger']), useFilterDefinition('instance_trigger', ['Trigger'])]),
+        filters: useGetDefaultFilterObject(['trigger_type', 'instance_trigger'], ['Trigger']),
       },
       numberOfElements: {
         number: 0,

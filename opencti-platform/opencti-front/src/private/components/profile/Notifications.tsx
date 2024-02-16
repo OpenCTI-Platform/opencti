@@ -9,13 +9,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
-import {
-  emptyFilterGroup,
-  getDefaultFilterObjFromFilterDefinitions,
-  isFilterGroupNotEmpty,
-  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
-  useFilterDefinition,
-} from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useGetDefaultFilterObject, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 
@@ -32,7 +26,7 @@ const Notifications: FunctionComponent = () => {
       orderAsc: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('is_read', ['Notification'])]),
+        filters: useGetDefaultFilterObject(['is_read'], ['Notification']),
       },
       numberOfElements: {
         number: 0,

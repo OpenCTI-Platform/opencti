@@ -551,26 +551,6 @@ export const getDefaultOperatorFilter = (
   return 'eq';
 };
 
-export const getDefaultFilterObject = (
-  filterKey: string,
-  filterDefinition?: FilterDefinition,
-): Filter => {
-  return {
-    ...defaultFilterObject,
-    id: uuid(),
-    key: filterKey,
-    operator: getDefaultOperatorFilter(filterDefinition),
-  };
-};
-
-export const getDefaultFilterObjFromFilterDefinitions = (
-  filtersDefinition: (FilterDefinition | undefined)[],
-) => {
-  return (filtersDefinition
-    .filter((def) => def) as FilterDefinition[])
-    .map((def) => getDefaultFilterObject(def.filterKey, def));
-};
-
 /**
  * Get the possible operator for a given key/subkey.
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
@@ -724,6 +704,28 @@ export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core
     throw Error(`The ${subKey} sub-filter doesn't exist for the ${filterKey} filter`);
   }
   return filterDefinition;
+};
+
+export const getDefaultFilterObject = (
+  filterKey: string,
+  filterDefinition?: FilterDefinition,
+): Filter => {
+  return {
+    ...defaultFilterObject,
+    id: uuid(),
+    key: filterKey,
+    operator: getDefaultOperatorFilter(filterDefinition),
+  };
+};
+
+export const useGetDefaultFilterObject = (
+  filterKeys: string[],
+  entityTypes: string[],
+) => {
+  const filtersDefinition = filterKeys.map((key) => useFilterDefinition(key, entityTypes));
+  return (filtersDefinition
+    .filter((def) => def) as FilterDefinition[])
+    .map((def) => getDefaultFilterObject(def.filterKey, def));
 };
 
 export const isStixObjectTypes = [

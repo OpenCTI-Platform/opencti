@@ -16,13 +16,7 @@ import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLin
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import {
-  useBuildEntityTypeBasedFilterContext,
-  emptyFilterGroup,
-  findFilterFromKey,
-  getDefaultFilterObjFromFilterDefinitions,
-  useFilterDefinition,
-} from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -47,7 +41,7 @@ const Indicators = () => {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromFilterDefinitions([useFilterDefinition('sightedBy', ['Indicator'])]),
+        filters: useGetDefaultFilterObject(['sightedBy'], ['Indicator']),
       },
       searchTerm: '',
       sortBy: 'created',
