@@ -103,7 +103,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
-            { label: t_i18n('Users'), link: '/dashboard/settings/security/users' },
+            { label: t_i18n('Users'), link: '/dashboard/settings/accesses/users' },
             { label: data.name || data.user_email, current: true },
           ]}
           />
