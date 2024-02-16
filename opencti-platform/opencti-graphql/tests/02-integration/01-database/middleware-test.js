@@ -745,6 +745,7 @@ describe('Upsert and merge entities', () => {
       description: 'MALWARE_TEST DESCRIPTION',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       objectMarking: [clearMarking, mitreMarking],
+      confidence: 15, // not set, it would fallback to user's confidence which is 100
     };
     const createdMalware = await addMalware(testContext, ADMIN_USER, malware);
     expect(createdMalware).not.toBeNull();
@@ -755,7 +756,11 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware).not.toBeNull();
     expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert TLP by name
-    let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
+    let upMalware = {
+      name: 'MALWARE_TEST',
+      objectMarking: [testMarking],
+      confidence: 15,
+    };
     let upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
@@ -768,7 +773,7 @@ describe('Upsert and merge entities', () => {
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       aliases: ['NEW MALWARE ALIAS'],
-      confidence: 90,
+      confidence: 90, // 90 > 15, so it's upserted
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
     expect(upsertedMalware.name).toEqual('NEW NAME');
@@ -1130,6 +1135,7 @@ describe('Elements impacts deletions', () => {
 describe('Elements upsert behaviors', () => {
   it('should upsert empty values', async () => {
     const clearMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+    const greenMarking = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
     const stixId = 'malware--78ca4366-f5b8-4764-83f7-34ce38198e28';
 
     // Create entities
@@ -1157,6 +1163,7 @@ describe('Elements upsert behaviors', () => {
     expect(malware.first_seen).toEqual('1970-01-01T00:00:00.000Z');
     expect(malware.malware_types).toEqual(['downloader', 'trojan']);
     expect(malware.objectMarking.length).toEqual(1);
+
     // Test on existing value [same confidence level]
     malware = await addMalware(testContext, ADMIN_USER, { ...base, description: 'TO DESC UPGRADE', first_seen: '2023-09-21T22:04:09.409Z' });
     expect(malware.confidence).toEqual(10);
@@ -1170,6 +1177,43 @@ describe('Elements upsert behaviors', () => {
     malware = await addMalware(testContext, ADMIN_USER, { ...base, confidence: 11, description: 'TO DESC UPPER' });
     expect(malware.confidence).toEqual(11);
     expect(malware.description).toEqual('TO DESC UPPER');
+
+    // on "multiple" attribute
+    // if confidence is lower, data should not be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 1,
+      malware_types: ['rootkit'],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.malware_types).toEqual(['downloader', 'trojan']);
+    // if confidence is higher or equal, data should be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 11,
+      malware_types: ['rootkit'],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.malware_types).toEqual(['downloader', 'trojan', 'rootkit']);
+
+    // on "multiple" refs
+    // if confidence is lower, data should not be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 1,
+      objectMarking: [greenMarking],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.objectMarking[0].standard_id).toEqual(clearMarking);
+    // if confidence is higher or equal, data should be added to the list
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 11,
+      objectMarking: [greenMarking],
+    });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.objectMarking[0].standard_id).toEqual(greenMarking);
+    // in case of marking, the highest rank is kept so we'll have only one
 
     // Upsert forcing the synchronization
     const syncContext = { ...testContext, synchronizedUpsert: true };

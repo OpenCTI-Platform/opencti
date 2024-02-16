@@ -658,6 +658,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
+    if (input.key === 'user_confidence_level') {
+      // user's effective level might have changed, we need to refresh session info
+      await userSessionRefresh(userId);
+    }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
@@ -1180,6 +1184,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
       definition_type: m.definition_type,
     })),
     session_version: PLATFORM_VERSION,
+    effective_confidence_level: user.effective_confidence_level,
     ...user.provider_metadata
   };
 };
@@ -1445,6 +1450,10 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       description: 'Principal admin account',
       api_token: tokenValue,
       password,
+      user_confidence_level: {
+        max_confidence: 100,
+        overrides: [],
+      },
     };
     await addUser(context, SYSTEM_USER, userToCreate);
     await userSessionRefresh(OPENCTI_ADMIN_UUID);
@@ -1474,5 +1483,8 @@ export const userEditContext = async (context, user, userId, input) => {
 
 export const getUserEffectiveConfidenceLevel = async (userId, context) => {
   const user = await findById(context, context.user, userId); // this returns a complete user, with groups
+  if (!user) {
+    throw FunctionalError('User not found', { user_id: userId });
+  }
   return computeUserEffectiveConfidenceLevel(user);
 };

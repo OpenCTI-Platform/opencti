@@ -198,6 +198,12 @@ import { confidence } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
+import {
+  controlCreateInputWithUserConfidence,
+  controlUserConfidenceAgainstElement,
+  controlUpsertInputWithUserConfidence,
+  adaptUpdateInputsConfidence
+} from '../utils/confidence-level';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -1851,7 +1857,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const { value: targetsCreated } = meta[metaIndex];
         const targetCreated = R.head(targetsCreated);
         // If asking for a real change
-        if (currentValue?.standard_id !== targetCreated?.internal_id && currentValue?.id !== targetCreated?.internal_id) {
+        if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
             const currentRels = await listAllRelations(context, user, relType, { fromId: initial.id });
@@ -1982,12 +1988,15 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   if (!initial) {
     throw FunctionalError('Cant update undefined element');
   }
-  const updates = Array.isArray(inputs) ? inputs : [inputs];
+  // region confidence control
+  controlUserConfidenceAgainstElement(user, initial);
+  const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
+  // endregion
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = updates.filter((e) => metaKeys.includes(e.key));
+  const meta = newInputs.filter((e) => metaKeys.includes(e.key));
   const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
   const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = updates.map((input) => {
+  const revolvedInputs = newInputs.map((input) => {
     if (metaKeys.includes(input.key)) {
       const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
       return { ...input, value: resolvedValues };
@@ -2404,8 +2413,13 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-  // If confidence is passed at creation, just compare confidence
-  const isConfidenceMatch = (updatePatch.confidence ?? 0) >= (element.confidence ?? 0);
+
+  // region confidence control / upsert
+  const { confidenceLevelToApply, isConfidenceMatch } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+  updatePatch.confidence = confidenceLevelToApply;
+  // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
+  // endregion
+
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2441,6 +2455,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
+        const isCurrentWithData = isNotEmptyField(currentData);
         const targetData = (patchInputData ?? []).map((n) => n.internal_id);
         // If expected data is different from current data
         if (R.symmetricDifference(currentData, targetData).length > 0) {
@@ -2448,17 +2463,26 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           // In full synchro, just replace everything
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if (isInputWithData && diffTargets.length > 0) {
-            // If data is provided and different from existing data, apply an add operation
+          } else if (
+            (isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
+            || (isInputWithData && !isCurrentWithData)
+          ) {
+            // If data is provided, different from existing data, and of higher confidence
+            // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+            // --> apply an add operation
             inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
           }
         }
-      } else {
+      } else { // not multiple
+        // If expected data is different from current data...
         const currentData = element[relDef.databaseName];
-        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData));
-        // If expected data is different from current data
-        // And data can be updated (complete a null value or forced through synchro upsert option
-        if (!R.equals(currentData, patchInputData) && updatable) {
+        const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
+        // ... and data can be updated:
+        //   forced synchro
+        //   OR the field was null -> better than nothing !
+        //   OR the confidence matches -> new value is "better" than existing value
+        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
+        if (isInputDifferentFromCurrent && updatable) {
           inputs.push({ key: inputField, value: [patchInputData] });
         }
       }
@@ -2627,10 +2651,17 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   };
 };
 
-export const createRelationRaw = async (context, user, input, opts = {}) => {
+export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
-  const { fromId, toId, relationship_type: relationshipType } = input;
+  const { fromId, toId, relationship_type: relationshipType } = rawInput;
+
+  // region confidence control
+  const input = structuredClone(rawInput);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
+  // endregion
+
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
@@ -2643,6 +2674,12 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
   const { from, to } = resolvedInput;
+
+  // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
+  if (isStixRefRelationship(relationshipType)) {
+    controlUserConfidenceAgainstElement(user, from);
+  }
+
   // check if user has "edit" access on from and to
   if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
     throw ForbiddenAccess();
@@ -2742,10 +2779,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         });
       }
       // TODO Handling merging relation when updating to prevent multiple relations finding
-      existingRelationship = R.head(filteredRelations);
-      // We can use the resolved input from/to to complete the element
-      existingRelationship.from = from;
-      existingRelationship.to = to;
+      // resolve all refs so we can upsert properly
+      existingRelationship = await storeLoadByIdWithRefs(context, user, R.head(filteredRelations).internal_id);
     }
     // endregion
     if (existingRelationship) {
@@ -3003,12 +3038,17 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   };
 };
 
-const createEntityRaw = async (context, user, input, type, opts = {}) => {
-  // Region - Pre-Check
+const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+  // region confidence control
+  const input = structuredClone(rawInput);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
+  // endregion
+  // region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
-  // Endregion
+  // endregion
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, filledInput, type, entitySetting);
@@ -3168,6 +3208,13 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+  // region confidence control
+  controlUserConfidenceAgainstElement(user, element);
+  // when deleting stix ref, we must check confidence on from side (this count has modifying this element itself)
+  if (isStixRefRelationship(element.entity_type)) {
+    controlUserConfidenceAgainstElement(user, element.from);
+  }
+  // endregion
   // Prevent individual deletion if linked to a user
   if (element.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(element.contact_information)) {
     const args = {

@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import {
-  ADMIN_USER,
-  API_TOKEN,
-  API_URI,
-  FIFTEEN_MINUTES,
-  PYTHON_PATH, queryAsAdmin,
-  RAW_EVENTS_SIZE,
-  SYNC_RAW_START_REMOTE_URI,
-  testContext,
-} from '../../utils/testQuery';
+import { ADMIN_USER, API_TOKEN, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, queryAsAdmin, RAW_EVENTS_SIZE, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { checkPostSyncContent, checkPreSyncContent } from '../sync-utils';
 import { elAggregationCount } from '../../../src/database/engine';
@@ -80,12 +71,12 @@ describe('Database sync raw', () => {
       expect(vocabRemoved.map((v) => v.name)).toEqual([]);
       expect(vocabAdded.map((v) => v.name)).toEqual([]);
 
-      const plop = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
-      const maaaap = new Map(plop.map((i) => [i.label, i.value]));
-      expect(maaaap.get('Indicator')).toEqual(28);
-      expect(maaaap.get('Malware')).toEqual(27);
-      expect(maaaap.get('Label')).toEqual(13);
-      expect(maaaap.get('Vocabulary')).toEqual(335);
+      const counters = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
+      const countersMap = new Map(counters.map((i) => [i.label, i.value]));
+      expect(countersMap.get('Indicator')).toEqual(28);
+      expect(countersMap.get('Malware')).toEqual(27);
+      expect(countersMap.get('Label')).toEqual(13);
+      expect(countersMap.get('Vocabulary')).toEqual(335);
 
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);

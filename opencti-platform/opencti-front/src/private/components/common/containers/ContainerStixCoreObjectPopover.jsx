@@ -224,7 +224,6 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
-        this.submitDeleteMapping();
         this.handleCloseDelete();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements?.(newSelectedElements);

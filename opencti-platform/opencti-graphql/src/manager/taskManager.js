@@ -57,6 +57,7 @@ import { promoteIndicatorToObservable } from '../modules/indicator/indicator-dom
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -136,6 +137,7 @@ const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
+  // note that the query is filtered to allow only elements with matching confidence level
   const data = await executeTaskQuery(context, user, task_filters, task_search, task_position);
   // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
@@ -159,7 +161,11 @@ const computeListTaskElements = async (context, user, task) => {
     const elementToResolve = ids[indexId];
     const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
     if (element) {
-      processingElements.push({ element, next: element.id });
+      // only process elements allowed by confidence control (no throw)
+      const isConfidenceMatch = controlUserConfidenceAgainstElement(user, element, true);
+      if (isConfidenceMatch) {
+        processingElements.push({ element, next: element.id });
+      }
     }
   }
   return { actions, elements: processingElements };
@@ -421,7 +427,7 @@ const executeProcessing = async (context, user, job) => {
             await executeUnshare(context, user, actionContext, element);
           }
         } catch (err) {
-          errors.push({ id: element.id, message: `${err.message} - ${err.data?.reason ?? err.reason}` });
+          errors.push({ id: element.id, message: `${err.message} - ${err.data?.reason ?? err.reason ?? 'no reason provided'}` });
         }
       }
     }

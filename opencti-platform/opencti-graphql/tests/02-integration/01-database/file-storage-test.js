@@ -38,7 +38,7 @@ describe('File storage file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10692);
+    expect(file.size).toEqual(10700);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
@@ -48,7 +48,7 @@ describe('File storage file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(10692);
+    expect(file.size).toEqual(10700);
     expect(file.name).toEqual(exportFileName);
   });
   it('should all file listing', async () => {
@@ -68,7 +68,7 @@ describe('File storage file listing', () => {
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { entity_id: 'unknow_id' });
     expect(files.length).toEqual(0);
     // maxFileSize filtering
-    files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 10692 });
+    files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 10700 });
     expect(files.length).toEqual(1);
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 1692 });
     expect(files.length).toEqual(0);
@@ -102,7 +102,7 @@ describe('File storage file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10692);
+    expect(file.size).toEqual(10700);
   });
   it('should delete file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');

@@ -272,7 +272,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
       filters: [{
         key: 'confidence',
         values: ['90'],
-        operator: 'gte',
+        operator: 'eq',
       }],
       filterGroups: [{
         mode: 'and',
@@ -368,8 +368,8 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results6 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results6.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(1);
-    expect(edgeIds[0]).toEqual(city3InternalId);
+    expect(edgeIds.length).toEqual(2); // City3 + Heitzing in DATA_STIX2_v2 (no confidence so inserted with user's confidence which is 100)
+    expect(edgeIds[1]).toEqual(city3InternalId);
     // --- 07. filters with keys that require a conversion --- //
     // objectMarking = marking1
     await changeTaxiiFilters({
