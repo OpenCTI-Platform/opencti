@@ -54,7 +54,7 @@ const AccessesMenu: FunctionComponent = () => {
   if (setMarkings) {
     menuEntries.push(...markingEntries);
   }
-  if (menuEntries.length === 0 && isOrgaAdmin) {
+  if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
       ...[
         {
