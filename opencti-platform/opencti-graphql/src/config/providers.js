@@ -7,7 +7,7 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
-import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
+import { Strategy as SamlStrategy } from 'passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
@@ -230,12 +230,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.info('[SAML] Successfully logged', { profile });
+        const samlAttributes = profile.attributes ? profile.attributes : profile;
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['Role'];
         const groupAttributes = mappedConfig.groups_management?.group_attributes || ['Group'];
-        const userName = profile[mappedConfig.account_attribute] || '';
-        const firstname = profile[mappedConfig.firstname_attribute] || '';
-        const lastname = profile[mappedConfig.lastname_attribute] || '';
-        const { nameID, nameIDFormat } = profile;
+        const userName = samlAttributes[mappedConfig.account_attribute] || '';
+        const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
+        const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
+        const { nameID, nameIDFormat } = samlAttributes;
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
         logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
@@ -244,7 +245,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
         }
         const computeRolesMapping = () => {
-          const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
+          const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
           const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
           const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
           const rolesMapper = genConfigMapper(rolesMapping);
@@ -253,7 +254,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // endregion
         // region groups mapping
         const computeGroupsMapping = () => {
-          const attrGroups = groupAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
+          const attrGroups = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
           const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
           const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
           const groupsMapper = genConfigMapper(groupsMapping);
