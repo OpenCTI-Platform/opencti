@@ -15,7 +15,7 @@ import { makeStyles } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
@@ -36,7 +36,6 @@ import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
 import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery,
-  StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -128,16 +127,8 @@ StixCoreObjectQuickSubscriptionContentProps
     stixCoreObjectQuickSubscriptionContentQuery,
     queryRef,
   );
-  const initialExistingInstanceTriggersEdges = () => {
-    return existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
-  };
 
-  const [existingInstanceTriggersEdges, setExistingInstanceTriggersEdges] = useState(initialExistingInstanceTriggersEdges());
-
-  useEffect(() => {
-    setExistingInstanceTriggersEdges(initialExistingInstanceTriggersEdges());
-  }, [existingInstanceTriggersData]);
-
+  const existingInstanceTriggersEdges = existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
   const triggerUpdate = existingInstanceTriggersEdges.length > 0;
 
   const [commitAddTrigger] = useMutation<TriggerLiveCreationKnowledgeMutation>(
@@ -147,14 +138,7 @@ StixCoreObjectQuickSubscriptionContentProps
   const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
 
   const searchInstanceTriggers = () => {
-    fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions)
-      .toPromise()
-      .then((data) => {
-        setExistingInstanceTriggersEdges(
-          (data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)
-            ?.triggersKnowledge?.edges ?? [],
-        );
-      });
+    fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions);
   };
 
   const handleOpen = () => {
