@@ -572,7 +572,7 @@ export const getDefaultFilterObjFromFilterDefinitions = (
 };
 
 /**
- * Get the possible operator for a given subkey.
+ * Get the possible operator for a given key/subkey.
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
  */
 export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
@@ -586,13 +586,16 @@ export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: s
 };
 
 /**
- * Operators are restricted depending on the filter key
- * @param filterKey
+ * Operators are restricted depending on the filter definition
+ * @param filterDefinition
  */
 export const getAvailableOperatorForFilterKey = (
   filterDefinition: FilterDefinition | undefined,
 ): string[] => {
   if (!filterDefinition) {
+    return ['eq'];
+  }
+  if (filterDefinition.filterKey === 'connectedToId') { // instance trigger filter
     return ['eq'];
   }
   const { type: filterType } = filterDefinition;
