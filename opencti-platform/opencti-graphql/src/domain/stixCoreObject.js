@@ -90,13 +90,26 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
   return elements.map(({ element, definition }) => {
     const relId = element[definition.databaseName];
     if (definition.multiple) {
-      const relElements = (relId ?? []).map((id) => resolvedElements[id]);
+      const relElements = (relId ?? []).map((id) => {
+        const resolve = resolvedElements[id];
+        if (isEmptyField(resolve)) {
+          throw UnsupportedError('Invalid loading of batched elements', { ids: relId });
+        }
+        return resolve;
+      });
       if (opts.sortBy) {
         return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
       }
       return relElements;
     }
-    return relId ? resolvedElements[relId] : undefined;
+    if (relId) {
+      const resolve = resolvedElements[relId];
+      if (isEmptyField(resolve)) {
+        throw UnsupportedError('Invalid loading of batched element', { id: relId });
+      }
+      return resolve;
+    }
+    return undefined;
   });
 };
 

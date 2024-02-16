@@ -2850,16 +2850,19 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
       const impactsBulk = groupsOfImpacts[i];
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
         return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
+          const updates = [];
+          const fromIndex = indexCache[impactId];
+          if (isEmptyField(fromIndex)) { // No need to clean up the connections if the target is already deleted.
+            return updates;
+          }
           const [relationType, relationIndex] = typeAndIndex.split('|');
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
-          const updates = [];
           let source = `if (ctx._source['${rel_key}'] != null) ctx._source['${rel_key}'] = ctx._source['${rel_key}'].stream().filter(id -> !params.cleanupIds.contains(id)).collect(Collectors.toList());`;
           if (isStixRefRelationship(relationType)) {
             source += 'ctx._source[\'updated_at\'] = params.updated_at;';
           }
           const script = { source, params: { cleanupIds, updated_at: now() } };
-          const fromIndex = indexCache[impactId];
           updates.push([
             { update: { _index: fromIndex, _id: impactId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
