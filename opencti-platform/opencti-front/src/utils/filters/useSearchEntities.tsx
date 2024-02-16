@@ -960,6 +960,15 @@ const useSearchEntities = ({
             }))
             .sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, relationshipsTypes);
+        } else if (searchContext.entityTypes.length === 1 && searchContext.entityTypes[0] === 'stix-core-relationship') {
+          const relationshipsTypes = (schema.scrs ?? [])
+            .map((n) => ({
+              label: t_i18n(`relationship_${n.label}`),
+              value: n.label,
+              type: n.label,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
+          unionSetEntities(filterKey, relationshipsTypes);
         } else {
           const relationshipsTypes = (schema.scrs ?? [])
             .map((n) => ({
