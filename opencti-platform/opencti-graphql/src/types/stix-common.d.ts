@@ -52,6 +52,8 @@ interface StixOpenctiExtension {
   participant_ids: string[];
   creator_ids: string[];
   authorized_members: Array<AuthorizedMember> | undefined;
+  labels_ids: string[];
+  created_by_ref_id: string;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

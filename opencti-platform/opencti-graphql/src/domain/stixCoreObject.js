@@ -16,14 +16,7 @@ import {
   INPUT_EXTERNAL_REFS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -46,7 +39,7 @@ import { RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCore
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { addFilter, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
@@ -204,28 +197,14 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     },
   };
   await pushToConnector(connector.internal_id, message);
-  const contextData = {
+  const baseData = {
     id: enrichedId,
     connector_id: connectorId,
     connector_name: connector.name,
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  if (element.creator_id) {
-    contextData.creator_ids = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
-  }
-  if (element[RELATION_GRANTED_TO]) {
-    contextData.granted_refs_ids = element[RELATION_GRANTED_TO];
-  }
-  if (element[RELATION_OBJECT_MARKING]) {
-    contextData.object_marking_refs_ids = element[RELATION_OBJECT_MARKING];
-  }
-  if (element[RELATION_CREATED_BY]) {
-    contextData.created_by_ref_id = element[RELATION_CREATED_BY];
-  }
-  if (element[RELATION_OBJECT_LABEL]) {
-    contextData.labels_ids = element[RELATION_OBJECT_LABEL];
-  }
+  const contextData = completeContextDataForEntity(baseData, element);
   await publishUserAction({
     user,
     event_access: 'extended',

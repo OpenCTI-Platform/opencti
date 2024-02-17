@@ -2,10 +2,9 @@ import * as R from 'ramda';
 import { logApp } from '../config/conf';
 import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { allFilesForPaths, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
@@ -72,16 +71,14 @@ export const askJobImport = async (context, user, args) => {
   const entityId = bypassEntityId || file.metaData.entity_id;
   const opts = { manual: true, connectorId, configuration, bypassValidation };
   const entity = await internalLoadById(context, user, entityId);
-
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
     controlUserConfidenceAgainstElement(user, entity);
   }
-
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
-  const contextData = {
+  const baseData = {
     id: entityId,
     file_id: file.id,
     file_name: file.name,
@@ -90,23 +87,7 @@ export const askJobImport = async (context, user, args) => {
     entity_name: entityName,
     entity_type: entityType
   };
-  if (entity) { // Entity can be null for global
-    if (entity.creator_id) {
-      contextData.creator_ids = Array.isArray(entity.creator_id) ? entity.creator_id : [entity.creator_id];
-    }
-    if (entity[RELATION_GRANTED_TO]) {
-      contextData.granted_refs_ids = entity[RELATION_GRANTED_TO];
-    }
-    if (entity[RELATION_OBJECT_MARKING]) {
-      contextData.object_marking_refs_ids = entity[RELATION_OBJECT_MARKING];
-    }
-    if (entity[RELATION_CREATED_BY]) {
-      contextData.created_by_ref_id = entity[RELATION_CREATED_BY];
-    }
-    if (entity[RELATION_OBJECT_LABEL]) {
-      contextData.labels_ids = entity[RELATION_OBJECT_LABEL];
-    }
-  }
+  const contextData = completeContextDataForEntity(baseData, entity);
   await publishUserAction({
     user,
     event_access: 'extended',
