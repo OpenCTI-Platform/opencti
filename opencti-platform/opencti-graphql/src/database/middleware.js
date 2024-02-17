@@ -309,7 +309,8 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           // This kind of situation can happen if:
           // - Access rights are asymmetric, should not happen for meta relationships.
           // - Relations is invalid, should not happen in platform data consistency.
-          logApp.warn('Targets of loadElementMetaDependencies not found', { relations: values.map((v) => ({ id: v.id, target: v.toId })) });
+          const relations = invalidRelations.map((v) => ({ relation_id: v.id, target_id: v.toId }));
+          logApp.warn('Targets of loadElementMetaDependencies not found', { relations });
         }
         data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation)?.internal_id : resolvedElementsWithRelation.map((r) => r.internal_id);
         data[inputKey] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
