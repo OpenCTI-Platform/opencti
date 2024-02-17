@@ -169,7 +169,7 @@
     "eslint-plugin-custom-rules": "0.0.1",
     "json5": "2.2.3",
     "glob-parent": "6.0.2",
-    "webpack": "5.90.1",
+    "webpack": "5.90.2",
     "d3-color": "3.1.0",
     "loader-utils": "3.2.1",
     "scss-tokenizer": "0.4.3",
