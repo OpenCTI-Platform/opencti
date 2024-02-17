@@ -30,7 +30,6 @@ import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FIL
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
-import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
