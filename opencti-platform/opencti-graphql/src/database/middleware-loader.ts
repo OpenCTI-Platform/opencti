@@ -570,14 +570,8 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
-    const contextData: UserReadActionContextData = completeContextDataForEntity({
-      id,
-      entity_name: extractEntityRepresentativeName(data),
-      entity_type: data.entity_type,
-    }, data);
-    if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
-      contextData.workspace_type = data.type;
-    }
+    const baseData = { id, entity_name: extractEntityRepresentativeName(data), entity_type: data.entity_type };
+    const contextData: UserReadActionContextData = completeContextDataForEntity(baseData, data);
     await publishUserAction({
       user,
       event_type: 'read',

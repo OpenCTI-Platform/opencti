@@ -2,6 +2,7 @@ import type { AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 interface BasicUserAction {
   user: AuthUser
@@ -30,6 +31,7 @@ export interface ElementContextData {
   granted_refs_ids?: string[]
   object_marking_refs_ids?: string[]
   created_by_ref_id?: string
+  workspace_type?: string
   labels_ids?: string[]
 }
 export interface UserEnrichActionContextData extends ElementContextData {
@@ -154,37 +156,37 @@ export const publishUserAction = async (userAction: UserAction) => {
 };
 
 export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData>(inputContextData: C, data: T) => {
-  const contextData = {
-    ...inputContextData,
-  };
-  if (data.creator_id) {
-    contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
-  }
-  if (data[RELATION_GRANTED_TO]) {
-    contextData.granted_refs_ids = data[RELATION_GRANTED_TO];
-  }
-  if (data[RELATION_OBJECT_MARKING]) {
-    contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
-  }
-  if (data[RELATION_CREATED_BY]) {
-    contextData.created_by_ref_id = data[RELATION_CREATED_BY];
-  }
-  if (data[RELATION_OBJECT_LABEL]) {
-    contextData.labels_ids = data[RELATION_OBJECT_LABEL];
+  const contextData = { ...inputContextData };
+  if (data) {
+    if (data.creator_id) {
+      contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
+    }
+    if (data[RELATION_GRANTED_TO]) {
+      contextData.granted_refs_ids = data[RELATION_GRANTED_TO];
+    }
+    if (data[RELATION_OBJECT_MARKING]) {
+      contextData.object_marking_refs_ids = data[RELATION_OBJECT_MARKING];
+    }
+    if (data[RELATION_CREATED_BY]) {
+      contextData.created_by_ref_id = data[RELATION_CREATED_BY];
+    }
+    if (data[RELATION_OBJECT_LABEL]) {
+      contextData.labels_ids = data[RELATION_OBJECT_LABEL];
+    }
+    if (data.entity_type === ENTITY_TYPE_WORKSPACE) {
+      contextData.workspace_type = data.type;
+    }
   }
   return contextData;
 };
 
 export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string) => {
-  let contextData: UserFileActionContextData = {
+  const baseData: UserFileActionContextData = {
     path,
     id: entity?.internal_id,
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename,
   };
-  if (entity) {
-    contextData = completeContextDataForEntity(contextData, entity);
-  }
-  return contextData;
+  return completeContextDataForEntity(baseData, entity);
 };

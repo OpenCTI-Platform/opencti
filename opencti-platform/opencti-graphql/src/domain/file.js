@@ -71,16 +71,14 @@ export const askJobImport = async (context, user, args) => {
   const entityId = bypassEntityId || file.metaData.entity_id;
   const opts = { manual: true, connectorId, configuration, bypassValidation };
   const entity = await internalLoadById(context, user, entityId);
-
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
     controlUserConfidenceAgainstElement(user, entity);
   }
-
   const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
-  let contextData = {
+  const baseData = {
     id: entityId,
     file_id: file.id,
     file_name: file.name,
@@ -89,9 +87,7 @@ export const askJobImport = async (context, user, args) => {
     entity_name: entityName,
     entity_type: entityType
   };
-  if (entity) { // Entity can be null for global
-    contextData = completeContextDataForEntity(contextData, entity);
-  }
+  const contextData = completeContextDataForEntity(baseData, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

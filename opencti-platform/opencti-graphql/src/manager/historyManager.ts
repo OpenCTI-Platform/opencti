@@ -39,7 +39,7 @@ interface HistoryContext {
   external_references?: Array<string>;
   creator_ids?: Array<string>;
   labels_ids?: Array<string>;
-  created_by_ref_id?: Array<string>;
+  created_by_ref_id?: string;
 }
 
 export interface HistoryData extends BasicStoreEntity {

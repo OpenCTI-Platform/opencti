@@ -197,14 +197,14 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     },
   };
   await pushToConnector(connector.internal_id, message);
-  let contextData = {
+  const baseData = {
     id: enrichedId,
     connector_id: connectorId,
     connector_name: connector.name,
     entity_name: extractEntityRepresentativeName(element),
     entity_type: element.entity_type
   };
-  contextData = completeContextDataForEntity(contextData, element);
+  const contextData = completeContextDataForEntity(baseData, element);
   await publishUserAction({
     user,
     event_access: 'extended',
