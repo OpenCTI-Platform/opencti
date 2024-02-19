@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// https://playwright.dev/docs/browsers
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
