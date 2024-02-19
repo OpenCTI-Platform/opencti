@@ -9,7 +9,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 const fieldToSelect = ({
   disabled,
   field: { onChange: fieldOnChange, ...field },
-  form: { isSubmitting, touched, errors, setTouched, setFieldValue },
+  form: { isSubmitting, touched, errors, setFieldTouched, setFieldValue },
   onClose,
   ...props
 }) => {
@@ -25,7 +25,7 @@ const fieldToSelect = ({
       if (dataset && dataset.value) {
         await setFieldValue(field.name, dataset.value);
       }
-      setTouched(true);
+      setFieldTouched(field.name, true);
     }),
     ...field,
     ...props,
@@ -34,7 +34,7 @@ const fieldToSelect = ({
 
 const SelectField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -58,12 +58,12 @@ const SelectField = (props) => {
   const internalOnBlur = React.useCallback(
     (event) => {
       const { value } = event.target;
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, value || '');
       }
     },
-    [setTouched, onSubmit, name],
+    [setFieldTouched, onSubmit, name],
   );
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToSelect(props);

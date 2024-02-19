@@ -190,8 +190,9 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            fullWidth={true}
-            askAi={true}
+            detectDuplicate={['Report']}
+            fullWidth
+            askAi
           />
           <Field
             component={DateTimePickerField}

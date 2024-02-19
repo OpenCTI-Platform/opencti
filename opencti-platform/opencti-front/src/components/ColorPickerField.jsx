@@ -19,7 +19,7 @@ const ColorPickerField = (props) => {
   };
 
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -44,15 +44,15 @@ const ColorPickerField = (props) => {
   const internalOnBlur = React.useCallback(
     (event) => {
       const { value } = event.target;
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, value || '');
       }
     },
-    [setTouched, onSubmit, name],
+    [setFieldTouched, onSubmit, name],
   );
   const handleChange = () => {
-    setTouched(true);
+    setFieldTouched(name, true);
     setAnchorEl(null);
     if (typeof onChange === 'function') {
       onChange(name, meta.value || '');

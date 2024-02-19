@@ -8,7 +8,7 @@ import StixDomainObjectDetectDuplicate from '../private/components/common/stix_d
 
 const TextField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -34,12 +34,12 @@ const TextField = (props) => {
   const internalOnBlur = React.useCallback(
     (event) => {
       const { value } = event.target;
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, value || '');
       }
     },
-    [onSubmit, setTouched, name],
+    [onSubmit, setFieldTouched, name],
   );
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(props);
@@ -50,7 +50,7 @@ const TextField = (props) => {
       error={!isNil(meta.error)}
       helperText={
         // eslint-disable-next-line no-nested-ternary
-        detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
+        (detectDuplicate && meta.value?.length > 2) && (isNil(meta.error) || !meta.touched) ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}
             value={meta.value}

@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import inject18n from './i18n';
 
 const SliderField = ({
-  form: { setFieldValue, setTouched },
+  form: { setFieldValue, setFieldTouched },
   field: { name },
   onFocus,
   onSubmit,
@@ -27,7 +27,7 @@ const SliderField = ({
   const internalOnBlur = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === 'DIV' || nodeName === undefined) {
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, field.value || '');
       }

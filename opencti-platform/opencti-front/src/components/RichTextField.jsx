@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
@@ -36,8 +35,9 @@ const useStyles = makeStyles((theme) => ({
 
 const RichTextField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
-    field: { name },
+    form: { setFieldValue, setFieldTouched },
+    field: { name, value },
+    meta = {},
     onFocus,
     onSubmit,
     onSelect,
@@ -49,7 +49,6 @@ const RichTextField = (props) => {
   const editorReference = useRef();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
@@ -57,9 +56,9 @@ const RichTextField = (props) => {
     }
   };
   const internalOnBlur = () => {
-    setTouched(true);
+    setFieldTouched(name, true);
     if (typeof onSubmit === 'function') {
-      onSubmit(name, field.value || '');
+      onSubmit(name, value || '');
     }
   };
   const internalOnSelect = () => {
@@ -86,7 +85,6 @@ const RichTextField = (props) => {
       editor={Editor}
       onReady={(editor) => {
         editorReference.current = editor;
-        editorReference.current.setData(field.value || '');
         editorReference.current.model.document.selection.on(
           'change',
           internalOnSelect,
@@ -99,7 +97,7 @@ const RichTextField = (props) => {
           resizeUnit: 'px',
         },
       }}
-      data={field.value || ''}
+      data={value || ''}
       onChange={(_, editor) => {
         setFieldValue(name, editor.getData());
       }}
@@ -157,7 +155,7 @@ const RichTextField = (props) => {
       )}
       {askAi && (
       <TextFieldAskAI
-        currentValue={field.value ?? ''}
+        currentValue={value ?? ''}
         setFieldValue={(val) => {
           setFieldValue(name, val);
           if (typeof onSubmit === 'function') {

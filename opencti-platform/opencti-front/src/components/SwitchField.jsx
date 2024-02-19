@@ -10,7 +10,7 @@ import { useFormatter } from './i18n';
 
 const SwitchField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     helpertext,
@@ -28,8 +28,8 @@ const SwitchField = (props) => {
     [onChange, setFieldValue, name],
   );
   const internalOnBlur = useCallback(() => {
-    setTouched(true);
-  }, [setTouched]);
+    setFieldTouched(name, true);
+  }, [setFieldTouched]);
   return (
     <div style={props.containerstyle}>
       <FormGroup>
