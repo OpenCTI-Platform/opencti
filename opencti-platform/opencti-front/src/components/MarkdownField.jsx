@@ -36,11 +36,13 @@ const MarkdownField = (props) => {
   };
   const internalOnBlur = (event) => {
     const { nodeName } = event.relatedTarget || {};
+    const isOtherMarkdownFieldOnFocus = !!event.relatedTarget?.name;
+    const isHandleMarkdownButton = event.target.nodeName !== 'BUTTON';
     if (
       nodeName === 'INPUT'
       || nodeName === 'DIV'
-      || nodeName === 'BUTTON'
       || nodeName === undefined
+      || (nodeName === 'TEXTAREA' && (isOtherMarkdownFieldOnFocus || isHandleMarkdownButton))
     ) {
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
