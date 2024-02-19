@@ -2528,7 +2528,6 @@
   "Unknown configuration error in the platform.": "Unknown configuration error in the platform.",
   "Effective Max Confidence Level:": "Effective Max Confidence Level:",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "The user has BYPASS capability, their max confidence level is set to 100.",
   "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.": "This user has no Max Confidence Level and does not inherit one from groups. Add a group to this user to resolve the issue.",
   "This user does not inherit a Max Confidence Level from their group. Configure user's groups with a Max Confidence Level.": "This user does not inherit a Max Confidence Level from their group. Configure user's groups with a Max Confidence Level.",
   "This group has no Max Confidence Level defined.": "This group has no Max Confidence Level defined.",

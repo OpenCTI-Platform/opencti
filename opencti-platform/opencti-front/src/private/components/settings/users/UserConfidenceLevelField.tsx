@@ -39,7 +39,7 @@ interface UserConfidenceLevelFieldProps {
   | null;
   containerStyle?: Record<string, string | number>;
   disabled?: boolean;
-  currentUser?: UserEditionOverview_user$data; // only for edition
+  user?: UserEditionOverview_user$data; // only for edition
 }
 
 const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps> = ({
@@ -50,7 +50,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
   editContext,
   containerStyle,
   disabled,
-  currentUser,
+  user,
 }) => {
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
@@ -76,21 +76,21 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
       variant="outlined"
       sx={{ position: 'relative' }}
     >
-      { currentUser && !!currentUser.effective_confidence_level && (
+      { user && !!user.effective_confidence_level && (
         <Box>
           {t_i18n('Effective Max Confidence Level:')}
           &nbsp;
-          <UserConfidenceLevel confidenceLevel={currentUser.effective_confidence_level} />
+          <UserConfidenceLevel user={user} />
         </Box>
       )}
-      { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length > 0 && (
+      { user && user.effective_confidence_level === null && (user.groups?.edges ?? []).length > 0 && (
         <Box
           sx={{ color: 'error.main' }}
         >
           {t_i18n('This user does not inherit a Max Confidence Level from their group. Configure user\'s groups with a Max Confidence Level.')}
         </Box>
       )}
-      { currentUser && currentUser.effective_confidence_level === null && (currentUser.groups?.edges ?? []).length === 0 && (
+      { user && user.effective_confidence_level === null && (user.groups?.edges ?? []).length === 0 && (
         <Box
           sx={{ color: 'error.main' }}
         >

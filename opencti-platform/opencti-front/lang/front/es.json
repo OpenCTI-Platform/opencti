@@ -2664,6 +2664,5 @@
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
   "You need a confidence level to edit objects in the platform.": "Necesitas un nivel de confianza para editar objetos en la plataforma.",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100.",
   "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingestión."
 }

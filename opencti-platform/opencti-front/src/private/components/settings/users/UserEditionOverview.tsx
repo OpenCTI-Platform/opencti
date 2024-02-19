@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -379,7 +379,7 @@ UserEditionOverviewComponentProps
               onSubmit={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
-              currentUser={user}
+              user={user}
             />
           )}
         </Form>

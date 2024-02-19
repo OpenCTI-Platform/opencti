@@ -2662,7 +2662,6 @@
   "Missing token": "丢失的令牌",
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "生成式人工智能是一项测试功能，因为我们目前正在对模型进行微调。请考虑检查重要信息。",
   "Accept": "接受",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "用户具有 BYPASS 功能，其最大置信度设置为 100。",
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
   "Your confidence level is insufficient to edit this object.": "您的置信度不足以编辑此对象。",
   "You need a confidence level to edit objects in the platform.": "编辑平台中的对象需要信任级别。"
