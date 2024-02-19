@@ -61,6 +61,7 @@ export const INTERNAL_ATTRIBUTES = [
   'authorized_authorities',
   'precision',
   'pattern_version',
+  'connections',
   // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',
