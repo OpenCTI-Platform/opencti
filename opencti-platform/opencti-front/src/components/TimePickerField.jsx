@@ -24,7 +24,7 @@ const timeFormatsMapWithSeconds = {
 
 const TimePickerField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -37,12 +37,12 @@ const TimePickerField = (props) => {
   const [field, meta] = useField(name);
   const internalOnAccept = React.useCallback(
     (date) => {
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, date.toISOString());
       }
     },
-    [setTouched, onSubmit, name],
+    [setFieldTouched, onSubmit, name],
   );
   const internalOnChange = React.useCallback(
     (date) => {
@@ -59,12 +59,12 @@ const TimePickerField = (props) => {
     }
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
-    setTouched(true);
+    setFieldTouched(name, true);
     const { value } = field;
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
-  }, [setTouched, onSubmit, name]);
+  }, [setFieldTouched, onSubmit, name]);
   const views = ['hours'];
   if (withSeconds) { // 'hours', 'minutes', 'seconds'
     views.push('minutes');

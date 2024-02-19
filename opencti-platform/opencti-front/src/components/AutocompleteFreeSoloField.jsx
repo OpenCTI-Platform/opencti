@@ -11,7 +11,7 @@ const filter = createFilterOptions();
 
 const AutocompleteFreeSoloField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
@@ -37,8 +37,8 @@ const AutocompleteFreeSoloField = (props) => {
     }
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
-    setTouched(true);
-  }, [setTouched]);
+    setFieldTouched(name, true);
+  }, [setFieldTouched]);
   const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;

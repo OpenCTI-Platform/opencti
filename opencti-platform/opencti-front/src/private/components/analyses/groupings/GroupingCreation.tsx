@@ -174,8 +174,9 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            fullWidth={true}
-            askAi={true}
+            detectDuplicate={['Grouping']}
+            fullWidth
+            askAi
           />
           <ConfidenceField
             entityType="Grouping"

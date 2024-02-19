@@ -9,7 +9,7 @@ import MarkdownDisplay from './MarkdownDisplay';
 
 const MarkdownField = (props) => {
   const {
-    form: { setFieldValue, setTouched },
+    form: { setFieldValue, setFieldTouched },
     field: { name },
     onFocus,
     onSubmit,
@@ -40,7 +40,7 @@ const MarkdownField = (props) => {
       || nodeName === 'BUTTON'
       || nodeName === undefined
     ) {
-      setTouched(true);
+      setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, field.value || '');
       }
