@@ -96,6 +96,16 @@ describe('Decay formula testing', () => {
     decayRule = selectDecayRuleForIndicator('Url', BUILT_IN_DECAY_RULES_FOR_TEST);
     expect(decayRule.id).toBe(TEST_URL_DECAY_RULE.id);
 
+    // GIVEN the type is URL, URL decay rule is disabled, WHEN getting decay rule, THEN the default one is return.
+    const activeDecayRules = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, { ...TEST_URL_DECAY_RULE, active: false }];
+    decayRule = selectDecayRuleForIndicator('Url', activeDecayRules);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
+
+    // GIVEN the type is URL, default decay rule has higher order, WHEN getting decay rule, THEN the default one is return.
+    const highDecayRules = [{ ...TEST_DEFAULT_DECAY_RULE, order: 2 }, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
+    decayRule = selectDecayRuleForIndicator('Url', highDecayRules);
+    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
+
     // GIVEN the type 'Url' that matched 2 rules
     const rulesWithTwoUrls: DecayRuleConfiguration[] = [];
     rulesWithTwoUrls.push({

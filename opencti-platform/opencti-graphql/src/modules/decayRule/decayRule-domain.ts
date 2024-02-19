@@ -336,12 +336,14 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
 
 // end region
 export const selectDecayRuleForIndicator = (indicatorObservableType: string, decayRules: DecayRuleConfiguration[]) => {
-  const orderedRules = [...decayRules].sort((a, b) => (b.order || 0) - (a.order || 0));
+  const orderedRules = [...decayRules].filter((d) => d.active)
+    .sort((a, b) => (b.order || 0) - (a.order || 0));
   const decayRule = orderedRules.find((rule) => {
-    if (!indicatorObservableType) {
-      return rule.decay_observable_types?.length === 0;
+    if (rule.decay_observable_types?.length > 0) {
+      // return first rule matching the indicator main observable type
+      return indicatorObservableType && rule.decay_observable_types.includes(indicatorObservableType);
     }
-    return rule.decay_observable_types?.includes(indicatorObservableType);
+    return true; // return first rule
   });
   if (!decayRule) {
     // The main observable is not found on any rule
