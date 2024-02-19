@@ -9,6 +9,7 @@ import {
 } from '../../../src/utils/confidence-level';
 import type { AuthUser } from '../../../src/types/user';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { BYPASS } from '../../../src/utils/access';
 
 const makeUser = (confidence: number | null) => ({
   id: `user_${confidence}`,
@@ -40,6 +41,7 @@ describe('Confidence level utilities', () => {
         overrides: [],
       },
       groups: [group70, group80],
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userA as unknown as AuthUser)).toEqual({
       max_confidence: 30,
@@ -51,6 +53,7 @@ describe('Confidence level utilities', () => {
       id: 'userB',
       user_confidence_level: null,
       groups: [group70, group80],
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userB as unknown as AuthUser)).toEqual({
       max_confidence: 80,
@@ -61,6 +64,7 @@ describe('Confidence level utilities', () => {
     const userC = {
       user_confidence_level: null,
       groups: [groupNull, group70, groupNull],
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userC as unknown as AuthUser)).toEqual({
       max_confidence: 70,
@@ -71,14 +75,41 @@ describe('Confidence level utilities', () => {
     const userD = {
       user_confidence_level: null,
       groups: [groupNull, groupNull],
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userD as unknown as AuthUser)).toBeNull();
 
     const userE = {
       user_confidence_level: null,
       groups: [],
+      capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userE as unknown as AuthUser)).toBeNull();
+
+    const userF = {
+      user_confidence_level: {
+        max_confidence: 30,
+        overrides: [],
+      },
+      groups: [group70],
+      capabilities: [{ name: BYPASS }],
+    };
+    expect(computeUserEffectiveConfidenceLevel(userF as unknown as AuthUser)).toEqual({
+      max_confidence: 100,
+      overrides: [],
+      source: userF,
+    });
+
+    const userG = {
+      user_confidence_level: null,
+      groups: [group70, group80],
+      capabilities: [{ name: BYPASS }],
+    };
+    expect(computeUserEffectiveConfidenceLevel(userG as unknown as AuthUser)).toEqual({
+      max_confidence: 100,
+      overrides: [],
+      source: userG,
+    });
   });
 
   describe('Control confidence', () => {

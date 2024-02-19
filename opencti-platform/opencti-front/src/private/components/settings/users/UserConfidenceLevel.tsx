@@ -6,6 +6,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
+import useGranted, { BYPASS } from '../../../../utils/hooks/useGranted';
 
 type Data_UserConfidenceLevel = User_user$data['user_confidence_level'];
 type Data_EffectiveConfidenceLevel = User_user$data['effective_confidence_level'];
@@ -16,6 +17,8 @@ type UserConfidenceLevelProps = {
 
 const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLevel }) => {
   const { t_i18n } = useFormatter();
+
+  const isGrantedBypass = useGranted([BYPASS]);
 
   if (!confidenceLevel) {
     return (
@@ -31,6 +34,8 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
 
   const renderSource = () => {
     const source = (confidenceLevel as Data_EffectiveConfidenceLevel)?.source;
+
+    console.log(isGrantedBypass);
 
     // FIXME: if watching the current user's detailed view, the source is {}, hence the check if (source.entity_type && ...) below
     // see warning: The GraphQL server likely violated the globally unique id requirement by returning the same id for different objects.
@@ -59,7 +64,10 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ confidenceLev
       return (
         <Tooltip
           sx={{ marginLeft: 1 }}
-          title={t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
+          title={isGrantedBypass
+            ? t_i18n('The user has BYPASS capability, their max confidence level is set to 100.')
+            : t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')
+          }
         >
           <InformationOutline fontSize={'small'} color={'info'} />
         </Tooltip>
