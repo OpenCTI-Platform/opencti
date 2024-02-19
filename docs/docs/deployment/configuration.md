@@ -180,6 +180,14 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### AI Service
 
+!!! note "AI deployment and cloud services"
+
+    There are several possibilities for [Enterprise Edition](../administration/enterprise.md) customers to use OpenCTI AI endpoints:
+
+     - Use the Filigran AI Service leveraging our custom AI model using the token given by the support team.
+     - Use OpenAI or MistralAI cloud endpoints using your own tokens.
+     - Deploy or use local AI endpoints (Filigran can provide you with the custom model).
+
 | Parameter       | Environment variable | Default value | Description                                               |
 |:----------------|:---------------------|:--------------|:----------------------------------------------------------|
 | ai:enabled      | AI__ENABLED          | true          | Enable AI capabilities                                    |
