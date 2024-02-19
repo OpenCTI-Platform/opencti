@@ -113,7 +113,7 @@ const Reports: FunctionComponent = () => {
       },
     };
     return (
-      <>
+      <div data-testid="report-page">
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
@@ -192,7 +192,7 @@ const Reports: FunctionComponent = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           type="Report"
         />
-      </>
+      </div>
     );
   };
   return (

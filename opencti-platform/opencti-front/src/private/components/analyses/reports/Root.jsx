@@ -119,7 +119,7 @@ class RootReport extends Component {
                   paddingRight = 350;
                 }
                 return (
-                  <div style={{ paddingRight }}>
+                  <div style={{ paddingRight }} data-testid="report-details-page">
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Analyses') },
                       { label: t('Reports'), link: '/dashboard/analyses/reports' },
