@@ -2664,5 +2664,6 @@
   "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert.",
   "Only successful tests allow the ingestion edition.": "Nur erfolgreiche Tests erlauben die Ingestion-Edition.",
   "Your confidence level is insufficient to edit this object.": "Dein Vertrauensniveau ist unzureichend, um dieses Objekt zu bearbeiten.",
-  "You need a confidence level to edit objects in the platform.": "Du benötigst ein Vertrauensniveau, um Objekte auf der Plattform zu bearbeiten."
+  "You need a confidence level to edit objects in the platform.": "Du benötigst ein Vertrauensniveau, um Objekte auf der Plattform zu bearbeiten.",
+  "The user has BYPASS capability, their max confidence level is set to 100.": "Der Benutzer ist BYPASS-fähig, sein maximales Vertrauensniveau ist auf 100 eingestellt."
 }
