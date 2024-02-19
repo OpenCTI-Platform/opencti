@@ -1,7 +1,14 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  GqlFilterGroup,
+  isFilterGroupNotEmpty,
+  removeIdFromFilterGroupObject,
+  RestrictedFiltersConfig,
+} from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
 import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
@@ -22,7 +29,7 @@ interface FilterIconButtonProps {
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
-  restrictedFilters?: string[];
+  restrictedFiltersConfig?: RestrictedFiltersConfig;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
@@ -44,7 +51,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   hasRenderedRef,
   setHasRenderedRef,
   entityTypes,
-  restrictedFilters,
+  restrictedFiltersConfig,
 }) => {
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
@@ -71,7 +78,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
             setHasRenderedRef={setHasRenderedRef}
             availableRelationFilterTypes={availableRelationFilterTypes}
             entityTypes={entityTypes}
-            restrictedFilters={restrictedFilters}
+            restrictedFiltersConfig={restrictedFiltersConfig}
           />
         </React.Suspense>
       )}
@@ -99,7 +106,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   helpers,
   availableRelationFilterTypes,
   entityTypes,
-  restrictedFilters,
+  restrictedFiltersConfig,
 }) => {
   const hasRenderedRef = useRef(false);
   const setHasRenderedRef = () => {
@@ -125,7 +132,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         hasRenderedRef={hasRenderedRef.current}
         setHasRenderedRef={setHasRenderedRef}
         entityTypes={entityTypes}
-        restrictedFilters={restrictedFilters}
+        restrictedFiltersConfig={restrictedFiltersConfig}
       />
     );
   }

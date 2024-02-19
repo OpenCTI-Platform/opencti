@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ const Relationships = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject([useFilterDefinition('fromId', ['stix-core-relationship']), useFilterDefinition('toId', ['stix-core-relationship'])]),
+        filters: useGetDefaultFilterObject(['fromId', 'toId'], ['stix-core-relationship']),
       },
       searchTerm: '',
       sortBy: 'created_at',

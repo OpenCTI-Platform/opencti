@@ -30,6 +30,12 @@ export type Filter = {
   mode?: string;
 };
 
+export type RestrictedFiltersConfig = {
+  valuesEdition?: string[], // filter keys whose values can't be changed
+  localModeSwitching?: string[], // filter keys whose local mode can't be changed
+  filterRemoving?: string[], // filter keys whose filter can't be removed
+};
+
 export const emptyFilterGroup = {
   mode: 'and',
   filters: [],

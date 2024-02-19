@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { Filter, FilterGroup, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { Filter, FilterGroup, RestrictedFiltersConfig, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -119,7 +119,7 @@ interface FilterIconButtonContainerProps {
   setHasRenderedRef: () => void;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
-  restrictedFilters?: string[];
+  restrictedFiltersConfig?: RestrictedFiltersConfig;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -139,7 +139,7 @@ FilterIconButtonContainerProps
   setHasRenderedRef,
   availableRelationFilterTypes,
   entityTypes,
-  restrictedFilters,
+  restrictedFiltersConfig,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -311,7 +311,7 @@ FilterIconButtonContainerProps
                   helpers={helpers}
                   redirection={redirection}
                   entityTypes={entityTypes}
-                  restrictedFilters={restrictedFilters}
+                  restrictedFiltersConfig={restrictedFiltersConfig}
                 />
               }
             >
@@ -344,14 +344,14 @@ FilterIconButtonContainerProps
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
                       entityTypes={entityTypes}
-                      restrictedFilters={restrictedFilters}
+                      restrictedFiltersConfig={restrictedFiltersConfig}
                     />
                   }
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
-                    (isReadWriteFilter && !(restrictedFilters?.includes(filterKey)))
+                    (isReadWriteFilter && !(restrictedFiltersConfig?.filterRemoving?.includes(filterKey)))
                       ? () => manageRemoveFilter(
                         currentFilter.id,
                         filterKey,

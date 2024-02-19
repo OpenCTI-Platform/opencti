@@ -207,6 +207,7 @@ class ListLines extends Component {
       handleExportCsv,
       helpers,
       inline,
+      additionalFilterKeys,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -441,6 +442,9 @@ class ListLines extends Component {
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
           entityTypes={entityTypes}
+          restrictedFiltersConfig={{
+            filterRemoving: additionalFilterKeys,
+          }}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -616,7 +620,8 @@ class ListLines extends Component {
   }
 
   render() {
-    const { disableExport, exportContext } = this.props;
+    console.log('virtual', this.props.entityTypes);
+    const { disableExport, exportContext, additionalFilterKeys } = this.props;
     const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
       <UserContext.Consumer>
@@ -630,7 +635,7 @@ class ListLines extends Component {
             });
             availableFilterKeys = Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
           }
-          if (this.props.additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(this.props.additionalFilterKeys);
+          if (additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
           if (disableExport) {
             return this.renderContent(availableFilterKeys, entityTypes);
           }

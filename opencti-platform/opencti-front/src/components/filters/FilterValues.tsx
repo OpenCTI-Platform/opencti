@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { Filter, RestrictedFiltersConfig, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
@@ -58,7 +58,7 @@ interface FilterValuesProps {
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
   entityTypes?: string[];
-  restrictedFilters?: string[];
+  restrictedFiltersConfig?: RestrictedFiltersConfig;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -74,7 +74,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   chipColor,
   noLabelDisplay,
   entityTypes,
-  restrictedFilters, // restricted filters can't be removed and their local mode can't be modified
+  restrictedFiltersConfig, // restricted filters can't be removed and their local mode can't be modified
 }) => {
   const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
@@ -82,7 +82,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const deactivatePopoverMenu = !helpers;
+  const deactivatePopoverMenu = !helpers || restrictedFiltersConfig?.valuesEdition?.includes(filterKey);
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   if (isOperatorNil) {
     return (
@@ -101,7 +101,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
-    const isLocalModeSwitchable = isReadWriteFilter && handleSwitchLocalMode && !restrictedFilters?.includes(filterKey);
+    const isLocalModeSwitchable = isReadWriteFilter && handleSwitchLocalMode && !restrictedFiltersConfig?.localModeSwitching?.includes(filterKey);
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
