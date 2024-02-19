@@ -550,9 +550,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   {t_i18n('Max Confidence Level')}
                 </Typography>
                 <div className="clearfix"/>
-                <UserConfidenceLevel
-                  confidenceLevel={user.effective_confidence_level}
-                />
+                <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>
           </Paper>

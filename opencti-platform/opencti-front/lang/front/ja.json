@@ -2663,5 +2663,7 @@
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "ジェネレーティブAIは現在モデルを微調整しているベータ機能です。重要な情報を確認してください。",
   "Accept": "受け入れる",
   "Your confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
-  "You need a confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。"
+  "You need a confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。",
+  "Only successful tests allow the ingestion edition.": "成功したテストのみがインジェスト版を許可します。",
+  "The user has BYPASS capability, their max confidence level is set to 100.": "ユーザーはBYPASS能力を持っており、最大信頼度は100に設定されている。"
 }

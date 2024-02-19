@@ -2663,5 +2663,7 @@
   "Accept": "Accepter",
   "Home": "Accueil",
   "Your confidence level is insufficient to edit this object.": "Votre niveau de confiance est insuffisant pour éditer cet objet.",
-  "You need a confidence level to edit objects in the platform.": "Vous avez besoin d'un niveau de confiance pour éditer des objets sur la plateforme."
+  "You need a confidence level to edit objects in the platform.": "Vous avez besoin d'un niveau de confiance pour éditer des objets sur la plateforme.",
+  "Only successful tests allow the ingestion edition.": "Seuls les tests réussis permettent l'édition de l'ingestion.",
+  "The user has BYPASS capability, their max confidence level is set to 100.": "L'utilisateur a la capacité de BYPASS, son niveau de confiance maximum est fixé à 100."
 }

@@ -6,6 +6,7 @@ import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import { isBypassUser } from './access';
 
 type ObjectWithConfidence = {
   id: string,
@@ -14,6 +15,15 @@ type ObjectWithConfidence = {
 };
 
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
+  // if a user has BYPASS capability, we consider a level 100
+  if (isBypassUser(user)) {
+    return {
+      max_confidence: 100,
+      overrides: [],
+      source: user,
+    };
+  }
+
   // if user has a specific confidence level, it overrides everything and we return it
   if (user.user_confidence_level) {
     return {
@@ -28,23 +38,23 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
     };
   }
 
-  // otherwise we get all groups for this user, and select the lowest max_confidence found
-  let minLevel = null;
+  // otherwise we get all groups for this user, and select the highest max_confidence found
+  let maxLevel = null;
   let source = null;
   if (user.groups) {
     for (let i = 0; i < user.groups.length; i += 1) {
       // groups were not migrated when introducing group_confidence_level, so group_confidence_level might be null
       const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
-      if (groupLevel !== null && (minLevel === null || groupLevel < minLevel)) {
-        minLevel = groupLevel;
+      if (groupLevel !== null && (maxLevel === null || groupLevel > maxLevel)) {
+        maxLevel = groupLevel;
         source = user.groups[i];
       }
     }
   }
 
-  if (minLevel !== null) {
+  if (maxLevel !== null) {
     return {
-      max_confidence: cropNumber(minLevel, 0, 100),
+      max_confidence: cropNumber(maxLevel, 0, 100),
       // TODO: handle overrides and their sources
       overrides: [],
       source,

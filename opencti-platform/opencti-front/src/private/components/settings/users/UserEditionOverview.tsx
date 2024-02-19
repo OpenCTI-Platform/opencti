@@ -379,7 +379,7 @@ UserEditionOverviewComponentProps
               onSubmit={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
-              currentUser={user}
+              user={user}
             />
           )}
         </Form>

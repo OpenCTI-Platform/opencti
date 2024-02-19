@@ -125,6 +125,7 @@ const GroupCreation = ({ paginationOptions }) => {
               {hasSetAccess && (
                 <ConfidenceField
                   name="group_confidence_level"
+                  label={t_i18n('Max Confidence Level')}
                   entityType="Group"
                   containerStyle={fieldSpacingContainerStyle}
                 />
