@@ -6,7 +6,7 @@ import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
-import { BYPASS, isUserHasCapability } from './access';
+import { isBypassUser } from './access';
 
 type ObjectWithConfidence = {
   id: string,
@@ -16,7 +16,7 @@ type ObjectWithConfidence = {
 
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   // if a user has BYPASS capability, we consider a level 100
-  if (isUserHasCapability(user, BYPASS)) {
+  if (isBypassUser(user)) {
     return {
       max_confidence: 100,
       overrides: [],
