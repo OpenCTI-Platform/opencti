@@ -591,6 +591,15 @@ describe('Entities distribution', () => {
     expect(aggregationMap.get('Malware')).toEqual(2);
     expect(aggregationMap.get('Campaign')).toEqual(1);
   });
+  it('should entity number field type distribution', async () => {
+    const options = { field: 'confidence', operation: 'count' };
+    const distribution = await distributionEntities(testContext, ADMIN_USER, ['Threat-Actor'], options);
+    expect(distribution.length).toEqual(2);
+    expect(distribution).toMatchObject([
+      { label: '100', value: 2 },
+      { label: '75', value: 1 }
+    ]);
+  });
   it.skip('should entity distribution filters', async () => {
     // const { startDate, endDate, operation, field, inferred } = options;
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');

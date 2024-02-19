@@ -213,12 +213,11 @@ const StixCoreObjectsDistributionList = ({
                         <ListItemIcon>
                           <ItemIcon
                             color={
-                              theme.palette.mode === 'light'
-                              && entry.color === '#ffffff'
+                              theme.palette.mode === 'light' && entry.color === '#ffffff'
                                 ? '#000000'
                                 : entry.color
                             }
-                            type={entry.type}
+                            type={entry.id ? entry.type : 'default'}
                           />
                         </ListItemIcon>
                         <ListItemText
