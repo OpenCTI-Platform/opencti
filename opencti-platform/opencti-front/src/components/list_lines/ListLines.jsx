@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
+import { compose, toPairs, uniq } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -620,7 +620,6 @@ class ListLines extends Component {
   }
 
   render() {
-    console.log('virtual', this.props.entityTypes);
     const { disableExport, exportContext, additionalFilterKeys } = this.props;
     const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
@@ -633,7 +632,7 @@ class ListLines extends Component {
               const currentMap = schema.filterKeysSchema.get(entityType);
               currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
             });
-            availableFilterKeys = Array.from(filterKeysMap.keys()); // keys of the entity type if availableFilterKeys is not specified
+            availableFilterKeys = uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
           }
           if (additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
           if (disableExport) {
