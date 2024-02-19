@@ -10,12 +10,10 @@ test.skip('Create a new report page and delete it', async ({ page }) => {
   await reportPage.getReportNameInput().click();
   await reportPage.getReportNameInput().fill('Test delete report e2e');
   await reportPage.getCreateReportButton().click();
-  await page.waitForTimeout(1000);
   //Issue on checked line
   await page.getByRole('link', { name: 'Test delete report Test e2e' }).first().getByRole('checkbox').check();
   await page.getByLabel('delete', { exact: true }).click();
   await page.getByRole('button', { name: 'Launch' }).click();
-  await page.waitForTimeout(10000);
   await page.goto('/dashboard/analyses/reports');
   expect(page.getByRole('link', { name: 'Test delete report Test e2e' }).count()).toEqual(0);
 });

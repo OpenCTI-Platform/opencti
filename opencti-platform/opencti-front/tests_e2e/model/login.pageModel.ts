@@ -24,4 +24,11 @@ export class LoginPage {
     getSignInButton() {
         return this.page.getByRole('button', { name: 'Sign in' })
     }
+    
+    async login() {
+        await this.page.goto('/');
+        await this.fillLoginInput('admin@opencti.io');
+        await this.fillPasswordInput('admin');
+        return this.getSignInButton().click();
+    }
 }

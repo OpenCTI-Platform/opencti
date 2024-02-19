@@ -15,6 +15,5 @@ test('Create a new report page and test update', async ({ page }) => {
   await reportDetailsPage.getEditButton().click();
   await reportForm.fillNameInput('Modification Test Update e2e');
   await reportForm.getCloseButton().click();
-  await page.waitForTimeout(500);
   await expect(reportDetailsPage.getTitle('Modification Test Update e2e')).toBeVisible()
 });

@@ -10,4 +10,9 @@ export class TopMenuProfilePage {
     getLogoutButton() {
         return this.page.getByRole('menuitem', { name: 'Logout' });
     }
+    
+    async logout() {
+        await this.getMenuProfile().click();
+        return this.getLogoutButton().click();
+    }
 }
