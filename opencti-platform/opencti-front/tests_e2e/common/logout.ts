@@ -7,5 +7,5 @@ export async function logout(page) {
     const menuProfile = new TopMenuProfilePage(page);
     await menuProfile.getMenuProfile().click();
     await menuProfile.getLogoutButton().click();
-    await expect(loginPage.getLoginPage()).toBeVisible();
+    await expect(loginPage.getPage()).toBeVisible();
 }
