@@ -18,7 +18,7 @@
         <link rel="prev" href="../data-intelligence/">
       
       
-        <link rel="next" href="../graph/">
+        <link rel="next" href="../api/">
       
       
         
@@ -3173,33 +3173,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../administration/sourcing/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Sourcing knowledge
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -3613,6 +3586,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Taxonomy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -3629,33 +3619,47 @@
 
       </a>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../graph/" class="md-nav__link">
         
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
-  <span class="md-ellipsis">
+  
+  
     
   
-    Knowledge graph
   
-
-    
-  </span>
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vocabularies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vocabularies
+      
+    </span>
+  </a>
   
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customization
+      
+    </span>
+  </a>
   
-
-      </a>
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3883,90 +3887,9 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../taxii-feeds/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    TAXII Feeds
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../csv-feeds/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    CSV Feeds
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../security/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Security and compliance
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -4277,6 +4200,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vocabularies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vocabularies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customization
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -4379,12 +4332,240 @@
 
 
 <h1 id="taxonomy">Taxonomy</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participate, don't hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<p>In OpenCTI, taxonomies serve as structured classification systems that aid in organizing and categorizing intelligence data. This reference guide provides an exhaustive description of the platform's customizable fields within the taxonomies' framework. Users can modify, add, or delete values within the available vocabularies to tailor the classification system to their specific requirements.</p>
+<p>For broader documentation on the taxonomies section, please consult <a href="../../administration/ontologies/">the appropriate page</a>.</p>
+<h2 id="vocabularies">Vocabularies</h2>
+<p>Default values are based on those defined in the <a href="https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_izngjy1g98l2">STIX standard</a> but can be tailored to better suit the organization's needs.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Used in</th>
+<th style="text-align: left;">Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Account type vocabulary (account-type-ov)</td>
+<td style="text-align: left;">User account</td>
+<td style="text-align: left;">facebook, ldap, nis, openid, radius, skype, tacacs, twitter, unix, windows-domain, windows-local</td>
+</tr>
+<tr>
+<td style="text-align: left;">Attack motivation vocabulary (attack-motivation-ov)</td>
+<td style="text-align: left;">Threat actor group</td>
+<td style="text-align: left;">accidental, coercion, dominance, ideology, notoriety, organizational-gain, personal-gain, personal-satisfaction, revenge, unpredictable</td>
+</tr>
+<tr>
+<td style="text-align: left;">Attack resource level vocabulary (attack-resource-level-ov)</td>
+<td style="text-align: left;">Threat actor group</td>
+<td style="text-align: left;">club, contest, government, individual, organization, team</td>
+</tr>
+<tr>
+<td style="text-align: left;">Case priority vocabulary (case_priority_ov)</td>
+<td style="text-align: left;">Incident response</td>
+<td style="text-align: left;">P1, P2, P3, P4</td>
+</tr>
+<tr>
+<td style="text-align: left;">Case severity vocabulary (case_severity_ov)</td>
+<td style="text-align: left;">Incident response</td>
+<td style="text-align: left;">critical, high, medium, low</td>
+</tr>
+<tr>
+<td style="text-align: left;">Channel type vocabulary (channel_type_ov)</td>
+<td style="text-align: left;">Channel</td>
+<td style="text-align: left;">Facebook, Twitter</td>
+</tr>
+<tr>
+<td style="text-align: left;">Collection layers vocabulary (collection_layers_ov)</td>
+<td style="text-align: left;">Data source</td>
+<td style="text-align: left;">cloud-control-plane, container, host, network, OSINT</td>
+</tr>
+<tr>
+<td style="text-align: left;">Event type vocabulary (event_type_ov)</td>
+<td style="text-align: left;">Event</td>
+<td style="text-align: left;">conference, financial, holiday, international-summit, local-election, national-election, sport-competition</td>
+</tr>
+<tr>
+<td style="text-align: left;">Eye color vocabulary (eye_color_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">black, blue, brown, green, hazel, other</td>
+</tr>
+<tr>
+<td style="text-align: left;">Gender vocabulary (gender_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">female, male, nonbinary, other</td>
+</tr>
+<tr>
+<td style="text-align: left;">Grouping context vocabulary (grouping_context_ov)</td>
+<td style="text-align: left;">Grouping</td>
+<td style="text-align: left;">malware-analysis, suspicious-activity, unspecified</td>
+</tr>
+<tr>
+<td style="text-align: left;">Hair color vocabulary vocabulary (hair_color_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">bald, black, blond, blue, brown, gray, green, other, red</td>
+</tr>
+<tr>
+<td style="text-align: left;">Implementation language vocabulary (implementation_language_ov)</td>
+<td style="text-align: left;">Malware</td>
+<td style="text-align: left;">applescript, bash, c, c++, c#, go, java, javascript, lua, objective-c, perl, php, powershell, python, ruby, scala, swift, typescript, visual-basic, x86-32, x86-64</td>
+</tr>
+<tr>
+<td style="text-align: left;">Incident response type vocabulary (incident_response_type_ov)</td>
+<td style="text-align: left;">Incident response</td>
+<td style="text-align: left;">data-leak, ransomware</td>
+</tr>
+<tr>
+<td style="text-align: left;">Incident severity vocabulary (incident_severity_ov)</td>
+<td style="text-align: left;">Incident</td>
+<td style="text-align: left;">critical, high, medium, low</td>
+</tr>
+<tr>
+<td style="text-align: left;">Incident type vocabulary (incident_type_ov)</td>
+<td style="text-align: left;">Incident</td>
+<td style="text-align: left;">alert, compromise, cybercrime, data-leak, information-system-disruption, phishing, reputation-damage, typosquatting</td>
+</tr>
+<tr>
+<td style="text-align: left;">Indicator type vocabulary (indicator_type_ov)</td>
+<td style="text-align: left;">Indicator</td>
+<td style="text-align: left;">anomalous-activity, anonymization, attribution, benign, compromised, malicious-activity, unknown</td>
+</tr>
+<tr>
+<td style="text-align: left;">Infrastructure type vocabulary (infrastructure_type_ov)</td>
+<td style="text-align: left;">Infrastructure</td>
+<td style="text-align: left;">amplification, anonymization, botnet, command-and-control, control-system, exfiltration, firewall, hosting-malware, hosting-target-lists, phishing, reconnaissance, routers-switches, staging, unknown, workstation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Integrity level vocabulary (integrity_level_ov)</td>
+<td style="text-align: left;">Process</td>
+<td style="text-align: left;">high, medium, low, system</td>
+</tr>
+<tr>
+<td style="text-align: left;">Malware capabilities vocabulary (malware_capabilities_ov)</td>
+<td style="text-align: left;">Malware</td>
+<td style="text-align: left;">accesses-remote-machines, anti-debugging, anti-disassembly, anti-emulation, anti-memory-forensics, anti-sandbox, anti-vm, captures-input-peripherals, captures-output-peripherals, captures-system-state-data, cleans-traces-of-infection, commits-fraud, communicates-with-c2, compromises-data-availability, compromises-data-integrity, compromises-system-availability, controls-local-machine, degrades-security-software, degrades-system-updates, determines-c2-server, emails-spam, escalates-privileges, evades-av, exfiltrates-data, fingerprints-host, hides-artifacts, hides-executing-code, infects-files, infects-remote-machines, installs-other-components, persists-after-system-reboot, prevents-artifact-access, prevents-artifact-deletion, probes-network-environment, self-modifies, steals-authentication-credentials, violates-system-operational-integrity</td>
+</tr>
+<tr>
+<td style="text-align: left;">Malware result vocabulary (malware_result_ov)</td>
+<td style="text-align: left;">Malware analysis</td>
+<td style="text-align: left;">benign, malicious, suspicious, unknown</td>
+</tr>
+<tr>
+<td style="text-align: left;">Malware type vocabulary (malware_type_ov)</td>
+<td style="text-align: left;">Malware</td>
+<td style="text-align: left;">adware, backdoor, bootkit, bot, ddos, downloader, dropper, exploit-kit, keylogger, ransomware, remote-access-trojan, resource-exploitation, rogue-security-software, rootkit, screen-capture, spyware, trojan, unknown, virus, webshell, wiper, worm</td>
+</tr>
+<tr>
+<td style="text-align: left;">Marital status vocabulary (marital_status_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">annulled, divorced, domestic_partner, legally_separated, married, never_married, polygamous, separated, single, widowed</td>
+</tr>
+<tr>
+<td style="text-align: left;">Note types vocabulary (note_types_ov)</td>
+<td style="text-align: left;">Note</td>
+<td style="text-align: left;">analysis, assessment, external, feedback, internal</td>
+</tr>
+<tr>
+<td style="text-align: left;">Opinion vocabulary (opinion_ov)</td>
+<td style="text-align: left;">Opinion</td>
+<td style="text-align: left;">agree, disagree, neutral, strongly-agree, strongly-disagree</td>
+</tr>
+<tr>
+<td style="text-align: left;">Pattern type vocabulary (pattern_type_ov)</td>
+<td style="text-align: left;">Indicator</td>
+<td style="text-align: left;">eql, pcre, shodan, sigma, snort, spl, stix, suricata, tanium-signal, yara</td>
+</tr>
+<tr>
+<td style="text-align: left;">Permissions vocabulary (permissions_ov)</td>
+<td style="text-align: left;">Attack pattern</td>
+<td style="text-align: left;">Administrator, root, User</td>
+</tr>
+<tr>
+<td style="text-align: left;">Platforms vocabulary (platforms_ov)</td>
+<td style="text-align: left;">Data source</td>
+<td style="text-align: left;">android, Azure AD, Containers, Control Server, Data Historian, Engineering Workstation, Field Controller/RTU/PLC/IED, Google Workspace, Human-Machine Interface, IaaS, Input/Output Server, iOS, linux, macos, Office 365, PRE, SaaS, Safety Instrumented System/Protection Relay, windows</td>
+</tr>
+<tr>
+<td style="text-align: left;">Processor architecture vocabulary (processor_architecture_ov)</td>
+<td style="text-align: left;">Malware</td>
+<td style="text-align: left;">alpha, arm, ia-64, mips, powerpc, sparc, x86, x86-64</td>
+</tr>
+<tr>
+<td style="text-align: left;">Reliability vocabulary (reliability_ov)</td>
+<td style="text-align: left;">Report, Organization</td>
+<td style="text-align: left;">A - Completely reliable, B - Usually reliable, C - Fairly reliable, D - Not usually reliable, E - Unreliable, F - Reliability cannot be judged</td>
+</tr>
+<tr>
+<td style="text-align: left;">Report types vocabulary (report_types_ov)</td>
+<td style="text-align: left;">Report</td>
+<td style="text-align: left;">internal-report, threat-report</td>
+</tr>
+<tr>
+<td style="text-align: left;">Request for information types vocabulary (request_for_information_types_ov)</td>
+<td style="text-align: left;">Request for information</td>
+<td style="text-align: left;">none</td>
+</tr>
+<tr>
+<td style="text-align: left;">Request for takedown types vocabulary (request_for_takedown_types_ov)</td>
+<td style="text-align: left;">Request for takedown</td>
+<td style="text-align: left;">brand-abuse, phishing</td>
+</tr>
+<tr>
+<td style="text-align: left;">Service status vocabulary (service_status_ov)</td>
+<td style="text-align: left;">Process</td>
+<td style="text-align: left;">SERVICE_CONTINUE_PENDING, SERVICE_PAUSE_PENDING, SERVICE_PAUSED, SERVICE_RUNNING, SERVICE_START_PENDING, SERVICE_STOP_PENDING, SERVICE_STOPPED</td>
+</tr>
+<tr>
+<td style="text-align: left;">Service type vocabulary (service_type_ov)</td>
+<td style="text-align: left;">Process</td>
+<td style="text-align: left;">SERVICE_FILE_SYSTEM_DRIVER, SERVICE_KERNEL_DRIVER, SERVICE_WIN32_OWN_PROCESS, SERVICE_WIN32_SHARE_PROCESS</td>
+</tr>
+<tr>
+<td style="text-align: left;">Start type vocabulary (start_type_ov)</td>
+<td style="text-align: left;">Process</td>
+<td style="text-align: left;">SERVICE_AUTO_START, SERVICE_BOOT_START, SERVICE_DEMAND_START, SERVICE_DISABLED, SERVICE_SYSTEM_ALERT</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor group role vocabulary (threat_actor_group_role_ov)</td>
+<td style="text-align: left;">Threat actor group</td>
+<td style="text-align: left;">agent, director, independent, infrastructure-architect, infrastructure-operator, malware-author, sponsor</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor group sophistication vocabulary (threat_actor_group_sophistication_ov)</td>
+<td style="text-align: left;">Threat actor group</td>
+<td style="text-align: left;">advanced, expert, innovator, intermediate, minimal, none, strategic</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor group type vocabulary (threat_actor_group_type_ov)</td>
+<td style="text-align: left;">Threat actor group</td>
+<td style="text-align: left;">activist, competitor, crime-syndicate, criminal, hacker, insider-accidental, insider-disgruntled, nation-state, sensationalist, spy, terrorist, unknown</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor individual role vocabulary (threat_actor_individual_role_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">agent, director, independent, infrastructure-architect, infrastructure-operator, malware-author, sponsor</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor individual sophistication vocabulary (threat_actor_individual_sophistication_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">advanced, expert, innovator, intermediate, minimal, none, strategic</td>
+</tr>
+<tr>
+<td style="text-align: left;">Threat actor individual type vocabulary (threat_actor_individual_type_ov)</td>
+<td style="text-align: left;">Threat actor individual</td>
+<td style="text-align: left;">activist, competitor, crime-syndicate, criminal, hacker, insider-accidental, insider-disgruntled, nation-state, sensationalist, spy, terrorist, unknown</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tool types vocabulary (tool_types_ov)</td>
+<td style="text-align: left;">Tool</td>
+<td style="text-align: left;">credential-exploitation, denial-of-service, exploitation, information-gathering, network-capture, remote-access, unknown, vulnerability-scanning</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/vocabularies-list.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Vocabularies list" src="../assets/vocabularies-list.png" /></a></p>
+<h2 id="customization">Customization</h2>
+<p>Users can customize the taxonomies by modifying the available values or adding new ones. These modifications enable users to adapt the classification system to their specific intelligence requirements. Additionally, within each vocabulary list, users have the flexibility to customize the order of the dropdown menu associated with the taxonomy. This feature allows users to prioritize certain values or arrange them in a manner that aligns with their specific classification needs. Additionally, users can track the usage count for each vocabulary, providing insights into the frequency of usage and helping to identify the most relevant and impactful classifications. These customization options empower users to tailor the taxonomy system to their unique intelligence requirements, enhancing the efficiency and effectiveness of intelligence analysis within the OpenCTI platform.</p>
+<p><a class="glightbox" href="../assets/vocabularies-customization.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Vocabularies customization" src="../assets/vocabularies-customization.png" /></a></p>
 
 
 
@@ -4407,7 +4588,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-16T13:32:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-16</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-19T13:51:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-19</span>
   </span>
 
     
@@ -4435,14 +4616,14 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
     
     <nav>
       
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
-          
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
-        </a>
-      
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
-          <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
         </a>
       
       
@@ -4493,13 +4674,13 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         
         
           
-          <a href="../graph/" class="md-footer__link md-footer__link--next" aria-label="Next: Knowledge graph">
+          <a href="../api/" class="md-footer__link md-footer__link--next" aria-label="Next: GraphQL API">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Knowledge graph
+                GraphQL API
               </div>
             </div>
             <div class="md-footer__button md-icon">
