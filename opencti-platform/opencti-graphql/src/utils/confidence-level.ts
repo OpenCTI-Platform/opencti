@@ -28,23 +28,23 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
     };
   }
 
-  // otherwise we get all groups for this user, and select the lowest max_confidence found
-  let minLevel = null;
+  // otherwise we get all groups for this user, and select the highest max_confidence found
+  let maxLevel = null;
   let source = null;
   if (user.groups) {
     for (let i = 0; i < user.groups.length; i += 1) {
       // groups were not migrated when introducing group_confidence_level, so group_confidence_level might be null
       const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
-      if (groupLevel !== null && (minLevel === null || groupLevel < minLevel)) {
-        minLevel = groupLevel;
+      if (groupLevel !== null && (maxLevel === null || groupLevel > maxLevel)) {
+        maxLevel = groupLevel;
         source = user.groups[i];
       }
     }
   }
 
-  if (minLevel !== null) {
+  if (maxLevel !== null) {
     return {
-      max_confidence: cropNumber(minLevel, 0, 100),
+      max_confidence: cropNumber(maxLevel, 0, 100),
       // TODO: handle overrides and their sources
       overrides: [],
       source,

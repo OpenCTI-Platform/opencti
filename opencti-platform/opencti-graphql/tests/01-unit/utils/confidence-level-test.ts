@@ -53,9 +53,9 @@ describe('Confidence level utilities', () => {
       groups: [group70, group80],
     };
     expect(computeUserEffectiveConfidenceLevel(userB as unknown as AuthUser)).toEqual({
-      max_confidence: 70,
+      max_confidence: 80,
       overrides: [],
-      source: group70,
+      source: group80,
     });
 
     const userC = {
