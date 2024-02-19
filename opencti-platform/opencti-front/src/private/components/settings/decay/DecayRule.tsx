@@ -4,11 +4,12 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
+import { InformationOutline } from 'mdi-material-ui';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useParams } from 'react-router-dom';
 import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRuleQuery.graphql';
-import { Icon } from '@mui/material';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -110,7 +111,12 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         <DecayRuleEdition decayRule={decayRule} />
       )}
       <div style={{ marginBottom: 23 }}>
-        <Typography variant="h1" gutterBottom={true} classes={{ root: classes.title }}>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+          style={decayRule.built_in ? { marginRight: 20 } : {}}
+        >
           {decayRule.name}
         </Typography>
         <ItemBoolean
@@ -120,11 +126,6 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         {!decayRule.built_in && (
           <div className={classes.popover}>
             <DecayRulePopover decayRule={decayRule} />
-          </div>
-        )}
-        {decayRule.built_in && (
-          <div className={classes.popover}>
-            <Icon />
           </div>
         )}
       </div>
@@ -149,7 +150,12 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Indicator observable types')}
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <span>{t_i18n('Indicator observable types')}</span>
+                      <Tooltip title={t_i18n('Matches all indicator main observable types if none is listed.')}>
+                        <InformationOutline fontSize="small" color="primary" />
+                      </Tooltip>
+                    </Box>
                   </Typography>
                   <FieldOrEmpty source={decayRule.decay_observable_types}>
                     <span>{decayRule.decay_observable_types?.join(', ')}</span>

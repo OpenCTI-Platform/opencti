@@ -2625,6 +2625,7 @@
   "Score:": "Punktzahl:",
   "Days": "Tage",
   "Indicator observable types": "Indikator beobachtbare Typen",
+  "Matches all indicator main observable types if none is listed.": "Entspricht allen Indikator-Hauptbeobachtungstypen, wenn keiner aufgeführt ist.",
   "Lifetime (in days)": "Lebenszeit (in Tagen)",
   "Decay factor": "Zerfallsfaktor",
   "Decay rules": "Zerfallregeln",

@@ -2640,6 +2640,7 @@
   "Score:": "Score:",
   "Days": "Days",
   "Indicator observable types": "Indicator observable types",
+  "Matches all indicator main observable types if none is listed.": "Matches all indicator main observable types if none is listed.",
   "Lifetime (in days)": "Lifetime (in days)",
   "Decay factor": "Decay factor",
   "Decay rules": "Decay rules",

@@ -2639,6 +2639,7 @@
   "Score:": "スコア",
   "Days": "日数",
   "Indicator observable types": "指標タイプ",
+  "Matches all indicator main observable types if none is listed.": "もし何もリストされていなければ、全ての指標となる主要な観測可能な型にマッチします。",
   "Lifetime (in days)": "ライフタイム（日）",
   "Decay factor": "減衰係数",
   "Decay rules": "減衰ルール",

@@ -2639,6 +2639,7 @@
   "Score:": "得分：",
   "Days": "天数",
   "Indicator observable types": "指标观测类型",
+  "Matches all indicator main observable types if none is listed.": "如果没有列出主要观测指标类型，则匹配所有指标类型。",
   "Lifetime (in days)": "寿命（天数）",
   "Decay factor": "衰减系数",
   "Decay rules": "衰变规则",
