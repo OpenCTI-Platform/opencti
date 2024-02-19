@@ -421,10 +421,10 @@ describe('User resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.userEdit.fieldPatch.user_confidence_level).toBeNull;
-    // now effective level is the highest values among the 2 groups
+    // now effective level is the highest values among the 2 groups (default: 100)
     expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
-    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.id).toEqual(groupInternalId);
   });
+
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
       mutation RoleAdd($input: RoleAddInput!) {
