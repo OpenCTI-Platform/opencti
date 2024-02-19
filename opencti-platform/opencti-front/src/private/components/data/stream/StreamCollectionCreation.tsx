@@ -214,6 +214,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                     'toTypes',
                   ]}
                   helpers={helpers}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </Box>
               <FilterIconButton

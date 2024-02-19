@@ -71,8 +71,8 @@ const ThreatActorGroupEditionDetailsComponent = ({
     primary_motivation: Yup.string().nullable(),
     secondary_motivations: Yup.array().nullable(),
     goals: Yup.string().nullable(),
-  references: Yup.array(),
-};
+    references: Yup.array(),
+  };
   const threatActorGroupValidator = useSchemaEditionValidation(
     'Threat-Actor-Group',
     basicShape,

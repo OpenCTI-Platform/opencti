@@ -293,6 +293,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                   availableRelationshipTypes={undefined}
                   type={undefined}
                   availableRelationFilterTypes={undefined}
+                  searchContext={{ entityTypes: ['History'] }}
                 />
               </div>
               <div className="clearfix" />

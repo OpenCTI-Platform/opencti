@@ -207,6 +207,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 'toTypes',
               ]}
               helpers={helpers}
+              searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
           </Box>
           <FilterIconButton

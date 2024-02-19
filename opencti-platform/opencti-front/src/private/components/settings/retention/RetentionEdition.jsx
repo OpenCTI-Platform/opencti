@@ -202,6 +202,7 @@ const RetentionEditionContainer = (props) => {
                   'toTypes',
                 ]}
                 helpers={helpers}
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
             </Box>
             <FilterIconButton

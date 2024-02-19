@@ -24,6 +24,7 @@ const entitiesFilters = [
   'killChainPhases',
   'malware_types',
   'report_types',
+  'incident_type',
   'regardingOf',
   'x_opencti_main_observable_type',
 ];
@@ -89,15 +90,18 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     'Stix-Domain-Object',
     'Stix-Cyber-Observable',
   ];
+  let searchContext = { entityTypes: ['Stix-Core-Object'] };
   if (perspective === 'relationships') {
     availableFilterKeys = relationshipsFilters;
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
+    searchContext = { entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] };
   } else if (perspective === 'audits') {
     availableFilterKeys = auditsFilters;
     availableEntityTypes = ['History', 'Activity'];
+    searchContext = { entityTypes: ['History'] };
   }
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -105,6 +109,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
         availableEntityTypes={availableEntityTypes}
         helpers={helpers}
+        searchContext={type === 'bookmark' ? undefined : searchContext}
       />
     </Box>
     { perspective === 'relationships' && (
@@ -118,6 +123,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicFrom}
           type="from"
+          searchContext={searchContext}
         />
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -129,6 +135,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicTo}
           type="to"
+          searchContext={searchContext}
         />
       </Box>
     </>)}

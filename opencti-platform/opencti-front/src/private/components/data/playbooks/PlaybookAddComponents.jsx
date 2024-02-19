@@ -458,6 +458,7 @@ const PlaybookAddComponentsContent = ({
                               'toTypes',
                             ]}
                             handleAddFilter={handleAddFilter}
+                            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                           />
                         </div>
                         <div className="clearfix" />

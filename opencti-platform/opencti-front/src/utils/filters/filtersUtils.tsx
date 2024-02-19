@@ -699,7 +699,7 @@ export const useBuildEntityTypeBasedFilterContext = (entityType: string, filters
   };
 };
 
-export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core-Object'], subKey?: string): FilterDefinition | undefined => {
+export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core-Object', 'stix-core-relationship'], subKey?: string): FilterDefinition | undefined => {
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {
     const subFilterDefinition = filterDefinition?.subFilters

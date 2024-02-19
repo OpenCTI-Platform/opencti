@@ -453,6 +453,7 @@ const FeedEditionContainer = (props) => {
                           'pattern_type',
                         ]}
                         helpers={helpers}
+                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       />
                     </Box>
                     <FilterIconButton

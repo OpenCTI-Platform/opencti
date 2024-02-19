@@ -265,6 +265,11 @@ const useSearchEntities = ({
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
   const theme = useTheme() as Theme;
+  const filterKeysMap = new Map();
+  (searchContext.entityTypes).forEach((entityType) => {
+    const currentMap = schema.filterKeysSchema.get(entityType);
+    currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+  });
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
@@ -816,13 +821,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
-      let filterDefinition = undefined as FilterDefinition | undefined;
-      (searchContext.entityTypes).forEach((entity_type) => {
-        const currentMap = schema.filterKeysSchema.get(entity_type);
-        filterDefinition = currentMap?.get(filterKey) ?? undefined;
-      });
-
+      const filterDefinition: FilterDefinition | undefined = filterKeysMap.get(filterKey) ?? undefined;
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':
@@ -842,6 +841,7 @@ const useSearchEntities = ({
           // eslint-disable-next-line no-case-declarations
           const idEntityTypes = filterDefinition?.elementsForFilterValuesSearch ?? [];
           if (idEntityTypes) {
+            const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
             if (idEntityTypes.every((typeOfId) => completedStixCoreObjectTypes.includes(typeOfId))) { // Stix Core Objects
               buildOptionsFromStixCoreObjectTypes(filterKey, idEntityTypes);
             } else if (idEntityTypes.every((typeOfId) => schema.smos.map((n) => n.id).includes(typeOfId))) { // Stix Meta Objects
