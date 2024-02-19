@@ -2646,7 +2646,7 @@
   "Impact": "衝撃",
   "indicators currently impacted by this rule": "現在このルールの影響を受けている指標",
   "Life curve": "ライフカーブ",
-  "Apply on indicator observable types": "指標の観測可能なタイプに適用する",
+  "Apply on indicator observable types (none = ALL)": "指標の観測可能なタイプに適用する (なし = すべて)",
   "Define at which score thresholds the indicator is updated.": "どのスコアしきい値でインジケータを更新するかを定義します。",
   "Add a reaction point": "リアクションポイントを追加する",
   "Remove this reaction point": "この反応点を削除する",

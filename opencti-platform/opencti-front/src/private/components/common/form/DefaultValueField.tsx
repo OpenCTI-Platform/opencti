@@ -7,6 +7,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import React from 'react';
+import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../../utils/authorizedMembers';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -112,6 +113,15 @@ const DefaultValueField = ({
         showAllMembersLine
         showCreatorLine
         canDeactivate
+      />
+    );
+  }
+  if (attribute.name === 'x_opencti_main_observable_type') {
+    return (
+      <ObservableTypesField
+        name={name}
+        label={label}
+        style={fieldSpacingContainerStyle}
       />
     );
   }

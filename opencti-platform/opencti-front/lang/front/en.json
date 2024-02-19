@@ -2647,7 +2647,7 @@
   "Impact": "Impact",
   "indicators currently impacted by this rule": "indicators currently impacted by this rule",
   "Life curve": "Life curve",
-  "Apply on indicator observable types": "Apply on indicator observable types",
+  "Apply on indicator observable types (none = ALL)": "Apply on indicator observable types (none = ALL)",
   "Define at which score thresholds the indicator is updated.": "Define at which score thresholds the indicator is updated.",
   "Add a reaction point": "Add a reaction point",
   "Remove this reaction point": "Remove this reaction point",

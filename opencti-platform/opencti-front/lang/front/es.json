@@ -2640,7 +2640,7 @@
   "Impact": "Impacto",
   "indicators currently impacted by this rule": "indicadores actualmente afectados por esta regla",
   "Life curve": "Curva de vida",
-  "Apply on indicator observable types": "Aplicar sobre tipos observables de indicadores",
+  "Apply on indicator observable types (none = ALL)": "Aplicar sobre tipos observables de indicadores (nada = TODOS)",
   "Define at which score thresholds the indicator is updated.": "Definir en qué umbrales de puntuación se actualiza el indicador.",
   "Add a reaction point": "Añadir un punto de reacción",
   "Remove this reaction point": "Eliminar este punto de reacción",

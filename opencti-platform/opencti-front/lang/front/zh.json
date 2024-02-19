@@ -2646,7 +2646,7 @@
   "Impact": "影响",
   "indicators currently impacted by this rule": "目前受此规则影响的指标",
   "Life curve": "寿命曲线",
-  "Apply on indicator observable types": "适用于指标观测类型",
+  "Apply on indicator observable types (none = ALL)": "适用于指标观测类型 (无 = 全部)",
   "Define at which score thresholds the indicator is updated.": "定义更新指标的分数阈值。",
   "Add a reaction point": "添加反应点",
   "Remove this reaction point": "删除该反应点",

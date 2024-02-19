@@ -12,6 +12,7 @@ import { Icon } from '@mui/material';
 import DecayRuleEdition from './DecayRuleEdition';
 import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import CustomizationMenu from '../CustomizationMenu';
@@ -150,7 +151,9 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Indicator observable types')}
                   </Typography>
-                  {decayRule.decay_observable_types?.join(', ')}
+                  <FieldOrEmpty source={decayRule.decay_observable_types}>
+                    <span>{decayRule.decay_observable_types?.join(', ')}</span>
+                  </FieldOrEmpty>
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -168,7 +171,9 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Reaction points')}
                   </Typography>
-                  {decayRule.decay_points?.join(', ')}
+                  <FieldOrEmpty source={decayRule.decay_points}>
+                    <span>{decayRule.decay_points?.join(', ')}</span>
+                  </FieldOrEmpty>
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
