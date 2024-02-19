@@ -17,9 +17,10 @@ import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from '../../../src/modu
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
-import { INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
+import { ALIAS_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();
@@ -185,5 +186,19 @@ describe('Filter keys schema generation testing', async () => {
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('x_opencti_score'); // attribute existing for all the observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables
     expect(filterDefinition?.subEntityTypes.length).toEqual(30); // 29 observables + abstract type 'Stix-Cyber-Observable'
+  });
+  it('should includes the filters associated to the attributes of the History entity type', () => {
+    let filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get(CONTEXT_OBJECT_LABEL_FILTER);
+    expect(filterDefinition?.type).toEqual('id');
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get('event_type');
+    expect(filterDefinition?.type).toEqual('string');
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get('report_types');
+    expect(filterDefinition).toBeUndefined();
+  });
+  it('should includes the filter definitions of the subtypes', () => {
+    let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(ALIAS_FILTER);
+    expect(filterDefinition?.type).toEqual('string');
+    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get('indicator_types');
+    expect(filterDefinition?.type).toEqual('string');
   });
 });

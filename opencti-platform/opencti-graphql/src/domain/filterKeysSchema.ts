@@ -341,6 +341,17 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   }
 };
 
+const completeFilterDefinitionsMapForTypeAndSubtypes = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string, isNotEnterpriseEdition: boolean) => {
+  const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
+  completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes); // add attributes and relations refs of type
+  completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type]), isNotEnterpriseEdition); // add or remove some special keys
+  if (subTypes.length > 0) { // handle the filter definitions of the subtypes
+    subTypes.forEach((subType) => {
+      completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, subType, isNotEnterpriseEdition);
+    });
+  }
+};
+
 export const generateFilterKeysSchema = async () => {
   const filterKeysSchema: Map<string, Map<string, FilterDefinition>> = new Map();
   const context = executionContext('filterKeysSchema');
@@ -350,16 +361,7 @@ export const generateFilterKeysSchema = async () => {
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
-    const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
-    // 01. add attributes and relations refs of type
-    completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes);
-    // 02. add or remove some special keys
-    completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type]), isNotEnterpriseEdition);
-    // 03. handle the attributes and relations refs of the subtypes
-    if (subTypes.length > 0) {
-      subTypes.forEach((subType) => completeFilterDefinitionMapForType(filterDefinitionsMap, subType));
-    }
-    // 04. set the filter definition in the filter schema
+    completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
   });
   // B. add connectedToId special key (for instance triggers)
