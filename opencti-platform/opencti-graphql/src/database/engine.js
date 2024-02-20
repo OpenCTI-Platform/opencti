@@ -100,7 +100,8 @@ import {
   isNumericAttribute,
   isObjectAttribute,
   isObjectFlatAttribute,
-  schemaAttributesDefinition
+  schemaAttributesDefinition,
+  validateElementAgainstSchema
 } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
@@ -3319,6 +3320,7 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
   });
 };
 export const elUpdateElement = async (instance) => {
+  validateElementAgainstSchema(instance);
   const esData = prepareElementForIndexing(instance);
   const dataToReplace = R.dissoc('representative', esData);
   const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
-import { UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType } from './attribute-definition';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import type { AttributeDefinition, AttrType, ObjectAttribute } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 
@@ -218,3 +218,44 @@ export const isObjectFlatAttribute = (k: string): boolean => {
 export const isMultipleAttribute = (entityType: string, k: string): boolean => (
   k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(entityType, k)
 );
+
+// region schema validation
+const validateObjectAgainstSchema = (value: object, key: string, schemaDef: ObjectAttribute) => {
+  if (Array.isArray(value) || !R.is(Object, value)) {
+    throw FunctionalError(`Validation against schema failed on attribute [${key}]: value is not an object`, { value });
+  }
+
+  // check mandatory fields
+  const mandatoryFieldNames = schemaDef.mappings
+    .filter((m) => m.mandatoryType === 'external' || m.mandatoryType === 'internal')
+    .map(({ name }) => name);
+  mandatoryFieldNames.forEach((mandatoryName) => {
+    if (!Object.keys(value).includes(mandatoryName)) {
+      throw FunctionalError(`Validation against schema failed on attribute [${key}]: mandatory field [${mandatoryName}] is not present`, { value });
+    }
+  });
+};
+
+export const validateElementAgainstSchema = (element: any) => {
+  Object.keys(element).forEach((elementKey) => {
+    const value = element[elementKey];
+    if (isObjectAttribute(elementKey)) {
+      const schemaDef = schemaAttributesDefinition.getAttributeByName(elementKey) as ObjectAttribute;
+      if (!schemaDef) return;
+      if (schemaDef.multiple) {
+        if (!Array.isArray(value)) {
+          throw FunctionalError(`Validation against schema failed on attribute [${elementKey}]: value is not an array`, { element });
+        }
+        value.forEach((item) => {
+          validateObjectAgainstSchema(item, elementKey, schemaDef);
+        });
+      } else {
+        if (Array.isArray(value) || !R.is(Object, value)) {
+          throw FunctionalError(`Validation against schema failed on attribute [${elementKey}]: value is not an object`, { element });
+        }
+        validateObjectAgainstSchema(value, elementKey, schemaDef);
+      }
+    }
+  });
+};
+// endregion
