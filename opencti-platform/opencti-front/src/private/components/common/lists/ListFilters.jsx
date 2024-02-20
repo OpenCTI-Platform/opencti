@@ -69,8 +69,8 @@ const ListFilters = ({
         numberOfOccurences: subEntityTypes.length,
         // eslint-disable-next-line no-nested-ternary
         groupLabel: isFilterKeyForAllTypes
-          ? 'Most used filters'
-          : 'All other filters',
+          ? t_i18n('Most used filters')
+          : t_i18n('All other filters'),
       };
     })
     .sort((a, b) => a.label.localeCompare(b.label))

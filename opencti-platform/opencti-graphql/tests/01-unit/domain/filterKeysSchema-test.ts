@@ -120,8 +120,8 @@ describe('Filter keys schema generation testing', async () => {
     // 'LZJD hash' for observables (not filterable)
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('hashes.LZJD');
     expect(filterDefinition).toBeUndefined(); // LZJD hash is not filterable
-    // 'operation' for notifications (mapping attribute in a mapping attribute)
-    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('notification_content.events.operation');
+    // 'operation' for notifications (mapping attribute that is in a mapping attribute)
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_NOTIFICATION)?.get('notification_content.events.operation');
     expect(filterDefinition?.filterKey).toEqual('notification_content.events.operation');
     expect(filterDefinition?.type).toEqual('enum');
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(3); // create, update, delete
