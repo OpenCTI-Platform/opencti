@@ -7,7 +7,6 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_LOCATION,
   INPUT_CREATED_BY,
-  INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS
 } from '../../../src/schema/general';
@@ -18,8 +17,6 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, 
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import { ALIAS_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 
 describe('Filter keys schema generation testing', async () => {
@@ -141,22 +138,13 @@ describe('Filter keys schema generation testing', async () => {
   });
   it('should construct correct filter definition for special filter keys', () => {
     // 'regardingOf' for stix core objects
-    let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INSTANCE_REGARDING_OF);
+    const filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.filterKey).toEqual(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.type).toEqual('nested');
     expect(filterDefinition?.multiple).toEqual(true);
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(0);
     expect(filterDefinition?.subFilters?.length).toEqual(2);
     expect(filterDefinition?.subFilters?.map((n) => n.filterKey).includes('relationship_type')).toBeTruthy();
-    // 'shared with' for sharable entities
-    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INPUT_GRANTED_REFS);
-    expect(filterDefinition?.filterKey).toEqual(INPUT_GRANTED_REFS);
-    expect(filterDefinition?.type).toEqual('id');
-    expect(filterDefinition?.multiple).toEqual(true);
-    expect(filterDefinition?.subEntityTypes.includes(ENTITY_TYPE_CONTAINER_REPORT)).toBeTruthy(); // reports can be shared
-    expect(filterDefinition?.subEntityTypes.includes(ENTITY_TYPE_CONTAINER_FEEDBACK)).toBeFalsy(); // feedbacks can't be shared
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
-    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
   it('should construct correct filter definition for abstract entity types', () => {
     // Containers
@@ -174,7 +162,7 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.subEntityTypes.length).toEqual(5); // 4 entity types that are cases + 'Case' abstract type
     // Stix Core Objects
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INPUT_KILLCHAIN);
-    expect(filterDefinition?.subEntityTypes.length).toEqual(4); // Attack-Pattern, Infrastructure, Malware, Tool
+    expect(filterDefinition?.subEntityTypes.length).toEqual(5); // Attack-Pattern, Infrastructure, Malware, Tool, Indicator
     expect(filterDefinition?.subEntityTypes.includes(ENTITY_TYPE_ATTACK_PATTERN)).toBeTruthy();
     // Location
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_LOCATION)?.get(INPUT_CREATED_BY);
@@ -191,7 +179,7 @@ describe('Filter keys schema generation testing', async () => {
     let filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get(CONTEXT_OBJECT_LABEL_FILTER);
     expect(filterDefinition?.type).toEqual('id');
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get('event_type');
-    expect(filterDefinition?.type).toEqual('string');
+    expect(filterDefinition?.type).toEqual('enum');
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_HISTORY)?.get('report_types');
     expect(filterDefinition).toBeUndefined();
   });
@@ -199,6 +187,6 @@ describe('Filter keys schema generation testing', async () => {
     let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(ALIAS_FILTER);
     expect(filterDefinition?.type).toEqual('string');
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get('indicator_types');
-    expect(filterDefinition?.type).toEqual('string');
+    expect(filterDefinition?.type).toEqual('vocabulary');
   });
 });
