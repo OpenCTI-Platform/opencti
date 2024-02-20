@@ -2382,7 +2382,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
   body.aggs = {
     genres: {
       terms: {
-        field: isBooleanAttribute(field) ? field : `${field}.keyword`,
+        field: isDateNumericOrBooleanAttribute(field) ? field : `${field}.keyword`,
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -2406,7 +2406,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
       return buckets.map((b) => {
         let label = b.key;
         if (typeof label === 'number') {
-          label = b.key_as_string;
+          label = String(b.key);
         } else if (!isIdFields) {
           label = pascalize(b.key);
         }
