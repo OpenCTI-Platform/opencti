@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -60,6 +61,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on AttackPattern {
           name
           description
+          x_mitre_id
         }
         ... on Campaign {
           name
@@ -236,7 +238,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
               x:
               // eslint-disable-next-line no-nested-ternary
                 field === 'internal_id'
-                  ? n.entity.name
+                  ? defaultValue(n.entity)
                   : field === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,
