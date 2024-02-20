@@ -112,7 +112,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Cases') },
-            { label: t_i18n('Incidents'), link: '/dashboard/cases/incidents' },
+            { label: t_i18n('Incident responses'), link: '/dashboard/cases/incidents' },
             { label: caseData.name, current: true },
           ]}
           />

@@ -16,7 +16,7 @@ export class ReportPage {
         return this.page.getByLabel('Name');
     }
     getCreateReportButton() {
-        return this.page.getByRole('button', { name: 'Create' })
+        return this.page.getByRole('button', { name: 'Create', exact: true })
     }
     getItemFromList(name: string) {
         return this.page.getByRole('link', { name }).first()

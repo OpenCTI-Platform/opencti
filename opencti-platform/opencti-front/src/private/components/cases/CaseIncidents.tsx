@@ -190,7 +190,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incidents'), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
