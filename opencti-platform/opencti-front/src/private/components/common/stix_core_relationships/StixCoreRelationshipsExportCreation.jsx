@@ -163,7 +163,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('Stix-Core-Object')?.keys() ?? []);
+          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('Stix-Core-Object')?.keys() ?? []).concat(['entity_type']);
           return (
             <ExportContext.Consumer>
               {({ selectedIds }) => {

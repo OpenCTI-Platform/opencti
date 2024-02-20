@@ -1332,7 +1332,12 @@ class ToolBar extends Component {
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
           const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
-          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('Basic-Object')?.keys ?? []);
+          const filterKeysMap = new Map();
+          entityTypeFilterValues.forEach((entityType) => {
+            const currentMap = schema.filterKeysSchema.get(entityType);
+            currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+          });
+          const availableFilterKeys = Array.from(filterKeysMap.keys() ?? []).concat(['entity_type']);
           // endregion
           return (
             <Drawer
