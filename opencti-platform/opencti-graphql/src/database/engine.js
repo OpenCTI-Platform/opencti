@@ -2369,6 +2369,10 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       if (orderKeyword === '_score') {
         ordering = R.append({ [orderKeyword]: scoreSearchOrder }, ordering);
+      } else if (isDateAttribute(orderCriteria)) {
+        // sorting on null dates results to an error, one way to fix it is to use missing: 0
+        // see https://github.com/elastic/elasticsearch/issues/81960
+        ordering = R.append({ [orderKeyword]: { order: orderMode, missing: 0 } }, ordering);
       } else {
         const order = { [orderKeyword]: { order: orderMode, missing: '_last' } };
         ordering = R.append(order, ordering);
