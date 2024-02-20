@@ -25,7 +25,7 @@ export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId
       const message = {
         internal: {
           work_id: work.id, // Related action for history
-          applicant_id: null, // User asking for the import
+          applicant_id: null, // No specific user asking for the import
         },
         event: {
           entity_id: stixCoreObjectId,

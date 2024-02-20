@@ -194,7 +194,7 @@ const initActivityManager = () => {
         }
         if (action.event_scope === 'enrich') {
           const { entity_name, connector_name } = action.context_data;
-          const message = `asks for \`${connector_name}\` enrichment in \`${entity_name}\``;
+          const message = `asks for \`${entity_name}\` enrichment with connector \`${connector_name}\``;
           await activityLogger(action, message);
         }
       }

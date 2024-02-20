@@ -190,7 +190,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const message = {
     internal: {
       work_id: work.id, // Related action for history
-      applicant_id: user.id, // User asking for the import
+      applicant_id: null, // No specific user asking for the import
     },
     event: {
       entity_id: element.standard_id,

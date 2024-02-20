@@ -122,7 +122,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
@@ -183,7 +183,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache } from './cache';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -1686,6 +1686,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Region - Pre-Check
   const elementsByKey = R.groupBy((e) => e.key, updates);
   const multiOperationKeys = Object.values(elementsByKey).filter((n) => n.length > 1);
@@ -1871,7 +1872,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
       } else {
         // Special access check for RELATION_GRANTED_TO meta
-        if (relType === RELATION_GRANTED_TO && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+        // If not supported, update must be rejected
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+        if (relType === RELATION_GRANTED_TO && !isUserCanManipulateGrantedRefs) {
           throw ForbiddenAccess();
         }
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
@@ -2350,6 +2353,7 @@ const buildRelationDeduplicationFilters = (input) => {
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
@@ -2376,7 +2380,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
-
   if (type === ENTITY_TYPE_INDICATOR) {
     if (updatePatch.decay_applied_rule && updatePatch.decay_base_score === element.decay_base_score) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
@@ -2389,7 +2392,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
     }
   }
-
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
     const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);
@@ -2416,13 +2418,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-
   // region confidence control / upsert
   const { confidenceLevelToApply, isConfidenceMatch } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
   updatePatch.confidence = confidenceLevelToApply;
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
-
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2455,19 +2455,22 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
-      const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
+      const isUpsertSynchro = context.synchronizedUpsert;
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
         const isCurrentWithData = isNotEmptyField(currentData);
         const targetData = (patchInputData ?? []).map((n) => n.internal_id);
+        // Specific case for organization restriction, has EE must be activated.
+        // If not supported, upsert of organization is not applied
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+        const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
         // If expected data is different from current data
-        if (R.symmetricDifference(currentData, targetData).length > 0) {
+        if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {
           const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
           // In full synchro, just replace everything
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if (
-            (isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
+          } else if ((isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
             || (isInputWithData && !isCurrentWithData)
           ) {
             // If data is provided, different from existing data, and of higher confidence
@@ -2674,6 +2677,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
+
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
   const { from, to } = resolvedInput;
@@ -2687,6 +2691,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
     throw ForbiddenAccess();
   }
+
   // Check consistency
   await checkRelationConsistency(context, user, relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
@@ -2708,6 +2713,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       throw UnsupportedError('Cant add another relation on single ref', errorData);
     }
   }
+
   // Build lock ids
   const inputIds = getInputIds(relationshipType, resolvedInput, fromRule);
   if (isImpactedTypeAndSide(relationshipType, ROLE_FROM)) inputIds.push(from.internal_id);
