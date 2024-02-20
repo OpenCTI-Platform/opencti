@@ -46,7 +46,7 @@ export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
     $first: Int
   ) {
     triggersKnowledge(filters: $filters, first: $first)
-      @connection(key: "Pagination_triggersKnowledge") {
+      @connection(key: "Pagination_quickSubscription__triggersKnowledge") {
       edges {
         node {
           id
@@ -188,7 +188,7 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         insertNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           'triggerKnowledgeLiveAdd',
         );
@@ -237,14 +237,13 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           triggerIdToDelete,
         );
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
       },
     });
   };
@@ -292,14 +291,13 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           triggerIdToUpdate,
         );
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
       },
     });
   };
