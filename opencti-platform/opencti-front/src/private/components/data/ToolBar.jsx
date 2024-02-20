@@ -1337,7 +1337,7 @@ class ToolBar extends Component {
             const currentMap = schema.filterKeysSchema.get(entityType);
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
-          const availableFilterKeys = Array.from(filterKeysMap.keys() ?? []).concat(['entity_type']);
+          const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
           // endregion
           return (
             <Drawer

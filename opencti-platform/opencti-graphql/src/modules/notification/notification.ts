@@ -8,7 +8,7 @@ import {
   type StoreEntityNotification,
   type StoreEntityTrigger
 } from './notification-types';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
@@ -81,9 +81,9 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       editDefault: false,
       multiple: true,
       upsert: false,
-      isFilterable: false,
+      isFilterable: true,
       mappings: [
-        { name: 'title', label: 'Notification title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+        { name: 'title', label: 'Notification title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
         {
           name: 'events',
           label: 'Notification events',
@@ -95,9 +95,9 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
           upsert: false,
           isFilterable: true,
           mappings: [
-            { name: 'message', label: 'Notification event message', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-            { name: 'instance_id', label: 'Notification related instance', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-            { name: 'operation', label: 'Notification operation', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+            { name: 'message', label: 'Notification message', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+            { name: 'instance_id', label: 'Notification related instance', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+            { name: 'operation', label: 'Notification operation', type: 'string', format: 'enum', values: ['create', 'update', 'delete'], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
           ]
         },
       ]

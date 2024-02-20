@@ -58,6 +58,7 @@ export type NestedObjectAttribute = { type: 'object', format: 'nested' } & Basic
 export type RefAttribute = { type: 'ref', databaseName: string, stixName: string, isRefExistingForTypes: Checker, datable?: boolean, toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
 export type ComplexAttribute = FlatObjectAttribute | ObjectAttribute | NestedObjectAttribute;
+export type ComplexAttributeWithMappings = ObjectAttribute | NestedObjectAttribute;
 
 export type AttributeDefinition = NumericAttribute | DateAttribute | BooleanAttribute | StringAttribute | ComplexAttribute | RefAttribute;
 
