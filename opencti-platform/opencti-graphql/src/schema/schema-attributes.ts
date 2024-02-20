@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ObjectAttribute } from './attribute-definition';
+import type { AttributeDefinition, AttrType } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 
@@ -197,16 +197,15 @@ export const isBooleanAttribute = (k: string): boolean => (
 export const isDateAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date')
 );
-export const isObjectAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
-);
 export const isNumericAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'numeric')
 );
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );
-
+export const isObjectAttribute = (k: string): boolean => (
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
+);
 export const isObjectFlatAttribute = (k: string): boolean => {
   const definition = schemaAttributesDefinition.getAttributeByName(k.split('.')[0]);
   if (!definition) return false;
@@ -220,42 +219,50 @@ export const isMultipleAttribute = (entityType: string, k: string): boolean => (
 );
 
 // region schema validation
-const validateObjectAgainstSchema = (value: object, key: string, schemaDef: ObjectAttribute) => {
-  if (Array.isArray(value) || !R.is(Object, value)) {
-    throw FunctionalError(`Validation against schema failed on attribute [${key}]: value is not an object`, { value });
-  }
-
-  // check mandatory fields
-  const mandatoryFieldNames = schemaDef.mappings
-    .filter((m) => m.mandatoryType === 'external' || m.mandatoryType === 'internal')
-    .map(({ name }) => name);
-  mandatoryFieldNames.forEach((mandatoryName) => {
-    if (!Object.keys(value).includes(mandatoryName)) {
-      throw FunctionalError(`Validation against schema failed on attribute [${key}]: mandatory field [${mandatoryName}] is not present`, { value });
+const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
+  if (schemaDef.type === 'object' && schemaDef.format !== 'flat') {
+    // to detect errors in schema definition (but should not happen)
+    if (!Array.isArray(schemaDef.mappings)) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: object has no mapping in schema`, { value: input });
     }
-  });
+    // check multiple constraint
+    if (schemaDef.multiple && !Array.isArray(input)) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
+    }
+    if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
+    }
+    // validateObjectsAgainstSchema(Array.isArray(value) ? value : [value], mapping as ObjectAttribute);
+    const inputValues = Array.isArray(input) ? input : [input];
+    inputValues.forEach((value) => {
+      // check the value adhere to mapping constraints
+      const valueKeys = Object.keys(value);
+      schemaDef.mappings.forEach((mapping) => {
+        // mandatory fields
+        if (mapping.mandatoryType === 'external' || mapping.mandatoryType === 'internal') {
+          if (!valueKeys.includes(mapping.name)) {
+            throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`, { value });
+          }
+        }
+        // ...we might add more constraints such as a numeric range.
+
+        // finally, recursively check mappings if any
+        const innerValue = value[mapping.name];
+        validateInputAgainstSchema(innerValue, mapping);
+      });
+    });
+  }
 };
 
 export const validateElementAgainstSchema = (element: any) => {
   Object.keys(element).forEach((elementKey) => {
-    const value = element[elementKey];
-    if (isObjectAttribute(elementKey)) {
-      const schemaDef = schemaAttributesDefinition.getAttributeByName(elementKey) as ObjectAttribute;
-      if (!schemaDef) return;
-      if (schemaDef.multiple) {
-        if (!Array.isArray(value)) {
-          throw FunctionalError(`Validation against schema failed on attribute [${elementKey}]: value is not an array`, { element });
-        }
-        value.forEach((item) => {
-          validateObjectAgainstSchema(item, elementKey, schemaDef);
-        });
-      } else {
-        if (Array.isArray(value) || !R.is(Object, value)) {
-          throw FunctionalError(`Validation against schema failed on attribute [${elementKey}]: value is not an object`, { element });
-        }
-        validateObjectAgainstSchema(value, elementKey, schemaDef);
-      }
+    const input = element[elementKey];
+    const schemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
+    if (!schemaDef) {
+      return; // no validation to do, happens for meta fields like "_index"
     }
+    validateInputAgainstSchema(input, schemaDef);
   });
 };
+
 // endregion
