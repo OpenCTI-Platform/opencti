@@ -34,7 +34,7 @@ import {
 import { now } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError, ValidationError } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -58,6 +58,7 @@ import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { validateUpdatableAttribute } from '../schema/schema-validator';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -183,6 +184,18 @@ const appendTaskErrors = async (task, errors) => {
   await elUpdate(task._index, task.id, { script: { source, lang: 'painless', params } });
 };
 
+const generatePatch = (field, values, type) => {
+  const basicErrors = validateUpdatableAttribute(type, { [field]: values });
+  const extensionErrors = validateUpdatableAttribute(type, { [`x_opencti_${field}`]: values });
+  if (basicErrors.length === 0) {
+    return { [field]: values };
+  }
+  if (extensionErrors.length === 0) {
+    return { [`x_opencti_${field}`]: values };
+  }
+  throw ValidationError(basicErrors.at(0) ?? extensionErrors.at(0), { message: 'You cannot update incompatible attribute' });
+};
+
 const executeDelete = async (context, user, element) => {
   await deleteElementById(context, user, element.internal_id, element.entity_type);
 };
@@ -201,7 +214,7 @@ const executeAdd = async (context, user, actionContext, element) => {
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = { [field]: values };
+    const patch = generatePatch(field, values, element.entity_type);
     const operations = { [field]: UPDATE_OPERATION_ADD };
     await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
@@ -221,7 +234,7 @@ const executeRemove = async (context, user, actionContext, element) => {
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = { [field]: values };
+    const patch = generatePatch(field, values, element.entity_type);
     const operations = { [field]: UPDATE_OPERATION_REMOVE };
     await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
@@ -242,7 +255,7 @@ const executeReplace = async (context, user, actionContext, element) => {
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = { [field]: values };
+    const patch = generatePatch(field, values, element.entity_type);
     await patchAttribute(context, user, element.id, element.entity_type, patch);
   }
 };
