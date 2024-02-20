@@ -24,7 +24,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { MESSAGING$ } from '../../../../relay/environment';
 import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
@@ -36,7 +36,6 @@ import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
 import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery,
-  StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -47,7 +46,7 @@ export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
     $first: Int
   ) {
     triggersKnowledge(filters: $filters, first: $first)
-      @connection(key: "Pagination_triggersKnowledge") {
+      @connection(key: "Pagination_quickSubscription__triggersKnowledge") {
       edges {
         node {
           id
@@ -124,15 +123,12 @@ StixCoreObjectQuickSubscriptionContentProps
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
 
-  const initialExistingInstanceTriggersEdges = () => {
-    const existingInstanceTriggersData = usePreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
-      stixCoreObjectQuickSubscriptionContentQuery,
-      queryRef,
-    );
-    return existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
-  };
-  const [existingInstanceTriggersEdges, setExistingInstanceTriggersEdges] = useState(initialExistingInstanceTriggersEdges());
+  const existingInstanceTriggersData = usePreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
+    stixCoreObjectQuickSubscriptionContentQuery,
+    queryRef,
+  );
 
+  const existingInstanceTriggersEdges = existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
   const triggerUpdate = existingInstanceTriggersEdges.length > 0;
 
   const [commitAddTrigger] = useMutation<TriggerLiveCreationKnowledgeMutation>(
@@ -141,19 +137,7 @@ StixCoreObjectQuickSubscriptionContentProps
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
   const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
 
-  const searchInstanceTriggers = () => {
-    fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions)
-      .toPromise()
-      .then((data) => {
-        setExistingInstanceTriggersEdges(
-          (data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)
-            ?.triggersKnowledge?.edges ?? [],
-        );
-      });
-  };
-
   const handleOpen = () => {
-    searchInstanceTriggers();
     setOpen(true);
   };
 
@@ -204,13 +188,12 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         insertNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           'triggerKnowledgeLiveAdd',
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         MESSAGING$.notifySuccess(
           'Instance trigger successfully created. You can click again on the bell to edit the options.',
         );
@@ -239,7 +222,6 @@ StixCoreObjectQuickSubscriptionContentProps
         input: finalValues,
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setSubmitting(false);
         handleClose();
       },
@@ -255,15 +237,13 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           triggerIdToDelete,
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setDeleting(false);
-        handleClose();
       },
     });
   };
@@ -311,15 +291,13 @@ StixCoreObjectQuickSubscriptionContentProps
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_triggersKnowledge',
+          'Pagination_quickSubscription__triggersKnowledge',
           paginationOptions,
           triggerIdToUpdate,
         );
       },
       onCompleted: () => {
-        searchInstanceTriggers();
         setDeleting(false);
-        handleClose();
       },
     });
   };
