@@ -4112,25 +4112,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.16.1":
-  version: 5.16.1
-  resolution: "@rjsf/core@npm:5.16.1"
+"@rjsf/core@npm:5.17.1":
+  version: 5.17.1
+  resolution: "@rjsf/core@npm:5.17.1"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
-    markdown-to-jsx: "npm:^7.4.0"
+    markdown-to-jsx: "npm:^7.4.1"
     nanoid: "npm:^3.3.7"
     prop-types: "npm:^15.8.1"
   peerDependencies:
     "@rjsf/utils": ^5.16.x
     react: ^16.14.0 || >=17
-  checksum: 10/05903011d6d5002fbba74afe91919c32122fd436dbee887e23de1684490ce37e318290e4149ea15907170da8eb0ec06e07261aa1b63980889918982c99e45e01
+  checksum: 10/60a7de78af791c85b3fd945db31a441ad4cceb85baa9e666ed528ef1ee55075f06c4fd7e9632cb111055a86c695e0277097306b4505118285e8bce4c5e08f385
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.16.1":
-  version: 5.16.1
-  resolution: "@rjsf/mui@npm:5.16.1"
+"@rjsf/mui@npm:5.17.1":
+  version: 5.17.1
+  resolution: "@rjsf/mui@npm:5.17.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
@@ -4139,13 +4139,13 @@ __metadata:
     "@rjsf/core": ^5.16.x
     "@rjsf/utils": ^5.16.x
     react: ">=17"
-  checksum: 10/fb01b0dced6cd05a7d903d6519a8d69dc55c93890c69bb1034ed623ed32a14de92e317ad68e5a4652e0b78a2c6b4fde970b05a45e76a4bc887e1e1c9e56732c5
+  checksum: 10/3d040069a0861c96c7910036760bfc061ab39d7cedbba08ef63cd6856a35fb55697aa67bf526782be874a70b670ec9ad95d57d1881e2203e15e22be486a60b2e
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.16.1":
-  version: 5.16.1
-  resolution: "@rjsf/utils@npm:5.16.1"
+"@rjsf/utils@npm:5.17.1":
+  version: 5.17.1
+  resolution: "@rjsf/utils@npm:5.17.1"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
@@ -4154,7 +4154,7 @@ __metadata:
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/701f460423dc0f7c9fcdb4a7f4ebb3e5b1c59caada3dc99e681ed6f51342dcd17c87fd4b62175dd3705f3d9ce07ad57c67640b8cfa8abb501a82b4a67b846725
+  checksum: 10/2b603c0994f173ee51be6c7ad29525cb2e599f154e5575f4f46c303660f7dc40fd5b238529b9a6fc0f67f540af91d69fffd12c75eecb865e392b761ce6fab5a4
   languageName: node
   linkType: hard
 
@@ -13731,7 +13731,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:^7.4.0":
+"markdown-to-jsx@npm:^7.4.1":
   version: 7.4.1
   resolution: "markdown-to-jsx@npm:7.4.1"
   peerDependencies:
@@ -15411,9 +15411,9 @@ __metadata:
     "@mui/utils": "npm:5.15.9"
     "@mui/x-date-pickers": "npm:6.19.4"
     "@playwright/test": "npm:^1.41.0"
-    "@rjsf/core": "npm:5.16.1"
-    "@rjsf/mui": "npm:5.16.1"
-    "@rjsf/utils": "npm:5.16.1"
+    "@rjsf/core": "npm:5.17.1"
+    "@rjsf/mui": "npm:5.17.1"
+    "@rjsf/utils": "npm:5.17.1"
     "@rollup/plugin-graphql": "npm:2.0.4"
     "@testing-library/react": "npm:14.2.1"
     "@types/node": "npm:20.11.19"
