@@ -11,7 +11,7 @@ import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import {
   isNumericFilter,
-  isStringFilter,
+  isBasicTextFilter,
   useFilterDefinition,
   Filter,
   getAvailableOperatorForFilter,
@@ -218,9 +218,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const filterType = fDef?.type;
     return (
       filterType === 'date'
-      || filterType === 'text'
       || isNumericFilter(filterType)
-      || isStringFilter(fDef)
+      || isBasicTextFilter(fDef)
     );
   };
 
@@ -324,7 +323,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     if (fDefinition?.type === 'date') {
       return <BasicFilterDate />;
     }
-    if (fDefinition?.type === 'integer' || fDefinition?.type === 'float') {
+    if (isNumericFilter(fDefinition?.type)) {
       return (
         <BasicNumberInput
           filter={filter}
@@ -335,7 +334,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         />
       );
     }
-    if (isStringFilter(filterDefinition) || filterDefinition?.type === 'text') {
+    if (isBasicTextFilter(filterDefinition)) {
       return (
         <BasicTextInput
           filter={filter}

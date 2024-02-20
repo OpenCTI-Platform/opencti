@@ -96,12 +96,14 @@ export const useIsUniqFilter = (key: string) => {
   return false;
 };
 
-export const isStringFilter = (
+// basic text filters are filters of type string or text that are not entity types filters
+// i.e. filters whose values are not pickable from a list but should be enter
+export const isBasicTextFilter = (
   filterDefinition: FilterDefinition | undefined,
 ) => {
   return filterDefinition
-    && !entityTypesFilters.includes(filterDefinition.filterKey)
-    && filterDefinition.type === 'string';
+    && (filterDefinition.type === 'string' || filterDefinition.type === 'text')
+    && !entityTypesFilters.includes(filterDefinition.filterKey);
 };
 
 export const isNumericFilter = (
@@ -549,11 +551,16 @@ export const getDefaultOperatorFilter = (
   if (type === 'boolean') {
     return 'eq';
   }
-  if (isStringFilter(filterDefinition)) {
-    return 'starts_with';
-  }
-  if (type === 'text') {
-    return 'search';
+  if (isBasicTextFilter(filterDefinition)) {
+    if (filterDefinition.type === 'string') {
+      return 'starts_with';
+    } if (filterDefinition.type === 'text') {
+      if (type === 'text') {
+        return 'search';
+      }
+    } else {
+      throw Error(`A basic text filter is of type string or text, not ${filterDefinition.type}`);
+    }
   }
   return 'eq';
 };
@@ -586,9 +593,6 @@ export const getAvailableOperatorForFilterKey = (
     return ['eq'];
   }
   const { type: filterType } = filterDefinition;
-  if (filterType === 'text') {
-    return ['search', 'nil', 'not_nil'];
-  }
   if (filterType === 'date') {
     return ['gt', 'gte', 'lt', 'lte'];
   }
@@ -598,9 +602,17 @@ export const getAvailableOperatorForFilterKey = (
   if (filterType === 'boolean') {
     return ['eq', 'not_eq'];
   }
-  if (isStringFilter(filterDefinition)) {
-    return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
-      'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
+  if (isBasicTextFilter(filterDefinition)) {
+    if (filterDefinition.type === 'string') {
+      return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
+        'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
+    } if (filterDefinition.type === 'text') {
+      if (filterDefinition.type === 'text') {
+        return ['search', 'nil', 'not_nil'];
+      }
+    } else {
+      throw Error(`A basic text filter is of type string or text, not ${filterDefinition.type}`);
+    }
   }
 
   return ['eq', 'not_eq', 'nil', 'not_nil']; // vocabulary or id
