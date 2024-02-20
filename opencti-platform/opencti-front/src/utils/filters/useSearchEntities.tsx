@@ -529,7 +529,8 @@ const useSearchEntities = ({
         }));
       let entitiesToAdd = ungroupedEntities;
       if (groupedBy.length > 0) {
-        entitiesToAdd = groupedBy.flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
+        entitiesToAdd = groupedBy
+          .flatMap((group) => ungroupedEntities.map((item) => ({ ...item, group })));
       }
       unionSetEntities(key, entitiesToAdd);
     };
