@@ -399,7 +399,9 @@ const useSearchEntities = ({
           const externalRefByEntities = (
             (data as ExternalReferencesQueriesSearchQuery$data)?.externalReferences?.edges ?? []
           ).map((n) => ({
-            label: n?.node.source_name,
+            label: n?.node.external_id
+              ? `${n?.node.source_name} (${n?.node.external_id})`
+              : n?.node.source_name,
             value: n?.node.id,
             type: 'External-Reference',
           }));
