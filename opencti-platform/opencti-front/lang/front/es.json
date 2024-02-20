@@ -2664,5 +2664,13 @@
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
   "You need a confidence level to edit objects in the platform.": "Necesitas un nivel de confianza para editar objetos en la plataforma.",
   "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingestión.",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100."
+  "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100.",
+  "create": "crear",
+  "update": "actualizar",
+  "delete": "borrar",
+  "This feature is only available in OpenCTI Enterprise Edition.": "Esta función sólo está disponible en OpenCTI Enterprise Edition.",
+  "Operational": "Operativo",
+  "Strategic": "Estratégico",
+  "Link created": "Enlace creado",
+  "Public dashboard": "Cuadro de mandos público"
 }
