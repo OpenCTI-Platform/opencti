@@ -3,7 +3,6 @@ import { graphql, useMutation } from 'react-relay';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
-import * as Yup from 'yup';
 import * as R from 'ramda';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
@@ -13,18 +12,16 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
-import ListItemText from '@mui/material/ListItemText';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import { useFormatter } from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import SwitchField from '../../../../components/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import useAuth from '../../../../utils/hooks/useAuth';
 import { handleErrorInForm } from '../../../../relay/environment';
+import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -34,12 +31,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  icon: {
-    paddingTop: 4,
-    paddingRight: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
   },
 }));
 
@@ -84,21 +75,6 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [commit] = useMutation(decayRuleCreationMutation);
-  const { schema } = useAuth();
-  const { scos } = schema;
-  const allObservableTypes = scos.map((sco) => sco.id);
-
-  const decayRuleValidator = Yup.object().shape({
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    active: Yup.boolean(),
-    order: Yup.number().min(1),
-    decay_lifetime: Yup.number().min(1),
-    decay_pound: Yup.number().min(0),
-    decay_revoke_score: Yup.number().min(0),
-    decay_observable_types: Yup.array().of(Yup.string()),
-    decay_points: Yup.array().of(Yup.number().min(0)),
-  });
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (
     values,
@@ -154,7 +130,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   return (
     <Formik<DecayRuleCreationFormData>
       initialValues={initialValues}
-      validationSchema={decayRuleValidator}
+      validationSchema={decayRuleValidator(t_i18n)}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -175,29 +151,11 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <Field
-            component={AutocompleteField}
+          <ObservableTypesField
             name="decay_observable_types"
+            label={t_i18n('Apply on indicator observable types (none = ALL)')}
             multiple={true}
-            fullWidth={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t_i18n('Apply on indicator observable types'),
-            }}
-            options={allObservableTypes}
-            isOptionEqualToValue={(option: string, value: string) => option === value}
             style={{ marginTop: 20 }}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: string,
-            ) => (
-              <li {...props}>
-                <div className={classes.icon}>
-                  <ItemIcon type={option} />
-                </div>
-                <ListItemText primary={t_i18n(`entity_${option}`)} />
-              </li>
-            )}
           />
           <Field
             component={TextField}

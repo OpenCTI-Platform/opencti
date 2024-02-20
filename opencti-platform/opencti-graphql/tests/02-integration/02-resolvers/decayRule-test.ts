@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import {
   BUILT_IN_DECAY_RULE_IP_URL,
@@ -10,7 +10,7 @@ import {
   initDecayRules
 } from '../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../src/types/user';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import type { BasicStoreEntityEdge } from '../../../src/types/store';
 import type { BasicStoreEntityDecayRule } from '../../../src/modules/decayRule/decayRule-types';
 import { logApp } from '../../../src/config/conf';
@@ -59,6 +59,57 @@ export const DECAY_RULE_READ_QUERY = gql`
   }
 `;
 
+const CREATE_QUERY = gql`
+  mutation decayRuleAdd($input: DecayRuleAddInput!) {
+    decayRuleAdd(input: $input) {
+      id
+      active
+      decay_lifetime
+      decay_observable_types
+      decay_points
+      decay_pound
+      decay_revoke_score
+      description
+      name
+      order
+    }
+  }
+`;
+
+const DECAY_RULE_LIST_QUERY = gql`
+  query decayRule(
+    $first: Int
+    $after: ID
+    $filters: FilterGroup
+    $search: String
+  ) {
+    decayRules(
+      first: $first
+      after: $after
+      filters: $filters
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+          order
+          built_in
+          decay_lifetime
+          decay_observable_types
+          decay_revoke_score
+        }
+      }
+    }
+  }
+`;
+
+const DELETE_QUERY = gql`
+  mutation decayRuleDelete($id: ID!) {
+    decayRuleDelete(id: $id)
+  }
+`;
+
 // To help when built-in decay rule are changing
 const TEST_IP_DECAY_RULE = BUILT_IN_DECAY_RULE_IP_URL;
 const TEST_FALLBACK_DECAY_RULE = FALLBACK_DECAY_RULE;
@@ -73,34 +124,6 @@ describe('DecayRule resolver standard behavior', () => {
   });
 
   it('should list built-in decay rules', async () => {
-    const DECAY_RULE_LIST_QUERY = gql`
-      query decayRule(
-        $first: Int
-        $after: ID
-        $filters: FilterGroup
-        $search: String
-      ) {
-        decayRules(
-          first: $first
-          after: $after
-          filters: $filters
-          search: $search
-        ) {
-          edges {
-            node {
-              id
-              name
-              order
-              built_in
-              decay_lifetime
-              decay_observable_types
-              decay_revoke_score
-            }
-          }
-        }
-      }
-    `;
-
     const getAllBuiltInDecayRules = await queryAsAdminWithSuccess({ query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
 
     const allRules: [] = getAllBuiltInDecayRules.data?.decayRules.edges;
@@ -123,22 +146,6 @@ describe('DecayRule resolver standard behavior', () => {
   });
 
   it('should DecayRule be created', async () => {
-    const CREATE_QUERY = gql`
-      mutation decayRuleAdd($input: DecayRuleAddInput!) {
-        decayRuleAdd(input: $input) {
-          id
-          active
-          decay_lifetime
-          decay_observable_types
-          decay_points
-          decay_pound
-          decay_revoke_score
-          description
-          name
-          order
-        }
-      }
-    `;
     // Create the decayRule
     const DECAY_RULE_TO_CREATE = {
       input: {
@@ -315,11 +322,6 @@ describe('DecayRule resolver standard behavior', () => {
   });
 
   it('should custom DecayRule be deleted', async () => {
-    const DELETE_QUERY = gql`
-      mutation decayRuleDelete($id: ID!) {
-        decayRuleDelete(id: $id)
-      }
-    `;
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: customDecayRuleId },
@@ -330,11 +332,6 @@ describe('DecayRule resolver standard behavior', () => {
   });
 
   it('Should built-in default DecayRule NEVER be deleted', async () => {
-    const DELETE_QUERY = gql`
-      mutation decayRuleDelete($id: ID!) {
-        decayRuleDelete(id: $id)
-      }
-    `;
     const deleteQueryResult = await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: defaultDecayRuleId },
@@ -372,5 +369,50 @@ describe('DecayRule resolver standard behavior', () => {
     for (let i = 0; i < indicatorsToCleanup.length; i += 1) {
       await deleteIndicator(indicatorsToCleanup[i]);
     }
+  });
+});
+
+describe('DecayRule rights management checks', () => {
+  it('should Participant/Editor user not be allowed to create a DecayRule.', async () => {
+    const DECAY_RULE_TO_CREATE = {
+      input: {
+        active: true,
+        decay_lifetime: 42,
+        decay_observable_types: [ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR],
+        decay_points: [90, 15, 45, -1], // disorder and negative number in purpose, to check of ordering is done correctly.
+        decay_pound: 0.5,
+        decay_revoke_score: 10,
+        description: 'Decay rule for email message and email address.',
+        name: 'decay rule email',
+        order: 12,
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: CREATE_QUERY,
+      variables: DECAY_RULE_TO_CREATE,
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: CREATE_QUERY,
+      variables: DECAY_RULE_TO_CREATE,
+    });
+  });
+
+  it('should Participant/Editor user not be allowed to list DecayRules.', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+  });
+
+  it('should Participant/Editor user not be allowed to delete DecayRules.', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: DELETE_QUERY,
+      variables: { id: 'dummy-id' },
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: DELETE_QUERY,
+      variables: { id: 'dummy-id' },
+    });
   });
 });

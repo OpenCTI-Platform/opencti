@@ -64,7 +64,7 @@ export const executeExternalQuery = async (client: AxiosInstance, uri: string, q
   return data;
 };
 
-const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}) => {
+export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}) => {
   const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true });
   return response.data;
 };

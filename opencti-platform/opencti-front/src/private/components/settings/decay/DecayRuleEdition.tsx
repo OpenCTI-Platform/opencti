@@ -2,37 +2,23 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import * as Yup from 'yup';
 import * as R from 'ramda';
-import makeStyles from '@mui/styles/makeStyles';
 import { AddOutlined, Delete } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
-import ListItemText from '@mui/material/ListItemText';
 import { FormikConfig } from 'formik/dist/types';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ObservableTypesField from '@components/common/form/ObservableTypesField';
+import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import SwitchField from '../../../../components/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useAuth from '../../../../utils/hooks/useAuth';
 import { handleError } from '../../../../relay/environment';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    paddingRight: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-}));
 
 export const decayRuleEditionMutation = graphql`
   mutation DecayRuleEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -64,27 +50,11 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   initialValues,
   onCompleted,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [commitUpdate] = useMutation(decayRuleEditionMutation);
-  const { schema } = useAuth();
-  const { scos } = schema;
-  const allObservableTypes = scos.map((sco) => sco.id);
-
-  const decayRuleValidator = Yup.object().shape({
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    active: Yup.boolean(),
-    order: Yup.number().min(1),
-    decay_lifetime: Yup.number().min(1),
-    decay_pound: Yup.number().min(0),
-    decay_revoke_score: Yup.number().min(0),
-    decay_observable_types: Yup.array().of(Yup.string()),
-    decay_points: Yup.array().of(Yup.number().min(0)),
-  });
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
-    decayRuleValidator
+    decayRuleValidator(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitUpdate({
@@ -117,7 +87,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
     <Formik<DecayRuleEditionFormData>
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={decayRuleValidator}
+      validationSchema={decayRuleValidator(t_i18n)}
       onSubmit={onSubmit}
     >
       {({ values }) => (
@@ -139,30 +109,12 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
           />
-          <Field
-            component={AutocompleteField}
+          <ObservableTypesField
             name="decay_observable_types"
+            label={t_i18n('Apply on indicator observable types (none = ALL)')}
             multiple={true}
-            fullWidth={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t_i18n('Apply on indicator observable types'),
-            }}
-            options={allObservableTypes}
-            isOptionEqualToValue={(option: string, value: string) => option === value}
-            style={{ marginTop: 20 }}
             onChange={handleSubmitField}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: string,
-            ) => (
-              <li {...props}>
-                <div className={classes.icon}>
-                  <ItemIcon type={option} />
-                </div>
-                <ListItemText primary={t_i18n(`entity_${option}`)} />
-              </li>
-            )}
+            style={{ marginTop: 20 }}
           />
           <Field
             component={TextField}
