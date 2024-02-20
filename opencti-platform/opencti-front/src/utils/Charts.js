@@ -554,10 +554,6 @@ export const radarChartOptions = (
         fontFamily: '"IBM Plex Sans", sans-serif',
         colors: chartColors,
       },
-      formatter: (value) => {
-        const len = value.length;
-        return len > 20 ? `${value.substring(0, 22)}...` : value;
-      },
     },
     axisBorder: {
       show: false,
