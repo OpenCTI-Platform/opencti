@@ -255,7 +255,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } = props;
   let isOnlySDOs = false;
   let isOnlySCOs = false;
-  let actualTypeFilter = [
+  let actualTypeFilterValues = [
     ...(targetStixDomainObjectTypes ?? []),
     ...(targetStixCyberObservableTypes ?? []),
   ];
@@ -267,7 +267,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     isOnlySDOs = true;
     virtualEntityTypes = targetStixDomainObjectTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Domain-Object')) {
-      actualTypeFilter = targetStixDomainObjectTypes;
+      actualTypeFilterValues = targetStixDomainObjectTypes;
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
@@ -276,7 +276,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     isOnlySCOs = true;
     virtualEntityTypes = targetStixCyberObservableTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Cyber-Observable')) {
-      actualTypeFilter = targetStixCyberObservableTypes;
+      actualTypeFilterValues = targetStixCyberObservableTypes;
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
@@ -287,6 +287,19 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       ...targetStixCyberObservableTypes,
     ];
   }
+  const actualTypeFilters = actualTypeFilterValues.length > 0
+    ? {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{
+        id: uuid(),
+        key: 'entity_type',
+        values: actualTypeFilterValues,
+        operator: 'eq',
+        mode: 'or',
+      }],
+    }
+    : emptyFilterGroup;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -300,21 +313,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [selectedElements, setSelectedElements] = useState({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, helpers] = useFiltersState(
-    actualTypeFilter.length > 0
-      ? {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{
-          id: uuid(),
-          key: 'entity_type',
-          values: actualTypeFilter,
-          operator: 'eq',
-          mode: 'or',
-        }],
-      }
-      : emptyFilterGroup,
-  );
+  const [filters, helpers] = useFiltersState(actualTypeFilters, actualTypeFilters);
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
     symbol: '',
@@ -576,7 +575,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             inputValue={searchTerm}
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
-            stixDomainObjectTypes={actualTypeFilter}
+            stixDomainObjectTypes={actualTypeFilterValues}
             creationCallback={undefined}
             confidence={undefined}
             defaultCreatedBy={undefined}
