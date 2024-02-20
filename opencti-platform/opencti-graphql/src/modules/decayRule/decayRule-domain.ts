@@ -346,16 +346,8 @@ export const selectDecayRuleForIndicator = (indicatorObservableType: string, dec
     return true; // return first rule
   });
   if (!decayRule) {
-    // The main observable is not found on any rule
-    // get the higher priority rule that has no decay_observable_types selection.
-    const firstRuleForAnyObservables = orderedRules.find((rule) => {
-      return rule.decay_observable_types?.length === 0;
-    });
-    if (!firstRuleForAnyObservables) {
-      // always return a fallback decay rule
-      return { ...FALLBACK_DECAY_RULE, id: 'FALLBACK_DECAY_RULE' };
-    }
-    return firstRuleForAnyObservables;
+    // always return a fallback decay rule
+    return { ...FALLBACK_DECAY_RULE, id: 'FALLBACK_DECAY_RULE' };
   }
   return decayRule;
 };
