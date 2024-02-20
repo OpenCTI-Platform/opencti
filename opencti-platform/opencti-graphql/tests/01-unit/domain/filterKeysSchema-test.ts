@@ -16,7 +16,7 @@ import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from '../../../src/modu
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
-import { ALIAS_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
+import { ALIAS_FILTER, CONNECTED_TO_INSTANCE_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 
 describe('Filter keys schema generation testing', async () => {
@@ -143,13 +143,19 @@ describe('Filter keys schema generation testing', async () => {
   });
   it('should construct correct filter definition for special filter keys', () => {
     // 'regardingOf' for stix core objects
-    const filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INSTANCE_REGARDING_OF);
+    let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.filterKey).toEqual(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.type).toEqual('nested');
     expect(filterDefinition?.multiple).toEqual(true);
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(0);
     expect(filterDefinition?.subFilters?.length).toEqual(2);
     expect(filterDefinition?.subFilters?.map((n) => n.filterKey).includes('relationship_type')).toBeTruthy();
+    // 'connectedToId' for 'Instance' special type
+    filterDefinition = filterKeysSchema.get('Instance')?.get(CONNECTED_TO_INSTANCE_FILTER);
+    expect(filterDefinition?.type).toEqual('id');
+    expect(filterDefinition?.multiple).toEqual(true);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
+    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
   });
   it('should construct correct filter definition for abstract entity types', () => {
     // Containers
