@@ -22,7 +22,7 @@ When creating a CSV feed, you need to select one or multiple types of entities t
 
 !!! note "Details"
     
-    For more information about CSV feeds, filters and configuration, please check the [Export in structured format](../usage/export-structured.md) section.
+    For more information about CSV feeds, filters and configuration, please check the [Export in structured format](../usage/export/#export-in-structured-or-document-format) section.
 
 ### TAXII collections
 
