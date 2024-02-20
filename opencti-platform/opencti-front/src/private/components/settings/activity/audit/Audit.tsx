@@ -118,7 +118,7 @@ const Audit = () => {
   const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     timestamp: {
-      label: 'Date',
+      label: 'Timestamp',
       width: '15%',
       isSortable: true,
     },
@@ -235,20 +235,7 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
-        availableFilterKeys={[
-          'event_type',
-          'event_scope',
-          'members_group',
-          'members_organization',
-          'members_user',
-          'created',
-          'contextEntityId',
-          'contextEntityType',
-          'contextCreatedBy',
-          'contextObjectMarking',
-          'contextObjectLabel',
-          'contextCreator',
-        ]}
+        entityTypes={['History']}
       >
         {queryRef && (
           <React.Suspense

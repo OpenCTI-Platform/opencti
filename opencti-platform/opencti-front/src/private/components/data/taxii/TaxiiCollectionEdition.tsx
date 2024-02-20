@@ -211,6 +211,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 'toTypes',
               ]}
               helpers={helpers}
+              searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
           </Box>
           <FilterIconButton

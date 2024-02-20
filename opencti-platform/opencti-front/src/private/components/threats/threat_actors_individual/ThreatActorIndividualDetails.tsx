@@ -56,6 +56,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
     threat_actor_types
     sophistication
     resource_level
+    personal_motivations
     primary_motivation
     secondary_motivations
     goals
@@ -282,6 +283,41 @@ ThreatActorIndividualDetailsProps
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={secondaryMotivation}
+                            small
+                          />
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t_i18n('Personal motivations')}
+            </Typography>
+            <FieldOrEmpty source={data.personal_motivations}>
+              {data.personal_motivations && (
+                <List>
+                  {data.personal_motivations.map((personalMotivation) => (
+                    <ListItem
+                      key={personalMotivation}
+                      dense={true}
+                      divider={true}
+                    >
+                      <ListItemIcon>
+                        <ArmFlexOutline />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <ItemOpenVocab
+                            type="attack-motivation-ov"
+                            value={personalMotivation}
                             small
                           />
                         }

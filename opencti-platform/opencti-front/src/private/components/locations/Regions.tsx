@@ -46,7 +46,7 @@ const Regions: FunctionComponent = () => {
         isSortable: true,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '20%',
         isSortable: true,
       },
@@ -79,11 +79,6 @@ const Regions: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'created',
-          'createdBy',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

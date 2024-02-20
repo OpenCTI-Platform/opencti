@@ -61,7 +61,7 @@ const AttackPatterns = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -94,18 +94,6 @@ const AttackPatterns = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'creator_id',
-          'created',
-          'revoked',
-          'killChainPhases',
-          'name',
-        ]}
       >
         {queryRef && (
         <React.Suspense

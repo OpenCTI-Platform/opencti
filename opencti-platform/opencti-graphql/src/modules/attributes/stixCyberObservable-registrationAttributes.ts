@@ -36,7 +36,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
-  { name: 'x_opencti_description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'x_opencti_description', label: 'Observable description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);
@@ -52,12 +52,12 @@ const hashDefinition: AttributeDefinition = {
     { name: 'SHA-1', label: 'SHA-1', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'SHA-256', label: 'SHA-256', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'SHA-512', label: 'SHA-512', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'SHA3-256', label: 'SHA3-256', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'SHA3-512', label: 'SHA3-512', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'SHA3-256', label: 'SHA3-256', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'SHA3-512', label: 'SHA3-512', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'SSDEEP', label: 'SSDEEP', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'SDHASH', label: 'SDHASH', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'TLSH', label: 'TLSH', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'LZJD', label: 'LZJD', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'SDHASH', label: 'SDHASH', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'TLSH', label: 'TLSH', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'LZJD', label: 'LZJD', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   mandatoryType: 'no',
   isFilterable: true,
@@ -67,7 +67,7 @@ const hashDefinition: AttributeDefinition = {
 
 const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_AUTONOMOUS_SYSTEM]: [
-    { name: 'number', label: 'Number', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'number', label: 'Autonomous system number', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'rir', label: 'RIR', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
@@ -104,14 +104,14 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'mime_type', label: 'Mime type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'payload_bin', label: 'Payload', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'url', label: 'URL', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'encryption_algorithm', label: 'Algorithm', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'encryption_algorithm', label: 'Encryption algorithm', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'decryption_key', label: 'Decryption key', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_additional_names', label: 'Additional names', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
     hashDefinition,
     { name: 'extensions', label: 'Extensions', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'size', label: 'Size', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'size', label: 'File size', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'name_enc', label: 'Name encoding', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'magic_number_hex', label: 'Magic number hex', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -166,8 +166,8 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_NETWORK_TRAFFIC]: [
     { name: 'extensions', label: 'Extensions', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'start', label: 'Start date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'end', label: 'Endd date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'is_active', label: 'Active', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'end', label: 'End date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'is_active', label: 'Network traffic active', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'src_port', label: 'SRC port', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
     { name: 'dst_port', label: 'DST port', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
     { name: 'protocols', label: 'Protocols', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
@@ -180,27 +180,27 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'extensions', label: 'Extensions', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_hidden', label: 'Hidden', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'pid', label: 'PID', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'created_time', label: 'Creation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'created_time', label: 'Process creation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'cwd', label: 'CWD', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'command_line', label: 'Command line', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'environment_variables', label: 'Environment variables', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     // windows-process-ext
     { name: 'aslr_enabled', label: 'ASLR enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'dep_enabled', label: 'DEP enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'priority', label: 'Priority', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'priority', label: 'Priority', type: 'string', format: 'vocabulary', vocabularyCategory: 'case_priority_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'owner_sid', label: 'Owner sid', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'window_title', label: 'Window title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     // { name: 'startup_info', label: 'Startup information', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // TODO introduce later
-    { name: 'integrity_level', label: 'Integrity level', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'integrity_level', label: 'Integrity level', type: 'string', format: 'vocabulary', vocabularyCategory: 'integrity_level_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     // windows-service-ext
     { name: 'service_name', label: 'Service name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'descriptions', label: 'Descriptions', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'display_name', label: 'Display name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'group_name', label: 'Group name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'start_type', label: 'Start type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'service_type', label: 'Service type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'service_status', label: 'Service status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'start_type', label: 'Start type', type: 'string', format: 'vocabulary', vocabularyCategory: 'start_type_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'service_type', label: 'Service type', type: 'string', format: 'vocabulary', vocabularyCategory: 'service_type_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'service_status', label: 'Service status', type: 'string', format: 'vocabulary', vocabularyCategory: 'service_status_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     // Missing serviceDlls
   ],
   [ENTITY_SOFTWARE]: [
@@ -230,7 +230,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     },
     { name: 'credential', label: 'Credential', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'account_login', label: 'Account login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'account_type', label: 'Account type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'account_type', label: 'Account type', type: 'string', format: 'vocabulary', vocabularyCategory: 'account_type_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'display_name', label: 'Display name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_service_account', label: 'Service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_privileged', label: 'Privileged', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -244,7 +244,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_WINDOWS_REGISTRY_KEY]: [
     { name: 'attribute_key', label: 'Key', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'modified_time', label: 'Modification date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'modified_time', label: 'Key modification date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'number_of_subkeys', label: 'Number of sub-keys', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [

@@ -161,7 +161,6 @@ const SearchIndexedFilesComponent = () => {
           secondaryAction={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[]}
         >
           {queryRef && (
             <React.Suspense fallback={<Loader/>}>

@@ -29,7 +29,7 @@ class PositionOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
-            {t('Creation date')}
+            {t('Original creation date')}
           </Typography>
           {fldt(position.created)}
           <Typography

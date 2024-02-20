@@ -1,6 +1,5 @@
 import React, { FunctionComponent, KeyboardEvent } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { useFormatter } from '../../../../components/i18n';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
@@ -13,6 +12,7 @@ interface FilterDateProps {
   operator?: string;
   inputValues: { key: string, values: string[], operator?: string }[];
   setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
+  filterLabel: string;
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -21,9 +21,8 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   operator,
   inputValues,
   setInputValues,
+  filterLabel,
 }) => {
-  const { t_i18n } = useFormatter();
-
   const findFilterFromKey = (filters: {
     key: string,
     values: (string | Date)[],
@@ -65,7 +64,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   return (
     <DatePicker
       key={filterKey}
-      label={t_i18n(filterKey)}
+      label={filterLabel}
       value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}

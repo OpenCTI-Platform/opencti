@@ -35,7 +35,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
     handleAddRepresentationFilter: (id: string, value: string) => {
       if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = filtersState.filters?.filters.find((f) => id === f.id);
-        if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
+        if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           setFiltersState((prevState) => ({
             ...prevState,
             filters: handleChangeOperatorFiltersUtil({

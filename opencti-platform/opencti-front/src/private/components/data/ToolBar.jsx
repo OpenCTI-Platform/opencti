@@ -75,8 +75,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, removeIdFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
-import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
+import { findFilterFromKey, serializeFilterGroupForBackend, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -588,7 +587,7 @@ class ToolBar extends Component {
     return t('Copy');
   }
 
-  submitTask() {
+  submitTask(availableFilterKeys) {
     this.setState({ processing: true });
     const { actions, mergingElement, scope } = this.state;
     const {
@@ -603,7 +602,7 @@ class ToolBar extends Component {
     } = this.props;
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
-      removeIdFromFilterGroupObject(filters),
+      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
     const finalActions = R.map(
       (n) => ({
@@ -1255,17 +1254,6 @@ class ToolBar extends Component {
       || (entityTypeFilterValues.length === 1
         && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
-    // region promote filters
-    const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
-    const observablesFiltered = entityTypeFilterValues.length > 0
-      && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
-    const promotionTypesFiltered = entityTypeFilterValues.length > 0
-      && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
-    const isManualPromoteSelect = !selectAll
-      && selectedTypes.length > 0
-      && selectedTypes.every((type) => promotionTypes.includes(type));
-    const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
-    // endregion
     // region enrich
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
@@ -1332,240 +1320,46 @@ class ToolBar extends Component {
     }
     return (
       <UserContext.Consumer>
-        {({ bannerSettings }) => (
-          <Drawer
-            anchor="bottom"
-            variant="persistent"
-            classes={{ paper: paperClass }}
-            open={isOpen}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                paddingLeft: navOpen ? 185 : 60,
-                bottom: bannerSettings.bannerHeightNumber,
-              },
-            }}
-          >
-            <Toolbar style={{ minHeight: 54 }}>
-              <Typography
-                className={classes.title}
-                color="inherit"
-                variant="subtitle1"
-              >
-                <span
-                  style={{
-                    padding: '2px 5px 2px 5px',
-                    marginRight: 5,
-                    backgroundColor: theme.palette.secondary.main,
-                    color: '#ffffff',
-                  }}
-                >
-                  {numberOfSelectedElements}
-                </span>{' '}
-                {t('selected')}{' '}
-                <IconButton
-                  aria-label="clear"
-                  disabled={
-                    numberOfSelectedElements === 0 || this.state.processing
-                  }
-                  onClick={handleClearSelectedElements.bind(this)}
-                  size="small"
-                >
-                  <ClearOutlined fontSize="small" />
-                </IconButton>
-              </Typography>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                {!typesAreNotUpdatable && (
-                  <Tooltip title={t('Update')}>
-                    <span>
-                      <IconButton
-                        aria-label="update"
-                        disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
-                        onClick={this.handleOpenUpdate.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <BrushOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                <UserContext.Consumer>
-                  {({ platformModuleHelpers }) => {
-                    const label = platformModuleHelpers.isRuleEngineEnable()
-                      ? 'Rule rescan'
-                      : 'Rule rescan (engine is disabled)';
-                    const buttonDisable = typesAreNotScannable
-                      || !platformModuleHelpers.isRuleEngineEnable()
-                      || numberOfSelectedElements === 0
-                      || this.state.processing;
-                    return typesAreNotScannable ? undefined : (
-                      <Tooltip title={t(label)}>
-                        <span>
-                          <IconButton
-                            aria-label="update"
-                            disabled={buttonDisable}
-                            onClick={this.handleOpenRescan.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <AutoFixHighOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    );
-                  }}
-                </UserContext.Consumer>
-                {this.props.handleCopy && (
-                  <Tooltip title={titleCopy}>
-                    <span>
-                      <IconButton
-                        aria-label="copy"
-                        disabled={
-                          numberOfSelectedElements
-                          > maxNumberOfObservablesToCopy
-                        }
-                        onClick={this.props.handleCopy}
-                        color="primary"
-                        size="small"
-                      >
-                        <ContentCopyOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                {!enrichDisable && (
-                  <Tooltip title={t('Enrichment')}>
-                    <span>
-                      <IconButton
-                        aria-label="enrichment"
-                        disabled={this.state.processing}
-                        onClick={this.handleOpenEnrichment.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <CloudRefreshOutline fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                {!promoteDisable && (
-                  <Tooltip title={t('Indicators/observables generation')}>
-                    <span>
-                      <IconButton
-                        aria-label="promote"
-                        disabled={this.state.processing}
-                        onClick={this.handleOpenPromote.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <TransformOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                {!typesAreNotMergable && (
-                  <Tooltip title={t('Merge')}>
-                    <span>
-                      <IconButton
-                        aria-label="merge"
-                        disabled={
-                          typesAreDifferent
-                          || numberOfSelectedElements < 2
-                          || numberOfSelectedElements > 4
-                          || preventMerge
-                          || selectAll
-                          || this.state.processing
-                        }
-                        onClick={this.handleOpenMerge.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <MergeOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-              </Security>
-              {!typesAreNotAddableInContainer && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <Tooltip title={t('Add in container')}>
-                    <span>
-                      <IconButton
-                        aria-label="input"
-                        disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
-                        onClick={this.handleOpenAddInContainer.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <MoveToInboxOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Security>
-              )}
-              {container && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <Tooltip title={t('Remove from the container')}>
-                    <span>
-                      <IconButton
-                        aria-label="remove"
-                        disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
-                        onClick={this.handleLaunchRemove.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <LinkOffOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Security>
-              )}
-              {deleteDisable !== true && (
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <Tooltip title={warningMessage || t('Delete')}>
-                    <span>
-                      <IconButton
-                        aria-label="delete"
-                        disabled={
-                          numberOfSelectedElements === 0
-                          || this.state.processing
-                        }
-                        onClick={this.handleLaunchDelete.bind(this)}
-                        color={warning ? 'warning' : 'primary'}
-                        size="small"
-                      >
-                        <DeleteOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Security>
-              )}
-            </Toolbar>
-            <Dialog
-              PaperProps={{ elevation: 1 }}
-              open={this.state.displayTask}
-              keepMounted={true}
-              TransitionComponent={Transition}
-              onClose={this.handleCloseTask.bind(this)}
-              fullWidth={true}
-              maxWidth="md"
+        {({ bannerSettings, schema }) => {
+          // region promote filters
+          const stixCyberObservableTypes = schema.scos.map((sco) => sco.id);
+          const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
+          const observablesFiltered = entityTypeFilterValues.length > 0
+            && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
+          const promotionTypesFiltered = entityTypeFilterValues.length > 0
+            && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
+          const isManualPromoteSelect = !selectAll
+            && selectedTypes.length > 0
+            && selectedTypes.every((type) => promotionTypes.includes(type));
+          const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
+          const filterKeysMap = new Map();
+          entityTypeFilterValues.forEach((entityType) => {
+            const currentMap = schema.filterKeysSchema.get(entityType);
+            currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+          });
+          const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
+          // endregion
+          return (
+            <Drawer
+              anchor="bottom"
+              variant="persistent"
+              classes={{ paper: paperClass }}
+              open={isOpen}
+              PaperProps={{
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  paddingLeft: navOpen ? 185 : 60,
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
+              }}
             >
-              <DialogTitle>
-                <div style={{ float: 'left' }}>
-                  {t('Launch a background task')}
-                </div>
-                <div style={{ float: 'right' }}>
+              <Toolbar style={{ minHeight: 54 }}>
+                <Typography
+                  className={classes.title}
+                  color="inherit"
+                  variant="subtitle1"
+                >
                   <span
                     style={{
                       padding: '2px 5px 2px 5px',
@@ -1574,722 +1368,936 @@ class ToolBar extends Component {
                       color: '#ffffff',
                     }}
                   >
-                    {n(numberOfSelectedElements)}
+                    {numberOfSelectedElements}
                   </span>{' '}
-                  {t('selected element(s)')}
-                </div>
-              </DialogTitle>
-              <DialogContent>
-                {numberOfSelectedElements > 1000 && (
-                  <Alert severity="warning">
-                    {t(
-                      "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
-                    )}
-                  </Alert>
-                )}
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>{t('Step')}</TableCell>
-                        <TableCell>{t('Field')}</TableCell>
-                        <TableCell>{t('Values')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          {' '}
-                          <span
-                            style={{
-                              padding: '2px 5px 2px 5px',
-                              marginRight: 5,
-                              color:
-                                theme.palette.mode === 'dark'
-                                  ? '#000000'
-                                  : '#ffffff',
-                              backgroundColor: theme.palette.primary.main,
-                            }}
-                          >
-                            1
+                  {t('selected')}{' '}
+                  <IconButton
+                    aria-label="clear"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={handleClearSelectedElements.bind(this)}
+                    size="small"
+                  >
+                    <ClearOutlined fontSize="small"/>
+                  </IconButton>
+                </Typography>
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  {!typesAreNotUpdatable && (
+                    <Tooltip title={t('Update')}>
+                      <span>
+                        <IconButton
+                          aria-label="update"
+                          disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                        }
+                          onClick={this.handleOpenUpdate.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <BrushOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  <UserContext.Consumer>
+                    {({ platformModuleHelpers }) => {
+                      const label = platformModuleHelpers.isRuleEngineEnable()
+                        ? 'Rule rescan'
+                        : 'Rule rescan (engine is disabled)';
+                      const buttonDisable = typesAreNotScannable
+                        || !platformModuleHelpers.isRuleEngineEnable()
+                        || numberOfSelectedElements === 0
+                        || this.state.processing;
+                      return typesAreNotScannable ? undefined : (
+                        <Tooltip title={t(label)}>
+                          <span>
+                            <IconButton
+                              aria-label="update"
+                              disabled={buttonDisable}
+                              onClick={this.handleOpenRescan.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <AutoFixHighOutlined fontSize="small"/>
+                            </IconButton>
                           </span>
-                        </TableCell>
-                        <TableCell>
-                          <Chip label="SCOPE" />
-                        </TableCell>
-                        <TableCell>{t('N/A')}</TableCell>
-                        <TableCell>
-                          {selectAll ? (
-                            <div className={classes.filters}>
-                              {search && search.length > 0 && (
-                                <span>
-                                  <Chip
-                                    classes={{ root: classes.filter }}
-                                    label={
-                                      <div>
-                                        <strong>{t('Search')}</strong>: {search}
-                                      </div>
-                                    }
-                                  />
-                                  {filters.filters.length > 0 && (
+                        </Tooltip>
+                      );
+                    }}
+                  </UserContext.Consumer>
+                  {this.props.handleCopy && (
+                    <Tooltip title={titleCopy}>
+                      <span>
+                        <IconButton
+                          aria-label="copy"
+                          disabled={
+                          numberOfSelectedElements
+                          > maxNumberOfObservablesToCopy
+                        }
+                          onClick={this.props.handleCopy}
+                          color="primary"
+                          size="small"
+                        >
+                          <ContentCopyOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {!enrichDisable && (
+                    <Tooltip title={t('Enrichment')}>
+                      <span>
+                        <IconButton
+                          aria-label="enrichment"
+                          disabled={this.state.processing}
+                          onClick={this.handleOpenEnrichment.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <CloudRefreshOutline fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {!promoteDisable && (
+                    <Tooltip title={t('Indicators/observables generation')}>
+                      <span>
+                        <IconButton
+                          aria-label="promote"
+                          disabled={this.state.processing}
+                          onClick={this.handleOpenPromote.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <TransformOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {!typesAreNotMergable && (
+                    <Tooltip title={t('Merge')}>
+                      <span>
+                        <IconButton
+                          aria-label="merge"
+                          disabled={
+                          typesAreDifferent
+                          || numberOfSelectedElements < 2
+                          || numberOfSelectedElements > 4
+                          || preventMerge
+                          || selectAll
+                          || this.state.processing
+                        }
+                          onClick={this.handleOpenMerge.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <MergeOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                </Security>
+                {!typesAreNotAddableInContainer && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <Tooltip title={t('Add in container')}>
+                      <span>
+                        <IconButton
+                          aria-label="input"
+                          disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                        }
+                          onClick={this.handleOpenAddInContainer.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <MoveToInboxOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Security>
+                )}
+                {container && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <Tooltip title={t('Remove from the container')}>
+                      <span>
+                        <IconButton
+                          aria-label="remove"
+                          disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                        }
+                          onClick={this.handleLaunchRemove.bind(this)}
+                          color="primary"
+                          size="small"
+                        >
+                          <LinkOffOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Security>
+                )}
+                {deleteDisable !== true && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Tooltip title={warningMessage || t('Delete')}>
+                      <span>
+                        <IconButton
+                          aria-label="delete"
+                          disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                        }
+                          onClick={this.handleLaunchDelete.bind(this)}
+                          color={warning ? 'warning' : 'primary'}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Security>
+                )}
+              </Toolbar>
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                open={this.state.displayTask}
+                keepMounted={true}
+                TransitionComponent={Transition}
+                onClose={this.handleCloseTask.bind(this)}
+                fullWidth={true}
+                maxWidth="md"
+              >
+                <DialogTitle>
+                  <div style={{ float: 'left' }}>
+                    {t('Launch a background task')}
+                  </div>
+                  <div style={{ float: 'right' }}>
+                    <span
+                      style={{
+                        padding: '2px 5px 2px 5px',
+                        marginRight: 5,
+                        backgroundColor: theme.palette.secondary.main,
+                        color: '#ffffff',
+                      }}
+                    >
+                      {n(numberOfSelectedElements)}
+                    </span>{' '}
+                    {t('selected element(s)')}
+                  </div>
+                </DialogTitle>
+                <DialogContent>
+                  {numberOfSelectedElements > 1000 && (
+                    <Alert severity="warning">
+                      {t(
+                        "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
+                      )}
+                    </Alert>
+                  )}
+                  <TableContainer>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>#</TableCell>
+                          <TableCell>{t('Step')}</TableCell>
+                          <TableCell>{t('Field')}</TableCell>
+                          <TableCell>{t('Values')}</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>
+                            {' '}
+                            <span
+                              style={{
+                                padding: '2px 5px 2px 5px',
+                                marginRight: 5,
+                                color:
+                                  theme.palette.mode === 'dark'
+                                    ? '#000000'
+                                    : '#ffffff',
+                                backgroundColor: theme.palette.primary.main,
+                              }}
+                            >
+                              1
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Chip label="SCOPE"/>
+                          </TableCell>
+                          <TableCell>{t('N/A')}</TableCell>
+                          <TableCell>
+                            {selectAll ? (
+                              <div className={classes.filters}>
+                                {search && search.length > 0 && (
+                                  <span>
                                     <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
+                                      classes={{ root: classes.filter }}
+                                      label={
+                                        <div>
+                                          <strong>{t('Search')}</strong>: {search}
+                                        </div>
+                                    }
                                     />
+                                    {filters.filters.length > 0 && (
+                                      <Chip
+                                        classes={{ root: classes.operator }}
+                                        label={t('AND')}
+                                      />
+                                    )}
+                                  </span>
+                                )}
+                                <TasksFilterValueContainer
+                                  filters={filters}
+                                ></TasksFilterValueContainer>
+                              </div>
+                            ) : (
+                              <span>
+                                {mergingElement
+                                  ? truncate(
+                                    R.join(', ', [
+                                      defaultValue(mergingElement),
+                                    ]),
+                                    80,
+                                  )
+                                  : truncate(
+                                    R.join(
+                                      ', ',
+                                      R.map(
+                                        (o) => defaultValue(o),
+                                        R.values(selectedElements || {}),
+                                      ),
+                                    ),
+                                    80,
                                   )}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        {R.map((o) => {
+                          const number = actions.indexOf(o);
+                          return (
+                            <TableRow key={o.type}>
+                              <TableCell>
+                                {' '}
+                                <span
+                                  style={{
+                                    padding: '2px 5px 2px 5px',
+                                    marginRight: 5,
+                                    color:
+                                      theme.palette.mode === 'dark'
+                                        ? '#000000'
+                                        : '#ffffff',
+                                    backgroundColor: theme.palette.primary.main,
+                                  }}
+                                >
+                                  {number + 2}
                                 </span>
-                              )}
-                              <TasksFilterValueContainer
-                                filters={filters}
-                              ></TasksFilterValueContainer>
-                            </div>
-                          ) : (
-                            <span>
-                              {mergingElement
-                                ? truncate(
-                                  R.join(', ', [
-                                    defaultValue(mergingElement),
-                                  ]),
-                                  80,
-                                )
-                                : truncate(
+                              </TableCell>
+                              <TableCell>
+                                <Chip label={o.type}/>
+                              </TableCell>
+                              <TableCell>
+                                {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                              </TableCell>
+                              <TableCell>
+                                {truncate(
                                   R.join(
                                     ', ',
                                     R.map(
-                                      (o) => defaultValue(o),
-                                      R.values(selectedElements || {}),
+                                      (p) => (typeof p === 'string'
+                                        ? p
+                                        : defaultValue(p)),
+                                      R.pathOr([], ['context', 'values'], o),
                                     ),
                                   ),
                                   80,
                                 )}
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                      {R.map((o) => {
-                        const number = actions.indexOf(o);
-                        return (
-                          <TableRow key={o.type}>
-                            <TableCell>
-                              {' '}
-                              <span
-                                style={{
-                                  padding: '2px 5px 2px 5px',
-                                  marginRight: 5,
-                                  color:
-                                    theme.palette.mode === 'dark'
-                                      ? '#000000'
-                                      : '#ffffff',
-                                  backgroundColor: theme.palette.primary.main,
-                                }}
-                              >
-                                {number + 2}
-                              </span>
-                            </TableCell>
-                            <TableCell>
-                              <Chip label={o.type} />
-                            </TableCell>
-                            <TableCell>
-                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                            </TableCell>
-                            <TableCell>
-                              {truncate(
-                                R.join(
-                                  ', ',
-                                  R.map(
-                                    (p) => (typeof p === 'string'
-                                      ? p
-                                      : defaultValue(p)),
-                                    R.pathOr([], ['context', 'values'], o),
-                                  ),
-                                ),
-                                80,
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      }, actions)}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={this.handleCloseTask.bind(this)}
-                  disabled={this.state.processing}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  onClick={this.submitTask.bind(this)}
-                  color="secondary"
-                  disabled={this.state.processing}
-                >
-                  {t('Launch')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-            <Drawer
-              open={this.state.displayUpdate}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleCloseUpdate.bind(this)}
-            >
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleCloseUpdate.bind(this)}
-                  size="large"
-                  color="primary"
-                >
-                  <CloseOutlined fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t('Update entities')}</Typography>
-              </div>
-              <div className={classes.container} style={{ marginTop: 20 }}>
-                {Array(actionsInputs.length)
-                  .fill(0)
-                  .map((_, i) => (
-                    <div key={i} className={classes.step}>
-                      <IconButton
-                        disabled={actionsInputs.length === 1}
-                        aria-label="Delete"
-                        className={classes.stepCloseButton}
-                        onClick={this.handleRemoveStep.bind(this, i)}
-                        size="small"
-                      >
-                        <CancelOutlined fontSize="small" />
-                      </IconButton>
-                      <Grid container={true} spacing={3}>
-                        <Grid item={true} xs={3}>
-                          <FormControl className={classes.formControl}>
-                            <InputLabel>{t('Action type')}</InputLabel>
-                            <Select
-                              variant="standard"
-                              value={actionsInputs[i]?.type}
-                              onChange={this.handleChangeActionInput.bind(
-                                this,
-                                i,
-                                'type',
-                              )}
-                            >
-                              <MenuItem value="ADD">{t('Add')}</MenuItem>
-                              <MenuItem value="REPLACE">
-                                {t('Replace')}
-                              </MenuItem>
-                              <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        <Grid item={true} xs={3}>
-                          <FormControl className={classes.formControl}>
-                            <InputLabel>{t('Field')}</InputLabel>
-                            {this.renderFieldOptions(i)}
-                          </FormControl>
-                        </Grid>
-                        <Grid item={true} xs={6}>
-                          {this.renderValuesOptions(i)}
-                        </Grid>
-                      </Grid>
-                    </div>
-                  ))}
-                <div className={classes.add}>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }, actions)}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </DialogContent>
+                <DialogActions>
                   <Button
-                    disabled={!this.areStepValid()}
-                    variant="contained"
+                    onClick={this.handleCloseTask.bind(this)}
+                    disabled={this.state.processing}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    onClick={this.submitTask.bind(this, availableFilterKeys)}
                     color="secondary"
-                    size="small"
-                    onClick={this.handleAddStep.bind(this)}
-                    classes={{ root: classes.buttonAdd }}
+                    disabled={this.state.processing}
                   >
-                    <AddOutlined fontSize="small" />
+                    {t('Launch')}
                   </Button>
-                </div>
-                <div className={classes.buttons}>
-                  <Button
-                    disabled={!this.areStepValid()}
-                    variant="contained"
+                </DialogActions>
+              </Dialog>
+              <Drawer
+                open={this.state.displayUpdate}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseUpdate.bind(this)}
+              >
+                <div className={classes.header}>
+                  <IconButton
+                    aria-label="Close"
+                    className={classes.closeButton}
+                    onClick={this.handleCloseUpdate.bind(this)}
+                    size="large"
                     color="primary"
-                    onClick={this.handleLaunchUpdate.bind(this)}
-                    classes={{ root: classes.button }}
                   >
-                    {t('Update')}
-                  </Button>
+                    <CloseOutlined fontSize="small" color="primary"/>
+                  </IconButton>
+                  <Typography variant="h6">{t('Update entities')}</Typography>
                 </div>
-              </div>
-            </Drawer>
-            <Drawer
-              open={this.state.displayMerge}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleCloseMerge.bind(this)}
-            >
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleCloseMerge.bind(this)}
-                  size="large"
-                  color="primary"
-                >
-                  <CloseOutlined fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t('Merge entities')}</Typography>
-              </div>
-              <div className={classes.container}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Selected entities')}
-                </Typography>
-                <List>
-                  {selectedElementsList.map((element) => (
-                    <ListItem key={element.id} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <ItemIcon type={element.entity_type} />
-                      </ListItemIcon>
-                      <ListItemText
-                        sx={{
-                          '.MuiListItemText-primary': {
-                            overflowX: 'hidden',
-                            textOverflow: 'ellipsis',
-                          },
-                        }}
-                        primary={defaultValue(element)}
-                        secondary={truncate(
-                          element.description
+                <div className={classes.container} style={{ marginTop: 20 }}>
+                  {Array(actionsInputs.length)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className={classes.step}>
+                        <IconButton
+                          disabled={actionsInputs.length === 1}
+                          aria-label="Delete"
+                          className={classes.stepCloseButton}
+                          onClick={this.handleRemoveStep.bind(this, i)}
+                          size="small"
+                        >
+                          <CancelOutlined fontSize="small"/>
+                        </IconButton>
+                        <Grid container={true} spacing={3}>
+                          <Grid item={true} xs={3}>
+                            <FormControl className={classes.formControl}>
+                              <InputLabel>{t('Action type')}</InputLabel>
+                              <Select
+                                variant="standard"
+                                value={actionsInputs[i]?.type}
+                                onChange={this.handleChangeActionInput.bind(
+                                  this,
+                                  i,
+                                  'type',
+                                )}
+                              >
+                                <MenuItem value="ADD">{t('Add')}</MenuItem>
+                                <MenuItem value="REPLACE">
+                                  {t('Replace')}
+                                </MenuItem>
+                                <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item={true} xs={3}>
+                            <FormControl className={classes.formControl}>
+                              <InputLabel>{t('Field')}</InputLabel>
+                              {this.renderFieldOptions(i)}
+                            </FormControl>
+                          </Grid>
+                          <Grid item={true} xs={6}>
+                            {this.renderValuesOptions(i)}
+                          </Grid>
+                        </Grid>
+                      </div>
+                    ))}
+                  <div className={classes.add}>
+                    <Button
+                      disabled={!this.areStepValid()}
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      onClick={this.handleAddStep.bind(this)}
+                      classes={{ root: classes.buttonAdd }}
+                    >
+                      <AddOutlined fontSize="small"/>
+                    </Button>
+                  </div>
+                  <div className={classes.buttons}>
+                    <Button
+                      disabled={!this.areStepValid()}
+                      variant="contained"
+                      color="primary"
+                      onClick={this.handleLaunchUpdate.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Update')}
+                    </Button>
+                  </div>
+                </div>
+              </Drawer>
+              <Drawer
+                open={this.state.displayMerge}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseMerge.bind(this)}
+              >
+                <div className={classes.header}>
+                  <IconButton
+                    aria-label="Close"
+                    className={classes.closeButton}
+                    onClick={this.handleCloseMerge.bind(this)}
+                    size="large"
+                    color="primary"
+                  >
+                    <CloseOutlined fontSize="small" color="primary"/>
+                  </IconButton>
+                  <Typography variant="h6">{t('Merge entities')}</Typography>
+                </div>
+                <div className={classes.container}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Selected entities')}
+                  </Typography>
+                  <List>
+                    {selectedElementsList.map((element) => (
+                      <ListItem key={element.id} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <ItemIcon type={element.entity_type}/>
+                        </ListItemIcon>
+                        <ListItemText
+                          sx={{
+                            '.MuiListItemText-primary': {
+                              overflowX: 'hidden',
+                              textOverflow: 'ellipsis',
+                            },
+                          }}
+                          primary={defaultValue(element)}
+                          secondary={truncate(
+                            element.description
                             || element.x_opencti_description
                             || '',
-                          60,
+                            60,
+                          )}
+                        />
+                        <div style={{ marginRight: 50 }}>
+                          {R.pathOr('', ['createdBy', 'name'], element)}
+                        </div>
+                        <div style={{ marginRight: 50 }}>
+                          <ItemMarkings
+                            variant="inList"
+                            markingDefinitions={
+                              element.objectMarking ?? []
+                            }
+                          />
+                        </div>
+                        <ListItemSecondaryAction>
+                          <Radio
+                            checked={
+                              keptEntityId
+                                ? keptEntityId === element.id
+                                : R.head(selectedElementsList).id === element.id
+                            }
+                            onChange={this.handleChangeKeptEntityId.bind(
+                              this,
+                              element.id,
+                            )}
+                            value={element.id}
+                            name="keptEntityID"
+                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                          />
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))}
+                  </List>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Merged entity')}
+                  </Typography>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Name')}
+                  </Typography>
+                  <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
+                    {defaultValue(keptElement)}
+                  </div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Aliases')}
+                  </Typography>
+                  {newAliases.map((label) => (label.length > 0 ? (
+                    <Chip
+                      key={label}
+                      classes={{ root: classes.aliases }}
+                      label={label}
+                    />
+                  ) : (
+                    ''
+                  )))}
+                  {noAuthor !== true && (
+                    <>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Author')}
+                      </Typography>
+                      {R.pathOr('', ['createdBy', 'name'], keptElement)}
+                    </>
+                  )}
+                  {noMarking !== true && (
+                    <>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Marking')}
+                      </Typography>
+                      <ItemMarkings
+                        markingDefinitions={
+                          keptElement?.markingDefinitions || []
+                        }
+                      />
+                    </>
+                  )}
+                  {noWarning !== true && (
+                    <>
+                      <Alert severity="warning" style={{ marginTop: 20 }}>
+                        {t(
+                          'The relations attached to selected entities will be copied to the merged entity.',
+                        )}
+                      </Alert>
+                    </>
+                  )}
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.handleLaunchMerge.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Merge')}
+                    </Button>
+                  </div>
+                </div>
+              </Drawer>
+              <Drawer
+                open={this.state.displayEnrichment}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseEnrichment.bind(this)}
+              >
+                <div className={classes.header}>
+                  <IconButton
+                    aria-label="Close"
+                    className={classes.closeButton}
+                    onClick={this.handleCloseEnrichment.bind(this)}
+                    size="large"
+                    color="primary"
+                  >
+                    <CloseOutlined fontSize="small" color="primary"/>
+                  </IconButton>
+                  <Typography variant="h6">{t('Entity enrichment')}</Typography>
+                </div>
+                <div className={classes.container}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Selected connectors')}
+                  </Typography>
+                  <List>
+                    {this.state.enrichConnectors.length === 0 && (
+                      <Alert severity="warning">
+                        {t('No connector available for the selected entities.')}
+                      </Alert>
+                    )}
+                    {this.state.enrichConnectors.map((connector) => (
+                      <ListItem key={connector.id} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <CloudRefreshOutline/>
+                        </ListItemIcon>
+                        <ListItemText primary={connector.name}/>
+                        <ListItemSecondaryAction>
+                          <MuiSwitch
+                            checked={this.state.enrichSelected.includes(
+                              connector.id,
+                            )}
+                            onChange={this.handleChangeEnrichSelected.bind(
+                              this,
+                              connector.id,
+                            )}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                          />
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))}
+                  </List>
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      disabled={
+                        this.state.enrichConnectors.length === 0
+                        || this.state.enrichSelected.length === 0
+                      }
+                      color="secondary"
+                      onClick={this.handleLaunchEnrichment.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Enrich')}
+                    </Button>
+                  </div>
+                </div>
+              </Drawer>
+              <Drawer
+                open={this.state.displayPromote}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleClosePromote.bind(this)}
+              >
+                <div className={classes.header}>
+                  <IconButton
+                    aria-label="Close"
+                    className={classes.closeButton}
+                    onClick={this.handleClosePromote.bind(this)}
+                    size="large"
+                    color="primary"
+                  >
+                    <CloseOutlined fontSize="small" color="primary"/>
+                  </IconButton>
+                  <Typography variant="h6">
+                    {t('Observables and indicators conversion')}
+                  </Typography>
+                </div>
+                <div className={classes.container}>
+                  {!observablesFiltered && (
+                    <div>
+                      <Typography
+                        variant="h4"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Indicators')}
+                      </Typography>
+                      <Alert severity="warning" style={{ marginTop: 20 }}>
+                        {t(
+                          'This action will generate observables from the selected indicators.',
+                        )}
+                      </Alert>
+                    </div>
+                  )}
+                  {observablesFiltered && (
+                    <div>
+                      <Typography
+                        variant="h4"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Observables')}
+                      </Typography>
+                      <Alert severity="warning" style={{ marginTop: 20 }}>
+                        {t(
+                          'This action will generate STIX patterns indicators from the selected observables.',
+                        )}
+                      </Alert>
+                    </div>
+                  )}
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.handleLaunchPromote.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Generate')}
+                    </Button>
+                  </div>
+                </div>
+              </Drawer>
+              <Drawer
+                open={this.state.displayRescan}
+                anchor="right"
+                elevation={1}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
+                onClose={this.handleCloseRescan.bind(this)}
+              >
+                <div className={classes.header}>
+                  <IconButton
+                    aria-label="Close"
+                    className={classes.closeButton}
+                    onClick={this.handleCloseRescan.bind(this)}
+                    size="large"
+                    color="primary"
+                  >
+                    <CloseOutlined fontSize="small" color="primary"/>
+                  </IconButton>
+                  <Typography variant="h6">{t('Rule entity rescan')}</Typography>
+                </div>
+                <div className={classes.container}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Selected rules')}
+                  </Typography>
+                  <Alert severity="warning" style={{ marginTop: 20 }}>
+                    {t(
+                      'Element will be rescan with all compatible activated rules',
+                    )}
+                  </Alert>
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={this.handleLaunchRescan.bind(this)}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Rescan')}
+                    </Button>
+                  </div>
+                </div>
+              </Drawer>
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                fullWidth={true}
+                maxWidth="sm"
+                TransitionComponent={Transition}
+                open={this.state.displayAddInContainer}
+                onClose={() => this.setState({ displayAddInContainer: false })}
+              >
+                <DialogTitle>{t('Add in container')}</DialogTitle>
+                <DialogContent>
+                  <StixDomainObjectCreation
+                    inputValue={actionsInputs[0]?.inputValue || ''}
+                    open={this.state.containerCreation}
+                    display={true}
+                    speeddial={true}
+                    stixDomainObjectTypes={['Container']}
+                    handleClose={() => this.setState({ containerCreation: false })
+                    }
+                    creationCallback={(data) => {
+                      const element = {
+                        label: data.name,
+                        value: data.id,
+                        type: data.entity_type,
+                      };
+                      this.setState(({ containers }) => ({
+                        containers: [...(containers ?? []), element],
+                      }));
+                      this.handleChangeActionInputValues(0, null, [
+                        ...(actionsInputs[0]?.values ?? []),
+                        element,
+                      ]);
+                    }}
+                  />
+                  <Autocomplete
+                    size="small"
+                    fullWidth={true}
+                    selectOnFocus={true}
+                    autoHighlight={true}
+                    getOptionLabel={(option) => (option.label ? option.label : '')
+                    }
+                    value={actionsInputs[0]?.values || []}
+                    multiple={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        label={t('Values')}
+                        fullWidth={true}
+                        onFocus={this.searchContainers.bind(this, 0)}
+                        style={{ marginTop: 3 }}
+                      />
+                    )}
+                    noOptionsText={t('No available options')}
+                    options={this.state.containers}
+                    onInputChange={this.searchContainers.bind(this, 0)}
+                    inputValue={actionsInputs[0]?.inputValue || ''}
+                    onChange={this.handleChangeActionInputValues.bind(this, 0)}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div className={classes.icon}>
+                          <ItemIcon type={option.type}/>
+                        </div>
+                        <div className={classes.text}>{option.label}</div>
+                      </li>
+                    )}
+                    disableClearable
+                  />
+                  <FormControlLabel
+                    style={{ marginTop: 20 }}
+                    control={
+                      <Checkbox
+                        checked={
+                          actionsInputs[0]?.options?.includeNeighbours || false
+                        }
+                        onChange={this.handleChangeActionInputOptions.bind(
+                          this,
+                          0,
+                          'includeNeighbours',
                         )}
                       />
-                      <div style={{ marginRight: 50 }}>
-                        {R.pathOr('', ['createdBy', 'name'], element)}
-                      </div>
-                      <div style={{ marginRight: 50 }}>
-                        <ItemMarkings
-                          variant="inList"
-                          markingDefinitions={
-                            element.objectMarking ?? []
-                          }
-                        />
-                      </div>
-                      <ListItemSecondaryAction>
-                        <Radio
-                          checked={
-                            keptEntityId
-                              ? keptEntityId === element.id
-                              : R.head(selectedElementsList).id === element.id
-                          }
-                          onChange={this.handleChangeKeptEntityId.bind(
-                            this,
-                            element.id,
-                          )}
-                          value={element.id}
-                          name="keptEntityID"
-                          inputProps={{ 'aria-label': 'keptEntityID' }}
-                        />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Merged entity')}
-                </Typography>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Name')}
-                </Typography>
-                <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
-                  {defaultValue(keptElement)}
-                </div>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Aliases')}
-                </Typography>
-                {newAliases.map((label) => (label.length > 0 ? (
-                  <Chip
-                    key={label}
-                    classes={{ root: classes.aliases }}
-                    label={label}
-                  />
-                ) : (
-                  ''
-                )))}
-                {noAuthor !== true && (
-                  <>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Author')}
-                    </Typography>
-                    {R.pathOr('', ['createdBy', 'name'], keptElement)}
-                  </>
-                )}
-                {noMarking !== true && (
-                  <>
-                    <Typography
-                      variant="h3"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Marking')}
-                    </Typography>
-                    <ItemMarkings
-                      markingDefinitions={
-                        keptElement?.markingDefinitions || []
-                      }
-                    />
-                  </>
-                )}
-                {noWarning !== true && (
-                  <>
-                    <Alert severity="warning" style={{ marginTop: 20 }}>
-                      {t(
-                        'The relations attached to selected entities will be copied to the merged entity.',
-                      )}
-                    </Alert>
-                  </>
-                )}
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={this.handleLaunchMerge.bind(this)}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Merge')}
-                  </Button>
-                </div>
-              </div>
-            </Drawer>
-            <Drawer
-              open={this.state.displayEnrichment}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleCloseEnrichment.bind(this)}
-            >
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleCloseEnrichment.bind(this)}
-                  size="large"
-                  color="primary"
-                >
-                  <CloseOutlined fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t('Entity enrichment')}</Typography>
-              </div>
-              <div className={classes.container}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Selected connectors')}
-                </Typography>
-                <List>
-                  {this.state.enrichConnectors.length === 0 && (
-                    <Alert severity="warning">
-                      {t('No connector available for the selected entities.')}
-                    </Alert>
-                  )}
-                  {this.state.enrichConnectors.map((connector) => (
-                    <ListItem key={connector.id} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <CloudRefreshOutline />
-                      </ListItemIcon>
-                      <ListItemText primary={connector.name} />
-                      <ListItemSecondaryAction>
-                        <MuiSwitch
-                          checked={this.state.enrichSelected.includes(
-                            connector.id,
-                          )}
-                          onChange={this.handleChangeEnrichSelected.bind(
-                            this,
-                            connector.id,
-                          )}
-                          inputProps={{ 'aria-label': 'controlled' }}
-                        />
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    disabled={
-                      this.state.enrichConnectors.length === 0
-                      || this.state.enrichSelected.length === 0
                     }
-                    color="secondary"
-                    onClick={this.handleLaunchEnrichment.bind(this)}
-                    classes={{ root: classes.button }}
+                    label={t('Also include first neighbours')}
+                  />
+                  <IconButton
+                    onClick={() => this.setState({ containerCreation: true })}
+                    edge="end"
+                    style={{ position: 'absolute', top: 68, right: 48 }}
+                    size="large"
                   >
-                    {t('Enrich')}
-                  </Button>
-                </div>
-              </div>
-            </Drawer>
-            <Drawer
-              open={this.state.displayPromote}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleClosePromote.bind(this)}
-            >
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleClosePromote.bind(this)}
-                  size="large"
-                  color="primary"
-                >
-                  <CloseOutlined fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">
-                  {t('Observables and indicators conversion')}
-                </Typography>
-              </div>
-              <div className={classes.container}>
-                {!observablesFiltered && (
-                  <div>
-                    <Typography
-                      variant="h4"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Indicators')}
-                    </Typography>
-                    <Alert severity="warning" style={{ marginTop: 20 }}>
-                      {t(
-                        'This action will generate observables from the selected indicators.',
-                      )}
-                    </Alert>
-                  </div>
-                )}
-                {observablesFiltered && (
-                  <div>
-                    <Typography
-                      variant="h4"
-                      gutterBottom={true}
-                      style={{ marginTop: 20 }}
-                    >
-                      {t('Observables')}
-                    </Typography>
-                    <Alert severity="warning" style={{ marginTop: 20 }}>
-                      {t(
-                        'This action will generate STIX patterns indicators from the selected observables.',
-                      )}
-                    </Alert>
-                  </div>
-                )}
-                <div className={classes.buttons}>
+                    <AddOutlined/>
+                  </IconButton>
+                </DialogContent>
+                <DialogActions>
                   <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={this.handleLaunchPromote.bind(this)}
-                    classes={{ root: classes.button }}
+                    onClick={() => this.setState({ displayAddInContainer: false })
+                    }
                   >
-                    {t('Generate')}
+                    {t('Cancel')}
                   </Button>
-                </div>
-              </div>
-            </Drawer>
-            <Drawer
-              open={this.state.displayRescan}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleCloseRescan.bind(this)}
-            >
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={this.handleCloseRescan.bind(this)}
-                  size="large"
-                  color="primary"
-                >
-                  <CloseOutlined fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t('Rule entity rescan')}</Typography>
-              </div>
-              <div className={classes.container}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t('Selected rules')}
-                </Typography>
-                <Alert severity="warning" style={{ marginTop: 20 }}>
-                  {t(
-                    'Element will be rescan with all compatible activated rules',
-                  )}
-                </Alert>
-                <div className={classes.buttons}>
                   <Button
-                    variant="contained"
                     color="secondary"
-                    onClick={this.handleLaunchRescan.bind(this)}
-                    classes={{ root: classes.button }}
+                    onClick={() => {
+                      this.setState(
+                        {
+                          displayAddInContainer: false,
+                          actionsInputs: [
+                            {
+                              ...actionsInputs[0],
+                              type: 'ADD',
+                              fieldType: 'ATTRIBUTE',
+                              field: 'container-object',
+                            },
+                          ],
+                        },
+                        this.handleLaunchUpdate.bind(this),
+                      );
+                    }}
                   >
-                    {t('Rescan')}
+                    {t('Add')}
                   </Button>
-                </div>
-              </div>
+                </DialogActions>
+              </Dialog>
             </Drawer>
-            <Dialog
-              PaperProps={{ elevation: 1 }}
-              fullWidth={true}
-              maxWidth="sm"
-              TransitionComponent={Transition}
-              open={this.state.displayAddInContainer}
-              onClose={() => this.setState({ displayAddInContainer: false })}
-            >
-              <DialogTitle>{t('Add in container')}</DialogTitle>
-              <DialogContent>
-                <StixDomainObjectCreation
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  open={this.state.containerCreation}
-                  display={true}
-                  speeddial={true}
-                  stixDomainObjectTypes={['Container']}
-                  handleClose={() => this.setState({ containerCreation: false })
-                  }
-                  creationCallback={(data) => {
-                    const element = {
-                      label: data.name,
-                      value: data.id,
-                      type: data.entity_type,
-                    };
-                    this.setState(({ containers }) => ({
-                      containers: [...(containers ?? []), element],
-                    }));
-                    this.handleChangeActionInputValues(0, null, [
-                      ...(actionsInputs[0]?.values ?? []),
-                      element,
-                    ]);
-                  }}
-                />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
-                  selectOnFocus={true}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')
-                  }
-                  value={actionsInputs[0]?.values || []}
-                  multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchContainers.bind(this, 0)}
-                      style={{ marginTop: 3 }}
-                    />
-                  )}
-                  noOptionsText={t('No available options')}
-                  options={this.state.containers}
-                  onInputChange={this.searchContainers.bind(this, 0)}
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  onChange={this.handleChangeActionInputValues.bind(this, 0)}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
-                  )}
-                  disableClearable
-                />
-                <FormControlLabel
-                  style={{ marginTop: 20 }}
-                  control={
-                    <Checkbox
-                      checked={
-                        actionsInputs[0]?.options?.includeNeighbours || false
-                      }
-                      onChange={this.handleChangeActionInputOptions.bind(
-                        this,
-                        0,
-                        'includeNeighbours',
-                      )}
-                    />
-                  }
-                  label={t('Also include first neighbours')}
-                />
-                <IconButton
-                  onClick={() => this.setState({ containerCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 68, right: 48 }}
-                  size="large"
-                >
-                  <AddOutlined />
-                </IconButton>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => this.setState({ displayAddInContainer: false })
-                  }
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  color="secondary"
-                  onClick={() => {
-                    this.setState(
-                      {
-                        displayAddInContainer: false,
-                        actionsInputs: [
-                          {
-                            ...actionsInputs[0],
-                            type: 'ADD',
-                            fieldType: 'ATTRIBUTE',
-                            field: 'container-object',
-                          },
-                        ],
-                      },
-                      this.handleLaunchUpdate.bind(this),
-                    );
-                  }}
-                >
-                  {t('Add')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </Drawer>
-        )}
+          );
+        }}
       </UserContext.Consumer>
     );
   }

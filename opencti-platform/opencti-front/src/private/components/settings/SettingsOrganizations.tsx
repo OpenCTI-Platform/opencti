@@ -61,7 +61,7 @@ const SettingsOrganizations = () => {
       render: (node: Organization) => (node.x_opencti_organization_type ?? ''),
     },
     created: {
-      label: 'Creation date',
+      label: 'Original creation date',
       width: '15%',
       isSortable: true,
       render: (node: Organization) => fd(node.created),

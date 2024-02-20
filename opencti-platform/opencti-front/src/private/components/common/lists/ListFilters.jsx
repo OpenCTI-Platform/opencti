@@ -9,7 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
-import { getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -30,8 +30,10 @@ const ListFilters = ({
   variant,
   type,
   helpers,
+  entityTypes,
 }) => {
   const { t_i18n } = useFormatter();
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
   let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
@@ -53,8 +55,34 @@ const ListFilters = ({
     helpers.handleClearAllFilters();
   };
   const handleChange = (value) => {
-    helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value));
+    helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
   };
+  const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
+    || (entityTypes.length > 1);
+  const options = isNotUniqEntityTypes ? availableFilterKeys
+    .map((key) => {
+      const subEntityTypes = filterKeysMap.get(key)?.subEntityTypes ?? [];
+      const isFilterKeyForAllTypes = subEntityTypes.some((subType) => entityTypes.includes(subType));
+      return {
+        value: key,
+        label: t_i18n(filterKeysMap.get(key)?.label ?? key),
+        numberOfOccurences: subEntityTypes.length,
+        // eslint-disable-next-line no-nested-ternary
+        groupLabel: isFilterKeyForAllTypes
+          ? t_i18n('Most used filters')
+          : t_i18n('All other filters'),
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .sort((a, b) => b.groupLabel.localeCompare(a.groupLabel)) // 'Most used filters' before 'All other filters'
+    : availableFilterKeys
+      .map((key) => {
+        return {
+          value: key,
+          label: t_i18n(filterKeysMap.get(key)?.label ?? key),
+        };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
   return (
     <>
       {variant === 'text' ? (
@@ -73,12 +101,8 @@ const ListFilters = ({
         <>
           <MUIAutocomplete
             id="list-filters-combo-box"
-            options={availableFilterKeys
-              .map((opt) => ({
-                value: opt,
-                label: t_i18n(opt),
-              }))
-              .sort((a, b) => a.label.localeCompare(b.label))}
+            options={options}
+            groupBy={isNotUniqEntityTypes ? (option) => option.groupLabel : undefined}
             sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {

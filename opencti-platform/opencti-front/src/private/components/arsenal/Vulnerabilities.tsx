@@ -9,7 +9,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VulnerabilitiesLinesPaginationQuery, VulnerabilitiesLinesPaginationQuery$variables } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -41,7 +41,7 @@ const Vulnerabilities = () => {
     numberOfElements,
   } = viewStorage;
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Vulnerability', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Vulnerability', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -69,7 +69,7 @@ const Vulnerabilities = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -104,20 +104,6 @@ const Vulnerabilities = () => {
         filters={filters}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'x_opencti_cvss_base_score',
-          'x_opencti_cvss_base_severity',
-          'x_opencti_cvss_attack_vector',
-          'creator_id',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

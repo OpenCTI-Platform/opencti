@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, toPairs } from 'ramda';
+import { compose, toPairs, uniq } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,6 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { ErrorBoundary } from '../../private/components/Error';
+import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -160,7 +161,7 @@ class ListLines extends Component {
     );
   }
 
-  renderContent(selectedIds = []) {
+  renderContent(availableFilterKeys, entityTypes, selectedIds = []) {
     const {
       t,
       classes,
@@ -187,7 +188,6 @@ class ListLines extends Component {
       children,
       exportContext,
       numberOfElements,
-      availableFilterKeys,
       noHeaders,
       iconExtension,
       searchVariant,
@@ -207,6 +207,7 @@ class ListLines extends Component {
       handleExportCsv,
       helpers,
       inline,
+      additionalFilterKeys,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -215,7 +216,7 @@ class ListLines extends Component {
           && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
-      entityTypes: exportContext?.entity_type ? [exportContext.entity_type] : [],
+      entityTypes: entityTypes ?? [],
     };
     return (
       <div className={noPadding ? classes.containerNoPadding : classes.container}>
@@ -440,6 +441,10 @@ class ListLines extends Component {
           handleSwitchLocalMode={handleSwitchLocalMode}
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
+          entityTypes={entityTypes}
+          restrictedFiltersConfig={{
+            filterRemoving: additionalFilterKeys,
+          }}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -615,16 +620,33 @@ class ListLines extends Component {
   }
 
   render() {
-    const { disableExport } = this.props;
-    if (disableExport) {
-      return this.renderContent();
-    }
+    const { disableExport, exportContext, additionalFilterKeys } = this.props;
+    const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
-      <ExportContext.Consumer>
-        {({ selectedIds }) => {
-          return this.renderContent(selectedIds);
+      <UserContext.Consumer>
+        {({ schema }) => {
+          let availableFilterKeys = this.props.availableFilterKeys ?? [];
+          if (availableFilterKeys.length === 0 && entityTypes) {
+            const filterKeysMap = new Map();
+            entityTypes.forEach((entityType) => {
+              const currentMap = schema.filterKeysSchema.get(entityType);
+              currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+            });
+            availableFilterKeys = uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
+          }
+          if (additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
+          if (disableExport) {
+            return this.renderContent(availableFilterKeys, entityTypes);
+          }
+          return (
+            <ExportContext.Consumer>
+              {({ selectedIds }) => {
+                return this.renderContent(availableFilterKeys, entityTypes, selectedIds);
+              }}
+            </ExportContext.Consumer>
+          );
         }}
-      </ExportContext.Consumer>
+      </UserContext.Consumer>
     );
   }
 }
@@ -658,7 +680,6 @@ ListLines.propTypes = {
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
-  availableFilterKeys: PropTypes.array,
   noHeaders: PropTypes.bool,
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
@@ -678,6 +699,9 @@ ListLines.propTypes = {
   searchContext: PropTypes.object,
   handleExportCsv: PropTypes.func,
   helpers: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
+  additionalFilterKeys: PropTypes.array,
+  entityTypes: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

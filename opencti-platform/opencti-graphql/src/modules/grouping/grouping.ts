@@ -9,7 +9,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: false
   },
   identifier: {
     definition: {
@@ -23,10 +23,10 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'content', label: 'Content', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'content_mapping', label: 'Content mapping', format: 'short', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'context', label: 'Content', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'content_mapping', label: 'Content mapping', format: 'text', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'context', label: 'Context', type: 'string', format: 'vocabulary', vocabularyCategory: 'grouping_context_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixGrouping) => {

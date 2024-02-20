@@ -1,7 +1,7 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import CustomizationMenu from '../CustomizationMenu';
@@ -39,7 +39,7 @@ const DecayRules = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const contextFilters = buildEntityTypeBasedFilterContext('DecayRule', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('DecayRule', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

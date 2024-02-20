@@ -6,7 +6,7 @@ import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
-import { UserContext } from '../utils/hooks/useAuth';
+import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
@@ -168,6 +168,28 @@ const rootPrivateQuery = graphql`
       key
       values
     }
+    filterKeysSchema {
+      entity_type
+      filters_schema {
+        filterKey
+        filterDefinition {
+          filterKey
+          label
+          type
+          multiple
+          subEntityTypes
+          elementsForFilterValuesSearch
+          subFilters {
+            filterKey
+            label
+            type
+            multiple
+            subEntityTypes
+            elementsForFilterValuesSearch
+          }
+        }
+      }
+    }
   }
 `;
 
@@ -199,7 +221,18 @@ interface RootComponentProps {
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
-  const { me, settings: settingsFragment, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSCRs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
+  const {
+    me,
+    settings: settingsFragment,
+    entitySettings,
+    schemaSCOs,
+    schemaSDOs,
+    schemaSMOs,
+    schemaSCRs,
+    schemaRelationsTypesMapping,
+    schemaRelationsRefTypesMapping,
+    filterKeysSchema,
+  } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
@@ -208,6 +241,10 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     scrs: schemaSCRs.edges.map((scr) => scr.node),
     schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
     schemaRelationsRefTypesMapping: new Map(schemaRelationsRefTypesMapping.map((n) => [n.key, n.values])),
+    filterKeysSchema: new Map(filterKeysSchema.map((n) => {
+      const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition as FilterDefinition]));
+      return [n.entity_type, filtersSchema];
+    })),
   };
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);

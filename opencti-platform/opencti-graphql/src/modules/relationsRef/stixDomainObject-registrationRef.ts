@@ -25,13 +25,16 @@ import {
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../schema/stixCyberObservable';
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]);
 
@@ -39,11 +42,10 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [object
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION, []);
 
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_ATTACK_PATTERN, [killChainPhases, objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_ATTACK_PATTERN, [killChainPhases, { ...objectOrganization, isFilterable: false }]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [
-  { ...samples, checker: (_, toType) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType) },
-  { ...operatingSystems, checker: (_, toType) => ENTITY_SOFTWARE === toType },
+  samples, operatingSystems,
   killChainPhases,
   objectOrganization
 ]);
@@ -58,6 +60,11 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INCIDENT, [objectA
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_NOTE, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [{ ...objects, mandatoryType: 'external' }, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OPINION, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_COURSE_OF_ACTION, [objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_COURSE_OF_ACTION, [{ ...objectOrganization, isFilterable: false }]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_GROUPING, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_VULNERABILITY, [objectOrganization]);
+
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_REGION, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_CITY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_COUNTRY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_POSITION, []);

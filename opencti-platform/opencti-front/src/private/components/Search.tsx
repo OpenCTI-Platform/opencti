@@ -17,7 +17,7 @@ import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
 
@@ -32,6 +32,7 @@ const Search = () => {
   const { t_i18n } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
+
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -40,7 +41,7 @@ const Search = () => {
       openExports: false,
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['entity_type']),
+        filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
       },
     },
   );
@@ -61,7 +62,7 @@ const Search = () => {
     numberOfSelectedElements,
   } = useEntityToggle<SearchStixCoreObjectLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -106,7 +107,7 @@ const Search = () => {
         isSortable: false,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '10%',
         isSortable: true,
       },
@@ -147,18 +148,6 @@ const Search = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'entity_type',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'x_opencti_organization_type',
-            'creator_id',
-            'created',
-            'created_at',
-          ]}
         >
           {queryRef && (
           <React.Suspense

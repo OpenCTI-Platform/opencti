@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ const Relationships = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['fromId', 'toId']),
+        filters: useGetDefaultFilterObject(['fromId', 'toId'], ['stix-core-relationship']),
       },
       searchTerm: '',
       sortBy: 'created_at',
@@ -61,7 +61,7 @@ const Relationships = () => {
     LOCAL_STORAGE_KEY,
   );
 
-  const contextFilters = buildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -109,7 +109,7 @@ const Relationships = () => {
         isSortable: isRuntimeSort,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '10%',
         isSortable: true,
       },
@@ -144,17 +144,6 @@ const Relationships = () => {
           filters={filters}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'relationship_type',
-            'fromId',
-            'toId',
-            'fromTypes',
-            'toTypes',
-            'objectMarking',
-            'created',
-            'createdBy',
-            'creator_id',
-          ]}
         >
           {queryRef && (
             <React.Suspense

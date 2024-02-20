@@ -13,7 +13,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { OpinionLineDummy } from './opinions/OpinionLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -65,7 +65,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     numberOfSelectedElements,
   } = useEntityToggle<OpinionLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Opinion', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Opinion', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -99,7 +99,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -138,16 +138,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'creator_id',
-            'created',
-          ]}
         >
           {queryRef && (
             <React.Suspense

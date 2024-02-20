@@ -24,7 +24,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { tasksDataColumns } from '../tasks/TasksLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -60,7 +60,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
     },
   );
   const { sortBy, orderAsc, filters } = viewStorage;
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Incident']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

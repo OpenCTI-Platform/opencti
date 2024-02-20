@@ -11,7 +11,7 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -75,7 +75,7 @@ const StixSightingRelationships = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['toSightingId', 'x_opencti_negative']),
+        filters: useGetDefaultFilterObject(['toSightingId', 'x_opencti_negative'], ['stix-sighting-relationship']),
       },
       searchTerm: '',
       sortBy: 'last_seen',
@@ -103,7 +103,7 @@ const StixSightingRelationships = () => {
     selectAll,
   } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
   const renderLines = () => {
@@ -131,17 +131,6 @@ const StixSightingRelationships = () => {
           numberOfElements={numberOfElements}
           secondaryAction={true}
           iconExtension={true}
-          availableFilterKeys={[
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'confidence',
-            'created',
-            'toSightingId',
-            'x_opencti_negative',
-            'creator',
-          ]}
         >
           <QueryRenderer
             query={stixSightingRelationshipsLinesQuery}

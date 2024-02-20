@@ -21,14 +21,12 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   standardId,
   parentTypes,
   baseType,
-  relationshipType,
+  { ...relationshipType, isFilterable: false },
   entityType,
   createdAt,
   updatedAt,
   creators,
-  { name: 'fromType', label: 'Source entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove ?
-  { name: 'toType', label: 'Target entity', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true }, // TODO to remove?
-  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
+  { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
   {
     name: 'connections',
     label: 'Relations connections',

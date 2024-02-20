@@ -14,11 +14,11 @@ import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes } from '../../../../utils/hooks/useAttributes';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnalyses';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -34,6 +34,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   const classes = useStyles();
   const { t_i18n, b, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
+  const { dateAttributes, ignoredAttributes } = useAttributes();
   const [anchorEl, setAnchorEl] = useState(null);
   const handleOpen = (event) => {
     setAnchorEl(event.currentTarget);

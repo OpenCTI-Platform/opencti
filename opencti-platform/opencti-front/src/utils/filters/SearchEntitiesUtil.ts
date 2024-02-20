@@ -32,8 +32,7 @@ export const getOptionsFromEntities = (
       // In case of entity we group by type
       return { ...f, group: f.type };
     }
-    // In the other case like relathionship_type we keep the filterKey as the type will be different everytime
-    return { ...f, group: filterKey };
+    return f;
   })
     .sort((a, b) => {
     // In case value is null, for "no label" case we want it at the top of the list
@@ -47,11 +46,15 @@ export const getOptionsFromEntities = (
     });
 };
 
-export const getUseSearch = (searchScope?: Record<string, string[]>) => {
+export const getUseSearch = (searchScope?: Record<string, string[]>, entityTypes?: string[]) => {
   if (!searchEntitiesScope) {
     return [];
   }
-  const searchEntitiesParams = searchScope ? { ...searchEntitiesScope, searchScope } : searchEntitiesScope;
+  const searchEntitiesScopeWithContext = { ...searchEntitiesScope };
+  if (entityTypes) {
+    searchEntitiesScopeWithContext.searchContext.entityTypes = entityTypes;
+  }
+  const searchEntitiesParams = searchScope ? { ...searchEntitiesScopeWithContext, searchScope } : searchEntitiesScopeWithContext;
   return useSearchEntities(searchEntitiesParams) as [
     Record<string, OptionValue[]>,
     (

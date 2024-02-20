@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
+import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 
 export const depsKeysRegister = {
@@ -26,6 +27,7 @@ export const schemaAttributesDefinition = {
     boolean: new Map<string, void>(),
     object: new Map<string, void>(),
   } as Record<AttrType, Map<string, void>>,
+  registeredTypes: [] as string[],
   upsertByEntity: new Map<string, string[]>(),
 
   // attributes registration
@@ -34,19 +36,41 @@ export const schemaAttributesDefinition = {
     if (usageProtection) {
       throw UnsupportedError('Register attributes use after usage, please check your imports');
     }
+    this.registeredTypes.push(entityType);
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
     // Register given attribute
     const currentAttributes = Object.values(this.attributes);
     attributes.forEach((attribute) => {
+      // Check different attributes have different labels
+      let attributesWithSameLabelAndDifferentName: AttributeDefinition[] = [];
+      currentAttributes
+        .forEach((m) => {
+          const attributeDefinitionsList = Array.from(m.values());
+          attributesWithSameLabelAndDifferentName = attributeDefinitionsList.filter((a) => (a.label === attribute.label) && (a.name !== attribute.name));
+        });
+      if (attributesWithSameLabelAndDifferentName.length > 0) {
+        throw UnsupportedError('You can\'t have two attributes with the same label and a different name in the platform', {
+          attributesWithSameLabelAndDifferentName,
+          attribute,
+        });
+      }
       // Check the homogeneity of attribute types
       const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
         if (existingAttribute.type === 'string') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
+          if (existingAttribute.type !== attribute.type) {
             throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
               existingAttribute,
               attribute,
             });
+          }
+          if (existingAttribute.format !== attribute.format) {
+            if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
+              throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', {
+                existingAttribute,
+                attribute,
+              });
+            }
           }
         }
         if (existingAttribute.type === 'numeric') {
@@ -81,6 +105,7 @@ export const schemaAttributesDefinition = {
           entityType
         });
       }
+      // set attribute
       directAttributes.set(attribute.name, attribute);
       // add the attribute name and type in the map of all the attributes
       // to do so, we overwrite an eventual attribute having the same name for an other entity type
@@ -122,6 +147,10 @@ export const schemaAttributesDefinition = {
   getAllAttributes() {
     usageProtection = true;
     return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
+  },
+
+  getRegisteredTypes() {
+    return this.registeredTypes;
   },
 
   // Usage of getAttributes

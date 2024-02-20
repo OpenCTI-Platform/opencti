@@ -199,6 +199,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     dataColumns={dataColumns}
                     styleNumber={3}
                     redirection
+                    entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object']}
                   />
                 )}
               </div>

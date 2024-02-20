@@ -13,7 +13,7 @@ import { CaseRftLinesCasesPaginationQuery, CaseRftLinesCasesPaginationQuery$vari
 import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLineCase_node.graphql';
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -52,7 +52,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     numberOfElements,
   } = viewStorage;
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Case-Rft', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Case-Rft', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -105,7 +105,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -143,21 +143,6 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'objectAssignee',
-          'objectParticipant',
-          'severity',
-          'priority',
-          'creator_id',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

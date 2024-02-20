@@ -469,7 +469,7 @@ class StixCoreRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Creation date')}
+                    {t('Original creation date')}
                   </Typography>
                   {nsdt(stixCoreRelationship.created)}
                   <Typography
@@ -499,7 +499,7 @@ class StixCoreRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Creation date (in this platform)')}
+                    {t('Platform creation date')}
                   </Typography>
                   {fldt(stixCoreRelationship.created_at)}
                   <Typography

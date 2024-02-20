@@ -22,7 +22,7 @@ const attributes: Array<AttributeDefinition> = [
     editDefault: false,
     multiple: false,
     upsert: false,
-    isFilterable: true,
+    isFilterable: false,
     mappings: [
       { name: 'version', label: 'Version', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'description', label: 'Filename', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -65,7 +65,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'content_type', label: 'Content type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'creator_tool', label: 'Creator tool', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'date', label: 'Created date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-      { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'format', label: 'Format', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'keywords', label: 'Keywords', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'language', label: 'Language', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

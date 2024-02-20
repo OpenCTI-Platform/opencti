@@ -36,7 +36,7 @@ class ObservedDataDetailsComponent extends Component {
               key: 'regardingOf',
               values: [
                 { key: 'id', values: [observedData.id] },
-                { key: 'type', values: ['object'] },
+                { key: 'relationship_type', values: ['object'] },
               ],
             },
           ],

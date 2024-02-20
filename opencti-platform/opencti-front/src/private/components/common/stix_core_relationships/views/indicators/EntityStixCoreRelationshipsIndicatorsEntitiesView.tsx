@@ -12,7 +12,7 @@ import { DataColumns, PaginationOptions } from '../../../../../../components/lis
 import { StixDomainObjectIndicatorsLinesQuery$data } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -85,7 +85,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
       isSortable: false,
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '15%',
       isSortable: true,
     },
@@ -101,7 +101,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     },
   };
 
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Indicator']);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [

@@ -4,7 +4,7 @@ import Loader from '../../../../components/Loader';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -35,7 +35,7 @@ const StixDomainObjectAttackPatterns = ({
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
   const contextFilters = {
     mode: 'and',
     filters: [

@@ -1,7 +1,8 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
-import { constructHandleAddFilter, constructHandleRemoveFilter, Filter, FilterGroup, FiltersVariant, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { uniq } from 'ramda';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -74,8 +75,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
       ],
     },
   );
+  const entityTypes = searchContext?.entityTypes ?? ['Stix-Core-Object'];
   setSearchEntitiesScope({
-    searchContext: searchContext ?? { entityTypes: [] },
+    searchContext: searchContext ?? { entityTypes },
     searchScope,
     setInputValues: setInputValues as (
       value: {
@@ -122,7 +124,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
       variant={variant}
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
-      searchContext={searchContext ?? { entityTypes: [] }}
+      searchContext={searchContext ?? { entityTypes }}
       handleChangeKeyword={handleChangeKeyword}
       inputValues={inputValues}
       setInputValues={setInputValues}
@@ -160,11 +162,12 @@ const Filters: FunctionComponent<FiltersProps> = ({
           handleCloseFilters={handleCloseFilters}
           open={open}
           anchorEl={anchorEl}
-          availableFilterKeys={availableFilterKeys}
+          availableFilterKeys={uniq(availableFilterKeys)}
           filterElement={filterElement}
           variant={variant}
           type={type}
           helpers={helpers}
+          entityTypes={entityTypes}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

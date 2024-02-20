@@ -3,7 +3,7 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
@@ -16,11 +16,10 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { constructHandleAddFilter, constructHandleRemoveFilter, deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
-import FilterAutocomplete, { FilterAutocompleteInputValue } from '../../common/lists/FilterAutocomplete';
 import Filters from '../../common/lists/Filters';
 import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -89,11 +88,7 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const instanceTriggerFilters = deserializeFilterGroupForFrontend(trigger.filters) ?? undefined;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState<
-  FilterAutocompleteInputValue[]
-  >([]);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
 
   useEffect(() => {
@@ -107,31 +102,6 @@ TriggerEditionOverviewProps
       },
     });
   }, [filters]);
-
-  const handleAddFilter = (k: string, id: string, op = 'eq') => {
-    const newBaseFilters = constructHandleAddFilter(instanceTriggerFilters, k, id, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(newBaseFilters),
-        },
-      },
-    });
-  };
-  const handleRemoveFilter = (k: string, op = 'eq') => {
-    const newBaseFilters = constructHandleRemoveFilter(instanceTriggerFilters, k, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(newBaseFilters),
-        },
-      },
-    });
-  };
 
   const onSubmit: FormikConfig<TriggerEditionFormValues>['onSubmit'] = (
     values,
@@ -332,10 +302,10 @@ TriggerEditionOverviewProps
               label: t_i18n('Triggering on'),
             }}
             options={
-                        trigger.instance_trigger
-                          ? instanceEventTypesOptions
-                          : filterEventTypesOptions
-                      }
+              trigger.instance_trigger
+                ? instanceEventTypesOptions
+                : filterEventTypesOptions
+            }
             onChange={(
               name: string,
               value: { value: string; label: string }[],
@@ -445,23 +415,12 @@ TriggerEditionOverviewProps
           />
           {trigger.trigger_type === 'live' && (
           <span>
-            {trigger.instance_trigger ? (
-              <div style={fieldSpacingContainerStyle}>
-                <FilterAutocomplete
-                  filterKey={'connectedToId'}
-                  searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                  defaultHandleAddFilter={handleAddFilter}
-                  inputValues={instanceFilters}
-                  setInputValues={setInstanceFilters}
-                  openOnFocus={true}
-                />
-              </div>
-            ) : (
-              <Box sx={{ paddingTop: 4,
-                display: 'flex',
-                gap: 1 }}
-              >
-                <Filters
+            <Box sx={{ paddingTop: 4,
+              display: 'flex',
+              gap: 1 }}
+            >
+              {(!trigger.instance_trigger
+                && <Filters
                   availableFilterKeys={[
                     'entity_type',
                     'workflow_id',
@@ -486,16 +445,20 @@ TriggerEditionOverviewProps
                     'toTypes',
                   ]}
                   helpers={helpers}
-                />
-              </Box>
-            )}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                   />)}
+            </Box>
 
             {trigger.instance_trigger
               ? <FilterIconButton
-                  filters={instanceTriggerFilters}
-                  handleRemoveFilter={handleRemoveFilter}
-                  styleNumber={2}
+                  filters={filters}
+                  helpers={{
+                    ...helpers,
+                    handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
+                  }}
                   redirection
+                  entityTypes={['Instance']}
+                  restrictedFiltersConfig={{ localModeSwitching: ['connectedToId'], filterRemoving: ['connectedToId'] }}
                 />
               : <FilterIconButton
                   filters={filters}

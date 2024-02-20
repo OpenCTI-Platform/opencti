@@ -52,12 +52,12 @@ const Notifiers = () => {
       isSortable: true,
     },
     name: {
-      label: 'name',
+      label: 'Name',
       width: '20%',
       isSortable: true,
     },
     description: {
-      label: 'description',
+      label: 'Description',
       width: '60%',
       isSortable: false,
     },
@@ -87,7 +87,6 @@ const Notifiers = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={['created']}
         message={t_i18n(
           'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}

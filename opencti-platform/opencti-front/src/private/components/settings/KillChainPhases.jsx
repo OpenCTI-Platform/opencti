@@ -89,7 +89,7 @@ class KillChainPhases extends Component {
         isSortable: true,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },

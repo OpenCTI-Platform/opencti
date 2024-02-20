@@ -12,7 +12,7 @@ import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.gr
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -58,7 +58,7 @@ const Reports: FunctionComponent = () => {
     numberOfSelectedElements,
   } = useEntityToggle<ReportLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Report', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Report', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -72,7 +72,7 @@ const Reports: FunctionComponent = () => {
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
-        label: 'Title',
+        label: 'Name',
         width: '25%',
         isSortable: true,
       },
@@ -97,7 +97,7 @@ const Reports: FunctionComponent = () => {
         isSortable: false,
       },
       published: {
-        label: 'Date',
+        label: 'Publication date',
         width: '10%',
         isSortable: true,
       },
@@ -137,23 +137,6 @@ const Reports: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'workflow_id',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'x_opencti_reliability',
-            'confidence',
-            'objectAssignee',
-            'objectParticipant',
-            'report_types',
-            'creator_id',
-            'published',
-            'created_at',
-            'objects',
-            'name',
-            'description',
-          ]}
         >
           {queryRef && (
             <React.Suspense

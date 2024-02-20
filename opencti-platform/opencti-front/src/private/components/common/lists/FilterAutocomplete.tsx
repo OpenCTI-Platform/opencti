@@ -7,7 +7,6 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import { EqFilters } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -46,6 +45,7 @@ interface FilterAutocompleteProps {
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
   openOnFocus?: boolean;
+  filterLabel: string;
 }
 
 const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) => {
@@ -59,6 +59,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     availableRelationshipTypes,
     availableRelationFilterTypes,
     openOnFocus,
+    filterLabel,
   } = props;
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -113,8 +114,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
       if (
-        EqFilters.includes(filterKey)
-        && (event as unknown as MouseEvent).altKey
+        (event as unknown as MouseEvent).altKey
         && event.type === 'click'
       ) {
         defaultHandleAddFilter(
@@ -170,13 +170,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       groupBy={
         isStixObjectTypes
           ? (option) => option.type
-          : (option) => t_i18n(option.group ? option.group : filterKey)
+          : (option) => (option.group ? t_i18n(option.group) : filterLabel)
       }
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => (
         <TextField
           {...params}
-          label={t_i18n(filterKey)}
+          label={filterLabel}
           variant="outlined"
           size="small"
           fullWidth={true}

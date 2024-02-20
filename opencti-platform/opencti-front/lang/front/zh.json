@@ -1937,9 +1937,6 @@
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "平臺中有兩個內置通知程式：使用者介面和預設郵件程式。它們不可配置，您可以在此處創建自定義。",
   "Expired": "已到期",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "您的帳戶已過期。如果您想重新激活您的帳戶，請聯繫您的管理員。",
-  "create": "Creation events",
-  "update": "Modification events",
-  "delete": "Deletion events",
   "Demographic Information": "人口统计信息",
   "Demographics": "人口统计",
   "Country of Residence": "居住国家",
@@ -2557,6 +2554,8 @@
   "Marking definitions to use by the csv mapper...": "只有当某些标记属性的策略设置为'让用户选择标记定义'时，csv 映射器才会使用标记定义。否则，此标记定义将被忽略。",
   "Option 'Let the user choose marking definitions'...": "选项 '让用户选择标记定义'将要求用户（在导入 CSV 文件时）选择在 CSV 文件中缺少数据时应用哪些标记定义。",
   "Update without references": "无引用更新",
+  "Original creation date": "原始创建日期",
+  "Platform creation date": "平台创建日期",
   "Max Confidence Level:": "最大置信度：",
   "Share as public dashboard": "作为公共仪表板共享",
   "To prevent people seeing all the data...": "要防止他人看到公共仪表板中的所有数据，请选择标记定义来限制共享数据。",
@@ -2665,5 +2664,13 @@
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
   "Your confidence level is insufficient to edit this object.": "您的置信度不足以编辑此对象。",
   "You need a confidence level to edit objects in the platform.": "编辑平台中的对象需要信任级别。",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "用户具有 BYPASS 功能，其最大置信度设置为 100。"
+  "The user has BYPASS capability, their max confidence level is set to 100.": "用户具有 BYPASS 功能，其最大置信度设置为 100。",
+  "create": "创建",
+  "update": "更新",
+  "delete": "删除",
+  "This feature is only available in OpenCTI Enterprise Edition.": "此功能仅适用于 OpenCTI 企业版。",
+  "Operational": "操作",
+  "Strategic": "战略",
+  "Link created": "创建的链接",
+  "Public dashboard": "公共仪表板"
 }

@@ -14,7 +14,6 @@ import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
 import MarkdownField from '../../../../components/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/hooks/useAttributes';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -22,6 +21,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertMarkings } from '../../../../utils/edition';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
@@ -96,6 +96,7 @@ const StixCyberObservableEditionOverviewComponent = ({
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
+  const { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } = useAttributes();
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);

@@ -203,7 +203,7 @@ class StixDomainObjectOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: -40 }}
               >
-                {t('Creation date')}
+                {t('Original creation date')}
               </Typography>
               {fldt(stixDomainObject.created)}
               <Typography
@@ -282,7 +282,7 @@ class StixDomainObjectOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creation date (in this platform)')}
+                {t('Platform creation date')}
               </Typography>
               {fldt(stixDomainObject.created_at)}
               <Typography

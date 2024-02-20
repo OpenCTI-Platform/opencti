@@ -24,7 +24,7 @@ import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__g
 import ListLines from '../../../../components/list_lines/ListLines';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -60,7 +60,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   );
   const { sortBy, orderAsc, filters } = viewStorage;
 
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Rfi']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
     filters: [

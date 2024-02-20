@@ -341,7 +341,7 @@ EntityDetailsComponentProps
         label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
       />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Creation date')}
+        {t_i18n('Platform creation date')}
       </Typography>
       {fldt(stixCoreObject.created_at)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>

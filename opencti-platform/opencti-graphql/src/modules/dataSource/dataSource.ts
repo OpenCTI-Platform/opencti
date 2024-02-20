@@ -12,7 +12,7 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: false
   },
   identifier: {
     definition: {
@@ -26,13 +26,13 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
-    { name: 'collection_layers', label: 'Layers', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'vocabulary', vocabularyCategory: 'platforms_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'collection_layers', label: 'Layers', type: 'string', format: 'vocabulary', vocabularyCategory: 'collection_layers_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [
-    objectOrganization
+    { ...objectOrganization, isFilterable: false }
   ],
   representative: (stix: StixDataSource) => {
     return stix.name;

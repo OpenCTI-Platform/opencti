@@ -27,7 +27,6 @@ import { parse } from '../../../../utils/Time';
 import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } from '../../../../utils/hooks/useAttributes';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -36,6 +35,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { convertMarking } from '../../../../utils/edition';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -219,6 +219,7 @@ const StixCyberObservableCreation = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
+  const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
 
   const handleOpen = () => setStatus({ open: true, type: status.type });

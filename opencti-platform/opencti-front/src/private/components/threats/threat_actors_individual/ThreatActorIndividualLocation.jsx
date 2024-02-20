@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -10,8 +11,7 @@ import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
-import { graphql, createFragmentContainer } from 'react-relay';
-import * as R from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { AutoFix } from 'mdi-material-ui';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -21,6 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -62,60 +63,57 @@ class ThreatActorIndividualLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {threatActorIndividual.locations.edges.length === 0 && (
-            <ListItem dense={true} divider={true} button={false}>
-              <ListItemText primary="-" />
-            </ListItem>
-          )}
-          {threatActorIndividual.locations.edges.map((locationEdge) => {
-            const { types } = locationEdge;
-            const location = locationEdge.node;
-            const link = resolveLink(location.entity_type);
-            const flag = location.entity_type === 'Country'
-              && R.head(
-                (location.x_opencti_aliases ?? []).filter(
-                  (n) => n?.length === 2,
-                ),
+        <FieldOrEmpty source={threatActorIndividual.locations}>
+          <List style={{ marginTop: -10 }}>
+            {threatActorIndividual.locations.edges.map((locationEdge) => {
+              const { types } = locationEdge;
+              const location = locationEdge.node;
+              const link = resolveLink(location.entity_type);
+              const flag = location.entity_type === 'Country'
+                && R.head(
+                  (location.x_opencti_aliases ?? []).filter(
+                    (n) => n?.length === 2,
+                  ),
+                );
+              return (
+                <ListItem
+                  key={location.id}
+                  dense={true}
+                  divider={true}
+                  button={true}
+                  component={Link}
+                  to={`${link}/${location.id}`}
+                >
+                  <ListItemIcon>
+                    {flag ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={location.name} />
+                  {types.includes('manual') ? (
+                    <ListItemSecondaryAction style={{ right: 0 }} >
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={() => this.removeLocation(locationEdge)}
+                          size="large"
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </Security>
+                    </ListItemSecondaryAction>
+                  ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+                </ListItem>
               );
-            return (
-              <ListItem
-                key={location.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`${link}/${location.id}`}
-              >
-                <ListItemIcon>
-                  {flag ? (
-                    <img
-                      style={{ width: 20 }}
-                      src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                      alt={location.name}
-                    />
-                  ) : (
-                    <ItemIcon type={location.entity_type} />
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={location.name} />
-                {types.includes('manual') ? (
-                  <ListItemSecondaryAction style={{ right: 0 }} >
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={() => this.removeLocation(locationEdge)}
-                        size="large"
-                      >
-                        <LinkOff />
-                      </IconButton>
-                    </Security>
-                  </ListItemSecondaryAction>
-                ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
-              </ListItem>
-            );
-          })}
-        </List>
+            })}
+          </List>
+        </FieldOrEmpty>
       </>
     );
   }

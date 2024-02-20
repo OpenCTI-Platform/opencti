@@ -1718,9 +1718,9 @@
   "Inactive": "Inactive",
   "Expired": "Expired",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Your account has expired. If you would like to reactivate your account, please contact your administrator.",
-  "create": "Creation events",
-  "update": "Modification events",
-  "delete": "Deletion events",
+  "create": "create",
+  "update": "update",
+  "delete": "delete",
   "Authorized_members": "Access restriction",
   "info_authorizedmembers_workspace": "Workspaces (dashboards and investigations) support Access Restriction. By default, they are only accessible by their creator. You can add specific accesses for users, groups and organizations to share them.",
   "info_authorizedmembers_knowledge_on": "By activating Access Restriction, access to this object will be denied for all users, regardless of their global capabilities and marking definitions. Then, you are able to grant access to more users, groups or organizations. Those specific accesses are an additional layer of access control, this means that users still need the proper capabilities and marking definitions to access the object.",
@@ -2558,6 +2558,8 @@
   "Marking definitions to use by the csv mapper...": "Marking definitions used by the csv mapper only when some marking attributes have the policy set to 'Let the user choose the marking definitions'. If not this Marking definitions is ignored.",
   "Option 'Let the user choose marking definitions'...": "Option 'Let the user choose marking definitions' will ask the user to choose (when importing the CSV file) which marking definitions to apply when the data is missing in the CSV file.",
   "Update without references": "Update without references",
+  "Original creation date": "Original creation date",
+  "Platform creation date": "Platform creation date",
   "Max Confidence Level:": "Max Confidence Level:",
   "Share as public dashboard": "Share as public dashboard",
   "Public dashboards": "Public dashboards",
@@ -2665,5 +2667,10 @@
   "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.": "Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.",
   "Accept": "Accept",
   "Your confidence level is insufficient to edit this object.": "Your confidence level is insufficient to edit this object.",
-  "You need a confidence level to edit objects in the platform.": "You need a confidence level to edit objects in the platform."
+  "You need a confidence level to edit objects in the platform.": "You need a confidence level to edit objects in the platform.",
+  "This feature is only available in OpenCTI Enterprise Edition.": "This feature is only available in OpenCTI Enterprise Edition.",
+  "Operational": "Operational",
+  "Strategic": "Strategic",
+  "Link created": "Link created",
+  "Public dashboard": "Public dashboard"
 }

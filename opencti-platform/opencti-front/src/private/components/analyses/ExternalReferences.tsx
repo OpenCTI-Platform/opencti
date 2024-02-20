@@ -15,7 +15,7 @@ import { ExternalReferenceLine_node$data } from './external_references/__generat
 import ToolBar from '../data/ToolBar';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -53,7 +53,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     selectAll,
   } = useEntityToggle<ExternalReferenceLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('External-Reference', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('External-Reference', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -86,7 +86,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
         isSortable: isRuntimeSort,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -113,10 +113,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           iconExtension={true}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'creator_id',
-            'created',
-          ]}
+          entityTypes={['External-Reference']}
         >
           {queryRef && (
             <React.Suspense

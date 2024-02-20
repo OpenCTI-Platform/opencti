@@ -575,7 +575,7 @@ RelationshipDetailsComponentProps
         </div>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t_i18n('Creation date')}
+        {t_i18n('Platform creation date')}
       </Typography>
       {fldt(stixRelationship.created_at)}
       {computeNotGenericDetails()}

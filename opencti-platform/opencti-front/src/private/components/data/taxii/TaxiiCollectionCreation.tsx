@@ -207,6 +207,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                     'toTypes',
                   ]}
                   helpers={helpers}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </Box>
               <FilterIconButton

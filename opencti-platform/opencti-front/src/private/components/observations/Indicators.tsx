@@ -16,7 +16,7 @@ import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLin
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -41,7 +41,7 @@ const Indicators = () => {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['sightedBy']),
+        filters: useGetDefaultFilterObject(['sightedBy'], ['Indicator']),
       },
       searchTerm: '',
       sortBy: 'created',
@@ -68,7 +68,7 @@ const Indicators = () => {
     onToggleEntity,
   } = useEntityToggle<IndicatorLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Indicator', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Indicator', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -134,7 +134,7 @@ const Indicators = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -172,25 +172,6 @@ const Indicators = () => {
           filters={filters}
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'objectLabel',
-            'objectMarking',
-            'created',
-            'created_at',
-            'valid_from',
-            'x_opencti_score',
-            'createdBy',
-            'indicates',
-            'sightedBy',
-            'x_opencti_detection',
-            'based-on',
-            'revoked',
-            'creator_id',
-            'confidence',
-            'indicator_types',
-            'name',
-            'pattern',
-          ]}
         >
           {queryRef && (
           <React.Suspense

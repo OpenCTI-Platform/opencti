@@ -51,7 +51,7 @@ const DataSources: FunctionComponent = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -84,17 +84,6 @@ const DataSources: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created',
-          'revoked',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

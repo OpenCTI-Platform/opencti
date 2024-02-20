@@ -15,7 +15,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ const StixCyberObservables: FunctionComponent = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['entity_type', 'sightedBy']),
+        filters: useGetDefaultFilterObject(['entity_type', 'sightedBy'], ['Stix-Cyber-Observable']),
       },
       searchTerm: '',
       sortBy: 'created_at',
@@ -50,7 +50,7 @@ const StixCyberObservables: FunctionComponent = () => {
     openExports,
   } = viewStorage;
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Cyber-Observable', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Cyber-Observable', filters);
 
   const {
     onToggleEntity,
@@ -112,7 +112,7 @@ const StixCyberObservables: FunctionComponent = () => {
         isSortable: false,
       },
       created_at: {
-        label: 'Date',
+        label: 'Platform creation date',
         width: '10%',
         isSortable: true,
       },
@@ -149,17 +149,6 @@ const StixCyberObservables: FunctionComponent = () => {
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
-          availableFilterKeys={[
-            'entity_type',
-            'objectLabel',
-            'objectMarking',
-            'created_at',
-            'x_opencti_score',
-            'createdBy',
-            'sightedBy',
-            'creator_id',
-            'value',
-          ]}
         >
           <QueryRenderer
             query={stixCyberObservablesLinesQuery}

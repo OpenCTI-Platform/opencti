@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup, getDefaultFilterObjFromArray } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ const Entities = () => {
     {
       filters: {
         ...emptyFilterGroup,
-        filters: getDefaultFilterObjFromArray(['entity_type']),
+        filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
       },
       sortBy: 'created_at',
       orderAsc: false,
@@ -58,7 +58,7 @@ const Entities = () => {
     numberOfSelectedElements,
   } = useEntityToggle<EntitiesStixDomainObjectLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -97,7 +97,7 @@ const Entities = () => {
         isSortable: false,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '15%',
         isSortable: true,
       },
@@ -133,18 +133,6 @@ const Entities = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          availableFilterKeys={[
-            'entity_type',
-            'regardingOf',
-            'objectLabel',
-            'objectMarking',
-            'createdBy',
-            'source_reliability',
-            'confidence',
-            'creator_id',
-            'created',
-            'created_at',
-          ]}
         >
           {queryRef && (
             <React.Suspense

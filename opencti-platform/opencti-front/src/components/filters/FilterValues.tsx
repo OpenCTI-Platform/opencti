@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter } from '../../utils/filters/filtersUtils';
+import { Filter, RestrictedFiltersConfig, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
@@ -57,6 +57,8 @@ interface FilterValuesProps {
   isReadWriteFilter?: boolean;
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
+  entityTypes?: string[];
+  restrictedFiltersConfig?: RestrictedFiltersConfig;
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
@@ -71,6 +73,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   isReadWriteFilter,
   chipColor,
   noLabelDisplay,
+  entityTypes,
+  restrictedFiltersConfig, // restricted filters can't be removed and their local mode can't be modified
 }) => {
   const { t_i18n } = useFormatter();
   const filterKey = currentFilter.key;
@@ -78,7 +82,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const deactivatePopoverMenu = !helpers;
+  const deactivatePopoverMenu = !helpers || restrictedFiltersConfig?.valuesEdition?.includes(filterKey);
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   if (isOperatorNil) {
     return (
@@ -95,9 +99,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       </>
     );
   }
+  const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
-    const operatorClassName = (isReadWriteFilter && handleSwitchLocalMode) ? classes.inlineOperator : classes.inlineOperatorReadOnly;
-    const operatorOnClick = (isReadWriteFilter && handleSwitchLocalMode) ? () => handleSwitchLocalMode(currentFilter) : undefined;
+    const isLocalModeSwitchable = isReadWriteFilter && handleSwitchLocalMode && !restrictedFiltersConfig?.localModeSwitching?.includes(filterKey);
+    const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
+    const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
       <Fragment key={id}>
         <FilterValuesContent
@@ -106,6 +112,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           filterKey={filterKey}
           id={id}
           value={filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id}
+          filterDefinition={filterDefinition}
         />
         {filterKey !== 'regardingOf' && last(filterValues) !== id && (
           <div

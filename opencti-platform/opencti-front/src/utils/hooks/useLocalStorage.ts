@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, useIsUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -358,7 +358,7 @@ export const usePaginationLocalStorage = <U>(
       if (viewStorage.filters && filter) {
         let newValues: string[] = [];
         if (id !== null) {
-          newValues = isUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
+          newValues = useIsUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
         }
         const newFilterElement = {
           id: uuid(),
@@ -415,7 +415,7 @@ export const usePaginationLocalStorage = <U>(
     handleAddRepresentationFilter: (id: string, value: string) => {
       if (value === null) { // handle clicking on 'no label' in entities list
         const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
-        if (findCorrespondingFilter && ['objectLabel', 'contextObjectLabel'].includes(findCorrespondingFilter.key)) {
+        if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
             const { filters } = viewStorage;
             setValue((c) => ({

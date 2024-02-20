@@ -38,8 +38,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
 import { capitalizeFirstLetter } from '../../../../utils/String';
-import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   lines: {
@@ -99,6 +99,7 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup);
 
@@ -457,6 +458,7 @@ const PlaybookAddComponentsContent = ({
                               'toTypes',
                             ]}
                             handleAddFilter={handleAddFilter}
+                            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                           />
                         </div>
                         <div className="clearfix" />

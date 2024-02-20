@@ -2,7 +2,7 @@ import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { contextFilters, FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -24,6 +24,7 @@ const entitiesFilters = [
   'killChainPhases',
   'malware_types',
   'report_types',
+  'incident_type',
   'regardingOf',
   'x_opencti_main_observable_type',
 ];
@@ -50,13 +51,7 @@ const auditsFilters = [
   'members_group',
   'members_organization',
   'members_user',
-  'contextEntityId',
-  'contextEntityType',
-  'contextCreatedBy',
-  'contextObjectMarking',
-  'contextObjectLabel',
-  'contextCreator',
-];
+].concat(contextFilters);
 
 interface DataSelection {
   label: string;
@@ -95,15 +90,18 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     'Stix-Domain-Object',
     'Stix-Cyber-Observable',
   ];
+  let searchContext = { entityTypes: ['Stix-Core-Object'] };
   if (perspective === 'relationships') {
     availableFilterKeys = relationshipsFilters;
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
+    searchContext = { entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] };
   } else if (perspective === 'audits') {
     availableFilterKeys = auditsFilters;
     availableEntityTypes = ['History', 'Activity'];
+    searchContext = { entityTypes: ['History'] };
   }
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -111,6 +109,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
         availableEntityTypes={availableEntityTypes}
         helpers={helpers}
+        searchContext={type === 'bookmark' ? undefined : searchContext}
       />
     </Box>
     { perspective === 'relationships' && (
@@ -124,6 +123,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicFrom}
           type="from"
+          searchContext={searchContext}
         />
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -134,8 +134,8 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             'Stix-Cyber-Observable',
           ]}
           helpers={helpersDynamicTo}
-
           type="to"
+          searchContext={searchContext}
         />
       </Box>
     </>)}

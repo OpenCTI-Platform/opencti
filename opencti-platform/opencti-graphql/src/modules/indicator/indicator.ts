@@ -3,6 +3,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
+import { revoked } from '../../schema/attribute-definition';
 
 const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator> = {
   type: {
@@ -19,15 +20,15 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'pattern_type', label: 'Pattern type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'pattern_version', label: 'Pattern version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'pattern_type', label: 'Pattern type', type: 'string', format: 'vocabulary', vocabularyCategory: 'pattern_type_ov', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'pattern_version', label: 'Pattern version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'pattern', label: 'Pattern', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'indicator_types', label: 'Indicator types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'indicator_types', label: 'Indicator types', type: 'string', format: 'vocabulary', vocabularyCategory: 'indicator_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     { name: 'valid_from', label: 'Valid from', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'valid_until', label: 'Valid until', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_detection', label: 'Detection', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_detection', label: 'Is detected', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_main_observable_type', label: 'Main observable type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     {
@@ -82,7 +83,8 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       label: 'Decay applied rule',
       isFilterable: false,
       format: 'flat'
-    }
+    },
+    { ...revoked, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [objectOrganization, killChainPhases],

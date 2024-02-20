@@ -30,7 +30,7 @@ import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixCoreObjectsLines';
@@ -255,38 +255,51 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } = props;
   let isOnlySDOs = false;
   let isOnlySCOs = false;
-  let actualTypeFilter = [
+  let actualTypeFilterValues = [
     ...(targetStixDomainObjectTypes ?? []),
     ...(targetStixCyberObservableTypes ?? []),
   ];
-  let virtualTypeFilter = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
+  let virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   if (
     (targetStixDomainObjectTypes ?? []).length > 0
         && (targetStixCyberObservableTypes ?? []).length === 0
   ) {
     isOnlySDOs = true;
-    virtualTypeFilter = targetStixDomainObjectTypes;
+    virtualEntityTypes = targetStixDomainObjectTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Domain-Object')) {
-      actualTypeFilter = targetStixDomainObjectTypes;
+      actualTypeFilterValues = targetStixDomainObjectTypes;
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
         && (targetStixDomainObjectTypes ?? []).length === 0
   ) {
     isOnlySCOs = true;
-    virtualTypeFilter = targetStixCyberObservableTypes;
+    virtualEntityTypes = targetStixCyberObservableTypes;
     if (!targetStixDomainObjectTypes.includes('Stix-Cyber-Observable')) {
-      actualTypeFilter = targetStixCyberObservableTypes;
+      actualTypeFilterValues = targetStixCyberObservableTypes;
     }
   } else if (
     (targetStixCyberObservableTypes ?? []).length > 0
         && (targetStixDomainObjectTypes ?? []).length > 0
   ) {
-    virtualTypeFilter = [
+    virtualEntityTypes = [
       ...targetStixDomainObjectTypes,
       ...targetStixCyberObservableTypes,
     ];
   }
+  const actualTypeFilters = actualTypeFilterValues.length > 0
+    ? {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{
+        id: uuid(),
+        key: 'entity_type',
+        values: actualTypeFilterValues,
+        operator: 'eq',
+        mode: 'or',
+      }],
+    }
+    : emptyFilterGroup;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -300,21 +313,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [selectedElements, setSelectedElements] = useState({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, helpers] = useFiltersState(
-    actualTypeFilter.length > 0
-      ? {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{
-          id: uuid(),
-          key: 'entity_type',
-          values: actualTypeFilter,
-          operator: 'eq',
-          mode: 'or',
-        }],
-      }
-      : emptyFilterGroup,
-  );
+  const [filters, helpers] = useFiltersState(actualTypeFilters, actualTypeFilters);
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
     symbol: '',
@@ -500,14 +499,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       },
     };
   };
+  const searchPaginationOptions = {
+    search: searchTerm,
+    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, virtualEntityTypes),
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  };
 
   const renderSelectEntity = () => {
-    const searchPaginationOptions = {
-      search: searchTerm,
-      filters: removeIdFromFilterGroupObject(filters),
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
     return (
       <>
         <div className={classes.header}>
@@ -543,19 +542,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   numberOfElements={numberOfElements}
                   iconExtension={true}
                   parametersWithPadding={true}
-                  availableEntityTypes={virtualTypeFilter}
+                  availableEntityTypes={virtualEntityTypes}
                   handleToggleSelectAll="no"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'objectMarking',
-                    'objectLabel',
-                    'createdBy',
-                    'confidence',
-                    'x_opencti_organization_type',
-                    'created',
-                    'created_at',
-                    'creator_id',
-                  ]}
+                  entityTypes={virtualEntityTypes}
+                  additionalFilterKeys={['entity_type']}
                 >
                   <QueryRenderer
                     query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}
@@ -585,7 +575,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
             inputValue={searchTerm}
             paginationKey="Pagination_stixCoreObjects"
             paginationOptions={searchPaginationOptions}
-            stixDomainObjectTypes={actualTypeFilter}
+            stixDomainObjectTypes={actualTypeFilterValues}
             creationCallback={undefined}
             confidence={undefined}
             defaultCreatedBy={undefined}

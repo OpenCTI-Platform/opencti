@@ -10,7 +10,7 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -85,7 +85,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -101,7 +101,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       },
     };
 
-    const contextFilters = buildEntityTypeBasedFilterContext('Feedback', filters);
+    const contextFilters = useBuildEntityTypeBasedFilterContext('Feedback', filters);
     const queryPaginationOptions = {
       ...paginationOptions,
       filters: contextFilters,
@@ -133,18 +133,6 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'objectAssignee',
-          'creator_id',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <Suspense

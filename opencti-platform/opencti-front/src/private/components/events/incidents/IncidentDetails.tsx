@@ -89,7 +89,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             key: 'regardingOf',
             values: [
               { key: 'id', values: [incident.id], operator: 'eq' },
-              { key: 'type', values: ['related-to', 'targets', 'uses', 'attributed-to'] },
+              { key: 'relationship_type', values: ['related-to', 'targets', 'uses', 'attributed-to'] },
             ],
           },
         ],
@@ -111,7 +111,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             key: 'regardingOf',
             values: [
               { key: 'id', values: [incident.id], operator: 'eq' },
-              { key: 'type', values: ['related-to'], operator: 'eq' },
+              { key: 'relationship_type', values: ['related-to'], operator: 'eq' },
             ],
           },
         ],

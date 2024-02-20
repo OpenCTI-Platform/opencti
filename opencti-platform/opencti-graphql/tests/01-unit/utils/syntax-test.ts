@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  systemChecker,
-  domainChecker,
-  hostnameChecker,
-  emailChecker,
-  ipv6Checker,
-  macAddrChecker,
-  ipv4Checker,
-  cpeChecker,
-} from '../../../src/utils/syntax';
+import { systemChecker, domainChecker, hostnameChecker, emailChecker, ipv6Checker, macAddrChecker, ipv4Checker, cpeChecker } from '../../../src/utils/syntax';
 
 describe('Regex Pattern Tests', () => {
   it('should match a valid system pattern', () => {

@@ -191,7 +191,7 @@ class StixCyberObservableOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creation date')}
+                {t('Platform creation date')}
               </Typography>
               {fldt(stixCyberObservable.created_at)}
               <Typography

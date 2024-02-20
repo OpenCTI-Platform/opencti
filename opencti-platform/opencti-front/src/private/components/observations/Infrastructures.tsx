@@ -13,7 +13,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { InfrastructureLineDummy } from './infrastructures/InfrastructureLine';
 import ToolBar from '../data/ToolBar';
 import { InfrastructureLine_node$data } from './infrastructures/__generated__/InfrastructureLine_node.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -46,7 +46,7 @@ const Infrastructures = () => {
     openExports,
     numberOfElements,
   } = viewStorage;
-  const contextFilters = buildEntityTypeBasedFilterContext('Infrastructure', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Infrastructure', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -95,7 +95,7 @@ const Infrastructures = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Original creation date',
         width: '10%',
         isSortable: true,
       },
@@ -128,14 +128,6 @@ const Infrastructures = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
-        availableFilterKeys={[
-          'objectLabel',
-          'objectMarking',
-          'created',
-          'createdBy',
-          'confidence',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

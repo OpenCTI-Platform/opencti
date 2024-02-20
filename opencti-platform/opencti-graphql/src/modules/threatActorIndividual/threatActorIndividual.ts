@@ -84,23 +84,23 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'threat_actor_types', label: 'Threat actor types', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'threat_actor_types', label: 'Threat actor types', type: 'string', format: 'vocabulary', vocabularyCategory: 'threat_actor_individual_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_seen', label: 'Last seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'goals', label: 'Goals', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-    { name: 'roles', label: 'Roles', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-    { name: 'sophistication', label: 'Sophistication', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'resource_level', label: 'Resource level', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'primary_motivation', label: 'Primary motivation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'secondary_motivations', label: 'Secondary motivation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-    { name: 'personal_motivations', label: 'Personal motivations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'roles', label: 'Roles', type: 'string', format: 'vocabulary', vocabularyCategory: 'threat_actor_individual_role_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'sophistication', label: 'Sophistication', type: 'string', format: 'vocabulary', vocabularyCategory: 'threat_actor_individual_sophistication_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'resource_level', label: 'Resource level', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_resource_level_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'primary_motivation', label: 'Primary motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'secondary_motivations', label: 'Secondary motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'personal_motivations', label: 'Personal motivations', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'date_of_birth', label: 'Date of birth', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'gender', label: 'Gender', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'gender', label: 'Gender', type: 'string', format: 'vocabulary', vocabularyCategory: 'gender_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'job_title', label: 'Job title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'marital_status', label: 'Marital status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'eye_color', label: 'Eye color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'hair_color', label: 'Hair color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'marital_status', label: 'Marital status', type: 'string', format: 'vocabulary', vocabularyCategory: 'marital_status_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'eye_color', label: 'Eye color', type: 'string', format: 'vocabulary', vocabularyCategory: 'eye_color_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hair_color', label: 'Hair color', type: 'string', format: 'vocabulary', vocabularyCategory: 'hair_color_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
       name: 'height',
       label: 'Height',
@@ -110,10 +110,10 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       editDefault: false,
       multiple: true,
       upsert: true,
-      isFilterable: true,
+      isFilterable: false,
       mappings: [
-        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
-        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+        { name: 'measure', label: 'Height measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Height measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
       ]
     },
     {
@@ -125,15 +125,15 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       editDefault: false,
       multiple: true,
       upsert: true,
-      isFilterable: true,
+      isFilterable: false,
       mappings: [
-        { name: 'measure', label: 'Measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
-        { name: 'date_seen', label: 'Measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true }
+        { name: 'measure', label: 'Weight measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+        { name: 'date_seen', label: 'Weight measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true }
       ]
     },
     { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'lang', label: 'Lang', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'lang', label: 'Lang', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [
     {

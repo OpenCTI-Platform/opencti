@@ -29,7 +29,6 @@ import SwitchField from '../../../../components/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
-import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -37,6 +36,7 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
   header: {
@@ -143,6 +143,7 @@ const feedValidation = (t) => Yup.object().shape({
 
 const FeedEditionContainer = (props) => {
   const { t, classes, feed, handleClose, open } = props;
+  const { ignoredAttributesInFeeds } = useAttributes();
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
   const [feedAttributes, setFeedAttributes] = useState({
@@ -452,6 +453,7 @@ const FeedEditionContainer = (props) => {
                           'pattern_type',
                         ]}
                         helpers={helpers}
+                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       />
                     </Box>
                     <FilterIconButton

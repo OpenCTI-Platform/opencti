@@ -2024,9 +2024,6 @@
   "Expired": "Caducada",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.",
   "Please contact your administrator.": "Comuníquese con su administrador.",
-  "create": "Creation events",
-  "update": "Modification events",
-  "delete": "Deletion events",
   "Demographic Information": "Información demográfica",
   "Demographics": "Demografía",
   "Country of Residence": "País de residencia",
@@ -2557,6 +2554,8 @@
   "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador csv sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
   "Option 'Let the user choose marking definitions'...": "La opción 'Dejar que el usuario elija las definiciones de marcado' pedirá al usuario que elija (al importar el archivo CSV) qué definiciones de marcado aplicar cuando falten datos en el archivo CSV.",
   "Update without references": "Actualizar sin referencias",
+  "Original creation date": "Fecha de creación original",
+  "Platform creation date": "Fecha de creación de la plataforma",
   "Max Confidence Level:": "Nivel Máximo de Confianza:",
   "Share as public dashboard": "Compartir como tablero público",
   "To prevent people seeing all the data...": "Para evitar que los usuarios vean todos los datos del panel público, seleccione una definición de marcado para restringir los datos compartidos.",
@@ -2665,5 +2664,13 @@
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
   "You need a confidence level to edit objects in the platform.": "Necesitas un nivel de confianza para editar objetos en la plataforma.",
   "Only successful tests allow the ingestion edition.": "Sólo las pruebas exitosas permiten la edición de ingestión.",
-  "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100."
+  "The user has BYPASS capability, their max confidence level is set to 100.": "El usuario tiene capacidad BYPASS, su nivel de confianza máximo está fijado en 100.",
+  "create": "crear",
+  "update": "actualizar",
+  "delete": "borrar",
+  "This feature is only available in OpenCTI Enterprise Edition.": "Esta función sólo está disponible en OpenCTI Enterprise Edition.",
+  "Operational": "Operativo",
+  "Strategic": "Estratégico",
+  "Link created": "Enlace creado",
+  "Public dashboard": "Cuadro de mandos público"
 }

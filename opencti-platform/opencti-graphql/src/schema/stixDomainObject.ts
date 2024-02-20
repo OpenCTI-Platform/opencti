@@ -111,7 +111,7 @@ schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THRE
 export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
   || type === ENTITY_TYPE_THREAT_ACTOR;
 
-const STIX_DOMAIN_OBJECTS: Array<string> = [
+export const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,

@@ -83,7 +83,7 @@ const ContainerStixCoreObjectsMapping = ({
       isSortable: isRuntimeSort,
     },
     created_at: {
-      label: 'Creation',
+      label: 'Platform creation date',
       width: '12%',
       isSortable: true,
     },
@@ -118,13 +118,6 @@ const ContainerStixCoreObjectsMapping = ({
         handleSwitchLocalMode={handleSwitchLocalMode}
         iconExtension={false}
         filters={filters}
-        availableFilterKeys={[
-          'entity_type',
-          'objectLabel',
-          'objectMarking',
-          'created_at',
-          'createdBy',
-        ]}
         availableEntityTypes={['Stix-Core-Object']}
         keyword={searchTerm}
         secondaryAction={true}

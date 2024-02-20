@@ -16,7 +16,7 @@ import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import { emptyFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -130,7 +130,7 @@ ContainerStixCyberObservablesComponentProps
       .filter((o) => o.id) as { id: string; value: string }[];
   };
 
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Cyber-Observable']);
   const contextFilters = {
     mode: 'and',
     filters: [
@@ -193,7 +193,7 @@ ContainerStixCyberObservablesComponentProps
         isSortable: isRuntimeSort,
       },
       created_at: {
-        label: 'Creation date',
+        label: 'Platform creation date',
         width: '10%',
         isSortable: true,
       },
@@ -238,14 +238,6 @@ ContainerStixCyberObservablesComponentProps
             keyword={searchTerm}
             openExports={openExports}
             filters={filters}
-            availableFilterKeys={[
-              'objectLabel',
-              'objectMarking',
-              'created_at',
-              'x_opencti_score',
-              'createdBy',
-              'sightedBy',
-            ]}
             paginationOptions={queryPaginationOptions}
           >
             {queryRef && (

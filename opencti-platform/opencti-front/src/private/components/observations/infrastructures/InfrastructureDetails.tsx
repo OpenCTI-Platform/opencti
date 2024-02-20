@@ -84,7 +84,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             key: 'regardingOf',
             values: [
               { key: 'id', values: [data.id] },
-              { key: 'type', values: ['consists-of'] },
+              { key: 'relationship_type', values: ['consists-of'] },
             ],
           },
         ],

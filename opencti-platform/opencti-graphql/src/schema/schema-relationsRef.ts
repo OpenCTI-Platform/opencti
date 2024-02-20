@@ -6,8 +6,8 @@ import type { RefAttribute } from './attribute-definition';
 let usageProtection = false;
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, Map<string, RefAttribute>>,
-  // allRelationsRef is a list of the names of all the relations ref registered in a schema definition
   allRelationsRef: [] as string[],
+  registeredTypes: [] as string[],
 
   namesCache: new Map<string, string[]>(),
   stixNamesCache: new Map<string, string[]>(),
@@ -26,7 +26,9 @@ export const schemaRelationsRefDefinition = {
     if (usageProtection) {
       throw UnsupportedError('Register relations refs use after usage, please check your imports');
     }
+    this.registeredTypes.push(entityType);
     const directRefs = this.relationsRef[entityType] ?? new Map<string, RefAttribute>();
+    const currentRefs = Object.values(this.relationsRef);
     // Register given relations ref
     relationsRefDefinition.forEach((relationRefDefinition) => {
       // Check name collision with STIX_CORE_RELATIONSHIP
@@ -42,6 +44,20 @@ export const schemaRelationsRefDefinition = {
           entityType
         });
       }
+      // Check different refs have different labels
+      let refsWithSameLabelAndDifferentName: RefAttribute[] = [];
+      currentRefs
+        .forEach((m) => {
+          const refDefinitionsList = Array.from(m.values());
+          refsWithSameLabelAndDifferentName = refDefinitionsList.filter((ref) => (ref.label === relationRefDefinition.label) && (ref.name !== relationRefDefinition.name));
+        });
+      if (refsWithSameLabelAndDifferentName.length > 0) {
+        throw UnsupportedError('You can\'t have two relations ref with the same label and a different name in the platform', {
+          refsWithSameLabelAndDifferentName,
+          relationRefDefinition,
+        });
+      }
+      // set relation ref
       directRefs.set(relationRefDefinition.name, relationRefDefinition);
       if (!this.allRelationsRef.includes(relationRefDefinition.name)) {
         this.allRelationsRef.push(relationRefDefinition.name);
@@ -83,6 +99,10 @@ export const schemaRelationsRefDefinition = {
 
   getRelationsRef(entityType: string): RefAttribute[] {
     return this.relationsRefCacheArray.get(this.selectEntityType(entityType)) ?? [];
+  },
+
+  getRegisteredTypes(): string[] {
+    return this.registeredTypes;
   },
 
   getRelationRef(entityType: string, name: string): RefAttribute | null {

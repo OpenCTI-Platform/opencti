@@ -54,7 +54,11 @@ import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
-import { deserializeDashboardManifestForFrontend, removeIdFromFilterGroupObject, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeDashboardManifestForFrontend,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+  serializeDashboardManifestForBackend,
+} from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -745,9 +749,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: removeIdFromFilterGroupObject(data.filters),
-                dynamicFrom: removeIdFromFilterGroupObject(data.dynamicFrom),
-                dynamicTo: removeIdFromFilterGroupObject(data.dynamicTo),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
             return <Paper
@@ -800,9 +804,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: removeIdFromFilterGroupObject(data.filters),
-                dynamicFrom: removeIdFromFilterGroupObject(data.dynamicFrom),
-                dynamicTo: removeIdFromFilterGroupObject(data.dynamicTo),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+                dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
             };
             return <Paper

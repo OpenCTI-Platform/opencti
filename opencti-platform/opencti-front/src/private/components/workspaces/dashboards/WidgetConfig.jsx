@@ -54,13 +54,13 @@ import WidgetFilters from './WidgetFilters';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
-import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
 import { emptyFilterGroup, findFiltersFromKeys } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, toB64 } from '../../../../utils/String';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -323,6 +323,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   }
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { ignoredAttributesInDashboards } = useAttributes();
   const [open, setOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState('write');
   const [stepIndex, setStepIndex] = useState(initialStep);

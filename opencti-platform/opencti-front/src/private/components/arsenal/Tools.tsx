@@ -8,7 +8,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ToolLineDummy } from './tools/ToolLine';
 import { ToolsLinesPaginationQuery, ToolsLinesPaginationQuery$variables } from './tools/__generated__/ToolsLinesPaginationQuery.graphql';
-import { buildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -36,7 +36,7 @@ const Tools = () => {
     numberOfElements,
   } = viewStorage;
 
-  const contextFilters = buildEntityTypeBasedFilterContext('Tool', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Tool', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -59,7 +59,7 @@ const Tools = () => {
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
+        label: 'Original creation date',
         width: '15%',
         isSortable: true,
       },
@@ -89,16 +89,6 @@ const Tools = () => {
         filters={filters}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'workflow_id',
-          'objectLabel',
-          'objectMarking',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created',
-          'name',
-        ]}
       >
         {queryRef && (
           <React.Suspense

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, errors, id, updatedAt } from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, errors, id, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -27,10 +27,10 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 const HistoryDefinition: AttributeDefinition[] = [
-  { name: 'event_type', label: 'Event type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'event_status', label: 'Event status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'event_access', label: 'Event access', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+  { name: 'event_status', label: 'Event status', type: 'string', format: 'enum', values: ['error', 'success'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
+  { name: 'event_access', label: 'Event access', type: 'string', format: 'enum', values: ['extended', 'administration'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
+  { name: 'event_scope', label: 'Event scope', type: 'string', format: 'enum', values: ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   {
     name: 'user_id',
     label: 'User ID',
@@ -90,7 +90,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     mandatoryType: 'internal',
     multiple: false,
     upsert: false,
-    isFilterable: true,
+    isFilterable: false,
     mappings: [
       id,
       { name: 'provider', label: 'Provider', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
@@ -130,6 +130,9 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'external_references', label: 'External references', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
     ]
   },
+  { ...creators, isFilterable: false },
+  { ...updatedAt, isFilterable: false },
+  { ...createdAt, isFilterable: false },
 ];
 
 export const settingsMessages = {
@@ -206,7 +209,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_GROUP]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_assignation', label: 'Default assignation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'auto_new_marking', label: 'Authorize to new markings', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
@@ -234,7 +237,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true,
+      isFilterable: false,
       mappings: [
         { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
         { name: 'overrides',
@@ -245,7 +248,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           mandatoryType: 'internal',
           multiple: true,
           upsert: true,
-          isFilterable: true,
+          isFilterable: false,
           mappings: [
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
@@ -257,7 +260,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'user_email', label: 'Email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'firstname', label: 'Firstname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'lastname', label: 'Lastname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'theme', label: 'Theme', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -296,7 +299,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true,
+      isFilterable: false,
       mappings: [
         { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
         { name: 'overrides',
@@ -307,7 +310,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           mandatoryType: 'internal',
           multiple: true,
           upsert: true,
-          isFilterable: true,
+          isFilterable: false,
           mappings: [
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
@@ -317,7 +320,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_RULE]: [
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
@@ -329,7 +332,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_CAPABILITY]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'attribute_order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_CONNECTOR]: [
     { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
@@ -346,19 +349,19 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'taxii_public', label: 'Public', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'taxii_public', label: 'Public taxii', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     authorizedMembers
   ],
   [ENTITY_TYPE_FEED]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'separator', label: 'Separator', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'rolling_time', label: 'Rolling time', type: 'numeric', precision: 'long', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'include_header', label: 'Include header', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'feed_public', label: 'Public', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'feed_public', label: 'Public feed', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'feed_types', label: 'Feed types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'feed_date_attribute', label: 'Selected attribute date', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     {
@@ -394,9 +397,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_STREAM_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'stream_public', label: 'Public', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'stream_public', label: 'Public stream', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'stream_live', label: 'Is live', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     authorizedMembers
   ],
@@ -406,7 +409,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_STATUS]: [
     { name: 'template_id', label: 'Template id', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
-    { name: 'type', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'order', label: 'Order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_WORK]: [
@@ -414,7 +417,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'event_source_id', label: 'Event source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
-    { name: 'event_type', label: 'Event type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
+    { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'connector_id', label: 'Connector ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'status', label: 'Status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
@@ -458,7 +461,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'enable', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'completed', label: 'Completed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'initiator_id', label: 'Initiator', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'task_filters', label: 'Filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'task_filters', label: 'Task filters', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'task_search', label: 'Search', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_position', label: 'Position', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_ids', label: 'Included IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
@@ -470,7 +473,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_RETENTION_RULE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'max_retention', label: 'Maximum retention', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_deleted_count', label: 'Last deleted count', precision: 'integer', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

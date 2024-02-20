@@ -1,7 +1,7 @@
 import useVocabularyCategory from './useVocabularyCategory';
+import useAuth from './useAuth';
 
-// TODO remove export when every usage is pure Function and use the hook
-export const ignoredAttributes = [
+const ignoredAttributes = [
   'id',
   'parent_types',
   'base_type',
@@ -25,7 +25,7 @@ export const ignoredAttributes = [
   'creator_id',
 ];
 
-export const workbenchAttributes = [
+const workbenchAttributes = [
   'name',
   'description',
   'case_type',
@@ -41,14 +41,14 @@ export const workbenchAttributes = [
   'context',
 ];
 
-export const ignoredAttributesInFeeds = [
+const ignoredAttributesInFeeds = [
   'x_opencti_stix_ids',
   'spec_version',
   'extensions',
   'importFiles',
 ];
 
-export const ignoredAttributesInDashboards = [
+const ignoredAttributesInDashboards = [
   'spec_version',
   'extensions',
   'importFiles',
@@ -68,7 +68,8 @@ export const ignoredAttributesInDashboards = [
   'content_mapping',
 ];
 
-export const dateAttributes = [
+// TODO check the attribute type from backend
+const dateAttributes = [
   'ctime',
   'mtime',
   'atime',
@@ -95,7 +96,7 @@ export const dateAttributes = [
   'stop_time',
 ];
 
-export const numberAttributes = [
+const numberAttributes = [
   'x_opencti_score',
   'confidence',
   'number',
@@ -112,7 +113,7 @@ export const numberAttributes = [
   'cvv',
 ];
 
-export const booleanAttributes = [
+const booleanAttributes = [
   'x_opencti_detection',
   'is_self_signed',
   'is_multipart',
@@ -126,113 +127,19 @@ export const booleanAttributes = [
   'dep_enabled',
 ];
 
-export const multipleAttributes = [
+const multipleAttributes = [
   'x_opencti_additional_names',
   'protocols',
   'descriptions',
 ];
 
-export const markdownAttributes = ['description', 'x_opencti_description'];
+const markdownAttributes = ['description', 'x_opencti_description'];
 
-export const htmlAttributes = ['content'];
+const htmlAttributes = ['content'];
 
-export const typesWithOpenCTIAliases = [
-  'Course-Of-Action',
-  'Identity',
-  'Individual',
-  'Organization',
-  'Sector',
-  'Position',
-  'Administrative-Area',
-  'Location',
-  'City',
-  'Country',
-  'Region',
-  'Event',
-  'Channel',
-  'Narrative',
-  'Threat-Actor-Individual',
-  'Threat-Actor-Group',
-];
+const typesWithoutName = ['Observed-Data'];
 
-export const typesWithoutAliases = [
-  'Indicator',
-  'Vulnerability',
-  'Language',
-  'Grouping',
-  'Report',
-];
-
-// TODO replace this by a proper hook using backend information
-export const stixDomainObjectTypes = [
-  'Stix-Domain-Object',
-  'Threat-Actor',
-  'Threat-Actor-Individual',
-  'Threat-Actor-Group',
-  'Intrusion-Set',
-  'Campaign',
-  'Incident',
-  'Malware',
-  'Tool',
-  'Attack-Pattern',
-  'Course-Of-Action',
-  'Data-Component',
-  'Data-Source',
-  'Organization',
-  'Sector',
-  'Position',
-  'Administrative-Area',
-  'Location',
-  'City',
-  'Country',
-  'Region',
-  'Event',
-  'Channel',
-  'Narrative',
-  'Indicator',
-  'Vulnerability',
-  'Language',
-  'Grouping',
-  'Report',
-  'Narrative',
-  'Channel',
-];
-
-export const stixCyberObservableTypes = [
-  'Stix-Cyber-Observable',
-  'Autonomous-System',
-  'Directory',
-  'Domain-Name',
-  'Email-Addr',
-  'Email-Message',
-  'Email-Mime-Part-Type',
-  'StixFile',
-  'X509-Certificate',
-  'IPv4-Addr',
-  'IPv6-Addr',
-  'Mac-Addr',
-  'Mutex',
-  'Network-Traffic',
-  'Process',
-  'Software',
-  'Url',
-  'User-Account',
-  'Windows-Registry-Key',
-  'Windows-Registry-Value-Type',
-  'Cryptographic-Key',
-  'Cryptocurrency-Wallet',
-  'Hostname',
-  'Text',
-  'User-Agent',
-  'Bank-Account',
-  'Phone-Number',
-  'Payment-Card',
-  'Media-Content',
-];
-
-export const typesWithoutName = ['Observed-Data'];
-
-export const typesContainers = [
+const typesContainers = [
   'report',
   'note',
   'case',
@@ -265,6 +172,10 @@ export const containerTypes = [
 
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
+  const { sdos, scos } = useAuth().schema;
+  const stixDomainObjectTypes = sdos.map((sdo) => sdo.id);
+  const stixCyberObservableTypes = scos.map((sco) => sco.id);
+  const stixCoreObjectTypes = stixDomainObjectTypes.concat(stixCyberObservableTypes);
   return {
     ignoredAttributes,
     workbenchAttributes,
@@ -276,10 +187,9 @@ const useAttributes = () => {
     multipleAttributes,
     markdownAttributes,
     htmlAttributes,
-    typesWithOpenCTIAliases,
-    typesWithoutAliases,
     stixDomainObjectTypes,
     stixCyberObservableTypes,
+    stixCoreObjectTypes,
     typesWithoutName,
     typesContainers,
     vocabularyAttributes: vocabularies.fields,

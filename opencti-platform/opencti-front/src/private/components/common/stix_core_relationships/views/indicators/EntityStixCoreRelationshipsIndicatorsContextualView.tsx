@@ -30,7 +30,7 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import type { Theme } from '../../../../../../components/Theme';
-import { FilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -162,7 +162,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       ),
     },
     created_at: {
-      label: 'Creation date',
+      label: 'Platform creation date',
       width: '15%',
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
@@ -207,7 +207,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
-  const userFilters = removeIdFromFilterGroupObject(filters);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
