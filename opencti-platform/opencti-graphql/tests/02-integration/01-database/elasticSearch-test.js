@@ -416,6 +416,26 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(1);
   });
+  it('should entity paginate domain objects sort by published', async () => {
+    const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      orderBy: 'published',
+      first: 20,
+      orderMode: 'desc',
+    });
+    expect(data).not.toBeNull();
+    expect(data.edges.length).toEqual(20);
+    expect(data.pageInfo.endCursor).toBeDefined();
+
+    const { endCursor } = data.pageInfo;
+    const nextPage = await elPaginate(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      orderBy: 'published',
+      first: 20,
+      orderMode: 'desc',
+      after: endCursor,
+    });
+    expect(nextPage).not.toBeNull();
+    expect(nextPage.edges.length).toBeGreaterThan(1);
+  });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = null, search = null,
     // orderBy = null, orderMode = 'asc',
