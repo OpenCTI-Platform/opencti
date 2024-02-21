@@ -16,7 +16,7 @@ import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 
-const entitySettingFragment = graphql`
+export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
     id
     target_type
@@ -24,6 +24,19 @@ const entitySettingFragment = graphql`
     platform_hidden_type
     enforce_reference
     availableSettings
+    mandatoryAttributes
+    scaleAttributes {
+      name
+      scale
+    }
+    defaultValuesAttributes {
+      name
+      type
+      defaultValues {
+        id
+        name
+      }
+    }
   }
 `;
 
