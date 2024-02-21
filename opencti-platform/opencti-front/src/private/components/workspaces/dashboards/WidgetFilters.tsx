@@ -1,57 +1,11 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
+import { uniq } from 'ramda';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { contextFilters, FilterGroup, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, isFilterGroupNotEmpty, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
-
-const entitiesFilters = [
-  'entity_type',
-  'objectMarking',
-  'objectLabel',
-  'createdBy',
-  'creator_id',
-  'workflow_id',
-  'objectAssignee',
-  'objectParticipant',
-  'objects',
-  'x_opencti_score',
-  'x_opencti_detection',
-  'revoked',
-  'confidence',
-  'pattern_type',
-  'killChainPhases',
-  'malware_types',
-  'report_types',
-  'incident_type',
-  'regardingOf',
-  'x_opencti_main_observable_type',
-];
-
-const relationshipsFilters = [
-  'fromId',
-  'toId',
-  'fromTypes',
-  'toTypes',
-  'relationship_type',
-  'objectMarking',
-  'objectLabel',
-  'createdBy',
-  'confidence',
-  'killChainPhases',
-  'creator_id',
-  'x_opencti_main_observable_type',
-];
-
-const auditsFilters = [
-  'entity_type',
-  'event_type',
-  'event_scope',
-  'members_group',
-  'members_organization',
-  'members_user',
-].concat(contextFilters);
 
 interface DataSelection {
   label: string;
@@ -85,24 +39,25 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     });
   }, [filters, filtersDynamicFrom, filtersDynamicTo]);
 
-  let availableFilterKeys = entitiesFilters;
   let availableEntityTypes = [
     'Stix-Domain-Object',
     'Stix-Cyber-Observable',
   ];
   let searchContext = { entityTypes: ['Stix-Core-Object'] };
   if (perspective === 'relationships') {
-    availableFilterKeys = relationshipsFilters;
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
-    searchContext = { entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] };
+    searchContext = { entityTypes: ['stix-core-relationship'] };
   } else if (perspective === 'audits') {
-    availableFilterKeys = auditsFilters;
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
   }
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
+  const availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? [])).concat('entity_type');
+  const entitiesFilterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
+  const entitiesFilters = uniq(Array.from(entitiesFilterKeysMap.keys() ?? []));
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
     <Box sx={{ display: 'flex', gap: 1 }}>
       <Filters
@@ -123,7 +78,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicFrom}
           type="from"
-          searchContext={searchContext}
+          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
         />
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -135,7 +90,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicTo}
           type="to"
-          searchContext={searchContext}
+          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
         />
       </Box>
     </>)}
