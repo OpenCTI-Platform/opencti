@@ -4,6 +4,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
+import { isEmptyField } from '../database/utils';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -225,14 +226,20 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     if (!Array.isArray(schemaDef.mappings)) {
       throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: object has no mapping in schema`, { value: input });
     }
+    const isMandatory = schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
     // check multiple constraint
-    if (schemaDef.multiple && !Array.isArray(input)) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
+    if (isMandatory) {
+      if (schemaDef.multiple && !Array.isArray(input)) {
+        throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
+      }
+      if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
+        throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
+      }
     }
-    if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
+    if (!isMandatory && isEmptyField(input)) {
+      return; // nothing to check (happens on 'remove' operation for instance
     }
-    // validateObjectsAgainstSchema(Array.isArray(value) ? value : [value], mapping as ObjectAttribute);
+
     const inputValues = Array.isArray(input) ? input : [input];
     inputValues.forEach((value) => {
       // check the value adhere to mapping constraints
