@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType } from './attribute-definition';
+import type { AttributeDefinition, AttrType, NestedObjectAttribute, ObjectAttribute } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
-import { isEmptyField } from '../database/utils';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -219,15 +218,29 @@ export const isMultipleAttribute = (entityType: string, k: string): boolean => (
   k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(entityType, k)
 );
 
-// region schema validation
+// -- utility functions independent of attribute registration --
+// (inner mappings are not registered like first-level attribute)
+
+export const isMandatoryAttributeMapping = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
+
+export const isNonFLatObjectAttributeMapping = (schemaDef: AttributeDefinition) : schemaDef is (ObjectAttribute | NestedObjectAttribute) => { // handy typeguard
+  return schemaDef.type === 'object' && schemaDef.format !== 'flat';
+};
+
+/**
+ * Validates that the given input conforms to the constraints in the corresponding schema definition.
+ * Recursively checks non-flat objects mappings.
+ * @param input an input object candidate to indexing in elastic
+ * @param schemaDef AttributeDefinition for the given input data
+ */
 const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
-  if (schemaDef.type === 'object' && schemaDef.format !== 'flat') {
+  if (isNonFLatObjectAttributeMapping(schemaDef)) {
     // to detect errors in schema definition (but should not happen)
     if (!Array.isArray(schemaDef.mappings)) {
       throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: object has no mapping in schema`, { value: input });
     }
-    const isMandatory = schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
-    // check multiple constraint
+    const isMandatory = isMandatoryAttributeMapping(schemaDef);
+    // check 'multiple' constraint
     if (isMandatory) {
       if (schemaDef.multiple && !Array.isArray(input)) {
         throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
@@ -236,20 +249,18 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
         throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
       }
     }
-    if (!isMandatory && isEmptyField(input)) {
+    if (!isMandatory && R.isNil(input)) {
       return; // nothing to check (happens on 'remove' operation for instance
     }
 
     const inputValues = Array.isArray(input) ? input : [input];
     inputValues.forEach((value) => {
-      // check the value adhere to mapping constraints
+      // check the value adhere to its mapping
       const valueKeys = Object.keys(value);
       schemaDef.mappings.forEach((mapping) => {
-        // mandatory fields
-        if (mapping.mandatoryType === 'external' || mapping.mandatoryType === 'internal') {
-          if (!valueKeys.includes(mapping.name)) {
-            throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`, { value });
-          }
+        // mandatory fields: the value must have a field with this name
+        if (isMandatoryAttributeMapping(mapping) && !valueKeys.includes(mapping.name)) {
+          throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`, { value });
         }
         // ...we might add more constraints such as a numeric range.
 
@@ -261,7 +272,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
   }
 };
 
-export const validateElementAgainstSchema = (element: any) => {
+export const validateDataBeforeIndexing = (element: any) => {
   Object.keys(element).forEach((elementKey) => {
     const input = element[elementKey];
     const schemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
@@ -271,5 +282,3 @@ export const validateElementAgainstSchema = (element: any) => {
     validateInputAgainstSchema(input, schemaDef);
   });
 };
-
-// endregion
