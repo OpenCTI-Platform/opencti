@@ -198,12 +198,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   type: string,
   filterDefinitionsMap: Map<string, FilterDefinition>, // filter definition map to complete
   subEntityTypes: string[],
-  isNotEnterpriseEdition: boolean,
 ) => {
-  // Entity type (only available for abstract entity types)
-  if (!isAbstract(type) && !isBasicRelationship(type)) {
-    filterDefinitionsMap.delete(TYPE_FILTER);
-  }
   if (isStixCoreObject(type)) {
     // In regards of (exist relationship of the given relationship types for the given entities)
     filterDefinitionsMap.set(INSTANCE_REGARDING_OF, {
@@ -262,10 +257,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
         subEntityTypes,
         elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
       });
-    }
-    // Shared with (remove if not EE)
-    if (isNotEnterpriseEdition) {
-      filterDefinitionsMap.delete(INPUT_GRANTED_REFS);
     }
   }
   if (type === ENTITY_TYPE_HISTORY) {
@@ -346,13 +337,24 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   }
 };
 
-const completeFilterDefinitionsMapForTypeAndSubtypes = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string, isNotEnterpriseEdition: boolean) => {
+const handleRemoveSpecialKeysFromFilterDefinitionsMap = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string, isNotEnterpriseEdition: boolean) => {
+  // Shared with (remove if not EE)
+  if (isNotEnterpriseEdition) {
+    filterDefinitionsMap.delete(INPUT_GRANTED_REFS);
+  }
+  // Entity type (only available for abstract entity types)
+  if (!isAbstract(type) && !isBasicRelationship(type)) {
+    filterDefinitionsMap.delete(TYPE_FILTER);
+  }
+};
+
+const completeFilterDefinitionsMapForTypeAndSubtypes = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string) => {
   const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
   completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes); // add attributes and relations refs of type
-  completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type]), isNotEnterpriseEdition); // add or remove some special keys
+  completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type])); // add or remove some special keys
   if (subTypes.length > 0) { // handle the filter definitions of the subtypes
     subTypes.forEach((subType) => {
-      completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, subType, isNotEnterpriseEdition);
+      completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, subType);
     });
   }
 };
@@ -366,7 +368,8 @@ export const generateFilterKeysSchema = async () => {
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
-    completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, type, isNotEnterpriseEdition);
+    completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, type);
+    handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
   });
   // B. add connectedToId special key (for instance triggers)

@@ -670,7 +670,7 @@ const useSearchEntities = ({
         case 'fromTypes':
         case 'toTypes':
         case 'type':
-          if (
+          if ( // case not abstract types
             availableEntityTypes
             && !availableEntityTypes.includes('Stix-Cyber-Observable')
             && !availableEntityTypes.includes('Stix-Domain-Object')
@@ -694,8 +694,9 @@ const useSearchEntities = ({
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);
-          } else {
+          } else { // case abstract types
             let result = [] as EntityWithLabelValue[];
+            // push the observables
             if (
               !availableEntityTypes
               || availableEntityTypes.includes('Stix-Core-Object')
@@ -715,6 +716,7 @@ const useSearchEntities = ({
                 },
               ];
             }
+            // push the stix domain objects
             if (
               !availableEntityTypes
               || availableEntityTypes.includes('Stix-Core-Object')
@@ -734,6 +736,7 @@ const useSearchEntities = ({
                 ...result,
               ];
             }
+            // push the relationship types
             if (
               !availableEntityTypes
               || availableEntityTypes.includes('stix-core-relationship')
