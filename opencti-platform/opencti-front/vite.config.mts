@@ -6,7 +6,6 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import IstanbulPlugin from 'vite-plugin-istanbul';
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
-
 const depsToOptimize = [
   "@mui/icons-material",
   "@mui/material/Menu",
@@ -182,7 +181,7 @@ export default defineConfig({
   },
 
   customLogger: logger,
-
+  
   plugins: [
     viteStaticCopy({
       targets: [
@@ -218,11 +217,11 @@ export default defineConfig({
     },
     react(),
     relay,
-    [IstanbulPlugin({
+    ...(process.env.USE_BABEL_PLUGIN_ISTANBUL ? [IstanbulPlugin({
       include: 'src/*',
       exclude: ['node_modules', 'test/'],
-      extension: [ '.js', '.jsx', '.ts','.tsx' ],
-    })]
+      extension: [ '.js', '.ts','.tsx' ],
+    })] : [])
   ],
 
   server: {
