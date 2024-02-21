@@ -102,6 +102,11 @@ Here is the description of the group available parameters.
 
 ![Group overview](assets/group-overview-new.png)
 
+!!! information "Max confidence level when a user has multiple groups"
+ 
+    A user with multiple groups will have the **the highest confidence level** of all its groups. 
+    For instance, if a user is part of group A (max confidence level = 100) and group B (max confidence level = 50), then the user max confidence level will be 100.
+
 ### Manage a group
 
 When managing a group, you can define the members and all above configurations.
