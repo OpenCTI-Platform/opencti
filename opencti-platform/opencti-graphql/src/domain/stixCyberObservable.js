@@ -31,7 +31,7 @@ import {
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions
 } from '../schema/stixCyberObservable';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
 import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
@@ -137,6 +137,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
         x_opencti_score: observable.x_opencti_score,
         createdBy: input.createdBy,
         objectMarking: input.objectMarking,
+        objectOrganization: input.objectOrganization,
         objectLabel: input.objectLabel,
         externalReferences: input.externalReferences,
         update: true,
@@ -154,8 +155,9 @@ export const promoteObservableToIndicator = async (context, user, observableId) 
   const observable = await storeLoadByIdWithRefs(context, user, observableId);
   const objectLabel = (observable[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
+  const objectOrganization = (observable[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
   const createdBy = observable[INPUT_CREATED_BY]?.internal_id;
-  await createIndicatorFromObservable(context, user, { objectLabel, objectMarking, createdBy }, observable);
+  await createIndicatorFromObservable(context, user, { objectLabel, objectMarking, objectOrganization, createdBy }, observable);
   return observable;
 };
 
