@@ -1060,7 +1060,7 @@ const elBuildRelation = (type, connection) => {
     [`${type}Id`]: connection.internal_id,
     [`${type}Role`]: connection.role,
     [`${type}Name`]: connection.name,
-    [`${type}Type`]: R.head(connection.types),
+    [`${type}Type`]: connection.types.find((connectionType) => !isAbstract(connectionType)),
   };
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
