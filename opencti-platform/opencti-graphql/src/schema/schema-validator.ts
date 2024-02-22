@@ -188,15 +188,17 @@ export const validateInputCreation = async (
   }, validateInputCreationFn);
 };
 
-const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
+export const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
+  const invalidKeys: string[] = [];
   Object.entries(input).forEach(([key]) => {
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     const reference = schemaRelationsRefDefinition.getRelationRef(instanceType, key);
     const schemaAttribute = attribute || reference;
     if (!schemaAttribute || schemaAttribute.update === false) {
-      throw ValidationError(key, { message: 'You cannot update incompatible attribute' });
+      invalidKeys.push(key);
     }
   });
+  return invalidKeys;
 };
 
 export const validateInputUpdate = async (
@@ -214,7 +216,10 @@ export const validateInputUpdate = async (
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);
-    validateUpdatableAttribute(instanceType, instanceFromInputs);
+    const errors = validateUpdatableAttribute(instanceType, instanceFromInputs);
+    if (errors.length > 0) {
+      throw ValidationError(errors.at(0), { message: 'You cannot update incompatible attribute' });
+    }
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
