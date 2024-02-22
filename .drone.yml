@@ -35,12 +35,14 @@ steps:
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
       - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
       - CONNECTOR_BRANCH=$([[ $(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git opencti/$BRANCH) ]] && echo opencti/$BRANCH || echo 'master')
+      - echo [INFO] cloning connectors, branch is [$CONNECTOR_BRANCH]
       - git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
       - cd opencti-platform/opencti-graphql
       - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
+      - echo [INFO] installing client-python, branch is [$CLIENT_PYTHON_BRANCH]
       - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
