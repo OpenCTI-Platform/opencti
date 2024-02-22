@@ -10180,7 +10180,7 @@ input MalwareAnalysisAddInput {
   result_name: String!
   result: String
   analysisSco: [String]
-  sample: String
+  objectSample: String
   created: DateTime
   modified: DateTime
   confidence: Int

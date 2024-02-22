@@ -11612,12 +11612,12 @@ export type MalwareAnalysisAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectSample?: InputMaybe<Scalars['String']['input']>;
   operatingSystem?: InputMaybe<Scalars['String']['input']>;
   product: Scalars['String']['input'];
   result?: InputMaybe<Scalars['String']['input']>;
   result_name: Scalars['String']['input'];
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
-  sample?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   submitted?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
