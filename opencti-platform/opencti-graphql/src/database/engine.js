@@ -3074,9 +3074,10 @@ export const prepareElementForIndexing = (element) => {
         if (R.is(String, f)) { // For string, trim by default
           return f.trim();
         }
-        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, no transform possible
+        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, limited transform
           // there is no attribute registration for inner mappings, so we cannot simply use isXXXAttribute functions in a recursion
-          return f;
+          // this would only make basic transform like string trimming
+          return prepareElementForIndexing(f);
         }
         // For all other types, no transform (list of boolean is not supported)
         return f;
@@ -3087,8 +3088,8 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
-    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, no transform possible
-      thing[key] = value;
+    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, limited transform
+      thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();
     } else { // For all other types (numeric, ...), no transform
