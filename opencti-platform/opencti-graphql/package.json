@@ -30,7 +30,7 @@
     ]
   },
   "engines": {
-    "node": ">= 16.*"
+    "node": ">= 17.*"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.515.0",
