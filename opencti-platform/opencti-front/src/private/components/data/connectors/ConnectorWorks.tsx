@@ -217,8 +217,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
               </Grid>
               <Button
                 classes={{ root: classes.errorButton }}
-                variant="outlined"
-                color={(work.errors ?? []).length === 0 ? 'success' : 'warning'}
+                variant={(work.errors ?? []).length > 0 ? 'contained' : 'outlined'}
+                color="error"
+                disabled={(work.errors ?? []).length === 0}
                 onClick={() => handleOpenErrors(work.errors ?? [])}
                 size="small"
               >

@@ -57,6 +57,13 @@ export const schemaRelationsRefDefinition = {
           relationRefDefinition,
         });
       }
+      // check name and databaseName are different
+      if (relationRefDefinition.name === relationRefDefinition.databaseName) {
+        throw UnsupportedError('You can\'t register a relations ref with equal name and databaseName', {
+          relationRef: relationRefDefinition.name,
+          entityType,
+        });
+      }
       // set relation ref
       directRefs.set(relationRefDefinition.name, relationRefDefinition);
       if (!this.allRelationsRef.includes(relationRefDefinition.name)) {
