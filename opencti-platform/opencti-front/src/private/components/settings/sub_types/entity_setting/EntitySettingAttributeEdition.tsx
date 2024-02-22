@@ -237,6 +237,7 @@ const EntitySettingAttributeEdition = ({
               setFieldValue={setFieldValue}
               entityType={entitySetting.target_type}
               name="default_values"
+              disabled={!attribute.editDefault}
             />
 
             {attribute.scale && (

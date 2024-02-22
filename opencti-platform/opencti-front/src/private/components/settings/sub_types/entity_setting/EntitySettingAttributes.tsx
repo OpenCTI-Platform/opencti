@@ -85,9 +85,15 @@ const EntitySettingAttributes = ({
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
         return isNotEmptyField(data.defaultValues) ? (
-          <CheckCircleOutlined fontSize="small" color="success" />
+          <CheckCircleOutlined
+            fontSize="small"
+            color={data.editDefault ? 'success' : 'disabled'}
+          />
         ) : (
-          <DoNotDisturbOnOutlined fontSize="small" color="primary" />
+          <DoNotDisturbOnOutlined
+            fontSize="small"
+            color={data.editDefault ? 'primary' : 'disabled'}
+          />
         );
       },
     },

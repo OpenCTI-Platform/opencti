@@ -51,6 +51,7 @@ const entitySettingAttributeLineFragment = graphql`
     multiple
     mandatory
     mandatoryType
+    editDefault
     defaultValues {
       id
       name
@@ -80,6 +81,7 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
   const handleCloseUpdate = () => setDisplayUpdate(false);
 
   const needEE = attribute.name === INPUT_AUTHORIZED_MEMBERS && !isEnterpriseEdition;
+  const nothingToUpdate = attribute.mandatoryType !== 'customizable' && !attribute.editDefault;
 
   return (
     <>
@@ -87,9 +89,9 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         key={attribute.name}
         divider={true}
         classes={{ root: classes.item }}
-        onClick={() => !needEE && handleOpenUpdate()}
-        disableRipple={needEE}
-        sx={needEE
+        onClick={() => !needEE && !nothingToUpdate && handleOpenUpdate()}
+        disableRipple={needEE || nothingToUpdate}
+        sx={needEE || nothingToUpdate
           ? {
             '&:hover': {
               cursor: 'default',
@@ -125,7 +127,7 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          {!needEE && <NorthEastOutlined />}
+          {!needEE && !nothingToUpdate && <NorthEastOutlined />}
         </ListItemIcon>
       </ListItemButton>
       <EntitySettingAttributeEdition
