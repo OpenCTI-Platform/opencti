@@ -231,13 +231,7 @@ export const runtimeFieldObservableValueScript = () => {
        } else {
          emit('Unknown')
        }
-     } else if (type == 'network-traffic') {
-       if (have(doc, 'dst_port')) {
-         emit(doc['dst_port.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
-    } else if (type == 'process') {
+     } else if (type == 'process') {
        if (have(doc, 'pid')) {
          emit(doc['pid.keyword'].value)
        } else if (have(doc, 'command_line')) {
