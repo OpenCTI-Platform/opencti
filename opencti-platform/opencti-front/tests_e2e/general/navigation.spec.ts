@@ -89,8 +89,8 @@ test('Check navigation on all pages', async ({ page }) => {
 
   // Other
   await leftBarPage.clickOnMenu('Investigations');
-  await expect(page.getByText('Investigations')).toBeVisible();
+  await expect(page.getByRole('paragraph')).toHaveText('Investigations');
   await leftBarPage.clickOnMenu('Dashboards');
-  await expect(page.locator('ol').getByText('Dashboards')).toBeVisible();
+  await expect(page.getByRole('paragraph')).toHaveText('Dashboards');
 
 });

@@ -11,7 +11,7 @@ test('Create a new report page and test update', async ({ page }) => {
   await reportPage.addNewReport();
   await reportForm.fillNameInput('Test Update e2e');
   await reportPage.getCreateReportButton().click();
-  await reportPage.getItemFromList( 'Test Update e2e Unknown - admin No' ).click();
+  await reportPage.getItemFromList( 'Test Update e2e' ).click();
   await reportDetailsPage.getEditButton().click();
   await reportForm.fillNameInput('Modification Test Update e2e');
   await reportForm.getCloseButton().click();

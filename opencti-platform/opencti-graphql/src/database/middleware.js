@@ -1495,7 +1495,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const preparedAliases = (aliasesInput.value ?? [])
           .filter((a) => isNotEmptyField(a))
           .filter((a) => normalizeName(a) !== normalizeName(instance.name)
-              && normalizeName(a) !== normalizeName(askedModificationName))
+            && normalizeName(a) !== normalizeName(askedModificationName))
           .map((a) => a.trim());
         aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
@@ -1667,12 +1667,12 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Impact the updated_at only if stix data is impacted
   // In case of upsert, this addition will be supported by the parent function
   if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
-      && !impactedInputs.find((i) => i.key === 'updated_at')) {
+    && !impactedInputs.find((i) => i.key === 'updated_at')) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
   if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)
-      && !impactedInputs.find((i) => i.key === 'modified')) {
+    && !impactedInputs.find((i) => i.key === 'modified')) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -3005,7 +3005,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // If file directly attached
   if (!isEmptyField(input.file)) {
     const path = `import/${type}/${internalId}`;
-    const file = await upload(context, user, path, input.file, { entity: { internal_id: internalId } });
+    const file = await upload(context, user, path, input.file, { entity: data });
     data.x_opencti_files = [storeFileConverter(user, file)];
     // Add external references from files if necessary
     const entitySetting = await getEntitySettingFromCache(context, type);
@@ -3043,7 +3043,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
 
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region confidence control
-  const input = structuredClone(rawInput);
+  const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
