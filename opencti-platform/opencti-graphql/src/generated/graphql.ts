@@ -11591,6 +11591,7 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
 };
 
 export type MalwareAnalysisAddInput = {
+  analysisSample?: InputMaybe<Scalars['String']['input']>;
   analysisSco?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   analysis_definition_version?: InputMaybe<Scalars['String']['input']>;
   analysis_ended?: InputMaybe<Scalars['DateTime']['input']>;
@@ -11612,7 +11613,6 @@ export type MalwareAnalysisAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  objectSample?: InputMaybe<Scalars['String']['input']>;
   operatingSystem?: InputMaybe<Scalars['String']['input']>;
   product: Scalars['String']['input'];
   result?: InputMaybe<Scalars['String']['input']>;
