@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { BasicStoreEntityFeed } from '../types/store.d';
+import type { BasicStoreEntityFeed } from '../types/store';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -3646,11 +3646,15 @@ export type ContainerEditMutationsKnowledgeAddFromInvestigationArgs = {
 
 
 export type ContainerEditMutationsRelationAddArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
   input: StixRefRelationshipAddInput;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
 export type ContainerEditMutationsRelationDeleteArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
 };
