@@ -140,7 +140,13 @@ const depsToOptimize = [
   "@mui/icons-material/TableView",
   "@mui/icons-material/ArrowForwardIosSharp",
   "d3-hierarchy",
-  "d3-timer"
+  "d3-timer",
+  "@mui/icons-material/Share",
+  "@mui/icons-material/ContentCopy",
+  "@mui/icons-material/Delete",
+  "@mui/lab/LoadingButton",
+  "@mui/material/Breadcrumbs",
+  "@mui/lab/Alert/Alert",
 ]
 
 const logger = createLogger()
