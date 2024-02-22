@@ -7395,8 +7395,10 @@ type Query {
   publicStixCoreObjectsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
   publicStixRelationshipsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
   publicStixCoreObjectsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
+  publicStixCoreObjectsDistributionBreakdown(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
   publicStixRelationshipsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
-  publicBookmarks(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixDomainObjectConnection
+  publicStixRelationshipsDistributionBreakdown(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [Distribution]
+  publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
 }

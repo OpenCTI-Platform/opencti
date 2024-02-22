@@ -75,7 +75,19 @@ type Query {
     startDate: DateTime
     endDate: DateTime
   ): [Distribution]
+  publicStixCoreObjectsDistributionBreakdown(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): [Distribution]
   publicStixRelationshipsDistribution(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): [Distribution]
+  publicStixRelationshipsDistributionBreakdown(
     uriKey: String!
     widgetId : String!
     startDate: DateTime

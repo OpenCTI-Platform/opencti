@@ -21,6 +21,8 @@ import type {
   QueryPublicBookmarksArgs,
   QueryPublicStixCoreObjectsArgs,
   QueryPublicStixRelationshipsArgs,
+  QueryPublicStixCoreObjectsDistributionBreakdownArgs,
+  QueryPublicStixRelationshipsDistributionBreakdownArgs,
 } from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
@@ -35,6 +37,7 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber, findAll as stixRelationships } from '../../domain/stixRelationship';
 import { bookmarks } from '../../domain/user';
 import { dayAgo } from '../../utils/format';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
 
 export const findById = (
   context: AuthContext,
@@ -359,6 +362,39 @@ export const publicStixCoreObjectsDistribution = async (
   return stixCoreObjectsDistribution(context, user, parameters);
 };
 
+// breakdown
+export const publicStixCoreObjectsDistributionBreakdown = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsDistributionBreakdownArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const filters = {
+    filterGroups: [selection.filters],
+    filters: [],
+    mode: 'and'
+  };
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    toTypes: selection.toTypes,
+    field: selection.attribute,
+    dateAttribute: selection.date_attribute || 'created_at',
+    operation: 'count',
+    limit: selection.number ?? 10,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+  };
+
+  const rootDistribution = await stixCoreObjectsDistribution(context, user, parameters);
+  console.log(rootDistribution);
+  return rootDistribution;
+};
+
 export const publicStixRelationshipsDistribution = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsDistributionArgs
@@ -384,6 +420,79 @@ export const publicStixRelationshipsDistribution = async (
 
   // Use standard API
   return stixRelationshipsDistribution(context, user, parameters);
+};
+
+export const publicStixRelationshipsDistributionBreakdown = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsDistributionBreakdownArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
+  const selection = dataSelection[0];
+  const breakdownSelection = dataSelection[1];
+
+  const filters = {
+    filterGroups: [selection.filters],
+    filters: [],
+    mode: 'and'
+  };
+
+  const parameters = {
+    operation: 'count',
+    field: selection.attribute || 'entity_type',
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+    dateAttribute: selection.date_attribute,
+    isTo: selection.isTo,
+    limit: selection.number,
+  };
+
+  // Use standard API
+  const rootDistribution = await stixRelationshipsDistribution(context, user, parameters);
+
+  // TODO pas de duplication d'API
+  // TODO await BluePromise.map(filteredElementsIds, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  return Promise.all(rootDistribution
+    .map(async (distrib) => {
+      if (!isStixCoreObject(distrib.entity.entity_type)) {
+        return distrib;
+      }
+      const breakdownFilters = {
+        filterGroups: [breakdownSelection.filters],
+        filters: [{
+          key: ['fromId'],
+          values: [distrib.entity.id],
+          mode: 'and',
+          operator: 'eq',
+        }],
+        mode: 'and'
+      };
+
+      const breakdownParameters = {
+        operation: 'count',
+        field: breakdownSelection.attribute || 'entity_type',
+        startDate: args.startDate,
+        endDate: args.endDate,
+        filters: breakdownFilters,
+        dynamicFrom: breakdownSelection.dynamicFrom,
+        dynamicTo: breakdownSelection.dynamicTo,
+        dateAttribute: breakdownSelection.date_attribute,
+        isTo: breakdownSelection.isTo,
+        limit: breakdownSelection.number,
+      };
+
+      return {
+        ...distrib,
+        entity: {
+          ...distrib.entity,
+          stixRelationshipsDistribution: await stixRelationshipsDistribution(context, user, breakdownParameters),
+        }
+      };
+    }));
 };
 
 // bookmarks

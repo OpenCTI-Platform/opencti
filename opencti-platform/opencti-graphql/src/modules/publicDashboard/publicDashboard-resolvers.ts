@@ -15,7 +15,9 @@ import {
   publicStixRelationshipsDistribution,
   publicBookmarks,
   publicStixCoreObjects,
-  publicStixRelationships
+  publicStixRelationships,
+  publicStixCoreObjectsDistributionBreakdown,
+  publicStixRelationshipsDistributionBreakdown,
 } from './publicDashboard-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
@@ -29,7 +31,9 @@ const publicDashboardResolvers: Resolvers = {
     publicStixRelationshipsMultiTimeSeries: (_, args, context) => publicStixRelationshipsMultiTimeSeries(context, args),
     publicStixRelationshipsNumber: (_, args, context) => publicStixRelationshipsNumber(context, args),
     publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
+    publicStixCoreObjectsDistributionBreakdown: (_, args, context) => publicStixCoreObjectsDistributionBreakdown(context, args),
     publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),
+    publicStixRelationshipsDistributionBreakdown: (_, args, context) => publicStixRelationshipsDistributionBreakdown(context, args),
     publicBookmarks: (_, args, context) => publicBookmarks(context, args),
     publicStixCoreObjects: (_, args, context) => publicStixCoreObjects(context, args),
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
