@@ -74,6 +74,11 @@ export const computeRangeIntersection = (a, b) => {
 
 export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
 export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');
+export const dayAgo = () => {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - 1);
+  return currentDate.toISOString().split('T')[0];
+};
 
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
