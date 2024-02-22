@@ -11,9 +11,10 @@ import {
   INPUT_CREATOR_USER,
   INPUT_DST,
   INPUT_DST_PAYLOAD,
+  INPUT_EMAIL_FROM,
+  INPUT_EMAIL_TO,
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
-  INPUT_FROM,
   INPUT_IMAGE,
   INPUT_LINKED,
   INPUT_OPENED_CONNECTION,
@@ -27,7 +28,6 @@ import {
   INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
-  INPUT_TO,
   INPUT_VALUES,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -561,12 +561,12 @@ interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_SERVICE_DLL]: Array<BasicStoreObject>;
   [INPUT_CC]: Array<BasicStoreObject>;
   [INPUT_BCC]: Array<BasicStoreObject>;
-  [INPUT_TO]: Array<BasicStoreObject>;
+  [INPUT_EMAIL_TO]: Array<BasicStoreObject>;
   [INPUT_RESOLVES_TO]: Array<BasicStoreObject>;
   [INPUT_BELONGS_TO]: Array<BasicStoreObject>;
   [INPUT_SENDER]: BasicStoreObject;
   [INPUT_RAW_EMAIL]: BasicStoreObject;
-  [INPUT_FROM]: BasicStoreObject;
+  [INPUT_EMAIL_FROM]: BasicStoreObject;
   [INPUT_CONTENT]: BasicStoreObject;
   [INPUT_VALUES]: Array<StoreWindowsRegistryValueType>;
   [INPUT_LABELS]: Array<StoreLabel>;

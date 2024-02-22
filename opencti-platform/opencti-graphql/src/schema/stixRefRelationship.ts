@@ -57,9 +57,9 @@ export const INPUT_SAMPLE = 'samples';
 export const INPUT_CONTAINS = 'containsObservable';
 export const INPUT_RESOLVES_TO = 'resolvesTo';
 export const INPUT_BELONGS_TO = 'belongsTo';
-export const INPUT_FROM = 'emailFrom';
 export const INPUT_SENDER = 'emailSender';
-export const INPUT_TO = 'emailTo';
+export const INPUT_EMAIL_FROM = 'emailFrom';
+export const INPUT_EMAIL_TO = 'emailTo';
 export const INPUT_CC = 'emailCc';
 export const INPUT_BCC = 'emailBcc';
 export const INPUT_RAW_EMAIL = 'rawEmail';
@@ -202,7 +202,7 @@ export const belongsTo: RefAttribute = {
   toTypes: [ENTITY_USER_ACCOUNT, ENTITY_AUTONOMOUS_SYSTEM],
 };
 export const from: RefAttribute = {
-  name: INPUT_FROM,
+  name: INPUT_EMAIL_FROM,
   type: 'ref',
   databaseName: RELATION_FROM,
   label: 'Email from',
@@ -236,7 +236,7 @@ export const sender: RefAttribute = {
   toTypes: [ENTITY_EMAIL_ADDR],
 };
 export const to: RefAttribute = {
-  name: INPUT_TO,
+  name: INPUT_EMAIL_TO,
   type: 'ref',
   databaseName: RELATION_TO,
   label: 'Email to',
