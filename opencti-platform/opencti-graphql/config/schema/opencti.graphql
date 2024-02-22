@@ -12082,8 +12082,8 @@ type ContainerEditMutations {
   @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Container @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Container @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Container @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationAdd: Workspace @auth(for: [KNOWLEDGE_KNUPDATE])
   knowledgeAddFromInvestigation(workspaceId: ID!): Container @auth(for: [KNOWLEDGE_KNUPDATE])
 }

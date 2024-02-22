@@ -179,11 +179,11 @@ export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsId
 };
 
 // region relation ref
-export const stixDomainObjectAddRelation = async (context, user, stixDomainObjectId, input) => {
-  return stixObjectOrRelationshipAddRefRelation(context, user, stixDomainObjectId, input, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const stixDomainObjectAddRelation = async (context, user, stixDomainObjectId, input, opts = {}) => {
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixDomainObjectId, input, ABSTRACT_STIX_DOMAIN_OBJECT, opts);
 };
-export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT, opts);
 };
 // endregion
 
