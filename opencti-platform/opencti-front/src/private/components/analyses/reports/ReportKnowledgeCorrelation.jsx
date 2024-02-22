@@ -1250,7 +1250,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
           x_opencti_order
           x_opencti_color
         }
-        objects {
+        objects(first: 500) {
           edges {
             node {
               ... on BasicObject {
@@ -1396,7 +1396,7 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
                           entity_type
                         }
                       }
-                                            objectMarking {
+                      objectMarking {
                         id
                         definition_type
                         definition
