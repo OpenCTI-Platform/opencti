@@ -7,9 +7,10 @@ import { DashboardFormPage } from "../model/dashboardForm.pageModel";
    const dashboardDetailsPage = new DashboardDetailsPage(page);
    const dashboardForm = new DashboardFormPage(page);
    await page.goto('/dashboard/workspaces/dashboards');
-   await dashboardPage.addNewDashboard();
+   await dashboardPage.openButtonModal().hover();
+   await dashboardPage.addNewDashboard().click();
    await dashboardForm.fillNameInput('Test e2e');
    await dashboardPage.getCreateDashboardButton().click();
-   await dashboardPage.getItemFromList('Test e2e Unknown - admin No').click();
+   await dashboardPage.getItemFromList('Test e2e admin Feb 22, 2024 Feb 22,').click();
    await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
  })

@@ -8,10 +8,12 @@ test('Create a new dashboard page and test update', async ({ page }) => {
   const dashboardDetailsPage = new DashboardDetailsPage(page);
   const dashboardForm = new DashboardFormPage(page);
   await page.goto('/dashboard/workspaces/dashboards');
-  await dashboardPage.addNewDashboard();
+  await dashboardPage.openButtonModal().hover();
+  await dashboardPage.addNewDashboard().click();
   await dashboardForm.fillNameInput('Test Update e2e');
   await dashboardPage.getCreateDashboardButton().click();
-  await dashboardPage.getItemFromList('Test Update e2e Unknown - admin No').click();
+  await dashboardPage.getItemFromList('Test Update e2e admin Feb 22').click();
+  await dashboardDetailsPage.openPopUpButton().click();
   await dashboardDetailsPage.getEditButton().click();
   await dashboardForm.fillNameInput('Modification Test Update e2e');
   await dashboardForm.getCloseButton().click();

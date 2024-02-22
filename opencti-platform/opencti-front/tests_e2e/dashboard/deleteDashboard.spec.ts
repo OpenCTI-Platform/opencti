@@ -7,10 +7,8 @@ test.skip('Create a new dashboard page and delete it', async ({ page }) => {
   await dashboardPage.addNewDashboard();
   await dashboardPage.getDashboardNameInput().click();
   await dashboardPage.getDashboardNameInput().fill('Test delete dashboard e2e');
-  await dashboardPage.getCreateDashboardButton().click();
+  await dashboardPage.getCreateDashboardButton()
 
-  await page.getByRole('link', { name: 'Test delete dashboard Test e2e' }).first().getByRole('checkbox').check();
-  await page.getByLabel('delete', { exact: true }).click();
   await page.getByRole('button', { name: 'Launch' }).click();
   await page.goto('/dashboard/workspaces/dashboards');
   expect(page.getByRole('link', { name: 'Test delete dashboard Test e2e' }).count()).toEqual(0);

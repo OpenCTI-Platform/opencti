@@ -10,7 +10,10 @@ export class DashboardDetailsPage {
   getTitle(name: string){
     return this.page.getByRole('heading',{name});
   }
+  openPopUpButton() {
+    return this.page.locator('.makeStyles-container-294 > .MuiButtonBase-root')
+  }
   getEditButton() {
-    return this.page.getByLabel('Edit');
+    return this.page.getByRole('menuitem', { name: 'Update' });
   }
 }

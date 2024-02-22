@@ -89,6 +89,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       },
     };
     return (
+      <div data-testid="dashboard-page">
       <ListLines
         helpers={storageHelpers}
         sortBy={sortBy}
@@ -122,6 +123,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           </React.Suspense>
         )}
       </ListLines>
+      </div>
     );
   };
 
