@@ -8,10 +8,7 @@ import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsv
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
-import { getEntitiesListFromCache } from '../../../database/cache';
-import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../../entitySetting/entitySetting-types';
-import { SYSTEM_USER } from '../../../utils/access';
-import { getAttributesConfiguration } from '../../entitySetting/entitySetting-utils';
+import { getAttributesConfiguration, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
 import { isNotEmptyField } from '../../../database/utils';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
@@ -151,15 +148,10 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
   const attributesDefaultValuesToResolve: Record<string, string[]> = {};
 
   // Extend schema attributes with entity settings if any
-  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(
-    context,
-    SYSTEM_USER,
-    ENTITY_TYPE_ENTITY_SETTING
-  );
-  entitySettings.forEach((entitySetting) => {
-    const schemaIndex = schemaAttributes.findIndex((s) => s.name === entitySetting.target_type);
-    if (schemaIndex > -1) {
-      const schemaAttribute = schemaAttributes[schemaIndex];
+  for (let schemaIndex = 0; schemaIndex < schemaAttributes.length; schemaIndex += 1) {
+    const schemaAttribute = schemaAttributes[schemaIndex];
+    const entitySetting = await getEntitySettingFromCache(context, schemaAttribute.name);
+    if (entitySetting) {
       getAttributesConfiguration(entitySetting)?.forEach((userDefinedAttr) => {
         const attributeIndex = schemaAttribute.attributes.findIndex((a) => a.name === userDefinedAttr.name);
         if (attributeIndex > -1) {
@@ -177,7 +169,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
         }
       });
     }
-  });
+  }
 
   // Resolve default values ref ids
   const idsToResolve = Object.values(attributesDefaultValuesToResolve).flat();

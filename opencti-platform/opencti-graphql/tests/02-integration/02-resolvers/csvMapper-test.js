@@ -1,6 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
 
 const MAPPER_INPUT = {
   name: 'super mapper',
@@ -199,8 +200,80 @@ const DELETE_MUTATION = gql`
   }
 `;
 
+const LIST_SCHEMAS_QUERY = gql`
+  query CsvMapperSchemaAttributes {
+    csvMapperSchemaAttributes {
+      name
+      attributes {
+        name
+        mandatory
+        defaultValues {
+          name
+          id
+        }
+      }
+    }
+  }
+`;
+
+// region Queries to be able to modify entity settings to test csvMapperSchameAttributes
+const ENTITY_SETTINGS_UPDATE = `
+  mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
+    entitySettingsFieldPatch(ids: $ids, input: $input) {
+      id
+    }
+  }
+`;
+const ENTITY_SETTINGS_GET = `
+  query getEntitySettingsQuery {
+    entitySettings {
+      edges {
+        node {
+          id
+          target_type
+          attributes_configuration
+        }
+      }
+    }
+  }
+`;
+// endregion
+
 describe('CSV Mapper Resolver', () => {
+  let entitySettingStixCoreRel;
   let addedMapper;
+
+  beforeAll(async () => {
+    const { data } = await adminQuery(ENTITY_SETTINGS_GET);
+    const entitySettings = data.entitySettings.edges.map((e) => e.node);
+    entitySettingStixCoreRel = entitySettings.find((setting) => setting.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP);
+
+    await adminQuery(
+      ENTITY_SETTINGS_UPDATE,
+      {
+        ids: [entitySettingStixCoreRel.id],
+        input: {
+          key: 'attributes_configuration',
+          value: JSON.stringify([
+            { name: 'description', default_values: ['hello'], mandatory: true }
+          ])
+        }
+      }
+    );
+  });
+
+  afterAll(async () => {
+    await adminQuery(
+      ENTITY_SETTINGS_UPDATE,
+      {
+        ids: [entitySettingStixCoreRel.id],
+        input: {
+          key: 'attributes_configuration',
+          value: entitySettingStixCoreRel.attributes_configuration
+        }
+      }
+    );
+  });
 
   it('should create a mapper', async () => {
     const { data } = await queryAsAdmin({
@@ -295,5 +368,15 @@ describe('CSV Mapper Resolver', () => {
     expect(csvMapperDelete).toBeDefined();
     expect(csvMapperDelete).toEqual(addedMapper.id);
     expect(csvMappers.length).toEqual(0);
+  });
+
+  it('should retrieve relationship settings from stix-core-rel', async () => {
+    const { data } = await queryAsAdmin({
+      query: LIST_SCHEMAS_QUERY,
+    });
+    const { attributes } = data.csvMapperSchemaAttributes.find((schema) => schema.name === 'related-to');
+    const description = attributes.find((attr) => attr.name === 'description');
+    expect(description.mandatory).toEqual(true);
+    expect(description.defaultValues[0].name).toEqual('hello');
   });
 });
