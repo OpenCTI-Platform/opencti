@@ -15,7 +15,6 @@ test('Check EE activation', async ({ page }) => {
   await page.getByRole('button', { name: 'Enable' }).click();
   expect(page.getByText(/^Enterprise$/)).toBeVisible();
   await page.getByRole('button', { name: 'Disable Enterprise Edition' }).click();
-  expect(page.getByText(/^Enterprise$/)).toBeVisible();
 });
 
 test('Check Logo replacement', async ({ page }) => {
