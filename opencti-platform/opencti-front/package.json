@@ -146,6 +146,7 @@
     "relay": "relay-compiler relay.config.json",
     "dev": "yarn relay && vite",
     "start": "yarn relay && node builder/dev/dev.js",
+    "start:e2e": "yarn relay && node builder/dev/dev-e2e.js",
     "esbuild": "node builder/prod/prod.js",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
