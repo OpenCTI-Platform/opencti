@@ -16,7 +16,7 @@ import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from '../../../src/modu
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
-import { ALIAS_FILTER, CONNECTED_TO_INSTANCE_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF } from '../../../src/utils/filtering/filtering-constants';
+import { ALIAS_FILTER, CONNECTED_TO_INSTANCE_FILTER, CONTEXT_OBJECT_LABEL_FILTER, INSTANCE_REGARDING_OF, TYPE_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 
 describe('Filter keys schema generation testing', async () => {
@@ -156,6 +156,13 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.multiple).toEqual(true);
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
     expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
+    // 'entity_type' filter for abstract types only
+    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(TYPE_FILTER);
+    expect(filterDefinition?.type).toEqual('string');
+    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(TYPE_FILTER);
+    expect(filterDefinition?.type).toEqual('string');
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_MALWARE)?.get(TYPE_FILTER);
+    expect(filterDefinition).toBeUndefined();
   });
   it('should construct correct filter definition for abstract entity types', () => {
     // Containers
