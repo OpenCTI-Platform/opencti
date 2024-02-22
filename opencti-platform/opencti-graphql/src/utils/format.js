@@ -20,6 +20,8 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
 
+const DEFAULT_TRUNCATE_LIMIT = 64;
+
 //----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
@@ -95,6 +97,20 @@ export const sanitizeForMomentParsing = (date) => date
   // add more if needed.
 
 //----------------------------------------------------------------------------------------------------------------------
+
+export const truncate = (str, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true) => {
+  if (str === undefined || str === null || str.length <= limit) {
+    return str;
+  }
+  const trimmedStr = str.substr(0, limit);
+  if (!withPoints) {
+    return trimmedStr;
+  }
+  if (!trimmedStr.includes(' ')) {
+    return `${trimmedStr}...`;
+  }
+  return `${trimmedStr.substr(0, Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')))}...`;
+};
 
 // TODO for now this list is duplicated in Front, think about updating it aswell
 export const observableValue = (stixCyberObservable) => {

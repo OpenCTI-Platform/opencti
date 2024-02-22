@@ -7,7 +7,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { now, sinceNowInMinutes } from '../utils/format';
+import { now, sinceNowInMinutes, truncate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
 import { isNotEmptyField } from './utils';
@@ -16,7 +16,6 @@ import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
-import { truncate } from '../utils/mailData';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Minio configuration
