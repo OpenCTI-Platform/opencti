@@ -353,11 +353,12 @@ export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   let resolvedFile = await file;
   // Checking infected ZIP files
-  try {
-    resolvedFile = await extractInfectedZipFile(resolvedFile);
-  } catch {
-    // do nothing
+  resolvedFile = await extractInfectedZipFile(resolvedFile);
+
+  if (!resolvedFile) {
+    throw FunctionalError('Something went wrong with the file upload');
   }
+
   const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
