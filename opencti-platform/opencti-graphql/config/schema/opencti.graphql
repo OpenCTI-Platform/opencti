@@ -12117,8 +12117,8 @@ type ReportEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
