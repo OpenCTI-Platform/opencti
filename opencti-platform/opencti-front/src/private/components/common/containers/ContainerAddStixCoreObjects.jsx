@@ -160,6 +160,7 @@ const ContainerAddStixCoreObjects = (props) => {
   } = viewStorage;
 
   const containerRef = useRef(null);
+  const keyword = mapping && searchTerm.length === 0 ? selectedText : searchTerm;
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
@@ -180,7 +181,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <StixDomainObjectCreation
         display={open}
-        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+        inputValue={keyword}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         confidence={confidence}
@@ -199,7 +200,7 @@ const ContainerAddStixCoreObjects = (props) => {
       <StixCyberObservableCreation
         display={open}
         contextual={true}
-        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+        inputValue={keyword}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
@@ -242,7 +243,7 @@ const ContainerAddStixCoreObjects = (props) => {
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
-          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+          inputValue={keyword}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           confidence={confidence}
@@ -260,7 +261,7 @@ const ContainerAddStixCoreObjects = (props) => {
         <StixCyberObservableCreation
           display={open}
           contextual={true}
-          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+          inputValue={keyword}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           defaultCreatedBy={defaultCreatedBy}
@@ -333,7 +334,7 @@ const ContainerAddStixCoreObjects = (props) => {
         orderAsc={orderAsc}
         dataColumns={buildColumns()}
         handleSearch={helpers.handleSearch}
-        keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+        keyword={keyword}
         handleSort={helpers.handleSort}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
@@ -374,7 +375,7 @@ const ContainerAddStixCoreObjects = (props) => {
   };
   const searchPaginationOptions = {
     ...addObjectsPaginationOptions,
-    search: mapping && searchTerm.length === 0 ? selectedText : searchTerm,
+    search: keyword,
   };
   const renderButton = () => {
     if (knowledgeGraph) {
