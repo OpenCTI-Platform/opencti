@@ -563,6 +563,30 @@ describe('Relations time series', () => {
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
   });
+  it('should relations time series with sightings relationship_type filter', async () => {
+    const options = {
+      field: 'created',
+      operation: 'count',
+      interval: 'month',
+      startDate: '2016-01-01T00:00:00.000+01:00',
+      endDate: '2017-01-01T00:00:00.000+01:00',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'relationship_type',
+          values: ['stix-sighting-relationship'],
+          mode: 'or',
+          operator: 'eq',
+        }],
+        filterGroups: [],
+      }
+    };
+    const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
+    expect(series.length).toEqual(13); // 13 months groups in the interval
+    const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
+    expect(aggregationMap.get('2016-04-30T23:00:00.000Z')).toEqual(0);
+    expect(aggregationMap.get('2016-07-31T23:00:00.000Z')).toEqual(2); // sighting--ee20065d-2555-424f-ad9e-0f8428623c75 and sighting--579a46af-a339-400d-809e-b92101fe7de8
+  });
   it('should relations with fromId time series', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {

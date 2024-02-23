@@ -745,11 +745,17 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           draggableCancel=".noDrag"
         >
           {R.values(manifest.widgets).map((widget) => {
+            let mainEntityTypes = ['Stix-Core-Object'];
+            if (widget.perspective === 'relationships') {
+              mainEntityTypes = ['Stix-Core-Object', 'stix-core-relationship'];
+            } else if (widget.perspective === 'audits') {
+              mainEntityTypes = ['History'];
+            }
             const removeIdFilterWidget = {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
                 dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
                 dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),
@@ -800,11 +806,17 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           draggableCancel=".noDrag"
         >
           {R.values(manifest.widgets).map((widget) => {
+            let mainEntityTypes = ['Stix-Core-Object'];
+            if (widget.perspective === 'relationships') {
+              mainEntityTypes = ['Stix-Core-Object', 'stix-core-relationship'];
+            } else if (widget.perspective === 'audits') {
+              mainEntityTypes = ['History'];
+            }
             const removeIdFilterWidget = {
               ...widget,
               dataSelection: widget.dataSelection.map((data) => ({
                 ...data,
-                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, ['Stix-Core-Object']),
+                filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
                 dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
                 dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
               })),

@@ -449,7 +449,7 @@ export const timeSeriesEntities = async (context, user, types, args) => {
 };
 export const timeSeriesRelations = async (context, user, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
-  const types = relationshipTypes || ['stix-core-relationship'];
+  const types = relationshipTypes || ['stix-core-relationship', 'object', 'stix-sighting-relationship'];
   const timeSeriesArgs = buildEntityFilters(types, args);
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);

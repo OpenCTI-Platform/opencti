@@ -730,6 +730,18 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     value={dataSelection[i].label}
                     onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                   />
+                  {perspective === 'relationships'
+                    && <Tooltip
+                      title={t_i18n(
+                        'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
+                      )}
+                       >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ marginRight: 5, marginTop: 20 }}
+                      />
+                    </Tooltip>}
                 </div>
                 <WidgetFilters
                   dataSelection={dataSelection[i]}
