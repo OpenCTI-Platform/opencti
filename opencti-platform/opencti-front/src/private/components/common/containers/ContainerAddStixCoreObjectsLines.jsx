@@ -3,6 +3,8 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import { Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -11,6 +13,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { ContainerAddStixCoreObjecstLineDummy, ContainerAddStixCoreObjectsLine } from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { insertNode } from '../../../../utils/store';
+import CommitMessage from '../form/CommitMessage';
 
 const nbOfRowsToLoad = 50;
 
@@ -51,9 +54,11 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
+    $commitMessage: String
+    $references: [String]
   ) {
     containerEdit(id: $id) {
-      relationAdd(input: $input) {
+      relationAdd(input: $input, commitMessage: $commitMessage, references: $references) {
         id
         to {
           ... on StixDomainObject {
@@ -76,9 +81,11 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
+    $commitMessage: String
+    $references: [String]
   ) {
     containerEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
         id
       }
     }
@@ -89,7 +96,9 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      referenceDialogOpened: false,
       expandedPanels: {},
+      currentlyToggledCoreObject: null,
       addedStixCoreObjects: R.indexBy(
         R.prop('id'),
         (props.containerStixCoreObjects || []).map((n) => n.node),
@@ -106,7 +115,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     );
   }
 
-  toggleStixCoreObject(stixCoreObject) {
+  sendStixCoreObjectModification(stixCoreObject, commitMessage, references) {
     const {
       containerId,
       paginationOptions,
@@ -145,6 +154,8 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             id: containerId,
             toId: stixCoreObject.id,
             relationship_type: 'object',
+            commitMessage,
+            references,
           },
           updater: (store) => {
             // ID is not valid pagination options, will be handled better when hooked
@@ -198,6 +209,8 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           variables: {
             id: containerId,
             input,
+            commitMessage,
+            references,
           },
           updater: (store) => {
             // ID is not valid pagination options, will be handled better when hooked
@@ -233,30 +246,78 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     }
   }
 
+  displayPopup(stixCoreObject) {
+    this.setState({ referenceDialogOpened: true });
+    this.setState({ currentlyToggledCoreObject: stixCoreObject });
+  }
+
+  closePopup() {
+    this.setState({ referenceDialogOpened: false });
+    this.setState({ currentlyToggledCoreObject: null });
+  }
+
+  submitReference(values, { setSubmitting }) {
+    setSubmitting(false);
+    this.setState({ referenceDialogOpened: false });
+    this.setState({ currentlyToggledCoreObject: null });
+  }
+
   render() {
     const { initialLoading, dataColumns, relay, containerRef } = this.props;
-    const { addedStixCoreObjects } = this.state;
+    const { addedStixCoreObjects, referenceDialogOpened } = this.state;
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data)}
-        globalCount={R.pathOr(
-          nbOfRowsToLoad,
-          ['stixCoreObjects', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<ContainerAddStixCoreObjectsLine />}
-        DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        addedElements={addedStixCoreObjects}
-        onToggleEntity={this.toggleStixCoreObject.bind(this)}
-        disableExport={true}
-        containerRef={containerRef}
-      />
+      <>
+        <ListLinesContent
+          initialLoading={initialLoading}
+          loadMore={relay.loadMore.bind(this)}
+          hasMore={relay.hasMore.bind(this)}
+          isLoading={relay.isLoading.bind(this)}
+          dataList={R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data)}
+          globalCount={R.pathOr(
+            nbOfRowsToLoad,
+            ['stixCoreObjects', 'pageInfo', 'globalCount'],
+            this.props.data,
+          )}
+          LineComponent={<ContainerAddStixCoreObjectsLine />}
+          DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
+          dataColumns={dataColumns}
+          nbOfRowsToLoad={nbOfRowsToLoad}
+          addedElements={addedStixCoreObjects}
+          onToggleEntity={this.displayPopup.bind(this)}
+          disableExport={true}
+          containerRef={containerRef}
+        />
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={referenceDialogOpened}
+          onClose={this.closePopup.bind(this)}
+          fullWidth
+        >
+          <Formik
+            initialValues={{ message: '', references: [] }}
+            onSubmit={this.submitReference.bind(this)}
+          >
+            {({
+              submitForm,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form style={{ float: 'right' }}>
+                <CommitMessage
+                  handleClose={this.closePopup.bind(this)}
+                  open={referenceDialogOpened}
+                  submitForm={submitForm}
+                  disabled={isSubmitting}
+                  setFieldValue={setFieldValue}
+                  values={values.references}
+                  id={containerRef.id}
+                />
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
+      </>
     );
   }
 }
