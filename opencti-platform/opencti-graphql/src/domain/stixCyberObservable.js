@@ -388,8 +388,8 @@ export const artifactImport = async (context, user, args) => {
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
   const meta = { version };
-  const upload = await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
-  if (!upload) {
+  const uploadFile = await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
+  if (!uploadFile) {
     throw FunctionalError('Something went wrong with the file upload');
   }
   return artifact;
