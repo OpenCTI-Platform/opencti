@@ -21,8 +21,6 @@ import type {
   QueryPublicBookmarksArgs,
   QueryPublicStixCoreObjectsArgs,
   QueryPublicStixRelationshipsArgs,
-  StixCoreObjectConnection,
-  StixRelationshipConnection
 } from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
@@ -30,7 +28,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
+import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
 import { getWidgetArguments } from './publicDashboard-utils';
 import { stixCoreObjectsDistribution, stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber, findAll as stixCoreObjects } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
@@ -410,7 +408,7 @@ export const publicBookmarks = async (
 export const publicStixCoreObjects = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsArgs
-): Promise <Omit<StixCoreObjectConnection, 'edges'>> => {
+) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user; // context.user is used in standard api
   const selection = dataSelection[0];
@@ -429,13 +427,13 @@ export const publicStixCoreObjects = async (
   };
 
   // Use standard API
-  return stixCoreObjects(context, user, parameters) as unknown as Promise <Omit<StixCoreObjectConnection, 'edges'>>;
+  return stixCoreObjects(context, user, parameters);
 };
 
 export const publicStixRelationships = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsArgs
-) : Promise <Omit<StixRelationshipConnection, 'edges'>> => {
+) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
 
@@ -454,6 +452,6 @@ export const publicStixRelationships = async (
   };
 
   // Use standard API
-  return stixRelationships(context, user, parameters) as unknown as Promise <Omit<StixRelationshipConnection, 'edges'>>;
+  return (await stixRelationships(context, user, parameters) as unknown as StoreRelationConnection<BasicStoreRelation>);
 };
 // endregion

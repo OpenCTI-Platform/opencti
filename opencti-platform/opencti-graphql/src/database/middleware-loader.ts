@@ -22,7 +22,8 @@ import type {
   BasicStoreRelation,
   StoreCommonConnection,
   StoreEntityConnection,
-  StoreProxyRelation
+  StoreProxyRelation,
+  StoreRelationConnection
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
@@ -277,9 +278,20 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
     filters: computedFilters,
   };
 };
+
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
+  const paginateArgs = buildRelationsFilter(type, args);
+  return elPaginate(context, user, indices, paginateArgs);
+};
+
+export const listRelationsPaginated = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+  args: RelationOptions<T> = {}): Promise<StoreRelationConnection<T>> => {
+  const { indices = READ_RELATIONSHIPS_INDICES, connectionFormat } = args;
+  if (connectionFormat === false) {
+    throw UnsupportedError('List connection require connectionFormat option to true');
+  }
   const paginateArgs = buildRelationsFilter(type, args);
   return elPaginate(context, user, indices, paginateArgs);
 };

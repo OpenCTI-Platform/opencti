@@ -211,6 +211,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
+  is_inferred: boolean; // TODO bad idea?
   // number
   confidence: number;
   attribute_count: number;
@@ -243,6 +244,12 @@ interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
   node: T;
 }
 
+interface BasicStoreRelationshipEdge<T extends BasicStoreRelation> {
+  cursor: string
+  types?: string[]
+  node: T;
+}
+
 interface BasicStoreCommonEdge<T extends BasicStoreCommon> {
   cursor: string
   types?: string[]
@@ -251,6 +258,11 @@ interface BasicStoreCommonEdge<T extends BasicStoreCommon> {
 
 interface StoreEntityConnection<T extends BasicStoreEntity> {
   edges: Array<BasicStoreEntityEdge<T>>;
+  pageInfo: PageInfo;
+}
+
+interface StoreRelationConnection<T extends BasicStoreRelation> {
+  edges: Array<BasicStoreRelationshipEdge<T>>;
   pageInfo: PageInfo;
 }
 
