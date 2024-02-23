@@ -181,7 +181,7 @@ const ArtifactCreation = ({
               objectMarking: [],
               objectLabel: [],
             }}
-            validationSchema={artifactValidation(t_i18n)}
+            validationSchema={artifactValidation()}
             onSubmit={onSubmit}
             onReset={onReset}
           >
