@@ -1,8 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
 
-const LIST_QUERY = gql`
+const LIST_QUERY = `
     query stixCyberObservables(
         $first: Int
         $after: ID
@@ -41,6 +41,7 @@ const READ_QUERY = gql`
 
 describe('StixCyberObservable resolver standard behavior', () => {
   let stixCyberObservableInternalId;
+  let networkTrafficInternalId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
   it('should stixCyberObservable created', async () => {
     const CREATE_QUERY = gql`
@@ -71,6 +72,34 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8.8.8.8');
     stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
+  it('should stixCyberObservable network traffic created', async () => {
+    const CREATE_QUERY = gql`
+      mutation StixCyberObservableAdd($type: String!, $NetworkTraffic: NetworkTrafficAddInput) {
+        stixCyberObservableAdd(type: $type, NetworkTraffic: $NetworkTraffic) {
+          id
+          observable_value
+          ... on NetworkTraffic {
+            dst_port
+          }
+        }
+      }
+    `;
+    // Create the stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'Network-Traffic',
+      NetworkTraffic: {
+        dst_port: 8090,
+      },
+    };
+    const stixCyberObservable = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservable).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8090');
+    networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+  });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
     expect(queryResult).not.toBeNull();
@@ -79,8 +108,13 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(queryResult.data.stixCyberObservable.toStix.length).toBeGreaterThan(5);
   });
   it('should list stixCyberObservables', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(3);
+    const queryResult = await queryAsAdmin({ query: gql(LIST_QUERY), variables: { first: 10 } });
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(4);
+  });
+  it('should list stixCyberObservables orderBy observable_value', async () => {
+    const queryResult = await adminQuery(LIST_QUERY, { first: 10, orderBy: 'observable_value', orderMode: 'desc' });
+    expect(queryResult.data.stixCyberObservables).not.toBeNull();
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(4);
   });
   it('should update stixCyberObservable', async () => {
     const UPDATE_QUERY = gql`
@@ -252,6 +286,11 @@ describe('StixCyberObservable resolver standard behavior', () => {
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: stixCyberObservableInternalId },
+    });
+    // delete network traffic
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: networkTrafficInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
