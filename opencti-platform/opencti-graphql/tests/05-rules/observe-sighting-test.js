@@ -64,7 +64,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToAnssi.first_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToAnssi.last_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToAnssi.attribute_count).toBe(1);
-      expect(cbrickToAnssi.confidence).toBe(100); // RULE_MANAGER_USER has confidence 100
+      expect(cbrickToAnssi.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       expect(cbrickToAnssi.i_inference_weight).toBe(1);
       expect((cbrickToAnssi.object_marking_refs || []).length).toBe(0);
       // Change the organization
@@ -89,7 +89,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitreRescan.first_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToMitreRescan.last_seen).toBe('2020-02-25T09:02:29.040Z');
       expect(cbrickToMitreRescan.attribute_count).toBe(1);
-      expect(cbrickToMitreRescan.confidence).toBe(100);
+      expect(cbrickToMitreRescan.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       expect(cbrickToMitreRescan.i_inference_weight).toBe(1);
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
