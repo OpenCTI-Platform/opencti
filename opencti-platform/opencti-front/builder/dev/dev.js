@@ -21,7 +21,7 @@ const debounce = (func, timeout = 500) => {
   };
 };
 const middleware = (target, ws = false) => createProxyMiddleware(basePath + target, {
-  target: "http://localhost:4000",
+  target: process.env.BACK_END_URL ?? "http://localhost:4000",
   changeOrigin: true,
   ws,
 })

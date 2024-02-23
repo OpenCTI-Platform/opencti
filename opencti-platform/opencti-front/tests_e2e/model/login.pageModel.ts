@@ -27,9 +27,6 @@ export class LoginPage {
     
     async login() {
         await this.page.goto('/');
-        await this.page.waitForTimeout(5000);
-        const buffer = await this.page.screenshot();
-        console.log(buffer.toString('base64'));
         await this.fillLoginInput('admin@opencti.io');
         await this.fillPasswordInput('admin');
         return this.getSignInButton().click();
