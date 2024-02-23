@@ -107,6 +107,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             filters={filtersDynamicFrom}
             helpers={helpersDynamicFrom}
             chipColor={'warning'}
+            entityTypes={['Stix-Core-Object']}
           />
         </>
       )}
@@ -121,6 +122,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             filters={filtersDynamicTo}
             helpers={helpersDynamicTo}
             chipColor={'success'}
+            entityTypes={['Stix-Core-Object']}
           />
         </>
       )}
@@ -133,6 +135,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            entityTypes={searchContext.entityTypes}
           />
         </>
       ) }
