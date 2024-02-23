@@ -78,6 +78,7 @@ steps:
       path: /usr/lib/python3.11
     environment:
       BACK_END_URL: http://opencti-raw-start:4100
+      E2E_TEST: true
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional

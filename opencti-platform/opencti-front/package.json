@@ -167,8 +167,8 @@
     "auto-translation:ja-back": "i18n-auto-translation -a deepl-free -p ./lang/back/en.json -t ja -k",
     "auto-translation:es-back": "i18n-auto-translation -a deepl-free -p ./lang/back/en.json -t es -k",
     "auto-translation:de-back": "i18n-auto-translation -a deepl-free -p ./lang/back/en.json -t de -k",
-    "test:e2e": "USE_BABEL_PLUGIN_ISTANBUL=true yarn playwright test",
-    "test:e2e:ui": "USE_BABEL_PLUGIN_ISTANBUL=true yarn playwright test --ui",
+    "test:e2e": "E2E_TEST=true yarn playwright test",
+    "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "npx nyc report --reporter=html && start \"\" coverage/index.html"
   },
