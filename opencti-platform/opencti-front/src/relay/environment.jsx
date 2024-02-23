@@ -133,6 +133,37 @@ export const extractSimpleError = (error) => {
   return 'Unknown error';
 };
 
+/**
+ * Perform a mutation and return any errors
+ */
+export const commitMutationWithPromise = ({
+  mutation,
+  variables,
+  updater,
+  optimisticUpdater,
+  optimisticResponse,
+  onCompleted,
+  onError,
+}) => new Promise((resolve, reject) => {
+  CM(environment, {
+    mutation,
+    variables,
+    updater,
+    optimisticUpdater,
+    optimisticResponse,
+    onCompleted: () => {
+      onCompleted();
+      resolve();
+    },
+    onError: (error) => {
+      onError();
+      if (error && error.res && error.res.errors) {
+        reject(buildErrorMessages(error));
+      }
+    },
+  });
+});
+
 // Relay functions
 export const commitMutation = ({
   mutation,
