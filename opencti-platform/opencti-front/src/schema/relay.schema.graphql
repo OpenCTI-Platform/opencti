@@ -7630,8 +7630,8 @@ type ReportEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report
   contextPatch(input: EditContext): Report
   contextClean: Report
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Report
+  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Report
 }
 
 type CourseOfActionEditMutations {
