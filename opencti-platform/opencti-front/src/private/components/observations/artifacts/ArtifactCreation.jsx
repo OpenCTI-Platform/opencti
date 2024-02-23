@@ -11,7 +11,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -83,7 +83,7 @@ const artifactMutation = graphql`
 `;
 
 const artifactValidation = () => Yup.object().shape({
-  file: Yup.string().nullable(),
+  file: Yup.mixed().required('this field is required'),
   x_opencti_description: Yup.string().nullable(),
 });
 
@@ -102,7 +102,7 @@ const ArtifactCreation = ({
     setOpen(false);
   };
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
         createdBy: R.path(['value']),
@@ -111,22 +111,20 @@ const ArtifactCreation = ({
       },
       values,
     );
-
     commitMutation({
       mutation: artifactMutation,
       variables: {
         file: values.file,
         ...adaptedValues,
       },
-
       updater: (store) => insertNode(
         store,
         'Pagination_stixCyberObservables',
         paginationOptions,
         'artifactImport',
       ),
-      onError: () => {
-        MESSAGING$.notifyError(t_i18n('Missing required file for Artifact creation'));
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
       setSubmitting,
@@ -181,7 +179,7 @@ const ArtifactCreation = ({
               objectMarking: [],
               objectLabel: [],
             }}
-            validationSchema={artifactValidation()}
+            validationSchema={artifactValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -191,9 +189,10 @@ const ArtifactCreation = ({
               isSubmitting,
               setFieldValue,
               values,
+              errors,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <CustomFileUpload setFieldValue={setFieldValue} />
+                <CustomFileUpload setFieldValue={setFieldValue} formikErrors={errors}/>
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"

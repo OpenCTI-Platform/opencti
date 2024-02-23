@@ -1,4 +1,4 @@
-import React, { FormEvent, FunctionComponent, useState } from 'react';
+import React, { FormEvent, FunctionComponent, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -17,6 +17,7 @@ interface CustomFileUploadProps {
   ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
+  formikErrors?: string;
   acceptMimeTypes?: string; // html input "accept" with MIME types only
   sizeLimit?: number; // in bytes
 }
@@ -60,6 +61,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   label,
   acceptMimeTypes,
   sizeLimit = 0, // defaults to 0 = no limit
+  formikErrors,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -72,6 +74,13 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     const file = inputElement.files?.[0];
     const fileSize = file?.size || 0;
 
+    useEffect(() => {
+      if (formikErrors?.file) {
+        setErrorText(formikErrors?.file);
+      } else {
+        setErrorText('');
+      }
+    }, [formikErrors]);
     const newFileName = eventTargetValue.substring(
       eventTargetValue.lastIndexOf('\\') + 1,
     );
