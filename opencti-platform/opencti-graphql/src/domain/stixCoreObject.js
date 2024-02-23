@@ -411,7 +411,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     await elUpdateElement({
-      ...previous,
+      _index: previous._index,
+      internal_id: internalId,
+      entity_type: previous.entity_type,
       updated_at: now(),
       x_opencti_files: files
     });
