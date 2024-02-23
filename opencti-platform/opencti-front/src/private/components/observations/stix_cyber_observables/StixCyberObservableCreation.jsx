@@ -5,18 +5,21 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add, Close, TextFieldsOutlined } from '@mui/icons-material';
 import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import * as PropTypes from 'prop-types';
+import { commitMutation, handleErrorInForm, QueryRenderer, MESSAGING$, commitMutationWithPromise } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -82,6 +85,12 @@ const useStyles = makeStyles((theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  active_typography: {
+    color: theme.palette.text.Typography,
+  },
+  disabled: {
+    color: theme.palette.text.disabled,
   },
 }));
 
@@ -225,106 +234,199 @@ const StixCyberObservableCreation = ({
   const handleOpen = () => setStatus({ open: true, type: status.type });
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
+  const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
+  const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = values;
-    // Potential dicts
-    if (
-      adaptedValues.hashes_MD5
-      || adaptedValues['hashes_SHA-1']
-      || adaptedValues['hashes_SHA-256']
-      || adaptedValues['hashes_SHA-512']
-    ) {
-      adaptedValues.hashes = [];
-      if (adaptedValues.hashes_MD5.length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'MD5',
-          hash: adaptedValues.hashes_MD5,
-        });
+
+    if (adaptedValues) { // Verify not null for DeepScan compliance
+      // Bulk Add Modal was used
+      if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
+        const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
+        // Trim them just to remove any extra spacing on front or rear of string
+        const trimmed_bulk_values = array_of_bulk_values.map((s) => s.trim());
+        // Remove any "" or empty resulting elements
+        const cleaned_bulk_values = trimmed_bulk_values.reduce((elements, i) => (i ? [...elements, i] : elements), []);
+        // De-duplicate by unique then rejoin
+        adaptedValues.value = [...new Set(cleaned_bulk_values)].join('\n');
       }
-      if (adaptedValues['hashes_SHA-1'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-1',
-          hash: adaptedValues['hashes_SHA-1'],
-        });
+
+      // Potential dicts
+      if (
+        adaptedValues.hashes_MD5
+        || adaptedValues['hashes_SHA-1']
+        || adaptedValues['hashes_SHA-256']
+        || adaptedValues['hashes_SHA-512']
+      ) {
+        adaptedValues.hashes = [];
+        if (adaptedValues.hashes_MD5.length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'MD5',
+            hash: adaptedValues.hashes_MD5,
+          });
+        }
+        if (adaptedValues['hashes_SHA-1'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-1',
+            hash: adaptedValues['hashes_SHA-1'],
+          });
+        }
+        if (adaptedValues['hashes_SHA-256'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-256',
+            hash: adaptedValues['hashes_SHA-256'],
+          });
+        }
+        if (adaptedValues['hashes_SHA-512'].length > 0) {
+          adaptedValues.hashes.push({
+            algorithm: 'SHA-512',
+            hash: adaptedValues['hashes_SHA-512'],
+          });
+        }
       }
-      if (adaptedValues['hashes_SHA-256'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-256',
-          hash: adaptedValues['hashes_SHA-256'],
-        });
+      adaptedValues = pipe(
+        dissoc('x_opencti_description'),
+        dissoc('x_opencti_score'),
+        dissoc('createdBy'),
+        dissoc('objectMarking'),
+        dissoc('objectLabel'),
+        dissoc('externalReferences'),
+        dissoc('createIndicator'),
+        dissoc('hashes_MD5'),
+        dissoc('hashes_SHA-1'),
+        dissoc('hashes_SHA-256'),
+        dissoc('hashes_SHA-512'),
+        toPairs,
+        map((n) => (includes(n[0], dateAttributes)
+          ? [n[0], n[1] ? parse(n[1]).format() : null]
+          : n)),
+        map((n) => (includes(n[0], numberAttributes)
+          ? [n[0], n[1] ? parseInt(n[1], 10) : null]
+          : n)),
+        map((n) => (includes(n[0], multipleAttributes)
+          ? [n[0], n[1] ? n[1].split(',') : null]
+          : n)),
+        fromPairs,
+      )(adaptedValues);
+      const observableType = status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+      const finalValues = {
+        type: status.type,
+        x_opencti_description:
+          values.x_opencti_description.length > 0
+            ? values.x_opencti_description
+            : null,
+        x_opencti_score: parseInt(values.x_opencti_score, 10),
+        createdBy: propOr(null, 'value', values.createdBy),
+        objectMarking: pluck('value', values.objectMarking),
+        objectLabel: pluck('value', values.objectLabel),
+        externalReferences: pluck('value', values.externalReferences),
+        createIndicator: values.createIndicator,
+        [observableType]: {
+          ...adaptedValues,
+          obsContent: values.obsContent?.value,
+        },
+      };
+      if (values.file) {
+        finalValues.file = values.file;
       }
-      if (adaptedValues['hashes_SHA-512'].length > 0) {
-        adaptedValues.hashes.push({
-          algorithm: 'SHA-512',
-          hash: adaptedValues['hashes_SHA-512'],
-        });
-      }
+
+      const error_array = [];
+      let validObservables = 0;
+      const commit = async () => {
+        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined;
+        if (valueList) {
+          const promises = valueList.map((value) => commitMutationWithPromise({
+            mutation: stixCyberObservableMutation,
+            variables: {
+              ...finalValues,
+              [observableType]: { value },
+            },
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              localHandleClose();
+            },
+            onError: () => {
+              setSubmitting(false);
+            },
+          }));
+          await Promise.allSettled(promises).then((results) => {
+            results.forEach(({ status: promiseStatus, reason }) => {
+              if (promiseStatus === 'fulfilled') {
+                validObservables += 1;
+              } else {
+                error_array.push(reason);
+              }
+            });
+          });
+          const totalObservables = valueList.length;
+          let closeFormWithAnySuccess = false;
+          if (error_array.length > 0) {
+            const errorObservables = error_array.length;
+            let message_string = '';
+            if (validObservables > 0) {
+              message_string = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+              closeFormWithAnySuccess = true;
+            }
+            message_string += ` ${errorObservables}/${totalObservables} ${t_i18n('observables contained errors and were not added.')} `;
+            const consolidated_errors = { res: { errors: error_array[0] } };
+            // Short Error message, just has total success and failure counts with translation support
+            consolidated_errors.res.errors[0].message = message_string;
+            // Long Error message with all errors
+            // consolidated_errors.res.errors[0].message = message_string + error_messages.join('\n');
+            // Toast Error Message to Screen - Will not close the form since errors exist for correction.
+            handleErrorInForm(consolidated_errors, setErrors);
+          } else {
+            let bulk_success_message = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+            if (totalObservables === 1) {
+              // This is for consistent messaging when adding just (1) Observable
+              bulk_success_message = t_i18n('Observable successfully added');
+            }
+            // Toast Message on Bulk Add Success
+            MESSAGING$.notifySuccess(bulk_success_message);
+            closeFormWithAnySuccess = true;
+          }
+          // Close the form if any observables were successfully added.
+          if (closeFormWithAnySuccess === true) {
+            localHandleClose();
+          }
+        } else {
+          // No 'values' were submitted to save, but other parts of form were possibly filled out for different
+          // Observable type like File Hash or something that are not currently bulk addable.
+          // No promise required here, just send the data for saving, as it is a singular add
+          commitMutation({
+            mutation: stixCyberObservableMutation,
+            variables: finalValues,
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onError: (error) => {
+              handleErrorInForm(error, setErrors);
+              setSubmitting(false);
+            },
+            setSubmitting,
+            onCompleted: () => {
+              // Toast Message on Add Success
+              MESSAGING$.notifySuccess(t_i18n('Observable successfully added'));
+              setSubmitting(false);
+              resetForm();
+              localHandleClose();
+            },
+          });
+        }
+      };
+      commit();
     }
-    adaptedValues = pipe(
-      dissoc('x_opencti_description'),
-      dissoc('x_opencti_score'),
-      dissoc('createdBy'),
-      dissoc('objectMarking'),
-      dissoc('objectLabel'),
-      dissoc('externalReferences'),
-      dissoc('createIndicator'),
-      dissoc('hashes_MD5'),
-      dissoc('hashes_SHA-1'),
-      dissoc('hashes_SHA-256'),
-      dissoc('hashes_SHA-512'),
-      toPairs,
-      map((n) => (includes(n[0], dateAttributes)
-        ? [n[0], n[1] ? parse(n[1]).format() : null]
-        : n)),
-      map((n) => (includes(n[0], numberAttributes)
-        ? [n[0], n[1] ? parseInt(n[1], 10) : null]
-        : n)),
-      map((n) => (includes(n[0], multipleAttributes)
-        ? [n[0], n[1] ? n[1].split(',') : null]
-        : n)),
-      fromPairs,
-    )(adaptedValues);
-    const finalValues = {
-      type: status.type,
-      x_opencti_description:
-        values.x_opencti_description.length > 0
-          ? values.x_opencti_description
-          : null,
-      x_opencti_score: parseInt(values.x_opencti_score, 10),
-      createdBy: propOr(null, 'value', values.createdBy),
-      objectMarking: pluck('value', values.objectMarking),
-      objectLabel: pluck('value', values.objectLabel),
-      externalReferences: pluck('value', values.externalReferences),
-      createIndicator: values.createIndicator,
-      [status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: {
-        ...adaptedValues,
-        obsContent: values.obsContent?.value,
-      },
-    };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
-    commitMutation({
-      mutation: stixCyberObservableMutation,
-      variables: finalValues,
-      updater: (store) => insertNode(
-        store,
-        paginationKey,
-        paginationOptions,
-        'stixCyberObservableAdd',
-      ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        localHandleClose();
-      },
-    });
   };
 
   const onReset = () => {
@@ -369,6 +471,94 @@ const StixCyberObservableCreation = ({
         }}
       />
     );
+  };
+
+  function BulkAddModal(props) {
+    const [openBulkModal, setOpenBulkModal] = React.useState(false);
+    const handleOpenBulkModal = () => {
+      const generic_value_field = document.getElementById('generic_value_field');
+      if (generic_value_field != null && generic_value_field.value != null
+          && generic_value_field.value.length > 0 && generic_value_field.value !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        props.setValue('bulk_value_field', generic_value_field.value.trim());
+      }
+      setOpenBulkModal(true);
+    };
+    const handleCloseBulkModal = () => {
+      setOpenBulkModal(false);
+      const bulk_value_field = document.getElementById('bulk_value_field');
+      if (bulk_value_field != null && bulk_value_field.value != null && bulk_value_field.value.length > 0) {
+        props.setValue('value', bulkAddMsg);
+        setGenericValueFieldDisabled(true);
+      } else {
+        props.setValue('value', '');
+        setGenericValueFieldDisabled(false);
+      }
+    };
+    const localHandleCancelClearBulkModal = () => {
+      setOpenBulkModal(false);
+      if (!genericValueFieldDisabled) {
+        // If one-liner field isn't disabled, then you are it seems deciding
+        // not to use the bulk add feature, so we will clear the field, since its population
+        // is used to process the bul_value_field versus the generic_value_field
+        props.setValue('bulk_value_field', '');
+      }
+      // else - you previously entered data and you just are canceling out of the popup window
+      // but keeping your entry in the form.
+    };
+    return (
+      <React.Fragment>
+        <IconButton
+          onClick={handleOpenBulkModal}
+          size="large"
+          color="primary" style={{ float: 'right', marginRight: 25 }}
+        >
+          <TextFieldsOutlined />
+        </IconButton>
+        <Dialog
+          PaperProps={{ elevation: 3 }}
+          open={openBulkModal}
+          onClose={handleCloseBulkModal}
+          fullWidth={true}
+        >
+          <DialogTitle>{t_i18n('Bulk Observable Creation')}</DialogTitle>
+          <DialogContent style={{ marginTop: 0, paddingTop: 0 }}>
+            <Typography id="add-bulk-observable-instructions" variant="subtitle1" component="subtitle1" style={{ whiteSpace: 'pre-line' }}>
+              <div style={{ border: '2px solid #FFA500', paddingLeft: 10 }}>
+                {t_i18n('Observables listed must be of the same type.')}
+                <br/>
+                {t_i18n('One Observable per line.')}
+              </div>
+            </Typography>
+            <Typography style={{ float: 'left', marginTop: 10 }}>
+              {t_i18n('Bulk Content')}
+            </Typography>
+            <Field
+              component={TextField}
+              id="bulk_value_field"
+              variant="standard"
+              key="bulk_value_field"
+              name="bulk_value_field"
+              fullWidth={true}
+              multiline={true}
+              rows="5"
+            />
+            <DialogActions>
+              <Button onClick={localHandleCancelClearBulkModal}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button color="secondary" onClick={handleCloseBulkModal}>
+                {t_i18n('Continue')}
+              </Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
+      </React.Fragment>
+    );
+  }
+
+  BulkAddModal.propTypes = {
+    setValue: PropTypes.func,
   };
 
   const renderForm = () => {
@@ -564,6 +754,32 @@ const StixCyberObservableCreation = ({
                             />
                           );
                         }
+                        if (attribute.value === 'value') {
+                          return (
+                            <div key={attribute.value}>
+                              <Typography className={genericValueFieldDisabled ? classes.disabled : classes.active_typography} style={{ float: 'left', marginTop: 20 }}>
+                                {attribute.value}
+                              </Typography>
+                              <Tooltip title="Copy/paste text content">
+                                <BulkAddModal
+                                  setValue={(field_name, new_value) => setFieldValue(field_name, new_value)}
+                                />
+                              </Tooltip>
+
+                              <Field
+                                id="generic_value_field"
+                                disabled={genericValueFieldDisabled}
+                                component={TextField}
+                                variant="standard"
+                                key={attribute.value}
+                                name={attribute.value}
+                                fullWidth={true}
+                                multiline={true}
+                                rows="1"
+                              />
+                            </div>
+                          );
+                        }
                         return (
                           <Field
                             component={TextField}
@@ -573,8 +789,7 @@ const StixCyberObservableCreation = ({
                             label={attribute.value}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
-                          />
-                        );
+                          />);
                       })}
                     </div>
                     <CreatedByField

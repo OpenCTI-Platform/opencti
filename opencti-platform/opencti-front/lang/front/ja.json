@@ -2683,5 +2683,13 @@
   "Most used filters": "最も使用されるフィルター",
   "All other filters": "その他のフィルター",
   "Testing csv mapper": "csvマッパーのテスト",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。"
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。",
+  "Multiple values entered. Edit with the TT button": "複数の値が入力されました。 TTボタンで編集",
+  "Bulk Observable Creation": "監視可能な一括作成",
+  "Observables listed must be of the same type.": "リストされる Observable は同じタイプである必要があります。",
+  "One Observable per line.": "1 行に 1 つの Observable。",
+  "Bulk Content": "バルクコンテンツ",
+  "Observable successfully added": "オブザーバブルが正常に追加されました",
+  "were added successfully.": "は正常に追加されました。",
+  "observables contained errors and were not added.": "オブザーバブルにはエラーが含まれていたため、追加されませんでした。"
 }

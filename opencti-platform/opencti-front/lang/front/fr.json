@@ -2683,5 +2683,13 @@
   "Most used filters": "Filtres les plus utilisés",
   "All other filters": "Tous les autres filtres",
   "Testing csv mapper": "Test du mappeur csv",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Ces opérations ne s'appliqueront qu'aux étiquettes ou marquages ajoutés dans le contexte de ce playbook, comme l'enrichissement ou d'autres manipulations de connaissances, mais pas si les étiquettes ou marquages sont déjà écrits dans la plateforme."
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Ces opérations ne s'appliqueront qu'aux étiquettes ou marquages ajoutés dans le contexte de ce playbook, comme l'enrichissement ou d'autres manipulations de connaissances, mais pas si les étiquettes ou marquages sont déjà écrits dans la plateforme.",
+  "Multiple values entered. Edit with the TT button": "Plusieurs valeurs saisies. Modifier avec le bouton TT",
+  "Bulk Observable Creation": "Création observable en masse",
+  "Observables listed must be of the same type.": "Les observables répertoriés doivent être du même type.",
+  "One Observable per line.": "Un observable par ligne.",
+  "Bulk Content": "Contenu en vrac",
+  "Observable successfully added": "Observable ajouté avec succès",
+  "were added successfully.": "ont été ajoutés avec succès.",
+  "observables contained errors and were not added.": "les observables contenaient des erreurs et n’étaient pas ajoutés."
 }

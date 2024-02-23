@@ -2683,5 +2683,13 @@
   "Most used filters": "最常用的过滤器",
   "All other filters": "所有其他筛选器",
   "Testing csv mapper": "测试 csv 映射器",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。"
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。",
+  "Multiple values entered. Edit with the TT button": "输入多个值。使用 TT 按钮进行编辑",
+  "Bulk Observable Creation": "批量可观察创建",
+  "Observables listed must be of the same type.": "列出的可观察量必须属于同一类型。",
+  "One Observable per line.": "每行一个 Observable。",
+  "Bulk Content": "批量内容",
+  "Observable successfully added": "可观察对象添加成功",
+  "were added successfully.": "已添加成功。",
+  "observables contained errors and were not added.": "observables 包含错误并且未添加。"
 }
