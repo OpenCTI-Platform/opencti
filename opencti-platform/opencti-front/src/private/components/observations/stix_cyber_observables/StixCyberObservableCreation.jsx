@@ -5,12 +5,13 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add, Close, TextFieldsOutlined } from '@mui/icons-material';
 import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
@@ -285,6 +286,7 @@ const StixCyberObservableCreation = ({
         : n)),
       fromPairs,
     )(adaptedValues);
+    const observableType = status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
     const finalValues = {
       type: status.type,
       x_opencti_description:
@@ -297,7 +299,7 @@ const StixCyberObservableCreation = ({
       objectLabel: pluck('value', values.objectLabel),
       externalReferences: pluck('value', values.externalReferences),
       createIndicator: values.createIndicator,
-      [status.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: {
+      [observableType]: {
         ...adaptedValues,
         obsContent: values.obsContent?.value,
       },
@@ -305,26 +307,42 @@ const StixCyberObservableCreation = ({
     if (values.file) {
       finalValues.file = values.file;
     }
-    commitMutation({
-      mutation: stixCyberObservableMutation,
-      variables: finalValues,
-      updater: (store) => insertNode(
-        store,
-        paginationKey,
-        paginationOptions,
-        'stixCyberObservableAdd',
-      ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        localHandleClose();
-      },
-    });
+
+    const commit = () => {
+      commitMutation({
+        mutation: stixCyberObservableMutation,
+        variables: finalValues,
+        updater: (store) => insertNode(
+          store,
+          paginationKey,
+          paginationOptions,
+          'stixCyberObservableAdd',
+        ),
+        onError: (error) => {
+          handleErrorInForm(error, setErrors);
+          setSubmitting(false);
+        },
+        setSubmitting,
+        onCompleted: () => {
+          setSubmitting(false);
+          resetForm();
+          localHandleClose();
+        },
+      });
+    };
+
+    const valueList = values?.value?.split('\n') || values?.value;
+    if (valueList) {
+    // loop and commit
+      for (const value of valueList) {
+        if (value) {
+          finalValues[observableType] = { value };
+        }
+        commit();
+      }
+    } else {
+      commit();
+    }
   };
 
   const onReset = () => {
@@ -402,6 +420,8 @@ const StixCyberObservableCreation = ({
               ),
             )(props.schemaAttributeNames.edges);
             for (const attribute of attributes) {
+              // eslint-disable-next-line no-console
+              console.log(`attribute ===> ${JSON.stringify(attribute, null, 4)}`);
               if (isVocabularyField(status.type, attribute.value)) {
                 initialValues[attribute.value] = null;
               } else if (includes(attribute.value, dateAttributes)) {
@@ -564,6 +584,32 @@ const StixCyberObservableCreation = ({
                             />
                           );
                         }
+                        if (attribute.value === 'value') {
+                          return (
+                            <>
+                              <Typography style={{ float: 'left', marginTop: 20 }}>
+                                {attribute.value}
+                              </Typography>
+                              <Tooltip title="Copy/paste text content">
+                                <IconButton
+                                  size="large"
+                                  color="primary" style={{ float: 'right' }}
+                                >
+                                  <TextFieldsOutlined />
+                                </IconButton>
+                              </Tooltip>
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                key={attribute.value}
+                                name={attribute.value}
+                                fullWidth={true}
+                                multiline={true}
+                                rows="3"
+                              />
+                            </>
+                          );
+                        }
                         return (
                           <Field
                             component={TextField}
@@ -573,8 +619,7 @@ const StixCyberObservableCreation = ({
                             label={attribute.value}
                             fullWidth={true}
                             style={{ marginTop: 20 }}
-                          />
-                        );
+                          />);
                       })}
                     </div>
                     <CreatedByField
