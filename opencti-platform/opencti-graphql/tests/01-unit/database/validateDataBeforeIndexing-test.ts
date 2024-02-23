@@ -98,6 +98,19 @@ describe('validateDataBeforeIndexing', () => {
     expect(() => validateDataBeforeIndexing(invalidUser))
       .toThrowError('Validation against schema failed on attribute [overrides]: mandatory field [entity_type] is not present');
 
+    invalidUser = {
+      ...user,
+      user_confidence_level: {
+        max_confidence: null, // mandatory field to null
+        overrides: [{
+          max_confidence: 77,
+          entity_type: 'Report'
+        }]
+      },
+    };
+    expect(() => validateDataBeforeIndexing(invalidUser))
+      .toThrowError('Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
+
     const invalidThreatActorIndividual = {
       ...threatActorIndividual,
       height: [{

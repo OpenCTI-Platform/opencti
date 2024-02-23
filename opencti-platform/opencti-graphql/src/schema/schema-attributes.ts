@@ -236,7 +236,7 @@ export const isNonFLatObjectAttributeMapping = (schemaDef: AttributeDefinition) 
 const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
   const isMandatory = isMandatoryAttributeMapping(schemaDef);
   if (isMandatory && R.isNil(input)) {
-    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: attribute is mandatory but not present`);
+    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`, { value: input });
   }
 
   if (isNonFLatObjectAttributeMapping(schemaDef)) {
