@@ -17,7 +17,9 @@ interface CustomFileUploadProps {
   ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
-  formikErrors?: string;
+  formikErrors: {
+    file?: string,
+  }
   acceptMimeTypes?: string; // html input "accept" with MIME types only
   sizeLimit?: number; // in bytes
 }
@@ -68,19 +70,20 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   const [fileNameForDisplay, setFileNameForDisplay] = useState('');
   const [errorText, setErrorText] = useState('');
 
+  useEffect(() => {
+    if (formikErrors?.file) {
+      setErrorText(formikErrors?.file);
+    } else {
+      setErrorText('');
+    }
+  }, [formikErrors]);
+
   const onChange = async (event: FormEvent) => {
     const inputElement = event.target as HTMLInputElement;
     const eventTargetValue = inputElement.value as string;
     const file = inputElement.files?.[0];
     const fileSize = file?.size || 0;
 
-    useEffect(() => {
-      if (formikErrors?.file) {
-        setErrorText(formikErrors?.file);
-      } else {
-        setErrorText('');
-      }
-    }, [formikErrors]);
     const newFileName = eventTargetValue.substring(
       eventTargetValue.lastIndexOf('\\') + 1,
     );
