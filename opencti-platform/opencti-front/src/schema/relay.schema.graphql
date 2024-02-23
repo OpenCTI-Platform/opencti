@@ -7592,8 +7592,8 @@ type ContainerEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Container
   contextPatch(input: EditContext): Container
   contextClean: Container
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Container
+  relationAdd(input: StixRefRelationshipAddInput!, commitMessage: String, references: [String]): StixRefRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): Container
   investigationAdd: Workspace
   knowledgeAddFromInvestigation(workspaceId: ID!): Container
 }
