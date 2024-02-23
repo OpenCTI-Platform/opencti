@@ -233,7 +233,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
-  let marginTop = '2px';
+  let marginTop = '8px';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
@@ -264,6 +264,7 @@ FilterIconButtonContainerProps
             marginTop: displayedFilters.length === 0 ? '0px' : marginTop,
             display: 'flex',
             flexWrap: 'wrap',
+            gap: 1,
           }
       }
     >
@@ -317,7 +318,7 @@ FilterIconButtonContainerProps
             >
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '0',
                   display: 'flex',
                 }}
               >
@@ -401,18 +402,13 @@ FilterIconButtonContainerProps
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-          <Box style={{
-            padding: '8px 4px',
-          }}
-          >
-            <DisplayFilterGroup
-              filtersRepresentativesMap={filtersRepresentativesMap}
-              filterObj={filters}
-              filterMode={filters.mode}
-              classFilter={classFilter}
-              classChipLabel={classes.chipLabel}
-            />
-          </Box>
+        <DisplayFilterGroup
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          filterObj={filters}
+          filterMode={filters.mode}
+          classFilter={classFilter}
+          classChipLabel={classes.chipLabel}
+        />
       )}
     </Box>
   );
