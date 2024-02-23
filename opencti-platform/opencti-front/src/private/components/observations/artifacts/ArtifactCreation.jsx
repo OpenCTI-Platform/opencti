@@ -11,7 +11,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -82,8 +82,8 @@ const artifactMutation = graphql`
   }
 `;
 
-const artifactValidation = (t) => Yup.object().shape({
-  file: Yup.mixed().required(t(' field is required')),
+const artifactValidation = () => Yup.object().shape({
+  file: Yup.string().nullable(),
   x_opencti_description: Yup.string().nullable(),
 });
 
@@ -102,7 +102,7 @@ const ArtifactCreation = ({
     setOpen(false);
   };
 
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const adaptedValues = R.evolve(
       {
         createdBy: R.path(['value']),
@@ -111,20 +111,22 @@ const ArtifactCreation = ({
       },
       values,
     );
+
     commitMutation({
       mutation: artifactMutation,
       variables: {
         file: values.file,
         ...adaptedValues,
       },
+
       updater: (store) => insertNode(
         store,
         'Pagination_stixCyberObservables',
         paginationOptions,
         'artifactImport',
       ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
+      onError: () => {
+        MESSAGING$.notifyError(t_i18n('Missing required file for Artifact creation'));
         setSubmitting(false);
       },
       setSubmitting,
