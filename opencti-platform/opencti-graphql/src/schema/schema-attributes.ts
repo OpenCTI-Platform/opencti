@@ -234,12 +234,12 @@ export const isNonFLatObjectAttributeMapping = (schemaDef: AttributeDefinition) 
  * @param schemaDef AttributeDefinition for the given input data
  */
 const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
+  const isMandatory = isMandatoryAttributeMapping(schemaDef);
+  if (isMandatory && R.isNil(input)) {
+    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: attribute is mandatory but not present`);
+  }
+
   if (isNonFLatObjectAttributeMapping(schemaDef)) {
-    // to detect errors in schema definition (but should not happen)
-    if (!Array.isArray(schemaDef.mappings)) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: object has no mapping in schema`, { value: input });
-    }
-    const isMandatory = isMandatoryAttributeMapping(schemaDef);
     // check 'multiple' constraint
     if (isMandatory) {
       if (schemaDef.multiple && !Array.isArray(input)) {
@@ -273,12 +273,26 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
 };
 
 export const validateDataBeforeIndexing = (element: any) => {
+  if (!element.entity_type) {
+    throw FunctionalError('Validation against schema failed: element has no entity_type', { value: element });
+  }
+
+  // just check the given entity_type is in schema ; this call would throw a DatabaseError
+  try {
+    schemaAttributesDefinition.getAttributes(element.entity_type);
+  } catch (e: any) {
+    if (e.name === 'DATABASE_ERROR') {
+      throw FunctionalError('Validation against schema failed: this entity_type is not supported', { value: element });
+    }
+    throw e;
+  }
+
   Object.keys(element).forEach((elementKey) => {
     const input = element[elementKey];
-    const schemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
-    if (!schemaDef) {
+    const attributeSchemaDef = schemaAttributesDefinition.getAttributeByName(elementKey);
+    if (!attributeSchemaDef) {
       return; // no validation to do, happens for meta fields like "_index"
     }
-    validateInputAgainstSchema(input, schemaDef);
+    validateInputAgainstSchema(input, attributeSchemaDef);
   });
 };
