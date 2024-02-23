@@ -115,7 +115,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     );
   }
 
-  sendStixCoreObjectModification(stixCoreObject, commitMessage, references) {
+  sendStixCoreObjectModification(stixCoreObject, commitMessage, references, setSubmitting) {
     const {
       containerId,
       paginationOptions,
@@ -212,6 +212,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             commitMessage,
             references,
           },
+          setSubmitting,
           updater: (store) => {
             // ID is not valid pagination options, will be handled better when hooked
             const options = { ...paginationOptions };
@@ -229,6 +230,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             );
           },
           onCompleted: () => {
+            setSubmitting(false);
             if (!mapping) {
               this.setState({
                 addedStixCoreObjects: {
@@ -240,6 +242,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onAdd === 'function') {
               onAdd(stixCoreObject);
             }
+            this.closePopup();
           },
         });
       }
@@ -257,9 +260,9 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   submitReference(values, { setSubmitting }) {
-    setSubmitting(false);
-    this.setState({ referenceDialogOpened: false });
-    this.setState({ currentlyToggledCoreObject: null });
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    this.sendStixCoreObjectModification(this.state.currentlyToggledCoreObject, commitMessage, references, setSubmitting);
   }
 
   render() {
@@ -287,36 +290,30 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           disableExport={true}
           containerRef={containerRef}
         />
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={referenceDialogOpened}
-          onClose={this.closePopup.bind(this)}
-          fullWidth
+        <Formik
+          initialValues={{ message: '', references: [] }}
+          onSubmit={this.submitReference.bind(this)}
         >
-          <Formik
-            initialValues={{ message: '', references: [] }}
-            onSubmit={this.submitReference.bind(this)}
-          >
-            {({
-              submitForm,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ float: 'right' }}>
-                <CommitMessage
-                  handleClose={this.closePopup.bind(this)}
-                  open={referenceDialogOpened}
-                  submitForm={submitForm}
-                  disabled={isSubmitting}
-                  setFieldValue={setFieldValue}
-                  values={values.references}
-                  id={containerRef.id}
-                />
-              </Form>
-            )}
-          </Formik>
-        </Dialog>
+          {({
+            submitForm,
+            isSubmitting,
+            setFieldValue,
+            values,
+          }) => (
+            <Form>
+              <CommitMessage
+                handleClose={this.closePopup.bind(this)}
+                open={referenceDialogOpened}
+                submitForm={submitForm}
+                disabled={isSubmitting}
+                setFieldValue={setFieldValue}
+                values={values.references}
+                id={containerRef.id}
+                noStoreUpdate={true}
+              />
+            </Form>
+          )}
+        </Formik>
       </>
     );
   }
