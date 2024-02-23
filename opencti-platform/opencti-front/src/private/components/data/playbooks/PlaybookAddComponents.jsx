@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
     margin: '0 0 20px 0',
     padding: 15,
     verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
+    border: `1px solid ${theme.palette.primary.main}`,
     borderRadius: 4,
     display: 'flex',
   },
@@ -136,14 +136,37 @@ const PlaybookAddComponentsContent = ({
     setActionsInputs(R.remove(i, 1, actionsInputs));
   };
   const handleChangeActionInput = (i, key, value) => {
-    setActionsInputs(
-      actionsInputs.map((v, k) => {
-        if (k === i) {
-          return { ...v, [key]: value };
-        }
-        return v;
-      }),
-    );
+    // extract currentValue value
+    const currentValue = R.head(actionsInputs.map((v, k) => (k === i && v[key] ? v[key] : null)).filter((n) => n !== null));
+    // Change operation
+    if (key === 'op' && currentValue !== value) {
+      setActionsInputs(
+        actionsInputs.map((v, k) => {
+          if (k === i) {
+            return { ...v, [key]: value, attribute: null, value: null };
+          }
+          return v;
+        }),
+      );
+    } else if (key === 'attribute' && currentValue !== value) {
+      setActionsInputs(
+        actionsInputs.map((v, k) => {
+          if (k === i) {
+            return { ...v, [key]: value, value: null };
+          }
+          return v;
+        }),
+      );
+    } else {
+      setActionsInputs(
+        actionsInputs.map((v, k) => {
+          if (k === i) {
+            return { ...v, [key]: value };
+          }
+          return v;
+        }),
+      );
+    }
   };
   const areStepsValid = () => {
     for (const n of actionsInputs) {

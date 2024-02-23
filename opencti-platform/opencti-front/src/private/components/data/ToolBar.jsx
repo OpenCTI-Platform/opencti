@@ -157,7 +157,7 @@ const styles = (theme) => ({
     margin: '0 0 20px 0',
     padding: 15,
     verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
+    border: `1px solid ${theme.palette.primary.main}`,
     borderRadius: 4,
     display: 'flex',
   },

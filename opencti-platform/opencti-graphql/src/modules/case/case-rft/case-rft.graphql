@@ -207,6 +207,7 @@ input CaseRftAddInput {
   modified: DateTime
   file: Upload
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]

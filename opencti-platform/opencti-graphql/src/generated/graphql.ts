@@ -275,6 +275,7 @@ export type AdministrativeAreaAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AdministrativeAreaConnection = {
@@ -2487,6 +2488,7 @@ export type CaseRfiAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CaseRfiConnection = {
@@ -2759,6 +2761,7 @@ export type CaseRftAddInput = {
   takedown_types?: InputMaybe<Array<Scalars['String']['input']>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CaseRftConnection = {
@@ -6590,6 +6593,7 @@ export type EventAddInput = {
   stop_time?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type EventConnection = {
@@ -7077,6 +7081,7 @@ export type FeedbackAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FeedbackConnection = {
@@ -7562,6 +7567,7 @@ export type GroupingAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GroupingConnection = {
@@ -9173,6 +9179,7 @@ export type IndicatorAddInput = {
   x_opencti_main_observable_type?: InputMaybe<Scalars['String']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<Scalars['StixId']['input']>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IndicatorConnection = {
@@ -11604,6 +11611,7 @@ export type MalwareAnalysisAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type MalwareAnalysisConnection = {
@@ -25309,6 +25317,7 @@ export type ThreatActorIndividualAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   weight?: InputMaybe<Array<MeasureInput>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ThreatActorIndividualConnection = {

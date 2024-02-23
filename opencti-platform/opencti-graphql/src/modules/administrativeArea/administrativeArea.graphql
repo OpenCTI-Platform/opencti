@@ -170,6 +170,7 @@ input AdministrativeAreaAddInput {
     created: DateTime
     modified: DateTime
     clientMutationId: String
+    x_opencti_workflow_id: String
     update: Boolean
     file: Upload
 }

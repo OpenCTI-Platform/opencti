@@ -204,6 +204,7 @@ input CaseRfiAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
   update: Boolean

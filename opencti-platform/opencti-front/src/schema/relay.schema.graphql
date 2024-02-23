@@ -8438,6 +8438,7 @@ input EventAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   file: Upload
 }
@@ -8543,6 +8544,7 @@ input GroupingAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   file: Upload
 }
@@ -9215,6 +9217,7 @@ input AdministrativeAreaAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   file: Upload
 }
@@ -9694,6 +9697,7 @@ input CaseRfiAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
   update: Boolean
@@ -9812,6 +9816,7 @@ input CaseRftAddInput {
   modified: DateTime
   file: Upload
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   takedown_types: [String!]
   caseTemplates: [String!]
@@ -9921,6 +9926,7 @@ input FeedbackAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
   update: Boolean
@@ -10176,6 +10182,7 @@ input MalwareAnalysisAddInput {
   objectOrganization: [String]
   objectLabel: [String]
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   file: Upload
 }
@@ -10394,6 +10401,7 @@ input ThreatActorIndividualAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
   update: Boolean
   file: Upload
 }
@@ -10810,6 +10818,7 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]
 }
