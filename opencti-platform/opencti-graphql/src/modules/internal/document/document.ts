@@ -37,8 +37,8 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'external_reference_id', label: 'Related external reference', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'messages', label: 'File messages', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
       { name: 'errors', label: 'File errors', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-      { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-      { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     ]
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place

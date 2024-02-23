@@ -93,7 +93,7 @@ export const stixDomainObjectsDistributionByEntity = async (context, user, args)
 
 export const stixDomainObjectAvatar = (stixDomainObject) => {
   const files = stixDomainObject.x_opencti_files ?? [];
-  return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && n.inCarousel);
+  return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && !!n.inCarousel);
 };
 // endregion
 
