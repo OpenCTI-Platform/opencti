@@ -366,7 +366,7 @@ FilterIconButtonContainerProps
             {isNotLastFilter && (
               <Box
                 sx={{
-                  padding: styleNumber === 3 ? '0 4px' : '8px 4px',
+                  padding: styleNumber === 3 ? '0 4px' : '0',
                   display: 'flex',
                 }}
               >
