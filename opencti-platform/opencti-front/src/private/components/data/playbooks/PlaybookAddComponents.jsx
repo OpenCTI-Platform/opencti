@@ -16,6 +16,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -23,14 +24,7 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  filtersAfterSwitchLocalMode,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/SwitchField';
@@ -40,6 +34,7 @@ import StatusField from '../../common/form/StatusField';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
 
 const useStyles = makeStyles((theme) => ({
   lines: {
@@ -101,7 +96,8 @@ const PlaybookAddComponentsContent = ({
   const { t_i18n } = useFormatter();
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
-  const [filters, setFilters] = useState(currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup);
+  const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
+  const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
 
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
@@ -110,25 +106,6 @@ const PlaybookAddComponentsContent = ({
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
 
-  const handleAddFilter = (k, id, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, k, id, op));
-  };
-  const handleRemoveFilter = (k, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, k, op));
-  };
-
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
   const handleAddStep = () => {
     setActionsInputs(R.append({}, actionsInputs));
   };
@@ -431,9 +408,15 @@ const PlaybookAddComponentsContent = ({
                   if (k === 'filters') {
                     return (
                       <div key={k}>
-                        <div style={{ marginTop: 35 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            gap: 1,
+                            marginTop: '35px',
+                          }}
+                        >
                           <Filters
-                            variant="text"
+                            helpers={helpers}
                             availableFilterKeys={[
                               'entity_type',
                               'workflow_id',
@@ -457,16 +440,14 @@ const PlaybookAddComponentsContent = ({
                               'fromTypes',
                               'toTypes',
                             ]}
-                            handleAddFilter={handleAddFilter}
                             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                           />
-                        </div>
+                        </Box>
                         <div className="clearfix" />
                         <FilterIconButton
                           filters={filters}
-                          handleRemoveFilter={handleRemoveFilter}
-                          handleSwitchGlobalMode={handleSwitchGlobalMode}
-                          handleSwitchLocalMode={handleSwitchLocalMode}
+                          helpers={helpers}
+                          entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
                           styleNumber={2}
                           redirection
                         />
