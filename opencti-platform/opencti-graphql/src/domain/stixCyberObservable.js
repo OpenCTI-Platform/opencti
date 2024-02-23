@@ -353,12 +353,11 @@ export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   let resolvedFile = await file;
   // Checking infected ZIP files
-  resolvedFile = await extractInfectedZipFile(resolvedFile);
-
-  if (!resolvedFile) {
-    throw FunctionalError('Something went wrong with the file upload');
+  try {
+    resolvedFile = await extractInfectedZipFile(resolvedFile);
+  } catch {
+    // do nothing
   }
-
   const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
@@ -390,6 +389,9 @@ export const artifactImport = async (context, user, args) => {
   const artifact = await addStixCyberObservable(context, user, artifactData);
   const meta = { version };
   await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
+  if (!upload) {
+    throw FunctionalError('Something went wrong with the file upload');
+  }
   return artifact;
 };
 
