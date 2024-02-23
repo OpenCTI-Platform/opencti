@@ -146,7 +146,6 @@ const depsToOptimize = [
   "@mui/icons-material/Delete",
   "@mui/lab/LoadingButton",
   "@mui/material/Breadcrumbs",
-  "@mui/lab/Alert/Alert",
 ]
 
 const logger = createLogger()
