@@ -97,7 +97,7 @@ const PlaybookAddComponentsContent = ({
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
-  const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
+  const [filters, helpers] = useFiltersState(initialFilters);
 
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
