@@ -3189,7 +3189,7 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
-    await createEntityAutoEnrichment(context, user, data.element.standard_id, type);
+    await createEntityAutoEnrichment(context, user, data.element, type);
   }
   return isCompleteResult ? data : data.element;
 };

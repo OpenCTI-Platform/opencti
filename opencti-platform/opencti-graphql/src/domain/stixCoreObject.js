@@ -12,9 +12,10 @@ import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
+  CONNECTOR_INTERNAL_ENRICHMENT,
   ENTITY_TYPE_CONTAINER,
   INPUT_EXTERNAL_REFS,
-  REL_INDEX_PREFIX,
+  REL_INDEX_PREFIX
 } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import {
@@ -193,7 +194,9 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
       applicant_id: null, // No specific user asking for the import
     },
     event: {
+      event_type: CONNECTOR_INTERNAL_ENRICHMENT,
       entity_id: element.standard_id,
+      entity_type: element.entity_type,
     },
   };
   await pushToConnector(connector.internal_id, message);
@@ -444,6 +447,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   }
   // Get the context
   const baseDocument = await documentFindById(context, user, fileId);
+  if (!baseDocument) {
+    throw UnsupportedError('File removed or inaccessible', { fileId });
+  }
   const entityId = baseDocument.metaData.entity_id;
   const externalReferenceId = baseDocument.metaData.external_reference_id;
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
