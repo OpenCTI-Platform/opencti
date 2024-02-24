@@ -656,6 +656,22 @@ workflows:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - docker_build_platform_fips:
+          requires:
+            - build_frontend
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - docker_build_worker_fips:
+          requires:
+            - build_frontend
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/              
       - deploy_testing:
           requires:
             - docker_build_platform_rolling
@@ -663,12 +679,16 @@ workflows:
       - notify_rolling:
           requires:
             - deploy_testing
+            - docker_build_platform_fips_rolling
+            - docker_build_worker_fips_rolling              
             - package_rolling
             - package_rolling_musl
       - notify:
           requires:
             - docker_build_platform
             - docker_build_worker
+            - docker_build_platform_fips
+            - docker_build_worker_fips
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
