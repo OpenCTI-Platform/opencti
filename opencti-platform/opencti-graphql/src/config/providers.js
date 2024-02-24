@@ -403,10 +403,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
         openIDStrategy.logout_remote = options.logout_remote;
         openIDStrategy.logout = (_, callback) => {
-          const isSpecificUri = isNotEmptyField(mappedConfig.logout_callback_url);
-          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${mappedConfig.issuer}/oidc/logout`;
+          const isSpecificUri = isNotEmptyField(config.logout_callback_url);
+          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
           if (isSpecificUri) {
-            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${mappedConfig.logout_callback_url}`;
+            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
             callback(null, logoutUri);
           } else {
             callback(null, endpointUri);
