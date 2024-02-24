@@ -2,7 +2,7 @@ site_name: OpenCTI Documentation
 site_description: Documentation about OpenCTI, the next-generation Cyber Threat Intelligence platform.
 site_author: Filigran
 site_url: https://docs.opencti.io
-copyright: © 2023 Filigran. All rights reserved
+copyright: © 2024 Filigran. All rights reserved
 repo_name: GitHub
 repo_url: https://github.com/OpenCTI-Platform/opencti
 edit_uri: https://github.com/OpenCTI-Platform/docs/blob/main/docs/
