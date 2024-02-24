@@ -198,6 +198,8 @@ nav:
         - Activity triggers: administration/audit/triggers.md
       - File indexing:  administration/file-indexing.md
   - Reference:
+    - Deployment:
+        - FIPS 140-2 installation: reference/fips.md
     - Data:
       - Data model: reference/data-model.md
       - Data Intelligence: reference/data-intelligence.md

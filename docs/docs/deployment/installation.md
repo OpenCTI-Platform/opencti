@@ -31,6 +31,10 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
 
 ## Using Docker
 
+!!! note "Deploy FIPS 140-2 compliant components"
+
+    We are providing FIPS 140-2 compliant images, please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
+
 ### Introduction
 
 OpenCTI can be deployed using the *docker-compose* command.
