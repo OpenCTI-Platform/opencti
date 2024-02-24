@@ -43,7 +43,7 @@ describe('Attribute use rule when merging', () => {
       const myThreatToParadise = await inferenceLookup(afterActivationRelations, MY_THREAT, PARADISE_RANSOMWARE, RELATION_USES);
       expect(myThreatToParadise).not.toBeNull();
       expect(myThreatToParadise[RULE].length).toBe(1);
-      expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20
+      expect(myThreatToParadise.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       // 02. Create a second threat actor
       const secondThreat = await addThreatActorGroup(testContext, SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
       // 02. Create require relation

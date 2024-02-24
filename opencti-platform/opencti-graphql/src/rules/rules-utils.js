@@ -16,7 +16,6 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
       return [
         { name: 'first_seen', operation: 'MIN' },
         { name: 'last_seen', operation: 'MAX' },
-        { name: 'confidence', operation: 'AVG' },
         { name: 'attribute_count', operation: 'SUM' },
         { name: 'objectMarking', operation: 'AGG' },
       ];
@@ -25,7 +24,6 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
       return [
         { name: 'start_time', operation: 'MIN' },
         { name: 'stop_time', operation: 'MAX' },
-        { name: 'confidence', operation: 'AVG' },
         { name: 'objectMarking', operation: 'AGG' },
       ];
     }
@@ -33,7 +31,6 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
       return [
         { name: 'first_seen', operation: 'MIN' },
         { name: 'last_seen', operation: 'MAX' },
-        { name: 'confidence', operation: 'AVG' },
         { name: 'objectMarking', operation: 'AGG' },
       ];
     }

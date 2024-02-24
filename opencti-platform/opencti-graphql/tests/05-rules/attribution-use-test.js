@@ -46,7 +46,7 @@ describe('Attribute use rule', () => {
       const myThreatToParadise = await inferenceLookup(afterActivationRelations, MY_THREAT, PARADISE_RANSOMWARE, RELATION_USES);
       expect(myThreatToParadise).not.toBeNull();
       expect(myThreatToParadise[RULE].length).toBe(1);
-      expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20
+      expect(myThreatToParadise.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       expect(myThreatToParadise.start_time).toBe('2020-02-28T23:00:00.000Z');
       expect(myThreatToParadise.stop_time).toBe('2020-02-29T14:00:00.000Z');
       // Create new element to trigger a live event
@@ -68,7 +68,7 @@ describe('Attribute use rule', () => {
       const myThreatToSpelevo = await inferenceLookup(afterLiveRelations, MY_THREAT, SPELEVO, RELATION_USES);
       expect(myThreatToSpelevo).not.toBeNull();
       expect(myThreatToSpelevo[RULE].length).toBe(1);
-      expect(myThreatToSpelevo.confidence).toBe(50); // AVG 2 relations (90 + 10) = 50
+      expect(myThreatToSpelevo.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       expect(myThreatToSpelevo.start_time).toBe('2020-01-20T20:30:00.000Z');
       expect(myThreatToSpelevo.stop_time).toBe('2020-02-28T14:00:00.000Z');
       // Disable the rule
