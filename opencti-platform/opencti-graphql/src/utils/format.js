@@ -155,150 +155,64 @@ export const observableValue = (stixCyberObservable) => {
 // Be careful to align this script with the previous function
 export const runtimeFieldObservableValueScript = () => {
   return `
-    boolean have(def doc, def key) {
-      doc.containsKey(key) && doc[key + '.keyword'].size()!=0
+    def getFieldValue(def doc, def key) {
+      if (!doc.containsKey(key)) {
+        return 'Unknown';
+      }
+      if (doc.containsKey(key + '.keyword')) {
+        if (doc[key + '.keyword'].size()!=0) {
+          return doc[key + '.keyword'].value;
+        }
+      } else if (doc[key].size()!=0) {
+        return String.valueOf(doc[key].value);
+      }
+      return 'Unknown';
+    }
+    def getFieldsValue(def doc, def fields) {
+      def value = 'Unknown';
+      for (def field : fields) {
+        value = getFieldValue(doc, field);
+        if (value != 'Unknown') {
+          return value;
+        }
+      }
+      return value;
     }
     def type = doc['entity_type.keyword'].value;
     if (type == 'autonomous-system') {
-      if (have(doc, 'name')) {
-        emit(doc['name.keyword'].value)
-      } else if (have(doc, 'number.keyword')) {
-        emit(doc['number.keyword'].value)
-      } else {
-        emit('Unknown')
-      }
+      emit(getFieldsValue(doc, ['name', 'number']))
     } else if (type == 'directory') {
-      if (have(doc, 'path')) {
-        emit(doc['path.keyword'].value)
-      } else {
-        emit('Unknown')
-      }
+      emit(getFieldValue(doc, 'path'))
     } else if (type == 'email-message') {
-      if (have(doc, 'body')) {
-        emit(doc['body.keyword'].value)
-      } else if (have(doc, 'subject')) {
-        emit(doc['subject.keyword'].value)
-      } else {
-        emit('Unknown')
-      }
+      emit(getFieldsValue(doc, ['body', 'subject']))
     } else if (type == 'artifact') {
-       if (have(doc, 'hashes.SHA-512')) {
-         emit(doc['hashes.SHA-512.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-256')) {
-         emit(doc['hashes.SHA-256.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-1')) {
-         emit(doc['hashes.SHA-1.keyword'].value)
-       } else if (have(doc, 'hashes.MD5')) {
-         emit(doc['hashes.MD5.keyword'].value)
-       } else if (have(doc, 'payload_bin')) {
-         emit(doc['payload_bin.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['hashes.SHA-256','hashes.SHA-512', 'hashes.SHA-1', 'hashes.MD5', 'payload_bin']))
     } else if (type == 'stixfile') {
-       if (have(doc, 'hashes.SHA-256')) {
-         emit(doc['hashes.SHA-256.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-512')) {
-         emit(doc['hashes.SHA-512.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-1')) {
-         emit(doc['hashes.SHA-1.keyword'].value)
-       } else if (have(doc, 'hashes.MD5')) {
-         emit(doc['hashes.MD5.keyword'].value)
-       } else if (have(doc, 'name')) {
-        emit(doc['name.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['hashes.SHA-256','hashes.SHA-512', 'hashes.SHA-1', 'hashes.MD5', 'name']))
     } else if (type == 'x509-certificate') {
-       if (have(doc, 'hashes.SHA-256')) {
-         emit(doc['hashes.SHA-256.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-512')) {
-         emit(doc['hashes.SHA-512.keyword'].value)
-       } else if (have(doc, 'hashes.SHA-1')) {
-         emit(doc['hashes.SHA-1.keyword'].value)
-       } else if (have(doc, 'hashes.MD5')) {
-         emit(doc['hashes.MD5.keyword'].value)
-       } else if (have(doc, 'subject')) {
-         emit(doc['subject.keyword'].value)
-       } else if (have(doc, 'issuer')) {
-         emit(doc['issuer.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['hashes.SHA-256','hashes.SHA-512', 'hashes.SHA-1', 'hashes.MD5', 'subject', 'issuer']))
     } else if (type == 'mutex') {
-       if (have(doc, 'name')) {
-         emit(doc['name.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
-     } else if (type == 'network-traffic') {
-       if (have(doc, 'dst_port')) {
-         emit(doc['dst_port.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldValue(doc, 'name'))
+    } else if (type == 'network-traffic') {
+      emit(getFieldValue(doc, 'dst_port'))
     } else if (type == 'process') {
-       if (have(doc, 'pid')) {
-         emit(doc['pid.keyword'].value)
-       } else if (have(doc, 'command_line')) {
-         emit(doc['command_line.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['pid', 'command_line']))
     } else if (type == 'software') {
-       if (have(doc, 'name')) {
-         emit(doc['name.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldValue(doc, 'name'))
     } else if (type == 'user-account') {
-       if (have(doc, 'account_login')) {
-         emit(doc['account_login.keyword'].value)
-       } else if (have(doc, 'user_id')) {
-         emit(doc['user_id.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['account_login', 'user_id']))
     } else if (type == 'bank-account') {
-       if (have(doc, 'iban')) {
-         emit(doc['iban.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldValue(doc, 'iban'))
     } else if (type == 'payment-card') {
-       if (have(doc, 'card_number')) {
-         emit(doc['card_number.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldValue(doc, 'card_number'))
     } else if (type == 'media-content') {
-       if (have(doc, 'content')) {
-         emit(doc['content.keyword'].value)
-       } else if (have(doc, 'title')) {
-         emit(doc['title.keyword'].value)
-       } else if (have(doc, 'url')) {
-         emit(doc['url.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldsValue(doc, ['content', 'title', 'url']))
     } else if (type == 'windows-registry-key') {
-       if (have(doc, 'attribute_key')) {
-         emit(doc['attribute_key.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
+      emit(getFieldValue(doc, 'attribute_key'))
     } else if (type == 'windows-registry-value-type') {
-       if (have(doc, 'name')) {
-         emit(doc['name.keyword'].value)
-       } else if (have(doc, 'data')) {
-         emit(doc['data.keyword'].value)
-       } else {
-         emit('Unknown')
-       }
-    } else if (have(doc, 'value')) {
-       emit(doc['value.keyword'].value)
+      emit(getFieldsValue(doc, ['name', 'data']))
     } else {
-      emit('Unknown')
+      emit(getFieldValue(doc, 'value'))
     }
   `;
 };
