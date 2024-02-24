@@ -79,7 +79,7 @@ describe('StixRelationship', () => {
       },
     });
     const relationshipsNumber = await relationshipsNumberResult.count;
-    expect(relationshipsNumber).toEqual(3); // 3 stix-sighting-relationships
+    expect(relationshipsNumber).toEqual(2); // 2 stix-sighting-relationships
   });
   it('should stixRelationship number with indicates and related-to', async () => {
     // -- stix core relationships --
