@@ -50,7 +50,7 @@ COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
 COPY opencti-graphql/script ./script
 ENV PYTHONUNBUFFERED=1
-ENV NODE_OPTIONS=--max_old_space_size=12288 --force-fips
+ENV NODE_OPTIONS="--force-fips --max_old_space_size=12288"
 ENV NODE_ENV=production
 
 ENTRYPOINT ["/sbin/tini", "--"]

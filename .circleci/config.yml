@@ -289,6 +289,87 @@ jobs:
           only_on_fail: true
           webhook_url: $MS_TEAMS_WEBHOOK_URL
 
+  docker_build_platform_fips:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-2004:202111-02
+      resource_class: large
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-platform
+          name: Build Docker image opencti/platform
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci_fips -t opencti/platform:latest-fips -t opencti/platform:${CIRCLE_TAG}-fips --push .
+          no_output_timeout: 30m
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
+
+  docker_build_worker_fips:
+    working_directory: ~/opencti_docker
+    machine:
+      image: ubuntu-2004:202111-02
+      resource_class: large
+    environment:
+      DOCKER_BUILDKIT: 1
+      BUILDX_PLATFORMS: linux/amd64
+    steps:
+      - attach_workspace:
+          at: ~/
+      - run: sudo apt-get update -qq && sudo apt install curl       
+      - run:
+          name: Install buildx
+          command: |
+            BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
+            curl --output docker-buildx \
+              --silent --show-error --location --fail --retry 3 \
+              "$BUILDX_BINARY_URL"
+            mkdir -p ~/.docker/cli-plugins
+            mv docker-buildx ~/.docker/cli-plugins/
+            chmod a+x ~/.docker/cli-plugins/docker-buildx
+            docker buildx install
+            # Run binfmt
+            docker run --rm --privileged tonistiigi/binfmt:latest --install "$BUILDX_PLATFORMS"
+            docker buildx create --name mybuilder --use
+      - run:
+          name: Login
+          command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run:
+          working_directory: ~/opencti_docker/opencti-worker
+          name: Build Docker image opencti/worker
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_fips -t opencti/worker:latest-fips -t opencti/worker:${CIRCLE_TAG}-fips --push .
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: $MS_TEAMS_WEBHOOK_URL          
+
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
     machine:
@@ -402,7 +483,7 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-platform
           name: Build Docker image opencti/platform
-          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci_fips -t opencti/platform-fips:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci_fips -t opencti/platform:rolling-fips --push .
           no_output_timeout: 30m
       - slack/notify:
           event: fail
@@ -443,7 +524,7 @@ jobs:
       - run:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
-          command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker-fips:rolling --push .
+          command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_fips -t opencti/worker:rolling-fips --push .
       - slack/notify:
           event: fail
           template: basic_fail_1
