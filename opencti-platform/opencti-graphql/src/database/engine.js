@@ -249,14 +249,15 @@ export const isEngineAlive = async () => {
 };
 export const searchEngineInit = async () => {
   // Select the correct engine
-  const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
   let engineVersion;
   let enginePlatform;
+  const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
+  const engineCheck = booleanConf('elasticsearch:engine_check', true);
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
     engine = elasticSearchClient;
     const searchVersion = await searchEngineVersion();
-    if (searchVersion.platform !== ELK_ENGINE) {
+    if (engineCheck && searchVersion.platform !== ELK_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
     enginePlatform = ELK_ENGINE;
@@ -265,7 +266,7 @@ export const searchEngineInit = async () => {
     logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
     engine = openSearchClient;
     const searchVersion = await searchEngineVersion();
-    if (searchVersion.platform !== OPENSEARCH_ENGINE) {
+    if (engineCheck && searchVersion.platform !== OPENSEARCH_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
     enginePlatform = OPENSEARCH_ENGINE;
