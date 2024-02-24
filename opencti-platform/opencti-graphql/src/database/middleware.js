@@ -2044,9 +2044,6 @@ const createRuleDataPatch = (instance) => {
   if (isBasicRelationship(instance.entity_type)) {
     patch.i_inference_weight = weight;
   }
-  // patch confidence is the Rule Manager's confidence
-  patch.confidence = RULE_MANAGER_USER.effective_confidence_level.max_confidence;
-
   // list supported attributes [{name: string, operation: string}] by entity type
   const supportedAttributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes(instance.entity_type);
   for (let index = 0; index < supportedAttributes.length; index += 1) {
