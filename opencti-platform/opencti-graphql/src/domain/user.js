@@ -529,29 +529,25 @@ export const addUser = async (context, user, newUser) => {
     relationship_type: RELATION_PARTICIPATE_TO,
   }));
   await Promise.all(relationOrganizations.map((relation) => createRelation(context, user, relation)));
-
   // Either use the provided groups or Assign the default groups to user (SSO)
-  if (newUser.groups?.length > 0) {
-    const relationGroups = newUser.groups.map((group) => ({
-      fromId: element.id,
-      toId: group,
-      relationship_type: RELATION_MEMBER_OF,
-    }));
-    await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
-  } else {
-    const defaultAssignationFilter = {
-      mode: 'and',
-      filters: [{ key: 'default_assignation', values: [true] }],
-      filterGroups: [],
-    };
-    const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
-    const relationGroups = defaultGroups.edges.map((e) => ({
-      fromId: element.id,
-      toId: e.node.internal_id,
-      relationship_type: RELATION_MEMBER_OF,
-    }));
-    await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
-  }
+  const userRelationGroups = (newUser.groups ?? []).map((group) => ({
+    fromId: element.id,
+    toId: group,
+    relationship_type: RELATION_MEMBER_OF,
+  }));
+  const defaultAssignationFilter = {
+    mode: 'and',
+    filters: [{ key: 'default_assignation', values: [true] }],
+    filterGroups: [],
+  };
+  const defaultGroups = await findGroups(context, user, { filters: defaultAssignationFilter });
+  const defaultRelationGroups = defaultGroups.edges.map((e) => ({
+    fromId: element.id,
+    toId: e.node.internal_id,
+    relationship_type: RELATION_MEMBER_OF,
+  }));
+  const relationGroups = [...userRelationGroups, ...defaultRelationGroups];
+  await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   if (isCreation) {
     const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
