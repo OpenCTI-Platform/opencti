@@ -12,7 +12,7 @@ import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrat
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider } from '../domain/user';
-import conf, { logApp } from './conf';
+import conf, { getPlatformHttpProxyAgent, logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE } from '../utils/access';
@@ -132,7 +132,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   const providerIdent = providerKeys[i];
   const provider = confProviders[providerIdent];
   const { identifier, strategy, config } = provider;
-  let mappedConfig = configRemapping(config);
+  const mappedConfig = configRemapping(config);
   if (config === undefined || !config.disabled) {
     const providerName = config?.label || providerIdent;
     // FORM Strategies
@@ -153,8 +153,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === STRATEGY_LDAP) {
       const providerRef = identifier || 'ldapauth';
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
-      mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
-      const ldapOptions = { server: mappedConfig };
+      const tlsConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
+      const ldapOptions = { server: tlsConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logApp.info('[LDAP] Successfully logged', { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
@@ -300,7 +300,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'oic';
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
-      OpenIDCustom.setHttpOptionsDefaults({ timeout: 0 });
+      const openIdClient = config.use_proxy ? getPlatformHttpProxyAgent(config.issuer) : undefined;
+      OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
@@ -318,7 +319,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // endregion
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
-        const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
+        const openIDStrategy = new OpenIDStrategy(options, (_, tokenset, userinfo, done) => {
           logApp.info('[OPENID] Successfully logged', { userinfo });
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
           const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
@@ -423,7 +424,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const facebookStrategy = new FacebookStrategy(
         facebookOptions,
-        (req, accessToken, refreshToken, profile, done) => {
+        (_, __, ___, profile, done) => {
           const data = profile._json;
           logApp.info('[FACEBOOK] Successfully logged', { profile: data });
           const { email } = data;
@@ -438,7 +439,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const domains = mappedConfig.domains || [];
       const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
-      const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
+      const googleStrategy = new GoogleStrategy(googleOptions, (_, __, ___, profile, done) => {
         logApp.info('[GOOGLE] Successfully logged', { profile });
         const email = R.head(profile.emails).value;
         const name = profile.displayName;
@@ -461,7 +462,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const organizations = mappedConfig.organizations || [];
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
-      const githubStrategy = new GithubStrategy(githubOptions, async (req, token, tokenSecret, profile, done) => {
+      const githubStrategy = new GithubStrategy(githubOptions, async (_, token, __, profile, done) => {
         logApp.info('[GITHUB] Successfully logged', { profile });
         let authorized = true;
         if (organizations.length > 0) {
@@ -491,7 +492,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const auth0Options = { passReqToCallback: true, ...mappedConfig };
       const auth0Strategy = new Auth0Strategy(
         auth0Options,
-        (req, accessToken, refreshToken, extraParams, profile, done) => {
+        (_, __, ___, ____, profile, done) => {
           logApp.info('[AUTH0] Successfully logged', { profile });
           const email = R.head(profile.emails).value;
           const name = profile.displayName;
