@@ -420,7 +420,7 @@ describe('Group resolver standard behavior', () => {
       }
     `;
     // Delete the groups
-    for (let i = 0; i < groupsToDeleteIds.length; i++) {
+    for (let i = 0; i < groupsToDeleteIds.length; i += 1) {
       const groupId = groupsToDeleteIds[i];
       await queryAsAdmin({
         query: DELETE_QUERY,
