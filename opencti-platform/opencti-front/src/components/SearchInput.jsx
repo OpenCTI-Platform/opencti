@@ -18,6 +18,8 @@ const useStyles = makeStyles((theme) => ({
     padding: '1px 10px 0 10px',
     marginRight: 5,
     backgroundColor: theme.palette.background.paper,
+    minWidth: 400,
+    width: '50%',
   },
   searchRootInDrawer: {
     borderRadius: 4,
@@ -36,8 +38,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.default,
   },
   searchInputTopBar: {
-    minWidth: 300,
-    width: '50%',
+    width: '100%',
   },
   searchInput: {
     transition: theme.transitions.create('width'),
