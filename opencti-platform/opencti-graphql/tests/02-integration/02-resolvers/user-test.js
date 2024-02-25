@@ -420,11 +420,11 @@ describe('User resolver standard behavior', () => {
         input: { key: 'user_confidence_level', value: [null] }
       },
     });
-    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level).toBeNull;
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_confidence_level).toBeNull;
     // now effective level is the highest values among the 2 groups (default: 100)
-    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
+    expect(userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
   });
-
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
       mutation RoleAdd($input: RoleAddInput!) {
@@ -559,13 +559,6 @@ describe('User resolver standard behavior', () => {
     });
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(1);
     expect(queryResult.data.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
-    const DELETE_GROUP_QUERY = gql`
-      mutation groupDelete($id: ID!) {
-        groupEdit(id: $id) {
-          delete
-        }
-      }
-    `;
     // Delete the group
     await queryAsAdmin({
       query: DELETE_GROUP_QUERY,
@@ -574,7 +567,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should user deleted', async () => {
     // Delete the users
-    for (let i = 0; i < userToDeleteIds.length; i++) {
+    for (let i = 0; i < userToDeleteIds.length; i += 1) {
       const userId = userToDeleteIds[i];
       await queryAsAdmin({
         query: DELETE_QUERY,
@@ -599,32 +592,32 @@ describe('User list members query behavior', () => {
 });
 
 describe('User has no capability query behavior', () => {
-  let groupId;
+  const GROUP_UPDATE_QUERY = gql`
+    mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+      groupEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+        }
+      }
+    }
+  `;
   let userWithoutRoleInternalId;
   beforeAll(async () => {
-    // Create the group
-    const GROUP_WITHOUT_ROLE = {
-      input: {
-        name: 'Group without role',
-        group_confidence_level: {
-          max_confidence: 60,
-          overrides: [],
-        }
+    // Modify the default group to prevent default_assignation
+    await queryAsAdmin({
+      query: GROUP_UPDATE_QUERY,
+      variables: {
+        id: 'group--a7991a4f-6192-59a4-87d3-d006d2c41cc8',
+        input: { key: 'default_assignation', value: [false] }
       },
-    };
-    const groupAddResult = await queryAsAdmin({
-      query: GROUP_ADD_QUERY,
-      variables: GROUP_WITHOUT_ROLE,
     });
-    groupId = groupAddResult.data.groupAdd.id;
-
     // Create the user
     const USER_TO_CREATE = {
       input: {
         name: 'UserWithoutRole',
         password: 'UserWithoutRole',
         user_email: 'UserWithoutRole@mail.com',
-        groups: [groupId],
+        groups: [],
       },
     };
     const userAddResult = await queryAsAdmin({
@@ -644,10 +637,12 @@ describe('User has no capability query behavior', () => {
       query: DELETE_QUERY,
       variables: { id: userWithoutRoleInternalId },
     });
-
     await queryAsAdmin({
-      query: DELETE_GROUP_QUERY,
-      variables: { id: groupId },
+      query: GROUP_UPDATE_QUERY,
+      variables: {
+        id: 'group--a7991a4f-6192-59a4-87d3-d006d2c41cc8',
+        input: { key: 'default_assignation', value: [true] }
+      },
     });
   });
 });
