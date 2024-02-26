@@ -1,36 +1,48 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import React from 'react';
+import useAuth from '../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, { indicatorEntitiesLinesQuery } from './IndicatorEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
-class IndicatorEntities extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sortBy: null,
-      orderAsc: false,
+const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, defaultStopTime }) => {
+  const LOCAL_STORAGE_KEY = 'indicator-entities';
+
+  const { viewStorage, helpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    {
       searchTerm: '',
-      view: 'lines',
-    };
-  }
+      sortBy: 'created_at',
+      orderAsc: false,
+      openExports: false,
+      filters: emptyFilterGroup,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+  );
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
-  }
+  const {
+    sortBy,
+    orderAsc,
+    filters,
+  } = viewStorage;
+  const paginationOptions = {
+    ...rawPaginationOptions,
+    fromId: indicatorId,
+    relationship_type: relationshipType || 'stix-core-relationship',
+  };
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
-  }
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
-  renderLines(platformModuleHelpers, paginationOptions) {
-    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-    const { indicatorId } = this.props;
-    const { sortBy, orderAsc } = this.state;
+  const renderLines = () => {
     const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
     const dataColumns = {
       relationship_type: {
@@ -51,12 +63,12 @@ class IndicatorEntities extends Component {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeFieldEnable(),
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeFieldEnable(),
       },
       start_time: {
         label: 'First obs.',
@@ -75,14 +87,22 @@ class IndicatorEntities extends Component {
     };
     return (
       <ListLines
+        helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         displayImport={true}
         secondaryAction={true}
         noBottomPadding={true}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        entityTypes={['stix-core-relationship']}
       >
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}
@@ -101,56 +121,34 @@ class IndicatorEntities extends Component {
         />
       </ListLines>
     );
-  }
+  };
 
-  render() {
-    const { sortBy, orderAsc, searchTerm } = this.state;
-    const { indicatorId, relationshipType, defaultStartTime, defaultStopTime } = this.props;
-    const paginationOptions = {
-      fromId: indicatorId,
-      relationship_type: relationshipType || 'stix-core-relationship',
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-    return (
-      <UserContext.Consumer>
-        {({ platformModuleHelpers }) => (
-          <>
-            {this.renderLines(platformModuleHelpers, paginationOptions)}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <StixCoreRelationshipCreationFromEntity
-                paginationOptions={paginationOptions}
-                entityId={indicatorId}
-                isRelationReversed={false}
-                targetStixDomainObjectTypes={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Infrastructure',
-                  'Tool',
-                  'Vulnerability',
-                  'Attack-Pattern',
-                  'Indicator',
-                ]}
-                defaultStartTime={defaultStartTime}
-                defaultStopTime={defaultStopTime}
-              />
-            </Security>
-          </>
-        )}
-      </UserContext.Consumer>
-    );
-  }
-}
-
-IndicatorEntities.propTypes = {
-  indicatorId: PropTypes.string,
-  relationshipType: PropTypes.string,
-  defaultStartTime: PropTypes.string,
-  defaultStopTime: PropTypes.string,
+  return (
+    <>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <StixCoreRelationshipCreationFromEntity
+          paginationOptions={paginationOptions}
+          entityId={indicatorId}
+          isRelationReversed={false}
+          targetStixDomainObjectTypes={[
+            'Threat-Actor',
+            'Intrusion-Set',
+            'Campaign',
+            'Incident',
+            'Malware',
+            'Infrastructure',
+            'Tool',
+            'Vulnerability',
+            'Attack-Pattern',
+            'Indicator',
+          ]}
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
+        />
+      </Security>
+    </>
+  );
 };
 
 export default IndicatorEntities;
