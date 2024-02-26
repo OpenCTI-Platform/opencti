@@ -126,7 +126,7 @@ export const AMBER_GROUP: Group = {
   markings: [MARKING_TLP_AMBER],
   roles: [ROLE_EDITOR],
   group_confidence_level: {
-    max_confidence: 100,
+    max_confidence: 20,
     overrides: [],
   }
 };
