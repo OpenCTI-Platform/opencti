@@ -1,5 +1,5 @@
 import { Field } from 'formik';
-import Alert from '@mui/lab/Alert/Alert';
+import Alert from '@mui/lab/Alert';
 import KillChainPhasesField from '@components/common/form/KillChainPhasesField';
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
