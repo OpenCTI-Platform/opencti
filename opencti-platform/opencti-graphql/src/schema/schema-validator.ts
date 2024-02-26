@@ -28,7 +28,10 @@ export const validateAndFormatSchemaAttribute = (
   if (!attributeDefinition || isEmptyField(editInput.value)) {
     return;
   }
-  if (!attributeDefinition.multiple && editInput.value.length > 1) {
+  const isPatchObject = attributeDefinition.type === 'object' && !!editInput.object_path;
+  if (!isPatchObject && !attributeDefinition.multiple && editInput.value.length > 1) {
+    // with a patch object, this must be checked against the internal schema mappings
+    // such case is covered later in validateDataBeforeIndexing
     throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
   }
   // Data validation

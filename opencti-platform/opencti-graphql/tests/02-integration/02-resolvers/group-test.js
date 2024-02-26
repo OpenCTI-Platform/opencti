@@ -253,13 +253,122 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0/max_confidence', value: [63] }
+        input: {
+          key: 'group_confidence_level',
+          object_path: '/group_confidence_level/overrides',
+          value: [
+            { entity_type: 'Report', max_confidence: 70 },
+            { entity_type: 'Malware', max_confidence: 25 }
+          ],
+        }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87,
+      overrides: [
+        { entity_type: 'Report', max_confidence: 70 },
+        { entity_type: 'Malware', max_confidence: 25 },
+      ],
+    });
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1/max_confidence', value: [63] }
       },
     });
     expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87, // unchanged!
-      overrides: [{ entity_type: 'Report', max_confidence: 63 }],
+      overrides: [
+        { entity_type: 'Report', max_confidence: 70 },
+        { entity_type: 'Malware', max_confidence: 63 },
+      ],
     });
+  });
+  it('should context patch group', async () => {
+    const CONTEXT_PATCH_QUERY = gql`
+      mutation GroupEdit($id: ID!, $input: EditContext) {
+        groupEdit(id: $id) {
+          contextPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CONTEXT_PATCH_QUERY,
+      variables: { id: groupInternalId, input: { focusOn: 'description' } },
+    });
+    expect(queryResult.data.groupEdit.contextPatch.id).toEqual(groupInternalId);
+  });
+  it('should fail to update group confidence level with invalid patch data', async () => {
+    const UPDATE_QUERY = gql`
+      mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+        groupEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    let queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          key: 'group_confidence_level',
+          object_path: '/group_confidence_level/overrides',
+          value: [
+            { entity_type: 'Report', max_confidence: 70 },
+            { entity_type: 'Malware', max_confidence: null }
+          ],
+        }
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
+
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          key: 'group_confidence_level',
+          object_path: '/group_confidence_level/overrides/1',
+          value: { entity_type: 'Malware' }
+        }
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present');
+
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          key: 'group_confidence_level',
+          value: {
+            max_confidence: 87,
+          }
+        }
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present');
+
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          key: 'group_confidence_level',
+          value: 45
+        }
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [group_confidence_level]: value must be an object');
   });
   it('should context patch group', async () => {
     const CONTEXT_PATCH_QUERY = gql`
