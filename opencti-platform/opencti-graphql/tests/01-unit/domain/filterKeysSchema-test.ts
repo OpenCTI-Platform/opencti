@@ -188,10 +188,10 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.subEntityTypes.length).toEqual(6); // 5 locations + abstract type 'Location'
     // Threat Actor
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_THREAT_ACTOR)?.get('threat_actor_types');
-    expect(filterDefinition?.type.length).toEqual('vocabulary');
+    expect(filterDefinition?.type).toEqual('vocabulary');
     expect(filterDefinition?.subEntityTypes.length).toEqual(2); // 'Threat-Actor-Group' and 'Threat-Actor-Individual'
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_THREAT_ACTOR)?.get('hair_color');
-    expect(filterDefinition?.type.length).toEqual('vocabulary');
+    expect(filterDefinition?.type).toEqual('vocabulary');
     expect(filterDefinition?.subEntityTypes.length).toEqual(1); // 'Threat-Actor-Individual'
 
     // Stix Core Relationships
