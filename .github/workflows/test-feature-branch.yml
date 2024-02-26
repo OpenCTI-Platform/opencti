@@ -6,7 +6,11 @@ on:
         type: string
         default: '{}'
         required: false
-
+      upgrade_from_58:
+        description: Whether to upgrade from 5.8
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   worker:
@@ -110,13 +114,14 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+      - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=35; else ID=26; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
       - name: deploy via awx
         uses: certara/github-action-ansible-tower-awx@master
         with:
           ansible-tower-user: ${{ secrets.AWX_USER }}
           ansible-tower-pass: ${{ secrets.AWX_PASSWORD }}
           ansible-tower-url: ${{ secrets.AWX_URL }}
-          template-id: "26"
+          template-id: "${{ env.AWX_TPL_ID }}"
           additional-vars: |
             { "octi_version": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }} }
       - name: display URL
