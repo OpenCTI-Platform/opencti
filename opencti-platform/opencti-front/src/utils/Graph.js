@@ -421,7 +421,7 @@ export const defaultValue = (n, fallback = 'Unknown') => {
             20,
           )}`)
       || fallback;
-  return n.x_mitre_id ? `[${n.x_mitre_id}]${mainValue}` : mainValue;
+  return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };
 
 export const defaultSecondaryValue = (n) => {
