@@ -53,8 +53,11 @@ const READ_QUERY = gql`
       effective_confidence_level {
         max_confidence
         source {
-          ... on User { entity_type id name }
-          ... on Group { entity_type id name }
+          type
+          object {
+            ... on User { entity_type id name }
+            ... on Group { entity_type id name }
+          }
         }
       }
       groups {
@@ -121,8 +124,11 @@ const CREATE_QUERY = gql`
       effective_confidence_level {
         max_confidence
         source {
-          ... on User { entity_type id name }
-          ... on Group { entity_type id name }
+          type
+          object {
+            ... on User { entity_type id name }
+            ... on Group { entity_type id name }
+          }
         }
       }
     }
@@ -187,7 +193,8 @@ describe('User resolver standard behavior', () => {
     expect(user.data.userAdd.user_confidence_level).toBeNull();
     // user created with default group, so effective confidence level shall be set
     expect(user.data.userAdd.effective_confidence_level.max_confidence).toEqual(100);
-    expect(user.data.userAdd.effective_confidence_level.source.entity_type).toEqual('Group');
+    expect(user.data.userAdd.effective_confidence_level.source.type).toEqual('Group');
+    expect(user.data.userAdd.effective_confidence_level.source.object).toBeDefined();
     userInternalId = user.data.userAdd.id;
     userStandardId = user.data.userAdd.standard_id;
     userToDeleteIds.push(userInternalId);
@@ -212,8 +219,8 @@ describe('User resolver standard behavior', () => {
       overrides: [{ entity_type: 'Report', max_confidence: 80 }],
     });
     expect(user2.data.userAdd.effective_confidence_level.max_confidence).toEqual(50);
-    expect(user2.data.userAdd.effective_confidence_level.source.entity_type).toEqual('User');
-    expect(user2.data.userAdd.effective_confidence_level.source.id).toEqual(user2.data.userAdd.id);
+    expect(user2.data.userAdd.effective_confidence_level.source.type).toEqual('User');
+    expect(user2.data.userAdd.effective_confidence_level.source.object.id).toEqual(user2.data.userAdd.id);
     userToDeleteIds.push(user2.data.userAdd.id);
   });
   it('should user loaded by internal id', async () => {
@@ -275,8 +282,11 @@ describe('User resolver standard behavior', () => {
             effective_confidence_level {
               max_confidence
               source {
-                ... on User { entity_type id name }
-                ... on Group { entity_type id name }
+                type
+                object {
+                  ... on User { entity_type id name }
+                  ... on Group { entity_type id name }
+                }
               }
             }
           }
@@ -292,7 +302,7 @@ describe('User resolver standard behavior', () => {
     });
     expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toEqual(33);
     expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.id).toEqual(userInternalId);
+    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should context patch user', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -391,7 +401,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.user_confidence_level.max_confidence).toEqual(33);
     expect(queryResult.data.user.effective_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.user.effective_confidence_level.source.id).toEqual(userInternalId);
+    expect(queryResult.data.user.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should remove user confidence level, effective level should be accurate', async () => {
     const UPDATE_QUERY = gql`
@@ -405,8 +415,11 @@ describe('User resolver standard behavior', () => {
             effective_confidence_level {
               max_confidence
               source {
-                ... on User { entity_type id name }
-                ... on Group { entity_type id name }
+                type
+                object {
+                  ... on User { entity_type id name }
+                  ... on Group { entity_type id name }
+                }
               }
             }
           }

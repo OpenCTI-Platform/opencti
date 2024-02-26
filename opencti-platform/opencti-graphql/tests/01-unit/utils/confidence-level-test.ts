@@ -46,7 +46,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userA as unknown as AuthUser)).toEqual({
       max_confidence: 30,
       overrides: [],
-      source: userA,
+      source: { type: 'User', object: userA },
     });
 
     const userB = {
@@ -58,7 +58,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userB as unknown as AuthUser)).toEqual({
       max_confidence: 80,
       overrides: [],
-      source: group80,
+      source: { type: 'Group', object: group80 },
     });
 
     const userC = {
@@ -69,7 +69,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userC as unknown as AuthUser)).toEqual({
       max_confidence: 70,
       overrides: [],
-      source: group70,
+      source: { type: 'Group', object: group70 },
     });
 
     const userD = {
@@ -97,7 +97,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userF as unknown as AuthUser)).toEqual({
       max_confidence: 100,
       overrides: [],
-      source: userF,
+      source: { type: 'Bypass' },
     });
 
     const userG = {
@@ -108,7 +108,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userG as unknown as AuthUser)).toEqual({
       max_confidence: 100,
       overrides: [],
-      source: userG,
+      source: { type: 'Bypass' },
     });
   });
 
