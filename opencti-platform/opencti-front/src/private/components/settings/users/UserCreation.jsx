@@ -108,7 +108,7 @@ const UserCreation = ({ paginationOptions }) => {
       {({ onClose }) => (
         <>
           <Alert severity="info">
-            {t_i18n('Unless specific groups are selected, user will be created with default groups.')}
+            {t_i18n('Unless specific groups are selected, user will be created with default groups only.')}
           </Alert>
           <br />
           <Formik

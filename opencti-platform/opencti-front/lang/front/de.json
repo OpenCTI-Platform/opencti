@@ -2521,7 +2521,6 @@
   "Max Confidence Level": "Max. Konfidenzniveau",
   "This value is overridden for the following entity types": "Dieser Wert wird für die folgenden Entitätstypen außer Kraft gesetzt",
   "Enable user Max Confidence Level": "Max. Konfidenzniveau des Benutzers einschalten",
-  "Unless specific groups are selected, user will be created with default groups.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer mit den Standardgruppen erstellt.",
   "entity_Group": "Gruppe",
   "Important notice: your action is required!": "Wichtiger Hinweis: Ihr Handeln ist erforderlich!",
   "this blogpost": "dieser Blogpost",
@@ -2673,5 +2672,6 @@
   "Operational": "Betrieblich",
   "Strategic": "Strategisch",
   "Link created": "Link erstellt",
-  "Public dashboard": "Öffentliches Dashboard"
+  "Public dashboard": "Öffentliches Dashboard",
+  "Unless specific groups are selected, user will be created with default groups only.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer nur mit den Standardgruppen erstellt."
 }

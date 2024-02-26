@@ -2518,7 +2518,6 @@
   "Max Confidence Level": "最大信頼度",
   "This value is overridden for the following entity types": "この値は以下のエンティティ・タイプでオーバーライドされます。",
   "Enable user Max Confidence Level": "ユーザの最大信頼レベルを有効にする",
-  "Unless specific groups are selected, user will be created with default groups.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループで作成されます。",
   "entity_Group": "グループ",
   "Important notice: your action is required!": "重要なお知らせ：あなたのアクションが必要です！",
   "this blogpost": "このブログ記事",
@@ -2673,5 +2672,6 @@
   "Operational": "運用",
   "Strategic": "戦略的",
   "Link created": "リンク作成",
-  "Public dashboard": "公開ダッシュボード"
+  "Public dashboard": "公開ダッシュボード",
+  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
 }

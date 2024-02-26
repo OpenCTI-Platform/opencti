@@ -2518,7 +2518,6 @@
   "Max Confidence Level": "最大置信度",
   "This value is overridden for the following entity types": "以下实体类型可重载该值",
   "Enable user Max Confidence Level": "启用用户最大置信度",
-  "Unless specific groups are selected, user will be created with default groups.": "除非选择了特定组，否则创建用户时将使用默认组。",
   "entity_Group": "组",
   "Important notice: your action is required!": "重要提示：需要您执行操作！",
   "this blogpost": "本博文",
@@ -2673,5 +2672,6 @@
   "Operational": "操作",
   "Strategic": "战略",
   "Link created": "创建的链接",
-  "Public dashboard": "公共仪表板"
+  "Public dashboard": "公共仪表板",
+  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
 }
