@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Dialog from '@mui/material/Dialog';
 import { Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
@@ -134,8 +133,11 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             id: containerId,
             toId: stixCoreObject.id,
             relationship_type: 'object',
+            commitMessage,
+            references,
           },
           onCompleted: () => {
+            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: R.dissoc(
                 stixCoreObject.id,
@@ -145,6 +147,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onDelete === 'function') {
               onDelete(stixCoreObject);
             }
+            this.closePopup();
           },
         });
       } else {
@@ -157,25 +160,28 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             commitMessage,
             references,
           },
-          updater: (store) => {
-            // ID is not valid pagination options, will be handled better when hooked
-            const options = { ...paginationOptions };
-            delete options.id;
-            delete options.count;
-            const conn = ConnectionHandler.getConnection(
-              store.get(containerId),
-              'Pagination_objects',
-              options,
-            );
-            ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-          },
+          // TODO Fix updater
+          // updater: (store) => {
+          // // ID is not valid pagination options, will be handled better when hooked
+          // const options = { ...paginationOptions };
+          // delete options.id;
+          // delete options.count;
+          // const conn = ConnectionHandler.getConnection(
+          //   store.get(containerId),
+          //   'Pagination_objects',
+          //   options,
+          // );
+          // ConnectionHandler.deleteNode(conn, stixCoreObject.id);
+          // },
           onCompleted: () => {
+            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: R.dissoc(
                 stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
+            this.closePopup();
           },
         });
       }
@@ -190,8 +196,12 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           variables: {
             id: containerId,
             input,
+            commitMessage,
+            references,
           },
+          setSubmitting,
           onCompleted: () => {
+            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: {
                 ...this.state.addedStixCoreObjects,
@@ -201,6 +211,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onAdd === 'function') {
               onAdd(stixCoreObject);
             }
+            this.closePopup();
           },
         });
       } else {
@@ -213,22 +224,23 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             references,
           },
           setSubmitting,
-          updater: (store) => {
-            // ID is not valid pagination options, will be handled better when hooked
-            const options = { ...paginationOptions };
-            delete options.id;
-            delete options.count;
-            insertNode(
-              store,
-              'Pagination_objects',
-              options,
-              'containerEdit',
-              containerId,
-              'relationAdd',
-              input,
-              'to',
-            );
-          },
+          // TODO Fix updater
+          // updater: (store) => {
+          // ID is not valid pagination options, will be handled better when hooked
+          // const options = { ...paginationOptions };
+          // delete options.id;
+          // delete options.count;
+          // insertNode(
+          //   store,
+          //   'Pagination_objects',
+          //   options,
+          //   'containerEdit',
+          //   containerId,
+          //   'relationAdd',
+          //   input,
+          //   'to',
+          // );
+          // },
           onCompleted: () => {
             setSubmitting(false);
             if (!mapping) {
@@ -249,7 +261,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     }
   }
 
-  displayPopup(stixCoreObject) {
+  stixCoreObjectToggled(stixCoreObject) {
     this.setState({ referenceDialogOpened: true });
     this.setState({ currentlyToggledCoreObject: stixCoreObject });
   }
@@ -286,7 +298,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
           addedElements={addedStixCoreObjects}
-          onToggleEntity={this.displayPopup.bind(this)}
+          onToggleEntity={this.stixCoreObjectToggled.bind(this)}
           disableExport={true}
           containerRef={containerRef}
         />
