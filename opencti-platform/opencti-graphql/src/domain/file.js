@@ -100,7 +100,7 @@ export const askJobImport = async (context, user, args) => {
 
 export const uploadImport = async (context, user, file) => {
   const path = 'import/global';
-  const up = await upload(context, user, path, file, {});
+  const { upload: up } = await upload(context, user, path, file, {});
   const contextData = buildContextDataForFile(null, path, up.name);
   await publishUserAction({
     user,
@@ -115,7 +115,7 @@ export const uploadImport = async (context, user, file) => {
 export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
-  const up = await upload(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
+  const { upload: up } = await upload(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name);
   await publishUserAction({
     user,

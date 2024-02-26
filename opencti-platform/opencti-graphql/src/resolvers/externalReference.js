@@ -66,7 +66,7 @@ const externalReferenceResolvers = {
         return externalReferenceDeleteRelation(context, context.user, id, fromId, relationshipType);
       },
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
+      importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
     }),
     externalReferenceAdd: (_, { input }, context) => addExternalReference(context, context.user, input),
   },
