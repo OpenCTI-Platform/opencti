@@ -189,8 +189,8 @@ export const createObservablesFromIndicator = async (
         fromId: indicator.id,
         toId: observableToLink,
         relationship_type: RELATION_BASED_ON,
-        objectMarking: indicator.objectMarking,
-        objectOrganization: indicator.objectOrganization,
+        objectMarking: input.objectMarking,
+        objectOrganization: input.objectOrganization,
       };
       return createRelation(context, user, relationInput);
     })
