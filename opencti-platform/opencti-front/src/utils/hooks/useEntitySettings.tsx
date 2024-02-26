@@ -1,51 +1,22 @@
-import { graphql, useFragment } from 'react-relay';
+import { useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectSchema, ObjectShape, Schema } from 'yup';
+import {
+  EntitySettingSettings_entitySetting$data,
+  EntitySettingSettings_entitySetting$key,
+} from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
+import { entitySettingFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingSettings';
 import useAuth from './useAuth';
 import { useFormatter } from '../../components/i18n';
-import {
-  useEntitySettingsConnection_entitySettings$data,
-  useEntitySettingsConnection_entitySettings$key,
-} from './__generated__/useEntitySettingsConnection_entitySettings.graphql';
 
-export const entitySettingsFragment = graphql`
-  fragment useEntitySettingsConnection_entitySettings on EntitySettingConnection {
-    edges {
-      node {
-        id
-        target_type
-        platform_entity_files_ref
-        platform_hidden_type
-        enforce_reference
-        mandatoryAttributes
-        scaleAttributes {
-          name
-          scale
-        }
-        defaultValuesAttributes {
-          name
-          type
-          defaultValues {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-`;
-
-export type EntitySetting = useEntitySettingsConnection_entitySettings$data['edges'][0]['node'];
+export type EntitySetting = EntitySettingSettings_entitySetting$data;
 
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  return useFragment<useEntitySettingsConnection_entitySettings$key>(
-    entitySettingsFragment,
-    entitySettings,
-  )
-    .edges.map(({ node }) => node)
-    .filter(({ target_type }) => (entityType ? entityTypes.includes(target_type) : true));
+  return entitySettings.edges
+    .map(({ node }) => useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, node))
+    .filter(({ target_type }: EntitySetting) => (entityType ? entityTypes.includes(target_type) : true));
 };
 
 export const useHiddenEntities = () => {

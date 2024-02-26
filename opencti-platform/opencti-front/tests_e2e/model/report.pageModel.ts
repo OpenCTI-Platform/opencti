@@ -12,6 +12,9 @@ export class ReportPage {
     addNewReport() {
         return this.page.getByLabel('Add', { exact: true }).click()
     }
+    closeNewreport() {
+        return this.page.getByLabel('Close', { exact: true }).click()
+    }
     getReportNameInput() {
         return this.page.getByLabel('Name');
     }

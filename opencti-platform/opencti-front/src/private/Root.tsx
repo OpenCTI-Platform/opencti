@@ -126,7 +126,12 @@ const rootPrivateQuery = graphql`
       version
     }
     entitySettings {
-      ...useEntitySettingsConnection_entitySettings
+      edges {
+        node {
+          id
+          ...EntitySettingSettings_entitySetting
+        }
+      }
     }
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
