@@ -55,7 +55,7 @@ class RootDashboard extends Component {
       },
     } = this.props;
     return (
-      <div data-testId="dashboard-details-page">
+      <div data-testid="dashboard-details-page">
         <QueryRenderer
           query={dashboardQuery}
           variables={{ id: workspaceId }}

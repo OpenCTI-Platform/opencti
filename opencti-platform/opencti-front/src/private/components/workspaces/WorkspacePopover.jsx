@@ -113,6 +113,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         size="large"
         style={{ marginTop: 3 }}
         color="primary"
+        data-testid="popover"
       >
         <MoreVert />
       </IconButton>

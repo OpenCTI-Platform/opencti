@@ -11,7 +11,7 @@ export class DashboardDetailsPage {
     return this.page.getByRole('heading',{name});
   }
   openPopUpButton() {
-    return this.page.locator('.makeStyles-container-294 > .MuiButtonBase-root')
+    return this.page.getByTestId('popover');
   }
   getEditButton() {
     return this.page.getByRole('menuitem', { name: 'Update' });
