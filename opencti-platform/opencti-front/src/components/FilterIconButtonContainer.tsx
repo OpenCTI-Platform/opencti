@@ -233,7 +233,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
-  let marginTop = '8px';
+  let margin = '8px';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
@@ -246,11 +246,11 @@ FilterIconButtonContainerProps
   } else if (styleNumber === 2) {
     classFilter = classes.filter2;
     classOperator = classes.operator2;
-    marginTop = '10px';
+    margin = '10px';
   } else if (styleNumber === 3) {
     classFilter = classes.filter3;
     classOperator = classes.operator3;
-    marginTop = '0px';
+    margin = '0px';
   }
   return (
     <Box
@@ -261,7 +261,7 @@ FilterIconButtonContainerProps
             overflow: 'hidden',
           }
           : {
-            marginTop: displayedFilters.length === 0 ? '0px' : marginTop,
+            margin: `${margin} 0`,
             display: 'flex',
             flexWrap: 'wrap',
             gap: 1,
