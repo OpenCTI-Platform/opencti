@@ -28,11 +28,8 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
 
   const renderSource = () => {
     const source = user.effective_confidence_level?.source;
-
-    // FIXME: if watching the current user's detailed view, the source is {}, hence the check if (source.entity_type && ...) below
-    // see warning: The GraphQL server likely violated the globally unique id requirement by returning the same id for different objects.
     if (source) {
-      if (source.entity_type && source.entity_type !== 'User') {
+      if (source.type === 'Group' && !!source.object) {
         // a group or orga
         return (
           <Tooltip
@@ -41,8 +38,8 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
               id: 'The Max Confidence Level is currently inherited from...',
               values: {
                 link: (
-                  <Link to={`/dashboard/settings/accesses/groups/${source.id}`}>
-                    {source.name}
+                  <Link to={`/dashboard/settings/accesses/groups/${source.object.id}`}>
+                    {source.object.name}
                   </Link>
                 ),
               },
@@ -53,24 +50,28 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
         );
       }
 
-      // source is the user himself, most probably by setting at the user level
-      let title = t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.');
-      // ... or if user has BYPASS, it's fixed to 100; check below is a cheap proxy (as we do not have user's capabilities in UserEditionOverview
-      if (!user.user_confidence_level || user.user_confidence_level.max_confidence < 100) {
-        title = t_i18n('The user has BYPASS capability, their max confidence level is set to 100.');
+      if (source.type === 'User') {
+        return (
+          <Tooltip
+            sx={{ marginLeft: 1 }}
+            title={t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
+          >
+            <InformationOutline fontSize={'small'} color={'info'} />
+          </Tooltip>
+        );
       }
 
-      return (
-        <Tooltip
-          sx={{ marginLeft: 1 }}
-          title={title}
-        >
-          <InformationOutline fontSize={'small'} color={'info'} />
-        </Tooltip>
-
-      );
+      if (source.type === 'Bypass') {
+        return (
+          <Tooltip
+            sx={{ marginLeft: 1 }}
+            title={t_i18n('The user has BYPASS capability, their max confidence level is set to 100.')}
+          >
+            <InformationOutline fontSize={'small'} color={'info'} />
+          </Tooltip>
+        );
+      }
     }
-
     return null;
   };
 

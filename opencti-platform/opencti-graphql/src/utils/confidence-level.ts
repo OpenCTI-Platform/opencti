@@ -20,7 +20,9 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
     return {
       max_confidence: 100,
       overrides: [],
-      source: user,
+      source: {
+        type: 'Bypass',
+      },
     };
   }
 
@@ -34,7 +36,10 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
         max_confidence: cropNumber(override.max_confidence, 0, 100),
         entity_type: override.entity_type,
       })),
-      source: user,
+      source: {
+        type: 'User',
+        object: user,
+      },
     };
   }
 
@@ -47,7 +52,10 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
       const groupLevel = user.groups[i].group_confidence_level?.max_confidence ?? null;
       if (groupLevel !== null && (maxLevel === null || groupLevel > maxLevel)) {
         maxLevel = groupLevel;
-        source = user.groups[i];
+        source = {
+          type: 'Group',
+          object: user.groups[i]
+        };
       }
     }
   }

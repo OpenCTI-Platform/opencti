@@ -113,7 +113,7 @@ const userResolvers = {
   Group: {
     roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
   },
-  EffectiveConfidenceLevelSource: {
+  EffectiveConfidenceLevelSourceObject: {
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
