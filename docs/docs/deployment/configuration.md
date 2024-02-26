@@ -89,6 +89,26 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png | The address of the OpenStreetMap provider with light theme style |
 | app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                    | External reference mandatory attachment                          |
 
+#### Functional customization
+
+| Parameter                                                                       | Environment variable                                            | Default value | Description                                                                              |
+|:--------------------------------------------------------------------------------|:----------------------------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------|
+| relations_deduplication:past_days                                               | RELATIONS_DEDUPLICATION__PAST_DAYS                              | 30            | De-duplicate relations based on `start_time` and `stop_time` - *n* days                  |
+| relations_deduplication:next_days                                               | RELATIONS_DEDUPLICATION__NEXT_DAYS                              | 30            | De-duplicate relations based on `start_time` and `stop_time` + *n* days                  |
+| relations_deduplication:created_by_based                                        | RELATIONS_DEDUPLICATION__CREATED_BY_BASED                       | `false`       | Take into account the author to duplicate even if `stat_time` / `stop_time` are matching |
+| relations_deduplication:types_overrides:*relationship_type*:past_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__PAST_DAYS         |               | Override the past days for a specific type of relationship (ex. *targets*)               |
+| relations_deduplication:types_overrides:*relationship_type*:next_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS         |               | Override the next days for a specific type of relationship (ex. *targets*)               |
+| relations_deduplication:types_overrides:*relationship_type*:created_by_based    | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED  |               | Override the author duplication for a specific type of relationship (ex. *targets*)      |
+
+| Parameter                                           | Environment variable                                  | Default value | Description                                                                 |
+|:----------------------------------------------------|:------------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
+| app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                     | `true`        | Enable the playground on /graphql                                           |
+| app:graphql:playground:force_disabled_introspection | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION | `false`       | Introspection is allowed to auth users but can be disabled in needed        |
+| app:concurrency:retry_count                         | APP__CONCURRENCY__RETRY_COUNT                         | 200           | Number of try to get the lock to work an element (create/update/merge, ...) |
+| app:concurrency:retry_delay                         | APP__CONCURRENCY__RETRY_DELAY                         | 100           | Delay between 2 lock retry (in milliseconds)                                |
+| app:concurrency:retry_jitter                        | APP__CONCURRENCY__RETRY_JITTER                        | 50            | Random jitter to prevent concurrent retry  (in milliseconds)                |
+| app:concurrency:max_ttl                             | APP__CONCURRENCY__MAX_TTL                             | 30000         | Global maximum time for lock retry (in milliseconds)                        |
+
 #### Technical customization
 
 | Parameter                                           | Environment variable                                  | Default value | Description                                                                 |
