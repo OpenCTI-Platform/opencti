@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
+import { generateUUID } from '../../../../../tests_e2e/fixtures/baseFixtures';
 
 const createdByUserRedirectButton = {
   float: 'left',
@@ -65,6 +66,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         ],
         operator: 'eq',
         mode: 'or',
+        id: generateUUID(), // because filters in the URL
       },
     ],
   });
