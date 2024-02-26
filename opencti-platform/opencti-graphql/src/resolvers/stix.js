@@ -4,9 +4,20 @@ import { connectorsForEnrichment } from '../database/repository';
 import { batchCreators } from '../domain/user';
 import { batchInternalRels } from '../domain/stixCoreObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { INPUT_GRANTED_REFS } from '../schema/general';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 
 const creatorsLoader = batchLoader(batchCreators);
 export const loadThroughDenormalized = (context, user, element, inputName, args = {}) => {
+  if (inputName === INPUT_GRANTED_REFS) {
+    if (!isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+      return []; // Granted_refs visibility is only for manager
+    }
+    const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
+    if (!ref) {
+      return []; // Granted_refs are not part of all core entities
+    }
+  }
   const relBatchLoader = batchLoader(batchInternalRels);
   if (element[inputName]) {
     // if element is already loaded, just send the data
