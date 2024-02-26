@@ -35,13 +35,8 @@ const MarkdownField = (props) => {
     }
   };
   const internalOnBlur = (event) => {
-    const { nodeName } = event.relatedTarget || {};
-    if (
-      nodeName === 'INPUT'
-      || nodeName === 'DIV'
-      || nodeName === 'BUTTON'
-      || nodeName === undefined
-    ) {
+    const isClickOutsideCurrentField = !event.currentTarget.contains(event.relatedTarget);
+    if (isClickOutsideCurrentField) {
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, field.value || '');
