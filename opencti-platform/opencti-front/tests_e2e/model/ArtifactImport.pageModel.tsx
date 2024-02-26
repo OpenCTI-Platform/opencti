@@ -6,10 +6,6 @@ export class ArtifactImportPage {
     getFileInput() {
         return this.page.getByLabel('file');
     }
-    async fillFileInput(input: string) {
-        await this.getFileInput().click();
-        return this.getFileInput().fill(input);
-    }
     getCreateArtifactImportButton() {
         return this.page.getByRole('button', { name: 'Create' });
     }
