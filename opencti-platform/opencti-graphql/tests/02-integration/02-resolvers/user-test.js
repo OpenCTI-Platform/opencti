@@ -624,7 +624,7 @@ describe('User creator completion', () => {
       },
     };
     const queryResult = await editorQuery({ query: SECTOR_CREATE_QUERY, variables: SECTOR_TO_CREATE });
-    expect(queryResult.data.sectorAdd.creators).toEqual(2);
+    expect(queryResult.data.sectorAdd.creators.length).toEqual(2);
   });
 });
 
