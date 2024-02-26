@@ -17,7 +17,7 @@ interface CustomFileUploadProps {
   ) => Promise<unknown>;
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
-  formikErrors: {
+  formikErrors?: {
     file?: string,
   }
   acceptMimeTypes?: string; // html input "accept" with MIME types only

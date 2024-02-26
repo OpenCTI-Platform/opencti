@@ -18,7 +18,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -192,7 +192,7 @@ const ArtifactCreation = ({
               errors,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <CustomFileUpload setFieldValue={setFieldValue} formikErrors={errors}/>
+                <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors}/>
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"
