@@ -5242,9 +5242,14 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <h3 id="configure-the-environment">Configure the environment</h3>
 <div class="admonition warning">
 <p class="admonition-title">ElasticSearch / OpenSearch configuration</p>
-<p>We highly recommend to put the ElasticSearch / OpenSearch following parameter:</p>
+<ul>
+<li>We highly recommend to put the ElasticSearch / OpenSearch following parameter:</li>
+</ul>
 <div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>thread_pool.search.queue_size<span class="o">=</span><span class="m">5000</span>
 </span></code></pre></div>
+<ul>
+<li>Check the <a href="/deployment/rollover/?h=rollo#opencti-integration-user-permissions-in-opensearchelasticsearch">OpenCTI Integration User Permissions in OpenSearch/ElasticSearch</a> for detailed information about the necessary user permissions for the OpenSearch/ElasticSearch integration.</li>
+</ul>
 </div>
 <p>Before running the <code>docker-compose</code> command, the <code>docker-compose.yml</code> file should be configured. By default, the <code>docker-compose.yml</code> file is using environment variables available in the file <code>.env.sample</code>.</p>
 <p>You can either rename the file <code>.env.sample</code> in <code>.env</code> and put the expected values or just fill directly the <code>docker-compose.yml</code> with the values corresponding to your environment.</p>
@@ -5454,7 +5459,7 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-24T17:33:14+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-26T06:11:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-26</span>
   </span>
 
     
@@ -5482,6 +5487,11 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
     
     <nav>
       
+        <a href="https://github.com/c-neto" class="md-author" title="@c-neto">
+          
+          <img src="https://avatars.githubusercontent.com/u/26532223?v=4&size=72" alt="c-neto">
+        </a>
+      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
           <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
@@ -5497,16 +5507,11 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
           <img src="https://avatars.githubusercontent.com/u/14978633?v=4&size=72" alt="ialejandro">
         </a>
       
-        <a href="https://github.com/sbocahu" class="md-author" title="@sbocahu">
-          
-          <img src="https://avatars.githubusercontent.com/u/929169?v=4&size=72" alt="sbocahu">
-        </a>
-      
       
       
         
           <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/installation.md" class="md-author md-author--more">
-            +1
+            +2
           </a>
         
       

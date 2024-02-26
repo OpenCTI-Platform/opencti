@@ -1023,6 +1023,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#opencti-integration-user-permissions-in-opensearchelasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI Integration User Permissions in OpenSearch/ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#elasticsearch-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4448,6 +4459,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#opencti-integration-user-permissions-in-opensearchelasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI Integration User Permissions in OpenSearch/ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#elasticsearch-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4713,6 +4735,36 @@
 <h2 id="introduction">Introduction</h2>
 <p>ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so support very well index lifeycle policies. Thus, by default OpenCTI initialized indices with a suffix <code>-00001</code> and use wildcard to query indices. When rollover policies are implemented (default starting OCTI 5.9.X if you initialized your platform at this version), indices are splitted to keep a reasonable volume of data in shards.</p>
 <p><a class="glightbox" href="../assets/indices.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Indices" src="../assets/indices.png" /></a></p>
+<h2 id="opencti-integration-user-permissions-in-opensearchelasticsearch">OpenCTI Integration User Permissions in OpenSearch/ElasticSearch</h2>
+<ul>
+<li>
+<p>Index Permissions</p>
+<ul>
+<li><strong>Patterns:</strong> <code>opencti*</code> <em>(Dependent on the parameter <a href="deployment/configuration/?h=configuration#elasticsearch">elasticsearch:index_prefix</a> value)</em></li>
+<li><strong>Permissions:</strong> <code>indices_all</code></li>
+</ul>
+</li>
+<li>
+<p>Cluster Permissions</p>
+<ul>
+<li><code>cluster_composite_ops_ro</code></li>
+<li><code>cluster_manage_index_templates</code></li>
+<li><code>cluster:admin/ingest/pipeline/put</code></li>
+<li><code>cluster:admin/opendistro/ism/policy/write</code></li>
+<li><code>cluster:monitor/health</code></li>
+<li><code>cluster:monitor/main</code></li>
+<li><code>cluster:monitor/state</code></li>
+<li><code>indices:admin/index_template/put</code></li>
+<li><code>indices:data/read/scroll/clear</code></li>
+<li><code>indices:data/read/scroll</code></li>
+<li><code>indices:data/write/bulk</code></li>
+</ul>
+</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">About<code>indices:*</code> in <em>Cluster Permissions</em></p>
+<p>It is crucial to include <code>indices:*</code> permissions in <strong>Cluster Permissions</strong> for the proper functioning of the OpenCTI integration. Removing these, even if already present in <strong>Index Permissions</strong>, may result in startup issues for the OpenCTI Platform.</p>
+</div>
 <h2 id="elasticsearch-configuration">ElasticSearch configuration</h2>
 <h3 id="indices">Indices</h3>
 <p>By default, a rollover policy is applied on all indices used by OpenCTI.</p>
@@ -4854,7 +4906,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-11-23T16:20:47+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-11-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-26T06:11:54+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-26</span>
   </span>
 
     
@@ -4882,14 +4934,19 @@
     
     <nav>
       
+        <a href="https://github.com/c-neto" class="md-author" title="@c-neto">
+          
+          <img src="https://avatars.githubusercontent.com/u/26532223?v=4&size=72" alt="c-neto">
+        </a>
+      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
         <a href="https://github.com/oklien" class="md-author" title="@oklien">
           
-          <img src="https://avatars.githubusercontent.com/u/696906?size=72" alt="oklien">
+          <img src="https://avatars.githubusercontent.com/u/696906?v=4&size=72" alt="oklien">
         </a>
       
       
