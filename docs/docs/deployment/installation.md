@@ -65,11 +65,13 @@ $ cd docker
 
 !!! warning "ElasticSearch / OpenSearch configuration"
 
-    We highly recommend to put the ElasticSearch / OpenSearch following parameter:
+    - We highly recommend to put the ElasticSearch / OpenSearch following parameter:
 
     ```bash
     thread_pool.search.queue_size=5000
     ```
+
+    - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](/deployment/rollover/?h=rollo#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the necessary user permissions for the OpenSearch/ElasticSearch integration.
 
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
