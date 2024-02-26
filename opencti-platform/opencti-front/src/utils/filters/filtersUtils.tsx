@@ -677,21 +677,21 @@ export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): Fil
 };
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
-export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, availableFilterKeys?: string[]): FilterGroup | undefined => {
+export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
   if (!filters) {
     return undefined;
   }
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys && availableFilterKeys?.includes(f.key))
+      .filter((f) => availableFilterKeys.includes(f.key))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
         delete newFilter.id;
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group)) as FilterGroup[],
+    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
   };
 };
 
