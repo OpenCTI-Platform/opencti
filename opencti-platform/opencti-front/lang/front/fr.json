@@ -2526,7 +2526,6 @@
   "Open Settings": "Ouvrir les paramètres",
   "Unknown configuration error in the platform.": "Erreur de configuration inconnue dans la plate-forme.",
   "alert_GROUP_WITH_NULL_CONFIDENCE_LEVEL": "À partir d'OpenCTI 6.0, un niveau de confiance maximal sera ajouté aux groupes et aux utilisateurs. Cela permettra aux administrateurs de la plateforme de mieux contrôler l'impact des données importées et d'éviter toute mise à jour indésirable des données. Veuillez lire {link_blogpost} pour plus d'informations.\n \nSur cette plateforme, le niveau de confiance maximum de certains groupes est actuellement indéfini. Leurs membres ne pourront pas créer de données dans la version 6.X de la plateforme. Pour éviter cela, assurez-vous que tous les groupes ont un niveau de confiance maximum défini. Plus d'informations dans {link_blogpost}. Soyez particulièrement attentif aux utilisateurs associés aux connecteurs, aux streams et aux feeds ; vous pouvez définir un niveau de confiance individuel pour remplacer le niveau de confiance du groupe si nécessaire. Rejoignez {link_slack} si vous avez besoin de conseils.",
-  "Unless specific groups are selected, user will be created with default groups.": "Si aucun groupe spécifique n'est sélectionné, l'utilisateur sera créé avec les groupes par défaut.",
   "You can enable/disable default values for marking in the customization of each entity type.": "Vous pouvez activer/désactiver les valeurs par défaut pour le marquage dans la personnalisation de chaque type d'entité.",
   "No confidence level found in this user's groups, and no confidence level defined at the user level.": "Aucun niveau de confiance n'a été trouvé dans les groupes de cet utilisateur, et aucun niveau de confiance n'a été défini au niveau de l'utilisateur.",
   "This group does not have a Max Confidence Level, members might not be able to create data.": "Ce groupe n'a pas de niveau de confiance maximum, les membres pourraient ne pas être en mesure de créer des données.",
@@ -2673,5 +2672,6 @@
   "Operational": "Opérationnel",
   "Strategic": "Stratégique",
   "Link created": "Lien créé",
-  "Public dashboard": "Tableau de bord public"
+  "Public dashboard": "Tableau de bord public",
+  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement."
 }
