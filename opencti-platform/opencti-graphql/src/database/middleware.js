@@ -194,15 +194,15 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
-import { confidence } from '../schema/attribute-definition';
+import { confidence, creators, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import {
+  adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
-  controlUserConfidenceAgainstElement,
   controlUpsertInputWithUserConfidence,
-  adaptUpdateInputsConfidence
+  controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
 
 // region global variables
@@ -2376,7 +2376,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
     }
   }
-
   if (type === ENTITY_TYPE_INDICATOR) {
     if (updatePatch.decay_applied_rule && updatePatch.decay_base_score === element.decay_base_score) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
@@ -2389,7 +2388,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
     }
   }
-
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
     const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);
@@ -2416,13 +2414,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-
   // region confidence control / upsert
   const { confidenceLevelToApply, isConfidenceMatch } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
   updatePatch.confidence = confidenceLevelToApply;
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
-
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
@@ -2431,7 +2427,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
-      const isStructuralUpsert = attributeKey === IDS_STIX; // Ids consolidation is always granted
+      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const isInputWithData = isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
