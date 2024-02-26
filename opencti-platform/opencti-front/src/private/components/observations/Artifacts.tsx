@@ -184,15 +184,17 @@ const Artifacts: FunctionComponent = () => {
   };
 
   return (
-    <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
-      {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ArtifactCreation
-          paginationOptions={queryPaginationOptions}
-        />
-      </Security>
-    </ExportContextProvider>
+    <div data-testid="artifact-page">
+      <ExportContextProvider>
+        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ArtifactCreation
+            paginationOptions={queryPaginationOptions}
+          />
+        </Security>
+      </ExportContextProvider>
+    </div>
   );
 };
 
