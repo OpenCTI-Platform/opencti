@@ -19,6 +19,7 @@ interface OpenVocabProps {
   onFocus?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   editContext?: unknown;
+  disabled?: boolean;
   queryRef: PreloadedQuery<OpenVocabFieldQuery>;
   onChange?: (name: string, value: string | string[]) => void;
   onSubmit?: (name: string, value: string | string[]) => void;
@@ -60,6 +61,7 @@ Omit<OpenVocabProps, 'type'>
   containerStyle,
   editContext,
   queryRef,
+  disabled = false,
 }) => {
   const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
     vocabularyQuery,
@@ -113,6 +115,7 @@ Omit<OpenVocabProps, 'type'>
         fullWidth={true}
         multiple={multiple}
         style={containerStyle}
+        disabled={disabled}
         options={openVocabList}
         renderOption={renderOption}
         isOptionEqualToValue={(option: Option, value: string) => option.value === value
@@ -132,6 +135,7 @@ Omit<OpenVocabProps, 'type'>
       name={name}
       onChange={internalOnChange}
       fullWidth={true}
+      disabled={disabled}
       multiple={multiple}
       style={containerStyle}
       options={openVocabList}

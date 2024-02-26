@@ -85,6 +85,7 @@ const AutocompleteField = (props) => {
       />
       {typeof openCreate === 'function' && (
         <IconButton
+          disabled={fieldProps.disabled}
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}

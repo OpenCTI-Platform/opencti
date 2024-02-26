@@ -23,6 +23,7 @@ interface ObservableTypesFieldProps {
   multiple?: boolean;
   onChange?: (name: string, value: string | string[]) => void;
   style?: Record<string, string | number>;
+  disabled?: boolean;
 }
 const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   name,
@@ -30,6 +31,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   multiple,
   onChange,
   style,
+  disabled,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -44,6 +46,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       name={name}
       multiple={multiple || false}
       fullWidth={true}
+      disabled={disabled}
       textfieldprops={{
         variant: 'standard',
         label,

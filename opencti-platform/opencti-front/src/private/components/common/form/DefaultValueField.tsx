@@ -27,6 +27,7 @@ interface DefaultValueFieldProps {
   },
   setFieldValue: (field: string, value: string) => void,
   entityType?: string
+  disabled?: boolean
 }
 
 const DefaultValueField = ({
@@ -34,6 +35,7 @@ const DefaultValueField = ({
   setFieldValue,
   entityType,
   name,
+  disabled = false,
 }: DefaultValueFieldProps) => {
   const { t_i18n } = useFormatter();
   const label = t_i18n('Default value');
@@ -51,6 +53,7 @@ const DefaultValueField = ({
           label={t_i18n('Activate/Deactivate default values')}
           fullWidth={true}
           containerstyle={{ marginTop: 20 }}
+          disabled={disabled}
         />
         <Alert
           severity="info"
@@ -69,6 +72,7 @@ const DefaultValueField = ({
       <KillChainPhasesField
         name={name}
         style={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -80,6 +84,7 @@ const DefaultValueField = ({
         name={name}
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
+        disabled={disabled}
       />
     );
   }
@@ -90,6 +95,7 @@ const DefaultValueField = ({
         label={label}
         name={name}
         style={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -100,6 +106,7 @@ const DefaultValueField = ({
         label={label}
         name={name}
         style={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -113,6 +120,7 @@ const DefaultValueField = ({
         showAllMembersLine
         showCreatorLine
         canDeactivate
+        disabled={disabled}
       />
     );
   }
@@ -122,6 +130,7 @@ const DefaultValueField = ({
         name={name}
         label={label}
         style={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -134,6 +143,7 @@ const DefaultValueField = ({
         name={name}
         multiple={attribute.multiple ?? false}
         containerStyle={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -152,6 +162,7 @@ const DefaultValueField = ({
             style: { marginTop: 20 },
           },
         }}
+        disabled={disabled}
       />
     );
   }
@@ -164,6 +175,7 @@ const DefaultValueField = ({
         name={name}
         label={label}
         containerstyle={fieldSpacingContainerStyle}
+        disabled={disabled}
       />
     );
   }
@@ -178,6 +190,7 @@ const DefaultValueField = ({
         label={label}
         fullWidth={true}
         style={{ marginTop: 20 }}
+        disabled={disabled}
       />
     );
   }
@@ -192,6 +205,7 @@ const DefaultValueField = ({
         multiline={true}
         rows="4"
         style={{ marginTop: 20 }}
+        disabled={disabled}
       />
     );
   }
@@ -203,6 +217,7 @@ const DefaultValueField = ({
         name={name}
         label={label}
         fullWidth={true}
+        disabled={disabled}
         style={{
           ...fieldSpacingContainerStyle,
           minHeight: 200,
@@ -219,6 +234,7 @@ const DefaultValueField = ({
       label={label}
       fullWidth={true}
       style={{ marginTop: 20 }}
+      disabled={disabled}
     />
   );
 };
