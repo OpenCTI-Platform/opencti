@@ -2383,7 +2383,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     if (updatePatch.decay_applied_rule && updatePatch.decay_base_score === element.decay_base_score) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
       updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
-      // don't reset valid_from & valid_until TODO how do we know if valid_from / valid_until changed ?
+      // don't reset valid_from & valid_until
       updatePatch.valid_from = element.valid_from;
       updatePatch.valid_until = element.valid_until;
       // Do not compute decay again when base score does not change

@@ -44,7 +44,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
     return mhd(history.updated_at);
   };
 
-  const getDisplayFor = (history: DecayHistory) => {
+  const getDisplayForHistory = (history: DecayHistory, index: number, currentScoreIndex: number) => {
     if (history.updated_at < indicator.decay_base_score_date) {
       // Anything before base score reset is just "score"
       return {
@@ -54,7 +54,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         updated_at: getDateAsTextFor(history),
       };
     }
-    if (history.score === indicator.x_opencti_score) {
+    if (index === currentScoreIndex) {
       return {
         label: t_i18n('Current stable score'),
         style: {
@@ -87,13 +87,31 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
     };
   };
 
+  const getDisplayForUpcomingUpdates = (history: DecayHistory) => {
+    if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return {
+        label: t_i18n('Revoke score'),
+        style: { color: theme.palette.secondary.main },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    }
+    return {
+      label: t_i18n('Stability threshold'),
+      style: { color: theme.palette.text.primary },
+      score: history.score,
+      updated_at: getDateAsTextFor(history),
+    };
+  };
+
   const labelledHistoryList: LabelledDecayHistory[] = [];
-  decayHistory.forEach((history) => (
-    labelledHistoryList.push(getDisplayFor(history))
+  const currentScoreIndex = decayHistory.findLastIndex((history) => history.score === indicator.x_opencti_score);
+  decayHistory.forEach((history, index) => (
+    labelledHistoryList.push(getDisplayForHistory(history, index, currentScoreIndex))
   ));
 
   decayLivePoints.forEach((history) => (
-    labelledHistoryList.push(getDisplayFor(history))
+    labelledHistoryList.push(getDisplayForUpcomingUpdates(history))
   ));
 
   labelledHistoryList.sort((a, b) => {
