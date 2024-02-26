@@ -21,7 +21,18 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : '25%',
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['list'],
+    ['monocart-reporter', {
+      name: `OpenCTI Report`,
+      outputFile: './test-results/report.html',
+      // global coverage report options
+      coverage: {
+        entryFilter: (entry) => true,
+        sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+      }
+    }]
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -36,7 +47,6 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     { name: 'setup', testMatch: /.*\.setup\.ts/ },
-    
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'],

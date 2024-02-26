@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import IstanbulPlugin from 'vite-plugin-istanbul';
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -216,12 +215,7 @@ export default defineConfig({
       },
     },
     react(),
-    relay,
-    ...(process.env.USE_BABEL_PLUGIN_ISTANBUL ? [IstanbulPlugin({
-      include: 'src/*',
-      exclude: ['node_modules', 'test/'],
-      extension: [ '.js', '.ts','.tsx' ],
-    })] : [])
+    relay
   ],
 
   server: {
