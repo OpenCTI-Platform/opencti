@@ -13,4 +13,11 @@ export class DashboardFormPage {
   getCloseButton(){
     return this.page.getByRole('button', { name: 'Close' });
   }
+  getTagInput() {
+    return this.page.getByPlaceholder('New tag');
+  }
+  async fillTagInput(input: string) {
+    await this.getTagInput().click();
+    return this.getTagInput().fill(input);
+  }
 }

@@ -16,9 +16,6 @@ export default class DashboardPage {
     getDashboardNameInput() {
         return this.page.getByLabel('Name');
     }
-    addNewDashboardTag() {
-        return this.page.getByLabel('Add tag', { exact: true }).click()
-    }
     getCreateDashboardButton() {
         return this.page.getByRole('button', { name: 'Create' });
     }

@@ -16,4 +16,10 @@ export class DashboardDetailsPage {
   getEditButton() {
     return this.page.getByRole('menuitem', { name: 'Update' });
   }
+  addNewDashboardTag() {
+    return this.page.getByLabel('Add tag', { exact: true })
+  }
+  getTag(name: string) {
+    return this.page.getByRole('button', {name});
+  }
 }
