@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, NestedObjectAttribute, ObjectAttribute } from './attribute-definition';
+import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings } from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 
@@ -223,7 +223,7 @@ export const isMultipleAttribute = (entityType: string, k: string): boolean => (
 
 export const isMandatoryAttributeMapping = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 
-export const isNonFLatObjectAttributeMapping = (schemaDef: AttributeDefinition) : schemaDef is (ObjectAttribute | NestedObjectAttribute) => { // handy typeguard
+export const isNonFlatObjectAttributeMapping = (schemaDef: AttributeDefinition) : schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
 
@@ -239,7 +239,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`, { value: input });
   }
 
-  if (isNonFLatObjectAttributeMapping(schemaDef)) {
+  if (isNonFlatObjectAttributeMapping(schemaDef)) {
     // check 'multiple' constraint
     if (isMandatory) {
       if (schemaDef.multiple && !Array.isArray(input)) {
