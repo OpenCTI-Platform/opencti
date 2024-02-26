@@ -778,6 +778,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#functional-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functional customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#technical-customization" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4628,6 +4639,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#functional-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functional customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#technical-customization" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5166,6 +5188,103 @@
 <td style="text-align: left;">APP__REFERENCE_ATTACHMENT</td>
 <td style="text-align: left;"><code>false</code></td>
 <td>External reference mandatory attachment</td>
+</tr>
+</tbody>
+</table>
+<h4 id="functional-customization">Functional customization</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Default value</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">relations_deduplication:past_days</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__PAST_DAYS</td>
+<td style="text-align: left;">30</td>
+<td style="text-align: left;">De-duplicate relations based on <code>start_time</code> and <code>stop_time</code> - <em>n</em> days</td>
+</tr>
+<tr>
+<td style="text-align: left;">relations_deduplication:next_days</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__NEXT_DAYS</td>
+<td style="text-align: left;">30</td>
+<td style="text-align: left;">De-duplicate relations based on <code>start_time</code> and <code>stop_time</code> + <em>n</em> days</td>
+</tr>
+<tr>
+<td style="text-align: left;">relations_deduplication:created_by_based</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__CREATED_BY_BASED</td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Take into account the author to duplicate even if <code>stat_time</code> / <code>stop_time</code> are matching</td>
+</tr>
+<tr>
+<td style="text-align: left;">relations_deduplication:types_overrides:<em>relationship_type</em>:past_days</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__<em>RELATIONSHIP_TYPE</em>__PAST_DAYS</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Override the past days for a specific type of relationship (ex. <em>targets</em>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">relations_deduplication:types_overrides:<em>relationship_type</em>:next_days</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__<em>RELATIONSHIP_TYPE</em>__NEXT_DAYS</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Override the next days for a specific type of relationship (ex. <em>targets</em>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">relations_deduplication:types_overrides:<em>relationship_type</em>:created_by_based</td>
+<td style="text-align: left;">RELATIONS_DEDUPLICATION__<em>RELATIONSHIP_TYPE</em>__CREATED_BY_BASED</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Override the author duplication for a specific type of relationship (ex. <em>targets</em>)</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Default value</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">app:graphql:playground:enabled</td>
+<td style="text-align: left;">APP__GRAPHQL__PLAYGROUND__ENABLED</td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">Enable the playground on /graphql</td>
+</tr>
+<tr>
+<td style="text-align: left;">app:graphql:playground:force_disabled_introspection</td>
+<td style="text-align: left;">APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION</td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Introspection is allowed to auth users but can be disabled in needed</td>
+</tr>
+<tr>
+<td style="text-align: left;">app:concurrency:retry_count</td>
+<td style="text-align: left;">APP__CONCURRENCY__RETRY_COUNT</td>
+<td style="text-align: left;">200</td>
+<td style="text-align: left;">Number of try to get the lock to work an element (create/update/merge, ...)</td>
+</tr>
+<tr>
+<td style="text-align: left;">app:concurrency:retry_delay</td>
+<td style="text-align: left;">APP__CONCURRENCY__RETRY_DELAY</td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">Delay between 2 lock retry (in milliseconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;">app:concurrency:retry_jitter</td>
+<td style="text-align: left;">APP__CONCURRENCY__RETRY_JITTER</td>
+<td style="text-align: left;">50</td>
+<td style="text-align: left;">Random jitter to prevent concurrent retry  (in milliseconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;">app:concurrency:max_ttl</td>
+<td style="text-align: left;">APP__CONCURRENCY__MAX_TTL</td>
+<td style="text-align: left;">30000</td>
+<td style="text-align: left;">Global maximum time for lock retry (in milliseconds)</td>
 </tr>
 </tbody>
 </table>
@@ -6100,7 +6219,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-26T06:12:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-02-26T12:05:20+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-02-26</span>
   </span>
 
     
@@ -6128,14 +6247,14 @@
     
     <nav>
       
-        <a href="https://github.com/c-neto" class="md-author" title="@c-neto">
-          
-          <img src="https://avatars.githubusercontent.com/u/26532223?v=4&size=72" alt="c-neto">
-        </a>
-      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
           <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
+        </a>
+      
+        <a href="https://github.com/c-neto" class="md-author" title="@c-neto">
+          
+          <img src="https://avatars.githubusercontent.com/u/26532223?v=4&size=72" alt="c-neto">
         </a>
       
         <a href="https://github.com/rubeste" class="md-author" title="@rubeste">
