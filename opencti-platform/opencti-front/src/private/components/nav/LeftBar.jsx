@@ -95,8 +95,8 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import logoFiligranDark from '../../../static/images/logo_filigran_dark.png';
 import logoFiligranLight from '../../../static/images/logo_filigran_light.png';
-import byFiligranDark from '../../../static/images/by_filigran_dark.png';
-import byFiligranLight from '../../../static/images/by_filigran_light.png';
+import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark.png';
+import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
@@ -881,11 +881,11 @@ const LeftBar = () => {
               </ListItemIcon>
             </Tooltip>
             {navOpen && (
-            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 10px' }}>
+            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 15px' }}>
               <img
-                src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
+                src={fileUri(theme.palette.mode === 'dark' ? logoFiligranTextDark : logoFiligranTextLight)}
                 alt="logo"
-                width={90}
+                width={50}
               />
             </ListItemIcon>
             )}

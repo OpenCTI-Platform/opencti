@@ -56,11 +56,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   logo: {
     cursor: 'pointer',
-    height: 35,
+    width: 158,
+    marginRight: 8,
   },
   logoCollapsed: {
     cursor: 'pointer',
-    height: 35,
+    width: 35,
     marginRight: 4,
   },
   menuContainer: {

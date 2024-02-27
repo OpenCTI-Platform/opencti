@@ -97,7 +97,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   byFiligranLogo: {
     width: 100,
-    margin: '-10px 0 0 290px',
+    margin: '-10px 0 0 295px',
   },
   filigranLogo: {
     width: 20,
