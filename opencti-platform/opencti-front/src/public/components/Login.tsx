@@ -8,12 +8,11 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import { Alert, AlertTitle } from '@mui/material';
-import classNames from 'classnames';
-import Typography from '@mui/material/Typography';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
-import logoDark from '../../static/images/logo_dark.png';
-import logoLight from '../../static/images/logo_light.png';
-import logoFiligran from '../../static/images/logo_filigran.png';
+import logoDark from '../../static/images/logo_text_dark.png';
+import logoLight from '../../static/images/logo_text_light.png';
+import byFiligranDark from '../../static/images/by_filigran_dark.png';
+import byFiligranLight from '../../static/images/by_filigran_light.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
@@ -36,8 +35,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     maxWidth: 500,
   },
   logo: {
-    width: 200,
-    margin: '0px 0px 50px 0px',
+    width: 400,
+    margin: 0,
   },
   button: {
     margin: theme.spacing(1),
@@ -89,18 +88,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textAlign: 'center',
     maxWidth: 500,
   },
-  bottomMarginLogo: {
-    marginBottom: 20,
-  },
   byFiligran: {
     display: 'flex',
     justifyContent: 'center',
   },
   byFiligranLogo: {
-    marginRight: 10,
-  },
-  byFiligranText: {
-    margin: 'auto 0',
+    width: 100,
+    margin: '-10px 0 0 290px',
   },
 }));
 
@@ -198,7 +192,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   } else if (isAuthButtons) {
     loginHeight = 150;
   }
-  const marginTop = dimension.height / 2 - loginHeight / 2 - 200;
+  const marginTop = dimension.height / 2 - loginHeight / 2 - 100;
   const [checked, setChecked] = useState(false);
   const handleChange = () => {
     setChecked(!checked);
@@ -234,24 +228,15 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       <img
         src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
         alt="logo"
-        className={classNames({
-          [classes.logo]: true,
-          [classes.bottomMarginLogo]: isWhitemarkEnable,
-        })}
+        className={classes.logo}
+        style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
       />
       {isWhitemarkEnable && (
-        <div
-          className={classNames([classes.byFiligran, classes.bottomMarginLogo])}
-        >
+        <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
           <img
-            width={20}
-            height={20}
-            src={fileUri(logoFiligran)}
+            src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
             className={classes.byFiligranLogo}
           />
-          <Typography variant="h4" className={classes.byFiligranText}>
-            by Filigran
-          </Typography>
         </div>
       )}
       {expired && expired === true && (

@@ -52,7 +52,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.text?.primary,
   },
   logoContainer: {
-    margin: '2px 0 0 -8px',
+    margin: '2px 0 0 10px',
   },
   logo: {
     cursor: 'pointer',
@@ -226,7 +226,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
-        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight, paddingLeft: 0 }}
       >
         <div className={classes.logoContainer}>
           <Link to="/dashboard">

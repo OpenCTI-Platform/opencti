@@ -93,7 +93,10 @@ import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import logo_filigran from '../../../static/images/logo_filigran.png';
+import logoFiligranDark from '../../../static/images/logo_filigran_dark.png';
+import logoFiligranLight from '../../../static/images/logo_filigran_light.png';
+import byFiligranDark from '../../../static/images/by_filigran_dark.png';
+import byFiligranLight from '../../../static/images/by_filigran_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
@@ -871,17 +874,20 @@ const LeftBar = () => {
             <Tooltip title={'By Filigran'}>
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                 <img
-                  src={fileUri(logo_filigran)}
+                  src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
                   alt="logo"
                   width={20}
                 />
               </ListItemIcon>
             </Tooltip>
             {navOpen && (
-            <ListItemText
-              classes={{ primary: classes.menuItemSmallText }}
-              primary={'by Filigran'}
-            />
+            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 10px' }}>
+              <img
+                src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
+                alt="logo"
+                width={90}
+              />
+            </ListItemIcon>
             )}
           </MenuItem>
           )}
