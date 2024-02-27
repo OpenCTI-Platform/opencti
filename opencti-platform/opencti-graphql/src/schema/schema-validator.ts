@@ -87,6 +87,9 @@ export const validateAndFormatSchemaAttribute = (
 const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, editInputs: EditInput[]) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
+    if (R.isEmpty(editInputs) || !Array.isArray(editInputs)) {
+      throw UnsupportedError('Cannot validate an empty or invalid input', { input: editInputs });
+    }
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);
       validateAndFormatSchemaAttribute(editInput.key, attributeDefinition, editInput);
@@ -210,6 +213,9 @@ export const validateInputUpdate = async (
   entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const validateInputUpdateFn = async () => {
+    if (R.isEmpty(editInputs) || !Array.isArray(editInputs)) {
+      throw UnsupportedError('Cannot validate an empty or invalid input', { input: editInputs });
+    }
     // Convert input to record
     const instanceFromInputs: Record<string, unknown> = {};
     editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
