@@ -45,14 +45,6 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   };
 
   const getDisplayForHistory = (history: DecayHistory, index: number, currentScoreIndex: number) => {
-    if (index === 0) {
-      return {
-        label: t_i18n('Initial score'),
-        style: { color: theme.palette.text.primary },
-        score: history.score,
-        updated_at: getDateAsTextFor(history),
-      };
-    }
     if (index === currentScoreIndex) {
       return {
         label: t_i18n('Current stable score'),
@@ -60,6 +52,14 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
           color: theme.palette.success.main,
           fontWeight: 'bold',
         },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    }
+    if (index === 0) {
+      return {
+        label: t_i18n('Initial score'),
+        style: { color: theme.palette.text.primary },
         score: history.score,
         updated_at: getDateAsTextFor(history),
       };
