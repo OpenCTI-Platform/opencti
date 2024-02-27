@@ -83,6 +83,19 @@ describe('Decay formula testing', () => {
     expect(Math.round(computeTimeFromExpectedScore(baseScore, compute20Score, TEST_DEFAULT_DECAY_RULE))).toBe(20);
   });
 
+  it('should compute score and time for fast rule', () => {
+    const customRule = {
+      decay_lifetime: 10, // 10 days
+      decay_pound: 1,
+      decay_points: [90, 80, 70, 60, 50, 40, 30],
+      decay_revoke_score: 0,
+    };
+    const baseScore = 90;
+    const computeScore = computeScoreFromExpectedTime(baseScore, 0.350, customRule);
+    const computeTime = computeTimeFromExpectedScore(baseScore, computeScore, customRule);
+    expect(computeTime).toBeCloseTo(0.350, 3);
+  });
+
   it('should find the right rule for indicator type', () => {
     // GIVEN the type is unknown or not filled, WHEN getting decay rule, THEN the FALLBACK one is return.
     let decayRule: DecayRuleConfiguration = selectDecayRuleForIndicator('', BUILT_IN_DECAY_RULES_FOR_TEST);

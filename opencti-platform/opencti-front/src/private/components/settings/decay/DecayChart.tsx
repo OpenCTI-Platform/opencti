@@ -53,15 +53,16 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
   const graphLinesAnnotations = [];
   // Horizontal lines that shows reaction points
   if (reactionPoints) {
-    reactionPoints.forEach((reactionPoint) => {
+    const currentScoreIndex = reactionPoints.findLastIndex((reactionPoint) => reactionPoint === currentScore);
+    reactionPoints.forEach((reactionPoint, index) => {
       const lineReactionValue = {
         y: reactionPoint,
-        borderColor: reactionPoint === currentScore ? scoreColor : reactionPointColor,
+        borderColor: index === currentScoreIndex ? scoreColor : reactionPointColor,
         label: {
-          borderColor: reactionPoint === currentScore ? scoreColor : reactionPointColor,
+          borderColor: index === currentScoreIndex ? scoreColor : reactionPointColor,
           offsetY: 0,
           style: {
-            color: reactionPoint === currentScore ? scoreColor : chartInfoTextColor,
+            color: index === currentScoreIndex ? scoreColor : chartInfoTextColor,
             background: chartLabelBackgroundColor,
           },
           text: `${reactionPoint}`,
@@ -104,7 +105,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
     });
 
     // circle on the curve that show the current stable score
-    const currentScoreData = decayCurvePoint.find((point) => point.score === currentScore);
+    const currentScoreData = decayCurvePoint.findLast((point) => point.score === currentScore);
     if (currentScoreData !== undefined) {
       pointAnnotations.push({
         x: convertTimeForChart(currentScoreData.updated_at),

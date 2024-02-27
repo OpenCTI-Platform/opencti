@@ -255,7 +255,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
       updated_at: validFrom.toDate(),
       score: indicatorBaseScore,
     });
-    const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
+    const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_next_reaction_date: nextScoreReactionDate,
@@ -321,7 +321,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       if (nextScoreReactionDate) {
         finalInput.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
       }
-      const newValidUntilDate = computeDecayPointReactionDate(newScore, newScore, model, updateDate, model.decay_revoke_score);
+      const newValidUntilDate = computeDecayPointReactionDate(newScore, model, updateDate, model.decay_revoke_score);
       finalInput.push({ key: 'valid_until', value: [newValidUntilDate.toISOString()] });
     }
   }
