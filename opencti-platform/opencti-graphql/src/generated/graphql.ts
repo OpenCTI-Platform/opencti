@@ -11591,6 +11591,7 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
 };
 
 export type MalwareAnalysisAddInput = {
+  analysisSample?: InputMaybe<Scalars['String']['input']>;
   analysisSco?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   analysis_definition_version?: InputMaybe<Scalars['String']['input']>;
   analysis_ended?: InputMaybe<Scalars['DateTime']['input']>;
@@ -11617,7 +11618,6 @@ export type MalwareAnalysisAddInput = {
   result?: InputMaybe<Scalars['String']['input']>;
   result_name: Scalars['String']['input'];
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
-  sample?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   submitted?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
@@ -14983,15 +14983,15 @@ export type NetworkTrafficStixCoreRelationshipsDistributionArgs = {
 };
 
 export type NetworkTrafficAddInput = {
-  dst?: InputMaybe<Scalars['String']['input']>;
   dst_byte_count?: InputMaybe<Scalars['Int']['input']>;
   dst_packets?: InputMaybe<Scalars['Int']['input']>;
   dst_port?: InputMaybe<Scalars['Int']['input']>;
   end?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  networkDst?: InputMaybe<Scalars['String']['input']>;
+  networkSrc?: InputMaybe<Scalars['String']['input']>;
   protocols?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  src?: InputMaybe<Scalars['String']['input']>;
   src_byte_count?: InputMaybe<Scalars['Int']['input']>;
   src_packets?: InputMaybe<Scalars['Int']['input']>;
   src_port?: InputMaybe<Scalars['Int']['input']>;

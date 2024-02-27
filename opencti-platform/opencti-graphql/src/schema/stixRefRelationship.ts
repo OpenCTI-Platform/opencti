@@ -54,31 +54,31 @@ export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationsh
 
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
 export const INPUT_SAMPLE = 'samples';
-export const INPUT_CONTAINS = 'contains';
+export const INPUT_CONTAINS = 'containsObservable';
 export const INPUT_RESOLVES_TO = 'resolvesTo';
 export const INPUT_BELONGS_TO = 'belongsTo';
-export const INPUT_FROM = 'from';
-export const INPUT_SENDER = 'sender';
-export const INPUT_TO = 'to';
-export const INPUT_CC = 'cc';
-export const INPUT_BCC = 'bcc';
+export const INPUT_SENDER = 'emailSender';
+export const INPUT_EMAIL_FROM = 'emailFrom';
+export const INPUT_EMAIL_TO = 'emailTo';
+export const INPUT_CC = 'emailCc';
+export const INPUT_BCC = 'emailBcc';
 export const INPUT_RAW_EMAIL = 'rawEmail';
 export const INPUT_BODY_RAW = 'bodyRaw';
 export const INPUT_PARENT_DIRECTORY = 'parentDirectory';
 export const INPUT_CONTENT = 'obsContent';
-export const INPUT_SRC = 'src';
-export const INPUT_DST = 'dst';
+export const INPUT_SRC = 'networkSrc';
+export const INPUT_DST = 'networkDst';
 export const INPUT_SRC_PAYLOAD = 'srcPayload';
 export const INPUT_DST_PAYLOAD = 'dstPayload';
-export const INPUT_ENCAPSULATES = 'encapsulates';
+export const INPUT_ENCAPSULATES = 'networkEncapsulates';
 export const INPUT_ENCAPSULATED_BY = 'encapsulatedBy';
 export const INPUT_OPENED_CONNECTION = 'openedConnections';
 export const INPUT_CREATOR_USER = 'creatorUser';
-export const INPUT_IMAGE = 'image';
-export const INPUT_PARENT = 'parent';
-export const INPUT_CHILD = 'child';
+export const INPUT_IMAGE = 'processImage';
+export const INPUT_PARENT = 'processParent';
+export const INPUT_CHILD = 'processChild';
 export const INPUT_BODY_MULTIPART = 'bodyMultipart';
-export const INPUT_VALUES = 'values';
+export const INPUT_VALUES = 'winRegValues';
 export const INPUT_LINKED = 'xOpenctiLinkedTo';
 export const INPUT_SERVICE_DLL = 'serviceDlls';
 
@@ -202,7 +202,7 @@ export const belongsTo: RefAttribute = {
   toTypes: [ENTITY_USER_ACCOUNT, ENTITY_AUTONOMOUS_SYSTEM],
 };
 export const from: RefAttribute = {
-  name: INPUT_FROM,
+  name: INPUT_EMAIL_FROM,
   type: 'ref',
   databaseName: RELATION_FROM,
   label: 'Email from',
@@ -236,7 +236,7 @@ export const sender: RefAttribute = {
   toTypes: [ENTITY_EMAIL_ADDR],
 };
 export const to: RefAttribute = {
-  name: INPUT_TO,
+  name: INPUT_EMAIL_TO,
   type: 'ref',
   databaseName: RELATION_TO,
   label: 'Email to',

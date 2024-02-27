@@ -12,9 +12,10 @@ import {
   INPUT_CREATOR_USER,
   INPUT_DST,
   INPUT_DST_PAYLOAD,
+  INPUT_EMAIL_FROM,
+  INPUT_EMAIL_TO,
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
-  INPUT_FROM,
   INPUT_IMAGE,
   INPUT_OPENED_CONNECTION,
   INPUT_OPERATING_SYSTEM,
@@ -27,7 +28,6 @@ import {
   INPUT_SERVICE_DLL,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
-  INPUT_TO,
   INPUT_VALUES,
   objectAssignee,
   objectLabel,
@@ -281,7 +281,7 @@ describe('Testing schema relations ref definition', () => {
     expect(relationRef.isRefExistingForTypes(ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBe(false);
 
     relationsRef = schemaRelationsRefDefinition.getRelationsRef(ENTITY_EMAIL_MESSAGE);
-    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_FROM);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_EMAIL_FROM);
     expect(relationRef).not.toBeNull();
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
@@ -289,7 +289,7 @@ describe('Testing schema relations ref definition', () => {
     expect(relationRef).not.toBeNull();
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);
-    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_TO);
+    [relationRef] = relationsRef.filter((rel) => rel.name === INPUT_EMAIL_TO);
     expect(relationRef).not.toBeNull();
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR)).toBe(true);
     expect(relationRef.isRefExistingForTypes(ENTITY_EMAIL_MESSAGE, ENTITY_IPV4_ADDR)).toBe(false);

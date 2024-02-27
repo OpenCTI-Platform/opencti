@@ -112,7 +112,6 @@ import {
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import {
-  INPUT_FROM,
   isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -601,7 +600,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           fetchingIds.push(...elements);
           expectedIds.push(...elements.map((e) => e.id));
         } else { // Single
-          if (dst === INPUT_FROM && isStixRefRelationship(type)) {
+          if (dst === 'from' && isStixRefRelationship(type)) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;

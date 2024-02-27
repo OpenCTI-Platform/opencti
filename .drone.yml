@@ -32,16 +32,24 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
+      - cd opencti-platform
+      - OPENCTI_COMMIT=$(git rev-parse --short HEAD)
+      - echo [INFO] using opencti@$DRONE_COMMIT_BRANCH:$OPENCTI_COMMIT
+      - cd ..
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
       - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
       - CONNECTOR_BRANCH=$([[ $(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git opencti/$BRANCH) ]] && echo opencti/$BRANCH || echo 'master')
       - git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
-      - cd opencti-platform/opencti-graphql
+      - cd opencti-connectors
+      - CONNECTOR_COMMIT=$(git rev-parse --short HEAD)
+      - echo [INFO] using connectors@$CONNECTOR_BRANCH:$CONNECTOR_COMMIT
+      - cd ../opencti-platform/opencti-graphql
       - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
       - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - echo [INFO] using package client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
   - name: api-coverage
