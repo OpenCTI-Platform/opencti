@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
+import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
@@ -726,6 +727,30 @@ const ContainerHeader = (props) => {
       right: 24,
     };
   }
+
+  const triggersPaginationOptions = {
+    includeAuthorities: true,
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['filters'],
+          values: [container.id],
+          operator: 'match',
+          mode: 'or',
+        },
+        {
+          key: ['instance_trigger'],
+          values: ['true'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
+    },
+  };
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+
   return (
     <Box sx={containerStyle}>
       {!knowledge && (
@@ -745,12 +770,12 @@ const ContainerHeader = (props) => {
           >
             {truncate(
               container.name
-                || container.attribute_abstract
-                || container.content
-                || container.opinion
-                || `${fd(container.first_observed)} - ${fd(
-                  container.last_observed,
-                )}`,
+              || container.attribute_abstract
+              || container.content
+              || container.opinion
+              || `${fd(container.first_observed)} - ${fd(
+                container.last_observed,
+              )}`,
               80,
             )}
           </Typography>
@@ -849,7 +874,7 @@ const ContainerHeader = (props) => {
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
           {enableQuickSubscription && (
-          <StixCoreObjectSubscribers elementId={container.id} />
+            <StixCoreObjectSubscribers triggerData={triggerData} />
           )}
           <Security
             needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
@@ -868,11 +893,11 @@ const ContainerHeader = (props) => {
             <StixCoreObjectSharing elementId={container.id} variant="header" />
           )}
           {!knowledge && (
-          <StixCoreObjectFileExport
-            id={container.id}
-            type={container.entity_type}
-            redirectToContent={true}
-          />
+            <StixCoreObjectFileExport
+              id={container.id}
+              type={container.entity_type}
+              redirectToContent={true}
+            />
           )}
           {enableSuggestions && (
             <QueryRenderer
@@ -1035,6 +1060,8 @@ const ContainerHeader = (props) => {
             <StixCoreObjectQuickSubscription
               instanceId={container.id}
               instanceName={defaultValue(container)}
+              paginationOptions={triggersPaginationOptions}
+              triggerData={triggerData}
             />
           )}
           {enableAskAi && (

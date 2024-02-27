@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -24,6 +24,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
+import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -313,6 +314,30 @@ const StixDomainObjectHeader = (props) => {
     stixDomainObject,
   );
   const enableReferences = useIsEnforceReference(entityType);
+
+  const triggersPaginationOptions = {
+    includeAuthorities: true,
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['filters'],
+          values: [stixDomainObject.id],
+          operator: 'match',
+          mode: 'or',
+        },
+        {
+          key: ['instance_trigger'],
+          values: ['true'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
+    },
+  };
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+
   return (
     <>
       <Tooltip title={defaultValue(stixDomainObject)}>
@@ -471,7 +496,7 @@ const StixDomainObjectHeader = (props) => {
       <div className={classes.actions}>
         <div className={classes.actionButtons}>
           {enableQuickSubscription && (
-            <StixCoreObjectSubscribers elementId={stixDomainObject.id} />
+            <StixCoreObjectSubscribers triggerData={triggerData} />
           )}
           {disableSharing !== true && (
             <StixCoreObjectSharing
@@ -490,6 +515,8 @@ const StixDomainObjectHeader = (props) => {
             <StixCoreObjectQuickSubscription
               instanceId={stixDomainObject.id}
               instanceName={defaultValue(stixDomainObject)}
+              paginationOptions={triggersPaginationOptions}
+              triggerData={triggerData}
             />
           )}
           {enableAskAi && (
