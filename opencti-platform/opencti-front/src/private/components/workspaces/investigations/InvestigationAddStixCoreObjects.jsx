@@ -6,10 +6,11 @@ import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLi
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 const InvestigationAddStixCoreObjects = (props) => {
   const {
@@ -26,63 +27,16 @@ const InvestigationAddStixCoreObjects = (props) => {
   const { t_i18n } = useFormatter();
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const [open, setOpen] = useState(false);
-  const [sortBy, setSortBy] = useState('_score');
-  const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, setFilters] = useState(
-    targetStixCoreObjectTypes
-    && !(
-      targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-      || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-    )
-      ? {
-        mode: 'and',
-        filters: [{
-          key: 'entity_type',
-          values: targetStixCoreObjectTypes,
-        }],
-        filterGroups: [],
-      }
-      : emptyFilterGroup,
-  );
-  const [numberOfElements, setNumberOfElements] = useState({
-    number: 0,
-    symbol: '',
-  });
-  const [searchTerm, setSearchTerm] = useState('');
-  const containerRef = useRef(null);
-  const handleSort = (field, sortOrderAsc) => {
-    setSortBy(field);
-    setOrderAsc(sortOrderAsc);
-  };
-  const handleAddFilter = (key, id, op = 'eq', event = null) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    setFilters(constructHandleAddFilter(filters, key, id, op));
-  };
-  const handleRemoveFilter = (key, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-  const handleSwitchLocalMode = (localFilter) => {
-    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-  };
 
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
-  };
   const isTypeDomainObject = (types) => {
-    return !types || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0);
+    return !types
+        || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
+        || (types.length === 1 && types[0] === 'Stix-Domain-Object');
   };
   const isTypeObservable = (types) => {
-    return (
-      !types || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
-    );
+    return !types
+        || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
+        || (types.length === 1 && types[0] === 'Stix-Cyber-Observable');
   };
   const resolveAvailableTypes = () => {
     if (
@@ -108,8 +62,50 @@ const InvestigationAddStixCoreObjects = (props) => {
     }
     return null;
   };
-  const buildColumns = (platformModuleHelpers) => {
-    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+
+  const LOCAL_STORAGE_KEY = `investigation-${workspaceId}-add-objects`;
+  const { viewStorage, helpers, paginationOptions: addObjectsPaginationOptions } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      sortBy: '_score',
+      orderAsc: false,
+      filters: targetStixCoreObjectTypes
+      && !(
+        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+      )
+        ? {
+          mode: 'and',
+          filters: [{
+            key: 'entity_type',
+            values: targetStixCoreObjectTypes,
+          }],
+          filterGroups: [],
+        }
+        : emptyFilterGroup,
+      types: [resolveAvailableTypes()],
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+  );
+
+  const {
+    sortBy,
+    orderAsc,
+    searchTerm,
+    filters,
+    numberOfElements,
+  } = viewStorage;
+
+  const containerRef = useRef(null);
+
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const buildColumns = () => {
     return {
       entity_type: {
         label: 'Type',
@@ -124,7 +120,7 @@ const InvestigationAddStixCoreObjects = (props) => {
       createdBy: {
         label: 'Author',
         width: '15%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeFieldEnable(),
       },
       objectLabel: {
         label: 'Labels',
@@ -134,37 +130,15 @@ const InvestigationAddStixCoreObjects = (props) => {
       objectMarking: {
         label: 'Marking',
         width: '15%',
-        isSortable: isRuntimeSort,
+        isSortable: isRuntimeFieldEnable(),
       },
     };
   };
 
+  const keyword = mapping && searchTerm.length === 0 ? selectedText : searchTerm;
   const searchPaginationOptions = {
-    types: [resolveAvailableTypes()],
-    search: mapping && searchTerm.length === 0 ? selectedText : searchTerm,
-    filters,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  };
-
-  const resetState = () => {
-    setSearchTerm('');
-    setFilters(
-      targetStixCoreObjectTypes
-      && !(
-        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-      )
-        ? {
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: targetStixCoreObjectTypes,
-          }],
-          filterGroups: [],
-        }
-        : emptyFilterGroup,
-    );
+    ...addObjectsPaginationOptions,
+    search: keyword,
   };
 
   return (
@@ -184,7 +158,6 @@ const InvestigationAddStixCoreObjects = (props) => {
       <Drawer
         open={mapping ? openDrawer : open}
         onClose={() => {
-          resetState();
           if (mapping) {
             handleClose();
           } else {
@@ -194,52 +167,48 @@ const InvestigationAddStixCoreObjects = (props) => {
         title={t_i18n('Add entities')}
         containerRef={containerRef}
       >
-        <UserContext.Consumer>
-          {({ platformModuleHelpers }) => (
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={buildColumns(platformModuleHelpers)}
-              handleSearch={setSearchTerm}
-              keyword={
-                  mapping && searchTerm.length === 0 ? selectedText : searchTerm
-                }
-              handleSort={handleSort}
-              handleAddFilter={handleAddFilter}
-              handleRemoveFilter={handleRemoveFilter}
-              handleSwitchLocalMode={handleSwitchLocalMode}
-              handleSwitchGlobalMode={handleSwitchGlobalMode}
-              disableCards={true}
-              filters={filters}
-              paginationOptions={searchPaginationOptions}
-              numberOfElements={numberOfElements}
-              iconExtension={true}
-              parametersWithPadding={true}
-              disableExport={true}
-              availableEntityTypes={[resolveAvailableTypes()]}
-            >
-              <QueryRenderer
-                query={investigationAddStixCoreObjectsLinesQuery}
-                variables={{ count: 100, ...searchPaginationOptions }}
-                render={({ props: renderProps }) => (
-                  <InvestigationAddStixCoreObjectsLines
-                    data={renderProps}
-                    workspaceId={workspaceId}
-                    paginationOptions={searchPaginationOptions}
-                    dataColumns={buildColumns(platformModuleHelpers)}
-                    initialLoading={renderProps === null}
-                    workspaceStixCoreObjects={workspaceStixCoreObjects}
-                    onAdd={onAdd}
-                    onDelete={onDelete}
-                    setNumberOfElements={setNumberOfElements}
-                    mapping={mapping}
-                    containerRef={containerRef}
-                  />
-                )}
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={buildColumns()}
+          handleSearch={helpers.handleSearch}
+          keyword={keyword}
+          handleSort={helpers.handleSort}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          disableCards={true}
+          filters={filters}
+          paginationOptions={searchPaginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          parametersWithPadding={true}
+          disableExport={true}
+          availableEntityTypes={targetStixCoreObjectTypes}
+          entityTypes={targetStixCoreObjectTypes}
+        >
+          <QueryRenderer
+            query={investigationAddStixCoreObjectsLinesQuery}
+            variables={{ count: 100, ...searchPaginationOptions }}
+            render={({ props: renderProps }) => (
+              <InvestigationAddStixCoreObjectsLines
+                data={renderProps}
+                workspaceId={workspaceId}
+                paginationOptions={searchPaginationOptions}
+                dataColumns={buildColumns()}
+                initialLoading={renderProps === null}
+                workspaceStixCoreObjects={workspaceStixCoreObjects}
+                onAdd={onAdd}
+                onDelete={onDelete}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                mapping={mapping}
+                containerRef={containerRef}
               />
-            </ListLines>
-          )}
-        </UserContext.Consumer>
+            )}
+          />
+        </ListLines>
       </Drawer>
     </>
   );
