@@ -1578,7 +1578,9 @@ class ToolBar extends Component {
                         padding: '2px 5px 2px 5px',
                         marginRight: 5,
                         backgroundColor: theme.palette.secondary.main,
-                        color: '#ffffff',
+                        color: theme.palette.mode === 'dark'
+                          ? '#000000'
+                          : '#ffffff',
                       }}
                     >
                       {n(numberOfSelectedElements)}
