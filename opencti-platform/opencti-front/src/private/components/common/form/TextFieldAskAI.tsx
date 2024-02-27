@@ -34,6 +34,7 @@ interface TextFieldAskAiProps {
   format: 'text' | 'html' | 'markdown';
   variant: 'markdown' | 'html' | 'text' | null;
   disabled?: boolean;
+  style?: object;
 }
 
 const textFieldAskAIFixSpellingMutation = graphql`
@@ -72,7 +73,14 @@ const textFieldAskAIExplainMutation = graphql`
   }
 `;
 
-const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, setFieldValue, variant, format = 'text', disabled }) => {
+const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
+  currentValue,
+  setFieldValue,
+  variant,
+  format = 'text',
+  disabled,
+  style
+}) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
@@ -327,7 +335,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   }
   if (variant === 'html') {
     return (
-      <div style={{ position: 'absolute', top: 0, right: 10 }}>
+      <div style={style || { position: 'absolute', top: -12, right: 35 }}>
         {renderButton()}
       </div>
     );

@@ -633,6 +633,7 @@ class StixDomainObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
+                    style={{position: 'absolute', top: 0, right: 10}}
                   />
                 </div>
               </>
