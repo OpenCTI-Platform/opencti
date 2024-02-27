@@ -1,18 +1,19 @@
-import { Page } from "@playwright/test";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Page } from '@playwright/test';
 
-export class TopMenuProfilePage {
-    constructor(private page:Page) {
-    }
+export default class TopMenuProfilePage {
+  constructor(private page:Page) {}
 
-    getMenuProfile() {
+  getMenuProfile() {
     return this.page.getByLabel('Profile');
-    }
-    getLogoutButton() {
-        return this.page.getByRole('menuitem', { name: 'Logout' });
-    }
-    
-    async logout() {
-        await this.getMenuProfile().click();
-        return this.getLogoutButton().click();
-    }
+  }
+
+  getLogoutButton() {
+    return this.page.getByRole('menuitem', { name: 'Logout' });
+  }
+
+  async logout() {
+    await this.getMenuProfile().click();
+    return this.getLogoutButton().click();
+  }
 }

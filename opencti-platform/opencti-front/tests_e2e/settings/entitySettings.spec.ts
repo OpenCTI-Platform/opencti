@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
-import { LeftBarPage } from '../model/menu/leftBar.pageModel';
-import { ReportPage } from '../model/report.pageModel';
+import LeftBarPage from '../model/menu/leftBar.pageModel';
+import ReportPage from '../model/report.pageModel';
 import { expect } from '../fixtures/baseFixtures';
 
 test('Testing content customization for Report', async ({ page }) => {

@@ -1,6 +1,5 @@
 import { expect, test } from '../fixtures/baseFixtures';
-import { LeftBarPage } from '../model/menu/leftBar.pageModel';
-
+import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 test('Check navigation on all pages', async ({ page }) => {
   await page.goto('/');
@@ -92,5 +91,4 @@ test('Check navigation on all pages', async ({ page }) => {
   await expect(page.getByRole('paragraph')).toHaveText('Investigations');
   await leftBarPage.clickOnMenu('Dashboards');
   await expect(page.getByRole('paragraph')).toHaveText('Dashboards');
-
 });
