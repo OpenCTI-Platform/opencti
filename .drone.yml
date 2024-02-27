@@ -98,6 +98,8 @@ services:
       - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo issue/$(echo $BRANCH | cut -d "/" -f 2) || echo 'master' )
       - git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
       - cd /tmp/opencti/opencti-platform/opencti-graphql
+      - OPENCTI_COMMIT=$(git rev-parse --short HEAD)
+      - echo [INFO] using opencti@$OPENCTI_BRANCH:$OPENCTI_COMMIT
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
