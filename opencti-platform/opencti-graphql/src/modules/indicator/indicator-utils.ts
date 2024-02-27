@@ -5,7 +5,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { IndicatorAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity } from '../../types/store';
-import { isNotEmptyField } from '../../database/utils';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { utcDate } from '../../utils/format';
 
 interface TTL_DEFINITION {
@@ -78,7 +78,12 @@ const computeValidFrom = (indicator: IndicatorAddInput): Moment => {
   return utcDate();
 };
 
-const computeValidUntil = async (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Promise<Moment> => {
+const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, lifetimeInDays: number): Moment => {
+  if (indicator.revoked && isEmptyField(indicator.valid_until)) {
+    // If indicator is explicitly revoked and not valid_until is specified
+    // Ensure the valid_until will be revoked by the time computation.
+    return validFrom;
+  }
   if (isNotEmptyField(indicator.valid_until)) {
     return utcDate(indicator.valid_until);
   }
@@ -87,12 +92,11 @@ const computeValidUntil = async (indicator: IndicatorAddInput, validFrom: Moment
 
 export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeInDays: number) => {
   const validFrom = computeValidFrom(indicator);
-  const validUntil = await computeValidUntil(indicator, validFrom, lifetimeInDays);
-
+  const validUntil = computeValidUntil(indicator, validFrom, lifetimeInDays);
   return {
     validFrom,
     validUntil,
-    revoked: validUntil.isBefore(utcDate()),
+    revoked: validUntil.isSameOrBefore(utcDate()),
     validPeriod: validFrom.isSameOrBefore(validUntil)
   };
 };
