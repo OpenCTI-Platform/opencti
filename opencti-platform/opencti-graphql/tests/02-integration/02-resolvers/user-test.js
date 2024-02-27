@@ -604,6 +604,30 @@ describe('User list members query behavior', () => {
   });
 });
 
+describe('User creator completion', () => {
+  it('Should sector upsert accumulate creator_id', async () => {
+    const SECTOR_CREATE_QUERY = gql`
+      mutation SectorAdd($input: SectorAddInput!) {
+        sectorAdd(input: $input) {
+          id
+          name
+          description
+          creators {
+            id
+          }
+        }
+      }
+    `;
+    const SECTOR_TO_CREATE = {
+      input: {
+        name: 'Consulting',
+      },
+    };
+    const queryResult = await editorQuery({ query: SECTOR_CREATE_QUERY, variables: SECTOR_TO_CREATE });
+    expect(queryResult.data.sectorAdd.creators.length).toEqual(2);
+  });
+});
+
 describe('User has no capability query behavior', () => {
   const GROUP_UPDATE_QUERY = gql`
     mutation GroupEdit($id: ID!, $input: [EditInput]!) {
