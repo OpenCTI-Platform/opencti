@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, distributionEntities, timeSeriesEntities, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
@@ -217,14 +217,15 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
 };
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {
-  const stixDomainObject = await findById(context, user, sdoId);
+  const stixDomainObject = await storeLoadByIdWithRefs(context, user, sdoId);
   const files = stixDomainObject.x_opencti_files.map((file) => {
     if (file.id === id) {
       return { ...file, order, description, inCarousel };
     }
     return file;
   });
-  const { element: updatedElement } = await updateAttribute(context, user, sdoId, ABSTRACT_STIX_DOMAIN_OBJECT, [{ key: 'x_opencti_files', value: files }]);
+
+  const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: files });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
 
