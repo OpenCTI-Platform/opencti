@@ -122,6 +122,7 @@ interface ContainerStixCyberObservablesLinesProps {
   setSelectedElements: (
     selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
   ) => void;
+  enableReferences?: boolean;
 }
 
 const ContainerStixCyberObservablesLines: FunctionComponent<
@@ -138,6 +139,7 @@ ContainerStixCyberObservablesLinesProps
   onTypesChange,
   queryRef,
   setSelectedElements,
+  enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixCyberObservablesLinesQuery,
@@ -189,6 +191,7 @@ ContainerStixCyberObservablesLinesProps
             defaultCreatedBy={data?.container.createdBy ?? null}
             defaultMarkingDefinitions={data?.container.objectMarking ?? []}
             confidence={data?.container.confidence}
+            enableReferences={enableReferences}
           />
         </Security>
       )}

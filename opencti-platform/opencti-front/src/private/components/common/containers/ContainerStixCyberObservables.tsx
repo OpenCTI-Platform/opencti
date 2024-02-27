@@ -55,11 +55,12 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
 
 interface ContainerStixCyberObservablesComponentProps {
   container: ContainerStixCyberObservables_container$data;
+  enableReferences?: boolean;
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
-> = ({ container }) => {
+> = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
@@ -267,6 +268,7 @@ ContainerStixCyberObservablesComponentProps
                   selectAll={selectAll}
                   setNumberOfElements={handleSetNumberOfElements}
                   setSelectedElements={setSelectedElements}
+                  enableReferences={enableReferences}
                 />
               </React.Suspense>
             )}
