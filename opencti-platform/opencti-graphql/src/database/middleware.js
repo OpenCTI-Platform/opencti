@@ -1632,7 +1632,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     if (ins) { // If update will really produce a data change
       impactedInputs.push(ins);
       // region Compute the update to push in the stream
-      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data') {
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_')) {
         const previous = getPreviousInstanceValue(input.key, instance);
         if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
           // Check symmetric difference for add and remove
