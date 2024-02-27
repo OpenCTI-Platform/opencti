@@ -51,7 +51,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
         isSortable: true,
       },
       entity_type: {
-        label: 'Entity type',
+        label: 'Target type',
         width: '12%',
         isSortable: false,
       },
