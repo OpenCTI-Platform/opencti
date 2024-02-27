@@ -18,7 +18,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -83,7 +83,7 @@ const artifactMutation = graphql`
 `;
 
 const artifactValidation = (t) => Yup.object().shape({
-  file: Yup.mixed().required(t(' field is required')),
+  file: Yup.mixed().required(t('This field is required')),
   x_opencti_description: Yup.string().nullable(),
 });
 
@@ -189,9 +189,10 @@ const ArtifactCreation = ({
               isSubmitting,
               setFieldValue,
               values,
+              errors,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <CustomFileUpload setFieldValue={setFieldValue} />
+                <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors}/>
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"
