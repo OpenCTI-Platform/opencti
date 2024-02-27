@@ -1,6 +1,6 @@
 import { expect, test as setup } from './fixtures/baseFixtures';
-import { DashboardPage } from "./model/dashboard.pageModel";
-import { LoginPage } from "./model/login.pageModel";
+import DashboardPage from './model/dashboard.pageModel';
+import LoginPage from './model/login.pageModel';
 
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 const prepLogoutFile = 'tests_e2e/.setup/.auth/logout-user.json';

@@ -43,7 +43,6 @@ module.exports = {
     'jest.file.transform.js',
     'jest.relay.transform.js',
     'extract-i18n-keyword.js',
-    '**/tests_e2e/**',
     'playwright.config.ts',
   ],
   plugins: [

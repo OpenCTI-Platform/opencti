@@ -1,7 +1,7 @@
-import { expect, test } from "../fixtures/baseFixtures";
-import { ReportPage } from "../model/report.pageModel";
-import { ReportDetailsPage } from "../model/reportDetails.pageModel";
-import { ReportFormPage } from "../model/reportForm.pageModel";
+import { expect, test } from '../fixtures/baseFixtures';
+import ReportPage from '../model/report.pageModel';
+import ReportDetailsPage from '../model/reportDetails.pageModel';
+import ReportFormPage from '../model/reportForm.pageModel';
 
 test('Create a new report page and test update', async ({ page }) => {
   const reportPage = new ReportPage(page);
@@ -11,9 +11,9 @@ test('Create a new report page and test update', async ({ page }) => {
   await reportPage.addNewReport();
   await reportForm.fillNameInput('Test Update e2e');
   await reportPage.getCreateReportButton().click();
-  await reportPage.getItemFromList( 'Test Update e2e' ).click();
+  await reportPage.getItemFromList('Test Update e2e').click();
   await reportDetailsPage.getEditButton().click();
   await reportForm.fillNameInput('Modification Test Update e2e');
   await reportForm.getCloseButton().click();
-  await expect(reportDetailsPage.getTitle('Modification Test Update e2e')).toBeVisible()
+  await expect(reportDetailsPage.getTitle('Modification Test Update e2e')).toBeVisible();
 });

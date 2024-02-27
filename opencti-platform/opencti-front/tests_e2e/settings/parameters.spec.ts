@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 import { expect } from '../fixtures/baseFixtures';
-import { LeftBarPage } from '../model/menu/leftBar.pageModel';
+import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 test('Check EE activation', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);

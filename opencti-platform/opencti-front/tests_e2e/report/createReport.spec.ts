@@ -1,8 +1,8 @@
-import { expect, test } from '../fixtures/baseFixtures';
-import { ReportPage } from '../model/report.pageModel';
-import { ReportDetailsPage } from '../model/reportDetails.pageModel';
-import { ReportFormPage } from '../model/reportForm.pageModel';
 import * as path from 'path';
+import { expect, test } from '../fixtures/baseFixtures';
+import ReportPage from '../model/report.pageModel';
+import ReportDetailsPage from '../model/reportDetails.pageModel';
+import ReportFormPage from '../model/reportForm.pageModel';
 
 test('Create a new report page', async ({ page }) => {
   const reportPage = new ReportPage(page);
@@ -31,5 +31,5 @@ test('Create a new report with associated file', async ({ page }) => {
   await reportPage.getItemFromList('Test e2e with file').click();
   await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
   await page.getByRole('tab', { name: 'Data' }).click();
-  await expect(page.getByRole('button', { name: 'createReport.spec.ts Launch' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'createReport.spec.ts Launch' })).toBeVisible();
 });

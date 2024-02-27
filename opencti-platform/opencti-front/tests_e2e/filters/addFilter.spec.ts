@@ -1,5 +1,5 @@
-import { expect, test } from "../fixtures/baseFixtures";
-import { FiltersUtils } from '../model/filters.pageModel';
+import { expect, test } from '../fixtures/baseFixtures';
+import FiltersUtils from '../model/filters.pageModel';
 
 test('Add a new filter in the observables list and check the filter is still present when we come back to the page', async ({ page }) => {
   await page.goto('/dashboard/observations/observables');

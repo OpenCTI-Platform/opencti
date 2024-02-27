@@ -1,9 +1,10 @@
-import { Page } from "@playwright/test";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Page } from '@playwright/test';
 
-export class DashboardPage {
-    constructor(private page: Page) {
-    }
-    getPage() {
-        return this.page.getByTestId('dashboard-page');
-    }
+export default class DashboardPage {
+  constructor(private page: Page) {}
+
+  getPage() {
+    return this.page.getByTestId('dashboard-page');
+  }
 }
