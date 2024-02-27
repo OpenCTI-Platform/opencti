@@ -2103,8 +2103,11 @@ const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) 
 const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   const { key, mode = 'or', operator = 'eq', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
-  if (arrayKeys[0] !== WORKFLOW_FILTER || arrayKeys[0] !== X_OPENCTI_WORKFLOW_ID || arrayKeys.length > 1) {
-    throw UnsupportedError(`A filter with these multiple keys is not supported: ${arrayKeys}`);
+  if (arrayKeys.length > 1) {
+    throw UnsupportedError(`A filter with these multiple keys is not supported : ${arrayKeys}`);
+  }
+  if (!arrayKeys[0].includes(WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID)) {
+    throw UnsupportedError('The key is not correct', { keys: arrayKeys });
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     return {
@@ -2127,7 +2130,7 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
       operator,
     };
   }
-  throw Error(`The operators supported for a filter with key=workflow_id are: eq, not_eq, nil, not_nil: ${operator} is not supported.`);
+  throw UnsupportedError('The operators supported for a filter with key=workflow_id is not supported.', { operator });
 };
 
 /**
