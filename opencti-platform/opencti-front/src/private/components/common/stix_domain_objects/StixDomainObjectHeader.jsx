@@ -41,6 +41,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { defaultValue } from '../../../../utils/Graph';
 import Transition from '../../../../components/Transition';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -336,10 +337,10 @@ const StixDomainObjectHeader = (props) => {
       ],
     },
   };
-  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions }, { fetchPolicy: 'network-only' });
 
   return (
-    <>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <Tooltip title={defaultValue(stixDomainObject)}>
         <Typography
           variant="h1"
@@ -702,7 +703,7 @@ const StixDomainObjectHeader = (props) => {
           )}
         </Formik>
       )}
-    </>
+    </React.Suspense>
   );
 };
 
