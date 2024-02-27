@@ -24,6 +24,7 @@ class Report:
                 template {
                   id
                   name
+                  color
                 }
             }
             createdBy {
@@ -55,6 +56,11 @@ class Report:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -227,6 +233,7 @@ class Report:
                 template {
                   id
                   name
+                  color
                 }
             }
             createdBy {
@@ -258,6 +265,11 @@ class Report:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id

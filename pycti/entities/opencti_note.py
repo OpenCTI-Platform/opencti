@@ -48,6 +48,11 @@ class Note:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id

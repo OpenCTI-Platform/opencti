@@ -19,6 +19,11 @@ class StixCyberObservable:
             spec_version
             created_at
             updated_at
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             creators {
                 id
                 name
@@ -299,6 +304,11 @@ class StixCyberObservable:
             spec_version
             created_at
             updated_at
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             creators {
                 id
                 name

@@ -67,6 +67,11 @@ class StixCoreRelationship:
                 x_opencti_order
                 x_opencti_color
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectLabel {
                 id
                 value
@@ -1115,9 +1120,11 @@ class StixCoreRelationship:
         default_date = kwargs.get("defaultDate", False)
         if stix_relation is not None:
             # Search in extensions
-            if "granted_refs" not in stix_relation:
-                stix_relation["granted_refs"] = self.opencti.get_attribute_in_extension(
-                    "granted_refs", stix_relation
+            if "x_opencti_granted_refs" not in stix_relation:
+                stix_relation["x_opencti_granted_refs"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "granted_refs", stix_relation
+                    )
                 )
 
             source_ref = stix_relation["source_ref"]
@@ -1179,8 +1186,8 @@ class StixCoreRelationship:
                     else None
                 ),
                 objectOrganization=(
-                    stix_relation["granted_refs"]
-                    if "granted_refs" in stix_relation
+                    stix_relation["x_opencti_granted_refs"]
+                    if "x_opencti_granted_refs" in stix_relation
                     else None
                 ),
                 update=update,
