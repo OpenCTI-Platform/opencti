@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   negative: {
     fontSize: 12,
@@ -45,7 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   itemIcon: {
     color: theme.palette.primary.main,

@@ -25,7 +25,7 @@ const useStyles = makeStyles(() => ({
     height: 25,
     marginRight: 7,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 150,
     backgroundColor: 'rgba(229,152,137, 0.08)',
     color: '#e59889',

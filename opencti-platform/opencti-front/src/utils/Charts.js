@@ -1,5 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
+import { truncate } from './String';
 
 const colors = (temp) => [
   C.red[temp],
@@ -550,6 +551,7 @@ export const radarChartOptions = (
   xaxis: {
     labels: {
       show: legend,
+      formatter: (value) => truncate(value, 25),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
         colors: chartColors,

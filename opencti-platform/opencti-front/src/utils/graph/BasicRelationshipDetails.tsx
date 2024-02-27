@@ -17,7 +17,7 @@ const useStyles = makeStyles({
     height: 20,
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
 });
 interface BasicRelationshipDetailsProps {

@@ -46,7 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 20,
     fontWeight: 800,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   metric: {
     position: 'relative',

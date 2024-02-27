@@ -28,7 +28,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.accent,
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     margin: '0 5px 5px 0',
   },
 });

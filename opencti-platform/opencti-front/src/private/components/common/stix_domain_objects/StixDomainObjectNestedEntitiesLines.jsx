@@ -54,7 +54,7 @@ const styles = (theme) => ({
     height: 20,
     float: 'left',
     textTransform: 'uppercase',
-    borderRadius: 0,
+    borderRadius: 4,
   },
 });
 

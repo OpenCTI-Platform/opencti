@@ -38,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     lineHeight: '12px',
     height: 20,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     cursor: 'pointer',
     '&:hover': {
       backgroundColor: theme.palette.primary.main,

@@ -55,7 +55,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     width: 120,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
 }));
 

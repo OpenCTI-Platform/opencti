@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 25,
     marginRight: 7,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
     width: 150,
     backgroundColor: theme.palette.background.accent,
     color: theme.palette.text?.primary,

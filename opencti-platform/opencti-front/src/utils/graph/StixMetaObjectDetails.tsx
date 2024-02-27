@@ -25,7 +25,7 @@ const useStyles = makeStyles(() => ({
     height: 20,
     width: 180,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
 }));
 

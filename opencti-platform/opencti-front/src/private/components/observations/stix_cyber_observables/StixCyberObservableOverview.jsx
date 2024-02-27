@@ -52,7 +52,7 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.accent,
     color: theme.palette.text.primary,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   standard_id: {
     padding: '5px 5px 5px 10px',

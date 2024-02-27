@@ -56,7 +56,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
     width: 140,
     textTransform: 'uppercase',
-    borderRadius: '0',
+    borderRadius: 4,
   },
   chipInList3: {
     fontSize: 12,

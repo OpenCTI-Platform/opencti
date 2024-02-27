@@ -1364,8 +1364,7 @@ class ToolBar extends Component {
                     style={{
                       padding: '2px 5px 2px 5px',
                       marginRight: 5,
-                      backgroundColor: theme.palette.secondary.main,
-                      color: '#ffffff',
+                      backgroundColor: theme.palette.background.accent,
                     }}
                   >
                     {numberOfSelectedElements}
@@ -1378,6 +1377,7 @@ class ToolBar extends Component {
                     }
                     onClick={handleClearSelectedElements.bind(this)}
                     size="small"
+                    color="primary"
                   >
                     <ClearOutlined fontSize="small"/>
                   </IconButton>
@@ -1577,8 +1577,7 @@ class ToolBar extends Component {
                       style={{
                         padding: '2px 5px 2px 5px',
                         marginRight: 5,
-                        backgroundColor: theme.palette.secondary.main,
-                        color: '#ffffff',
+                        backgroundColor: theme.palette.background.accent,
                       }}
                     >
                       {n(numberOfSelectedElements)}
@@ -1623,7 +1622,7 @@ class ToolBar extends Component {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Chip label="SCOPE"/>
+                            <Chip style={{ borderRadius: 4 }} label="SCOPE"/>
                           </TableCell>
                           <TableCell>{t('N/A')}</TableCell>
                           <TableCell>

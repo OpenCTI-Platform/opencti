@@ -151,7 +151,7 @@ const styles = (theme) => ({
     fontSize: 15,
     height: 30,
     textTransform: 'uppercase',
-    borderRadius: 0,
+    borderRadius: 4,
   },
 });
 

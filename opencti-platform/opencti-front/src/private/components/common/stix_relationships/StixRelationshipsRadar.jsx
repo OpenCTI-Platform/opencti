@@ -283,11 +283,11 @@ const StixRelationshipsRadar = ({
             const labels = data.map((n) => n.label);
             return (
               <Chart
-                options={radarChartOptions(theme, labels, [], true, false)}
+                options={radarChartOptions(theme, labels, [], true, true)}
                 series={chartData}
                 type="radar"
                 width="100%"
-                height="120%"
+                height="100%"
                 withExportPopover={withExportPopover}
                 isReadOnly={isReadOnly}
               />

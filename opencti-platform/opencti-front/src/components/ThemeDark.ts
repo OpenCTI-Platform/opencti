@@ -169,10 +169,12 @@ const ThemeDark = (
             fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
             background: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
+            borderRadius: 4,
           },
           'pre.light': {
             fontFamily: 'Consolas, monaco, monospace',
             background: `${nav || THEME_DARK_DEFAULT_NAV} !important`,
+            borderRadius: 4,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
@@ -181,6 +183,7 @@ const ThemeDark = (
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
+            borderRadius: 4,
           },
           '.react-mde': {
             border: '0 !important',
