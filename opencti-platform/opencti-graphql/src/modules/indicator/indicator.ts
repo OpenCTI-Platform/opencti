@@ -49,7 +49,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       multiple: false,
       upsert: true,
       label: 'Decay base score',
-      isFilterable: true,
+      isFilterable: false,
       precision: 'integer',
     },
     {
