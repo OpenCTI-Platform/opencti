@@ -2106,7 +2106,7 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   if (arrayKeys.length > 1) {
     throw UnsupportedError(`A filter with these multiple keys is not supported : ${arrayKeys}`);
   }
-  if (!arrayKeys[0].includes(WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID)) {
+  if (![WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID].includes(arrayKeys[0])) {
     throw UnsupportedError('The key is not correct', { keys: arrayKeys });
   }
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
