@@ -268,14 +268,15 @@ class ExternalReference:
         id = kwargs.get("id", None)
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
+        version = kwargs.get("version")
         mime_type = kwargs.get("mime_type", "text/plain")
         no_trigger_import = kwargs.get("no_trigger_import", False)
         if id is not None and file_name is not None:
             final_file_name = os.path.basename(file_name)
             query = """
-                mutation ExternalReferenceEdit($id: ID!, $file: Upload!, $noTriggerImport: Boolean) {
+                mutation ExternalReferenceEdit($id: ID!, $file: Upload!, $version: String, $noTriggerImport: Boolean) {
                     externalReferenceEdit(id: $id) {
-                        importPush(file: $file, noTriggerImport: $noTriggerImport) {
+                        importPush(file: $file, version: $version, noTriggerImport: $noTriggerImport) {
                             id
                             name
                         }
@@ -297,6 +298,7 @@ class ExternalReference:
                 {
                     "id": id,
                     "file": (self.file(final_file_name, data, mime_type)),
+                    "version": version,
                     "noTriggerImport": (
                         no_trigger_import
                         if isinstance(no_trigger_import, bool)
