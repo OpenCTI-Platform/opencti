@@ -18,6 +18,11 @@ class StixDomainObject:
             spec_version
             created_at
             updated_at
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -495,6 +500,11 @@ class StixDomainObject:
             spec_version
             created_at
             updated_at
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             createdBy {
                 ... on Identity {
                     id

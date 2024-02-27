@@ -14,69 +14,74 @@ class StixCoreObject:
             spec_version
             created_at
             updated_at
-            ... on StixDomainObject {
-                createdBy {
-                    ... on Identity {
-                        id
-                        standard_id
-                        entity_type
-                        parent_types
-                        spec_version
-                        identity_class
-                        name
-                        description
-                        roles
-                        contact_information
-                        x_opencti_aliases
-                        created
-                        modified
-                        objectLabel {
-                            id
-                            value
-                            color
-                        }
-                    }
-                    ... on Organization {
-                        x_opencti_organization_type
-                        x_opencti_reliability
-                    }
-                    ... on Individual {
-                        x_opencti_firstname
-                        x_opencti_lastname
-                    }
-                }
-                objectMarking {
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
+            createdBy {
+                ... on Identity {
                     id
                     standard_id
                     entity_type
-                    definition_type
-                    definition
+                    parent_types
+                    spec_version
+                    identity_class
+                    name
+                    description
+                    roles
+                    contact_information
+                    x_opencti_aliases
                     created
                     modified
-                    x_opencti_order
-                    x_opencti_color
-                }
-                objectLabel {
-                    id
-                    value
-                    color
-                }
-                externalReferences {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            source_name
-                            description
-                            url
-                            hash
-                            external_id
-                            created
-                            modified
-                        }
+                    objectLabel {
+                        id
+                        value
+                        color
                     }
                 }
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
+                }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
+            }
+            objectLabel {
+                id
+                value
+                color
+            }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                        created
+                        modified
+                    }
+                }
+            }
+            ... on StixDomainObject {
                 revoked
                 confidence
                 created
@@ -632,82 +637,87 @@ class StixCoreObject:
             spec_version
             created_at
             updated_at
-            ... on StixDomainObject {
-                createdBy {
-                    ... on Identity {
-                        id
-                        standard_id
-                        entity_type
-                        parent_types
-                        spec_version
-                        identity_class
-                        name
-                        description
-                        roles
-                        contact_information
-                        x_opencti_aliases
-                        created
-                        modified
-                        objectLabel {
-                            id
-                            value
-                            color
-                        }
-                    }
-                    ... on Organization {
-                        x_opencti_organization_type
-                        x_opencti_reliability
-                    }
-                    ... on Individual {
-                        x_opencti_firstname
-                        x_opencti_lastname
-                    }
-                }
-                objectMarking {
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
+            createdBy {
+                ... on Identity {
                     id
                     standard_id
                     entity_type
-                    definition_type
-                    definition
+                    parent_types
+                    spec_version
+                    identity_class
+                    name
+                    description
+                    roles
+                    contact_information
+                    x_opencti_aliases
                     created
                     modified
-                    x_opencti_order
-                    x_opencti_color
+                    objectLabel {
+                        id
+                        value
+                        color
+                    }
                 }
-                objectLabel {
-                    id
-                    value
-                    color
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
                 }
-                externalReferences {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            source_name
-                            description
-                            url
-                            hash
-                            external_id
-                            created
-                            modified
-                            importFiles {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        size
-                                        metaData {
-                                            mimetype
-                                            version
-                                        }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
+                id
+                standard_id
+                entity_type
+                definition_type
+                definition
+                created
+                modified
+                x_opencti_order
+                x_opencti_color
+            }
+            objectLabel {
+                id
+                value
+                color
+            }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        standard_id
+                        entity_type
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                        created
+                        modified
+                        importFiles {
+                            edges {
+                                node {
+                                    id
+                                    name
+                                    size
+                                    metaData {
+                                        mimetype
+                                        version
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+            ... on StixDomainObject {
                 revoked
                 confidence
                 created

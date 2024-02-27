@@ -47,6 +47,11 @@ class CaseIncident:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id
@@ -96,7 +101,9 @@ class CaseIncident:
                         description
                         due_date
                         status {
+                          id
                           template {
+                            id
                             name
                             color
                           }
@@ -255,6 +262,11 @@ class CaseIncident:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
