@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
+import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 /* eslint-disable import/no-unresolved */
@@ -271,7 +272,9 @@ export const searchEngineInit = async () => {
       region,
       service: conf.get('opensearch:service') || 'es',
       getCredentials: () => {
-        const credentialsProvider = defaultProvider();
+        const credentialsProvider = defaultProvider({
+          roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({ region })
+        });
         return credentialsProvider();
       }
     }) : {})
