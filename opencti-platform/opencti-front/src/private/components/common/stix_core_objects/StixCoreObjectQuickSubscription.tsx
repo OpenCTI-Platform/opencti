@@ -22,7 +22,8 @@ import Drawer from '@components/common/drawer/Drawer';
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
 import {
   stixCoreObjectTriggersUtilsPaginationQuery as TriggerQuery,
-  stixCoreObjectTriggersUtilsPaginationQuery$data, stixCoreObjectTriggersUtilsPaginationQuery$variables,
+  stixCoreObjectTriggersUtilsPaginationQuery$data,
+  stixCoreObjectTriggersUtilsPaginationQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
