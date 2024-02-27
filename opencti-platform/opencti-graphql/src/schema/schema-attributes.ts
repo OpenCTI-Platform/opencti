@@ -240,17 +240,15 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
   }
 
   if (isNonFlatObjectAttributeMapping(schemaDef)) {
-    // check 'multiple' constraint
-    if (isMandatory) {
-      if (schemaDef.multiple && !Array.isArray(input)) {
-        throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
-      }
-      if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
-        throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
-      }
-    }
     if (!isMandatory && R.isNil(input)) {
       return; // nothing to check (happens on 'remove' operation for instance
+    }
+    // check 'multiple' constraint
+    if (schemaDef.multiple && !Array.isArray(input)) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
+    }
+    if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
     }
 
     const inputValues = Array.isArray(input) ? input : [input];
