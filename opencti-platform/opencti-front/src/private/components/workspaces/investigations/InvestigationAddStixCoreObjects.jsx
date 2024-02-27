@@ -141,11 +141,6 @@ const InvestigationAddStixCoreObjects = (props) => {
     search: keyword,
   };
 
-  const resetState = () => {
-    helpers.handleSearch('');
-    helpers.handleClearAllFilters();
-  };
-
   return (
     <>
       {!mapping && (
@@ -163,7 +158,6 @@ const InvestigationAddStixCoreObjects = (props) => {
       <Drawer
         open={mapping ? openDrawer : open}
         onClose={() => {
-          resetState();
           if (mapping) {
             handleClose();
           } else {
