@@ -111,7 +111,7 @@ const stixCyberObservableResolvers = {
       },
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, id, args),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
-      importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
+      importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       promote: () => promoteObservableToIndicator(context, context.user, id),
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),

@@ -356,7 +356,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const up = await upload(context, user, path, file, { entity: previous });
+  const { upload: up } = await upload(context, user, path, file, { entity: previous });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
@@ -368,8 +368,9 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   return true;
 };
 
-export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false) => {
+export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
+  const { noTriggerImport, version: fileVersion } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -389,7 +390,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const up = await upload(context, user, filePath, file, { meta, noTriggerImport, entity: previous });
+    const { upload: up, untouched } = await upload(context, user, filePath, file, { meta, noTriggerImport, fileVersion, entity: previous });
+    if (untouched) {
+      // When synchronizing the version can be the same.
+      // If it's the case, just return without any x_opencti_files modifications
+      return up;
+    }
     // 02. Create and link external ref if needed.
     let addedExternalRef;
     if (isAutoExternal) {

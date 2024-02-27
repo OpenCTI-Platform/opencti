@@ -15,7 +15,7 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { allFilesForPaths, deleteDocumentIndex, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Minio configuration
@@ -318,19 +318,20 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 };
 
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
+  const { entity, meta = {}, noTriggerImport = false, fileVersion, errorOnExisting = false } = opts;
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   const key = `${filePath}/${truncatedFileName}`;
-  let existingFile = null;
-  try {
-    existingFile = await loadFile(user, key);
-  } catch {
-    // do nothing
+  const currentFile = await documentFindById(context, user, key);
+  if (currentFile) {
+    if (currentFile.metaData?.version === fileVersion) {
+      return { upload: currentFile, untouched: true };
+    }
+    if (errorOnExisting) {
+      throw FunctionalError('A file already exists with this name');
+    }
   }
-  if (errorOnExisting && existingFile) {
-    throw FunctionalError('A file already exists with this name');
-  }
+
   // Upload the data
   const readStream = createReadStream();
   const fileMime = guessMimeType(key) || mimetype;
@@ -356,36 +357,34 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     }
   });
   await s3Upload.done();
-  existingFile = await loadFile(user, key);
+  const uploadedFile = await loadFile(user, key);
+
+  // Register in elastic
   const file = {
     id: key,
     name: truncatedFileName,
-    size: existingFile.size,
+    size: uploadedFile.size,
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
-  // Register in elastic
   await indexFileToDocument(file);
 
   // confidence control on the context entity (like a report) if we want auto-enrichment
-  let isConfidenceMatch = true;
-  if (entity) {
-    // noThrow ; we do not want to fail here as it's an automatic process.
-    // we will simply not start the job
-    isConfidenceMatch = controlUserConfidenceAgainstElement(user, entity, true);
-  }
+  // noThrow ; we do not want to fail here as it's an automatic process.
+  // we will simply not start the job
+  const isConfidenceMatch = entity ? controlUserConfidenceAgainstElement(user, entity, true) : true;
   const isFilePathForImportEnrichment = filePath.startsWith('import/')
     && !filePath.startsWith('import/pending')
     && !filePath.startsWith('import/External-Reference');
 
-  // Trigger a enrich job for import file if needed
+  // Trigger an enrich job for import file if needed
   if (!noTriggerImport && isConfidenceMatch && isFilePathForImportEnrichment) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
-  return file;
+  return { upload: file, untouched: false };
 };
 
 export const deleteAllObjectFiles = async (context, user, element) => {

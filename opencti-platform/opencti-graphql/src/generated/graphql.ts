@@ -6759,6 +6759,7 @@ export type ExternalReferenceEditMutationsFieldPatchArgs = {
 export type ExternalReferenceEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -21807,6 +21808,7 @@ export type StixCoreObjectEditMutationsExportPushArgs = {
 export type StixCoreObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22379,6 +22381,7 @@ export type StixCyberObservableEditMutationsFieldPatchArgs = {
 export type StixCyberObservableEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22670,6 +22673,7 @@ export type StixDomainObjectEditMutationsFieldPatchArgs = {
 export type StixDomainObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
+  version?: InputMaybe<Scalars['String']['input']>;
 };
 
 

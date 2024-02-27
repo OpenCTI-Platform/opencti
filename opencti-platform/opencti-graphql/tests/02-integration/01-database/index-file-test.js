@@ -13,7 +13,7 @@ const indexFile = async (fileName, mimetype, documentId) => {
     mimetype,
   };
   // upload file in minio
-  const uploadedFile = await upload(testContext, ADMIN_USER, 'import/global', file, {});
+  const { upload: uploadedFile } = await upload(testContext, ADMIN_USER, 'import/global', file, {});
 
   // get file content in base64
   const fileContent = await getFileContent(uploadedFile.id, 'base64');

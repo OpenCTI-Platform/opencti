@@ -7522,7 +7522,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!, noTriggerImport: Boolean): File
+  importPush(file: Upload!, version: String, noTriggerImport: Boolean): File
 }
 
 type KillChainPhaseEditMutations {
@@ -7542,7 +7542,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!, noTriggerImport: Boolean): File
+  importPush(file: Upload!, version: String, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
 }
@@ -7563,7 +7563,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
-  importPush(file: Upload!, noTriggerImport: Boolean): File
+  importPush(file: Upload!, version: String, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
@@ -7796,7 +7796,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixCyberObservable
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promote: StixCyberObservable
-  importPush(file: Upload!, noTriggerImport: Boolean): File
+  importPush(file: Upload!, version: String, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean
 }
