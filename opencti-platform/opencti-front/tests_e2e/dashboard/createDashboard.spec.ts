@@ -22,5 +22,5 @@ test('Create a new dashboard page', async ({ page }) => {
   await dashboardDetailsPage.getDeleteButton().click();
   await dashboardDetailsPage.getDelete().click();
   await page.goto('/dashboard/workspaces/dashboards');
-  expect(page.getByRole('link', { name: 'Test e2e' })).toBeHidden();
+  await expect(page.getByRole('link', {name: 'Test e2e'})).toBeHidden();
 });
