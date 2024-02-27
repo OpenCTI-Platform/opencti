@@ -8,11 +8,14 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import { Alert, AlertTitle } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import logoDark from '../../static/images/logo_text_dark.png';
 import logoLight from '../../static/images/logo_text_light.png';
 import byFiligranDark from '../../static/images/by_filigran_dark.png';
 import byFiligranLight from '../../static/images/by_filigran_light.png';
+import logoFiligranDark from '../../static/images/logo_filigran_dark.png';
+import logoFiligranLight from '../../static/images/logo_filigran_light.png';
 import LoginForm from './LoginForm';
 import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
@@ -95,6 +98,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   byFiligranLogo: {
     width: 100,
     margin: '-10px 0 0 290px',
+  },
+  filigranLogo: {
+    width: 20,
+    marginRight: 10,
+  },
+  byFiligranText: {
+    margin: 'auto 0',
   },
 }));
 
@@ -231,12 +241,23 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         className={classes.logo}
         style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
       />
-      {isWhitemarkEnable && (
+      {isWhitemarkEnable && (!loginLogo || loginLogo.length === 0) && (
         <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
           <img
             src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
             className={classes.byFiligranLogo}
           />
+        </div>
+      )}
+      {isWhitemarkEnable && loginLogo && loginLogo.length && (
+        <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
+          <img
+            src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
+            className={classes.filigranLogo}
+          />
+          <Typography variant="h4" className={classes.byFiligranText}>
+            by Filigran
+          </Typography>
         </div>
       )}
       {expired && expired === true && (

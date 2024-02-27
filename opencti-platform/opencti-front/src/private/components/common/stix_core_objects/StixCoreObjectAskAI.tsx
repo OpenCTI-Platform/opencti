@@ -49,6 +49,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
+import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 
 // region types
 interface StixCoreObjectAskAiProps {
@@ -101,6 +102,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+  const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
   const [action, setAction] = useState<'container-report' | 'summarize-files' | 'convert-files' | null>(null);
   const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
@@ -290,9 +292,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         <MenuItem onClick={() => handleOpenOptions('summarize-files')}>
           {t_i18n('Summarize associated files')}
         </MenuItem>
-        <MenuItem onClick={() => handleOpenOptions('convert-files')}>
-          {t_i18n('Convert associated files to STIX 2.1')}
-        </MenuItem>
+        {isKnowledgeUploader && (
+          <MenuItem onClick={() => handleOpenOptions('convert-files')}>
+            {t_i18n('Convert associated files to STIX 2.1')}
+          </MenuItem>
+        )}
       </Menu>
       <Dialog
         PaperProps={{ elevation: 1 }}
@@ -400,21 +404,23 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
                 </ListItemSecondaryAction>
               </ListItem>
             )}
-            <ListItem dense={true} divider={true}>
-              <ListItemText
-                primary={t_i18n('New file')}
-                secondary={t_i18n('Create a new file with the content')}
-              />
-              <ListItemSecondaryAction>
-                <Radio
-                  checked={destination === 'file'}
-                  onChange={() => setDestination('file')}
-                  value="file"
-                  name="destination"
-                  inputProps={{ 'aria-label': 'destination' }}
+            {isKnowledgeUploader && (
+              <ListItem dense={true} divider={true}>
+                <ListItemText
+                  primary={t_i18n('New file')}
+                  secondary={t_i18n('Create a new file with the content')}
                 />
-              </ListItemSecondaryAction>
-            </ListItem>
+                <ListItemSecondaryAction>
+                  <Radio
+                    checked={destination === 'file'}
+                    onChange={() => setDestination('file')}
+                    value="file"
+                    name="destination"
+                    inputProps={{ 'aria-label': 'destination' }}
+                  />
+                </ListItemSecondaryAction>
+              </ListItem>
+            )}
           </List>
           {destination === 'file' && (
             <TextField
