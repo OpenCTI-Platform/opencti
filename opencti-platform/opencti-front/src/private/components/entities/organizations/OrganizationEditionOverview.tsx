@@ -190,6 +190,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     createdBy: convertCreatedBy(organization) as Option,
     objectMarking: convertMarkings(organization),
     references: [],
+    confidence: organization.confidence,
   };
 
   return (
