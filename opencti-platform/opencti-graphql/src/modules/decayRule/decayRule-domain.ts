@@ -29,6 +29,7 @@ const DECAY_FACTOR: number = 3.0;
 export interface DecayChartData {
   live_score_serie: DecayHistory[]
 }
+
 export interface DecayModel {
   decay_lifetime: number // in days
   decay_pound: number // can be changed in other model when feature is ready.
@@ -171,7 +172,7 @@ export const countAppliedIndicators = async (context: AuthContext, user: AuthUse
 /**
  * Compute all time scores needed to draw the chart from base score to 0.
  */
-export const computeScoreList = (maxScore:number): number[] => {
+export const computeScoreList = (maxScore: number): number[] => {
   const scoreArray: number[] = [];
   for (let i = maxScore; i >= 0; i -= 1) {
     scoreArray.push(i);
@@ -186,6 +187,9 @@ export const computeScoreList = (maxScore:number): number[] => {
  * @param model decay configuration to use.
  */
 export const computeTimeFromExpectedScore = (initialScore: number, score: number, model: DecayModel) => {
+  if (initialScore === 0) { // Can't divide by 0 when the initial score is 0
+    return 0;
+  }
   if (model.decay_pound && model.decay_lifetime) {
     return (Math.E ** (Math.log(1 - (score / initialScore)) * (DECAY_FACTOR * model.decay_pound))) * model.decay_lifetime;
   }
@@ -374,7 +378,7 @@ export const computeScoreFromExpectedTime = (initialScore: number, daysFromStart
   return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
 };
 
-export const computeDecayPointReactionDate = (initialScore: number, stableScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
+export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
   const daysDelay = computeTimeFromExpectedScore(initialScore, decayPoint, model);
   const duration = moment.duration(daysDelay, 'days');
   return moment(startDate).add(duration.asMilliseconds(), 'ms').toDate();
@@ -383,7 +387,7 @@ export const computeDecayPointReactionDate = (initialScore: number, stableScore:
 export const computeNextScoreReactionDate = (initialScore: number, stableScore: number, model: DecayModel, startDate: Moment) => {
   if (model.decay_points && model.decay_points.length > 0) {
     const nextKeyPoint = model.decay_points.find((p) => p < stableScore) || model.decay_revoke_score;
-    return computeDecayPointReactionDate(initialScore, stableScore, model, startDate, nextKeyPoint);
+    return computeDecayPointReactionDate(initialScore, model, startDate, nextKeyPoint);
   }
   return null;
 };

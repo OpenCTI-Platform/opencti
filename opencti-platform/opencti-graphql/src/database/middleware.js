@@ -1632,7 +1632,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     if (ins) { // If update will really produce a data change
       impactedInputs.push(ins);
       // region Compute the update to push in the stream
-      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data') {
+      if (!input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data' && !input.key.startsWith('decay_')) {
         const previous = getPreviousInstanceValue(input.key, instance);
         if (input.operation === UPDATE_OPERATION_ADD || input.operation === UPDATE_OPERATION_REMOVE) {
           // Check symmetric difference for add and remove
@@ -2380,14 +2380,20 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
+    // Do not compute decay again when base score does not change
     if (updatePatch.decay_applied_rule && updatePatch.decay_base_score === element.decay_base_score) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
-      // Do not compute decay again when base score does not change
+      // don't reset score, valid_from & valid_until
+      updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
+      updatePatch.valid_from = element.valid_from;
+      updatePatch.valid_until = element.valid_until;
+      // don't reset decay attributes
       updatePatch.decay_base_score_date = element.decay_base_score_date;
       updatePatch.decay_applied_rule = element.decay_applied_rule;
-      updatePatch.decay_history = [];
+      updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
       updatePatch.decay_next_reaction_date = element.decay_next_reaction_date;
     } else {
+      // As base_score as change, decay will be reset by upsert
       logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
     }
   }

@@ -44,17 +44,8 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
     return mhd(history.updated_at);
   };
 
-  const getDisplayFor = (history: DecayHistory) => {
-    if (history.updated_at < indicator.decay_base_score_date) {
-      // Anything before base score reset is just "score"
-      return {
-        label: t_i18n('Score'),
-        style: { color: theme.palette.text.primary },
-        score: history.score,
-        updated_at: getDateAsTextFor(history),
-      };
-    }
-    if (history.score === indicator.x_opencti_score) {
+  const getDisplayForHistory = (history: DecayHistory, index: number, currentScoreIndex: number) => {
+    if (index === currentScoreIndex) {
       return {
         label: t_i18n('Current stable score'),
         style: {
@@ -64,14 +55,16 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         score: history.score,
         updated_at: getDateAsTextFor(history),
       };
-    } if (history.score === indicator.decay_base_score) {
+    }
+    if (index === 0) {
       return {
-        label: t_i18n('Base score'),
+        label: t_i18n('Initial score'),
         style: { color: theme.palette.text.primary },
         score: history.score,
         updated_at: getDateAsTextFor(history),
       };
-    } if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
+    }
+    if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
       return {
         label: t_i18n('Revoke score'),
         style: { color: theme.palette.secondary.main },
@@ -80,7 +73,24 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
       };
     }
     return {
-      label: t_i18n('Stability threshold'),
+      label: t_i18n('Stable score'),
+      style: { color: theme.palette.text.primary },
+      score: history.score,
+      updated_at: getDateAsTextFor(history),
+    };
+  };
+
+  const getDisplayForUpcomingUpdates = (history: DecayHistory) => {
+    if (history.score === indicator.decay_applied_rule?.decay_revoke_score) {
+      return {
+        label: t_i18n('Revoke score'),
+        style: { color: theme.palette.secondary.main },
+        score: history.score,
+        updated_at: getDateAsTextFor(history),
+      };
+    }
+    return {
+      label: t_i18n('Stable score'),
       style: { color: theme.palette.text.primary },
       score: history.score,
       updated_at: getDateAsTextFor(history),
@@ -88,12 +98,13 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   };
 
   const labelledHistoryList: LabelledDecayHistory[] = [];
-  decayHistory.forEach((history) => (
-    labelledHistoryList.push(getDisplayFor(history))
+  const currentScoreIndex = decayHistory.findLastIndex((history) => history.score === indicator.x_opencti_score);
+  decayHistory.forEach((history, index) => (
+    labelledHistoryList.push(getDisplayForHistory(history, index, currentScoreIndex))
   ));
 
   decayLivePoints.forEach((history) => (
-    labelledHistoryList.push(getDisplayFor(history))
+    labelledHistoryList.push(getDisplayForUpcomingUpdates(history))
   ));
 
   labelledHistoryList.sort((a, b) => {
@@ -117,7 +128,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={7}>
           <DecayChart
             currentScore={indicator.x_opencti_score || 0}
             revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
@@ -126,7 +137,7 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             decayLiveScore={indicator.decayLiveDetails?.live_score}
           />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={5}>
           <TableContainer component={Paper}>
             <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
               <TableHead>

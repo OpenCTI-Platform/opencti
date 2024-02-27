@@ -1,6 +1,6 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { DECAY_MANAGER_USER, executionContext } from '../utils/access';
 import { findIndicatorsForDecay, updateIndicatorDecayScore } from '../modules/indicator/indicator-domain';
 
 const INDICATOR_DECAY_MANAGER_ENABLED = booleanConf('indicator_decay_manager:enabled', true);
@@ -15,12 +15,12 @@ const BATCH_SIZE = conf.get('indicator_decay_manager:batch_size') || 10000;
  */
 export const indicatorDecayHandler = async () => {
   const context = executionContext('indicator_decay_manager');
-  const indicatorsToUpdate = await findIndicatorsForDecay(context, SYSTEM_USER, BATCH_SIZE);
+  const indicatorsToUpdate = await findIndicatorsForDecay(context, DECAY_MANAGER_USER, BATCH_SIZE);
   let errorCount = 0;
   for (let i = 0; i < indicatorsToUpdate.length; i += 1) {
     try {
       const indicator = indicatorsToUpdate[i];
-      await updateIndicatorDecayScore(context, SYSTEM_USER, indicator);
+      await updateIndicatorDecayScore(context, DECAY_MANAGER_USER, indicator);
     } catch (e) {
       logApp.warn(e, `[OPENCTI-MODULE] Error when processing decay for ${indicatorsToUpdate[i].id}, skipping.`);
       errorCount += 1;
