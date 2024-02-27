@@ -20,10 +20,7 @@ import { useMutation, useRefetchableFragment } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
-import {
-  stixCoreObjectTriggersUtilsPaginationQuery as TriggerQuery,
-  stixCoreObjectTriggersUtilsPaginationQuery$data,
-} from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
+import { stixCoreObjectTriggersUtilsPaginationQuery as TriggerQuery, stixCoreObjectTriggersUtilsPaginationQuery$data, } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -40,7 +37,6 @@ import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
-import { StixCoreObjectQuickSubscriptionContentPaginationQuery$variables } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 interface InstanceTriggerEditionFormValues {
