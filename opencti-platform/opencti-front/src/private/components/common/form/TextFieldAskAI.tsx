@@ -327,7 +327,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({ currentValue, 
   }
   if (variant === 'html') {
     return (
-      <div style={{ position: 'absolute', top: 0, right: 10 }}>
+      <div style={{ position: 'absolute', top: -12, right: 35 }}>
         {renderButton()}
       </div>
     );
