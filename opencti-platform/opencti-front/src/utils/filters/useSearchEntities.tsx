@@ -682,6 +682,11 @@ const useSearchEntities = ({
                 .filter((type) => type !== 'Container')
                 .concat(containerTypes);
             }
+            if (availableEntityTypes.includes('Threat-Actor')) {
+              completedAvailableEntityTypes = completedAvailableEntityTypes
+                .filter((type) => type !== 'Threat-Actor')
+                .concat(['Threat-Actor-Individual', 'Threat-Actor-Group']);
+            }
             const entitiesTypes = completedAvailableEntityTypes
               .map((n) => ({
                 label: t_i18n(

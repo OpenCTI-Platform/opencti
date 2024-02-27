@@ -6,6 +6,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_THREAT_ACTOR,
   INPUT_CREATED_BY,
   INPUT_KILLCHAIN,
   INPUT_LABELS
@@ -185,6 +186,14 @@ describe('Filter keys schema generation testing', async () => {
     // Location
     filterDefinition = filterKeysSchema.get(ENTITY_TYPE_LOCATION)?.get(INPUT_CREATED_BY);
     expect(filterDefinition?.subEntityTypes.length).toEqual(6); // 5 locations + abstract type 'Location'
+    // Threat Actor
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_THREAT_ACTOR)?.get('threat_actor_types');
+    expect(filterDefinition?.type).toEqual('vocabulary');
+    expect(filterDefinition?.subEntityTypes.length).toEqual(2); // 'Threat-Actor-Group' and 'Threat-Actor-Individual'
+    filterDefinition = filterKeysSchema.get(ENTITY_TYPE_THREAT_ACTOR)?.get('hair_color');
+    expect(filterDefinition?.type).toEqual('vocabulary');
+    expect(filterDefinition?.subEntityTypes.length).toEqual(1); // 'Threat-Actor-Individual'
+
     // Stix Core Relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('fromId');
     expect(filterDefinition?.subEntityTypes.length).toEqual(49); // 48 stix core relationship types + abstract type 'stix-core-relationships'

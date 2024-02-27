@@ -93,6 +93,7 @@ export const indicatorEntitiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
     ...IndicatorEntitiesLines_data
       @arguments(
@@ -108,6 +109,7 @@ export const indicatorEntitiesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -133,6 +135,7 @@ export default createPaginationContainer(
           defaultValue: start_time
         }
         orderMode: { type: "OrderingMode" }
+        filters: { type: "FilterGroup" }
       ) {
         stixCoreRelationships(
           fromId: $fromId
@@ -147,6 +150,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
