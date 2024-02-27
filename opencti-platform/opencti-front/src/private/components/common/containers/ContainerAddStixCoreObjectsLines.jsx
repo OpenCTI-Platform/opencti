@@ -262,8 +262,13 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   stixCoreObjectToggled(stixCoreObject) {
-    this.setState({ referenceDialogOpened: true });
-    this.setState({ currentlyToggledCoreObject: stixCoreObject });
+    const { enableReferences } = this.props;
+    if (enableReferences) {
+      this.setState({ referenceDialogOpened: true });
+      this.setState({ currentlyToggledCoreObject: stixCoreObject });
+    } else {
+      this.sendStixCoreObjectModification(stixCoreObject, '', [], () => {});
+    }
   }
 
   closePopup() {
@@ -278,7 +283,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, containerRef } = this.props;
+    const { initialLoading, dataColumns, relay, containerRef, enableReferences } = this.props;
     const { addedStixCoreObjects, referenceDialogOpened } = this.state;
     return (
       <>
@@ -302,30 +307,32 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           disableExport={true}
           containerRef={containerRef}
         />
-        <Formik
-          initialValues={{ message: '', references: [] }}
-          onSubmit={this.submitReference.bind(this)}
-        >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              <CommitMessage
-                handleClose={this.closePopup.bind(this)}
-                open={referenceDialogOpened}
-                submitForm={submitForm}
-                disabled={isSubmitting}
-                setFieldValue={setFieldValue}
-                values={values.references}
-                id={containerRef.id}
-                noStoreUpdate={true}
-              />
-            </Form>
-          )}
-        </Formik>
+        {enableReferences && (
+          <Formik
+            initialValues={{ message: '', references: [] }}
+            onSubmit={this.submitReference.bind(this)}
+          >
+            {({
+              submitForm,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form>
+                <CommitMessage
+                  handleClose={this.closePopup.bind(this)}
+                  open={referenceDialogOpened}
+                  submitForm={submitForm}
+                  disabled={isSubmitting}
+                  setFieldValue={setFieldValue}
+                  values={values.references}
+                  id={containerRef.id}
+                  noStoreUpdate={true}
+                />
+              </Form>
+            )}
+          </Formik>
+        )}
       </>
     );
   }
@@ -345,6 +352,7 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   onDelete: PropTypes.func,
   mapping: PropTypes.bool,
   containerRef: PropTypes.object,
+  enableReferences: PropTypes.bool,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
