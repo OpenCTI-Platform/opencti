@@ -14,6 +14,7 @@ import {
   buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
+  INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS
 } from '../../schema/general';
@@ -154,7 +155,7 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
-  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
+  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
@@ -170,6 +171,7 @@ export const createObservablesFromIndicator = async (
       x_opencti_score: indicator.x_opencti_score,
       createdBy: input.createdBy,
       objectMarking: input.objectMarking,
+      objectOrganization: input.objectOrganization,
       objectLabel: input.objectLabel,
       externalReferences: input.externalReferences,
       update: true,
@@ -183,7 +185,13 @@ export const createObservablesFromIndicator = async (
   }
   await Promise.all(
     observablesToLink.map((observableToLink) => {
-      const relationInput = { fromId: indicator.id, toId: observableToLink, relationship_type: RELATION_BASED_ON };
+      const relationInput = {
+        fromId: indicator.id,
+        toId: observableToLink,
+        relationship_type: RELATION_BASED_ON,
+        objectMarking: input.objectMarking,
+        objectOrganization: input.objectOrganization,
+      };
       return createRelation(context, user, relationInput);
     })
   );
@@ -193,9 +201,10 @@ export const promoteIndicatorToObservable = async (context: AuthContext, user: A
   const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
+  const objectOrganization = (indicator[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
   const externalReferences = (indicator[INPUT_EXTERNAL_REFS] ?? []).map((n) => n.internal_id);
   const createdBy = indicator[INPUT_CREATED_BY]?.internal_id;
-  const input = { objectLabel, objectMarking, createdBy, externalReferences };
+  const input = { objectLabel, objectMarking, objectOrganization, createdBy, externalReferences };
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
@@ -272,7 +281,13 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const created = await createEntity(context, user, finalIndicatorToCreate, ENTITY_TYPE_INDICATOR);
   await Promise.all(
     observablesToLink.map((observableToLink) => {
-      const input = { fromId: created.id, toId: observableToLink, relationship_type: RELATION_BASED_ON };
+      const input = {
+        fromId: created.id,
+        toId: observableToLink,
+        relationship_type: RELATION_BASED_ON,
+        objectMarking: indicator.objectMarking,
+        objectOrganization: indicator.objectOrganization,
+      };
       return createRelation(context, user, input);
     })
   );

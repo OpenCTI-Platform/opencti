@@ -867,6 +867,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
         }
         const pattern = await createStixPattern(context, AUTOMATION_MANAGER_USER, key, value);
         const { score } = observable.extensions[STIX_EXT_OCTI_SCO];
+        const { granted_refs } = observable.extensions[STIX_EXT_OCTI];
         if (pattern) {
           const indicatorData = {
             name: indicatorName,
@@ -902,6 +903,9 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           if (observable.extensions[STIX_EXT_OCTI_SCO].external_references) {
             indicator.external_references = observable.extensions[STIX_EXT_OCTI_SCO].external_references;
           }
+          if (granted_refs) {
+            indicator.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+          }
           bundle.objects.push(indicator);
           const relationship = {
             id: `relationship--${generateInternalId()}`,
@@ -909,9 +913,16 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             source_ref: indicator.id,
             target_ref: observable.id,
             relationship_type: RELATION_BASED_ON,
+            object_marking_refs: observable.object_marking_refs ?? [],
             created: now(),
-            modified: now()
+            modified: now(),
+            extensions: {
+              [STIX_EXT_OCTI]: {}
+            }
           } as StixRelation;
+          if (granted_refs) {
+            relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+          }
           bundle.objects.push(relationship);
           return { output_port: 'out', bundle };
         }
@@ -954,12 +965,13 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
         for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
           const observable = observables[indexObservable];
           const description = indicator.description ?? `Simple observable of indicator {${indicator.name || indicator.pattern}}`;
-          const { score } = indicator.extensions[STIX_EXT_OCTI];
+          const { score, granted_refs } = indicator.extensions[STIX_EXT_OCTI];
           const observableData = {
             ...R.dissoc('type', observable),
             x_opencti_score: score,
             x_opencti_description: description,
             extensions: {
+              [STIX_EXT_OCTI]: {},
               [STIX_EXT_OCTI_SCO]: {
                 score,
                 description,
@@ -987,6 +999,9 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           if (indicator.external_references) {
             stixObservable.extensions[STIX_EXT_OCTI_SCO].external_references = indicator.external_references;
           }
+          if (granted_refs) {
+            stixObservable.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+          }
           bundle.objects.push(stixObservable);
           const relationship = {
             id: `relationship--${generateInternalId()}`,
@@ -994,9 +1009,16 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             source_ref: indicator.id,
             target_ref: stixObservable.id,
             relationship_type: RELATION_BASED_ON,
+            object_marking_refs: indicator.object_marking_refs ?? [],
             created: now(),
-            modified: now()
+            modified: now(),
+            extensions: {
+              [STIX_EXT_OCTI]: {}
+            }
           } as StixRelation;
+          if (granted_refs) {
+            relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
+          }
           bundle.objects.push(relationship);
         }
         return { output_port: 'out', bundle };
