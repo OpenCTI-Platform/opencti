@@ -10,7 +10,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR
 } from './general';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
 import { aliases, type AttributeDefinition, xOpenctiAliases } from './attribute-definition';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { schemaTypesDefinition } from './schema-types';
@@ -185,5 +185,6 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
   ENTITY_TYPE_WORK, // Work is defined as an history object
-  ENTITY_TYPE_TAXII_COLLECTION // TODO TaxiiCollection must be migrate to add according parent types
+  ENTITY_TYPE_TAXII_COLLECTION, // TODO TaxiiCollection must be migrate to add according parent types
+  ENTITY_TYPE_INTERNAL_FILE, // TODO InternalFile must be migrate to add according parent types
 ];

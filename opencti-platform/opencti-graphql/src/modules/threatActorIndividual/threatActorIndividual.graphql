@@ -26,7 +26,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectOrganization: [Organization!]
   objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number

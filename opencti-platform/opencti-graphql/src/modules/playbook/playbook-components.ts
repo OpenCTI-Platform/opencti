@@ -49,15 +49,7 @@ import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelat
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
-import {
-  isEmptyField,
-  isNotEmptyField,
-  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE
-} from '../../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES_WITHOUT_INFERRED, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
@@ -388,7 +380,6 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
 
 interface SharingConfiguration extends PlaybookComponentConfiguration {
   organizations: string[]
-  operation: 'add' | 'remove' | 'replace'
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -399,24 +390,14 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       default: [],
       $ref: 'Target organizations',
       items: { type: 'string', oneOf: [] }
-    },
-    operation: {
-      type: 'string',
-      default: 'add',
-      $ref: 'Operation to apply',
-      oneOf: [
-        { const: 'add', title: 'Add' },
-        { const: 'remove', title: 'Remove' },
-        { const: 'replace', title: 'Replace' }
-      ]
-    },
+    }
   },
-  required: ['organizations', 'operation'],
+  required: ['organizations'],
 };
 const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
-  name: 'Manage sharing with organizations',
-  description: 'Share/Unshare with organizations within the platform',
+  name: 'Share with organizations',
+  description: 'Share with organizations within the platform',
   icon: 'identity',
   is_entry_point: false,
   is_internal: true,
@@ -437,25 +418,12 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const allOrganizations = await getEntitiesListFromCache<BasicStoreEntityOrganization>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    const { organizations, operation } = playbookNode.configuration;
+    const { organizations } = playbookNode.configuration;
     const organizationIds = allOrganizations
       .filter((o) => (organizations ?? []).includes(o.internal_id))
       .map((o) => o.standard_id);
     const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
-    // granted_refs are always fully change on absorption level
-    // We only need to compute the expected final result
-    if (operation === UPDATE_OPERATION_ADD) {
-      baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
-    }
-    if (operation === UPDATE_OPERATION_REMOVE && organizationIds.length > 0) {
-      // noinspection UnnecessaryLocalVariableJS
-      const remainingOrganizations = (baseData.extensions[STIX_EXT_OCTI].granted_refs ?? [])
-        .filter((o: string) => organizationIds.some((select) => o !== select));
-      baseData.extensions[STIX_EXT_OCTI].granted_refs = remainingOrganizations;
-    }
-    if (operation === UPDATE_OPERATION_REPLACE) {
-      baseData.extensions[STIX_EXT_OCTI].granted_refs = organizationIds;
-    }
+    baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
     return { output_port: 'out', bundle };
   }
 };

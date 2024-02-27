@@ -16,6 +16,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
+  CONNECTOR_INTERNAL_EXPORT_FILE,
   INPUT_GRANTED_REFS
 } from '../schema/general';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
@@ -74,6 +75,7 @@ export const askListExport = async (context, user, exportContext, format, select
       return {
         internal,
         event: {
+          event_type: CONNECTOR_INTERNAL_EXPORT_FILE,
           export_scope: 'selection', // query or selection or single
           file_name: fileName, // Export expected file name
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
@@ -135,6 +137,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
         applicant_id: user.id, // User asking for the import
       },
       event: {
+        event_type: CONNECTOR_INTERNAL_EXPORT_FILE,
         file_name: fileName, // Export expected file name
         ...baseEvent
       },

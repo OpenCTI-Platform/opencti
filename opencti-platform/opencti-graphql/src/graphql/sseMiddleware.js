@@ -24,7 +24,15 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, computeUserMemberAccessIds, executionContext, isUserCanAccessStixElement, isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  computeUserMemberAccessIds,
+  executionContext,
+  isUserCanAccessStixElement,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SYSTEM_USER
+} from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -237,7 +245,7 @@ const createSseMiddleware = () => {
       },
       setLastEventId: (id) => { lastEventId = id; },
       connected: () => !req.finished,
-      sendEvent: (eventId, topic, data) => {
+      sendEvent: (eventId, topic, event) => {
         if (req.finished) {
           // Write on an already terminated response
           return;
@@ -250,9 +258,16 @@ const createSseMiddleware = () => {
         if (topic) {
           message += `event: ${topic}\n`;
         }
-        if (data) {
+        if (event) {
           message += 'data: ';
-          message += JSON.stringify(data);
+          const isDataTopic = eventId && topic !== 'heartbeat';
+          if (isDataTopic && req.user && !isUserHasCapability(req.user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+            const filtered = { ...event };
+            delete filtered.data.extensions[STIX_EXT_OCTI].granted_refs;
+            message += JSON.stringify(filtered);
+          } else {
+            message += JSON.stringify(event);
+          }
           message += '\n';
         }
         message += '\n';
