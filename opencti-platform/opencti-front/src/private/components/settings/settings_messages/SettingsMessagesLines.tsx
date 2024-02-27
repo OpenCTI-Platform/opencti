@@ -23,7 +23,7 @@ const SettingsMessagesLines = ({
       loadMore={() => null}
       hasMore={() => false}
       dataList={datas ?? []}
-      globalCount={datas.length ?? 1}
+      globalCount={(datas ?? []).length ?? 1}
       nbOfRowsToLoad={50}
       LineComponent={SettingsMessagesLine}
       DummyLineComponent={SettingsMessagesLineDummy}

@@ -249,7 +249,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           />
         </div>
       )}
-      {isWhitemarkEnable && loginLogo && loginLogo.length && (
+      {isWhitemarkEnable && loginLogo && loginLogo.length > 0 && (
         <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
           <img
             src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}

@@ -79,7 +79,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   variant,
   format = 'text',
   disabled,
-  style
+  style,
 }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
