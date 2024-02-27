@@ -55,31 +55,33 @@ class RootDashboard extends Component {
       },
     } = this.props;
     return (
-      <QueryRenderer
-        query={dashboardQuery}
-        variables={{ id: workspaceId }}
-        render={({ props }) => {
-          if (props) {
-            if (props.workspace) {
-              return (
-                <Route
-                  exact
-                  path="/dashboard/workspaces/dashboards/:workspaceId"
-                  render={(routeProps) => (
-                    <Dashboard
-                      {...routeProps}
-                      workspace={props.workspace}
-                      settings={props.settings}
-                    />
-                  )}
-                />
-              );
+      <div data-testid="dashboard-details-page">
+        <QueryRenderer
+          query={dashboardQuery}
+          variables={{ id: workspaceId }}
+          render={({ props }) => {
+            if (props) {
+              if (props.workspace) {
+                return (
+                  <Route
+                    exact
+                    path="/dashboard/workspaces/dashboards/:workspaceId"
+                    render={(routeProps) => (
+                      <Dashboard
+                        {...routeProps}
+                        workspace={props.workspace}
+                        settings={props.settings}
+                      />
+                    )}
+                  />
+                );
+              }
+              return <ErrorNotFound />;
             }
-            return <ErrorNotFound />;
-          }
-          return <Loader />;
-        }}
-      />
+            return <Loader />;
+          }}
+        />
+      </div>
     );
   }
 }

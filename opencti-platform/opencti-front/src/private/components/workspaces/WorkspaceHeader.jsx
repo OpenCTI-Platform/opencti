@@ -67,7 +67,6 @@ const useStyles = makeStyles(() => ({
   },
   tags: {
     float: 'right',
-    width: 350,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'end',
@@ -76,6 +75,7 @@ const useStyles = makeStyles(() => ({
   tag: {
     marginRight: 7,
     paddingBottom: 2,
+    marginBottom: 3,
     maxWidth: 180,
   },
   tagsInput: {
@@ -128,15 +128,13 @@ const WorkspaceHeader = ({
   const handleToggleOpenTags = () => {
     setOpenTags(!openTags);
   };
-  const getCurrentTags = () => workspace.tags;
   const handleChangeNewTags = (event) => {
     const { value } = event.target;
     setNewTag(value);
   };
   const onSubmitCreateTag = (data, { resetForm, setSubmitting }) => {
-    const currentTags = getCurrentTags();
     if (
-      (currentTags === null || !currentTags.includes(newTag))
+      (tags === null || !tags.includes(newTag))
       && newTag !== ''
     ) {
       commitMutation({
@@ -145,7 +143,7 @@ const WorkspaceHeader = ({
           id: workspace.id,
           input: {
             key: 'tags',
-            value: [...currentTags, newTag],
+            value: [...tags, newTag],
           },
         },
         setSubmitting,
@@ -157,8 +155,7 @@ const WorkspaceHeader = ({
     resetForm();
   };
   const deleteTag = (tag) => {
-    const currentTags = getCurrentTags();
-    const filteredTags = currentTags.filter((a) => a !== tag);
+    const filteredTags = tags.filter((a) => a !== tag);
     commitMutation({
       mutation: workspaceMutation,
       variables: {
@@ -435,14 +432,14 @@ const WorkspaceHeader = ({
                 aria-tag="More"
                 onClick={handleToggleOpenTags}
                 size="large"
-                style={{ fontSize: 14, marginRight: '7px' }}
+                style={{ fontSize: 14, marginRight: '7px', marginTop: '-4px' }}
               >
                 <DotsHorizontalCircleOutline fontSize="small" />
               </IconButton>
             ) : (
               <Tooltip title={t_i18n('Add tag')}>
                 <IconButton
-                  style={{ float: 'left', marginTop: '-5px' }}
+                  style={{ float: 'left', marginTop: '-5px', marginRight: '3px' }}
                   color="primary"
                   aria-tag="Tag"
                   onClick={handleOpenTag}

@@ -89,19 +89,20 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       },
     };
     return (
-      <ListLines
-        helpers={storageHelpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        keyword={searchTerm}
-        secondaryAction={true}
-        paginationOptions={workspacePaginationOptions}
-        numberOfElements={numberOfElements}
-      >
-        {queryRef && (
+      <div data-testid="dashboard-page">
+        <ListLines
+          helpers={storageHelpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          keyword={searchTerm}
+          secondaryAction={true}
+          paginationOptions={workspacePaginationOptions}
+          numberOfElements={numberOfElements}
+        >
+          {queryRef && (
           <React.Suspense
             fallback={
               <>
@@ -120,8 +121,9 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
               setNumberOfElements={storageHelpers.handleSetNumberOfElements}
             />
           </React.Suspense>
-        )}
-      </ListLines>
+          )}
+        </ListLines>
+      </div>
     );
   };
 
