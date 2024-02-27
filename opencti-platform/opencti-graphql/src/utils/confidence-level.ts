@@ -32,7 +32,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
       // we make sure the levels are cropped in between 0-100
       // other values were possibly injected in octi <6.0 though API calls
       max_confidence: cropNumber(user.user_confidence_level.max_confidence, 0, 100),
-      overrides: user.user_confidence_level.overrides?.map((override) => ({
+      overrides: (user.user_confidence_level.overrides ?? []).map((override) => ({
         max_confidence: cropNumber(override.max_confidence, 0, 100),
         entity_type: override.entity_type,
       })),
