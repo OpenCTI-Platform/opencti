@@ -21,7 +21,7 @@ const debounce = (func, timeout = 500) => {
   };
 };
 const middleware = (target, ws = false) => createProxyMiddleware(basePath + target, {
-  target: "http://localhost:4000",
+  target: process.env.BACK_END_URL ?? "http://localhost:4000",
   changeOrigin: true,
   ws,
 })
@@ -61,29 +61,32 @@ esbuild.context({
   });
   // endregion
   // region Listen change for hot recompile
-  chokidar.watch("src/**/*.{js,jsx,ts,tsx}", {
-    awaitWriteFinish: true,
-    ignoreInitial: true,
-  }).on(
-    "all",
-    debounce(() => {
-      const start = new Date().getTime();
-      console.log(`[HOT RELOAD] Update of front detected`);
-      return builder
-        .rebuild()
-        .then(() => {
-          const time = new Date().getTime() - start;
-          console.log(
-            `[HOT RELOAD] Rebuild done in ${time} ms, updating frontend`
-          );
-          clients.forEach((res) => res.write("data: update\n\n"));
-          clients.length = 0;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+  if (!process.env.E2E_TEST) {
+    chokidar.watch("src/**/*.{js,jsx,ts,tsx}", {
+      awaitWriteFinish: true,
+      ignoreInitial: true,
     })
-  );
+      .on(
+        "all",
+        debounce(() => {
+          const start = new Date().getTime();
+          console.log(`[HOT RELOAD] Update of front detected`);
+          return builder
+            .rebuild()
+            .then(() => {
+              const time = new Date().getTime() - start;
+              console.log(
+                `[HOT RELOAD] Rebuild done in ${time} ms, updating frontend`
+              );
+              clients.forEach((res) => res.write("data: update\n\n"));
+              clients.length = 0;
+            })
+            .catch((error) => {
+              console.error(error);
+            });
+        })
+      );
+  }
   // endregion
   // region Start a dev web server
   const app = express();
@@ -119,12 +122,14 @@ esbuild.context({
       .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
       .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
       .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
-    res.header(
-      "Cache-Control",
-      "private, no-cache, no-store, must-revalidate"
-    );
-    res.header("Expires", "-1");
-    res.header("Pragma", "no-cache");
+    if (!process.env.E2E_TEST) {
+      res.header(
+        "Cache-Control",
+        "private, no-cache, no-store, must-revalidate"
+      );
+      res.header("Expires", "-1");
+      res.header("Pragma", "no-cache");
+    }
     return res.send(withOptionValued);
   });
   app.listen(3000);
