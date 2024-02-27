@@ -46,6 +46,7 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { files } from '../../schema/attribute-definition';
 
 interface Measures {
   measure: number | null
@@ -83,6 +84,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     },
   },
   attributes: [
+    { ...files, update: true },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'threat_actor_types', label: 'Threat actor types', type: 'string', format: 'vocabulary', vocabularyCategory: 'threat_actor_individual_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },

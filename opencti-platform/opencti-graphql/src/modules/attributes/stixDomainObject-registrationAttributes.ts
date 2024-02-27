@@ -203,6 +203,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   [ENTITY_TYPE_THREAT_ACTOR_GROUP]: [
     iAliasedIds,
     aliases,
+    { ...files, update: true },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'threat_actor_types', label: 'Threat actor types', format: 'vocabulary', type: 'string', vocabularyCategory: 'threat_actor_group_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: false, isFilterable: true },
