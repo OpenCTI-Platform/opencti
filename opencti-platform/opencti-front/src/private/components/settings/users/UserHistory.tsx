@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { useQueryLoader } from 'react-relay';
@@ -65,6 +66,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         ],
         operator: 'eq',
         mode: 'or',
+        id: uuid(), // because filters in the URL
       },
     ],
   });
