@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from '@mui/styles';
 import Box from '@mui/material/Box';
+import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 import StixCoreObjectAskAI from '../stix_core_objects/StixCoreObjectAskAI';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
@@ -42,6 +43,7 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const useStyles = makeStyles({
   containerDefault: {
@@ -726,333 +728,361 @@ const ContainerHeader = (props) => {
       right: 24,
     };
   }
+
+  const triggersPaginationOptions = {
+    includeAuthorities: true,
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['filters'],
+          values: [container.id],
+          operator: 'match',
+          mode: 'or',
+        },
+        {
+          key: ['instance_trigger'],
+          values: ['true'],
+          operator: 'eq',
+          mode: 'or',
+        },
+      ],
+    },
+  };
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions }, { fetchPolicy: 'network-only' });
+
   return (
     <Box sx={containerStyle}>
-      {!knowledge && (
-        <Tooltip
-          title={
-            container.name
-            || container.attribute_abstract
-            || container.content
-            || container.opinion
-            || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-          }
-        >
-          <Typography
-            variant="h1"
-            gutterBottom={true}
-            classes={{ root: classes.title }}
-          >
-            {truncate(
+      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        {!knowledge && (
+          <Tooltip
+            title={
               container.name
+              || container.attribute_abstract
+              || container.content
+              || container.opinion
+              || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+            }
+          >
+            <Typography
+              variant="h1"
+              gutterBottom={true}
+              classes={{ root: classes.title }}
+            >
+              {truncate(
+                container.name
                 || container.attribute_abstract
                 || container.content
                 || container.opinion
                 || `${fd(container.first_observed)} - ${fd(
                   container.last_observed,
                 )}`,
-              80,
-            )}
-          </Typography>
-        </Tooltip>
-      )}
-      {knowledge && (
-        <div className={classes.export}>
-          <ExportButtons
-            domElementId="container"
-            name={t_i18n('Report representation')}
-            pixelRatio={currentMode === 'graph' ? 1 : 2}
-            adjust={adjust}
-            containerId={container.id}
-            investigationAddFromContainer={investigationAddFromContainer}
-          />
-        </div>
-      )}
-      {modes && (
-        <div className={classes.modes}>
-          <ToggleButtonGroup size="small" exclusive={true}>
-            {modes.includes('graph') && (
-              <Tooltip title={t_i18n('Graph view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/graph`}
-                  selected={currentMode === 'graph'}
-                >
-                  <VectorPolygon
-                    fontSize="small"
-                    color={currentMode === 'graph' ? 'primary' : 'inherit'}
-                  />
-                </ToggleButton>
-              </Tooltip>
-            )}
-            {modes.includes('content') && (
-              <Tooltip title={t_i18n('Content mapping view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/content`}
-                  selected={currentMode === 'content'}
-                >
-                  <DifferenceOutlined
-                    fontSize="small"
-                    color={currentMode === 'content' ? 'primary' : 'inherit'}
-                  />
-                </ToggleButton>
-              </Tooltip>
-            )}
-            {modes.includes('timeline') && (
-              <Tooltip title={t_i18n('TimeLine view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/timeline`}
-                  selected={currentMode === 'timeline'}
-                >
-                  <ChartTimeline
-                    fontSize="small"
-                    color={currentMode === 'timeline' ? 'primary' : 'inherit'}
-                  />
-                </ToggleButton>
-              </Tooltip>
-            )}
-            {modes.includes('correlation') && (
-              <Tooltip title={t_i18n('Correlation view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/correlation`}
-                  selected={currentMode === 'correlation'}
-                >
-                  <VectorLink
-                    fontSize="small"
-                    color={
-                      currentMode === 'correlation' ? 'primary' : 'inherit'
-                    }
-                  />
-                </ToggleButton>
-              </Tooltip>
-            )}
-            {modes.includes('matrix') && (
-              <Tooltip title={t_i18n('Tactics matrix view')}>
-                <ToggleButton
-                  component={Link}
-                  to={`${link}/matrix`}
-                  selected={currentMode === 'matrix'}
-                >
-                  <ViewColumnOutlined
-                    fontSize="small"
-                    color={currentMode === 'matrix' ? 'primary' : 'inherit'}
-                  />
-                </ToggleButton>
-              </Tooltip>
-            )}
-          </ToggleButtonGroup>
-        </div>
-      )}
-      <div className={classes.actions}>
-        <div className={classes.actionButtons}>
-          {enableQuickSubscription && (
-          <StixCoreObjectSubscribers elementId={container.id} />
-          )}
-          <Security
-            needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-            hasAccess={!!enableManageAuthorizedMembers}
-          >
-            <FormAuthorizedMembersDialog
-              id={container.id}
-              owner={container.creators?.[0]}
-              authorizedMembers={authorizedMembersToOptions(
-                container.authorized_members,
+                80,
               )}
-              mutation={authorizedMembersMutation}
+            </Typography>
+          </Tooltip>
+        )}
+        {knowledge && (
+          <div className={classes.export}>
+            <ExportButtons
+              domElementId="container"
+              name={t_i18n('Report representation')}
+              pixelRatio={currentMode === 'graph' ? 1 : 2}
+              adjust={adjust}
+              containerId={container.id}
+              investigationAddFromContainer={investigationAddFromContainer}
             />
-          </Security>
-          {!knowledge && disableSharing !== true && (
-            <StixCoreObjectSharing elementId={container.id} variant="header" />
-          )}
-          {!knowledge && (
-          <StixCoreObjectFileExport
-            id={container.id}
-            type={container.entity_type}
-            redirectToContent={true}
-          />
-          )}
-          {enableSuggestions && (
-            <QueryRenderer
-              query={containerHeaderObjectsQuery}
-              variables={{ id: container.id }}
-              render={({ props: containerProps }) => {
-                if (containerProps && containerProps.container) {
-                  const suggestions = generateSuggestions(
-                    containerProps.container.objects.edges.map((o) => ({
-                      ...o.node,
-                      types: o.types,
-                    })),
-                  );
-                  const appliedSuggestions = getAppliedSuggestions();
-                  if (userIsKnowledgeEditor) {
-                    return (
-                      <>
-                        <Tooltip title={t_i18n('Open the suggestions')}>
-                          <ToggleButton
-                            onClick={() => setDisplaySuggestions(true)}
-                            disabled={
-                              suggestions.length === 0
-                              || currentMode !== 'graph'
-                            }
-                            value="suggestion"
-                            size="small"
-                          >
-                            <Badge
-                              badgeContent={
-                                suggestions.filter(
-                                  (n) => !appliedSuggestions.includes(n.type),
-                                ).length
-                              }
-                              color="secondary"
-                            >
-                              <AssistantOutlined
-                                fontSize="small"
-                                disabled={suggestions.length === 0}
-                                color={
-                                  // eslint-disable-next-line no-nested-ternary
-                                  suggestions.length === 0
-                                    ? 'disabled'
-                                    : displaySuggestions
-                                      ? 'secondary'
-                                      : 'primary'
-                                }
-                              />
-                            </Badge>
-                          </ToggleButton>
-                        </Tooltip>
-                        <Dialog
-                          PaperProps={{ elevation: 1 }}
-                          open={displaySuggestions}
-                          TransitionComponent={Transition}
-                          onClose={() => setDisplaySuggestions(false)}
-                          maxWidth="md"
-                          fullWidth={true}
-                        >
-                          <DialogTitle>{t_i18n('Suggestions')}</DialogTitle>
-                          <DialogContent dividers={true}>
-                            <List>
-                              {suggestions.map((suggestion) => (
-                                <ListItem
-                                  key={suggestion.type}
-                                  disableGutters={true}
-                                  divider={true}
-                                >
-                                  <ListItemText
-                                    primary={
-                                      <MarkdownDisplay
-                                        content={t_i18n(
-                                          `suggestion_${suggestion.type}`,
-                                        )}
-                                        remarkGfmPlugin={true}
-                                        commonmark={true}
-                                        markdownComponents={true}
-                                      />
-                                    }
-                                  />
-                                  <Select
-                                    style={{
-                                      width: 200,
-                                      minWidth: 200,
-                                      margin: '0 0 0 15px',
-                                    }}
-                                    variant="standard"
-                                    onChange={(event) => handleSelectEntity(suggestion.type, event)
-                                    }
-                                    value={selectedEntity[suggestion.type]}
-                                  >
-                                    {suggestion.data.map((object) => (
-                                      <MenuItem
-                                        key={object.id}
-                                        value={object.id}
-                                      >
-                                        {defaultValue(object)}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                  <ListItemSecondaryAction>
-                                    <IconButton
-                                      edge="end"
-                                      aria-label="apply"
-                                      onClick={() => applySuggestion(
-                                        suggestion.type,
-                                        containerProps.container.objects.edges.map(
-                                          (o) => ({
-                                            ...o.node,
-                                            types: o.types,
-                                          }),
-                                        ),
-                                      )
-                                      }
-                                      size="large"
-                                      color={
-                                        applied.some(
-                                          (a) => a[suggestion.type]
-                                            === selectedEntity[suggestion.type],
-                                        )
-                                          ? 'success'
-                                          : 'secondary'
-                                      }
-                                      disabled={
-                                        applying.includes(suggestion.type)
-                                        || !selectedEntity[suggestion.type]
-                                      }
-                                    >
-                                      {applying.includes(suggestion.type) ? (
-                                        <CircularProgress
-                                          size={20}
-                                          color="inherit"
-                                        />
-                                      ) : (
-                                        <AddTaskOutlined />
-                                      )}
-                                    </IconButton>
-                                  </ListItemSecondaryAction>
-                                </ListItem>
-                              ))}
-                            </List>
-                          </DialogContent>
-                          <DialogActions>
-                            <Button
-                              onClick={() => setDisplaySuggestions(false)}
-                              color="primary"
-                            >
-                              {t_i18n('Close')}
-                            </Button>
-                          </DialogActions>
-                        </Dialog>
-                      </>
-                    );
-                  }
-                }
-                return <div />;
-              }}
-            />
-          )}
-          {enableQuickSubscription && (
-            <StixCoreObjectQuickSubscription
-              instanceId={container.id}
-              instanceName={defaultValue(container)}
-            />
-          )}
-          {enableAskAi && (
-            <StixCoreObjectAskAI
-              instanceId={container.id}
-              instanceType={container.entity_type}
-              instanceName={defaultValue(container)}
-              type="container"
-            />
-          )}
-          {!knowledge && (
-            <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
-              {React.cloneElement(PopoverComponent, { id: container.id })}
+          </div>
+        )}
+        {modes && (
+          <div className={classes.modes}>
+            <ToggleButtonGroup size="small" exclusive={true}>
+              {modes.includes('graph') && (
+                <Tooltip title={t_i18n('Graph view')}>
+                  <ToggleButton
+                    component={Link}
+                    to={`${link}/graph`}
+                    selected={currentMode === 'graph'}
+                  >
+                    <VectorPolygon
+                      fontSize="small"
+                      color={currentMode === 'graph' ? 'primary' : 'inherit'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+              {modes.includes('content') && (
+                <Tooltip title={t_i18n('Content mapping view')}>
+                  <ToggleButton
+                    component={Link}
+                    to={`${link}/content`}
+                    selected={currentMode === 'content'}
+                  >
+                    <DifferenceOutlined
+                      fontSize="small"
+                      color={currentMode === 'content' ? 'primary' : 'inherit'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+              {modes.includes('timeline') && (
+                <Tooltip title={t_i18n('TimeLine view')}>
+                  <ToggleButton
+                    component={Link}
+                    to={`${link}/timeline`}
+                    selected={currentMode === 'timeline'}
+                  >
+                    <ChartTimeline
+                      fontSize="small"
+                      color={currentMode === 'timeline' ? 'primary' : 'inherit'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+              {modes.includes('correlation') && (
+                <Tooltip title={t_i18n('Correlation view')}>
+                  <ToggleButton
+                    component={Link}
+                    to={`${link}/correlation`}
+                    selected={currentMode === 'correlation'}
+                  >
+                    <VectorLink
+                      fontSize="small"
+                      color={
+                        currentMode === 'correlation' ? 'primary' : 'inherit'
+                      }
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+              {modes.includes('matrix') && (
+                <Tooltip title={t_i18n('Tactics matrix view')}>
+                  <ToggleButton
+                    component={Link}
+                    to={`${link}/matrix`}
+                    selected={currentMode === 'matrix'}
+                  >
+                    <ViewColumnOutlined
+                      fontSize="small"
+                      color={currentMode === 'matrix' ? 'primary' : 'inherit'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+            </ToggleButtonGroup>
+          </div>
+        )}
+        <div className={classes.actions}>
+          <div className={classes.actionButtons}>
+            {enableQuickSubscription && (
+              <StixCoreObjectSubscribers triggerData={triggerData} />
+            )}
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+              hasAccess={!!enableManageAuthorizedMembers}
+            >
+              <FormAuthorizedMembersDialog
+                id={container.id}
+                owner={container.creators?.[0]}
+                authorizedMembers={authorizedMembersToOptions(
+                  container.authorized_members,
+                )}
+                mutation={authorizedMembersMutation}
+              />
             </Security>
-          )}
+            {!knowledge && disableSharing !== true && (
+              <StixCoreObjectSharing elementId={container.id} variant="header" />
+            )}
+            {!knowledge && (
+              <StixCoreObjectFileExport
+                id={container.id}
+                type={container.entity_type}
+                redirectToContent={true}
+              />
+            )}
+            {enableSuggestions && (
+              <QueryRenderer
+                query={containerHeaderObjectsQuery}
+                variables={{ id: container.id }}
+                render={({ props: containerProps }) => {
+                  if (containerProps && containerProps.container) {
+                    const suggestions = generateSuggestions(
+                      containerProps.container.objects.edges.map((o) => ({
+                        ...o.node,
+                        types: o.types,
+                      })),
+                    );
+                    const appliedSuggestions = getAppliedSuggestions();
+                    if (userIsKnowledgeEditor) {
+                      return (
+                        <>
+                          <Tooltip title={t_i18n('Open the suggestions')}>
+                            <ToggleButton
+                              onClick={() => setDisplaySuggestions(true)}
+                              disabled={
+                                suggestions.length === 0
+                                || currentMode !== 'graph'
+                              }
+                              value="suggestion"
+                              size="small"
+                            >
+                              <Badge
+                                badgeContent={
+                                  suggestions.filter(
+                                    (n) => !appliedSuggestions.includes(n.type),
+                                  ).length
+                                }
+                                color="secondary"
+                              >
+                                <AssistantOutlined
+                                  fontSize="small"
+                                  disabled={suggestions.length === 0}
+                                  color={
+                                    // eslint-disable-next-line no-nested-ternary
+                                    suggestions.length === 0
+                                      ? 'disabled'
+                                      : displaySuggestions
+                                        ? 'secondary'
+                                        : 'primary'
+                                  }
+                                />
+                              </Badge>
+                            </ToggleButton>
+                          </Tooltip>
+                          <Dialog
+                            PaperProps={{ elevation: 1 }}
+                            open={displaySuggestions}
+                            TransitionComponent={Transition}
+                            onClose={() => setDisplaySuggestions(false)}
+                            maxWidth="md"
+                            fullWidth={true}
+                          >
+                            <DialogTitle>{t_i18n('Suggestions')}</DialogTitle>
+                            <DialogContent dividers={true}>
+                              <List>
+                                {suggestions.map((suggestion) => (
+                                  <ListItem
+                                    key={suggestion.type}
+                                    disableGutters={true}
+                                    divider={true}
+                                  >
+                                    <ListItemText
+                                      primary={
+                                        <MarkdownDisplay
+                                          content={t_i18n(
+                                            `suggestion_${suggestion.type}`,
+                                          )}
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                          markdownComponents={true}
+                                        />
+                                      }
+                                    />
+                                    <Select
+                                      style={{
+                                        width: 200,
+                                        minWidth: 200,
+                                        margin: '0 0 0 15px',
+                                      }}
+                                      variant="standard"
+                                      onChange={(event) => handleSelectEntity(suggestion.type, event)
+                                      }
+                                      value={selectedEntity[suggestion.type]}
+                                    >
+                                      {suggestion.data.map((object) => (
+                                        <MenuItem
+                                          key={object.id}
+                                          value={object.id}
+                                        >
+                                          {defaultValue(object)}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                    <ListItemSecondaryAction>
+                                      <IconButton
+                                        edge="end"
+                                        aria-label="apply"
+                                        onClick={() => applySuggestion(
+                                          suggestion.type,
+                                          containerProps.container.objects.edges.map(
+                                            (o) => ({
+                                              ...o.node,
+                                              types: o.types,
+                                            }),
+                                          ),
+                                        )
+                                        }
+                                        size="large"
+                                        color={
+                                          applied.some(
+                                            (a) => a[suggestion.type]
+                                              === selectedEntity[suggestion.type],
+                                          )
+                                            ? 'success'
+                                            : 'secondary'
+                                        }
+                                        disabled={
+                                          applying.includes(suggestion.type)
+                                          || !selectedEntity[suggestion.type]
+                                        }
+                                      >
+                                        {applying.includes(suggestion.type) ? (
+                                          <CircularProgress
+                                            size={20}
+                                            color="inherit"
+                                          />
+                                        ) : (
+                                          <AddTaskOutlined />
+                                        )}
+                                      </IconButton>
+                                    </ListItemSecondaryAction>
+                                  </ListItem>
+                                ))}
+                              </List>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button
+                                onClick={() => setDisplaySuggestions(false)}
+                                color="primary"
+                              >
+                                {t_i18n('Close')}
+                              </Button>
+                            </DialogActions>
+                          </Dialog>
+                        </>
+                      );
+                    }
+                  }
+                  return <div />;
+                }}
+              />
+            )}
+            {enableQuickSubscription && (
+              <StixCoreObjectQuickSubscription
+                instanceId={container.id}
+                instanceName={defaultValue(container)}
+                paginationOptions={triggersPaginationOptions}
+                triggerData={triggerData}
+              />
+            )}
+            {enableAskAi && (
+              <StixCoreObjectAskAI
+                instanceId={container.id}
+                instanceType={container.entity_type}
+                instanceName={defaultValue(container)}
+                type="container"
+              />
+            )}
+            {!knowledge && (
+              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]}>
+                {React.cloneElement(PopoverComponent, { id: container.id })}
+              </Security>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="clearfix" />
+        <div className="clearfix" />
+      </React.Suspense>
     </Box>
   );
 };
