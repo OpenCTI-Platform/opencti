@@ -14983,15 +14983,15 @@ export type NetworkTrafficStixCoreRelationshipsDistributionArgs = {
 };
 
 export type NetworkTrafficAddInput = {
-  dst?: InputMaybe<Scalars['String']['input']>;
   dst_byte_count?: InputMaybe<Scalars['Int']['input']>;
   dst_packets?: InputMaybe<Scalars['Int']['input']>;
   dst_port?: InputMaybe<Scalars['Int']['input']>;
   end?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
+  networkDst?: InputMaybe<Scalars['String']['input']>;
+  networkSrc?: InputMaybe<Scalars['String']['input']>;
   protocols?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  src?: InputMaybe<Scalars['String']['input']>;
   src_byte_count?: InputMaybe<Scalars['Int']['input']>;
   src_packets?: InputMaybe<Scalars['Int']['input']>;
   src_port?: InputMaybe<Scalars['Int']['input']>;

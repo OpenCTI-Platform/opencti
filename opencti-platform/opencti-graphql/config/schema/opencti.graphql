@@ -8282,8 +8282,8 @@ input NetworkTrafficAddInput {
   start: DateTime
   end: DateTime
   is_active: Boolean
-  src: String
-  dst: String
+  networkSrc: String
+  networkDst: String
   src_port: Int
   dst_port: Int
   protocols: [String]

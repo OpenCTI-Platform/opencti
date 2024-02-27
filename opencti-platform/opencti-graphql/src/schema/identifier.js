@@ -28,7 +28,7 @@ import { now } from '../utils/format';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-converter';
-import { isStixRefRelationship } from './stixRefRelationship';
+import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
 const MD5 = 'MD5';
@@ -112,8 +112,8 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_NETWORK_TRAFFIC]: [ // start, (!) end, src_ref, dst_ref, src_port, dst_port, protocols, (!) extensions
       { src: 'start' },
       { src: 'end' },
-      { src: 'src', dest: 'src_ref' },
-      { src: 'dst', dest: 'dst_ref' },
+      { src: INPUT_SRC, dest: 'src_ref' },
+      { src: INPUT_DST, dest: 'dst_ref' },
       { src: 'src_port' },
       { src: 'dst_port' },
       { src: 'protocols' },
