@@ -106,9 +106,11 @@ The available operators are:
 * `gt` / `gte` for 'greater than' / 'greater than or equal',
 * `lt` / `lte` for 'lower than' / 'lower than or equal',
 * `nil` for 'empty', and `not_nil` for non-empty (any value),
-  * Note that `nil` and `not_nil` are the only operators that do not require anything inside `values`.
-* `starts_with` / `not_starts_with` / `ends_with` / `not_ends_with` / `contains` / `not contains` are available for searching in short string fields (name, value, title...).
+* `starts_with` / `not_starts_with` / `ends_with` / `not_ends_with` / `contains` / `not contains` are available for searching in short string fields (name, value, title...),
 * `search`  is available in short string and text fields.
+
+#### Note
+`nil` and `not_nil` are the only operators that do not require anything inside `values`.
 
 There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
 
