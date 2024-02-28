@@ -90,6 +90,7 @@ const InvestigationAddStixCoreObjects = (props) => {
         symbol: '',
       },
     },
+    true,
   );
 
   const {
