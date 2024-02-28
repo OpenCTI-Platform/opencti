@@ -157,56 +157,67 @@ describe('Confidence level utilities', () => {
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: true,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(10), makeElement(30)))
         .toEqual({
           isConfidenceMatch: false,
           confidenceLevelToApply: 10,
+          isConfidenceUpper: false,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(10)))
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: true,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(10), makeElement(50)))
         .toEqual({
           isConfidenceMatch: false,
           confidenceLevelToApply: 10,
+          isConfidenceUpper: false,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(50), makeElement(30)))
         .toEqual({
           isConfidenceMatch: false,
           confidenceLevelToApply: 10,
+          isConfidenceUpper: false,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(30), makeElement(50)))
         .toEqual({
           isConfidenceMatch: false,
           confidenceLevelToApply: 10,
+          isConfidenceUpper: false,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(null), makeElement(30)))
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 50,
+          isConfidenceUpper: true,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(50)))
         .toEqual({
           isConfidenceMatch: false,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: false,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(30), makeElement(null)))
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: true,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(null)))
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: true,
         });
       expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(null)))
         .toEqual({
           isConfidenceMatch: true,
           confidenceLevelToApply: 30,
+          isConfidenceUpper: true,
         });
       expect(() => controlUpsertInputWithUserConfidence(makeUser(null), makeElement(30), makeElement(50)))
         .toThrowError('User has no effective max confidence level and cannot upsert this element');

@@ -2424,7 +2424,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     inputs.push(fileImpact);
   }
   // region confidence control / upsert
-  const { confidenceLevelToApply, isConfidenceMatch } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
   updatePatch.confidence = confidenceLevelToApply;
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
@@ -2487,13 +2487,16 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       } else { // not multiple
         // If expected data is different from current data...
         const currentData = element[relDef.databaseName];
+        const isCurrentEmptyData = isEmptyField(currentData);
         const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
         // ... and data can be updated:
-        //   forced synchro
-        //   OR the field was null -> better than nothing !
-        //   OR the confidence matches -> new value is "better" than existing value
-        const updatable = isUpsertSynchro || (isInputWithData && isEmptyField(currentData)) || isConfidenceMatch;
-        if (isInputDifferentFromCurrent && updatable) {
+        // forced synchro
+        // OR the field is currently null (auto consolidation)
+        // OR the confidence matches
+        // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
+        const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
+        const updatable = isUpsertSynchro || (isInputWithData && isCurrentEmptyData) || isConfidenceMatch;
+        if (isInputDifferentFromCurrent && updatable && !isProtectedCreatedBy) {
           inputs.push({ key: inputField, value: [patchInputData] });
         }
       }

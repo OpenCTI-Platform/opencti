@@ -108,10 +108,12 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(userMaxConfidence, inputElementOrPatch.confidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
   const isConfidenceMatch = confidenceLevelToApply >= existing; // always true if no existingConfidence
+  const isConfidenceUpper = confidenceLevelToApply > existing;
 
   return {
     confidenceLevelToApply,
     isConfidenceMatch,
+    isConfidenceUpper
   };
 };
 
