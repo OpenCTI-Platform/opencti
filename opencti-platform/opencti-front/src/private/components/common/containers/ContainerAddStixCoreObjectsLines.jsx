@@ -114,7 +114,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     );
   }
 
-  sendStixCoreObjectModification(stixCoreObject, commitMessage, references, setSubmitting) {
+  sendStixCoreObjectModification(stixCoreObject, commitMessage, references, setSubmitting, resetForm) {
     const {
       containerId,
       paginationOptions,
@@ -137,7 +137,6 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             references,
           },
           onCompleted: () => {
-            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: R.dissoc(
                 stixCoreObject.id,
@@ -147,8 +146,10 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onDelete === 'function') {
               onDelete(stixCoreObject);
             }
-            this.closePopup();
+            setSubmitting(false);
+            resetForm(true);
           },
+          setSubmitting,
         });
       } else {
         commitMutation({
@@ -160,29 +161,29 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             commitMessage,
             references,
           },
-          // TODO Fix updater
-          // updater: (store) => {
-          // // ID is not valid pagination options, will be handled better when hooked
-          // const options = { ...paginationOptions };
-          // delete options.id;
-          // delete options.count;
-          // const conn = ConnectionHandler.getConnection(
-          //   store.get(containerId),
-          //   'Pagination_objects',
-          //   options,
-          // );
-          // ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-          // },
+          updater: (store) => {
+          // ID is not valid pagination options, will be handled better when hooked
+            const options = { ...paginationOptions };
+            delete options.id;
+            delete options.count;
+            const conn = ConnectionHandler.getConnection(
+              store.get(containerId),
+              'Pagination_objects',
+              options,
+            );
+            ConnectionHandler.deleteNode(conn, stixCoreObject.id);
+          },
           onCompleted: () => {
-            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: R.dissoc(
                 stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
-            this.closePopup();
+            setSubmitting(false);
+            resetForm(true);
           },
+          setSubmitting,
         });
       }
     } else {
@@ -199,9 +200,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             commitMessage,
             references,
           },
-          setSubmitting,
           onCompleted: () => {
-            setSubmitting(false);
             this.setState({
               addedStixCoreObjects: {
                 ...this.state.addedStixCoreObjects,
@@ -211,8 +210,10 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onAdd === 'function') {
               onAdd(stixCoreObject);
             }
-            this.closePopup();
+            setSubmitting(false);
+            resetForm(true);
           },
+          setSubmitting,
         });
       } else {
         commitMutation({
@@ -223,26 +224,29 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             commitMessage,
             references,
           },
-          setSubmitting,
           // TODO Fix updater
-          // updater: (store) => {
+          updater: (store) => {
           // ID is not valid pagination options, will be handled better when hooked
-          // const options = { ...paginationOptions };
-          // delete options.id;
-          // delete options.count;
-          // insertNode(
-          //   store,
-          //   'Pagination_objects',
-          //   options,
-          //   'containerEdit',
-          //   containerId,
-          //   'relationAdd',
-          //   input,
-          //   'to',
-          // );
-          // },
+            console.log('a');
+            const options = { ...paginationOptions };
+            console.log('b');
+            delete options.id;
+            delete options.count;
+            console.log('c');
+            insertNode(
+              store,
+              'Pagination_objects',
+              options,
+              'containerEdit',
+              containerId,
+              'relationAdd',
+              input,
+              'to',
+            );
+            console.log('d');
+          },
           onCompleted: () => {
-            setSubmitting(false);
+            console.log('onComplete');
             if (!mapping) {
               this.setState({
                 addedStixCoreObjects: {
@@ -254,8 +258,10 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             if (typeof onAdd === 'function') {
               onAdd(stixCoreObject);
             }
-            this.closePopup();
+            setSubmitting(false);
+            resetForm(true);
           },
+          setSubmitting,
         });
       }
     }
@@ -267,7 +273,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
       this.setState({ referenceDialogOpened: true });
       this.setState({ currentlyToggledCoreObject: stixCoreObject });
     } else {
-      this.sendStixCoreObjectModification(stixCoreObject, '', [], () => {});
+      this.sendStixCoreObjectModification(stixCoreObject, '', [], () => {}, () => {});
     }
   }
 
@@ -276,14 +282,14 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     this.setState({ currentlyToggledCoreObject: null });
   }
 
-  submitReference(values, { setSubmitting }) {
+  submitReference(values, { setSubmitting, resetForm }) {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
-    this.sendStixCoreObjectModification(this.state.currentlyToggledCoreObject, commitMessage, references, setSubmitting);
+    this.sendStixCoreObjectModification(this.state.currentlyToggledCoreObject, commitMessage, references, setSubmitting, resetForm);
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, containerRef, enableReferences } = this.props;
+    const { initialLoading, dataColumns, relay, containerRef, enableReferences, containerId } = this.props;
     const { addedStixCoreObjects, referenceDialogOpened } = this.state;
     return (
       <>
@@ -326,8 +332,8 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
                   disabled={isSubmitting}
                   setFieldValue={setFieldValue}
                   values={values.references}
-                  id={containerRef.id}
-                  noStoreUpdate={true}
+                  id={containerId}
+                  noStoreUpdate={false}
                 />
               </Form>
             )}
