@@ -135,7 +135,7 @@ const InvestigationAddStixCoreObjects = (props) => {
     };
   };
 
-  const keyword = mapping && searchTerm.length === 0 ? selectedText : searchTerm;
+  const keyword = mapping && searchTerm?.length === 0 ? selectedText : searchTerm;
   const searchPaginationOptions = {
     ...addObjectsPaginationOptions,
     search: keyword,
