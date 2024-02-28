@@ -105,7 +105,7 @@ export const CAPABILITIES = [
 // endregion
 
 const createMarkingDefinitions = async (context) => {
-  // Create marking defs
+  // Create marking defs for TLP
   await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:CLEAR',
@@ -133,6 +133,32 @@ const createMarkingDefinitions = async (context) => {
   await addMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:RED',
+    x_opencti_color: '#c62828',
+    x_opencti_order: 4,
+  });
+
+  // Creation markings for PAP
+  await addMarkingDefinition(context, SYSTEM_USER, {
+    definition_type: 'PAP',
+    definition: 'PAP:CLEAR',
+    x_opencti_color: '#ffffff',
+    x_opencti_order: 1,
+  });
+  await addMarkingDefinition(context, SYSTEM_USER, {
+    definition_type: 'PAP',
+    definition: 'PAP:GREEN',
+    x_opencti_color: '#2e7d32',
+    x_opencti_order: 2,
+  });
+  await addMarkingDefinition(context, SYSTEM_USER, {
+    definition_type: 'PAP',
+    definition: 'PAP:AMBER',
+    x_opencti_color: '#d84315',
+    x_opencti_order: 3,
+  });
+  await addMarkingDefinition(context, SYSTEM_USER, {
+    definition_type: 'PAP',
+    definition: 'PAP:RED',
     x_opencti_color: '#c62828',
     x_opencti_order: 4,
   });

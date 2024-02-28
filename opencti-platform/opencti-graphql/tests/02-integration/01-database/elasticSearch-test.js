@@ -396,7 +396,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: ES_MAX_PAGINATION });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(502);
+    expect(data.edges.length).toEqual(506);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -501,7 +501,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(7);
+    expect(data.edges.length).toEqual(11);
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
@@ -511,7 +511,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(2);
     // Special case when operator = eq + the field key is a dateFields => use a match
     filters = {
       mode: 'and',
@@ -528,7 +528,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(7); // The 4 Default TLP + MITRE Corporation
+    expect(data.edges.length).toEqual(11); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
     filters = {
       mode: 'and',
@@ -555,7 +555,7 @@ describe('Elasticsearch pagination', () => {
       filterGroups: [],
     };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
-    expect(data.edges.length).toEqual(356);
+    expect(data.edges.length).toEqual(360);
     filters = {
       mode: 'and',
       filters: [
@@ -573,7 +573,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: ES_MAX_PAGINATION
     });
-    expect(data.edges.length).toEqual(502);
+    expect(data.edges.length).toEqual(506);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -600,7 +600,7 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'definition',
       orderMode: 'desc',
     });
-    expect(data.edges.length).toEqual(7);
+    expect(data.edges.length).toEqual(11);
     const markings = R.map((e) => e.node.definition, data.edges);
     expect(markings[0]).toEqual('TLP:TEST');
     expect(markings[1]).toEqual('TLP:RED');
@@ -608,12 +608,16 @@ describe('Elasticsearch pagination', () => {
     expect(markings[3]).toEqual('TLP:CLEAR');
     expect(markings[4]).toEqual('TLP:AMBER+STRICT');
     expect(markings[5]).toEqual('TLP:AMBER');
+    expect(markings[6]).toEqual('PAP:RED');
+    expect(markings[7]).toEqual('PAP:GREEN');
+    expect(markings[8]).toEqual('PAP:CLEAR');
+    expect(markings[9]).toEqual('PAP:AMBER');
   });
   it('should relation paginate everything', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(43);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(47);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(24);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(124);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(2);
@@ -625,14 +629,14 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['external-reference'].length).toEqual(7);
     expect(metaByEntityType['object-marking'].length).toEqual(26);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
-    expect(data.edges.length).toEqual(193);
+    expect(data.edges.length).toEqual(197);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(193);
+    expect(data.length).toEqual(197);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
