@@ -1,6 +1,4 @@
-<h1 align="center">
-  <a href="https://opencti.io"><img src="https://filigran.io/wp-content/uploads/2023/10/opencti_github.png" alt="OpenCTI"></a>
-</h1>
+# ![OpenCTI](./.github/img/logo_opencti_dark.png#gh-dark-mode-only) ![OpenCTI](./.github/img/logo_opencti_light.png#gh-light-mode-only)
 <p align="center">
   <a href="https://opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
   <a href="https://docs.opencti.io" alt="Documentation"><img src="https://img.shields.io/badge/documentation-latest-orange.svg" /></a>
@@ -18,7 +16,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-![Screenshot](https://filigran.io/wp-content/uploads/2023/08/opencti-dashboard.png "Screenshot")
+![Screenshot](./.github/img/screenshot.png "Screenshot")
 
 ## Objective
 
@@ -88,7 +86,8 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
 
-<a href="https://filigran.io" alt="Filigran"><img src="https://filigran.io/wp-content/uploads/2023/08/filigran_text_medium.png" width="200" /></a>
+![Filigran](./.github/img/logo_filigran_dark.png#gh-dark-mode-only)
+![Filigran](./.github/img/logo_filigran_light.png#gh-light-mode-only)
 
 ### GDPR and the OpenCTI OpenStreetMap server
 
