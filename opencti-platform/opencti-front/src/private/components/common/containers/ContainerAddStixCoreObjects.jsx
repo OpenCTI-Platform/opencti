@@ -149,6 +149,7 @@ const ContainerAddStixCoreObjects = (props) => {
         symbol: '',
       },
     },
+    true,
   );
 
   const {
