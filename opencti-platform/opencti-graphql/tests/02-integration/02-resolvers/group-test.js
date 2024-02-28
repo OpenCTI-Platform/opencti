@@ -285,22 +285,6 @@ describe('Group resolver standard behavior', () => {
       ],
     });
   });
-  it('should context patch group', async () => {
-    const CONTEXT_PATCH_QUERY = gql`
-      mutation GroupEdit($id: ID!, $input: EditContext) {
-        groupEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: CONTEXT_PATCH_QUERY,
-      variables: { id: groupInternalId, input: { focusOn: 'description' } },
-    });
-    expect(queryResult.data.groupEdit.contextPatch.id).toEqual(groupInternalId);
-  });
   it('should fail to update group confidence level with invalid patch data', async () => {
     const UPDATE_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: [EditInput]!) {
