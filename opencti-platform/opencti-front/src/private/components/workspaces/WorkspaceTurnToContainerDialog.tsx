@@ -77,16 +77,17 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   const [containers, setContainers] = useState<Record<string, EntityValue[]>>({});
   const [entities, searchEntities] = useSearchEntities({
     setInputValues: () => {},
-    availableEntityTypes: [
-      'Report',
-      'Grouping',
-      'Case-Incident',
-      'Case-Rfi',
-      'Case-Rft',
-    ],
     availableRelationshipTypes: [],
     searchContext: { entityTypes: ['Container'] },
-    searchScope: {},
+    searchScope: {
+      id: [
+        'Report',
+        'Grouping',
+        'Case-Incident',
+        'Case-Rfi',
+        'Case-Rft',
+      ],
+    },
   }) as [
     Record<string, EntityValue[]>,
     (
@@ -96,13 +97,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       event: SyntheticEvent
     ) => Record<string, EntityValue[]>,
   ]; // change when useSearchEntities will be in TS;
-  const containersFromElements = entities.containers ?? [
-    {
-      label: '',
-      type: '',
-      value: '',
-    },
-  ];
+  const containersFromElements = entities.id ?? [];
 
   const [commitInvestigationToContainerAdd] = useMutation<WorkspaceTurnToContainerDialogMutation>(
     investigationToContainerMutation,
@@ -136,7 +131,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     incomingValue?: string,
   ) => {
     if (!event) return;
-    searchEntities('containers', containers, setContainers, event);
+    searchEntities('id', containers, setContainers, event);
     setActionsInputs({
       ...actionsInputs,
       inputValue: incomingValue ?? '',

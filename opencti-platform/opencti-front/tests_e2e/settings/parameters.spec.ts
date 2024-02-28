@@ -13,7 +13,7 @@ test('Check EE activation', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'OpenCTI Enterprise Edition (' })).toBeVisible();
   await page.getByLabel('I have read and agree to the').check();
   await page.getByRole('button', { name: 'Enable' }).click();
-  expect(page.getByText(/^Enterprise$/)).toBeVisible();
+  await expect(page.getByText(/^Enterprise$/)).toBeVisible();
   await page.getByRole('button', { name: 'Disable Enterprise Edition' }).click();
 });
 
