@@ -53,8 +53,6 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
-    $commitMessage: String
-    $references: [String]
   ) {
     containerEdit(id: $id) {
       relationAdd(input: $input, commitMessage: $commitMessage, references: $references) {
@@ -80,8 +78,6 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
-    $commitMessage: String
-    $references: [String]
   ) {
     containerEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
@@ -162,7 +158,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             references,
           },
           updater: (store) => {
-          // ID is not valid pagination options, will be handled better when hooked
+            // ID is not valid pagination options, will be handled better when hooked
             const options = { ...paginationOptions };
             delete options.id;
             delete options.count;
@@ -246,7 +242,6 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             console.log('d');
           },
           onCompleted: () => {
-            console.log('onComplete');
             if (!mapping) {
               this.setState({
                 addedStixCoreObjects: {
