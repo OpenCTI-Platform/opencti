@@ -6,7 +6,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError } from '../../config/errors';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { ENTITY_EMAIL_MESSAGE, ENTITY_NETWORK_TRAFFIC, isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -152,6 +152,16 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
   return listAllEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
+const validateObservableGeneration = (observableType: string, indicatorPattern: string) => {
+  if (observableType === ENTITY_NETWORK_TRAFFIC && (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))) {
+    return false; // we can't create this type of observables (issue #5293)
+  }
+  if (observableType === ENTITY_EMAIL_MESSAGE && indicatorPattern.includes('from_ref')) {
+    return false; // we can't create this type of observables (issue #5293)
+  }
+  return true;
+};
+
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
@@ -160,9 +170,10 @@ export const createObservablesFromIndicator = async (
 ) => {
   const { pattern } = indicator;
   const observables = extractObservablesFromIndicatorPattern(pattern);
+  const filteredObservables = observables.filter((obs) => validateObservableGeneration(obs.type, pattern));
   const observablesToLink = [];
-  for (let index = 0; index < observables.length; index += 1) {
-    const observable = observables[index];
+  for (let index = 0; index < filteredObservables.length; index += 1) {
+    const observable = filteredObservables[index];
     const observableInput = {
       ...R.dissoc('type', observable),
       x_opencti_description: indicator.description
