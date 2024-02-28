@@ -181,6 +181,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   label: t_i18n('Import from date (empty = all Csv possible items)'),
                   variant: 'standard',
                   fullWidth: true,
+                  style: fieldSpacingContainerStyle,
                 }}
               />
               <Field
