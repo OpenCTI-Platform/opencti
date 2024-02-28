@@ -9,6 +9,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsMultiLineChartQuery } from './__generated__/PublicStixCoreObjectsMultiLineChartQuery.graphql';
+import { monthsAgo, now } from '../../../utils/Time';
 
 const publicStixCoreObjectsMultiLineChartQuery = graphql`
   query PublicStixCoreObjectsMultiLineChartQuery(
@@ -71,8 +72,8 @@ const PublicStixCoreObjectsMultiLineChartComponent = ({
 const PublicStixCoreObjectsMultiLineChart = ({
   uriKey,
   widget,
-  startDate,
-  endDate,
+  startDate = monthsAgo(12),
+  endDate = now(),
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();

@@ -9,6 +9,7 @@ import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../components/dashboard/WidgetVerticalBars';
 import { PublicStixCoreObjectsMultiVerticalBarsQuery } from './__generated__/PublicStixCoreObjectsMultiVerticalBarsQuery.graphql';
 import type { PublicManifestWidget } from './PublicManifest';
+import { monthsAgo, now } from '../../../utils/Time';
 
 const publicStixCoreObjectsMultiVerticalBarsQuery = graphql`
   query PublicStixCoreObjectsMultiVerticalBarsQuery(
@@ -72,8 +73,8 @@ const PublicStixCoreObjectsMultiVerticalBarsComponent = ({
 const PublicStixCoreObjectsMultiVerticalBars = ({
   uriKey,
   widget,
-  startDate,
-  endDate,
+  startDate = monthsAgo(12),
+  endDate = now(),
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();

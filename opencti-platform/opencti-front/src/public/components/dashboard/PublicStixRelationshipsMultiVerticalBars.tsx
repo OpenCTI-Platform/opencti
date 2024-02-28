@@ -9,6 +9,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMultiVerticalBarsQuery } from './__generated__/PublicStixRelationshipsMultiVerticalBarsQuery.graphql';
+import { monthsAgo, now } from '../../../utils/Time';
 
 const publicStixRelationshipsMultiVerticalBarsQuery = graphql`
   query PublicStixRelationshipsMultiVerticalBarsQuery(
@@ -72,8 +73,8 @@ const PublicStixRelationshipsMultiVerticalBarsComponent = ({
 const PublicStixRelationshipsMultiVerticalBars = ({
   uriKey,
   widget,
-  startDate,
-  endDate,
+  startDate = monthsAgo(12),
+  endDate = now(),
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
