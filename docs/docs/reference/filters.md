@@ -106,7 +106,13 @@ The available operators are:
 * `gt` / `gte` for 'greater than' / 'greater than or equal',
 * `lt` / `lte` for 'lower than' / 'lower than or equal',
 * `nil` for 'empty', and `not_nil` for non-empty (any value),
-  * Note that `nil` and `not_nil` are the only operators that do not require anything inside `values`.
+* `starts_with` / `not_starts_with` / `ends_with` / `not_ends_with` / `contains` / `not contains` are available for searching in short string fields (name, value, title...),
+* `search`  is available in short string and text fields.
+
+#### Note
+`nil` and `not_nil` are the only operators that do not require anything inside `values`.
+
+There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
 
 When using a numerical comparison operators (`gt` and the like) against textual values, the alphabetical ordering is used.
 
@@ -223,7 +229,7 @@ Some keys do not exist in the schema definition, but are allowed in addition. Th
 It is the case for:
 
 * ``sightedBy``: entities to which X is linked via a stix sighting relationship,
-* ``elementId``: entities to which X is related via a stix core relationship,
+* ``workflow_id``: status id of the entities, or status template id of the status of the entities,
 * ``connectedToId``: the listened instances for an instance trigger.
 
 For some keys, negative equality filtering is not supported yet (`not_eq` operator). For instance, it is the case for:
@@ -232,6 +238,24 @@ For some keys, negative equality filtering is not supported yet (`not_eq` operat
 * ``fromTypes``
 * ``toId``
 * ``toTypes``
+
+The ``regardingOf`` filter key has a special format and enables to target the entities having a relationship of a certain type with certain entities.
+Here is an example of filter to fetch the entities related to the entity X:
+```
+filters = {
+  mode: 'and',
+  filters: [
+    {
+      key: 'regardingOf',
+      values: [
+        { key: 'id', values: ['id-of-X'] },
+        { key: 'relationship_type', values: ['related-to'] },
+      ],
+    },
+  ],
+  filterGroups: [],
+};
+```
 
 #### Limited support in stream events filtering
 Filters that are run against the event stream are not using the complete schema definition in terms of filtering keys.
