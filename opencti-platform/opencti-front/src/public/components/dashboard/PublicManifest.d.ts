@@ -18,6 +18,7 @@ export interface PublicManifestWidget {
   }
   dataSelection: {
     label?: string
+    number?: number
     attribute?: string
     date_attribute?: string
     centerLat?: number

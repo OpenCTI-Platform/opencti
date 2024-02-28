@@ -19,6 +19,13 @@ type PublicDashboard implements InternalObject & BasicObject {
   authorized_members: [MemberAccess!]  @auth(for: [KNOWLEDGE, EXPLORE])
 }
 
+type PublicDistribution {
+  label: String!
+  entity: StixObjectOrStixRelationshipOrCreator
+  value: Int
+  breakdownDistribution: [Distribution]
+}
+
 # Ordering
 enum PublicDashboardsOrdering {
   name
@@ -74,25 +81,13 @@ type Query {
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [Distribution]
-  publicStixCoreObjectsDistributionBreakdown(
-    uriKey: String!
-    widgetId : String!
-    startDate: DateTime
-    endDate: DateTime
-  ): [Distribution]
+  ): [PublicDistribution]
   publicStixRelationshipsDistribution(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [Distribution]
-  publicStixRelationshipsDistributionBreakdown(
-    uriKey: String!
-    widgetId : String!
-    startDate: DateTime
-    endDate: DateTime
-  ): [Distribution]
+  ): [PublicDistribution]
   publicBookmarks(
     uriKey: String!
     widgetId : String!

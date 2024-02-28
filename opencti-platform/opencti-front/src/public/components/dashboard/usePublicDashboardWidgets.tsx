@@ -28,6 +28,7 @@ import PublicStixRelationshipsMap from './PublicStixRelationshipsMap';
 import PublicStixCoreObjectsHorizontalBars from './PublicStixCoreObjectsHorizontalBars';
 import PublicStixRelationshipsHorizontalBars from './PublicStixRelationshipsHorizontalBars';
 import PublicStixDomainObjectBookmarksList from './PublicStixDomainObjectBookmarksList';
+import PublicStixRelationshipsMultiHorizontalBars from './PublicStixRelationshipsMultiHorizontalBars';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
@@ -234,9 +235,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       case 'horizontal-bar':
-        if (false) {
-          // TODO implement multi horizontal bars with breakdowns
-          return 'Not implemented yet';
+        if (widget.dataSelection.length > 1) {
+          return (
+            <PublicStixRelationshipsMultiHorizontalBars
+              startDate={startDate}
+              endDate={endDate}
+              uriKey={uriKey}
+              widget={widget}
+            />
+          );
         }
         return (
           <PublicStixRelationshipsHorizontalBars

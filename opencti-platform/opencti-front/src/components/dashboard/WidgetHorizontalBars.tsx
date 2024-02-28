@@ -10,6 +10,10 @@ import type { Theme } from '../Theme';
 interface WidgetHorizontalBarsProps {
   series: ApexAxisChartSeries
   distributed?: boolean
+  stacked?: boolean
+  total?: boolean
+  legend?: boolean
+  categories?: string[]
   withExport?: boolean
   readonly?: boolean
   redirectionUtils?: {
@@ -21,6 +25,10 @@ interface WidgetHorizontalBarsProps {
 const WidgetHorizontalBars = ({
   series,
   distributed,
+  stacked,
+  total,
+  legend,
+  categories,
   withExport,
   readonly,
   redirectionUtils,
@@ -38,6 +46,10 @@ const WidgetHorizontalBars = ({
         distributed,
         navigate,
         redirectionUtils,
+        stacked,
+        total,
+        categories,
+        legend,
       ) as ApexOptions}
       series={series}
       type="bar"

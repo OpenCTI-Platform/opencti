@@ -17401,6 +17401,14 @@ export enum PublicDashboardsOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export type PublicDistribution = {
+  __typename?: 'PublicDistribution';
+  breakdownDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
+  label: Scalars['String']['output'];
+  value?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   about?: Maybe<AppInfo>;
@@ -17580,13 +17588,11 @@ export type Query = {
   publicDashboardByUriKey?: Maybe<PublicDashboard>;
   publicDashboards?: Maybe<PublicDashboardConnection>;
   publicStixCoreObjects?: Maybe<StixCoreObjectConnection>;
-  publicStixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  publicStixCoreObjectsDistributionBreakdown?: Maybe<Array<Maybe<Distribution>>>;
+  publicStixCoreObjectsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixCoreObjectsNumber?: Maybe<Number>;
   publicStixRelationships?: Maybe<StixRelationshipConnection>;
-  publicStixRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  publicStixRelationshipsDistributionBreakdown?: Maybe<Array<Maybe<Distribution>>>;
+  publicStixRelationshipsDistribution?: Maybe<Array<Maybe<PublicDistribution>>>;
   publicStixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   publicStixRelationshipsNumber?: Maybe<Number>;
   rabbitMQMetrics?: Maybe<RabbitMqMetrics>;
@@ -18959,14 +18965,6 @@ export type QueryPublicStixCoreObjectsDistributionArgs = {
 };
 
 
-export type QueryPublicStixCoreObjectsDistributionBreakdownArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  startDate?: InputMaybe<Scalars['DateTime']['input']>;
-  uriKey: Scalars['String']['input'];
-  widgetId: Scalars['String']['input'];
-};
-
-
 export type QueryPublicStixCoreObjectsMultiTimeSeriesArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -18992,14 +18990,6 @@ export type QueryPublicStixRelationshipsArgs = {
 
 
 export type QueryPublicStixRelationshipsDistributionArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  startDate?: InputMaybe<Scalars['DateTime']['input']>;
-  uriKey: Scalars['String']['input'];
-  widgetId: Scalars['String']['input'];
-};
-
-
-export type QueryPublicStixRelationshipsDistributionBreakdownArgs = {
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   uriKey: Scalars['String']['input'];
@@ -28378,6 +28368,7 @@ export type ResolversTypes = ResolversObject<{
   PublicDashboardConnection: ResolverTypeWrapper<Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversTypes['PublicDashboardEdge']> }>;
   PublicDashboardEdge: ResolverTypeWrapper<Omit<PublicDashboardEdge, 'node'> & { node: ResolversTypes['PublicDashboard'] }>;
   PublicDashboardsOrdering: PublicDashboardsOrdering;
+  PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   Query: ResolverTypeWrapper<{}>;
   QueryTask: ResolverTypeWrapper<QueryTask>;
   QueryTaskAddInput: QueryTaskAddInput;
@@ -29087,6 +29078,7 @@ export type ResolversParentTypes = ResolversObject<{
   PublicDashboardAddInput: PublicDashboardAddInput;
   PublicDashboardConnection: Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversParentTypes['PublicDashboardEdge']> };
   PublicDashboardEdge: Omit<PublicDashboardEdge, 'node'> & { node: ResolversParentTypes['PublicDashboard'] };
+  PublicDistribution: Omit<PublicDistribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   Query: {};
   QueryTask: QueryTask;
   QueryTaskAddInput: QueryTaskAddInput;
@@ -34799,6 +34791,14 @@ export type PublicDashboardEdgeResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PublicDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDistribution'] = ResolversParentTypes['PublicDistribution']> = ResolversObject<{
+  breakdownDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
@@ -34977,13 +34977,11 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
   publicDashboards?: Resolver<Maybe<ResolversTypes['PublicDashboardConnection']>, ParentType, ContextType, Partial<QueryPublicDashboardsArgs>>;
   publicStixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsArgs, 'uriKey' | 'widgetId'>>;
-  publicStixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionArgs, 'uriKey' | 'widgetId'>>;
-  publicStixCoreObjectsDistributionBreakdown?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionBreakdownArgs, 'uriKey' | 'widgetId'>>;
+  publicStixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixCoreObjectsNumberArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsArgs, 'uriKey' | 'widgetId'>>;
-  publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
-  publicStixRelationshipsDistributionBreakdown?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionBreakdownArgs, 'uriKey' | 'widgetId'>>;
+  publicStixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['PublicDistribution']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsDistributionArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsMultiTimeSeriesArgs, 'uriKey' | 'widgetId'>>;
   publicStixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, RequireFields<QueryPublicStixRelationshipsNumberArgs, 'uriKey' | 'widgetId'>>;
   rabbitMQMetrics?: Resolver<Maybe<ResolversTypes['RabbitMQMetrics']>, ParentType, ContextType, Partial<QueryRabbitMqMetricsArgs>>;
@@ -38104,6 +38102,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PublicDashboard?: PublicDashboardResolvers<ContextType>;
   PublicDashboardConnection?: PublicDashboardConnectionResolvers<ContextType>;
   PublicDashboardEdge?: PublicDashboardEdgeResolvers<ContextType>;
+  PublicDistribution?: PublicDistributionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   QueryTask?: QueryTaskResolvers<ContextType>;
   QueueArguments?: QueueArgumentsResolvers<ContextType>;

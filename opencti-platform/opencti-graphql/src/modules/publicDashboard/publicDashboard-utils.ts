@@ -1,6 +1,6 @@
 import { getEntitiesMapFromCache, getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { UnsupportedError } from '../../config/errors';
@@ -11,8 +11,8 @@ import { elLoadById } from '../../database/engine';
 
 interface WidgetArguments {
   user: AuthUser,
-  dataSelection: any,
-  parameters: any,
+  dataSelection: PublicDashboardCachedWidget['dataSelection'],
+  parameters: PublicDashboardCachedWidget['parameters'],
 }
 
 export const getWidgetArguments = async (
@@ -29,22 +29,22 @@ export const getWidgetArguments = async (
 
   const { user_id, private_manifest, allowed_markings }: PublicDashboardCached = publicDashboard;
 
-  // Get user from cache
+  // Get user that creates the public dashboard from cache
   const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const plateformUser = platformUsersMap.get(user_id);
-  if (!plateformUser) {
+  const platformUser = platformUsersMap.get(user_id);
+  if (!platformUser) {
     throw UnsupportedError('User not found');
   }
 
-  // replace User markings by publicDashboard allowed_markings
+  // To replace User markings by publicDashboard allowed_markings
   const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-
-  // replace User capabilities by KNOWLEDGE capability
+  // To replace User capabilities by KNOWLEDGE capability
   const accessKnowledgeCapability: UserCapability = await elLoadById(context, SYSTEM_USER, 'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493') as unknown as UserCapability;
 
+  // Construct a fake user to be able to call private API
   const user = {
-    ...plateformUser,
-    origin: { user_id: plateformUser.id, referer: 'public-dashboard' },
+    ...platformUser,
+    origin: { user_id: platformUser.id, referer: 'public-dashboard' },
     allowed_marking: computeAvailableMarkings(allowed_markings, allMarkings), // TODO what if user is downgraded ??
     capabilities: [accessKnowledgeCapability]
   };

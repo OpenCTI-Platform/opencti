@@ -2,6 +2,7 @@ import type { BasicStoreEntity, StoreEntity, StoreMarkingDefinition } from '../.
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { AuthorizedMember } from '../../utils/access';
+import type { FilterGroup } from '../../generated/graphql';
 
 export const ENTITY_TYPE_PUBLIC_DASHBOARD = 'PublicDashboard';
 
@@ -34,12 +35,56 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
 // endregion
 
 // region cache type
+export interface PublicDashboardCachedWidget {
+  id: string
+  perspective: 'entities' | 'relationships' | 'audits' | null
+  type: string,
+  layout: {
+    w: number
+    h: number,
+    x: number
+    y: number
+    i: string
+    moved: boolean
+    static: boolean
+  }
+  parameters: {
+    title?: string
+    interval?: string
+    stacked?: boolean
+    legend?: boolean
+    distributed?: boolean
+  }
+  dataSelection: {
+    filters?: FilterGroup
+    dynamicFrom?: FilterGroup
+    dynamicTo?: FilterGroup
+    label?: string
+    attribute?: string
+    date_attribute?: string
+    centerLat?: number
+    centerLng?: number
+    zoom?: number
+    isTo?: boolean
+    number?: boolean
+    toTypes?: string[]
+    perspective?: 'entities' | 'relationships' | 'audits' | null
+  }[]
+}
+
 export interface PublicDashboardCached {
   id: string;
   internal_id: string;
   uri_key: string;
   dashboard_id: string;
-  private_manifest: { widgets:any, parameters: any };
+  private_manifest: {
+    widgets: Record<string, PublicDashboardCachedWidget>,
+    config: {
+      startDate?: string
+      endDate?: string
+      relativeDate?: string
+    }
+  };
   user_id: string;
   allowed_markings_ids: string[];
   allowed_markings: Array<StoreMarkingDefinition>;
