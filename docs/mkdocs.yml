@@ -190,6 +190,7 @@ nav:
           - Custom notifiers: administration/notifiers.md
           - Notifier samples: administration/notifier-samples.md
         - Retention policies: administration/retentions.md
+        - Decay rules: administration/decay-rules.md
       - Taxonomies: administration/ontologies.md
       - Activity:
         - Overview: administration/audit/overview.md

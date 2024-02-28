@@ -70,3 +70,9 @@ The file indexing manager extracts and indexes the text content of the files, an
 It allows users to search for text content within files uploaded to the platform.
 
 More information can be found [here](../administration/file-indexing.md).
+
+## Indicator decay manager
+
+The indicator decay manager allows to update indicators score automatically based on configured decay rules.
+
+More information can be found [here](../administration/decay-rules.md).
