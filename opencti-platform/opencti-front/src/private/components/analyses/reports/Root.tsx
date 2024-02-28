@@ -26,6 +26,7 @@ import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomain
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -84,7 +85,7 @@ const RootReport = () => {
     [reportId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Report');
+  const enableReferences = useIsEnforceReference('Report') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   return (
