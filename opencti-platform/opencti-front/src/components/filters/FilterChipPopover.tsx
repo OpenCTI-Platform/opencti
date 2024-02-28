@@ -290,7 +290,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
           return (
-            <Tooltip title={option.label} key={option.label} followCursor={true}>
+            <Tooltip title={option.label} key={option.label} followCursor>
               <li
                 {...props}
                 onKeyDown={(e) => {
