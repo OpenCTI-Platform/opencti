@@ -1234,7 +1234,7 @@ export const buildCompleteUser = async (context, client) => {
   const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
 
   // effective confidence level
-  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups });
+  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
 
   return {
     ...client,
