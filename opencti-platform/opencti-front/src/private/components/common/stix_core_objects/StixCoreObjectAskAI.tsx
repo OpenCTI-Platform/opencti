@@ -345,7 +345,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
               fullWidth={true}
               type="number"
               value={paragraphs}
-              onChange={(event) => setParagraphs(event.target.value as unknown as number)}
+              onChange={(event) => setParagraphs(Number.isNaN(parseInt(event.target.value, 10)) ? 1 : parseInt(event.target.value, 10))}
               style={fieldSpacingContainerStyle}
             />
           )}
