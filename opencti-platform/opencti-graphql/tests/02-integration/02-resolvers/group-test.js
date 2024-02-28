@@ -274,15 +274,53 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0', value: [{ entity_type: 'Case-Rfi', max_confidence: 70 }] }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87,
+      overrides: [
+        { entity_type: 'Case-Rfi', max_confidence: 70 },
+        { entity_type: 'Malware', max_confidence: 25 },
+      ],
+    });
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1/max_confidence', value: [63] }
       },
     });
     expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
-      max_confidence: 87, // unchanged!
+      max_confidence: 87,
       overrides: [
-        { entity_type: 'Report', max_confidence: 70 },
+        { entity_type: 'Case-Rfi', max_confidence: 70 },
         { entity_type: 'Malware', max_confidence: 63 },
       ],
+    });
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1', value: [], operation: 'remove' }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87,
+      overrides: [
+        { entity_type: 'Case-Rfi', max_confidence: 70 },
+      ],
+    });
+    queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides', value: [] }
+      },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+      max_confidence: 87,
+      overrides: [],
     });
   });
   it('should fail to update group confidence level with invalid patch data', async () => {
