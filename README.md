@@ -93,4 +93,5 @@ $ pytest ./tests/02-integration/
 
 OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
 
-<a href="https://filigran.io" alt="Filigran"><img src="https://filigran.io/wp-content/uploads/2023/08/filigran_text_medium.png" width="200" /></a>
+![Filigran](https://github.com/OpenCTI-Platform/opencti/raw/master/.github/img/logo_filigran_dark.png#gh-dark-mode-only)
+![Filigran](https://github.com/OpenCTI-Platform/opencti/raw/master/.github/img/logo_filigran_light.png#gh-light-mode-only)
