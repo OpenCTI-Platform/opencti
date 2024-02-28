@@ -45,7 +45,7 @@ test('Check navigation on all pages', async ({ page }) => {
 
   // Checking Arsenal menu
   await leftBarPage.clickOnMenu('Arsenal');
-  await leftBarPage.expectPage('Arsenal', 'Malwares');
+  await leftBarPage.expectPage('Arsenal', 'Malware');
   await leftBarPage.expectPage('Arsenal', 'Channels');
   await leftBarPage.expectPage('Arsenal', 'Tools');
   await leftBarPage.expectPage('Arsenal', 'Vulnerabilities');
