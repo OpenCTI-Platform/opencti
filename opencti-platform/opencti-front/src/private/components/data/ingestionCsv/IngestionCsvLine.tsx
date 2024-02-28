@@ -57,6 +57,7 @@ const ingestionCsvLineFragment = graphql`
     uri
     ingestion_running
     current_state_date
+    current_state_hash
   }
 `;
 
@@ -102,7 +103,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               className={classes.bodyItem}
               style={{ width: dataColumns.current_state_date.width }}
             >
-              {nsdt(data.current_state_date)}
+              {data.current_state_date ? nsdt(data.current_state_date) : data.current_state_hash}
             </div>
           </div>
         }

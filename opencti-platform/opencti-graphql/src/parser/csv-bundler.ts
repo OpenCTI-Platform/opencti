@@ -13,6 +13,8 @@ import { parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
+import { logApp } from '../config/conf';
+import { UnknownError } from '../config/errors';
 
 const validateInput = async (context: AuthContext, user: AuthUser, inputs: Record<string, InputType>[]) => {
   await Promise.all(inputs.map(async (input) => {
@@ -46,16 +48,20 @@ export const bundleProcess = async (
       if (skipLine) {
         skipLine = false;
       } else if (!isEmptyLine) {
-        // Compute input by representation
-        const inputs = await mappingProcess(context, user, sanitizedMapper, record);
-        // Remove inline elements
-        const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
-        // Validate elements
-        await validateInput(context, user, withoutInlineInputs);
-        // Transform entity to stix
-        const stixObjects = withoutInlineInputs.map((input) => convertStoreToStix(input as unknown as StoreCommon));
-        // Add to bundle
-        bundleBuilder.addObjects(stixObjects);
+        try {
+          // Compute input by representation
+          const inputs = await mappingProcess(context, user, sanitizedMapper, record);
+          // Remove inline elements
+          const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
+          // Validate elements
+          await validateInput(context, user, withoutInlineInputs);
+          // Transform entity to stix
+          const stixObjects = withoutInlineInputs.map((input) => convertStoreToStix(input as unknown as StoreCommon));
+          // Add to bundle
+          bundleBuilder.addObjects(stixObjects);
+        } catch (e) {
+          logApp.error(UnknownError('Error CSV mapping record', { cause: e }));
+        }
       }
     })));
   }
