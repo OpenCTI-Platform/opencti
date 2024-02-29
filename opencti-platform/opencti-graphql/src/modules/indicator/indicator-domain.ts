@@ -152,11 +152,11 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
   return listAllEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-const validateObservableGeneration = (observableType: string, indicatorPattern: string) => {
+export const validateObservableGeneration = (observableType: string, indicatorPattern: string) => {
   if (observableType === ENTITY_NETWORK_TRAFFIC && (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))) {
     return false; // we can't create this type of observables (issue #5293)
   }
-  if (observableType === ENTITY_EMAIL_MESSAGE && indicatorPattern.includes('from_ref')) {
+  if (observableType === ENTITY_EMAIL_MESSAGE && (indicatorPattern.includes('from_ref') || indicatorPattern.includes('sender_ref'))) {
     return false; // we can't create this type of observables (issue #5293)
   }
   return true;
