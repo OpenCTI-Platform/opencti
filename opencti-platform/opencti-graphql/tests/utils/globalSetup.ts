@@ -85,7 +85,7 @@ const platformClean = async () => {
   await deleteQueues(testContext, ADMIN_USER);
   // Remove all elastic indices
   const indices = await elPlatformIndices();
-  await elDeleteIndices(indices.map((i) => i.index));
+  await elDeleteIndices(indices.map((i: { index: number }) => i.index));
   // Delete redis streams
   const testRedisClient = createRedisClient('reset');
   await testRedisClient.del('stream.opencti');
@@ -93,14 +93,15 @@ const platformClean = async () => {
   logApp.info(`[vitest-global-setup] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);
 };
 
-const waitPlatformIsAlive = async () => {
+const waitPlatformIsAlive = async (): Promise<true> => {
   const isAlive = await isPlatformAlive();
   if (!isAlive) {
     logApp.info('[vitest-global-setup] ping platform ...');
     await wait(1000);
-    return await waitPlatformIsAlive();
+    return waitPlatformIsAlive();
   }
   logApp.info('[vitest-global-setup] platform is alive');
+  return true;
 };
 
 export async function setup() {
