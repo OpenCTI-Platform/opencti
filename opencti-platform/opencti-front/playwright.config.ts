@@ -31,10 +31,9 @@ export default defineConfig({
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
       },
-      onEnd: async (reportData, capability) => {
-        
+      onEnd: async (reportData) => {
         // teams integration with webhook
-        await teamsWebhook(reportData, capability);
+        await teamsWebhook(reportData);
       }
     }]
   ],
