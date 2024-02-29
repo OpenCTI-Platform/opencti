@@ -750,7 +750,7 @@ const ContainerHeader = (props) => {
       ],
     },
   };
-  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions }, { fetchPolicy: 'network-only' });
+  const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
   return (
     <Box sx={containerStyle}>
