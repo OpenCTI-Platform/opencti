@@ -1351,7 +1351,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { caseData, theme, mode } = this.props;
+    const { caseData, theme, mode, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -1468,6 +1468,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
                 resetAllFilters={this.resetAllFilters.bind(this)}
                 openCreatedRelation={this.state.openCreatedRelation}
                 handleCloseRelationCreation={() => this.setState({ openCreatedRelation: false })}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

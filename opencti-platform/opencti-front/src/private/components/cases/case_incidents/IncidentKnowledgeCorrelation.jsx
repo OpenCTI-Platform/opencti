@@ -832,7 +832,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
   }
 
   render() {
-    const { caseData, theme, t } = this.props;
+    const { caseData, theme, t, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -981,6 +981,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
                 timeRangeValues={timeRangeValues}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

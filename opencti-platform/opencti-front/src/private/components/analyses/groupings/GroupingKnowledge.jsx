@@ -145,6 +145,7 @@ class GroupingKnowledgeComponent extends Component {
       match: {
         params: { mode },
       },
+      enableReferences,
     } = this.props;
     const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
     return (
@@ -177,6 +178,7 @@ class GroupingKnowledgeComponent extends Component {
                     <GroupingKnowledgeGraph
                       grouping={props.grouping}
                       mode={mode}
+                      enableReferences={enableReferences}
                     />
                   );
                 }
@@ -221,7 +223,7 @@ class GroupingKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.grouping) {
                   return (
-                    <GroupingKnowledgeCorrelation grouping={props.grouping} />
+                    <GroupingKnowledgeCorrelation grouping={props.grouping} enableReferences={enableReferences}/>
                   );
                 }
                 return (
@@ -288,6 +290,7 @@ GroupingKnowledgeComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  enableReferences: PropTypes.bool,
 };
 
 const GroupingKnowledge = createFragmentContainer(GroupingKnowledgeComponent, {

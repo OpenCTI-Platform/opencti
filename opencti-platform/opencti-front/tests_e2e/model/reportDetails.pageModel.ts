@@ -15,4 +15,8 @@ export default class ReportDetailsPage {
   getEditButton() {
     return this.page.getByLabel('Edit');
   }
+
+  getObservablesTab() {
+    return this.page.getByRole('tab', { name: 'Observables' });
+  }
 }

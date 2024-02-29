@@ -345,6 +345,7 @@ class ReportKnowledgeGraphBar extends Component {
       theme,
       navOpen,
       resetAllFilters,
+      enableReferences,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -872,6 +873,7 @@ class ReportKnowledgeGraphBar extends Component {
                         onAdd={onAdd}
                         onDelete={onDelete}
                         confidence={report.confidence}
+                        enableReferences={enableReferences}
                       />
                     )}
                     <Tooltip title={t('Edit the selected item')}>
@@ -1227,6 +1229,7 @@ ReportKnowledgeGraphBar.propTypes = {
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
   navOpen: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default R.compose(

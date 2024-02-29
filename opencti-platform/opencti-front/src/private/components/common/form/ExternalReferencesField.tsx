@@ -218,7 +218,7 @@ ExternalReferencesFieldProps
                     'externalReferenceEdit',
                     id,
                     'relationAdd',
-                    input,
+                    { input },
                     'to',
                   );
                 }

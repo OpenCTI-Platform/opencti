@@ -336,6 +336,7 @@ class GroupingKnowledgeGraphBar extends Component {
       navOpen,
       resetAllFilters,
       selectModeFreeReady,
+      enableReferences,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -859,6 +860,7 @@ class GroupingKnowledgeGraphBar extends Component {
                         onAdd={onAdd}
                         onDelete={onDelete}
                         confidence={grouping.confidence}
+                        enableReferences={enableReferences}
                       />
                     )}
                     <Tooltip title={t('Edit the selected item')}>
@@ -1190,6 +1192,7 @@ GroupingKnowledgeGraphBar.propTypes = {
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
   navOpen: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default R.compose(

@@ -1334,7 +1334,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { report, theme, mode } = this.props;
+    const { report, theme, mode, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -1451,6 +1451,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 resetAllFilters={this.resetAllFilters.bind(this)}
                 openCreatedRelation={this.state.openCreatedRelation}
                 handleCloseRelationCreation={() => this.setState({ openCreatedRelation: false })}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

@@ -833,7 +833,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
   }
 
   render() {
-    const { grouping, theme, t } = this.props;
+    const { grouping, theme, t, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -981,6 +981,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
                 timeRangeValues={timeRangeValues}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

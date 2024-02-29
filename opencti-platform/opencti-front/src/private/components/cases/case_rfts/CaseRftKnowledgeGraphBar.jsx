@@ -348,6 +348,7 @@ class CaseRftKnowledgeGraphBar extends Component {
       theme,
       navOpen,
       resetAllFilters,
+      enableReferences,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -872,6 +873,7 @@ class CaseRftKnowledgeGraphBar extends Component {
                         onAdd={onAdd}
                         onDelete={onDelete}
                         confidence={caseData.confidence}
+                        enableReferences={enableReferences}
                       />
                     )}
                     <Tooltip title={t('Edit the selected item')}>
@@ -1227,6 +1229,7 @@ CaseRftKnowledgeGraphBar.propTypes = {
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
   navOpen: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default R.compose(
