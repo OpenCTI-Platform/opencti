@@ -5,7 +5,7 @@ import '../../src/manager/index';
 // endregion
 import { deleteBucket, initializeBucket } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
-import { ADMIN_USER, createTestUsers, testContext } from './testQuery';
+import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient, shutdownRedisClients } from '../../src/database/redis';
@@ -93,13 +93,24 @@ const platformClean = async () => {
   logApp.info(`[vitest-global-setup] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);
 };
 
+const waitPlatformIsAlive = async () => {
+  const isAlive = await isPlatformAlive();
+  if (!isAlive) {
+    logApp.info('[vitest-global-setup] ping platform ...');
+    await wait(1000);
+    return await waitPlatformIsAlive();
+  }
+  logApp.info('[vitest-global-setup] platform is alive');
+};
+
 export async function setup() {
+  // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');
     const stopTime = new Date().getTime();
     await platformClean();
     await testPlatformStart();
-    await wait(15000); // Wait 15 secs for complete platform start
+    await waitPlatformIsAlive();
     logApp.info('[vitest-global-setup] creating test users');
     await createTestUsers();
     logApp.info(`[vitest-global-setup] Test Platform initialization done in ${new Date().getTime() - stopTime} ms`);
@@ -118,7 +129,7 @@ export async function setup() {
 
   // setup tests users
   if (!SKIP_CLEANUP_PLATFORM) {
-    await wait(15000); // Wait 15 secs for complete platform start
+    await waitPlatformIsAlive();
     logApp.info('[vitest-global-setup] Creating test users...');
     await createTestUsers();
   }
