@@ -240,6 +240,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       multiple: false,
       upsert: false,
       isFilterable: false,
+      sortBy: { path: 'group_confidence_level.max_confidence', type: 'numeric' },
       mappings: [
         { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
         { name: 'overrides',

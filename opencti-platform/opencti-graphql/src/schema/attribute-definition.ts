@@ -38,11 +38,17 @@ type BasicDefinition = {
   update?: boolean // If attribute can be updated (null = true)
 };
 
+export type MappingDefinition = AttributeDefinition & {
+  associatedFilterKeys?: { key: string, label: string }[] // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
+};
+
 type BasicObjectDefinition = BasicDefinition & {
-  mappings: (
-    { associatedFilterKeys?: { key: string, label: string }[] } // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
-    & AttributeDefinition
-  )[],
+  mappings: MappingDefinition[],
+  // if the object attribute can be used for sorting, we need to know how
+  sortBy?: {
+    path: string // path leading to the value that serves for sorting
+    type: string // type of this value, copied for convenience from corresponding mapping (checked at registration)
+  }
 };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
