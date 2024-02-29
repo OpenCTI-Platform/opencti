@@ -172,7 +172,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
       {renderLines()}
     </ExportContextProvider>
   );
