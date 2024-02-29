@@ -51,8 +51,8 @@ Here are the configuration keys, for both containers (environment variables) and
 
 | Parameter                          | Environment variable                 | Default value | Description                                                                                                |
 |:-----------------------------------|:-------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------|
-| http_proxy                         | HTTP_PROXY                           |               | Proxy URL for HTTP connection (example: http://proxy:8O080)                                                |
-| https_proxy                        | HTTPS_PROXY                          |               | Proxy URL for HTTPS connection (example: http://proxy:8O080)                                               |
+| http_proxy                         | HTTP_PROXY                           |               | Proxy URL for HTTP connection (example: http://proxy:80080)                                                |
+| https_proxy                        | HTTPS_PROXY                          |               | Proxy URL for HTTPS connection (example: http://proxy:80080)                                               |
 | no_proxy                           | NO_PROXY                             |               | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io) |
 | app:https_cert:cookie_secure       | APP__HTTPS_CERT__COOKIE_SECURE       | false         | Set the flag "secure" for session cookies.                                                                 |
 | app:https_cert:ca                  | APP__HTTPS_CERT__CA                  | Empty list [] | Certificate authority paths or content, only if the client uses a self-signed certificate.                 |
