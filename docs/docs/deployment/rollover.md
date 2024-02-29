@@ -14,7 +14,7 @@ ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been 
 ## OpenCTI Integration User Permissions in OpenSearch/ElasticSearch
 
 - Index Permissions
-    - **Patterns:** `opencti*` _(Dependent on the parameter [elasticsearch:index_prefix](deployment/configuration/?h=configuration#elasticsearch) value)_
+    - **Patterns:** `opencti*` _(Dependent on the parameter [elasticsearch:index_prefix](configuration.md#elasticsearch) value)_
     - **Permissions:** `indices_all`
 
 - Cluster Permissions
