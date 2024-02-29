@@ -26,6 +26,8 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -80,6 +82,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
@@ -188,6 +191,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerStixDomainObjects
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -198,6 +202,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerStixCyberObservables
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -224,7 +229,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               exact
               path="/dashboard/cases/rfis/:caseId/knowledge/:mode"
               render={(routeProps) => (
-                <CaseRfiKnowledge {...routeProps} caseData={caseData} />
+                <CaseRfiKnowledge {...routeProps} caseData={caseData} enableReferences={enableReferences} />
               )}
             />
             <Route

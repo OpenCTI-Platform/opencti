@@ -82,7 +82,7 @@ class GroupEditionUsers extends Component {
             'groupEdit',
             this.props.group.id,
             'relationAdd',
-            input,
+            { input },
             'from',
           );
         },

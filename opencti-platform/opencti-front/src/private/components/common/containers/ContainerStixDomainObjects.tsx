@@ -43,9 +43,10 @@ const ContainerStixDomainObjectsFragment = graphql`
 `;
 
 const ContainerStixDomainObjects = ({
-  container,
+  container, enableReferences,
 }: {
   container: ContainerStixDomainObjects_container$key;
+  enableReferences?: boolean
 }) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -204,6 +205,7 @@ const ContainerStixDomainObjects = ({
             deSelectedElements={deSelectedElements}
             onToggleEntity={onToggleEntity}
             selectAll={selectAll}
+            enableReferences={enableReferences}
           />
           <ToolBar
             selectedElements={selectedElements}
