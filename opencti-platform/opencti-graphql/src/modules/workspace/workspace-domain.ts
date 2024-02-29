@@ -32,6 +32,7 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
 
 export const findById = (
   context: AuthContext,
@@ -287,13 +288,7 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
     });
   }
 
-  const isCompatibleOpenCtiVersion = (openCtiVersion: string) => {
-    const [major, minor, patch] = openCtiVersion.split('.').map((number) => parseInt(number, 10));
-    const [openCtiMajor, openCtiMinor, openCtiPatch] = MINIMAL_COMPATIBLE_VERSION.split('.').map((number) => parseInt(number, 10));
-    return major >= openCtiMajor && minor >= openCtiMinor && patch >= openCtiPatch;
-  };
-
-  if (!isCompatibleOpenCtiVersion(parsedData.openCTI_version)) {
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
     throw FunctionalError(
       `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
       { reason: parsedData.openCTI_version },
