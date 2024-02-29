@@ -16,6 +16,7 @@ import { DecayRulesLinesPaginationQuery, DecayRulesLinesPaginationQuery$variable
 import { DecayRulesLine_node$data } from './__generated__/DecayRulesLine_node.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { INDICATOR_DECAY_MANAGER } from '../../../../utils/platformModulesHelper';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const LOCAL_STORAGE_KEY = 'view-decay-rules';
 
@@ -151,6 +152,7 @@ const DecayRules = () => {
   return (
     <div className={classes.container}>
       <CustomizationMenu />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Decay rules'), current: true }]} />
       {renderLines()}
       <DecayRuleCreation paginationOptions={queryPaginationOptions} />
     </div>
