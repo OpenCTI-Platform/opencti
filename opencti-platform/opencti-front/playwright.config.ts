@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-
+import teamsWebhook from './tests_e2e/webhooks/teams-webhook.js';
 // https://playwright.dev/docs/browsers
 
 /**
@@ -30,6 +30,11 @@ export default defineConfig({
       coverage: {
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+      },
+      onEnd: async (reportData, capability) => {
+        
+        // teams integration with webhook
+        await teamsWebhook(reportData, capability);
       }
     }]
   ],
@@ -40,6 +45,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    screenshot: "only-on-failure",
     ignoreHTTPSErrors: true,
   },
   expect: { timeout: 200000 },
