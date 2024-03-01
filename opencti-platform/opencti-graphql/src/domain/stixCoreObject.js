@@ -385,12 +385,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     const filePath = `import/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
-    const meta = {};
+    const meta = { version: fileVersion };
     if (isAutoExternal) {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await upload(context, user, filePath, file, { meta, noTriggerImport, fileVersion, entity: previous });
+    const { upload: up, untouched } = await upload(context, user, filePath, file, { meta, noTriggerImport, entity: previous });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications

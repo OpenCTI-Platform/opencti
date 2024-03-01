@@ -318,13 +318,17 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 };
 
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, fileVersion, errorOnExisting = false } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
+  const metadata = { ...meta };
+  if (!metadata.version) {
+    metadata.version = now();
+  }
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   const key = `${filePath}/${truncatedFileName}`;
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
-    if (currentFile.metaData?.version === fileVersion) {
+    if (currentFile.metaData?.version === metadata.version) {
       return { upload: currentFile, untouched: true };
     }
     if (errorOnExisting) {
@@ -337,10 +341,6 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   // Upload the data
   const readStream = createReadStream();
   const fileMime = guessMimeType(key) || mimetype;
-  const metadata = { ...meta };
-  if (!metadata.version) {
-    metadata.version = now();
-  }
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
