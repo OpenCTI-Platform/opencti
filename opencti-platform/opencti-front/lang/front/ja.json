@@ -2673,5 +2673,12 @@
   "Strategic": "戦略的",
   "Link created": "リンク作成",
   "Public dashboard": "公開ダッシュボード",
-  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
+  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。",
+  "Multiple values entered. Edit with the TT button": "複数の値が入力されました。 TTボタンで編集",
+  "Bulk Observable Creation": "監視可能な一括作成",
+  "Observables listed must be of the same type.": "リストされる Observable は同じタイプである必要があります。",
+  "One Observable per line.": "1 行に 1 つの Observable。",
+  "Bulk Content": "バルクコンテンツ",
+  "were added successfully.": "は正常に追加されました。",
+  "observables contained errors and were not added.": "オブザーバブルにはエラーが含まれていたため、追加されませんでした。"
 }

@@ -2673,5 +2673,12 @@
   "Strategic": "Estratégico",
   "Link created": "Enlace creado",
   "Public dashboard": "Cuadro de mandos público",
-  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto."
+  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto.",
+  "Multiple values entered. Edit with the TT button": "Se ingresaron varios valores. Editar con el botón TT",
+  "Bulk Observable Creation": "Creación observable masiva",
+  "Observables listed must be of the same type.": "Los observables enumerados deben ser del mismo tipo.",
+  "One Observable per line.": "Un Observable por línea.",
+  "Bulk Content": "Contenido masivo",
+  "were added successfully.": "fueron agregados exitosamente.",
+  "observables contained errors and were not added.": "Los observables contenían errores y no se agregaron."
 }
