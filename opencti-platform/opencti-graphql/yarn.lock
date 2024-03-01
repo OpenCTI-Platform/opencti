@@ -5721,9 +5721,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"archiver@npm:6.0.1":
-  version: 6.0.1
-  resolution: "archiver@npm:6.0.1"
+"archiver@npm:6.0.2":
+  version: 6.0.2
+  resolution: "archiver@npm:6.0.2"
   dependencies:
     archiver-utils: "npm:^4.0.1"
     async: "npm:^3.2.4"
@@ -5732,7 +5732,7 @@ __metadata:
     readdir-glob: "npm:^1.1.2"
     tar-stream: "npm:^3.0.0"
     zip-stream: "npm:^5.0.1"
-  checksum: 10/22997a5bbfe1c4e977d9caa91bca2e01e9d84a91d542ab3c2e22a6a56dbe33c0cd53e92b5e6cfef293da4bc6869497b2940399350f5247f173022d07e12ff749
+  checksum: 10/daeeea82bcbfa349df0fa3dcb29722b46fc01223774e76f28298277546b78722264354edb23c86eb359e8929bc101cd1f43818071591130dfc64f6e686d3bf84
   languageName: node
   linkType: hard
 
@@ -11449,7 +11449,7 @@ __metadata:
     apollo-errors: "npm:1.9.0"
     apollo-server-core: "npm:3.13.0"
     apollo-server-express: "npm:3.13.0"
-    archiver: "npm:6.0.1"
+    archiver: "npm:6.0.2"
     archiver-zip-encrypted: "npm:1.0.11"
     async-lock: "npm:1.4.1"
     axios: "npm:1.6.7"
