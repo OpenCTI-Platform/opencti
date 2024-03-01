@@ -49,7 +49,13 @@ import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelat
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES_WITHOUT_INFERRED, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_ENTITIES_INDICES_WITHOUT_INFERRED,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
+} from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
@@ -581,6 +587,7 @@ const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--',
 type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
 interface RuleConfiguration extends PlaybookComponentConfiguration {
   rule: string
+  inferences: boolean
 }
 const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
   type: 'object',
@@ -596,8 +603,9 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
         { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
       ]
     },
+    inferences: { type: 'boolean', $ref: 'Include inferred objects', default: false },
   },
-  required: ['rule'],
+  required: ['rule', 'inferences'],
 };
 const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   id: 'PLAYBOOK_RULE_COMPONENT',
@@ -613,12 +621,12 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { id, type } = baseData.extensions[STIX_EXT_OCTI];
-    const { rule } = playbookNode.configuration;
+    const { rule, inferences } = playbookNode.configuration;
     if (rule === RESOLVE_INDICATORS) {
       // RESOLVE_INDICATORS is for now only triggered on observable creation / update
       if (isStixCyberObservable(type)) {
         // Observable <-- (based on) -- Indicator
-        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR], indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
+        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
         const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
@@ -632,7 +640,8 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // RESOLVE_OBSERVABLES is for now only triggered on indicator creation / update
       if (type === ENTITY_TYPE_INDICATOR) {
         // Indicator (based on) --> Observable
-        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
+        // eslint-disable-next-line max-len
+        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
         const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
@@ -679,12 +688,17 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (isStixDomainObjectContainer(type)) {
         // Handle first seen synchro for reports creation / modification
         const container = baseData as StixContainer;
+        const objectRefsToResolve = [];
         if (container.object_refs && container.object_refs.length > 0) {
-          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, container.object_refs);
-          if (elements.length > 0) {
-            bundle.objects.push(...elements);
-            return { output_port: 'out', bundle };
-          }
+          objectRefsToResolve.push(...container.object_refs);
+        }
+        if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
+          objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);
+        }
+        const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve);
+        if (elements.length > 0) {
+          bundle.objects.push(...elements);
+          return { output_port: 'out', bundle };
         }
       }
     }
@@ -693,7 +707,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         context,
         AUTOMATION_MANAGER_USER,
         ABSTRACT_STIX_CORE_RELATIONSHIP,
-        { fromOrToId: id, baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
+        { fromOrToId: id, baseData: true, indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
       ) as StoreRelation[];
       let idsToResolve = R.uniq(
         [

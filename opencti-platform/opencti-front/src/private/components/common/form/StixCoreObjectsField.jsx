@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union } from 'ramda';
+import { compose, pathOr, pipe, map } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
@@ -10,8 +10,8 @@ import { defaultValue } from '../../../../utils/Graph';
 import ItemIcon from '../../../../components/ItemIcon';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
-  query StixCoreObjectsFieldSearchQuery($search: String) {
-    stixCoreObjects(search: $search) {
+  query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
+    stixCoreObjects(search: $search, types: $types) {
       edges {
         node {
           id
@@ -200,16 +200,17 @@ const styles = () => ({
 class StixCoreObjectsField extends Component {
   constructor(props) {
     super(props);
-    this.state = { stixCoreObjects: [] };
+    this.state = { stixCoreObjects: [], types: ['Stix-Core-Objects'] };
   }
 
   searchStixCoreObjects(event) {
     fetchQuery(stixCoreObjectsFieldSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
+      types: this.state.types,
     })
       .toPromise()
       .then((data) => {
-        const labels = pipe(
+        const stixCoreObjects = pipe(
           pathOr([], ['stixCoreObjects', 'edges']),
           map((n) => ({
             label: defaultValue(n.node),
@@ -217,16 +218,18 @@ class StixCoreObjectsField extends Component {
             type: n.node.entity_type,
           })),
         )(data);
-        this.setState({
-          stixCoreObjects: union(this.state.stixCoreObjects, labels),
-        });
+        this.setState({ stixCoreObjects });
       });
+  }
+
+  changeType(type) {
+    this.setState({ types: [type] });
   }
 
   render() {
     const { t, name, style, classes, helpertext } = this.props;
     return (
-      <div>
+      <>
         <Field
           component={AutocompleteField}
           style={style}
@@ -237,7 +240,9 @@ class StixCoreObjectsField extends Component {
             label: t('Entities'),
             helperText: helpertext,
             onFocus: this.searchStixCoreObjects.bind(this),
+
           }}
+          groupBy={(option) => option.type}
           noOptionsText={t('No available options')}
           options={this.state.stixCoreObjects}
           onInputChange={this.searchStixCoreObjects.bind(this)}
@@ -251,7 +256,7 @@ class StixCoreObjectsField extends Component {
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />
-      </div>
+      </>
     );
   }
 }
