@@ -23,6 +23,7 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import type { BasicWorkflowStatus } from '../../types/store';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -125,7 +126,7 @@ export const resolveFilterGroup = async (
 /**
  * Build a resolution map thanks to the cache
  */
-const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>) : Promise<FilterResolutionMap> => {
+const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>): Promise<FilterResolutionMap> => {
   const map: Map<string, string> = new Map();
   if (Object.keys(STIX_RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
     for (let index = 0; index < filter.values.length; index += 1) {
@@ -139,8 +140,9 @@ const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser,
         if (!(await isUserCanAccessStixElement(context, user, cachedObject))) {
           // invalidate the filter value; it won't match ever, but we keep track of this invalidation for debug purposes
           map.set(v, '<restricted-or-deleted>');
+        } else if (filter.key[0] === CONNECTED_TO_INSTANCE_FILTER) {
+          map.set(v, cachedObject.extensions[STIX_EXT_OCTI].id);
         } else {
-          // resolve according to path
           const cachedValue = cachedObject[path];
           if (typeof cachedValue === 'string') {
             map.set(v, cachedValue);
@@ -153,7 +155,7 @@ const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser,
   return map;
 };
 
-const mergeMaps = <K, V>(mapArray: Map<K, V>[]) : Map<K, V> => {
+const mergeMaps = <K, V>(mapArray: Map<K, V>[]): Map<K, V> => {
   const mergedMap = new Map<K, V>();
 
   mapArray.forEach((map) => {
