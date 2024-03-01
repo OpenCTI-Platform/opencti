@@ -450,7 +450,7 @@ StixCoreRelationshipExternalReferencesLinesContainer.propTypes = {
 
 export const stixCoreRelationshipExternalReferencesLinesQuery = graphql`
   query StixCoreRelationshipExternalReferencesLinesQuery(
-    $count: Int!
+    $count: Int
     $id: String!
   ) {
     ...StixCoreRelationshipExternalReferencesLines_data

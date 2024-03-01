@@ -538,7 +538,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
 };
 
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
-  query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
+  query StixCoreObjectExternalReferencesLinesQuery($count: Int, $id: String!) {
     ...StixCoreObjectExternalReferencesLines_data
       @arguments(count: $count, id: $id)
   }

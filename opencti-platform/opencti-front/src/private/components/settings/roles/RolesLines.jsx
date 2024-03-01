@@ -40,7 +40,7 @@ RolesLines.propTypes = {
 export const rolesLinesQuery = graphql`
   query RolesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: RolesOrdering
     $orderMode: OrderingMode

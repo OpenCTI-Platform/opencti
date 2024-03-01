@@ -60,7 +60,7 @@ IngestionTaxiiLines.propTypes = {
 export const IngestionTaxiiLinesQuery = graphql`
   query IngestionTaxiiLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IngestionTaxiiOrdering
     $orderMode: OrderingMode

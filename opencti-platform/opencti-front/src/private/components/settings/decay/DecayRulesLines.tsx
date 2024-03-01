@@ -12,7 +12,7 @@ const nbOfRowsToLoad = 50;
 export const decayRulesLinesQuery = graphql`
   query DecayRulesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: DecayRuleOrdering
     $orderMode: OrderingMode

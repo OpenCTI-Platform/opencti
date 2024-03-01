@@ -109,7 +109,7 @@ export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
   query StixNestedRefRelationshipCreationFromEntityLinesQuery(
     $search: String
     $types: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode

@@ -21,7 +21,7 @@ interface DataSourceLinesProps {
 export const dataSourcesLinesQuery = graphql`
   query DataSourcesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: DataSourcesOrdering
     $orderMode: OrderingMode

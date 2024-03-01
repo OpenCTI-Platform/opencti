@@ -34,7 +34,7 @@ export const searchStixCoreObjectsLinesQuery = graphql`
   query SearchStixCoreObjectsLinesPaginationQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode

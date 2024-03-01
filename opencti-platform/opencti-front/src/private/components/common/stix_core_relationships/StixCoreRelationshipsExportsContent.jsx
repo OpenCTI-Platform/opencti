@@ -129,7 +129,7 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
 
 export const stixCoreRelationshipsExportsContentQuery = graphql`
   query StixCoreRelationshipsExportsContentRefetchQuery(
-    $count: Int!
+    $count: Int
     $exportContext: ExportContext!
   ) {
     ...StixCoreRelationshipsExportsContent_data

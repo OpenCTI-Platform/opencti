@@ -194,7 +194,7 @@ export const stixCyberObservableNestedEntitiesLinesQuery = graphql`
   query StixCyberObservableNestedEntitiesLinesQuery(
     $fromOrToId: String
     $search: String
-    $count: Int!
+    $count: Int
     $orderBy: StixRefRelationshipsOrdering
     $orderMode: OrderingMode
   ) {

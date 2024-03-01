@@ -49,7 +49,7 @@ export const AuditCSVQuery = graphql`
   query AuditCSVQuery(
     $search: String
     $types: [String!]
-    $first: Int!
+    $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup

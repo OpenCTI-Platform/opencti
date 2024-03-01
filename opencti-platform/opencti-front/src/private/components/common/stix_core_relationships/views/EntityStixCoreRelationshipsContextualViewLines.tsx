@@ -57,7 +57,7 @@ export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsContextualViewLinesQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $filters: FilterGroup
     $orderBy: StixCoreObjectsOrdering

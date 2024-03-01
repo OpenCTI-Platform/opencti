@@ -40,7 +40,7 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     $id: String!
     $search: String
     $types: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode

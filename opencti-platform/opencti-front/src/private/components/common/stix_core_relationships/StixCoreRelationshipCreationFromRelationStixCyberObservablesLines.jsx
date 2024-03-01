@@ -139,7 +139,7 @@ export const stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQu
   query StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQuery(
     $search: String
     $types: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode

@@ -92,7 +92,7 @@ const inlineStyles = {
 const stixCyberObservableIndicatorsPromoteMutation = graphql`
   mutation StixCyberObservableIndicatorsPromoteMutation(
     $id: ID!
-    $first: Int!
+    $first: Int
   ) {
     stixCyberObservableEdit(id: $id) {
       promote {

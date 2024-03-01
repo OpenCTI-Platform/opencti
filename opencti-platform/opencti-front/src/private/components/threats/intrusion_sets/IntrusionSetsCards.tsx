@@ -16,7 +16,7 @@ const nbOfCardsToLoad = 20;
 export const intrusionSetsCardsQuery = graphql`
   query IntrusionSetsCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IntrusionSetsOrdering
     $orderMode: OrderingMode

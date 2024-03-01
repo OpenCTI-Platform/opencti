@@ -73,7 +73,7 @@ StixDomainObjectIndicatorsLines.propTypes = {
 export const stixDomainObjectIndicatorsLinesQuery = graphql`
   query StixDomainObjectIndicatorsLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode

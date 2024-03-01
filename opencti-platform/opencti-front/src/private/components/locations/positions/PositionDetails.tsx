@@ -45,7 +45,7 @@ export const positionDetailsLocationRelationshipsLinesQuery = graphql`
     $confidences: [Int]
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...PositionDetails_positionRelationships

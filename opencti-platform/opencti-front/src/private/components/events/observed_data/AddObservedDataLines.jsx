@@ -173,7 +173,7 @@ AddObservedDataLinesContainer.propTypes = {
 };
 
 export const addObservedDataLinesQuery = graphql`
-  query AddObservedDataLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddObservedDataLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddObservedDataLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

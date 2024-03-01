@@ -50,7 +50,7 @@ export const AuditLinesQuery = graphql`
   query AuditLinesPaginationQuery(
     $search: String
     $types: [String!]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: LogsOrdering
     $orderMode: OrderingMode

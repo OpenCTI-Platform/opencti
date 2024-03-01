@@ -20,7 +20,7 @@ interface RegionsLinesProps {
 export const regionsLinesQuery = graphql`
   query RegionsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: RegionsOrdering
     $orderMode: OrderingMode

@@ -15,7 +15,7 @@ const nbOfCardsToLoad = 20;
 export const threatActorsGroupCardsQuery = graphql`
   query ThreatActorsGroupCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode

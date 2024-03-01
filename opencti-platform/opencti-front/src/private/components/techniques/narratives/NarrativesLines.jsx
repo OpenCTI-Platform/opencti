@@ -77,7 +77,7 @@ NarrativesLinesComponent.propTypes = {
 };
 
 export const narrativesLinesQuery = graphql`
-  query NarrativesLinesPaginationQuery($count: Int!, $cursor: ID) {
+  query NarrativesLinesPaginationQuery($count: Int, $cursor: ID) {
     ...NarrativesLines_data @arguments(count: $count, cursor: $cursor)
   }
 `;

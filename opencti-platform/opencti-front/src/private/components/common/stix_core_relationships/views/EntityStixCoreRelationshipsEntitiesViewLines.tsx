@@ -68,7 +68,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 export const entityStixCoreRelationshipsEntitiesQuery = graphql`
   query EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode

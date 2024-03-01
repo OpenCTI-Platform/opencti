@@ -11,7 +11,7 @@ export const settingsOrganizationUsersLinesQuery = graphql`
   query SettingsOrganizationUsersLinesQuery(
     $id: String!
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode

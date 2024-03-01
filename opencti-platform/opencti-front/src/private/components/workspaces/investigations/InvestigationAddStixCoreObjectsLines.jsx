@@ -197,7 +197,7 @@ export const investigationAddStixCoreObjectsLinesQuery = graphql`
   query InvestigationAddStixCoreObjectsLinesQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode

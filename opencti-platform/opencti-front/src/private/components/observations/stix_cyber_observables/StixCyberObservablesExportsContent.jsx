@@ -119,7 +119,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
 }
 
 export const stixCyberObservablesExportsContentQuery = graphql`
-  query StixCyberObservablesExportsContentRefetchQuery($count: Int!, $exportContext: ExportContext!) {
+  query StixCyberObservablesExportsContentRefetchQuery($count: Int, $exportContext: ExportContext!) {
     ...StixCyberObservablesExportsContent_data @arguments(count: $count, exportContext: $exportContext)
   }
 `;

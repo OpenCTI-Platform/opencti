@@ -20,7 +20,7 @@ interface EventsLinesProps {
 export const eventsLinesQuery = graphql`
     query EventsLinesPaginationQuery(
         $search: String
-        $count: Int!
+        $count: Int
         $cursor: ID
         $orderBy: EventsOrdering
         $orderMode: OrderingMode

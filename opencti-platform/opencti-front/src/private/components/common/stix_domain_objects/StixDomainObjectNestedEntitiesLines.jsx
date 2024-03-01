@@ -169,7 +169,7 @@ export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
   query StixDomainObjectNestedEntitiesLinesQuery(
     $fromOrToId: String
     $search: String
-    $count: Int!
+    $count: Int
     $orderBy: StixRefRelationshipsOrdering
     $orderMode: OrderingMode
   ) {

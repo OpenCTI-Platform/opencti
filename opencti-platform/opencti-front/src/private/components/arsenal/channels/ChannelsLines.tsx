@@ -21,7 +21,7 @@ interface ChannelsLinesProps {
 export const channelsLinesQuery = graphql`
   query ChannelsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ChannelsOrdering
     $orderMode: OrderingMode

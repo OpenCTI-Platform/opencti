@@ -20,7 +20,7 @@ interface StatusTemplatesLinesProps {
 export const statusTemplatesLinesQuery = graphql`
   query StatusTemplatesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StatusTemplateOrdering
     $orderMode: OrderingMode

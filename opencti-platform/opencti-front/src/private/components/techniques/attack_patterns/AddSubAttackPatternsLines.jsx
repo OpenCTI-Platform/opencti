@@ -44,7 +44,7 @@ AddSubAttackPatternsLinesContainer.propTypes = {
 export const addSubAttackPatternsLinesQuery = graphql`
   query AddSubAttackPatternsLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddSubAttackPatternsLines_data

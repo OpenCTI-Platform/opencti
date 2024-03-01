@@ -14,7 +14,7 @@ const nbOfRowsToLoad = 50;
 export const notesLinesQuery = graphql`
   query NotesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: NotesOrdering
     $orderMode: OrderingMode

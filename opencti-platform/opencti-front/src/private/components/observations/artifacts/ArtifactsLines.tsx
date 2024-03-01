@@ -30,7 +30,7 @@ export const artifactsLinesQuery = graphql`
   query ArtifactsLinesPaginationQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode

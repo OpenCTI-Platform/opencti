@@ -14,7 +14,7 @@ const nbOfRowsToLoad = 50;
 export const opinionsLinesQuery = graphql`
   query OpinionsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: OpinionsOrdering
     $orderMode: OrderingMode

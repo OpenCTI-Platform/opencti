@@ -550,7 +550,7 @@ export const attackPatternsMatrixColumnsQuery = graphql`
   query AttackPatternsMatrixColumnsQuery(
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
-    $count: Int!
+    $count: Int
     $cursor: ID
     $filters: FilterGroup
   ) {

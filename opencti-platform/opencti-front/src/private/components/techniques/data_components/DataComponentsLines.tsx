@@ -22,7 +22,7 @@ interface DataComponentsLinesProps {
 export const dataComponentsLinesQuery = graphql`
   query DataComponentsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: DataComponentsOrdering
     $orderMode: OrderingMode

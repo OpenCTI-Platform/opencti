@@ -45,7 +45,7 @@ TaxiiLines.propTypes = {
 export const TaxiiLinesQuery = graphql`
   query TaxiiLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: TaxiiCollectionOrdering
     $orderMode: OrderingMode

@@ -62,7 +62,7 @@ StixCoreObjectOrStixCoreRelationshipContainersLines.propTypes = {
 export const stixCoreObjectOrStixCoreRelationshipContainersLinesQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipContainersLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ContainersOrdering
     $orderMode: OrderingMode

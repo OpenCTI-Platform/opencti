@@ -63,7 +63,7 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
   query ContainerStixObjectsOrStixRelationshipsLinesQuery(
     $id: String!
     $types: [String]
-    $count: Int!
+    $count: Int
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
   ) {

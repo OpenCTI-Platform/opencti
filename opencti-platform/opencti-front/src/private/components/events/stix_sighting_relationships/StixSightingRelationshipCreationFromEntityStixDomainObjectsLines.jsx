@@ -172,7 +172,7 @@ export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQue
   query StixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery(
     $search: String
     $types: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode

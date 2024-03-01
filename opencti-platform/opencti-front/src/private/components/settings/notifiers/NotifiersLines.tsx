@@ -47,7 +47,7 @@ const NotifierLineFragment = graphql`
 export const NotifiersLinesQuery = graphql`
   query NotifiersLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: NotifierOrdering
     $orderMode: OrderingMode

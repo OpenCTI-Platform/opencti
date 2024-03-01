@@ -89,7 +89,7 @@ export const indicatorEntitiesLinesQuery = graphql`
     $stopTimeStop: DateTime
     $confidences: [Int]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode

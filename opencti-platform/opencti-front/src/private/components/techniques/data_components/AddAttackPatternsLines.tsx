@@ -23,7 +23,7 @@ export const addAttackPatternsMutationRelationDelete = graphql`
 export const addAttackPatternsLinesQuery = graphql`
   query AddAttackPatternsLinesToDataComponentQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddAttackPatternsLinesToDataComponent_data

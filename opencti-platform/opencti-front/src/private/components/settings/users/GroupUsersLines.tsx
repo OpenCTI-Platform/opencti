@@ -11,7 +11,7 @@ export const groupUsersLinesQuery = graphql`
   query GroupUsersLinesQuery(
     $id: String!
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode

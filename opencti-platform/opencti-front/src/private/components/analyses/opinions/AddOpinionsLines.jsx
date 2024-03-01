@@ -170,7 +170,7 @@ AddOpinionsLinesContainer.propTypes = {
 };
 
 export const addOpinionsLinesQuery = graphql`
-  query AddOpinionsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddOpinionsLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddOpinionsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

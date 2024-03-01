@@ -42,7 +42,7 @@ AddSubNarrativesLinesContainer.propTypes = {
 };
 
 export const addSubNarrativesLinesQuery = graphql`
-  query AddSubNarrativesLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddSubNarrativesLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddSubNarrativesLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

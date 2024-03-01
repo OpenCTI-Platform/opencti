@@ -74,7 +74,7 @@ const StixCoreObjectsExportsContentComponent = ({
 
 export const stixCoreObjectsExportsContentQuery = graphql`
   query StixCoreObjectsExportsContentRefetchQuery(
-    $count: Int!
+    $count: Int
     $exportContext: ExportContext!
   ) {
     ...StixCoreObjectsExportsContent_data @arguments(count: $count, exportContext: $exportContext)

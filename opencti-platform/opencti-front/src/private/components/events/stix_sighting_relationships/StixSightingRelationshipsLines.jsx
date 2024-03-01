@@ -75,7 +75,7 @@ export const stixSightingRelationshipsLinesQuery = graphql`
     $toId: StixRef
     $toTypes: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixSightingRelationshipsOrdering
     $orderMode: OrderingMode

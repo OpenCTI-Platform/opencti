@@ -258,9 +258,8 @@ export const usePaginationLocalStorage = <U>(
   ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
-  const paginationOptions = localStorageToPaginationOptions({ count: 25, ...viewStorage });
+  const paginationOptions = localStorageToPaginationOptions(viewStorage);
   const { filterKeysSchema } = useAuth().schema;
-
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterById: (id: string) => {

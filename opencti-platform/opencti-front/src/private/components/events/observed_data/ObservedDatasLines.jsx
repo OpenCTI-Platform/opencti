@@ -73,7 +73,7 @@ ObservedDatasLines.propTypes = {
 export const observedDatasLinesQuery = graphql`
   query ObservedDatasLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ObservedDatasOrdering
     $orderMode: OrderingMode

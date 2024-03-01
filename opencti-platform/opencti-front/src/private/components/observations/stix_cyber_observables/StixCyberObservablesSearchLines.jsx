@@ -160,7 +160,7 @@ StixCyberObservablesContainer.propTypes = {
 export const stixCyberObservablesSearchLinesQuery = graphql`
   query StixCyberObservablesSearchLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode

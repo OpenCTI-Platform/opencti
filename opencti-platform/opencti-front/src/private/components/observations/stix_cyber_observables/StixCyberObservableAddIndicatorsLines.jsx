@@ -31,7 +31,7 @@ StixCyberObservableAddIndicatorsLinesContainer.propTypes = {
 export const stixCyberObservableAddIndicatorsLinesQuery = graphql`
   query StixCyberObservableAddIndicatorsLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode

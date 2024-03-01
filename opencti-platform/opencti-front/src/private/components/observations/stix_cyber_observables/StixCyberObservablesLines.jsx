@@ -104,7 +104,7 @@ export const stixCyberObservablesLinesQuery = graphql`
   query StixCyberObservablesLinesPaginationQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode

@@ -13,7 +13,7 @@ const nbOfRowsToLoad = 50;
 export const workspacesLinesQuery = graphql`
   query WorkspacesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode

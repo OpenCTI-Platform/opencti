@@ -41,7 +41,7 @@ AddLocationsLinesContainer.propTypes = {
 };
 
 export const addLocationsLinesQuery = graphql`
-  query AddLocationsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddLocationsLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddLocationsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

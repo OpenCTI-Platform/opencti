@@ -31,7 +31,7 @@ interface ThreatActorsIndividualLinesProps {
 export const threatActorsIndividualLinesQuery = graphql`
   query ThreatActorsIndividualLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ThreatActorsIndividualOrdering
     $orderMode: OrderingMode

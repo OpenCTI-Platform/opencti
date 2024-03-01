@@ -231,7 +231,7 @@ export const stixDomainObjectsLinesSubTypesQuery = graphql`
 export const stixDomainObjectsLinesQuery = graphql`
   query StixDomainObjectsLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode

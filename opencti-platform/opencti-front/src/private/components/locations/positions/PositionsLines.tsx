@@ -20,7 +20,7 @@ interface PositionsLinesProps {
 export const positionsLinesQuery = graphql`
   query PositionsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: PositionsOrdering
     $orderMode: OrderingMode

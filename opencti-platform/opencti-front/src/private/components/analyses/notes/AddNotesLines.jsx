@@ -176,7 +176,7 @@ AddNotesLinesContainer.propTypes = {
 };
 
 export const addNotesLinesQuery = graphql`
-  query AddNotesLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddNotesLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddNotesLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

@@ -36,7 +36,7 @@ export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     $toId: [String]
     $fromTypes: [String]
     $toTypes: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode

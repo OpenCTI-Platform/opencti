@@ -29,7 +29,7 @@ interface InfrastructuresLinesProps {
 export const infrastructuresLinesQuery = graphql`
   query InfrastructuresLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: InfrastructuresOrdering
     $orderMode: OrderingMode

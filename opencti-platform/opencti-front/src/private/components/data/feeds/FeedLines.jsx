@@ -45,7 +45,7 @@ FeedLines.propTypes = {
 export const FeedLinesQuery = graphql`
   query FeedLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: FeedOrdering
     $orderMode: OrderingMode

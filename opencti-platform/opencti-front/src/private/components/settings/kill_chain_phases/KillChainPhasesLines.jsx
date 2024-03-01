@@ -60,7 +60,7 @@ KillChainPhasesLines.propTypes = {
 export const killChainPhasesLinesQuery = graphql`
   query KillChainPhasesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: KillChainPhasesOrdering
     $orderMode: OrderingMode

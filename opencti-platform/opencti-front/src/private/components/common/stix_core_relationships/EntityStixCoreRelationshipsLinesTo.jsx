@@ -79,7 +79,7 @@ export const entityStixCoreRelationshipsLinesToQuery = graphql`
     $toRole: String
     $relationship_type: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode

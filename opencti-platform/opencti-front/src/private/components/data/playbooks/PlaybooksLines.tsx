@@ -20,7 +20,7 @@ interface PlaybookLinesProps {
 export const playbooksLinesQuery = graphql`
   query PlaybooksLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: PlaybooksOrdering
     $orderMode: OrderingMode

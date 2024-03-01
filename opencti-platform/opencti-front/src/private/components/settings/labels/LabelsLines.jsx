@@ -68,7 +68,7 @@ LabelsLines.propTypes = {
 export const labelsLinesQuery = graphql`
   query LabelsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: LabelsOrdering
     $orderMode: OrderingMode

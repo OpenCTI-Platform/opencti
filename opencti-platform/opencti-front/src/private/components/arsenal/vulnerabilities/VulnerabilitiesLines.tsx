@@ -21,7 +21,7 @@ interface VulnerabilityLinesProps {
 export const vulnerabilitiesLinesQuery = graphql`
   query VulnerabilitiesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: VulnerabilitiesOrdering
     $orderMode: OrderingMode

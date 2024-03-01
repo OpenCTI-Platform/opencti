@@ -44,7 +44,7 @@ RetentionLines.propTypes = {
 export const RetentionLinesQuery = graphql`
   query RetentionLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...RetentionLines_data

@@ -14,7 +14,7 @@ const nbOfRowsToLoad = 50;
 export const indicatorsLinesQuery = graphql`
   query IndicatorsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $filters: FilterGroup
     $orderBy: IndicatorsOrdering

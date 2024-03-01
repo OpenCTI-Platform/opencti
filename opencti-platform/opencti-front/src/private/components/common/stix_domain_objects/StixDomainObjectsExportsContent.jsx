@@ -79,7 +79,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
 
 export const stixDomainObjectsExportsContentQuery = graphql`
   query StixDomainObjectsExportsContentRefetchQuery(
-    $count: Int!
+    $count: Int
     $exportContext: ExportContext!
   ) {
     ...StixDomainObjectsExportsContent_data

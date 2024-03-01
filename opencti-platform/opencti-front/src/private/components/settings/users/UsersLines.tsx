@@ -52,7 +52,7 @@ const UsersLines: React.FC<UsersLinesProps> = (props) => {
 export const usersLinesQuery = graphql`
   query UsersLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode

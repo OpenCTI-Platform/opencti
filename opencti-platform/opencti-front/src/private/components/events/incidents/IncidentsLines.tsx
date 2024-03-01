@@ -14,7 +14,7 @@ const nbOfRowsToLoad = 50;
 export const incidentsLinesPaginationQuery = graphql`
   query IncidentsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode

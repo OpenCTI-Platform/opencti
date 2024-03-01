@@ -41,7 +41,7 @@ const useStyles = makeStyles(() => createStyles({
 
 export const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
-    $count: Int!
+    $count: Int
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup

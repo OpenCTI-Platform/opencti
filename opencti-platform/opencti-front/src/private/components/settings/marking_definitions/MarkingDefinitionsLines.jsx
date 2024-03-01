@@ -60,7 +60,7 @@ MarkingDefinitionsLines.propTypes = {
 export const markingDefinitionsLinesQuery = graphql`
   query MarkingDefinitionsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: MarkingDefinitionsOrdering
     $orderMode: OrderingMode

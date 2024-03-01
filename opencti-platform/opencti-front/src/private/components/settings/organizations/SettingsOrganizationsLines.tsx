@@ -18,7 +18,7 @@ export interface SettingsOrganizationsLinesProps {
 export const settingsOrganizationsLinesQuery = graphql`
   query SettingsOrganizationsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: OrganizationsOrdering
     $orderMode: OrderingMode

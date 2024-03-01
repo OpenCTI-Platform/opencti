@@ -21,7 +21,7 @@ interface ToolsLinesProps {
 export const toolsLinesQuery = graphql`
   query ToolsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ToolsOrdering
     $orderMode: OrderingMode

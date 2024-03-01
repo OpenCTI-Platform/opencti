@@ -44,7 +44,7 @@ AddCoursesOfActionLinesContainer.propTypes = {
 export const addCoursesOfActionLinesQuery = graphql`
   query AddCoursesOfActionLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddCoursesOfActionLines_data

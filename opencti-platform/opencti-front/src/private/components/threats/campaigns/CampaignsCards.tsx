@@ -16,7 +16,7 @@ const nbOfCardsToLoad = 20;
 export const campaignsCardsQuery = graphql`
   query CampaignsCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: CampaignsOrdering
     $orderMode: OrderingMode

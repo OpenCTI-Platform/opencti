@@ -60,7 +60,7 @@ SyncLines.propTypes = {
 export const SyncLinesQuery = graphql`
   query SyncLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: SynchronizersOrdering
     $orderMode: OrderingMode

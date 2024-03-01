@@ -60,7 +60,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
-    $count: Int!
+    $count: Int
     $orderBy: NotesOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup

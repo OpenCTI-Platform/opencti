@@ -23,7 +23,7 @@ export const addDataComponentsMutationRelationDelete = graphql`
 export const addDataComponentsLinesQuery = graphql`
   query AddDataComponentsLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddDataComponentsLines_data

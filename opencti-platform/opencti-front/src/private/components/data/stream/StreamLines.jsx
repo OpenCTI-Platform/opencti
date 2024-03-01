@@ -45,7 +45,7 @@ StreamLines.propTypes = {
 export const StreamLinesQuery = graphql`
   query StreamLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StreamCollectionOrdering
     $orderMode: OrderingMode

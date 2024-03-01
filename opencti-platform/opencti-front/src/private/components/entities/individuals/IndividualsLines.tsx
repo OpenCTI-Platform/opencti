@@ -21,7 +21,7 @@ interface IndividualsLinesProps {
 export const individualsLinesQuery = graphql`
   query IndividualsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: IndividualsOrdering
     $orderMode: OrderingMode

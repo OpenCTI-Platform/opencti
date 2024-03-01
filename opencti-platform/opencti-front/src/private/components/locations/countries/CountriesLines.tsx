@@ -20,7 +20,7 @@ interface CountriesLinesProps {
 export const countriesLinesQuery = graphql`
   query CountriesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: CountriesOrdering
     $orderMode: OrderingMode

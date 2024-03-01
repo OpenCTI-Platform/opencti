@@ -264,7 +264,7 @@ IndicatorAddObservablesLinesContainer.propTypes = {
 export const indicatorAddObservablesLinesQuery = graphql`
   query IndicatorAddObservablesLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode

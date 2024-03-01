@@ -21,7 +21,7 @@ interface CaseTemplatesLinesProps {
 export const caseTemplatesLinesQuery = graphql`
   query CaseTemplateLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: CaseTemplatesOrdering
     $orderMode: OrderingMode

@@ -273,7 +273,7 @@ AddExternalReferencesLinesContainer.propTypes = {
 export const addExternalReferencesLinesQuery = graphql`
   query AddExternalReferencesLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddExternalReferencesLines_data

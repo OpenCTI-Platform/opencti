@@ -43,7 +43,7 @@ const GroupsLines: React.FC<GroupsLinesProps> = (props) => {
 export const groupsLinesQuery = graphql`
   query GroupsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: GroupsOrdering
     $orderMode: OrderingMode

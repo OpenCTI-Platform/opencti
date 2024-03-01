@@ -24,7 +24,7 @@ interface TriggerLinesProps {
 export const triggersLinesQuery = graphql`
   query TriggersLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: TriggersOrdering
     $orderMode: OrderingMode

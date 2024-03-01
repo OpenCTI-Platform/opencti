@@ -28,7 +28,7 @@ interface ExternalReferencesLinesProps {
 export const externalReferencesLinesQuery = graphql`
   query ExternalReferencesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: ExternalReferencesOrdering
     $orderMode: OrderingMode

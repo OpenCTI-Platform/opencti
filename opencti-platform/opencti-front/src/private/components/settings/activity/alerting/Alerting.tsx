@@ -30,7 +30,7 @@ const useStyles = makeStyles<Theme>(() => ({
 export const alertingQuery = graphql`
   query AlertingPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: TriggersOrdering
     $orderMode: OrderingMode

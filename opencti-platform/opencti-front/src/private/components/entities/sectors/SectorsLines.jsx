@@ -74,7 +74,7 @@ SectorsLinesComponent.propTypes = {
 };
 
 export const sectorsLinesQuery = graphql`
-  query SectorsLinesPaginationQuery($count: Int!, $cursor: ID) {
+  query SectorsLinesPaginationQuery($count: Int, $cursor: ID) {
     ...SectorsLines_data @arguments(count: $count, cursor: $cursor)
   }
 `;

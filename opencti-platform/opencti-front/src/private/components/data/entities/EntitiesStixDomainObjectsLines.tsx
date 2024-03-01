@@ -34,7 +34,7 @@ export const entitiesStixDomainObjectsLinesQuery = graphql`
   query EntitiesStixDomainObjectsLinesPaginationQuery(
     $types: [String]
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode

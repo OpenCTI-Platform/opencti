@@ -186,9 +186,9 @@ const ContainerAddStixCoreObjects = (props) => {
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
         stixDomainObjectTypes={
-            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-              ? targetStixCoreObjectTypes
-              : []
+          targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+            ? targetStixCoreObjectTypes
+            : []
         }
       />
     );
@@ -212,7 +212,7 @@ const ContainerAddStixCoreObjects = (props) => {
         <SpeedDial
           className={classes.createButton}
           ariaLabel="Create"
-          icon={<SpeedDialIcon/>}
+          icon={<SpeedDialIcon />}
           onClose={() => setOpenSpeedDial(false)}
           onOpen={() => setOpenSpeedDial(true)}
           open={openSpeedDial}
@@ -222,7 +222,7 @@ const ContainerAddStixCoreObjects = (props) => {
         >
           <SpeedDialAction
             title={t_i18n('Create an observable')}
-            icon={<HexagonOutline/>}
+            icon={<HexagonOutline />}
             tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
             FabProps={{
@@ -231,7 +231,7 @@ const ContainerAddStixCoreObjects = (props) => {
           />
           <SpeedDialAction
             title={t_i18n('Create an entity')}
-            icon={<GlobeModel/>}
+            icon={<GlobeModel />}
             tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
             FabProps={{
@@ -248,9 +248,9 @@ const ContainerAddStixCoreObjects = (props) => {
           defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinitions={defaultMarkingDefinitions}
           stixCoreObjectTypes={
-              targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-                ? targetStixCoreObjectTypes
-                : []
+            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+              ? targetStixCoreObjectTypes
+              : []
           }
           speeddial={true}
           open={openCreateEntity}
@@ -274,22 +274,22 @@ const ContainerAddStixCoreObjects = (props) => {
   const renderEntityCreation = (searchPaginationOptions) => {
     if (
       targetStixCoreObjectTypes
-            && isTypeDomainObject(targetStixCoreObjectTypes)
-            && !isTypeObservable(targetStixCoreObjectTypes)
+      && isTypeDomainObject(targetStixCoreObjectTypes)
+      && !isTypeObservable(targetStixCoreObjectTypes)
     ) {
       return renderDomainObjectCreation(searchPaginationOptions);
     }
     if (
       targetStixCoreObjectTypes
-            && isTypeObservable(targetStixCoreObjectTypes)
-            && !isTypeDomainObject(targetStixCoreObjectTypes)
+      && isTypeObservable(targetStixCoreObjectTypes)
+      && !isTypeDomainObject(targetStixCoreObjectTypes)
     ) {
       return renderObservableCreation(searchPaginationOptions);
     }
     if (
       !targetStixCoreObjectTypes
-            || (isTypeObservable(targetStixCoreObjectTypes)
-                && isTypeDomainObject(targetStixCoreObjectTypes))
+      || (isTypeObservable(targetStixCoreObjectTypes)
+        && isTypeDomainObject(targetStixCoreObjectTypes))
     ) {
       return renderStixCoreObjectCreation(searchPaginationOptions);
     }
@@ -372,11 +372,11 @@ const ContainerAddStixCoreObjects = (props) => {
     );
   };
 
-  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
   const searchPaginationOptions = removeEmptyFields({
-    ...paginationOptionsNoCount,
+    ...addObjectsPaginationOptions,
     search: keyword,
   });
+
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
@@ -387,7 +387,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             size="large"
           >
-            <Add/>
+            <Add />
           </IconButton>
         </Tooltip>
       );
@@ -401,7 +401,7 @@ const ContainerAddStixCoreObjects = (props) => {
           classes={{ root: classes.createButtonSimple }}
           size="large"
         >
-          <Add fontSize="small"/>
+          <Add fontSize="small" />
         </IconButton>
       );
     }
@@ -412,7 +412,7 @@ const ContainerAddStixCoreObjects = (props) => {
         aria-label="Add"
         className={withPadding ? classes.createButtonWithPadding : classes.createButton}
       >
-        <Add/>
+        <Add />
       </Fab>
     );
   };

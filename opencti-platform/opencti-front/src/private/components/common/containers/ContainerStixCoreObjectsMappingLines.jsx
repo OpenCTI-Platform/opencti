@@ -10,7 +10,7 @@ export const containerStixCoreObjectsMappingLinesQuery = graphql`
     query ContainerStixCoreObjectsMappingLinesQuery(
         $id: String!
         $search: String
-        $count: Int!
+        $count: Int
         $cursor: ID
         $orderBy: StixObjectOrStixRelationshipsOrdering
         $orderMode: OrderingMode

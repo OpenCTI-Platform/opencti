@@ -54,7 +54,7 @@ const contextualViewLinesFragment = graphql`
 export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $filters: FilterGroup
     $orderBy: IndicatorsOrdering

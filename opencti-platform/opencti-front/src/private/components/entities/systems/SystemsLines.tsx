@@ -21,7 +21,7 @@ interface SystemsLinesProps {
 export const systemsLinesQuery = graphql`
   query SystemsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: SystemsOrdering
     $orderMode: OrderingMode

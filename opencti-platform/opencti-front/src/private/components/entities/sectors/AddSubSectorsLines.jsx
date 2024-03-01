@@ -42,7 +42,7 @@ AddSubSectorsLinesContainer.propTypes = {
 };
 
 export const addSubSectorsLinesQuery = graphql`
-  query AddSubSectorsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddSubSectorsLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddSubSectorsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

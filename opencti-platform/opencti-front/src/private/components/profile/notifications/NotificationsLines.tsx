@@ -29,7 +29,7 @@ interface NotificationLinesProps {
 export const notificationsLinesQuery = graphql`
   query NotificationsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: NotificationsOrdering
     $orderMode: OrderingMode

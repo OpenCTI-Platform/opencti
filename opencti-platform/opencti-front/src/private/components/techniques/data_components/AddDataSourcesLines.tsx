@@ -20,7 +20,7 @@ export const addDataSourcesLinesMutationAdd = graphql`
 `;
 
 export const addDataSourcesLinesQuery = graphql`
-  query AddDataSourcesLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddDataSourcesLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddDataSourcesLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

@@ -109,7 +109,7 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
     $confidences: [Int]
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data

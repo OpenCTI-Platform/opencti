@@ -43,7 +43,7 @@ AddLocationsThreatActorIndividualLinesContainer.propTypes = {
 export const addLocationsThreatActorIndividualLinesQuery = graphql`
   query AddLocationsThreatActorIndividualLinesQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
   ) {
     ...AddLocationsThreatActorIndividualLines_data

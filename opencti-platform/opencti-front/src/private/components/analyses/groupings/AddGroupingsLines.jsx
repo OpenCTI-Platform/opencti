@@ -174,7 +174,7 @@ AddGroupingsLinesContainer.propTypes = {
 };
 
 export const addGroupingsLinesQuery = graphql`
-  query AddGroupingsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddGroupingsLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddGroupingsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

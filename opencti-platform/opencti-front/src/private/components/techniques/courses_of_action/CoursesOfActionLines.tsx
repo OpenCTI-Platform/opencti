@@ -24,7 +24,7 @@ interface CoursesOfActionLinesProps {
 export const coursesOfActionLinesQuery = graphql`
   query CoursesOfActionLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: CoursesOfActionOrdering
     $orderMode: OrderingMode

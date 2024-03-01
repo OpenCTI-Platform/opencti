@@ -24,7 +24,7 @@ interface AttackPatternsLinesProps {
 export const attackPatternsLinesQuery = graphql`
   query AttackPatternsLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode

@@ -42,7 +42,7 @@ AddSoftwaresLinesContainer.propTypes = {
 };
 
 export const addSoftwaresLinesQuery = graphql`
-  query AddSoftwaresLinesQuery($search: String, $count: Int!, $cursor: ID) {
+  query AddSoftwaresLinesQuery($search: String, $count: Int, $cursor: ID) {
     ...AddSoftwaresLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }

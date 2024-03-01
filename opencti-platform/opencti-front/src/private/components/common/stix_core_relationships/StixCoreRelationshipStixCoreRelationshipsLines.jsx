@@ -153,7 +153,7 @@ export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query StixCoreRelationshipStixCoreRelationshipsLinesQuery(
     $fromOrToId: [String]
     $relationship_type: [String]
-    $count: Int!
+    $count: Int
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
