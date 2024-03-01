@@ -19,7 +19,11 @@ export const removeEmptyFields = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> => {
   const clone = { ...obj };
-  Object.keys(clone).forEach((key) => isEmptyField(clone[key]) && delete clone[key]);
+  Object.keys(clone).forEach((key) => {
+    if (typeof clone[key] !== 'string' && isEmptyField(clone[key])) {
+      delete clone[key];
+    }
+  });
   return clone;
 };
 
