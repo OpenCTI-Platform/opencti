@@ -274,7 +274,7 @@ export const testConnectedTo = (stix: any, filter: Filter) => {
   if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
-  return testStringFilter(filter, [stix.id]);
+  return testStringFilter(filter, [stix.extensions[STIX_EXT_OCTI].id]);
 };
 
 /**
