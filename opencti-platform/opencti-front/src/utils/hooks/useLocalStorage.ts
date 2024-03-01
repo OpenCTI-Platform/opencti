@@ -195,9 +195,6 @@ const useLocalStorage = (
       if (isEmptyField(value)) {
         value = initialValue;
       }
-      if (value?.filters?.filters.length === 0 && !value.searchTerm && value?.filters?.filterGroups.length === 0) {
-        value = initialValue;
-      }
       // Need to clear the local storage ?
       if (!R.equals(removeEmptyFields(value), value)) {
         const initialState = removeEmptyFields(value);
