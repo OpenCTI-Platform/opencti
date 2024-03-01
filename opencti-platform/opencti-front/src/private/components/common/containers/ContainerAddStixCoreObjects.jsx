@@ -19,6 +19,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { removeEmptyFields } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -144,10 +145,6 @@ const ContainerAddStixCoreObjects = (props) => {
         ? targetEntityTypesFilterGroup
         : emptyFilterGroup,
       types: [resolveAvailableTypes()],
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
     },
     true,
   );
@@ -374,10 +371,12 @@ const ContainerAddStixCoreObjects = (props) => {
       </ListLines>
     );
   };
-  const searchPaginationOptions = {
-    ...addObjectsPaginationOptions,
+
+  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
+  const searchPaginationOptions = removeEmptyFields({
+    ...paginationOptionsNoCount,
     search: keyword,
-  };
+  });
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
