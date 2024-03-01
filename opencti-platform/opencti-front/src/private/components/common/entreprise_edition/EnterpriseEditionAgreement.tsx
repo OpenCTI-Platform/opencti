@@ -80,7 +80,7 @@ EnterpriseEditionAgreementProps
             {t_i18n(
               'For all other usages, you (and your organization) should have entered in a',
             )}{' '}
-            <a href="https://filigran.io/offering/subscribe" target="_blank" rel="noreferrer">
+            <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">
               {t_i18n('Filigran Enterprise agreement')}
             </a>
             .
