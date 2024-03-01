@@ -100,12 +100,12 @@ const ContainerAddStixCoreObjects = (props) => {
   const isTypeDomainObject = (types) => {
     return !types
       || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
-      || (types.length === 1 && types[0] === 'Stix-Domain-Object');
+      || types.includes('Stix-Domain-Object');
   };
   const isTypeObservable = (types) => {
     return !types
       || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
-      || (types.length === 1 && types[0] === 'Stix-Cyber-Observable');
+      || types.includes('Stix-Cyber-Observable');
   };
 
   const resolveAvailableTypes = () => {
@@ -272,6 +272,7 @@ const ContainerAddStixCoreObjects = (props) => {
     );
   };
   const renderEntityCreation = (searchPaginationOptions) => {
+    console.log(targetStixCoreObjectTypes);
     if (
       targetStixCoreObjectTypes
             && isTypeDomainObject(targetStixCoreObjectTypes)
