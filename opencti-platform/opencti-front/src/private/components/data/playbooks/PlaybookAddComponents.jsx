@@ -17,6 +17,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
 import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -74,8 +75,8 @@ const useStyles = makeStyles((theme) => ({
   },
   stepCloseButton: {
     position: 'absolute',
-    top: -20,
-    right: -20,
+    top: -18,
+    right: -18,
   },
 }));
 
@@ -167,6 +168,12 @@ const PlaybookAddComponentsContent = ({
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
+        {
+          label: t_i18n('Marking definitions'),
+          value: 'objectMarking',
+          isMultiple: true,
+        },
+        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
         { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
         { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
@@ -488,49 +495,56 @@ const PlaybookAddComponentsContent = ({
                         {Array(actionsInputs.length)
                           .fill(0)
                           .map((_, i) => (
-                            <div key={i} className={classes.step}>
-                              <IconButton
-                                disabled={actionsInputs.length === 1}
-                                aria-label="Delete"
-                                className={classes.stepCloseButton}
-                                onClick={() => {
-                                  handleRemoveStep(i);
-                                  setValues(
-                                    R.omit([`actions-${i}-value`], values),
-                                  );
-                                }}
-                                size="small"
-                              >
-                                <CancelOutlined fontSize="small" />
-                              </IconButton>
-                              <Grid container={true} spacing={3}>
-                                <Grid item={true} xs={3}>
-                                  <FormControl className={classes.formControl}>
-                                    <InputLabel>{t_i18n('Action type')}</InputLabel>
-                                    <Select
-                                      variant="standard"
-                                      value={actionsInputs[i]?.op}
-                                      onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
-                                    >
-                                      {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
-                                        <MenuItem key={op} value={op}>
-                                          {t_i18n(capitalizeFirstLetter(op))}
-                                        </MenuItem>
-                                      ))}
-                                    </Select>
-                                  </FormControl>
+                            <>
+                              {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel'].includes(actionsInputs[i]?.attribute))) && (
+                                <Alert severity="warning" style={{ marginBottom: 20 }}>
+                                  {t_i18n('This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.')}
+                                </Alert>
+                              )}
+                              <div key={i} className={classes.step}>
+                                <IconButton
+                                  disabled={actionsInputs.length === 1}
+                                  aria-label="Delete"
+                                  className={classes.stepCloseButton}
+                                  onClick={() => {
+                                    handleRemoveStep(i);
+                                    setValues(
+                                      R.omit([`actions-${i}-value`], values),
+                                    );
+                                  }}
+                                  size="small"
+                                >
+                                  <CancelOutlined fontSize="small" />
+                                </IconButton>
+                                <Grid container={true} spacing={3}>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl className={classes.formControl}>
+                                      <InputLabel>{t_i18n('Action type')}</InputLabel>
+                                      <Select
+                                        variant="standard"
+                                        value={actionsInputs[i]?.op}
+                                        onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
+                                      >
+                                        {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
+                                          <MenuItem key={op} value={op}>
+                                            {t_i18n(capitalizeFirstLetter(op))}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={3}>
+                                    <FormControl className={classes.formControl}>
+                                      <InputLabel>{t_i18n('Field')}</InputLabel>
+                                      {renderFieldOptions(i, values, setValues)}
+                                    </FormControl>
+                                  </Grid>
+                                  <Grid item={true} xs={6}>
+                                    {renderValuesOptions(i)}
+                                  </Grid>
                                 </Grid>
-                                <Grid item={true} xs={3}>
-                                  <FormControl className={classes.formControl}>
-                                    <InputLabel>{t_i18n('Field')}</InputLabel>
-                                    {renderFieldOptions(i, values, setValues)}
-                                  </FormControl>
-                                </Grid>
-                                <Grid item={true} xs={6}>
-                                  {renderValuesOptions(i)}
-                                </Grid>
-                              </Grid>
-                            </div>
+                              </div>
+                            </>
                           ))}
                         <div className={classes.add}>
                           <Button
