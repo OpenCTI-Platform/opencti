@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
@@ -61,11 +61,9 @@ const SearchInput = (props) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const {
-    onChange,
     onSubmit,
     variant,
     keyword,
-    fullWidth,
     placeholder = `${t_i18n('Search these results')}...`,
   } = props;
   let classRoot = classes.searchRoot;
@@ -86,25 +84,33 @@ const SearchInput = (props) => {
   } else if (variant === 'noAnimation') {
     classInput = classes.searchInputNoAnimation;
   }
+  const [searchValue, setSearchValue] = useState(keyword);
+  useEffect(() => {
+    if (keyword !== searchValue) {
+      setSearchValue(keyword);
+    }
+  }, [keyword]);
+
   return (
     <TextField
-      fullWidth={fullWidth}
       name="keyword"
-      defaultValue={keyword}
+      value={searchValue}
       variant="outlined"
       size="small"
       placeholder={placeholder}
       onChange={(event) => {
         const { value } = event.target;
-        if (typeof onChange === 'function') {
-          onChange(value);
-        }
+        setSearchValue(value);
       }}
-      onKeyPress={(event) => {
+      onKeyDown={(event) => {
         const { value } = event.target;
         if (typeof onSubmit === 'function' && event.key === 'Enter') {
           onSubmit(value);
         }
+      }}
+      onBlur={(event) => {
+        const { value } = event.target;
+        onSubmit(value);
       }}
       InputProps={{
         startAdornment: (
