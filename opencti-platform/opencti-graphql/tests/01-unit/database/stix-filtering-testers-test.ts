@@ -648,7 +648,7 @@ describe('Stix filter testers', () => {
         key: ['connectedToId'],
         mode: 'or',
         operator: 'eq',
-        values: ['<some-id>', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32']
+        values: ['<some-id>', 'f13cd64f-9268-4d77-9850-eb6fbe322463']
       } as Filter;
       expect(testers.testConnectedTo(stixReport, filter)).toEqual(true);
       expect(testers.testConnectedTo(stixSighting, filter)).toEqual(false);
