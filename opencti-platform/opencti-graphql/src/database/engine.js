@@ -2707,7 +2707,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
 
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { baseData = false, bypassSizeLimit = false, first = ES_DEFAULT_PAGINATION } = options;
+  const { baseData = false, baseFields = BASE_FIELDS, bypassSizeLimit = false, first = ES_DEFAULT_PAGINATION } = options;
   const { types = null, connectionFormat = true } = options;
   const body = await elQueryBodyBuilder(context, user, options);
   if (body.size > ES_MAX_PAGINATION && !bypassSizeLimit) {
@@ -2717,7 +2717,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   const query = {
     index: indexName,
     track_total_hits: true,
-    _source: baseData ? BASE_FIELDS : true,
+    _source: baseData ? baseFields : true,
     body,
   };
   logApp.debug('[SEARCH] paginate', { query });

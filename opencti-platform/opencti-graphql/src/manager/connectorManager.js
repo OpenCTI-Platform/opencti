@@ -68,6 +68,8 @@ const closeOldWorks = async (context, connector) => {
       noFiltersChecking: true,
       types: ['Work'],
       connectionFormat: false,
+      baseData: true,
+      baseFields: ['internal_id', 'timestamp'],
       callback: queryCallback
     });
   }
@@ -95,6 +97,8 @@ const deleteCompletedWorks = async (context, connector) => {
     types: ['Work'],
     noFiltersChecking: true,
     connectionFormat: false,
+    baseData: true,
+    baseFields: ['internal_id'],
     callback: queryCallback
   });
 };
