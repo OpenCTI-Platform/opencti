@@ -21,6 +21,7 @@ const AutocompleteField = (props) => {
     openCreate,
     getOptionLabel,
     onInternalChange,
+    endAdornment,
   } = props;
   const [, meta] = useField(name);
   const internalOnChange = React.useCallback(
@@ -67,10 +68,14 @@ const AutocompleteField = (props) => {
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
-        renderInput={({ inputProps: { value, ...inputProps }, ...params }) => (
+        renderInput={({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
           <TextField
             {...{ ...params, inputProps }}
             {...textfieldprops}
+            InputProps={{
+              ...InputProps,
+              endAdornment: endAdornment ?? undefined,
+            }}
             value={value}
             name={name}
             fullWidth={true}
@@ -82,6 +87,11 @@ const AutocompleteField = (props) => {
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
         isOptionEqualToValue={isOptionEqualToValue ?? defaultOptionToValue}
+        slotProps={{
+          paper: {
+            elevation: 2,
+          },
+        }}
       />
       {typeof openCreate === 'function' && (
         <IconButton

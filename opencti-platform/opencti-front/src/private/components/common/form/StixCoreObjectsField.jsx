@@ -1,17 +1,26 @@
-import React, { Component } from 'react';
-import { compose, pathOr, pipe, map } from 'ramda';
+import React, { useState } from 'react';
+import * as R from 'ramda';
 import { Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
-import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import InputAdornment from '@mui/material/InputAdornment';
+import { PaletteOutlined } from '@mui/icons-material';
+import Popover from '@mui/material/Popover';
+import MenuList from '@mui/material/MenuList';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import makeStyles from '@mui/styles/makeStyles';
+import IconButton from '@mui/material/IconButton';
 import ItemIcon from '../../../../components/ItemIcon';
+import { defaultValue } from '../../../../utils/Graph';
+import { useFormatter } from '../../../../components/i18n';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { fetchQuery } from '../../../../relay/environment';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
-    stixCoreObjects(search: $search, types: $types) {
+    stixCoreObjects(search: $search, types: $types, first: 100) {
       edges {
         node {
           id
@@ -182,7 +191,7 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
   }
 `;
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -195,70 +204,126 @@ const styles = () => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
-class StixCoreObjectsField extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { stixCoreObjects: [], types: ['Stix-Core-Objects'] };
-  }
-
-  searchStixCoreObjects(event) {
+const StixCoreObjectsField = ({ name, style, helpertext }) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const { stixCoreObjectTypes: entityTypes } = useAttributes();
+  const [anchorElSearchScope, setAnchorElSearchScope] = useState(false);
+  const [stixCoreObjects, setStixCoreObjects] = useState([]);
+  const [searchScope, setSearchScope] = useState({});
+  const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
+  const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
+  const handleToggleSearchScope = (key, value) => {
+    setSearchScope((c) => ({
+      ...c,
+      [key]: (searchScope[key] || []).includes(value)
+        ? searchScope[key].filter((n) => n !== value)
+        : [...(searchScope[key] || []), value],
+    }));
+  };
+  const searchStixCoreObjects = (event) => {
     fetchQuery(stixCoreObjectsFieldSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-      types: this.state.types,
+      types: searchScope[name] ?? [],
     })
       .toPromise()
       .then((data) => {
-        const stixCoreObjects = pipe(
-          pathOr([], ['stixCoreObjects', 'edges']),
-          map((n) => ({
+        const finalStixCoreObjects = R.pipe(
+          R.pathOr([], ['stixCoreObjects', 'edges']),
+          R.map((n) => ({
             label: defaultValue(n.node),
             value: n.node.id,
             type: n.node.entity_type,
           })),
         )(data);
-        this.setState({ stixCoreObjects });
+        setStixCoreObjects(finalStixCoreObjects);
       });
-  }
+  };
+  const entitiesTypes = R.pipe(
+    R.map((n) => ({
+      label: t_i18n(
+        n.toString()[0] === n.toString()[0].toUpperCase()
+          ? `entity_${n.toString()}`
+          : `relationship_${n.toString()}`,
+      ),
+      value: n,
+      type: n,
+    })),
+    R.sortWith([R.ascend(R.prop('label'))]),
+  )(entityTypes);
+  return (
+    <>
+      <Field
+        component={AutocompleteField}
+        style={style}
+        name={name}
+        multiple={true}
+        textfieldprops={{
+          variant: 'standard',
+          label: t_i18n('Entities'),
+          helperText: helpertext,
+          onFocus: searchStixCoreObjects,
+        }}
+        endAdornment={(
+          <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
+            <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
+              <PaletteOutlined
+                fontSize="small"
+                color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
+              />
+            </IconButton>
+            <Popover
+              classes={{ paper: classes.container2 }}
+              open={Boolean(anchorElSearchScope)}
+              anchorEl={anchorElSearchScope}
+              onClose={() => handleCloseSearchScope()}
+              anchorOrigin={{
+                vertical: 'center',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'center',
+                horizontal: 'left',
+              }}
+              elevation={8}
+            >
+              <MenuList dense={true}>
+                {entitiesTypes.map((entityType) => (
+                  <MenuItem
+                    key={entityType.value}
+                    value={entityType.value}
+                    dense={true}
+                    onClick={() => handleToggleSearchScope(name, entityType.value)}
+                  >
+                    <Checkbox
+                      size="small"
+                      checked={(searchScope[name] || []).includes(entityType.value)}
+                    />
+                    <ListItemText primary={entityType.label}/>
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Popover>
+          </InputAdornment>
+        )}
+        groupBy={(option) => option.type}
+        noOptionsText={t_i18n('No available options')}
+        options={stixCoreObjects}
+        onInputChange={searchStixCoreObjects}
+        renderOption={(props, option) => (
+          <li {...props}>
+            <div className={classes.icon} style={{ color: option.color }}>
+              <ItemIcon type={option.type} />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
+        )}
+        classes={{ clearIndicator: classes.autoCompleteIndicator }}
+      />
+    </>
+  );
+};
 
-  changeType(type) {
-    this.setState({ types: [type] });
-  }
-
-  render() {
-    const { t, name, style, classes, helpertext } = this.props;
-    return (
-      <>
-        <Field
-          component={AutocompleteField}
-          style={style}
-          name={name}
-          multiple={true}
-          textfieldprops={{
-            variant: 'standard',
-            label: t('Entities'),
-            helperText: helpertext,
-            onFocus: this.searchStixCoreObjects.bind(this),
-
-          }}
-          groupBy={(option) => option.type}
-          noOptionsText={t('No available options')}
-          options={this.state.stixCoreObjects}
-          onInputChange={this.searchStixCoreObjects.bind(this)}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div className={classes.icon} style={{ color: option.color }}>
-                <ItemIcon type={option.type} />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-          classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
-      </>
-    );
-  }
-}
-
-export default compose(inject18n, withStyles(styles))(StixCoreObjectsField);
+export default StixCoreObjectsField;
