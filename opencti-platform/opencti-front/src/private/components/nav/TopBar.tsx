@@ -224,6 +224,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       position="fixed"
       className={classes.appBar}
       variant="outlined"
+      elevation={0}
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
