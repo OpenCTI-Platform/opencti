@@ -1,10 +1,10 @@
+import * as R from 'ramda';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
-import { testStringFilter, testNumericFilter, toValidArray, testBooleanFilter } from '../boolean-logic-engine';
 import type { TesterFunction } from '../boolean-logic-engine';
-
+import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
 import {
   ASSIGNEE_FILTER,
   CONFIDENCE_FILTER,
@@ -28,9 +28,10 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
+import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -274,7 +275,8 @@ export const testConnectedTo = (stix: any, filter: Filter) => {
   if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
-  return testStringFilter(filter, [stix.extensions[STIX_EXT_OCTI].id]);
+  const value = R.path(STIX_RESOLUTION_MAP_PATHS[CONNECTED_TO_INSTANCE_FILTER] as string[], stix) as string;
+  return testStringFilter(filter, [value]);
 };
 
 /**
