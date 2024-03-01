@@ -27,6 +27,7 @@ import {
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
+  OBJECT_CONTAINS_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
 } from '../utils/filtering/filtering-constants';
@@ -39,7 +40,7 @@ import { isEmptyField } from '../database/utils';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -236,6 +237,17 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       subEntityTypes,
       elementsForFilterValuesSearch: ['reliability_ov'],
     });
+    // 'contains' is not only for containers, but might be used in any sro or sco as in "contained inside"
+    if (isStixCoreObject(type) || isStixRelationship(type)) {
+      filterDefinitionsMap.set(OBJECT_CONTAINS_FILTER, {
+        filterKey: OBJECT_CONTAINS_FILTER,
+        type: 'id',
+        label: 'Contains',
+        multiple: true,
+        subEntityTypes,
+        elementsForFilterValuesSearch: [],
+      });
+    }
     // Alias (handle both 'aliases' and 'x_opencti_aliases' attributes
     if (isStixObjectAliased(type)) {
       filterDefinitionsMap.set(ALIAS_FILTER, {
