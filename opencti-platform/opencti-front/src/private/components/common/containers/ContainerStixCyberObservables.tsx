@@ -239,6 +239,7 @@ ContainerStixCyberObservablesComponentProps
             openExports={openExports}
             filters={filters}
             paginationOptions={queryPaginationOptions}
+            availableEntityTypes={['Stix-Cyber-Observable']}
           >
             {queryRef && (
               <React.Suspense

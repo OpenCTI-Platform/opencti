@@ -171,6 +171,7 @@ const ContainerStixDomainObjects = ({
       secondaryAction={true}
       numberOfElements={numberOfElements}
       paginationOptions={queryPaginationOptions}
+      availableEntityTypes={['Stix-Domain-Object']}
     >
       {queryRef && (
         <React.Suspense
