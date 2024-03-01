@@ -206,7 +206,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const StixCoreObjectsField = ({ name, style, helpertext }) => {
+const StixCoreObjectsField = (props) => {
+  const { name, style, helpertext } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();

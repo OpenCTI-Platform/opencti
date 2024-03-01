@@ -19,6 +19,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { removeEmptyFields } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -99,12 +100,12 @@ const ContainerAddStixCoreObjects = (props) => {
   const isTypeDomainObject = (types) => {
     return !types
       || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
-      || (types.length === 1 && types[0] === 'Stix-Domain-Object');
+      || types.includes('Stix-Domain-Object');
   };
   const isTypeObservable = (types) => {
     return !types
       || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
-      || (types.length === 1 && types[0] === 'Stix-Cyber-Observable');
+      || types.includes('Stix-Cyber-Observable');
   };
 
   const resolveAvailableTypes = () => {
@@ -144,10 +145,6 @@ const ContainerAddStixCoreObjects = (props) => {
         ? targetEntityTypesFilterGroup
         : emptyFilterGroup,
       types: [resolveAvailableTypes()],
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
     },
     true,
   );
@@ -275,6 +272,7 @@ const ContainerAddStixCoreObjects = (props) => {
     );
   };
   const renderEntityCreation = (searchPaginationOptions) => {
+    console.log(targetStixCoreObjectTypes);
     if (
       targetStixCoreObjectTypes
             && isTypeDomainObject(targetStixCoreObjectTypes)
@@ -374,10 +372,12 @@ const ContainerAddStixCoreObjects = (props) => {
       </ListLines>
     );
   };
-  const searchPaginationOptions = {
-    ...addObjectsPaginationOptions,
+
+  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
+  const searchPaginationOptions = removeEmptyFields({
+    ...paginationOptionsNoCount,
     search: keyword,
-  };
+  });
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
