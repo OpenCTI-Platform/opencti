@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import WidgetListCoreObjects from '../../../components/dashboard/WidgetListCoreObjects';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
 import { useFormatter } from '../../../components/i18n';

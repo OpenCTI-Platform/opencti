@@ -98,9 +98,12 @@ export const getAllowedMarkings = async (
   user: AuthUser,
   publicDashboard: BasicStoreEntityPublicDashboard | PublicDashboardCached,
 ): Promise<StoreMarkingDefinition[]> => {
+  const publicDashboardMarkingsIds = publicDashboard.allowed_markings_ids;
+  if (!publicDashboardMarkingsIds) {
+    return [];
+  }
   // get markings from cache
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  const publicDashboardMarkingsIds = publicDashboard.allowed_markings_ids;
   return publicDashboardMarkingsIds.flatMap((id: string) => markingsMap.get(id) || []);
 };
 

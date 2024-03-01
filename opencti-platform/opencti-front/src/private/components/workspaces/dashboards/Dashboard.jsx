@@ -468,6 +468,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       case 'donut':
+        console.log(widget);
         return (
           <StixRelationshipsDonut
             startDate={startDate}
@@ -780,7 +781,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 {widget.perspective === 'audits'
                     && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === null
-                    && renderRawVisualization(removeIdFilterWidget, manifest.config)}
+                    && renderRawVisualization(removeIdFilterWidget)}
               </ErrorBoundary>
             </Paper>;
           })}
@@ -831,7 +832,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 {widget.perspective === 'audits'
                   && renderAuditsVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === null
-                  && renderRawVisualization(removeIdFilterWidget, manifest.config)}
+                  && renderRawVisualization(removeIdFilterWidget)}
               </ErrorBoundary>
             </Paper>;
           })}
