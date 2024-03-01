@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -65,7 +65,7 @@
     "apollo-errors": "1.9.0",
     "apollo-server-core": "3.13.0",
     "apollo-server-express": "3.13.0",
-    "archiver": "6.0.1",
+    "archiver": "6.0.2",
     "archiver-zip-encrypted": "1.0.11",
     "async-lock": "1.4.1",
     "axios": "1.6.7",
