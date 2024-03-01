@@ -332,6 +332,8 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     }
   }
 
+  const creatorId = currentFile?.metaData?.creator_id ? currentFile.metaData.creator_id : user.id;
+
   // Upload the data
   const readStream = createReadStream();
   const fileMime = guessMimeType(key) || mimetype;
@@ -344,7 +346,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     filename: encodeURIComponent(truncatedFileName),
     mimetype: fileMime,
     encoding,
-    creator_id: user.id,
+    creator_id: creatorId,
     entity_id: entity?.internal_id,
   };
   const s3Upload = new Upload({

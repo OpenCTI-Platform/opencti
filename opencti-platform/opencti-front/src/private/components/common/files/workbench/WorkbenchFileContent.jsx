@@ -273,6 +273,8 @@ const WorkbenchFileContentComponent = ({
   const [stixSightings, setStixSightings] = useState([]);
   const [containers, setContainers] = useState([]);
 
+  const [fileObjectsJson, setFileObjectsJson] = useState('');
+
   const [selectedElements, setSelectedElements] = useState({});
   const [deSelectedElements, setDeselectedElements] = useState({});
   const [selectAll, setSelectAll] = useState(false);
@@ -337,7 +339,9 @@ const WorkbenchFileContentComponent = ({
   const loadFileContent = () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(file.id)}`;
     Axios.get(url).then(async (res) => {
-      computeState(res.data.objects);
+      const fileObjects = res.data.objects ?? [];
+      setFileObjectsJson(JSON.stringify(fileObjects));
+      computeState(fileObjects);
       return true;
     });
   };
@@ -373,26 +377,31 @@ const WorkbenchFileContentComponent = ({
           ]);
         }
       }
-      const data = {
-        id: `bundle--${uuid()}`,
-        type: 'bundle',
-        objects: [
-          ...stixDomainObjects,
-          ...stixCyberObservables,
-          ...stixCoreRelationships,
-          ...stixSightings,
-          ...containers,
-        ],
-      };
-      const json = JSON.stringify(data);
-      const blob = new Blob([json], { type: 'text/json' });
-      const fileToUpload = new File([blob], file.name, {
-        type: 'application/json',
-      });
-      commitMutation({
-        mutation: workbenchFileContentMutation,
-        variables: { file: fileToUpload, entityId: currentEntityId },
-      });
+      const objects = [
+        ...stixDomainObjects,
+        ...stixCyberObservables,
+        ...stixCoreRelationships,
+        ...stixSightings,
+        ...containers,
+      ];
+      const objectsJson = JSON.stringify(objects);
+      if (objectsJson !== fileObjectsJson) { // check that objects have changed
+        setFileObjectsJson(objectsJson);
+        const data = {
+          id: `bundle--${uuid()}`,
+          type: 'bundle',
+          objects,
+        };
+        const json = JSON.stringify(data);
+        const blob = new Blob([json], { type: 'text/json' });
+        const fileToUpload = new File([blob], file.name, {
+          type: 'application/json',
+        });
+        commitMutation({
+          mutation: workbenchFileContentMutation,
+          variables: { file: fileToUpload, entityId: currentEntityId },
+        });
+      }
     }
   };
 
