@@ -28,7 +28,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
 import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
-import { getHttpClient } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -121,8 +121,9 @@ export const internalProcessNotification = async (
       const dataJson = JSON.parse(generatedWebhook);
       const dataHeaders = R.fromPairs((headers ?? []).map((h) => [h.attribute, h.value]));
       const dataParameters = R.fromPairs((params ?? []).map((h) => [h.attribute, h.value]));
-      const httpClient = getHttpClient({ responseType: 'json', headers: dataHeaders });
-      await httpClient({ url, method: verb, params: dataParameters, data: dataJson }).catch((err) => {
+      const httpClientOptions: GetHttpClient = { responseType: 'json', headers: dataHeaders };
+      const httpClient = getHttpClient(httpClientOptions);
+      await httpClient.call({ url, method: verb, params: dataParameters, data: dataJson }).catch((err) => {
         logApp.error(err, { manager: 'PUBLISHER_MANAGER' });
         return { error: err };
       });

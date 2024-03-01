@@ -108,10 +108,11 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
 };
 
 const rssHttpGetter = (): Getter => {
-  const httpClient = getHttpClient({
+  const httpClientOptions: GetHttpClient = {
     responseType: 'text',
     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0' }
-  });
+  };
+  const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
     const { data } = await httpClient.get(uri);
     return data;
