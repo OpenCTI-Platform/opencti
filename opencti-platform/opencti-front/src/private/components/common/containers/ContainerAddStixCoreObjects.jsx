@@ -272,7 +272,6 @@ const ContainerAddStixCoreObjects = (props) => {
     );
   };
   const renderEntityCreation = (searchPaginationOptions) => {
-    console.log(targetStixCoreObjectTypes);
     if (
       targetStixCoreObjectTypes
             && isTypeDomainObject(targetStixCoreObjectTypes)

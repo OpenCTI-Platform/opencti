@@ -313,8 +313,8 @@ const StixCoreObjectsField = (props) => {
         noOptionsText={t_i18n('No available options')}
         options={stixCoreObjects}
         onInputChange={searchStixCoreObjects}
-        renderOption={(props, option) => (
-          <li {...props}>
+        renderOption={(innerProps, option) => (
+          <li {...innerProps}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type={option.type} />
             </div>
