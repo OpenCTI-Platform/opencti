@@ -37,6 +37,7 @@ import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import type { Theme } from '../../../../components/Theme';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -310,7 +311,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [targetEntities, setTargetEntities] = useState(
     targetEntitiesProps ?? [],
   );
-  const [selectedElements, setSelectedElements] = useState({});
+  const [selectedElements, setSelectedElements] = useState<Record<string, StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data>>({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
   const [filters, helpers] = useFiltersState(actualTypeFilters, actualTypeFilters);
