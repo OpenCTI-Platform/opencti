@@ -116,7 +116,7 @@
     "eslint": "8.57.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
-    "eslint-config-airbnb-typescript": "17.1.0",
+    "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-plugin-custom-rules": "link:packages/eslint-plugin-custom-rules",
     "eslint-plugin-import": "2.29.1",
