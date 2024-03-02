@@ -7042,15 +7042,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bundle-name@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "bundle-name@npm:4.1.0"
-  dependencies:
-    run-applescript: "npm:^7.0.0"
-  checksum: 10/1d966c8d2dbf4d9d394e53b724ac756c2414c45c01340b37743621f59cc565a435024b394ddcb62b9b335d1c9a31f4640eb648c3fec7f97ee74dc0694c9beb6c
-  languageName: node
-  linkType: hard
-
 "bytes@npm:3.0.0":
   version: 3.0.0
   resolution: "bytes@npm:3.0.0"
@@ -8788,23 +8779,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"default-browser-id@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "default-browser-id@npm:5.0.0"
-  checksum: 10/185bfaecec2c75fa423544af722a3469b20704c8d1942794a86e4364fe7d9e8e9f63241a5b769d61c8151993bc65833a5b959026fa1ccea343b3db0a33aa6deb
-  languageName: node
-  linkType: hard
-
-"default-browser@npm:^5.2.1":
-  version: 5.2.1
-  resolution: "default-browser@npm:5.2.1"
-  dependencies:
-    bundle-name: "npm:^4.1.0"
-    default-browser-id: "npm:^5.0.0"
-  checksum: 10/afab7eff7b7f5f7a94d9114d1ec67273d3fbc539edf8c0f80019879d53aa71e867303c6f6d7cffeb10a6f3cfb59d4f963dba3f9c96830b4540cc7339a1bf9840
-  languageName: node
-  linkType: hard
-
 "define-data-property@npm:^1.0.1, define-data-property@npm:^1.1.2, define-data-property@npm:^1.1.4":
   version: 1.1.4
   resolution: "define-data-property@npm:1.1.4"
@@ -8813,13 +8787,6 @@ __metadata:
     es-errors: "npm:^1.3.0"
     gopd: "npm:^1.0.1"
   checksum: 10/abdcb2505d80a53524ba871273e5da75e77e52af9e15b3aa65d8aad82b8a3a424dad7aee2cc0b71470ac7acf501e08defac362e8b6a73cdb4309f028061df4ae
-  languageName: node
-  linkType: hard
-
-"define-lazy-prop@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "define-lazy-prop@npm:3.0.0"
-  checksum: 10/f28421cf9ee86eecaf5f3b8fe875f13d7009c2625e97645bfff7a2a49aca678270b86c39f9c32939e5ca7ab96b551377ed4139558c795e076774287ad3af1aa4
   languageName: node
   linkType: hard
 
@@ -12346,15 +12313,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-docker@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "is-docker@npm:3.0.0"
-  bin:
-    is-docker: cli.js
-  checksum: 10/b698118f04feb7eaf3338922bd79cba064ea54a1c3db6ec8c0c8d8ee7613e7e5854d802d3ef646812a8a3ace81182a085dfa0a71cc68b06f3fa794b9783b3c90
-  languageName: node
-  linkType: hard
-
 "is-extendable@npm:^0.1.0, is-extendable@npm:^0.1.1":
   version: 0.1.1
   resolution: "is-extendable@npm:0.1.1"
@@ -12446,17 +12404,6 @@ __metadata:
   version: 1.1.3
   resolution: "is-in-browser@npm:1.1.3"
   checksum: 10/f7411dbea0875ac609a794e28a545d654331e2a51f42a8c1629abbedf21ecb642ca726a4a9c8be28f9854990a764693483652b65612ccf7b5bc68aa4657e9a26
-  languageName: node
-  linkType: hard
-
-"is-inside-container@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "is-inside-container@npm:1.0.0"
-  dependencies:
-    is-docker: "npm:^3.0.0"
-  bin:
-    is-inside-container: cli.js
-  checksum: 10/c50b75a2ab66ab3e8b92b3bc534e1ea72ca25766832c0623ac22d134116a98bcf012197d1caabe1d1c4bd5f84363d4aa5c36bb4b585fbcaf57be172cd10a1a03
   languageName: node
   linkType: hard
 
@@ -12700,15 +12647,6 @@ __metadata:
   version: 1.0.2
   resolution: "is-windows@npm:1.0.2"
   checksum: 10/438b7e52656fe3b9b293b180defb4e448088e7023a523ec21a91a80b9ff8cdb3377ddb5b6e60f7c7de4fa8b63ab56e121b6705fe081b3cf1b828b0a380009ad7
-  languageName: node
-  linkType: hard
-
-"is-wsl@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "is-wsl@npm:3.1.0"
-  dependencies:
-    is-inside-container: "npm:^1.0.0"
-  checksum: 10/f9734c81f2f9cf9877c5db8356bfe1ff61680f1f4c1011e91278a9c0564b395ae796addb4bf33956871041476ec82c3e5260ed57b22ac91794d4ae70a1d2f0a9
   languageName: node
   linkType: hard
 
@@ -14820,7 +14758,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:~2.5.3":
+"monocart-coverage-reports@npm:~2.5.8":
   version: 2.5.9
   resolution: "monocart-coverage-reports@npm:2.5.9"
   dependencies:
@@ -14839,30 +14777,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-formatter@npm:~2.3.1, monocart-formatter@npm:~2.3.2":
+"monocart-formatter@npm:~2.3.2":
   version: 2.3.2
   resolution: "monocart-formatter@npm:2.3.2"
   checksum: 10/e426a9daab2123bba16dbd471dd0abb8af216713aee9b7e7790596dbfbde6e57097ac8bc8d947af568a0a6f560db16140bd688654b3ae28ebbb25d5ec1459b56
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.3.3":
-  version: 2.3.3
-  resolution: "monocart-reporter@npm:2.3.3"
+"monocart-reporter@npm:2.4.0":
+  version: 2.4.0
+  resolution: "monocart-reporter@npm:2.4.0"
   dependencies:
     console-grid: "npm:~2.2.1"
     eight-colors: "npm:~1.3.0"
     koa: "npm:~2.15.0"
     koa-static-resolver: "npm:~1.0.5"
     lz-utils: "npm:~2.0.2"
-    monocart-coverage-reports: "npm:~2.5.3"
-    monocart-formatter: "npm:~2.3.1"
-    nodemailer: "npm:~6.9.9"
-    open: "npm:~10.0.3"
+    monocart-coverage-reports: "npm:~2.5.8"
+    monocart-formatter: "npm:~2.3.2"
+    nodemailer: "npm:~6.9.10"
     turbogrid: "npm:~3.0.13"
   bin:
     monocart: lib/cli.js
-  checksum: 10/2019d673241e7ef2a102d53067be5dac364d1f3781d3d7777420b90d40db676047ad78223f93054d7d134d39aa4922071da6dc1f81da2976bf7215759463c81a
+  checksum: 10/e4383d0a916404a899ff327493ffa6067406a4eb4a7f6d0d0d3564dde351f70d39847f6385f806e21e1b7fc72b9697dac5af47eb8d1481a7ae173479fbb61b2a
   languageName: node
   linkType: hard
 
@@ -15099,7 +15036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:~6.9.9":
+"nodemailer@npm:~6.9.10":
   version: 6.9.11
   resolution: "nodemailer@npm:6.9.11"
   checksum: 10/6e049d8931f2f3c7af3a871132d9d6013a4229dc011acffb940d1b99bba64144bc3048c23d6daa4a4bb9f706dc9350ceb6679dcaf7658be1fd5094d10f3261ea
@@ -15510,18 +15447,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:~10.0.3":
-  version: 10.0.4
-  resolution: "open@npm:10.0.4"
-  dependencies:
-    default-browser: "npm:^5.2.1"
-    define-lazy-prop: "npm:^3.0.0"
-    is-inside-container: "npm:^1.0.0"
-    is-wsl: "npm:^3.1.0"
-  checksum: 10/6d3a1f1daa6a485f82fae3301319e32faa32f724f7cbc857fc27fcdd6272fdaab36142b785d12cccb472539dfc192e78e5ac6de4bc83aba60f8c1e27cc6fa884
-  languageName: node
-  linkType: hard
-
 "opencti-front@workspace:.":
   version: 0.0.0-use.local
   resolution: "opencti-front@workspace:."
@@ -15604,7 +15529,7 @@ __metadata:
     mdi-material-ui: "npm:7.8.0"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
-    monocart-reporter: "npm:2.3.3"
+    monocart-reporter: "npm:2.4.0"
     pdfmake: "npm:0.2.9"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.3"
@@ -18238,13 +18163,6 @@ __metadata:
   version: 4.8.5
   resolution: "rsvp@npm:4.8.5"
   checksum: 10/3c81905a0c235125cb00e855580ed8fb63d302d69ea6cadb506cea214892665f71c0998350875a6117ccce68d9afca5d996c5c74a5c36ca134cfe141bec4ce1c
-  languageName: node
-  linkType: hard
-
-"run-applescript@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "run-applescript@npm:7.0.0"
-  checksum: 10/b02462454d8b182ad4117e5d4626e9e6782eb2072925c9fac582170b0627ae3c1ea92ee9b2df7daf84b5e9ffe14eb1cf5fb70bc44b15c8a0bfcdb47987e2410c
   languageName: node
   linkType: hard
 
