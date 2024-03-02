@@ -125,7 +125,7 @@
     "express": "4.18.2",
     "fs-extra": "11.2.0",
     "http-proxy-middleware": "2.0.6",
-    "i18n-auto-translation": "1.3.7",
+    "i18n-auto-translation": "1.4.0",
     "jsdom": "24.0.0",
     "monocart-reporter": "2.3.3",
     "react-test-renderer": "18.2.0",
