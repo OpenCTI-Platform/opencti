@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import Toolbar from '@mui/material/Toolbar';
@@ -10,41 +10,41 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
+  AccountBalanceOutlined,
   AssignmentOutlined,
+  BiotechOutlined,
+  BugReportOutlined,
   CasesOutlined,
   ChevronLeft,
   ChevronRight,
   ConstructionOutlined,
   DashboardOutlined,
-  ExploreOutlined,
-  InsertChartOutlinedOutlined,
-  LayersOutlined,
   DescriptionOutlined,
-  WorkspacesOutlined,
-  BiotechOutlined,
-  SubjectOutlined,
-  LocalOfferOutlined,
-  TaskAltOutlined,
-  VisibilityOutlined,
-  WifiTetheringOutlined,
+  DiamondOutlined,
+  DomainOutlined,
+  EventOutlined,
   ExpandLessOutlined,
   ExpandMoreOutlined,
-  DiamondOutlined,
-  BugReportOutlined,
-  WebAssetOutlined,
-  SurroundSoundOutlined,
-  StreamOutlined,
+  ExploreOutlined,
+  FlagOutlined,
+  InsertChartOutlinedOutlined,
+  LayersOutlined,
+  LocalOfferOutlined,
+  MapOutlined,
+  PersonOutlined,
+  PlaceOutlined,
+  PublicOutlined,
   SourceOutlined,
   SpeakerNotesOutlined,
-  PersonOutlined,
   StorageOutlined,
-  AccountBalanceOutlined,
-  EventOutlined,
-  DomainOutlined,
-  PlaceOutlined,
-  MapOutlined,
-  FlagOutlined,
-  PublicOutlined,
+  StreamOutlined,
+  SubjectOutlined,
+  SurroundSoundOutlined,
+  TaskAltOutlined,
+  VisibilityOutlined,
+  WebAssetOutlined,
+  WifiTetheringOutlined,
+  WorkspacesOutlined,
 } from '@mui/icons-material';
 import {
   AccountMultipleOutline,
@@ -304,10 +304,6 @@ const LeftBar = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
-  const [height, setHeight] = useState(0);
-  useLayoutEffect(() => {
-    setHeight(ref.current.offsetHeight);
-  }, [selectedMenu]);
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
@@ -860,12 +856,11 @@ const LeftBar = () => {
           </MenuList>
         </Security>
       </div>
-      <div style={height + (navOpen && selectedMenu ? 300 : 130) < dimension.height ? { position: 'fixed', bottom: 10, left: 0 } : {}}>
+      <div style={{ marginTop: 'auto' }}>
         <MenuList component="nav">
           {(!platform_whitemark || !isEnterpriseEdition) && (
           <MenuItem
             dense={true}
-            style={{ marginBottom: bannerHeightNumber }}
             classes={{
               root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
             }}
@@ -893,7 +888,7 @@ const LeftBar = () => {
           )}
           <MenuItem
             dense={true}
-            style={{ marginBottom: bannerHeightNumber }}
+            style={{ marginBottom: bannerHeightNumber ? 6 : undefined }}
             classes={{
               root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
             }}

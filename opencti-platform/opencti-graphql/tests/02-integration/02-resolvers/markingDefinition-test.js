@@ -86,8 +86,8 @@ describe('MarkingDefinition resolver standard behavior', () => {
     expect(queryResult.data.markingDefinition.id).toEqual(markingDefinitionInternalId);
   });
   it('should list markingDefinitions', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.markingDefinitions.edges.length).toEqual(8);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 20 } });
+    expect(queryResult.data.markingDefinitions.edges.length).toEqual(12);
   });
   it('should update markingDefinition', async () => {
     const UPDATE_QUERY = gql`
