@@ -1666,9 +1666,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/transport@npm:8.4.0":
-  version: 8.4.0
-  resolution: "@elastic/transport@npm:8.4.0"
+"@elastic/transport@npm:8.4.1":
+  version: 8.4.1
+  resolution: "@elastic/transport@npm:8.4.1"
   dependencies:
     debug: "npm:^4.3.4"
     hpagent: "npm:^1.0.0"
@@ -1676,13 +1676,13 @@ __metadata:
     secure-json-parse: "npm:^2.4.0"
     tslib: "npm:^2.4.0"
     undici: "npm:^5.22.1"
-  checksum: 10/8f022e3fc6fa6e1704418d2f4d55bf49a0e9a91e3ad42e1c31f73c215e4d09760b7c8248cf67f0a55b70e635f9058cddc1b67ec13b37cecae5e0cf36e82bbb85
+  checksum: 10/4c4cbe9c0e38ee8864b8951c8bd65938c9871cbe3295e8dd6398f1cdb02badc195486c0723562ba02089fd2f697fe0f51eed5d5ebef92c869ebc502041688ea7
   languageName: node
   linkType: hard
 
-"@elastic/transport@patch:@elastic/transport@8.4.0#./patch/elasticsearch-transport-8.10.0.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 8.4.0
-  resolution: "@elastic/transport@patch:@elastic/transport@npm%3A8.4.0#./patch/elasticsearch-transport-8.10.0.patch::version=8.4.0&hash=66a125&locator=opencti-graphql%40workspace%3A."
+"@elastic/transport@patch:@elastic/transport@8.4.1#./patch/elasticsearch-transport-8.10.0.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 8.4.1
+  resolution: "@elastic/transport@patch:@elastic/transport@npm%3A8.4.1#./patch/elasticsearch-transport-8.10.0.patch::version=8.4.1&hash=66a125&locator=opencti-graphql%40workspace%3A."
   dependencies:
     debug: "npm:^4.3.4"
     hpagent: "npm:^1.0.0"
@@ -1690,7 +1690,7 @@ __metadata:
     secure-json-parse: "npm:^2.4.0"
     tslib: "npm:^2.4.0"
     undici: "npm:^5.22.1"
-  checksum: 10/0956c6b470b751e18e6cfb68aa0233360723592c8c0deddb30431d26c56e427a4bf7fe255085237e7f805d03061aaaa2f80feae29035a6e86f1c059bd151eae6
+  checksum: 10/9392a371483efc169f475e8e3de0f3f98bd319c679b33f11199c28a1ff49b4c698cad889335af98b0ebb0f987336d1fcf36802b87f03727a29b9560468b30709
   languageName: node
   linkType: hard
 
@@ -11424,7 +11424,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.525.1"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@elastic/elasticsearch": "npm:8.12.2"
-    "@elastic/transport": "npm:8.4.0"
+    "@elastic/transport": "npm:8.4.1"
     "@escape.tech/graphql-armor": "npm:2.4.0"
     "@graphql-codegen/cli": "npm:5.0.2"
     "@graphql-codegen/client-preset": "npm:4.2.2"
