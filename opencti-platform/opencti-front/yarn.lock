@@ -15612,7 +15612,7 @@ __metadata:
     react: "npm:18.2.0"
     react-apexcharts: "npm:1.4.1"
     react-color: "npm:2.19.3"
-    react-cookie: "npm:7.0.2"
+    react-cookie: "npm:7.1.0"
     react-csv: "npm:2.2.2"
     react-dom: "npm:18.2.0"
     react-force-graph-2d: "npm:1.25.4"
@@ -16990,16 +16990,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-cookie@npm:7.0.2":
-  version: 7.0.2
-  resolution: "react-cookie@npm:7.0.2"
+"react-cookie@npm:7.1.0":
+  version: 7.1.0
+  resolution: "react-cookie@npm:7.1.0"
   dependencies:
     "@types/hoist-non-react-statics": "npm:^3.3.5"
     hoist-non-react-statics: "npm:^3.3.2"
     universal-cookie: "npm:^7.0.0"
   peerDependencies:
     react: ">= 16.3.0"
-  checksum: 10/dab6a43139fa30a1765a64cbad8b89a2bb6cd955c9def6032e71d0b451ab97e7efa7a36a34f91739ca9715d6746817c015083156e769f79bb0188341c7a98a1c
+  checksum: 10/70caad3b39f0512ca88455fba22a558f7bd1eb5e34a475317c4c8006776e457edfcd0b63541f5e10937d2151986024b97007c3d24788d7be8f12c4c5f7ae89f0
   languageName: node
   linkType: hard
 
