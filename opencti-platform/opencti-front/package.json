@@ -73,7 +73,7 @@
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.5",
     "reactflow": "11.10.4",
-    "recharts": "2.12.0",
+    "recharts": "2.12.2",
     "relay-runtime": "16.2.0",
     "remark-flexible-markers": "1.0.4",
     "remark-gfm": "4.0.0",
