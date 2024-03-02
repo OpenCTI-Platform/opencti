@@ -81,6 +81,16 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:audit_logs:logs_max_files | APP__AUDIT_LOGS__LOGS_MAX_FILES | 7             | Maximum number of daily files in logs                      |
 | app:audit_logs:logs_directory | APP__AUDIT_LOGS__LOGS_DIRECTORY | ./logs        | Audit logs directory                                       |
 
+#### Telemetry
+
+| Parameter                                 | Environment variable                         | Default value | Description                             |
+|:------------------------------------------|:---------------------------------------------|:--------------|:----------------------------------------|
+| app:telemetry:metrics:enabled             | APP__TELEMETRY__METRICS__ENABLED             | `false`       | Enable the metrics collection.          |
+| app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint.       |
+| app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint. |
+| app:health_access_key                     | APP__HEALTH_ACCESS_KEY                       | ChangeMe      | Access key for the `/health` endpoint.  |
+
+
 #### Maps & references
 
 | Parameter                 | Environment variable       | Default value                                              | Description                                                      |

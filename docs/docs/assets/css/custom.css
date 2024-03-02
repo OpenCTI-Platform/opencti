@@ -19,10 +19,10 @@
   --md-default-fg-color--light:        #697a94;
   --md-default-fg-color--lighter:      #3d4e66;
   --md-default-fg-color--lightest:     #03305d;
-  --md-default-bg-color:               #071a2e;
-  --md-default-bg-color--light:        #001830;
-  --md-default-bg-color--lighter:      #021426;
-  --md-default-bg-color--lightest:     #000e1c;
+  --md-default-bg-color:               #070d19;
+  --md-default-bg-color--light:        #0f1e38;
+  --md-default-bg-color--lighter:      #152849;
+  --md-default-bg-color--lightest:     #09101e;
 
   /* Code color shades */
   --md-code-fg-color:                  #ffffff;
@@ -41,7 +41,7 @@
   --md-typeset-color:                  #ffffff;
 
   /* Typeset `a` color shades */
-  --md-typeset-a-color:                #00b1ff;
+  --md-typeset-a-color:                #0fbcff;
 
   /* Typeset `mark` color shades */
   --md-typeset-mark-color:             #;
@@ -72,12 +72,12 @@
   --md-footer-fg-color--light:         #;
   --md-footer-fg-color--lighter:       #;
   --md-footer-bg-color:                #011222;
-  --md-footer-bg-color--dark:          #000e1c;
+  --md-footer-bg-color--dark:          #09101e;
 }
 
 /* Header */
 .md-header, .md-tabs {
-  background-color: #000e1c !important;
+  background-color: #09101e !important;
 }
 
 /* Cards */
@@ -94,7 +94,7 @@
 }
 
 html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover {
-    color: #00b1ff !important;
+    color: #0fbcff !important;
 }
 
 .middle {
@@ -123,36 +123,10 @@ html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover 
 
 
 /* Works on Chrome, Edge, and Safari */
-body {
-  scrollbar-color: #6b6b6b #2b2b2b;
-}
-
-*::-webkit-scrollbar {
-  width: 12px;
-  background-color: #001e3c;
-}
-
-*::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  background-color: #01478d;
-  min-height: 24px;
-  border: 3px solid #001e3c;
-}
-
-*::-webkit-scrollbar-thumb:focus {
-  background-color: #01478d;
-}
-
-*::-webkit-scrollbar-thumb:active {
-  background-color: #01478d;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-  background-color: #01478d;
-}
-          
-html::-webkit-scrollbar-corner {
-  background-color: #01478d;
+html, body {
+  scrollbar-color: #070d19 #0f1e38;
+  scrollbarWidth: thin;
+  WebkitFontSmoothing: auto;
 }
 
 .glightbox img {
