@@ -6282,9 +6282,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:3.45.2":
-  version: 3.45.2
-  resolution: "apexcharts@npm:3.45.2"
+"apexcharts@npm:3.46.0":
+  version: 3.46.0
+  resolution: "apexcharts@npm:3.46.0"
   dependencies:
     "@yr/monotone-cubic-spline": "npm:^1.0.3"
     svg.draggable.js: "npm:^2.2.2"
@@ -6293,7 +6293,7 @@ __metadata:
     svg.pathmorphing.js: "npm:^0.1.3"
     svg.resize.js: "npm:^1.4.3"
     svg.select.js: "npm:^3.0.1"
-  checksum: 10/a506604a1f61ecdaee5b75f3397e26b01365718cc14d97aa3222f94cae31cc25a9b9b548ae1576371357c32146dcc5dbe78ee2fce9eef320526f2a3868b9ce53
+  checksum: 10/e7ff2b05b938d8f4d7b945066c21bd2b205489bf92d22bbdf81d79788c9d7eed3c74019248ca952aaef9d1d6e4cbee08b48d70e4ce0689e3b463a56bf153d405
   languageName: node
   linkType: hard
 
@@ -15592,7 +15592,7 @@ __metadata:
     "@types/uuid": "npm:9.0.8"
     "@vitejs/plugin-react": "npm:4.2.1"
     analytics: "npm:0.8.11"
-    apexcharts: "npm:3.45.2"
+    apexcharts: "npm:3.46.0"
     axios: "npm:1.6.7"
     babel-plugin-relay: "npm:16.2.0"
     chokidar: "npm:3.6.0"
