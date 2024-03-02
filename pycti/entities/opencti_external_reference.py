@@ -268,7 +268,7 @@ class ExternalReference:
         id = kwargs.get("id", None)
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
-        version = kwargs.get("version")
+        version = kwargs.get("version", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         no_trigger_import = kwargs.get("no_trigger_import", False)
         if id is not None and file_name is not None:

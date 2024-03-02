@@ -557,7 +557,7 @@ class OpenCTIStix2:
                             self.opencti.external_reference.add_file(
                                 id=external_reference_id,
                                 file_name=file["name"],
-                                version=file["version"],
+                                version=file.get("version", None),
                                 data=base64.b64decode(file["data"]),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
@@ -574,7 +574,7 @@ class OpenCTIStix2:
                             self.opencti.external_reference.add_file(
                                 id=external_reference_id,
                                 file_name=file["name"],
-                                version=file["version"],
+                                version=file.get("version", None),
                                 data=base64.b64decode(file["data"]),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
@@ -725,7 +725,7 @@ class OpenCTIStix2:
                         self.opencti.external_reference.add_file(
                             id=external_reference_id,
                             file_name=file["name"],
-                            version=file["version"],
+                            version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -740,7 +740,7 @@ class OpenCTIStix2:
                         self.opencti.external_reference.add_file(
                             id=external_reference_id,
                             file_name=file["name"],
-                            version=file["version"],
+                            version=file.get("version", None),
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -951,7 +951,7 @@ class OpenCTIStix2:
                     self.opencti.stix_domain_object.add_file(
                         id=stix_object_result["id"],
                         file_name=file["name"],
-                        version=file["version"],
+                        version=file.get("version", None),
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
                         no_trigger_import=file.get("no_trigger_import", False),
@@ -966,7 +966,7 @@ class OpenCTIStix2:
                     self.opencti.stix_domain_object.add_file(
                         id=stix_object_result["id"],
                         file_name=file["name"],
-                        version=file["version"],
+                        version=file.get("version", None),
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
                         no_trigger_import=file.get("no_trigger_import", False),
@@ -1074,7 +1074,7 @@ class OpenCTIStix2:
                     self.opencti.stix_cyber_observable.add_file(
                         id=stix_observable_result["id"],
                         file_name=file["name"],
-                        version=file["version"],
+                        version=file.get("version", None),
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
                         no_trigger_import=file.get("no_trigger_import", False),
@@ -1089,7 +1089,7 @@ class OpenCTIStix2:
                     self.opencti.stix_cyber_observable.add_file(
                         id=stix_observable_result["id"],
                         file_name=file["name"],
-                        version=file["version"],
+                        version=file.get("version", None),
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
                         no_trigger_import=file.get("no_trigger_import", False),
@@ -1539,7 +1539,7 @@ class OpenCTIStix2:
                                 "name": file["name"],
                                 "data": data,
                                 "mime_type": file["metaData"]["mimetype"],
-                                "version": file["metaData"]["version"],
+                                "version": file["metaData"].get("version", None),
                             }
                         )
                 entity["external_references"].append(external_reference)
@@ -1826,7 +1826,7 @@ class OpenCTIStix2:
                         "name": file["name"],
                         "data": data,
                         "mime_type": file["metaData"]["mimetype"],
-                        "version": file["metaData"]["version"],
+                        "version": file["metaData"].get("version", None),
                     }
                 )
             del entity["importFiles"]
