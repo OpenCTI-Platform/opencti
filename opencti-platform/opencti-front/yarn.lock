@@ -13578,7 +13578,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4.0.1, lodash@npm:^4.17.11, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+"lodash@npm:4.17.21, lodash@npm:^4.0.1, lodash@npm:^4.17.11, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
@@ -15656,7 +15656,7 @@ __metadata:
     react-timeline-range-slider: "npm:1.4.1"
     react-virtualized: "npm:9.22.5"
     reactflow: "npm:11.10.4"
-    recharts: "npm:2.12.0"
+    recharts: "npm:2.12.2"
     relay-compiler: "npm:16.2.0"
     relay-runtime: "npm:16.2.0"
     relay-test-utils: "npm:16.2.0"
@@ -17677,13 +17677,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.12.0":
-  version: 2.12.0
-  resolution: "recharts@npm:2.12.0"
+"recharts@npm:2.12.2":
+  version: 2.12.2
+  resolution: "recharts@npm:2.12.2"
   dependencies:
     clsx: "npm:^2.0.0"
     eventemitter3: "npm:^4.0.1"
-    lodash: "npm:^4.17.19"
+    lodash: "npm:^4.17.21"
     react-is: "npm:^16.10.2"
     react-smooth: "npm:^4.0.0"
     recharts-scale: "npm:^0.4.4"
@@ -17692,7 +17692,7 @@ __metadata:
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/080cdd9128fb180f96f9bc6480614094b8ac19af452f5dd6e200c5d630610ab1b584532deac8bc87baa3e19d25345c817496b595ed904a01782e94a2d29c15ff
+  checksum: 10/a6208f4f98b4eb2ed646c718411565c2e6e9a55f4f97f6fd73754cac3aeb872e4fa8b5aaeb73c920eb67934bcefde993ab93ce640742507ac801fb3654278168
   languageName: node
   linkType: hard
 
