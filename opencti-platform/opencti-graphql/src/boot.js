@@ -10,15 +10,36 @@ export const platformStart = async () => {
   logApp.info('[OPENCTI] Starting platform');
   try {
     // Check all dependencies access
-    await checkSystemDependencies();
+    try {
+      await checkSystemDependencies();
+    } catch (dependencyError) {
+      logApp.error('[OPENCTI] System dependencies check failed', {dependencyError });
+      throw dependencyError; // Re-throw the error to exit the main try block
+    }
+
     // Init the cache manager
-    await cacheManager.start();
+    try {
+      await cacheManager.start();
+    } catch (cacheError) {
+      logApp.error('[OPENCTI] Cache manager initialization failed', { cacheError });
+      throw cacheError;
+    }
     // Init the platform default
-    await platformInit();
+    try {
+      await platformInit();
+    } catch (platformError) {
+      logApp.error('[OPENCTI] Platform default initialization failed', { platformError });
+      throw platformError;
+    }
     // Init the modules
-    await startModules();
-  } catch (e) {
-    logApp.error(e);
+    try {
+      await startModules();
+    } catch (modulesError) {
+      logApp.error('[OPENCTI] Modules startup failed', {modulesError});
+      throw modulesError;
+    }
+  } catch (mainError) {
+    logApp.error(mainError);
     process.exit(1);
   }
 };
