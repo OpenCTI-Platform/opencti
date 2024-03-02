@@ -92,7 +92,7 @@
     "@playwright/test": "1.42.1",
     "@rollup/plugin-graphql": "2.0.4",
     "@testing-library/react": "14.2.1",
-    "@types/node": "20.11.19",
+    "@types/node": "20.11.24",
     "@types/qrcode": "1.5.5",
     "@types/ramda": "0.29.10",
     "@types/react": "18.2.55",
