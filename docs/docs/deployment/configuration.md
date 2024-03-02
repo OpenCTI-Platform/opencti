@@ -312,9 +312,19 @@ Can be configured manually using the configuration file `config.yml` or through 
 
 ### Worker specific configuration
 
+#### Logging
+
 | Parameter                      | Environment variable           | Default value | Description                                                |
 |:-------------------------------|:-------------------------------|:--------------|:-----------------------------------------------------------|
 | worker:log_level               | WORKER_LOG_LEVEL               | info          | The log level (error, warning, info or debug)              |
+
+#### Telemetry
+
+| Parameter                          | Environment variable               | Default value | Description                               |
+|:-----------------------------------|:-----------------------------------|:--------------|:------------------------------------------|
+| worker:telemetry_enabled           | WORKER_TELEMETRY_ENABLED           | false         | Enable the Prometheus endpoint            |
+| worker:telemetry_prometheus_port   | WORKER_PROMETHEUS_TELEMETRY_PORT   | 14270         | Port of the Prometheus endpoint           |
+| worker:telemetry_prometheus_host   | WORKER_PROMETHEUS_TELEMETRY_HOST   | 0.0.0.0       | Listen address of the Prometheus endpoint |
 
 ### Connector specific configuration
 
@@ -322,7 +332,7 @@ For specific connector configuration, you need to check each connector behavior.
 
 ## ElasticSearch
 
-If you want to adapt the memory consumption of ElasticSearch, you can use theses options:
+If you want to adapt the memory consumption of ElasticSearch, you can use these options:
 
 ```bash
 # Add the following environment variable:
