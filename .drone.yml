@@ -77,7 +77,7 @@ services:
       MINIO_ROOT_PASSWORD: ChangeMe
     command: [ server, /data ]
   - name: rabbitmq
-    image: rabbitmq:3.12-management
+    image: rabbitmq:3.13-management
   - name: opencti
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
     environment:
