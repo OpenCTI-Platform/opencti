@@ -5419,7 +5419,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:16 || 17 || 18":
+"@types/react@npm:*, @types/react@npm:16 || 17 || 18, @types/react@npm:18.2.61":
   version: 18.2.61
   resolution: "@types/react@npm:18.2.61"
   dependencies:
@@ -5427,17 +5427,6 @@ __metadata:
     "@types/scheduler": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10/74c2920ccca83fc51190ed4eda1066fa6a644197839dd37765fcce93cbd50b7a52b75815ce0083bb95195f886c80b57745314dd49ecbf235fa93d753ae2260bc
-  languageName: node
-  linkType: hard
-
-"@types/react@npm:18.2.55":
-  version: 18.2.55
-  resolution: "@types/react@npm:18.2.55"
-  dependencies:
-    "@types/prop-types": "npm:*"
-    "@types/scheduler": "npm:*"
-    csstype: "npm:^3.0.2"
-  checksum: 10/bf8fe19e73575489e63c0726355f164157cd69e75f2a862436ad2c0586e732cb953a7255a6bc73145e8f9506ee7a723f9a569ca9a39c53984e5b12b84e1c718a
   languageName: node
   linkType: hard
 
@@ -15472,7 +15461,7 @@ __metadata:
     "@types/node": "npm:20.11.24"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.10"
-    "@types/react": "npm:18.2.55"
+    "@types/react": "npm:18.2.61"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.2.19"
     "@types/react-grid-layout": "npm:1.3.5"
