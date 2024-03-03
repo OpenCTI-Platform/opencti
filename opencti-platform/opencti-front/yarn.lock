@@ -12858,10 +12858,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.7.6":
-  version: 3.7.6
-  resolution: "js-base64@npm:3.7.6"
-  checksum: 10/6615d5b22b2d01442588ebf47df8fa6f07dab05daf34f334e373b20364de4e7f47bad9ac6cc0ccf1887ef7d822aaeb8249877d330e8a1b1da290ca72353e888e
+"js-base64@npm:3.7.7":
+  version: 3.7.7
+  resolution: "js-base64@npm:3.7.7"
+  checksum: 10/185e34c536a6b1c4e1ad8bd96d25b49a9ea4e6803e259eaaaca95f1b392a0d590b2933c5ca8580c776f7279507944b81ff1faf889d84baa5e31f026e96d676a5
   languageName: node
   linkType: hard
 
@@ -15505,7 +15505,7 @@ __metadata:
     http-proxy-middleware: "npm:2.0.6"
     i18n-auto-translation: "npm:1.4.0"
     invert-color: "npm:2.0.0"
-    js-base64: "npm:3.7.6"
+    js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
     jsdom: "npm:24.0.0"
     leaflet: "npm:1.9.4"
