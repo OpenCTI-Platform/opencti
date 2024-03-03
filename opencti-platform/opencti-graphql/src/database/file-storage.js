@@ -7,7 +7,7 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { now, sinceNowInMinutes, truncate } from '../utils/format';
+import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
 import { isNotEmptyField } from './utils';
@@ -328,7 +328,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   const key = `${filePath}/${truncatedFileName}`;
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
-    if (currentFile.metaData?.version === metadata.version) {
+    if (utcDate(currentFile.metaData.version).isSameOrAfter(utcDate(metadata.version))) {
       return { upload: currentFile, untouched: true };
     }
     if (errorOnExisting) {

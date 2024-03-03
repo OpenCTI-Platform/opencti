@@ -151,7 +151,7 @@ export const createSyncHttpUri = (sync, state, testMode) => {
     return `${httpBase(uri)}stream/${stream}`;
   }
   const from = isEmptyField(state) ? '0-0' : state;
-  const recover = sync.recover ?? sync.created_at;
+  const recover = sync.recover ?? now();
   let streamUri = `${httpBase(uri)}stream/${stream}?from=${from}&listen-delete=${del}&no-dependencies=${dep}`;
   if (recover) {
     streamUri += `&recover=${recover}`;
