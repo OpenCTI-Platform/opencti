@@ -3017,6 +3017,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/geologica@npm:5.0.3":
+  version: 5.0.3
+  resolution: "@fontsource/geologica@npm:5.0.3"
+  checksum: 10/27e155cd26655a54ee18c37c0484016c4512e25fe4355fd8fca1cc64cb797ab5be1117ba8c4444f7ef6443a507112049667b9dce182c172a9550cded7705c54f
+  languageName: node
+  linkType: hard
+
+"@fontsource/ibm-plex-sans@npm:5.0.18":
+  version: 5.0.18
+  resolution: "@fontsource/ibm-plex-sans@npm:5.0.18"
+  checksum: 10/e0af360e9a4e1511f831d42320caf49ec78f0825645a851642acb971c573fbb1874cadb0c949c8f6d0973b0d1a78dbd478a4d78302ddc485cb807b516d4c6a75
+  languageName: node
+  linkType: hard
+
 "@formatjs/ecma402-abstract@npm:1.18.2":
   version: 1.18.2
   resolution: "@formatjs/ecma402-abstract@npm:1.18.2"
@@ -15457,6 +15471,8 @@ __metadata:
     "@date-io/date-fns": "npm:3.0.0"
     "@emotion/react": "npm:11.11.3"
     "@emotion/styled": "npm:11.11.0"
+    "@fontsource/geologica": "npm:5.0.3"
+    "@fontsource/ibm-plex-sans": "npm:5.0.18"
     "@mui/icons-material": "npm:5.15.11"
     "@mui/lab": "npm:5.0.0-alpha.166"
     "@mui/material": "npm:5.15.11"
@@ -15571,8 +15587,6 @@ __metadata:
     subscriptions-transport-ws: "npm:0.11.0"
     tap: "npm:18.7.0"
     three-spritetext: "npm:1.8.2"
-    typeface-ibm-plex-sans: "npm:1.1.13"
-    typeface-roboto: "npm:1.1.13"
     typescript: "npm:5.3.3"
     unified: "npm:11.0.4"
     use-analytics: "npm:1.1.0"
@@ -20123,20 +20137,6 @@ __metadata:
   version: 0.0.6
   resolution: "typedarray@npm:0.0.6"
   checksum: 10/2cc1bcf7d8c1237f6a16c04efc06637b2c5f2d74e58e84665445cf87668b85a21ab18dd751fa49eee6ae024b70326635d7b79ad37b1c370ed2fec6aeeeb52714
-  languageName: node
-  linkType: hard
-
-"typeface-ibm-plex-sans@npm:1.1.13":
-  version: 1.1.13
-  resolution: "typeface-ibm-plex-sans@npm:1.1.13"
-  checksum: 10/a429b3f4805c5856b83750b44fa1d05dae87795f591339cd67b1de73235b18c7be2fa831272cb6e7203e29f8b837a23065888a91115cf4972fbb8d3b8858d220
-  languageName: node
-  linkType: hard
-
-"typeface-roboto@npm:1.1.13":
-  version: 1.1.13
-  resolution: "typeface-roboto@npm:1.1.13"
-  checksum: 10/04371862bb979c51e4ef9ebf407491068f9c8a862e77a4ba3826a11f06d462f647560d10e5e8bcca1267e866153c9e3b8d8102d23f07192fb758f7ea1f7f4be5
   languageName: node
   linkType: hard
 

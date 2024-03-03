@@ -67,6 +67,7 @@ const ThemeDark = (
       padding: 0,
       fontWeight: 400,
       fontSize: 22,
+      fontFamily: '"Geoligica", sans-serif',
     },
     h2: {
       margin: '0 0 10px 0',
@@ -74,6 +75,7 @@ const ThemeDark = (
       fontWeight: 500,
       fontSize: 16,
       textTransform: 'uppercase',
+      fontFamily: '"Geoligica", sans-serif',
     },
     h3: {
       margin: '0 0 10px 0',
@@ -81,6 +83,7 @@ const ThemeDark = (
       color: '#bebebe',
       fontWeight: 400,
       fontSize: 13,
+      fontFamily: '"Geoligica", sans-serif',
     },
     h4: {
       margin: '0 0 10px 0',
@@ -100,6 +103,7 @@ const ThemeDark = (
       fontWeight: 400,
       fontSize: 18,
       color: primary || THEME_DARK_DEFAULT_PRIMARY,
+      fontFamily: '"Geoligica", sans-serif',
     },
     subtitle2: {
       fontWeight: 400,

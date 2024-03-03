@@ -11644,9 +11644,9 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth
-  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]! @auth
-  filterKeysSchema: [FilterKeysSchema!]! @auth
+  schemaRelationsTypesMapping: [StixRelationshipSchema!]!
+  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]!
+  filterKeysSchema: [FilterKeysSchema!]!
 
   ######## STIX CORE RELATIONSHIPS
 

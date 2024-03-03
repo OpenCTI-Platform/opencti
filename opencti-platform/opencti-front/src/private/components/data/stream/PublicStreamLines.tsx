@@ -4,7 +4,6 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { Stream } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
 import { ContentCopy, OpenInNew } from 'mdi-material-ui';
@@ -17,9 +16,8 @@ import { StreamLineDummy } from './StreamLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles({
   bodyItem: {
@@ -80,13 +78,13 @@ const queryRef = loadQuery<PublicStreamLinesQuery>(
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
-    width: '15%',
+    width: '25%',
     isSortable: false,
     render: (node) => node.name,
   },
   description: {
     label: 'Description',
-    width: '25%',
+    width: '35%',
     isSortable: false,
     render: (node) => node.description,
   },
@@ -103,25 +101,6 @@ const dataColumns: DataColumns = {
       />
     ),
   },
-  filters: {
-    label: 'Filters',
-    width: '40%',
-    isSortable: false,
-    render: (node) => {
-      const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
-      return (
-        <>
-          {nodeFilters && (
-            <FilterIconButton
-              filters={nodeFilters}
-              dataColumns={this}
-              styleNumber={3}
-            />
-          )}
-        </>
-      );
-    },
-  },
 };
 
 const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
@@ -137,7 +116,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon>
-        <Stream />
+        <ItemIcon type="streamcollection" />
       </ListItemIcon>
       <ListItemText
         primary={
