@@ -179,7 +179,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 />
                 <Tooltip
                   title={t_i18n(
-                    'If this option is selected, we will skip the first line of your csv file',
+                    'If this option is selected, we will skip the first line of your CSV file',
                   )}
                 >
                   <InformationOutline
