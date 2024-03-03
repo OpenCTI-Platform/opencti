@@ -1286,7 +1286,7 @@ class StixDomainObject:
         if id is not None and file_name is not None:
             final_file_name = os.path.basename(file_name)
             query = """
-                mutation StixDomainObjectEdit($id: ID!, $file: Upload!, $version: String, $noTriggerImport: Boolean) {
+                mutation StixDomainObjectEdit($id: ID!, $file: Upload!, $version: DateTime, $noTriggerImport: Boolean) {
                     stixDomainObjectEdit(id: $id) {
                         importPush(file: $file, version: $version, noTriggerImport: $noTriggerImport) {
                             id
