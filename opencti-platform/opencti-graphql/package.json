@@ -165,7 +165,7 @@
     "@types/graphql-upload": "16.0.7",
     "@types/mime-types": "2.1.4",
     "@types/nconf": "0.10.6",
-    "@types/ramda": "0.29.10",
+    "@types/ramda": "0.29.11",
     "@types/tough-cookie": "4.0.5",
     "@types/turndown": "5.0.4",
     "@types/uuid": "9.0.8",
