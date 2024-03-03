@@ -111,7 +111,7 @@
     "chokidar": "3.6.0",
     "compression": "1.7.4",
     "cross-env": "7.0.3",
-    "esbuild": "0.20.0",
+    "esbuild": "0.20.1",
     "esbuild-jest": "0.5.0",
     "eslint": "8.57.0",
     "eslint-config-airbnb": "19.0.4",
