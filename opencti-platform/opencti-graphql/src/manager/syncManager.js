@@ -1,7 +1,5 @@
-import * as R from 'ramda';
 import EventSource from 'eventsource';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import * as jsonpatch from 'fast-json-patch';
 import conf, { booleanConf, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -80,13 +78,9 @@ const syncManagerInstance = (syncId) => {
   };
   const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
     const { uri } = sync;
-    let processingData = data;
+    const processingData = { ...data };
     // Reverse patch the id if modified
-    const idOperations = (context?.reverse_patch ?? []).filter((patch) => patch.path === '/id');
-    if (idOperations.length > 0) {
-      const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
-      processingData = stixPreviousID;
-    }
+    const idOperation = (context?.reverse_patch ?? []).find((patch) => patch.path === '/id');
     // Handle file enrichment
     const entityFiles = processingData.extensions[STIX_EXT_OCTI].files ?? [];
     for (let index = 0; index < entityFiles.length; index += 1) {
@@ -95,7 +89,7 @@ const syncManagerInstance = (syncId) => {
       const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
       entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
     }
-    return processingData;
+    return { data: processingData, previous_standard: idOperation?.value };
   };
   const saveCurrentState = async (context, type, sync, eventId) => {
     const currentTime = new Date().getTime();
@@ -139,11 +133,17 @@ const syncManagerInstance = (syncId) => {
             if (eventType === 'heartbeat') {
               await saveCurrentState(context, eventType, sync, eventId);
             } else {
-              const syncData = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, eventContext);
+              const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, data, eventContext);
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               // Applicant_id should be a userId coming from synchronizer
-              await pushToSync({ type: 'event', synchronized, update: true, applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID, content });
+              await pushToSync({
+                type: 'event',
+                synchronized,
+                previous_standard,
+                update: true,
+                applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
+                content });
               await saveCurrentState(context, 'event', sync, eventId);
             }
           } catch (e) {

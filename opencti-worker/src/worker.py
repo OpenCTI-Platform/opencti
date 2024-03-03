@@ -247,6 +247,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         work_id = data["work_id"] if "work_id" in data else None
         synchronized = data["synchronized"] if "synchronized" in data else False
         self.api.set_synchronized_upsert_header(synchronized)
+        previous_standard = data.get("previous_standard")
+        self.api.set_previous_standard_header(previous_standard)
         # Execute the import
         self.processing_count += 1
         content = "Unparseable"
