@@ -210,6 +210,9 @@ class OpenCTIApiClient:
             "true" if synchronized is True else "false"
         )
 
+    def set_previous_standard_header(self, previous_standard):
+        self.request_headers["previous-standard"] = previous_standard
+
     def get_request_headers(self):
         return self.request_headers
 
