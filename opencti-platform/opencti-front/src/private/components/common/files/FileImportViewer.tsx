@@ -33,6 +33,7 @@ interface FileImportViewerComponentProps {
   connectors: { [p: string]: { data: { name: string; active: boolean } }[] };
   relay: RelayRefetchProp;
   isArtifact?: boolean;
+  directDownload?: boolean;
 }
 
 const FileImportViewerComponent: FunctionComponent<
@@ -44,6 +45,7 @@ FileImportViewerComponentProps
   connectors,
   relay,
   isArtifact,
+  directDownload,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -93,6 +95,7 @@ FileImportViewerComponentProps
                       }
                       handleOpenImport={handleOpenImport}
                       isArtifact={isArtifact}
+                      directDownload={directDownload}
                     />
                   )
                 );

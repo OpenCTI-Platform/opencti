@@ -83,6 +83,7 @@ class CourseOfActionDetailsComponent extends Component {
                   size="small"
                   label={courseOfAction.x_mitre_id}
                   color="primary"
+                  style={{ borderRadius: 4 }}
                 />
               </FieldOrEmpty>
               <Typography

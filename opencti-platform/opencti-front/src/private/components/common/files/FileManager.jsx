@@ -136,6 +136,7 @@ const FileManager = ({
   connectorsExport,
   connectorsImport,
   isArtifact,
+  directDownload = false,
 }) => {
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
@@ -250,6 +251,7 @@ const FileManager = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
           isArtifact={isArtifact}
+          directDownload={directDownload}
         />
         <WorkbenchFileViewer
           entity={entity}

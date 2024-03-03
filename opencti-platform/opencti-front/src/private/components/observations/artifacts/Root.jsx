@@ -218,6 +218,7 @@ class RootArtifact extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.stixCyberObservable}
                             isArtifact={true}
+                            directDownload={true}
                           />
                         )}
                       />

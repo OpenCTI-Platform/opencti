@@ -28,30 +28,26 @@ const AddDataComponents: FunctionComponent<{
 }> = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const paginationOptions: AddDataComponentsLinesQuery$variables = {
     search,
     count: 20,
   };
-
   const handleSearch = (keyword: string) => setSearch(keyword);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
     setSearch('');
   };
-
   const queryRef = useQueryLoading<AddDataComponentsLinesQuery>(
     addDataComponentsLinesQuery,
     paginationOptions,
   );
-
   return (
-    <div>
+    <>
       <IconButton
-        color="secondary"
+        color="primary"
         aria-label="Add"
         onClick={handleOpen}
         classes={{ root: classes.createButton }}
@@ -89,7 +85,7 @@ const AddDataComponents: FunctionComponent<{
         inputValue={search}
         paginationOptions={paginationOptions}
       />
-    </div>
+    </>
   );
 };
 
