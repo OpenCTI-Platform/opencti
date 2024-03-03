@@ -1186,9 +1186,14 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     // Check if we need to do something
     if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
-      const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
-      if (isNotEmptyField(mergedDict)) {
-        updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+      const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
+      if (isObjectMultiple) {
+        updateAttributes.push({ key: targetFieldKey, value: fieldValues, operation: UPDATE_OPERATION_ADD });
+      } else {
+        const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
+        if (isNotEmptyField(mergedDict)) {
+          updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+        }
       }
     } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
