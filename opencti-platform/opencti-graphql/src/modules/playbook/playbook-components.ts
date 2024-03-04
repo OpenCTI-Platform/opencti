@@ -838,6 +838,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
     if (all) {
       observables.push(...bundle.objects);
     }
+    const objectsToPush: StixObject[] = [];
     for (let index = 0; index < observables.length; index += 1) {
       const observable = observables[index] as StixCyberObject;
       let { type } = observable.extensions[STIX_EXT_OCTI];
@@ -888,7 +889,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           if (granted_refs) {
             indicator.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
-          bundle.objects.push(indicator);
+          objectsToPush.push(indicator);
           const relationship = {
             id: `relationship--${generateInternalId()}`,
             type: 'relationship',
@@ -905,10 +906,13 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           if (granted_refs) {
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
-          bundle.objects.push(relationship);
-          return { output_port: 'out', bundle };
+          objectsToPush.push(relationship);
         }
       }
+    }
+    if (objectsToPush.length > 0) {
+      bundle.objects.push(...objectsToPush);
+      return { output_port: 'out', bundle };
     }
     return { output_port: 'unmodified', bundle };
   }
@@ -940,6 +944,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
     if (all) {
       indicators.push(...bundle.objects);
     }
+    const objectsToPush: StixObject[] = [];
     for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
       const indicator = indicators[indexIndicator] as StixIndicator;
       if (indicator.type === 'indicator') {
@@ -984,7 +989,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           if (granted_refs) {
             stixObservable.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
-          bundle.objects.push(stixObservable);
+          objectsToPush.push(stixObservable);
           const relationship = {
             id: `relationship--${generateInternalId()}`,
             type: 'relationship',
@@ -1001,10 +1006,13 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           if (granted_refs) {
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
-          bundle.objects.push(relationship);
+          objectsToPush.push(relationship);
         }
-        return { output_port: 'out', bundle };
       }
+    }
+    if (objectsToPush.length > 0) {
+      bundle.objects.push(...objectsToPush);
+      return { output_port: 'out', bundle };
     }
     return { output_port: 'unmodified', bundle };
   }
