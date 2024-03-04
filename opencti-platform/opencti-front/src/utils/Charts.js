@@ -349,25 +349,33 @@ export const horizontalBarsChartOptions = (
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
           const { labelIndex } = config;
-          const link = resolveLink(redirectionUtils[labelIndex].entity_type);
-          const entityId = redirectionUtils[labelIndex].id;
-          navigate(`${link}/${entityId}`);
+          const entityType = redirectionUtils[labelIndex].entity_type;
+          const link = resolveLink(entityType);
+          if (link) {
+            const entityId = redirectionUtils[labelIndex].id;
+            navigate(`${link}/${entityId}`);
+          }
         }
       },
       mouseMove: (event, chartContext, config) => {
-        if (
-          redirectionUtils
-          && ((config.dataPointIndex >= 0
-            && ((config.seriesIndex >= 0
-              && redirectionUtils[config.dataPointIndex].series?.[
-                config.seriesIndex
-              ]?.entity_type)
-              || !(
-                config.seriesIndex >= 0
-                && redirectionUtils[config.dataPointIndex].series
-              )))
-            || event.target.parentNode.className.baseVal
-              === 'apexcharts-text apexcharts-yaxis-label ')
+        const { dataPointIndex, seriesIndex } = config;
+        if (redirectionUtils
+          && (
+            (dataPointIndex >= 0 // case click on a bar
+              && (
+                (seriesIndex >= 0 && redirectionUtils[dataPointIndex].series // case multi bars
+                  && redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type
+                  && resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type)
+                )
+                || (
+                  !(seriesIndex >= 0 && redirectionUtils[dataPointIndex].series) // case not multi bars
+                  && redirectionUtils[dataPointIndex].entity_type
+                  && resolveLink(redirectionUtils[dataPointIndex].entity_type)
+                )
+              )
+            )
+            || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label ' // case click on a label
+          )
         ) {
           // for clickable parts of the graphs
           // eslint-disable-next-line no-param-reassign
@@ -378,33 +386,28 @@ export const horizontalBarsChartOptions = (
       },
       click: (event, chartContext, config) => {
         if (redirectionUtils) {
-          if (config.dataPointIndex >= 0) {
+          const { dataPointIndex, seriesIndex } = config;
+          if (dataPointIndex >= 0) {
             // click on a bar
-            const { dataPointIndex } = config;
             if (
-              config.seriesIndex >= 0
+              seriesIndex >= 0
               && redirectionUtils[dataPointIndex].series
             ) {
               // for multi horizontal bars representing entities
-              const { seriesIndex } = config;
-              if (
-                redirectionUtils[dataPointIndex].series[seriesIndex]
-                  ?.entity_type
-              ) {
+              if (redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type) {
                 // for series representing a single entity
-                const link = resolveLink(
-                  redirectionUtils[dataPointIndex].series[seriesIndex]
-                    .entity_type,
-                );
-                const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
-                navigate(`${link}/${entityId}`);
+                const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
+                if (link) {
+                  const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
+                  navigate(`${link}/${entityId}`);
+                }
               }
             } else {
-              const link = resolveLink(
-                redirectionUtils[dataPointIndex].entity_type,
-              );
-              const entityId = redirectionUtils[dataPointIndex].id;
-              navigate(`${link}/${entityId}`);
+              const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
+              if (link) {
+                const entityId = redirectionUtils[dataPointIndex].id;
+                navigate(`${link}/${entityId}`);
+              }
             }
           }
         }
