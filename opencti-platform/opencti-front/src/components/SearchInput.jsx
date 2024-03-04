@@ -110,7 +110,9 @@ const SearchInput = (props) => {
       }}
       onBlur={(event) => {
         const { value } = event.target;
-        onSubmit(value);
+        if (value !== keyword) {
+          onSubmit(value);
+        }
       }}
       InputProps={{
         startAdornment: (
