@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -303,15 +303,22 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     : emptyFilterGroup;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(targetEntitiesProps.length !== 0);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
   const [targetEntities, setTargetEntities] = useState(
     targetEntitiesProps ?? [],
   );
   const [selectedElements, setSelectedElements] = useState<Record<string, StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data>>({});
+  useEffect(() => {
+    if (targetEntitiesProps !== targetEntities) {
+      setTargetEntities(targetEntitiesProps);
+      setStep(targetEntitiesProps.length === 0 ? 0 : 1);
+      setOpen(targetEntitiesProps.length !== 0);
+    }
+  }, [targetEntitiesProps]);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
   const [filters, helpers] = useFiltersState(actualTypeFilters, actualTypeFilters);
