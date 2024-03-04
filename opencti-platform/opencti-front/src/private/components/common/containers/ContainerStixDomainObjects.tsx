@@ -85,7 +85,12 @@ const ContainerStixDomainObjects = ({
     mode: 'and',
     filters: [
       { key: 'objects', values: [containerData.id], operator: 'eq' },
-      { key: 'entity_type', values: ['Stix-Domain-Object'], operator: 'eq' },
+      {
+        key: 'entity_type',
+        values: (types && types.length > 0) ? types : ['Stix-Domain-Object'],
+        operator: 'eq',
+        mode: 'or',
+      },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
