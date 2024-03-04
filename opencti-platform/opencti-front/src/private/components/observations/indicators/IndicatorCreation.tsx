@@ -391,7 +391,6 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  console.log('open', open);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -404,7 +403,6 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   );
 
   if (contextual) {
-    console.log('conetxtual');
     return (
       <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
         <Fab
