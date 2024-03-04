@@ -182,7 +182,6 @@ const Indicators = () => {
           filters={contextFilters}
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
-          variant="large"
           type="Indicator"
         />
       </>
