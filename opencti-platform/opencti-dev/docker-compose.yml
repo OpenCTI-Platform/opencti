@@ -77,6 +77,19 @@ services:
       - 16686:16686
       - 4318:4318
 
+  # SAML / OpenId provider with keyclaok - disabled by default
+  # to run use 'docker compose --profile openid up -d'
+  opencti-dev-keycloak:
+    profiles: [ openid ]
+    image: quay.io/keycloak/keycloak
+    container_name: opencti-dev-keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: "admin"
+      KEYCLOAK_ADMIN_PASSWORD: "admin"
+    ports:
+      - "9999:8080"
+
 volumes:
   esdata:
     driver: local
