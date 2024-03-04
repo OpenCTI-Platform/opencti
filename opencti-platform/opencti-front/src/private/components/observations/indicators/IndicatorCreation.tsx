@@ -38,15 +38,6 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 280,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
   createButtonContextual: {
     position: 'fixed',
     bottom: 30,
@@ -400,6 +391,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  console.log('open', open);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -412,6 +404,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   );
 
   if (contextual) {
+    console.log('conetxtual');
     return (
       <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
         <Fab
@@ -444,7 +437,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   return (
     <Drawer
       title={t_i18n('Create an indicator')}
-      variant={DrawerVariant.createWithLargePanel}
+      variant={DrawerVariant.create}
     >
       {({ onClose }) => (
         <IndicatorCreationForm
