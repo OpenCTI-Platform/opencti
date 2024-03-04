@@ -7,7 +7,7 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
-import { Strategy as SamlStrategy } from 'passport-saml';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
@@ -213,66 +213,78 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === STRATEGY_SAML) {
       const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
-      const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
-        logApp.info('[SAML] Successfully logged', { profile });
-        const samlAttributes = profile.attributes ? profile.attributes : profile;
-        const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
-        const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
-        const userName = samlAttributes[mappedConfig.account_attribute] || '';
-        const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
-        const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
-        const { nameID, nameIDFormat } = samlAttributes;
-        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
-        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
-        // region roles mapping
-        const computeRolesMapping = () => {
-          const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
-          const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
-          const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
-          const rolesMapper = genConfigMapper(rolesMapping);
-          return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
-        };
-        // endregion
-        // region groups mapping
-        const computeGroupsMapping = () => {
-          const attrGroups = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
-          const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
-          const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-          const groupsMapper = genConfigMapper(groupsMapping);
-          return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-        };
-        const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
-        // endregion
-        // region organizations mapping
-        const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
-        const computeOrganizationsMapping = () => {
-          const orgaDefault = mappedConfig.organizations_default ?? [];
-          const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-          const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
-          const availableOrgas = R.flatten(
-            orgaPath.map((path) => {
-              const value = R.path(path.split('.'), profile) || [];
-              return Array.isArray(value) ? value : [value];
-            })
-          );
-          const orgasMapper = genConfigMapper(orgasMapping);
-          return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-        };
-        const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-        // endregion
-        logApp.info('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
-        if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-          const { nameID: email } = profile;
-          const opts = {
-            providerGroups: groupsToAssociate,
-            providerOrganizations: organizationsToAssociate,
-            autoCreateGroup: mappedConfig.auto_create_group ?? false,
-          };
-          providerLoginHandler({ email, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
-        } else {
-          done({ message: 'Restricted access, ask your administrator' });
+      const samlStrategy = new SamlStrategy(
+        samlOptions,
+        (profile, done) => {
+          // SAML Login function
+          logApp.info('[SAML] Successfully logged', { profile });
+          const samlAttributes = profile.attributes ? profile.attributes : profile;
+          const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
+          const groupAttributes = mappedConfig.groups_management?.group_attributes || ['groups'];
+          const userName = samlAttributes[mappedConfig.account_attribute] || '';
+          const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
+          const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
+          const { nameID, nameIDFormat } = samlAttributes;
+        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
+        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
+          // region roles mapping
+        if (isRoleBaseAccess) {
+          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
         }
-      });
+          const computeRolesMapping = () => {
+            const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
+            const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
+            const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
+            const rolesMapper = genConfigMapper(rolesMapping);
+            return samlRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
+          };
+          // endregion
+          // region groups mapping
+          const computeGroupsMapping = () => {
+            const attrGroups = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
+            const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
+            const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+            const groupsMapper = genConfigMapper(groupsMapping);
+            return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+          };
+          const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
+          // endregion
+          // region organizations mapping
+          const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+          const computeOrganizationsMapping = () => {
+            const orgaDefault = mappedConfig.organizations_default ?? [];
+            const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+            const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+            const availableOrgas = R.flatten(
+              orgaPath.map((path) => {
+                const value = R.path(path.split('.'), profile) || [];
+                return Array.isArray(value) ? value : [value];
+              })
+            );
+            const orgasMapper = genConfigMapper(orgasMapping);
+            return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+          };
+          const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+          // endregion
+          logApp.info('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
+          if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
+            const { nameID: email } = profile;
+            const opts = {
+              providerGroups: groupsToAssociate,
+              providerOrganizations: organizationsToAssociate,
+              autoCreateGroup: mappedConfig.auto_create_group ?? false,
+            };
+            providerLoginHandler({ email, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } }, done, opts);
+          } else {
+            done({ message: 'Restricted access, ask your administrator' });
+          }
+        },
+        (profile) => {
+        // SAML Logout function
+          logApp.info(`[SAML] Logout done for ${profile}`);
+        }
+      );
       samlStrategy.logout_remote = samlOptions.logout_remote;
       passport.use(providerRef, samlStrategy);
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
