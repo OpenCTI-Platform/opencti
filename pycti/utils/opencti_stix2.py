@@ -554,14 +554,17 @@ class OpenCTIStix2:
                         )["id"]
                     if "x_opencti_files" in external_reference:
                         for file in external_reference["x_opencti_files"]:
-                            self.opencti.external_reference.add_file(
-                                id=external_reference_id,
-                                file_name=file["name"],
-                                version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
-                                mime_type=file["mime_type"],
-                                no_trigger_import=file.get("no_trigger_import", False),
-                            )
+                            if "data" in file:
+                                self.opencti.external_reference.add_file(
+                                    id=external_reference_id,
+                                    file_name=file["name"],
+                                    version=file.get("version", None),
+                                    data=base64.b64decode(file["data"]),
+                                    mime_type=file["mime_type"],
+                                    no_trigger_import=file.get(
+                                        "no_trigger_import", False
+                                    ),
+                                )
                     if (
                         self.opencti.get_attribute_in_extension(
                             "files", external_reference
@@ -571,14 +574,17 @@ class OpenCTIStix2:
                         for file in self.opencti.get_attribute_in_extension(
                             "files", external_reference
                         ):
-                            self.opencti.external_reference.add_file(
-                                id=external_reference_id,
-                                file_name=file["name"],
-                                version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
-                                mime_type=file["mime_type"],
-                                no_trigger_import=file.get("no_trigger_import", False),
-                            )
+                            if "data" in file:
+                                self.opencti.external_reference.add_file(
+                                    id=external_reference_id,
+                                    file_name=file["name"],
+                                    version=file.get("version", None),
+                                    data=base64.b64decode(file["data"]),
+                                    mime_type=file["mime_type"],
+                                    no_trigger_import=file.get(
+                                        "no_trigger_import", False
+                                    ),
+                                )
                     self.mapping_cache[generated_ref_id] = generated_ref_id
                     external_references_ids.append(external_reference_id)
                     if stix_object["type"] in [
@@ -722,14 +728,15 @@ class OpenCTIStix2:
                     )["id"]
                 if "x_opencti_files" in external_reference:
                     for file in external_reference["x_opencti_files"]:
-                        self.opencti.external_reference.add_file(
-                            id=external_reference_id,
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                        )
+                        if "data" in file:
+                            self.opencti.external_reference.add_file(
+                                id=external_reference_id,
+                                file_name=file["name"],
+                                version=file.get("version", None),
+                                data=base64.b64decode(file["data"]),
+                                mime_type=file["mime_type"],
+                                no_trigger_import=file.get("no_trigger_import", False),
+                            )
                 if (
                     self.opencti.get_attribute_in_extension("files", external_reference)
                     is not None
@@ -737,14 +744,15 @@ class OpenCTIStix2:
                     for file in self.opencti.get_attribute_in_extension(
                         "files", external_reference
                     ):
-                        self.opencti.external_reference.add_file(
-                            id=external_reference_id,
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
-                            mime_type=file["mime_type"],
-                            no_trigger_import=file.get("no_trigger_import", False),
-                        )
+                        if "data" in file:
+                            self.opencti.external_reference.add_file(
+                                id=external_reference_id,
+                                file_name=file["name"],
+                                version=file.get("version", None),
+                                data=base64.b64decode(file["data"]),
+                                mime_type=file["mime_type"],
+                                no_trigger_import=file.get("no_trigger_import", False),
+                            )
                 self.mapping_cache[generated_ref_id] = generated_ref_id
                 external_references_ids.append(external_reference_id)
         # Granted refs
@@ -948,14 +956,15 @@ class OpenCTIStix2:
             # Add files
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
-                    self.opencti.stix_domain_object.add_file(
-                        id=stix_object_result["id"],
-                        file_name=file["name"],
-                        version=file.get("version", None),
-                        data=base64.b64decode(file["data"]),
-                        mime_type=file["mime_type"],
-                        no_trigger_import=file.get("no_trigger_import", False),
-                    )
+                    if "data" in file:
+                        self.opencti.stix_domain_object.add_file(
+                            id=stix_object_result["id"],
+                            file_name=file["name"],
+                            version=file.get("version", None),
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
+                        )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
                 is not None
@@ -963,14 +972,15 @@ class OpenCTIStix2:
                 for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
-                    self.opencti.stix_domain_object.add_file(
-                        id=stix_object_result["id"],
-                        file_name=file["name"],
-                        version=file.get("version", None),
-                        data=base64.b64decode(file["data"]),
-                        mime_type=file["mime_type"],
-                        no_trigger_import=file.get("no_trigger_import", False),
-                    )
+                    if "data" in file:
+                        self.opencti.stix_domain_object.add_file(
+                            id=stix_object_result["id"],
+                            file_name=file["name"],
+                            version=file.get("version", None),
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
+                        )
         return stix_object_results
 
     def import_observable(
@@ -1071,14 +1081,15 @@ class OpenCTIStix2:
             # Add files
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
-                    self.opencti.stix_cyber_observable.add_file(
-                        id=stix_observable_result["id"],
-                        file_name=file["name"],
-                        version=file.get("version", None),
-                        data=base64.b64decode(file["data"]),
-                        mime_type=file["mime_type"],
-                        no_trigger_import=file.get("no_trigger_import", False),
-                    )
+                    if "data" in file:
+                        self.opencti.stix_cyber_observable.add_file(
+                            id=stix_observable_result["id"],
+                            file_name=file["name"],
+                            version=file.get("version", None),
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
+                        )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
                 is not None
@@ -1086,14 +1097,15 @@ class OpenCTIStix2:
                 for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
-                    self.opencti.stix_cyber_observable.add_file(
-                        id=stix_observable_result["id"],
-                        file_name=file["name"],
-                        version=file.get("version", None),
-                        data=base64.b64decode(file["data"]),
-                        mime_type=file["mime_type"],
-                        no_trigger_import=file.get("no_trigger_import", False),
-                    )
+                    if "data" in file:
+                        self.opencti.stix_cyber_observable.add_file(
+                            id=stix_observable_result["id"],
+                            file_name=file["name"],
+                            version=file.get("version", None),
+                            data=base64.b64decode(file["data"]),
+                            mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
+                        )
             if "id" in stix_object:
                 self.mapping_cache[stix_object["id"]] = {
                     "id": stix_observable_result["id"],
