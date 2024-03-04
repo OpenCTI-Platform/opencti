@@ -158,7 +158,7 @@ const ContainerAddStixCoreObjects = (props) => {
   } = viewStorage;
 
   const containerRef = useRef(null);
-  const keyword = mapping && (searchTerm?.length === 0 || !searchTerm) ? selectedText : searchTerm;
+  const keyword = mapping && (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
