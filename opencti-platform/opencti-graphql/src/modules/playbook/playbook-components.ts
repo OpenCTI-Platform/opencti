@@ -812,11 +812,13 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
 };
 interface CreateIndicatorConfiguration extends PlaybookComponentConfiguration {
   all: boolean
+  wrap_in_container: boolean
 }
 const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicatorConfiguration> = {
   type: 'object',
   properties: {
-    all: { type: 'boolean', $ref: 'Create indicator from all observables in the bundle', default: false },
+    all: { type: 'boolean', $ref: 'Create indicators from all observables in the bundle', default: false },
+    wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap indicators in container', default: false },
   },
   required: [],
 };
@@ -831,13 +833,15 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
   configuration_schema: PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { all } = playbookNode.configuration;
+    const { all, wrap_in_container } = playbookNode.configuration;
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const observables = [baseData];
     if (all) {
       observables.push(...bundle.objects);
     }
+    const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
+    const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
     for (let index = 0; index < observables.length; index += 1) {
       const observable = observables[index] as StixCyberObject;
@@ -890,6 +894,9 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             indicator.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(indicator);
+          if (wrap_in_container && isBaseDataAContainer) {
+            (baseData as StixContainer).object_refs.push(indicator.id);
+          }
           const relationship = {
             id: `relationship--${generateInternalId()}`,
             type: 'relationship',
@@ -907,23 +914,28 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(relationship);
+          if (wrap_in_container && isBaseDataAContainer) {
+            (baseData as StixContainer).object_refs.push(relationship.id);
+          }
         }
       }
     }
     if (objectsToPush.length > 0) {
       bundle.objects.push(...objectsToPush);
-      return { output_port: 'out', bundle };
+      return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };
   }
 };
 interface CreateObservableConfiguration extends PlaybookComponentConfiguration {
   all: boolean
+  wrap_in_container: boolean
 }
 const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservableConfiguration> = {
   type: 'object',
   properties: {
-    all: { type: 'boolean', $ref: 'Create observable from all indicators in the bundle', default: false },
+    all: { type: 'boolean', $ref: 'Create observables from all indicators in the bundle', default: false },
+    wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap observables in container', default: false },
   },
   required: [],
 };
@@ -938,12 +950,14 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
   configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { all } = playbookNode.configuration;
+    const { all, wrap_in_container } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const indicators = [baseData];
     if (all) {
       indicators.push(...bundle.objects);
     }
+    const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
+    const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
     for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
       const indicator = indicators[indexIndicator] as StixIndicator;
@@ -990,6 +1004,9 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             stixObservable.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(stixObservable);
+          if (wrap_in_container && isBaseDataAContainer) {
+            (baseData as StixContainer).object_refs.push(stixObservable.id);
+          }
           const relationship = {
             id: `relationship--${generateInternalId()}`,
             type: 'relationship',
@@ -1007,12 +1024,19 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
           }
           objectsToPush.push(relationship);
+          if (wrap_in_container && isBaseDataAContainer) {
+            (baseData as StixContainer).object_refs.push(relationship.id);
+          }
         }
       }
     }
     if (objectsToPush.length > 0) {
       bundle.objects.push(...objectsToPush);
       return { output_port: 'out', bundle };
+    }
+    if (objectsToPush.length > 0) {
+      bundle.objects.push(...objectsToPush);
+      return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };
   }
