@@ -7,7 +7,7 @@ import { internalFindByIds, listEntitiesPaginated, storeLoadById } from '../../d
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace } from './workspace-types';
-import { FunctionalError } from '../../config/errors';
+import { DatabaseError, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
@@ -22,17 +22,19 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
-import { elFindByIds } from '../../database/engine';
+import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
-import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, toBase64 } from '../../database/utils';
+import { buildPagination, fromBase64, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import { getEntitiesListFromCache } from '../../database/cache';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 
 export const findById = (
   context: AuthContext,
@@ -205,6 +207,39 @@ export const workspaceDelete = async (
     workspaceId,
     ENTITY_TYPE_WORKSPACE,
   );
+
+  // region cascade delete associated public dashboards
+  const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_PUBLIC_DASHBOARD
+  );
+  const publicDashboardsToDelete = publicDashboards
+    .filter((dashboard) => dashboard.dashboard_id === workspaceId)
+    .map((dashboard) => dashboard.id);
+  if (publicDashboardsToDelete.length > 0) {
+    await elRawDeleteByQuery({
+      index: READ_INDEX_INTERNAL_OBJECTS,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': { value: 'PublicDashboard' } } },
+              { terms: { 'internal_id.keyword': publicDashboardsToDelete } }
+            ]
+          }
+        }
+      }
+    }).catch((err) => {
+      throw DatabaseError(
+        '[DELETE] Error deleting public dashboard for workspace ',
+        { cause: err, workspace_id: workspaceId, }
+      );
+    });
+  }
+  // endregion
+
   await publishUserAction({
     user,
     event_type: 'mutation',
