@@ -74,7 +74,7 @@ const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({
   }
 
   return (
-    <Drawer title={t_i18n('Csv Mapper edition')} open={open} onClose={onClose}>
+    <Drawer title={t_i18n('CSV Mapper edition')} open={open} onClose={onClose}>
       <CsvMapperEdition csvMapper={csvMapper} onClose={onClose}/>
     </Drawer>
   );

@@ -88,7 +88,7 @@ class CourseOfActionAttackPatternComponent extends Component {
           courseOfAction={courseOfAction}
           courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
         />
-        <div style={{ float: 'right', marginRight: 15 }}>
+        <div style={{ float: 'right', margin: '-10px 15px 0 0' }}>
           {expandable && (
             <IconButton
               color="primary"

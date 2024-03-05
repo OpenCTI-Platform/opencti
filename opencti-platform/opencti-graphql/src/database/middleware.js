@@ -1186,9 +1186,14 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     // Check if we need to do something
     if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
-      const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
-      if (isNotEmptyField(mergedDict)) {
-        updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+      const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
+      if (isObjectMultiple) {
+        updateAttributes.push({ key: targetFieldKey, value: fieldValues, operation: UPDATE_OPERATION_ADD });
+      } else {
+        const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
+        if (isNotEmptyField(mergedDict)) {
+          updateAttributes.push({ key: targetFieldKey, value: [mergedDict] });
+        }
       }
     } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
@@ -1359,8 +1364,9 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return input;
 };
-const prepareAttributesForUpdate = (instance, elements, upsert) => {
+const prepareAttributesForUpdate = async (context, user, instance, elements, upsert) => {
   const instanceType = instance.entity_type;
+  const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
     // Dynamic cases, attributes not defined in the schema
     if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
@@ -1370,6 +1376,37 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
     const def = schemaAttributesDefinition.getAttribute(instance.entity_type, input.key);
     if (!def) {
       throw UnsupportedError('Cant prepare attribute for update', { type: instance.entity_type, name: input.key });
+    }
+    // Specific case for Label
+    if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
+      return {
+        key: input.key,
+        value: input.value.map((v) => v.toLowerCase())
+      };
+    }
+    // Specific case for name in aliased entities
+    // If name change already inside aliases, name must be kep untouched
+    if (upsert && input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
+      const aliasField = resolveAliasesField(instanceType).name;
+      const normalizeAliases = instance[aliasField] ? instance[aliasField].map((e) => normalizeName(e)) : [];
+      const name = normalizeName(input.value.at(0));
+      if ((normalizeAliases).includes(name)) {
+        return null;
+      }
+    }
+    // Aliases can't have the same name as entity name and an already existing normalized alias
+    if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
+      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
+      const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
+      return { key: input.key, value: uniqAliases };
+    }
+    // For upsert, workflow cant be reset or setup on un-existing workflow
+    if (input.key === X_WORKFLOW_ID && upsert) {
+      const workflowId = R.head(input.value);
+      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
+      if (isEmptyField(workflowStatus)) { // If workflow is not found, remove the input
+        return null;
+      }
     }
     // Check integer
     if (def.type === 'numeric') {
@@ -1409,29 +1446,6 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
         };
       }
     }
-    // Specific case for Label
-    if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
-      return {
-        key: input.key,
-        value: input.value.map((v) => v.toLowerCase())
-      };
-    }
-    // Specific case for name in aliased entities
-    // If name change already inside aliases, name must be kep untouched
-    if (upsert && input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
-      const aliasField = resolveAliasesField(instanceType).name;
-      const normalizeAliases = instance[aliasField] ? instance[aliasField].map((e) => normalizeName(e)) : [];
-      const name = normalizeName(input.value.at(0));
-      if ((normalizeAliases).includes(name)) {
-        return null;
-      }
-    }
-    // Aliases can't have the same name as entity name and an already existing normalized alias
-    if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
-      const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return { key: input.key, value: uniqAliases };
-    }
     // No need to rework the input
     return input;
   }).filter((i) => isNotEmptyField(i));
@@ -1465,7 +1479,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = prepareAttributesForUpdate(instance, elements, upsert);
+  const preparedElements = await prepareAttributesForUpdate(context, user, instance, elements, upsert);
   // region Check date range
   const inputKeys = elements.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
@@ -2356,8 +2370,9 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const updatePatch = { ...basePatch };
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
+    const compareIds = [element.standard_id, generateStandardId(type, basePatch)];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && basePatch.stix_id !== element.standard_id) {
+    if (isNotEmptyField(basePatch.stix_id) && !compareIds.includes(basePatch.stix_id)) {
       ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
@@ -3081,7 +3096,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     const standardId = resolvedInput.standard_id || generateStandardId(type, resolvedInput);
     // Check if the entity exists, must be done with SYSTEM USER to really find it.
     const existingEntities = [];
-    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type });
+    const finderIds = [...participantIds, ...(context.previousStandard ? [context.previousStandard] : [])];
+    const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, finderIds, { type });
     // Hash are per definition keys.
     // When creating a hash, we can check all hashes to update or merge the result
     // Generating multiple standard ids could be a solution but to complex to implements
@@ -3151,8 +3167,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
         const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
         const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-        const inputAliases = { ...resolvedInput, [key]: filteredAliases };
-        return upsertElement(context, user, existingByStandard, type, inputAliases, { ...opts, locks: participantIds });
+        const resolvedAliases = { ...resolvedInput, [key]: filteredAliases };
+        return upsertElement(context, user, existingByStandard, type, resolvedAliases, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
@@ -3165,7 +3181,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       }
       if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
         const target = R.head(filteredEntities);
-        return upsertElement(context, user, target, type, { x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] }, { ...opts, locks: participantIds });
+        const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
+        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
       }
       // If not we dont know what to do, just throw an exception.
       throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });

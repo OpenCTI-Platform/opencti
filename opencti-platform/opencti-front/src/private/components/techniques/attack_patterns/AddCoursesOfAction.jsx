@@ -81,9 +81,9 @@ class AddCoursesOfAction extends Component {
       search: this.state.search,
     };
     return (
-      <div>
+      <>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
@@ -127,7 +127,7 @@ class AddCoursesOfAction extends Component {
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
         />
-      </div>
+      </>
     );
   }
 }

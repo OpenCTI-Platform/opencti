@@ -15,7 +15,7 @@ const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Create a csv mapper')}
+      title={t_i18n('Create a CSV mapper')}
       variant={DrawerVariant.createWithPanel}
     >
       <CsvMapperCreation paginationOptions={paginationOptions} />

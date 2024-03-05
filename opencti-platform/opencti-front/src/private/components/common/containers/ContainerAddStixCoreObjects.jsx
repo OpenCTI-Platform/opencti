@@ -133,7 +133,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return null;
   };
 
-  const LOCAL_STORAGE_KEY = `container-${containerId}-add-objects`;
+  const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
   const { viewStorage, helpers, paginationOptions: addObjectsPaginationOptions } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {

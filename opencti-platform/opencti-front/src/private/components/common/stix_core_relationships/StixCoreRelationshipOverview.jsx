@@ -593,7 +593,7 @@ class StixCoreRelationshipContainer extends Component {
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Fab
               onClick={this.handleOpenEdition.bind(this)}
-              color="secondary"
+              color="primary"
               aria-label="Edit"
               className={
                 paddingRight

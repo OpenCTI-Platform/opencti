@@ -186,9 +186,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const isConsentMessage = isNotEmptyField(consentMessage);
   let loginHeight = 280;
   if (type === '2FA_ACTIVATION') {
-    loginHeight = 80;
+    loginHeight = 280;
   } else if (type === '2FA_VALIDATION') {
-    loginHeight = 200;
+    loginHeight = 230;
   } else if (isAuthButtons && isAuthForm && isLoginMessage) {
     loginHeight = 400;
   } else if (isAuthButtons && isAuthForm) {
@@ -324,7 +324,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
             alt="logo"
             className={classes.logo}
           />
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 20 }}>
             <OTPForm />
           </Paper>
         </>

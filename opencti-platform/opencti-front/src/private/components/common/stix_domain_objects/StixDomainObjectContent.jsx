@@ -582,14 +582,14 @@ class StixDomainObjectContentComponent extends Component {
                     rows={Math.round(height / 23)}
                     key={currentFile.id}
                     id={currentFile.id}
-                    value={currentContent}
+                    value={currentContent ?? ''}
                     multiline={true}
                     onChange={this.onTextFieldChange.bind(this)}
                     fullWidth={true}
                     InputProps={{
                       endAdornment: (
                         <TextFieldAskAI
-                          currentValue={currentContent}
+                          currentValue={currentContent ?? ''}
                           setFieldValue={(val) => {
                             this.onTextFieldChange({ target: { value: val } });
                           }}
@@ -621,7 +621,7 @@ class StixDomainObjectContentComponent extends Component {
                       language: 'en',
                       toolbar: { shouldNotGroupWhenFull: true },
                     }}
-                    data={currentContent}
+                    data={currentContent ?? ''}
                     onChange={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());
                     }}
@@ -652,7 +652,7 @@ class StixDomainObjectContentComponent extends Component {
                   style={{ minHeight: height, height }}
                 >
                   <ReactMde
-                    value={currentContent}
+                    value={currentContent ?? ''}
                     minEditorHeight={height - 80}
                     maxEditorHeight={height - 80}
                     onChange={this.onMarkDownFieldChange.bind(this)}

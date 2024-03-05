@@ -12,12 +12,13 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
+import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { toolEditionQuery } from './ToolEdition';
 import ToolEditionContainer from './ToolEditionContainer';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
 const ToolPopoverDeletionMutation = graphql`
@@ -35,6 +36,7 @@ class ToolPopover extends Component {
       anchorEl: null,
       displayDelete: false,
       displayEdit: false,
+      displayEnrichment: false,
       deleting: false,
     };
   }
@@ -80,6 +82,15 @@ class ToolPopover extends Component {
     this.setState({ displayEdit: false });
   }
 
+  handleOpenEnrichment() {
+    this.setState({ displayEnrichment: true });
+    this.handleClose();
+  }
+
+  handleCloseEnrichment() {
+    this.setState({ displayEnrichment: false });
+  }
+
   render() {
     const { t, id } = this.props;
     return (
@@ -100,12 +111,18 @@ class ToolPopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
+          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+            <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
+              {t('Enrich')}
+            </MenuItem>
+          </Security>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
           </Security>
         </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}

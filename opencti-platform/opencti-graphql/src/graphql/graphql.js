@@ -78,6 +78,7 @@ const createApolloServer = () => {
       executeContext.req = req;
       executeContext.res = res;
       executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true';
+      executeContext.previousStandard = req.headers['previous-standard'];
       executeContext.workId = req.headers['opencti-work-id'];
       try {
         const user = await authenticateUserFromRequest(executeContext, req, res);

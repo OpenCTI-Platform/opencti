@@ -57,6 +57,7 @@ class AttackPatternDetailsComponent extends Component {
                 size="small"
                 label={attackPattern.x_mitre_id}
                 color="primary"
+                style={{ borderRadius: 4 }}
               />
               <Typography
                 variant="h3"

@@ -6,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
-import { OpenInNew, ContentCopy, DatabaseExportOutline } from 'mdi-material-ui';
+import { OpenInNew, ContentCopy } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { TaxiiLineDummy } from './TaxiiLine';
 import { PublicTaxiiLinesQuery } from './__generated__/PublicTaxiiLinesQuery.graphql';
@@ -17,9 +17,8 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
-import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>(() => ({
   bodyItem: {
@@ -79,13 +78,13 @@ const queryRef = loadQuery<PublicTaxiiLinesQuery>(
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
-    width: '15%',
+    width: '25%',
     isSortable: false,
     render: (node) => node.name,
   },
   description: {
     label: 'Description',
-    width: '25%',
+    width: '35%',
     isSortable: false,
     render: (node) => node.description,
   },
@@ -101,25 +100,6 @@ const dataColumns: DataColumns = {
         label={t('Started')}
       />
     ),
-  },
-  filters: {
-    label: 'Filters',
-    width: '40%',
-    isSortable: false,
-    render: (node) => {
-      const nodeFilters = deserializeFilterGroupForFrontend(node.filters);
-      return (
-        <>
-          {nodeFilters && (
-            <FilterIconButton
-              filters={nodeFilters}
-              dataColumns={this}
-              styleNumber={3}
-            />
-          )}
-        </>
-      );
-    },
   },
 };
 
@@ -139,7 +119,7 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <DatabaseExportOutline />
+        <ItemIcon type="taxiicollection" />
       </ListItemIcon>
       <ListItemText
         primary={

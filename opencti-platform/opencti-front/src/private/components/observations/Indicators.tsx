@@ -1,12 +1,10 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
-import IndicatorsRightBar from './indicators/IndicatorsRightBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -14,23 +12,15 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { IndicatorLine_node$data } from './indicators/__generated__/IndicatorLine_node.graphql';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
-import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, findFilterFromKey, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    paddingRight: 250,
-  },
-}));
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const {
     viewStorage,
     paginationOptions,
@@ -41,7 +31,7 @@ const Indicators = () => {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {
         ...emptyFilterGroup,
-        filters: useGetDefaultFilterObject(['sightedBy'], ['Indicator']),
+        filters: useGetDefaultFilterObject(['pattern_type', 'x_opencti_main_observable_type'], ['Indicator']),
       },
       searchTerm: '',
       sortBy: 'created',
@@ -78,35 +68,17 @@ const Indicators = () => {
     queryPaginationOptions,
   );
 
-  const patternTypes = findFilterFromKey(filters?.filters ?? [], 'pattern_type')?.values ?? [];
-  const observableTypes = findFilterFromKey(filters?.filters ?? [], 'x_opencti_main_observable_type')?.values ?? [];
-  const handleToggleIndicatorType = (type: string) => {
-    if (patternTypes.includes(type)) {
-      storageHelpers.handleRemoveFilter('pattern_type', 'eq', type);
-    } else {
-      storageHelpers.handleAddFilter('pattern_type', type);
-    }
-  };
-  const handleToggleObservableType = (type: string) => {
-    if (observableTypes.includes(type)) {
-      storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', 'eq', type);
-    } else {
-      storageHelpers.handleAddFilter(
-        'x_opencti_main_observable_type',
-        type,
-      );
-    }
-  };
-  const handleClearObservableTypes = () => {
-    storageHelpers.handleRemoveFilter('x_opencti_main_observable_type');
-  };
-  const renderLines = (platformModuleHelpers: ModuleHelper | undefined) => {
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+
+  const renderLines = () => {
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
                 - Object.keys(deSelectedElements || {}).length;
     }
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     const dataColumns = {
       pattern_type: {
         label: 'Pattern type',
@@ -121,12 +93,12 @@ const Indicators = () => {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -146,7 +118,7 @@ const Indicators = () => {
       objectMarking: {
         label: 'Marking',
         width: '10%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
     };
     return (
@@ -186,7 +158,7 @@ const Indicators = () => {
                     />
                   ))}
               </>
-                            }
+            }
           >
             <IndicatorsLines
               queryRef={queryRef}
@@ -210,34 +182,21 @@ const Indicators = () => {
           filters={contextFilters}
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
-          variant="large"
           type="Indicator"
         />
       </>
     );
   };
   return (
-    <UserContext.Consumer>
-      {({ platformModuleHelpers }) => (
-        <ExportContextProvider>
-          <div className={classes.container}>
-            <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
-            {renderLines(platformModuleHelpers)}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndicatorCreation paginationOptions={queryPaginationOptions}/>
-            </Security>
-            <IndicatorsRightBar
-              indicatorTypes={patternTypes}
-              observableTypes={observableTypes}
-              handleToggleIndicatorType={handleToggleIndicatorType}
-              handleToggleObservableType={handleToggleObservableType}
-              handleClearObservableTypes={handleClearObservableTypes}
-              openExports={openExports}
-            />
-          </div>
-        </ExportContextProvider>
-      )}
-    </UserContext.Consumer>
+    <ExportContextProvider>
+      <div>
+        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Indicators'), current: true }]} />
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorCreation paginationOptions={queryPaginationOptions}/>
+        </Security>
+      </div>
+    </ExportContextProvider>
   );
 };
 
