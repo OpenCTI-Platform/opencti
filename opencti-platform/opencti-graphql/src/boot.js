@@ -7,13 +7,13 @@ import { shutdownModules, startModules } from './managers';
 
 // region platform start and stop
 export const platformStart = async () => {
-  logApp.info("[OPENCTI] Starting platform");
+  logApp.info('[OPENCTI] Starting platform');
   try {
     // Check all dependencies access
     try {
       await checkSystemDependencies();
     } catch (dependencyError) {
-      logApp.error("[OPENCTI] System dependencies check failed", {
+      logApp.error('[OPENCTI] System dependencies check failed', {
         dependencyError,
       });
       throw dependencyError; // Re-throw the error to exit the main try block
@@ -23,7 +23,7 @@ export const platformStart = async () => {
     try {
       await cacheManager.start();
     } catch (cacheError) {
-      logApp.error("[OPENCTI] Cache manager initialization failed", {
+      logApp.error('[OPENCTI] Cache manager initialization failed', {
         cacheError,
       });
       throw cacheError;
@@ -32,7 +32,7 @@ export const platformStart = async () => {
     try {
       await platformInit();
     } catch (platformError) {
-      logApp.error("[OPENCTI] Platform default initialization failed", {
+      logApp.error('[OPENCTI] Platform default initialization failed', {
         platformError,
       });
       throw platformError;
@@ -41,7 +41,7 @@ export const platformStart = async () => {
     try {
       await startModules();
     } catch (modulesError) {
-      logApp.error("[OPENCTI] Modules startup failed", { modulesError });
+      logApp.error('[OPENCTI] Modules startup failed', { modulesError });
       throw modulesError;
     }
   } catch (mainError) {
