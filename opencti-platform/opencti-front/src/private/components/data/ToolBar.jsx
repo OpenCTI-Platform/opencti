@@ -851,7 +851,7 @@ class ToolBar extends Component {
     );
     this.setState({ actionsInputs });
     fetchQuery(identitySearchIdentitiesSearchQuery, {
-      types: ['Individual', 'Organization'],
+      types: ['Individual', 'Organization', 'System'],
       search: newValue && newValue.length > 0 ? newValue : '',
       first: 10,
     })
