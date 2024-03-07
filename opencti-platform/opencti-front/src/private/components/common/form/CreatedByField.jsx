@@ -109,7 +109,7 @@ class CreatedByField extends Component {
       dryrun,
     } = this.props;
     return (
-      <div>
+      <>
         <Field
           component={AutocompleteField}
           style={style}
@@ -160,7 +160,7 @@ class CreatedByField extends Component {
             }
           }}
         />
-      </div>
+      </>
     );
   }
 }

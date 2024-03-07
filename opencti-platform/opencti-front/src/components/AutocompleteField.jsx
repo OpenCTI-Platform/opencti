@@ -74,7 +74,7 @@ const AutocompleteField = (props) => {
             {...textfieldprops}
             InputProps={{
               ...InputProps,
-              endAdornment: endAdornment ?? undefined,
+              endAdornment: endAdornment ?? InputProps.endAdornment,
             }}
             value={value}
             name={name}

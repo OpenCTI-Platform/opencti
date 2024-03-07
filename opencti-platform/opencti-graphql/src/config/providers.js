@@ -161,22 +161,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         const firstname = user[mappedConfig.firstname_attribute] || '';
         const lastname = user[mappedConfig.lastname_attribute] || '';
-        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
-        // region roles mapping
-        if (isRoleBaseAccess) {
-          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
-        }
-        // @deprecated: SSO mapping on roles is deprecated but kept to ensure the correct migration
-        const computeRolesMapping = () => {
-          const rolesGroupsMapping = mappedConfig.roles_management?.groups_mapping || [];
-          const userRolesGroups = (user._groups || [])
-            .map((g) => g[mappedConfig.roles_management?.group_attribute || 'cn'])
-            .filter((g) => isNotEmptyField(g));
-          const rolesMapper = genConfigMapper(rolesGroupsMapping);
-          return userRolesGroups.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
-        };
-        // endregion
+        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
         // region groups mapping
         const computeGroupsMapping = () => {
           const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
@@ -186,7 +171,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const groupsMapper = genConfigMapper(groupsMapping);
           return userGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
         };
-        const groupsToAssociate = R.uniq(computeGroupsMapping().concat(computeRolesMapping()));
+        const groupsToAssociate = R.uniq(computeGroupsMapping());
         // endregion
         // region organizations mapping
         const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
@@ -237,13 +222,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
         const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
         const { nameID, nameIDFormat } = samlAttributes;
-        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
-        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
+        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
         // region roles mapping
-        if (isRoleBaseAccess) {
-          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
-        }
         const computeRolesMapping = () => {
           const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
           const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
@@ -308,40 +289,21 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // region scopes generation
         const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
         const openIdScopes = [...defaultScopes];
-        const rolesScope = mappedConfig.roles_management?.roles_scope;
-        if (rolesScope) {
-          openIdScopes.push(rolesScope);
-        }
         const groupsScope = mappedConfig.groups_management?.groups_scope;
         if (groupsScope) {
           openIdScopes.push(groupsScope);
+        }
+        const organizationsScope = mappedConfig.organizations_management?.organizations_scope;
+        if (organizationsScope) {
+          openIdScopes.push(organizationsScope);
         }
         // endregion
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (_, tokenset, userinfo, done) => {
           logApp.info('[OPENID] Successfully logged', { userinfo });
-          const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-          const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
-          // region roles mapping
-          if (isRoleBaseAccess) {
-            logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
-          }
-          const computeRolesMapping = () => {
-            const token = mappedConfig.roles_management?.token_reference || 'access_token';
-            const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
-            const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
-            const decodedUser = jwtDecode(tokenset[token]);
-            logApp.info(`[OPENID] Roles mapping on decoded ${token}`, { decoded: decodedUser });
-            const availableRoles = R.flatten(rolesPath.map((path) => {
-              const value = R.path(path.split('.'), decodedUser) || [];
-              return Array.isArray(value) ? value : [value];
-            }));
-            const rolesMapper = genConfigMapper(rolesMapping);
-            return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
-          };
-          const mappedRoles = isRoleBaseAccess ? computeRolesMapping() : [];
-          // endregion
+          const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+          logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
           // region groups mapping
           const computeGroupsMapping = () => {
             const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
@@ -361,7 +323,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
           };
           const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
-          const groupsToAssociate = R.uniq((mappedGroups).concat(mappedRoles));
+          const groupsToAssociate = R.uniq(mappedGroups);
           // endregion
           // region organizations mapping
           const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);

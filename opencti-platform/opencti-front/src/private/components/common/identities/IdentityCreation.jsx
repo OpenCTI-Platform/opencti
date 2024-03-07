@@ -137,7 +137,7 @@ class IdentityCreation extends Component {
   render() {
     const { t, inputValue, open, onlyAuthors, handleClose, dryrun } = this.props;
     return (
-      <div>
+      <>
         <Formik
           enableReinitialize={true}
           initialValues={{
@@ -243,7 +243,7 @@ class IdentityCreation extends Component {
             </Form>
           )}
         </Formik>
-      </div>
+      </>
     );
   }
 }
