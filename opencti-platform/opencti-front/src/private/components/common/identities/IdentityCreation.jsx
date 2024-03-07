@@ -193,15 +193,9 @@ class IdentityCreation extends Component {
                     fullWidth={true}
                     containerstyle={fieldSpacingContainerStyle}
                   >
-                    {!onlyAuthors && (
-                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    )}
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    {!onlyAuthors && (
-                      <MenuItem value="System">{t('System')}</MenuItem>
-                    )}
+                    {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
+                    <MenuItem value="Organization">{t('Organization')}</MenuItem>
+                    <MenuItem value="System">{t('System')}</MenuItem>
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>
                   {!dryrun && (
