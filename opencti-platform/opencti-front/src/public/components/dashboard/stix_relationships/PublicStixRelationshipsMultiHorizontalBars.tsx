@@ -1,15 +1,15 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import * as R from 'ramda';
-import type { PublicManifestWidget } from './PublicManifest';
-import { useFormatter } from '../../../components/i18n';
-import { defaultValue } from '../../../utils/Graph';
-import WidgetHorizontalBars from '../../../components/dashboard/WidgetHorizontalBars';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
+import type { PublicManifestWidget } from '../PublicManifest';
+import { useFormatter } from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
+import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMultiHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsMultiHorizontalBarsQuery.graphql';
 
 const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`

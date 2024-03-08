@@ -8,6 +8,7 @@ import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
 interface WidgetRadarProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   label: string
   groupBy: string

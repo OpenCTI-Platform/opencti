@@ -2,33 +2,33 @@ import React from 'react';
 import WidgetText from '@components/workspaces/dashboards/WidgetText';
 import type { PublicManifestConfig, PublicManifestWidget } from './PublicManifest';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
-import PublicStixCoreObjectsNumber from './PublicStixCoreObjectsNumber';
-import PublicStixCoreObjectsList from './PublicStixCoreObjectsList';
-import PublicStixCoreObjectsDistributionList from './PublicStixCoreObjectsDistributionList';
-import PublicStixCoreObjectsMultiVerticalBars from './PublicStixCoreObjectsMultiVerticalBars';
-import PublicStixCoreObjectsMultiLineChart from './PublicStixCoreObjectsMultiLineChart';
-import PublicStixCoreObjectsMultiAreaChart from './PublicStixCoreObjectsMultiAreaChart';
-import PublicStixCoreObjectsTimeline from './PublicStixCoreObjectsTimeline';
-import PublicStixCoreObjectsDonut from './PublicStixCoreObjectsDonut';
-import PublicStixCoreObjectsRadar from './PublicStixCoreObjectsRadar';
-import PublicStixCoreObjectsMultiHeatMap from './PublicStixCoreObjectsMultiHeatMap';
-import PublicStixCoreObjectsTreeMap from './PublicStixCoreObjectsTreeMap';
-import PublicStixCoreRelationshipsNumber from './PublicStixRelationshipsNumber';
-import PublicStixRelationshipsList from './PublicStixRelationshipsList';
-import PublicStixRelationshipsDistributionList from './PublicStixRelationshipsDistributionList';
-import PublicStixRelationshipsMultiVerticalBars from './PublicStixRelationshipsMultiVerticalBars';
-import PublicStixRelationshipsMultiLineChart from './PublicStixRelationshipsMultiLineChart';
-import PublicStixRelationshipsMultiAreaChart from './PublicStixRelationshipsMultiAreaChart';
-import PublicStixRelationshipsTimeline from './PublicStixRelationshipsTimeline';
-import PublicStixRelationshipsDonut from './PublicStixRelationshipsDonut';
-import PublicStixRelationshipsRadar from './PublicStixRelationshipsRadar';
-import PublicStixRelationshipsMultiHeatMap from './PublicStixRelationshipsMultiHeatMap';
-import PublicStixRelationshipsTreeMap from './PublicStixRelationshipsTreeMap';
-import PublicStixRelationshipsMap from './PublicStixRelationshipsMap';
-import PublicStixCoreObjectsHorizontalBars from './PublicStixCoreObjectsHorizontalBars';
-import PublicStixRelationshipsHorizontalBars from './PublicStixRelationshipsHorizontalBars';
-import PublicStixDomainObjectBookmarksList from './PublicStixDomainObjectBookmarksList';
-import PublicStixRelationshipsMultiHorizontalBars from './PublicStixRelationshipsMultiHorizontalBars';
+import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjectsNumber';
+import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';
+import PublicStixCoreObjectsDistributionList from './stix_core_objects/PublicStixCoreObjectsDistributionList';
+import PublicStixCoreObjectsMultiVerticalBars from './stix_core_objects/PublicStixCoreObjectsMultiVerticalBars';
+import PublicStixCoreObjectsMultiLineChart from './stix_core_objects/PublicStixCoreObjectsMultiLineChart';
+import PublicStixCoreObjectsMultiAreaChart from './stix_core_objects/PublicStixCoreObjectsMultiAreaChart';
+import PublicStixCoreObjectsTimeline from './stix_core_objects/PublicStixCoreObjectsTimeline';
+import PublicStixCoreObjectsDonut from './stix_core_objects/PublicStixCoreObjectsDonut';
+import PublicStixCoreObjectsRadar from './stix_core_objects/PublicStixCoreObjectsRadar';
+import PublicStixCoreObjectsMultiHeatMap from './stix_core_objects/PublicStixCoreObjectsMultiHeatMap';
+import PublicStixCoreObjectsTreeMap from './stix_core_objects/PublicStixCoreObjectsTreeMap';
+import PublicStixCoreRelationshipsNumber from './stix_relationships/PublicStixRelationshipsNumber';
+import PublicStixRelationshipsList from './stix_relationships/PublicStixRelationshipsList';
+import PublicStixRelationshipsDistributionList from './stix_relationships/PublicStixRelationshipsDistributionList';
+import PublicStixRelationshipsMultiVerticalBars from './stix_relationships/PublicStixRelationshipsMultiVerticalBars';
+import PublicStixRelationshipsMultiLineChart from './stix_relationships/PublicStixRelationshipsMultiLineChart';
+import PublicStixRelationshipsMultiAreaChart from './stix_relationships/PublicStixRelationshipsMultiAreaChart';
+import PublicStixRelationshipsTimeline from './stix_relationships/PublicStixRelationshipsTimeline';
+import PublicStixRelationshipsDonut from './stix_relationships/PublicStixRelationshipsDonut';
+import PublicStixRelationshipsRadar from './stix_relationships/PublicStixRelationshipsRadar';
+import PublicStixRelationshipsMultiHeatMap from './stix_relationships/PublicStixRelationshipsMultiHeatMap';
+import PublicStixRelationshipsTreeMap from './stix_relationships/PublicStixRelationshipsTreeMap';
+import PublicStixRelationshipsMap from './stix_relationships/PublicStixRelationshipsMap';
+import PublicStixCoreObjectsHorizontalBars from './stix_core_objects/PublicStixCoreObjectsHorizontalBars';
+import PublicStixRelationshipsHorizontalBars from './stix_relationships/PublicStixRelationshipsHorizontalBars';
+import PublicStixDomainObjectBookmarksList from './stix_domain_objects/PublicStixDomainObjectBookmarksList';
+import PublicStixRelationshipsMultiHorizontalBars from './stix_relationships/PublicStixRelationshipsMultiHorizontalBars';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
@@ -116,7 +116,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       case 'horizontal-bar':
-        if (false) {
+        if (widget.dataSelection.length > 1) {
           // TODO implement multi horizontal bars with breakdowns
           return 'Not implemented yet';
         }

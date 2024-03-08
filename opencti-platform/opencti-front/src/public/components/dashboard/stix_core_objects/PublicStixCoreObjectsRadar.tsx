@@ -1,23 +1,23 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from './PublicManifest';
-import WidgetRadar from '../../../components/dashboard/WidgetRadar';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixRelationshipsRadarQuery } from './__generated__/PublicStixRelationshipsRadarQuery.graphql';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixCoreObjectsRadarQuery } from './__generated__/PublicStixCoreObjectsRadarQuery.graphql';
+import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
+import type { PublicManifestWidget } from '../PublicManifest';
 
-const publicStixRelationshipsRadarsQuery = graphql`
-  query PublicStixRelationshipsRadarQuery(
+const publicStixCoreObjectsRadarQuery = graphql`
+  query PublicStixCoreObjectsRadarQuery(
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
     $widgetId : String!
   ) {
-    publicStixRelationshipsDistribution(
+    publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
@@ -97,6 +97,9 @@ const publicStixRelationshipsRadarsQuery = graphql`
           name
           description
         }
+        ... on MalwareAnalysis {
+          result_name
+        }
         ... on ThreatActor {
           name
           description
@@ -151,45 +154,40 @@ const publicStixRelationshipsRadarsQuery = graphql`
         ... on Creator {
           name
         }
-        ... on Report {
-          name
+        ... on Label {
+          value
         }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
+        ... on Status {
+          template {
+            name
+          }
         }
       }
     }
   }
 `;
 
-interface PublicStixRelationshipsRadarComponentProps {
+interface PublicStixCoreObjectsRadarComponentProps {
   dataSelection: PublicManifestWidget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsRadarQuery>
+  queryRef: PreloadedQuery<PublicStixCoreObjectsRadarQuery>
 }
 
-const PublicStixRelationshipsRadarComponent = ({
+const PublicStixCoreObjectsRadarComponent = ({
   dataSelection,
   queryRef,
-}: PublicStixRelationshipsRadarComponentProps) => {
-  const { publicStixRelationshipsDistribution } = usePreloadedQuery(
-    publicStixRelationshipsRadarsQuery,
+}: PublicStixCoreObjectsRadarComponentProps) => {
+  const { publicStixCoreObjectsDistribution } = usePreloadedQuery(
+    publicStixCoreObjectsRadarQuery,
     queryRef,
   );
 
   if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
+    publicStixCoreObjectsDistribution
+    && publicStixCoreObjectsDistribution.length > 0
   ) {
     return (
       <WidgetRadar
-        data={[...publicStixRelationshipsDistribution]}
+        data={[...publicStixCoreObjectsDistribution]}
         label={dataSelection[0].label ?? ''}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
         withExport={false}
@@ -200,7 +198,7 @@ const PublicStixRelationshipsRadarComponent = ({
   return <WidgetNoData />;
 };
 
-const PublicStixRelationshipsRadar = ({
+const PublicStixCoreObjectsRadar = ({
   uriKey,
   widget,
   startDate,
@@ -209,8 +207,8 @@ const PublicStixRelationshipsRadar = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsRadarQuery>(
-    publicStixRelationshipsRadarsQuery,
+  const queryRef = useQueryLoading<PublicStixCoreObjectsRadarQuery>(
+    publicStixCoreObjectsRadarQuery,
     {
       uriKey,
       widgetId: id,
@@ -226,7 +224,7 @@ const PublicStixRelationshipsRadar = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixRelationshipsRadarComponent
+          <PublicStixCoreObjectsRadarComponent
             queryRef={queryRef}
             dataSelection={dataSelection}
           />
@@ -238,4 +236,4 @@ const PublicStixRelationshipsRadar = ({
   );
 };
 
-export default PublicStixRelationshipsRadar;
+export default PublicStixCoreObjectsRadar;

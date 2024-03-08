@@ -1,16 +1,17 @@
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { useTheme } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
 interface WidgetDistributionListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   hasSettingAccess?: boolean
   overflow?: string
@@ -41,14 +42,20 @@ const WidgetDistributionList = ({
           if (entry.type !== 'User' || hasSettingAccess) {
             link = entry.id ? computeLink(entry) : null;
           }
+          let linkProps = {};
+          if (link) {
+            linkProps = {
+              component: Link,
+              to: link,
+            };
+          }
+
           return (
-            <ListItem
+            <ListItemButton
               key={entry.label}
               dense={true}
-              button={!!link}
               divider={true}
-              component={link ? Link : null}
-              to={link || null}
+              {...linkProps}
               sx={{
                 height: 50,
                 minHeight: 50,
@@ -96,7 +103,7 @@ const WidgetDistributionList = ({
               >
                 {n(entry.value)}
               </div>
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>

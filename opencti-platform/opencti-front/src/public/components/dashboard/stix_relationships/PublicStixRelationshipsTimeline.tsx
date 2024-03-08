@@ -1,15 +1,15 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import { resolveLink } from '../../../utils/Entity';
-import WidgetTimeline from '../../../components/dashboard/WidgetTimeline';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
+import { resolveLink } from '../../../../utils/Entity';
+import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsTimelineQuery } from './__generated__/PublicStixRelationshipsTimelineQuery.graphql';
-import type { PublicManifestWidget } from './PublicManifest';
+import type { PublicManifestWidget } from '../PublicManifest';
 
 const publicStixRelationshipsTimelineQuery = graphql`
   query PublicStixRelationshipsTimelineQuery(

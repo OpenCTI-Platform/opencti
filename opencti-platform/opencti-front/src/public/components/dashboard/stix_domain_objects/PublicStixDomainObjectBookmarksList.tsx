@@ -1,25 +1,20 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixCoreObjectsTimelineQuery } from './__generated__/PublicStixCoreObjectsTimelineQuery.graphql';
-import { resolveLink } from '../../../utils/Entity';
-import WidgetTimeline from '../../../components/dashboard/WidgetTimeline';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixDomainObjectBookmarksListQuery } from './__generated__/PublicStixDomainObjectBookmarksListQuery.graphql';
 
-const publicStixCoreObjectsTimelineQuery = graphql`
-  query PublicStixCoreObjectsTimelineQuery(
-    $startDate: DateTime
-    $endDate: DateTime
+const publicStixDomainObjectBookmarksListQuery = graphql`
+  query PublicStixDomainObjectBookmarksListQuery(
     $uriKey: String!
     $widgetId : String!
   ) {
-    publicStixCoreObjects(
-      startDate: $startDate
-      endDate: $endDate
+    publicBookmarks(
       uriKey: $uriKey
       widgetId : $widgetId
     ) {
@@ -28,10 +23,8 @@ const publicStixCoreObjectsTimelineQuery = graphql`
           id
           entity_type
           created_at
-          ... on StixDomainObject {
-            created
-            modified
-          }
+          created
+          modified
           ... on AttackPattern {
             name
             description
@@ -42,9 +35,6 @@ const publicStixCoreObjectsTimelineQuery = graphql`
           }
           ... on Note {
             attribute_abstract
-          }
-          ... on Opinion {
-            opinion
           }
           ... on ObservedData {
             first_observed
@@ -118,9 +108,6 @@ const publicStixCoreObjectsTimelineQuery = graphql`
             name
             description
           }
-          ... on MalwareAnalysis {
-            result_name
-          }
           ... on ThreatActor {
             name
             description
@@ -161,16 +148,6 @@ const publicStixCoreObjectsTimelineQuery = graphql`
           ... on Case {
             name
           }
-          ... on Note {
-            attribute_abstract
-            content
-          }
-          ... on Opinion {
-            opinion
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
           createdBy {
             ... on Identity {
               id
@@ -191,54 +168,40 @@ const publicStixCoreObjectsTimelineQuery = graphql`
   }
 `;
 
-interface PublicStixCoreObjectsTimelineComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsTimelineQuery>
+interface PublicStixDomainObjectBookmarksListComponentProps {
+  queryRef: PreloadedQuery<PublicStixDomainObjectBookmarksListQuery>
 }
 
-const PublicStixCoreObjectsTimelineComponent = ({
+const PublicStixDomainObjectBookmarksListComponent = ({
   queryRef,
-}: PublicStixCoreObjectsTimelineComponentProps) => {
-  const { publicStixCoreObjects } = usePreloadedQuery(
-    publicStixCoreObjectsTimelineQuery,
+}: PublicStixDomainObjectBookmarksListComponentProps) => {
+  const { publicBookmarks } = usePreloadedQuery(
+    publicStixDomainObjectBookmarksListQuery,
     queryRef,
   );
 
   if (
-    publicStixCoreObjects
-    && publicStixCoreObjects?.edges
-    && publicStixCoreObjects.edges.length > 0
+    publicBookmarks
+    && publicBookmarks.edges
+    && publicBookmarks.edges.length > 0
   ) {
-    const stixCoreObjectsEdges = publicStixCoreObjects.edges;
-    const data = stixCoreObjectsEdges.flatMap((stixCoreObjectEdge) => {
-      const stixCoreObject = stixCoreObjectEdge?.node;
-      if (!stixCoreObject) return [];
-      const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
-      return {
-        value: stixCoreObject,
-        link,
-      };
-    });
-    return <WidgetTimeline data={data} />;
+    return <WidgetBookmarks bookmarks={[...publicBookmarks.edges]} />;
   }
   return <WidgetNoData />;
 };
 
-const PublicStixCoreObjectsTimeline = ({
+const PublicStixDomainObjectBookmarksList = ({
   uriKey,
   widget,
-  startDate,
-  endDate,
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsTimelineQuery>(
-    publicStixCoreObjectsTimelineQuery,
+  const queryRef = useQueryLoading<PublicStixDomainObjectBookmarksListQuery>(
+    publicStixDomainObjectBookmarksListQuery,
     {
       uriKey,
       widgetId: id,
-      startDate,
-      endDate,
     },
   );
 
@@ -249,7 +212,7 @@ const PublicStixCoreObjectsTimeline = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixCoreObjectsTimelineComponent queryRef={queryRef} />
+          <PublicStixDomainObjectBookmarksListComponent queryRef={queryRef} />
         </React.Suspense>
       ) : (
         <WidgetLoader />
@@ -258,4 +221,4 @@ const PublicStixCoreObjectsTimeline = ({
   );
 };
 
-export default PublicStixCoreObjectsTimeline;
+export default PublicStixDomainObjectBookmarksList;

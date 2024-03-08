@@ -1,17 +1,18 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from './PublicManifest';
-import WidgetTree from '../../../components/dashboard/WidgetTree';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixRelationshipsTreeMapQuery } from './__generated__/PublicStixRelationshipsTreeMapQuery.graphql';
+import { useFormatter } from '../../../../components/i18n';
+import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
+import type { PublicManifestWidget } from '../PublicManifest';
+import { defaultValue } from '../../../../utils/Graph';
 
-const publicStixRelationshipsTreeMapsQuery = graphql`
-  query PublicStixRelationshipsTreeMapQuery(
+const publicStixRelationshipsDistributionListQuery = graphql`
+  query PublicStixRelationshipsDistributionListQuery(
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
@@ -27,9 +28,11 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
         }
         ... on AttackPattern {
@@ -80,15 +83,15 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
           name
           description
         }
-        ... on AdministrativeArea {
-          name
-          description
-        }
         ... on Country {
           name
           description
         }
         ... on Region {
+          name
+          description
+        }
+        ... on AdministrativeArea {
           name
           description
         }
@@ -136,6 +139,9 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
         ... on Case {
           name
         }
+        ... on Report {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }
@@ -168,40 +174,39 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
   }
 `;
 
-interface PublicStixRelationshipsTreeMapComponentProps {
-  parameters: PublicManifestWidget['parameters']
+interface PublicStixRelationshipsDistributionListComponentProps {
   dataSelection: PublicManifestWidget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsTreeMapQuery>
+  queryRef: PreloadedQuery<PublicStixRelationshipsDistributionListQuery>
 }
 
-const PublicStixRelationshipsTreeMapComponent = ({
-  parameters,
+const PublicStixRelationshipsDistributionListComponent = ({
   dataSelection,
   queryRef,
-}: PublicStixRelationshipsTreeMapComponentProps) => {
+}: PublicStixRelationshipsDistributionListComponentProps) => {
   const { publicStixRelationshipsDistribution } = usePreloadedQuery(
-    publicStixRelationshipsTreeMapsQuery,
+    publicStixRelationshipsDistributionListQuery,
     queryRef,
   );
 
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
-    return (
-      <WidgetTree
-        data={[...publicStixRelationshipsDistribution]}
-        groupBy={dataSelection[0].attribute ?? 'entity_type'}
-        isDistributed={parameters.distributed}
-        readonly={true}
-        withExport={false}
-      />
-    );
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
+    const finalField = dataSelection[0].attribute || 'entity_type';
+    const data = publicStixRelationshipsDistribution.flatMap((o) => {
+      if (!o) return [];
+      return {
+        label: finalField.endsWith('_id')
+          ? defaultValue(o.entity)
+          : o.label,
+        value: o.value,
+        id: o.entity?.id ?? null,
+        type: o.entity?.entity_type ?? o.label,
+      };
+    });
+    return <WidgetDistributionList data={data} />;
   }
   return <WidgetNoData />;
 };
 
-const PublicStixRelationshipsTreeMap = ({
+const PublicStixRelationshipsDistributionList = ({
   uriKey,
   widget,
   startDate,
@@ -210,8 +215,8 @@ const PublicStixRelationshipsTreeMap = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsTreeMapQuery>(
-    publicStixRelationshipsTreeMapsQuery,
+  const queryRef = useQueryLoading<PublicStixRelationshipsDistributionListQuery>(
+    publicStixRelationshipsDistributionListQuery,
     {
       uriKey,
       widgetId: id,
@@ -227,9 +232,8 @@ const PublicStixRelationshipsTreeMap = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixRelationshipsTreeMapComponent
+          <PublicStixRelationshipsDistributionListComponent
             queryRef={queryRef}
-            parameters={parameters}
             dataSelection={dataSelection}
           />
         </React.Suspense>
@@ -240,4 +244,4 @@ const PublicStixRelationshipsTreeMap = ({
   );
 };
 
-export default PublicStixRelationshipsTreeMap;
+export default PublicStixRelationshipsDistributionList;

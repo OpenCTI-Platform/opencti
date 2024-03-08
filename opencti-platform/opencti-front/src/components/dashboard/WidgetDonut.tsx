@@ -8,6 +8,7 @@ import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
 interface WidgetDonutProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   groupBy: string
   withExport?: boolean

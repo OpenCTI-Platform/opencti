@@ -468,7 +468,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           />
         );
       case 'donut':
-        console.log(widget);
         return (
           <StixRelationshipsDonut
             startDate={startDate}

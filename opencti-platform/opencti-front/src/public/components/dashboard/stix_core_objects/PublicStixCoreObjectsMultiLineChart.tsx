@@ -1,18 +1,18 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from './PublicManifest';
-import { useFormatter } from '../../../components/i18n';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import WidgetMultiAreas from '../../../components/dashboard/WidgetMultiAreas';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixCoreObjectsMultiAreaChartQuery } from './__generated__/PublicStixCoreObjectsMultiAreaChartQuery.graphql';
-import { monthsAgo, now } from '../../../utils/Time';
+import type { PublicManifestWidget } from '../PublicManifest';
+import { useFormatter } from '../../../../components/i18n';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixCoreObjectsMultiLineChartQuery } from './__generated__/PublicStixCoreObjectsMultiLineChartQuery.graphql';
+import { monthsAgo, now } from '../../../../utils/Time';
 
-const publicStixCoreObjectsMultiAreaChartQuery = graphql`
-  query PublicStixCoreObjectsMultiAreaChartQuery(
+const publicStixCoreObjectsMultiLineChartQuery = graphql`
+  query PublicStixCoreObjectsMultiLineChartQuery(
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
@@ -32,26 +32,26 @@ const publicStixCoreObjectsMultiAreaChartQuery = graphql`
   }
 `;
 
-interface PublicStixCoreObjectsMultiAreaChartComponentProps {
+interface PublicStixCoreObjectsMultiLineChartComponentProps {
   parameters: PublicManifestWidget['parameters']
   dataSelection: PublicManifestWidget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiAreaChartQuery>
+  queryRef: PreloadedQuery<PublicStixCoreObjectsMultiLineChartQuery>
 }
 
-const PublicStixCoreObjectsMultiAreaChartComponent = ({
+const PublicStixCoreObjectsMultiLineChartComponent = ({
   parameters,
   dataSelection,
   queryRef,
-}: PublicStixCoreObjectsMultiAreaChartComponentProps) => {
+}: PublicStixCoreObjectsMultiLineChartComponentProps) => {
   const { t_i18n } = useFormatter();
   const { publicStixCoreObjectsMultiTimeSeries } = usePreloadedQuery(
-    publicStixCoreObjectsMultiAreaChartQuery,
+    publicStixCoreObjectsMultiLineChartQuery,
     queryRef,
   );
 
   if (publicStixCoreObjectsMultiTimeSeries) {
     return (
-      <WidgetMultiAreas
+      <WidgetMultiLines
         series={publicStixCoreObjectsMultiTimeSeries.map((serie, i) => ({
           name: dataSelection[i].label ?? t_i18n('Number of entities'),
           data: (serie?.data ?? []).map((entry) => ({
@@ -60,7 +60,6 @@ const PublicStixCoreObjectsMultiAreaChartComponent = ({
           })),
         }))}
         interval={parameters.interval}
-        isStacked={parameters.stacked}
         hasLegend={parameters.legend}
         withExport={false}
         readonly={true}
@@ -70,7 +69,7 @@ const PublicStixCoreObjectsMultiAreaChartComponent = ({
   return <WidgetNoData />;
 };
 
-const PublicStixCoreObjectsMultiAreaChart = ({
+const PublicStixCoreObjectsMultiLineChart = ({
   uriKey,
   widget,
   startDate = monthsAgo(12),
@@ -79,8 +78,8 @@ const PublicStixCoreObjectsMultiAreaChart = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiAreaChartQuery>(
-    publicStixCoreObjectsMultiAreaChartQuery,
+  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiLineChartQuery>(
+    publicStixCoreObjectsMultiLineChartQuery,
     {
       uriKey,
       widgetId: id,
@@ -96,7 +95,7 @@ const PublicStixCoreObjectsMultiAreaChart = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixCoreObjectsMultiAreaChartComponent
+          <PublicStixCoreObjectsMultiLineChartComponent
             queryRef={queryRef}
             parameters={parameters}
             dataSelection={dataSelection}
@@ -109,4 +108,4 @@ const PublicStixCoreObjectsMultiAreaChart = ({
   );
 };
 
-export default PublicStixCoreObjectsMultiAreaChart;
+export default PublicStixCoreObjectsMultiLineChart;

@@ -1,11 +1,11 @@
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
 import { defaultValue } from '../../utils/Graph';
 import ItemMarkings from '../ItemMarkings';
@@ -25,6 +25,7 @@ const bodyItemStyle = (width: string): CSSProperties => ({
 });
 
 interface WidgetListRelationshipsProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   dateAttribute: string
 }
@@ -57,15 +58,21 @@ const WidgetListRelationships = ({
           if (remoteNode) {
             link = computeLink(remoteNode);
           }
+          let linkProps = {};
+          if (link) {
+            linkProps = {
+              component: Link,
+              to: link,
+            };
+          }
+
           return (
-            <ListItem
+            <ListItemButton
               key={stixRelationship.id}
               dense={true}
-              button={true}
               className="noDrag"
               divider={true}
-              component={Link}
-              to={link}
+              {...linkProps}
               style={{
                 height: 50,
                 minHeight: 50,
@@ -109,7 +116,7 @@ const WidgetListRelationships = ({
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.from
-                          ? defaultValue(stixRelationship.from, true)
+                          ? defaultValue(stixRelationship.from)
                           : t_i18n('Restricted')}
                       </code>
                     </div>
@@ -142,7 +149,7 @@ const WidgetListRelationships = ({
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.to
-                          ? defaultValue(stixRelationship.to, true)
+                          ? defaultValue(stixRelationship.to)
                           : t_i18n('Restricted')}
                       </code>
                     </div>
@@ -168,7 +175,7 @@ const WidgetListRelationships = ({
                   </div>
                 }
               />
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>

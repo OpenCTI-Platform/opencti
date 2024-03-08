@@ -12,6 +12,7 @@ import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
 interface WidgetBookmarksProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bookmarks: any[]
 }
 

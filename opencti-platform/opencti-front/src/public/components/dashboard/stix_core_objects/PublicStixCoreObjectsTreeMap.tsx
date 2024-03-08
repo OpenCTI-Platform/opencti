@@ -1,17 +1,17 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixCoreObjectsDonutQuery } from './__generated__/PublicStixCoreObjectsDonutQuery.graphql';
-import WidgetDonut from '../../../components/dashboard/WidgetDonut';
-import type { PublicManifestWidget } from './PublicManifest';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixCoreObjectsTreeMapQuery } from './__generated__/PublicStixCoreObjectsTreeMapQuery.graphql';
+import WidgetTree from '../../../../components/dashboard/WidgetTree';
+import type { PublicManifestWidget } from '../PublicManifest';
 
-const publicStixCoreObjectsDonutQuery = graphql`
-  query PublicStixCoreObjectsDonutQuery(
+const publicStixCoreObjectsTreeMapQuery = graphql`
+  query PublicStixCoreObjectsTreeMapQuery(
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
@@ -145,7 +145,6 @@ const publicStixCoreObjectsDonutQuery = graphql`
         ... on MarkingDefinition {
           definition_type
           definition
-          x_opencti_color
         }
         ... on KillChainPhase {
           kill_chain_name
@@ -156,12 +155,10 @@ const publicStixCoreObjectsDonutQuery = graphql`
         }
         ... on Label {
           value
-          color
         }
         ... on Status {
           template {
             name
-            color
           }
         }
       }
@@ -169,17 +166,19 @@ const publicStixCoreObjectsDonutQuery = graphql`
   }
 `;
 
-interface PublicStixCoreObjectsDonutComponentProps {
+interface PublicStixCoreObjectsTreeMapComponentProps {
+  parameters: PublicManifestWidget['parameters']
   dataSelection: PublicManifestWidget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsDonutQuery>
+  queryRef: PreloadedQuery<PublicStixCoreObjectsTreeMapQuery>
 }
 
-const PublicStixCoreObjectsDonutComponent = ({
+const PublicStixCoreObjectsTreeMapComponent = ({
+  parameters,
   dataSelection,
   queryRef,
-}: PublicStixCoreObjectsDonutComponentProps) => {
+}: PublicStixCoreObjectsTreeMapComponentProps) => {
   const { publicStixCoreObjectsDistribution } = usePreloadedQuery(
-    publicStixCoreObjectsDonutQuery,
+    publicStixCoreObjectsTreeMapQuery,
     queryRef,
   );
 
@@ -188,18 +187,19 @@ const PublicStixCoreObjectsDonutComponent = ({
     && publicStixCoreObjectsDistribution.length > 0
   ) {
     return (
-      <WidgetDonut
+      <WidgetTree
         data={[...publicStixCoreObjectsDistribution]}
         groupBy={dataSelection[0].attribute ?? 'entity_type'}
-        withExport={false}
+        isDistributed={parameters.distributed}
         readonly={true}
+        withExport={false}
       />
     );
   }
   return <WidgetNoData />;
 };
 
-const PublicStixCoreObjectsDonut = ({
+const PublicStixCoreObjectsTreeMap = ({
   uriKey,
   widget,
   startDate,
@@ -208,8 +208,8 @@ const PublicStixCoreObjectsDonut = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsDonutQuery>(
-    publicStixCoreObjectsDonutQuery,
+  const queryRef = useQueryLoading<PublicStixCoreObjectsTreeMapQuery>(
+    publicStixCoreObjectsTreeMapQuery,
     {
       uriKey,
       widgetId: id,
@@ -225,8 +225,9 @@ const PublicStixCoreObjectsDonut = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixCoreObjectsDonutComponent
+          <PublicStixCoreObjectsTreeMapComponent
             queryRef={queryRef}
+            parameters={parameters}
             dataSelection={dataSelection}
           />
         </React.Suspense>
@@ -237,4 +238,4 @@ const PublicStixCoreObjectsDonut = ({
   );
 };
 
-export default PublicStixCoreObjectsDonut;
+export default PublicStixCoreObjectsTreeMap;

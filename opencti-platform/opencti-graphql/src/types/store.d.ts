@@ -211,7 +211,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
-  is_inferred: boolean; // TODO bad idea?
+  is_inferred: boolean;
   // number
   confidence: number;
   attribute_count: number;

@@ -1,14 +1,14 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import LocationMiniMapTargets from '@components/common/location/LocationMiniMapTargets';
-import type { PublicManifestWidget } from './PublicManifest';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import { computeLevel } from '../../../utils/Number';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
+import type { PublicManifestWidget } from '../PublicManifest';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import { computeLevel } from '../../../../utils/Number';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMapQuery } from './__generated__/PublicStixRelationshipsMapQuery.graphql';
 
 const publicStixRelationshipsMapQuery = graphql`

@@ -179,6 +179,16 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
               }
             ],
             filterGroups: []
+          },
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or'
+            }],
+            filterGroups: []
           }
         }
       ],
@@ -312,6 +322,16 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
             ],
             filterGroups: []
           },
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or'
+            }],
+            filterGroups: []
+          }
         }
       ],
       parameters: {
@@ -392,6 +412,16 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 mode: 'or'
               }
             ],
+            filterGroups: []
+          },
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or'
+            }],
             filterGroups: []
           }
         }

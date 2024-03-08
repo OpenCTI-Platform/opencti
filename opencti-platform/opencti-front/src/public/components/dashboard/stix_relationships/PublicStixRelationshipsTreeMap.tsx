@@ -1,21 +1,17 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
 import React from 'react';
-import type { PublicManifestWidget } from './PublicManifest';
-import type { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import { itemColor } from '../../../utils/Colors';
-import { defaultValue } from '../../../utils/Graph';
-import WidgetHorizontalBars from '../../../components/dashboard/WidgetHorizontalBars';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
-import { PublicStixRelationshipsHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsHorizontalBarsQuery.graphql';
+import type { PublicManifestWidget } from '../PublicManifest';
+import WidgetTree from '../../../../components/dashboard/WidgetTree';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import { PublicStixRelationshipsTreeMapQuery } from './__generated__/PublicStixRelationshipsTreeMapQuery.graphql';
 
-const publicStixRelationshipsHorizontalBarsQuery = graphql`
-  query PublicStixRelationshipsHorizontalBarsQuery(
+const publicStixRelationshipsTreeMapsQuery = graphql`
+  query PublicStixRelationshipsTreeMapQuery(
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
@@ -32,11 +28,9 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
       entity {
         ... on BasicObject {
           entity_type
-          id
         }
         ... on BasicRelationship {
           entity_type
-          id
         }
         ... on AttackPattern {
           name
@@ -83,6 +77,10 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
           description
         }
         ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
           name
           description
         }
@@ -138,16 +136,12 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
         ... on Case {
           name
         }
-        ... on Report {
-          name
-        }
         ... on StixCyberObservable {
           observable_value
         }
         ... on MarkingDefinition {
           definition_type
           definition
-          x_opencti_color
         }
         ... on KillChainPhase {
           kill_chain_name
@@ -169,30 +163,24 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
         ... on Opinion {
           opinion
         }
-        ... on Label {
-          value
-          color
-        }
       }
     }
   }
 `;
 
-interface PublicStixRelationshipsHorizontalBarsComponentProps {
+interface PublicStixRelationshipsTreeMapComponentProps {
   parameters: PublicManifestWidget['parameters']
   dataSelection: PublicManifestWidget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsHorizontalBarsQuery>
+  queryRef: PreloadedQuery<PublicStixRelationshipsTreeMapQuery>
 }
 
-const PublicStixRelationshipsHorizontalBarsComponent = ({
+const PublicStixRelationshipsTreeMapComponent = ({
   parameters,
   dataSelection,
   queryRef,
-}: PublicStixRelationshipsHorizontalBarsComponentProps) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+}: PublicStixRelationshipsTreeMapComponentProps) => {
   const { publicStixRelationshipsDistribution } = usePreloadedQuery(
-    publicStixRelationshipsHorizontalBarsQuery,
+    publicStixRelationshipsTreeMapsQuery,
     queryRef,
   );
 
@@ -200,59 +188,20 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
     publicStixRelationshipsDistribution
     && publicStixRelationshipsDistribution.length > 0
   ) {
-    const selection = dataSelection[0];
-    const finalField = selection.attribute || 'entity_type';
-    const data = publicStixRelationshipsDistribution.map((n) => {
-      let color = selection.attribute?.endsWith('_id')
-        ? itemColor(n?.entity?.entity_type)
-        : itemColor(n?.label);
-      if (n?.entity?.color) {
-        color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
-          ? '#000000'
-          : n.entity.color;
-      }
-      if (n?.entity?.x_opencti_color) {
-        color = theme.palette.mode === 'light'
-        && n.entity.x_opencti_color === '#ffffff'
-          ? '#000000'
-          : n.entity.x_opencti_color;
-      }
-      return {
-        x: finalField.endsWith('_id')
-          ? defaultValue(n?.entity)
-          : n?.label,
-        y: n?.value,
-        fillColor: color,
-      };
-    });
-    const chartData = [{
-      name: selection.label || t_i18n('Number of relationships'),
-      data,
-    }];
-    const redirectionUtils = finalField.endsWith('_id')
-      ? publicStixRelationshipsDistribution.flatMap((n) => {
-        if (!n || !n.entity) return [];
-        return {
-          id: n.entity.id,
-          entity_type: n.entity.entity_type,
-        };
-      })
-      : undefined;
-
     return (
-      <WidgetHorizontalBars
-        series={chartData}
-        distributed={parameters.distributed}
-        withExport={false}
+      <WidgetTree
+        data={[...publicStixRelationshipsDistribution]}
+        groupBy={dataSelection[0].attribute ?? 'entity_type'}
+        isDistributed={parameters.distributed}
         readonly={true}
-        redirectionUtils={redirectionUtils}
+        withExport={false}
       />
     );
   }
   return <WidgetNoData />;
 };
 
-const PublicStixRelationshipsHorizontalBars = ({
+const PublicStixRelationshipsTreeMap = ({
   uriKey,
   widget,
   startDate,
@@ -261,8 +210,8 @@ const PublicStixRelationshipsHorizontalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsHorizontalBarsQuery>(
-    publicStixRelationshipsHorizontalBarsQuery,
+  const queryRef = useQueryLoading<PublicStixRelationshipsTreeMapQuery>(
+    publicStixRelationshipsTreeMapsQuery,
     {
       uriKey,
       widgetId: id,
@@ -273,12 +222,12 @@ const PublicStixRelationshipsHorizontalBars = ({
 
   return (
     <WidgetContainer
-      title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
+      title={parameters.title ?? title ?? t_i18n('Entities number')}
       variant="inLine"
     >
       {queryRef ? (
         <React.Suspense fallback={<WidgetLoader />}>
-          <PublicStixRelationshipsHorizontalBarsComponent
+          <PublicStixRelationshipsTreeMapComponent
             queryRef={queryRef}
             parameters={parameters}
             dataSelection={dataSelection}
@@ -291,4 +240,4 @@ const PublicStixRelationshipsHorizontalBars = ({
   );
 };
 
-export default PublicStixRelationshipsHorizontalBars;
+export default PublicStixRelationshipsTreeMap;

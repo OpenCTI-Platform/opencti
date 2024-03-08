@@ -43,7 +43,7 @@ import {
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findAll as stixRelationships, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
 import { bookmarks } from '../../domain/user';
-import { dayAgo } from '../../utils/format';
+import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 
@@ -291,7 +291,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
     operation: 'count',
     startDate: args.startDate,
     endDate: args.endDate,
-    interval: parameters?.interval ? parameters?.interval : 'month',
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters
   };
 
@@ -312,7 +312,7 @@ export const publicStixCoreObjectsNumber = async (
   const parameters = {
     dateAttribute: selection.date_attribute,
     startDate: args.startDate,
-    endDate: dayAgo(),
+    endDate: daysAgo(1),
     filters,
     types: [
       ABSTRACT_STIX_CORE_OBJECT,
@@ -334,7 +334,7 @@ export const publicStixRelationshipsNumber = async (
 
   const parameters = {
     startDate: args.startDate,
-    endDate: dayAgo(),
+    endDate: daysAgo(1),
     filters,
     dateAttribute: selection.date_attribute,
     dynamicFrom: selection.dynamicFrom,

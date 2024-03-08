@@ -265,7 +265,7 @@ const AuditsList = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? title ?? t_i18n('Audits list')}
+      title={parameters.title ?? t_i18n('Audits list')}
       variant={variant}
     >
       {renderContent()}

@@ -1,13 +1,13 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import { useFormatter } from '../../../components/i18n';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import { useFormatter } from '../../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsListQuery } from './__generated__/PublicStixRelationshipsListQuery.graphql';
-import WidgetListRelationships from '../../../components/dashboard/WidgetListRelationships';
+import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 
 const publicStixRelationshipsListQuery = graphql`
   query PublicStixRelationshipsListQuery(

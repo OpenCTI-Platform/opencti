@@ -271,10 +271,6 @@ describe('PublicDashboard resolver', () => {
         let octopusId;
         let franceId;
         let belgiqueId;
-        let vadorFranceId;
-        let magnetoFranceId;
-        let magnetoBelgiqueId;
-        let octopusBelgiqueId;
 
         afterAll(async () => {
           // region Delete areas.
@@ -283,11 +279,11 @@ describe('PublicDashboard resolver', () => {
               administrativeAreaDelete(id: $id)
             }
           `;
-          await editorQuery({
+          await queryAsAdmin({
             query: DELETE_AREA,
             variables: { id: franceId },
           });
-          await editorQuery({
+          await queryAsAdmin({
             query: DELETE_AREA,
             variables: { id: belgiqueId },
           });
@@ -312,32 +308,6 @@ describe('PublicDashboard resolver', () => {
           await queryAsAdmin({
             query: DELETE_MALWARE,
             variables: { id: octopusId },
-          });
-          // endregion
-
-          // region Delete relations between areas and malwares
-          const DELETE_TARGETS_REL = gql`
-            mutation StixCoreRelationshipDelete($id: ID!) {
-              stixCoreRelationshipEdit(id: $id) {
-                delete
-              }
-            }
-          `;
-          await queryAsAdmin({
-            query: DELETE_TARGETS_REL,
-            variables: { id: vadorFranceId },
-          });
-          await queryAsAdmin({
-            query: DELETE_TARGETS_REL,
-            variables: { id: magnetoFranceId },
-          });
-          await queryAsAdmin({
-            query: DELETE_TARGETS_REL,
-            variables: { id: magnetoBelgiqueId },
-          });
-          await queryAsAdmin({
-            query: DELETE_TARGETS_REL,
-            variables: { id: octopusBelgiqueId },
           });
           // endregion
         });
@@ -390,7 +360,7 @@ describe('PublicDashboard resolver', () => {
               stixCoreRelationshipAdd(input: $input) { id }
             }
           `;
-          const vadorFrance = await editorQuery({
+          await editorQuery({
             query: ADD_TARGETS_REL,
             variables: {
               input: {
@@ -400,8 +370,7 @@ describe('PublicDashboard resolver', () => {
               }
             },
           });
-          vadorFranceId = vadorFrance.data.stixCoreRelationshipAdd.id;
-          const magnetoFrance = await editorQuery({
+          await editorQuery({
             query: ADD_TARGETS_REL,
             variables: {
               input: {
@@ -411,8 +380,7 @@ describe('PublicDashboard resolver', () => {
               }
             },
           });
-          magnetoFranceId = magnetoFrance.data.stixCoreRelationshipAdd.id;
-          const magnetoBelgique = await editorQuery({
+          await editorQuery({
             query: ADD_TARGETS_REL,
             variables: {
               input: {
@@ -422,8 +390,7 @@ describe('PublicDashboard resolver', () => {
               }
             },
           });
-          magnetoBelgiqueId = magnetoBelgique.data.stixCoreRelationshipAdd.id;
-          const octopusBelgique = await editorQuery({
+          await editorQuery({
             query: ADD_TARGETS_REL,
             variables: {
               input: {
@@ -433,7 +400,6 @@ describe('PublicDashboard resolver', () => {
               }
             },
           });
-          octopusBelgiqueId = octopusBelgique.data.stixCoreRelationshipAdd.id;
           // endregion
         });
 
@@ -567,7 +533,7 @@ describe('PublicDashboard resolver', () => {
           const { publicStixRelationshipsMultiTimeSeries } = data;
           const attacksData = publicStixRelationshipsMultiTimeSeries[0].data;
           expect(attacksData.length).toEqual(1);
-          expect(attacksData[0].value).toEqual(4);
+          expect(attacksData[0].value).toEqual(5);
         });
 
         it('should return the data for API: SCO Distribution', async () => {

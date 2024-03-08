@@ -7,6 +7,7 @@ import { treeMapOptions } from '../../utils/Charts';
 import { defaultValue } from '../../utils/Graph';
 
 interface WidgetTreeProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   groupBy: string
   withExport?: boolean

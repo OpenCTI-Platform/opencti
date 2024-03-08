@@ -1,15 +1,15 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import type { PublicManifestWidget } from './PublicManifest';
-import { useFormatter } from '../../../components/i18n';
-import WidgetVerticalBars from '../../../components/dashboard/WidgetVerticalBars';
-import WidgetNoData from '../../../components/dashboard/WidgetNoData';
-import type { PublicWidgetContainerProps } from './publicWidgetContainerProps';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import WidgetLoader from '../../../components/dashboard/WidgetLoader';
+import type { PublicManifestWidget } from '../PublicManifest';
+import { useFormatter } from '../../../../components/i18n';
+import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsMultiVerticalBarsQuery } from './__generated__/PublicStixRelationshipsMultiVerticalBarsQuery.graphql';
-import { monthsAgo, now } from '../../../utils/Time';
+import { monthsAgo, now } from '../../../../utils/Time';
 
 const publicStixRelationshipsMultiVerticalBarsQuery = graphql`
   query PublicStixRelationshipsMultiVerticalBarsQuery(
