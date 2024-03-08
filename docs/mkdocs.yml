@@ -157,7 +157,7 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
-      - Ask AI: usage/AskAI.md
+      - Ask AI: usage/ask-ai.md
     - Act on knowledge:
       - Case management: usage/case-management.md
       - Notifications and alerting: usage/notifications.md
