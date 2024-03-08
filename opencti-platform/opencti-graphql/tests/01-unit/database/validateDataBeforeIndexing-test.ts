@@ -40,7 +40,7 @@ describe('validateDataBeforeIndexing', () => {
       main: 'Plop'
     },
     user_confidence_level: {
-      max_confidence: 73, // missing mandatory field in a single object
+      max_confidence: 73,
       overrides: [
         {
           max_confidence: 77,
