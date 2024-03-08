@@ -77,8 +77,8 @@ services:
       - 16686:16686
       - 4318:4318
 
-  # SAML / OpenId provider with keyclaok - disabled by default
-  # to run use 'docker compose --profile openid up -d'
+  # SAML / OpenId provider with keycloak - disabled by default
+  # See keycloak/README.md
   opencti-dev-keycloak:
     profiles: [ openid ]
     image: quay.io/keycloak/keycloak
