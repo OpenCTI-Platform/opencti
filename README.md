@@ -33,7 +33,7 @@ OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-au
 OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://filigran.io/offering/subscribe) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
 
 * OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
-* OpenCTI Enterprise Edition, licensed under the [Non-Commercial license](LICENSE).
+* OpenCTI Enterprise Edition, licensed under the [Enterprise Edition license](LICENSE).
 
 To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://filigran.io/offering/subscribe) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
 
