@@ -8,7 +8,7 @@ import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntityFromCache } from '../database/cache';
@@ -196,4 +196,12 @@ export const getCriticalAlerts = async (context, user) => {
 
   // no alert
   return [];
+};
+
+export const getMaxMarkings = async (context, user, settings) => {
+  const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  if (!platform_data_sharing_max_markings) {
+    return [];
+  }
+  return internalFindByIds(context, user, platform_data_sharing_max_markings);
 };

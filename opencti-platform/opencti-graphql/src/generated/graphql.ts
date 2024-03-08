@@ -21289,6 +21289,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
   platform_critical_alerts: Array<PlatformCriticalAlert>;
+  platform_data_sharing_max_markings?: Maybe<Array<MarkingDefinition>>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_favicon?: Maybe<Scalars['String']['output']>;
@@ -35604,6 +35605,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
+  platform_data_sharing_max_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

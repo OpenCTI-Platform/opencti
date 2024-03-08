@@ -1170,6 +1170,7 @@ type Settings implements InternalObject & BasicObject {
   entity_type: String!
   parent_types: [String!]!
   platform_organization: Organization
+  platform_data_sharing_max_markings: [MarkingDefinition!]
   platform_title: String
   platform_favicon: String
   platform_email: String

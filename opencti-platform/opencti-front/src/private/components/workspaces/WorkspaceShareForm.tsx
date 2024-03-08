@@ -71,6 +71,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             style={fieldSpacingContainerStyle}
             onChange={() => {}}
             setFieldValue={setFieldValue}
+            limitToMaxSharing
           />
 
           <div

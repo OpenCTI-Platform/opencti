@@ -8,6 +8,7 @@ import { computeAvailableMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
+import { getMaxMarkings } from '../../domain/settings';
 
 interface WidgetArguments {
   user: AuthUser,
@@ -22,6 +23,7 @@ export const getWidgetArguments = async (
 ): Promise<WidgetArguments> => {
   // Get publicDashboard from cache
   const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+  console.log(publicDashboardsMapByUriKey);
   const publicDashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!publicDashboard) {
     throw UnsupportedError('Dashboard not found');
@@ -36,8 +38,12 @@ export const getWidgetArguments = async (
     throw UnsupportedError('User not found');
   }
 
-  // To replace User markings by publicDashboard allowed_markings
+  // Determine the marking definitions allowed.
   const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const maxMarkings = await getMaxMarkings(context, SYSTEM_USER);
+  const availableMaxMarkings = computeAvailableMarkings(maxMarkings, allMarkings).map((m) => m.id);
+  const availableDashboardMarkings = computeAvailableMarkings(allowed_markings, allMarkings);
+  const availableMarkings = availableDashboardMarkings.filter((m) => availableMaxMarkings.includes(m.id));
   // To replace User capabilities by KNOWLEDGE capability
   const accessKnowledgeCapability: UserCapability = await elLoadById(context, SYSTEM_USER, 'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493') as unknown as UserCapability;
 
@@ -45,7 +51,7 @@ export const getWidgetArguments = async (
   const user = {
     ...platformUser,
     origin: { user_id: platformUser.id, referer: 'public-dashboard' },
-    allowed_marking: computeAvailableMarkings(allowed_markings, allMarkings), // TODO what if user is downgraded ??
+    allowed_marking: availableMarkings,
     capabilities: [accessKnowledgeCapability]
   };
 
