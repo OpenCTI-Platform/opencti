@@ -29,6 +29,7 @@
   --md-code-fg-color--light:           #1bb6ff;
   --md-code-bg-color:                  #001e3c;
   --md-code-bg-color--light:           #001e3c;
+  --md-code-bg-color--lighter:         #001e3c;
 
   /* Code highlighting color shades */
   --md-code-hl-operator-color:         #9ccc65;
