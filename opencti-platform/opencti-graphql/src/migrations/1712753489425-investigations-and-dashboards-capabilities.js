@@ -4,12 +4,19 @@ import { elLoadById, elReplace } from '../database/engine';
 
 export const up = async (next) => {
   const context = executionContext('migration');
-  // ------ Add Manage Public Dashboards capability
-  await addCapability(context, SYSTEM_USER, {
-    name: 'EXPLORE_EXUPDATE_PUBLISH',
-    description: 'Manage Public Dashboards',
-    attribute_order: 1300
-  });
+  // ------ Add or rename Manage Public Dashboards capability
+  const managePublicDashboardsCapability = await elLoadById(context, SYSTEM_USER, 'capability--40892bfe-13c2-5e3e-96a3-531760950451');
+  if (managePublicDashboardsCapability) {
+    const managePublicDashboardsCapabilityPatch = { description: 'Manage Public Dashboards' };
+    await elReplace(managePublicDashboardsCapability._index, managePublicDashboardsCapability.internal_id, { doc: managePublicDashboardsCapabilityPatch });
+  } else {
+    await addCapability(context, SYSTEM_USER, {
+      name: 'EXPLORE_EXUPDATE_PUBLISH',
+      description: 'Manage Public Dashboards',
+      attribute_order: 1300
+    });
+  }
+
   // ------ Access exploration renaming
   const accessCapability = await elLoadById(context, SYSTEM_USER, 'capability--c2f6d8be-29c7-5e7f-ab17-dfa14a349025');
   const accessCapabilityPatch = { description: 'Access Dashboards and investigations' };

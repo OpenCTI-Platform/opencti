@@ -15,6 +15,8 @@ import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { PoliciesMarkingDefinitions$key } from '@components/settings/__generated__/PoliciesMarkingDefinitions.graphql';
+import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
@@ -62,6 +64,11 @@ const PoliciesFragment = graphql`
     password_policy_min_words
     password_policy_min_lowercase
     password_policy_min_uppercase
+    platform_data_sharing_max_markings {
+      id
+      definition
+      definition_type
+    }
     platform_providers {
       name
       strategy
@@ -74,10 +81,26 @@ const PoliciesFragment = graphql`
   }
 `;
 
+const PoliciesMarkingDefinitionsFragment = graphql`
+  fragment PoliciesMarkingDefinitions on MarkingDefinitionConnection {
+    edges {
+      node {
+        id
+        definition
+        definition_type
+        x_opencti_order
+      }
+    }
+  }
+`;
+
 const policiesQuery = graphql`
   query PoliciesQuery {
     settings {
       ...Policies
+    }
+    markingDefinitions {
+      ...PoliciesMarkingDefinitions
     }
   }
 `;
@@ -107,6 +130,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_data_sharing_max_markings: Yup.array().of(Yup.string()).nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -117,13 +141,19 @@ interface PoliciesComponentProps {
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
-  const data = usePreloadedQuery(policiesQuery, queryRef);
   const isEnterpriseEdition = useEnterpriseEdition();
+
+  const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
+  const markings = useFragment<PoliciesMarkingDefinitions$key>(
+    PoliciesMarkingDefinitionsFragment,
+    data.markingDefinitions,
+  );
+
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const handleSubmitField = (name: string, value: string | Option) => {
+  const handleSubmitField = (name: string, value: string | string[] | Option) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -159,6 +189,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
+    platform_data_sharing_max_markings: settings.platform_data_sharing_max_markings?.map((m) => m.id) ?? [],
   };
   const authProviders = settings.platform_providers;
   return (
@@ -430,6 +461,20 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         label={t_i18n('Platform banner text')}
                         fullWidth={true}
                         onSubmit={handleSubmitField}
+                      />
+                    </Paper>
+                  </Grid>
+
+                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t_i18n('Maximum marking definition allowed to be shared')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Field
+                        component={MarkingsSelectField}
+                        markingDefinitions={(markings?.edges ?? []).map((e) => e.node)}
+                        name="platform_data_sharing_max_markings"
+                        onChange={(val: string[]) => handleSubmitField('platform_data_sharing_max_markings', val)}
                       />
                     </Paper>
                   </Grid>

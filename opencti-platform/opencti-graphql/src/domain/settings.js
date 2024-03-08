@@ -8,14 +8,16 @@ import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { computeAvailableMarkings } from './user';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -196,4 +198,20 @@ export const getCriticalAlerts = async (context, user) => {
 
   // no alert
   return [];
+};
+
+// Retrieves max level of markings that can be shared.
+export const getDataSharingMaxMarkings = async (context, user, settings) => {
+  const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  if (!platform_data_sharing_max_markings) {
+    return [];
+  }
+  return internalFindByIds(context, user, platform_data_sharing_max_markings);
+};
+
+// Retrieves all available markings than can be shared.
+export const getAvailableDataSharingMarkings = async (context, user) => {
+  const maxMarkings = await getDataSharingMaxMarkings(context, user);
+  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return computeAvailableMarkings(maxMarkings, allMarkings);
 };

@@ -46,6 +46,12 @@ const rootSettingsFragment = graphql`
     platform_whitemark
     platform_session_idle_timeout
     platform_session_timeout
+    platform_data_sharing_max_markings {
+      id
+      definition
+      definition_type
+      x_opencti_order
+    }
     platform_feature_flags {
       id
       enable

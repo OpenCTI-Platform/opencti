@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -7,7 +6,7 @@ import { createEntity, deleteElementById, loadEntity, updateAttribute } from '..
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { fromBase64, isNotEmptyField, toBase64 } from '../../database/utils';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import {
   type EditInput,
   type FilterGroup,
@@ -25,7 +24,7 @@ import {
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
   type QueryPublicStixRelationshipsNumberArgs
 } from '../../generated/graphql';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
@@ -46,6 +45,7 @@ import { bookmarks } from '../../domain/user';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
+import { getAvailableDataSharingMarkings } from '../../domain/settings';
 
 export const findById = (
   context: AuthContext,
@@ -77,6 +77,7 @@ export const getPublicDashboardByUriKey = (
   context: AuthContext,
   uri_key: string,
 ) => {
+  logApp.info('[OPENCTI] Public dashboard - trying to fetch public dashboard with URI KEY', { uri_key });
   return loadEntity(
     context,
     SYSTEM_USER,
@@ -125,6 +126,20 @@ export const addPublicDashboard = async (
     throw FunctionalError('Cannot published empty dashboard');
   }
 
+  const adminAuthorizedMembers = dashboard.authorized_members
+    .filter((member) => member.access_right === 'admin')
+    .map((member) => member.id);
+
+  if (!adminAuthorizedMembers.includes(user.id)) {
+    throw ForbiddenAccess('You are not allowed to do this.');
+  }
+
+  const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-');
+  const existingDashboard = await getPublicDashboardByUriKey(context, uriKey);
+  if (existingDashboard) {
+    throw FunctionalError(`Cannot published the dashboard, uri key ${uriKey} already used.`);
+  }
+
   const parsedManifest = JSON.parse(fromBase64(dashboard.manifest) ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
@@ -151,15 +166,23 @@ export const addPublicDashboard = async (
     [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     user,
   );
+
+  // check platform data sharing max markings
+  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, SYSTEM_USER)).map((m) => m.id);
+  if (input.allowed_markings_ids?.some((id) => !availableDataSharingMarkingIds.includes(id))) {
+    throw UnsupportedError('Invalid markings');
+  }
+
   // Create publicDashboard
   const publicDashboardToCreate = {
     name: input.name,
+    enabled: input.enabled,
     description: input.description,
     public_manifest: publicManifest,
     private_manifest: dashboard.manifest,
     dashboard_id: input.dashboard_id,
     user_id: user.id,
-    uri_key: uuidv4(),
+    uri_key: uriKey,
     authorized_members: authorizedMembers,
     allowed_markings_ids: input.allowed_markings_ids,
   };
@@ -193,11 +216,6 @@ export const publicDashboardEditField = async (
   id: string,
   input: EditInput[],
 ) => {
-  const invalidInput = input.some((item: EditInput) => item.key !== 'name' && item.key !== 'uri_key');
-  if (invalidInput) {
-    throw UnsupportedError('Only name and uri_key can be updated');
-  }
-
   const { element } = await updateAttribute(
     context,
     user,
@@ -247,6 +265,8 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 // heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
   const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
   const timeSeriesParameters = dataSelection.map((selection) => {
     const filters = {
       filterGroups: [selection.filters],
@@ -275,6 +295,8 @@ export const publicStixRelationshipsMultiTimeSeries = async (
   args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
 ) => {
   const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
   const timeSeriesParameters = dataSelection.map((selection) => {
     const filters = {
       filterGroups: [selection.filters],
@@ -305,6 +327,7 @@ export const publicStixCoreObjectsNumber = async (
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -328,6 +351,7 @@ export const publicStixRelationshipsNumber = async (
   args: QueryPublicStixRelationshipsNumberArgs
 ): Promise<NumberResult> => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -351,6 +375,7 @@ export const publicStixCoreObjectsDistribution = async (
   args: QueryPublicStixCoreObjectsDistributionArgs
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -517,6 +542,7 @@ export const publicBookmarks = async (
   args: QueryPublicBookmarksArgs
 ) => {
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
 
   const selection = dataSelection[0];
   const { filters } = selection;

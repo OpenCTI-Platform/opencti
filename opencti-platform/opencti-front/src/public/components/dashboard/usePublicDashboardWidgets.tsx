@@ -27,24 +27,21 @@ import PublicStixRelationshipsTreeMap from './stix_relationships/PublicStixRelat
 import PublicStixRelationshipsMap from './stix_relationships/PublicStixRelationshipsMap';
 import PublicStixCoreObjectsHorizontalBars from './stix_core_objects/PublicStixCoreObjectsHorizontalBars';
 import PublicStixRelationshipsHorizontalBars from './stix_relationships/PublicStixRelationshipsHorizontalBars';
-import PublicStixDomainObjectBookmarksList from './stix_domain_objects/PublicStixDomainObjectBookmarksList';
 import PublicStixRelationshipsMultiHorizontalBars from './stix_relationships/PublicStixRelationshipsMultiHorizontalBars';
 import PublicStixRelationshipsPolarArea from './stix_relationships/PublicStixRelationshipsPolarArea';
 import PublicStixCoreObjectsPolarArea from './stix_core_objects/PublicStixCoreObjectsPolarArea';
+import { useFormatter } from '../../../components/i18n';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
+  const { t_i18n } = useFormatter();
+
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
   const endDate = config?.relativeDate ? formatDate(dayStartDate(null, false)) : config?.endDate;
 
   const entityWidget = (widget: PublicManifestWidget) => {
     switch (widget.type) {
       case 'bookmark':
-        return (
-          <PublicStixDomainObjectBookmarksList
-            uriKey={uriKey}
-            widget={widget}
-          />
-        );
+        return t_i18n('Bookmarks are not supported in public dashboards');
       case 'number':
         return (
           <PublicStixCoreObjectsNumber
@@ -120,7 +117,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'horizontal-bar':
         if (widget.dataSelection.length > 1) {
           // TODO implement multi horizontal bars with breakdowns
-          return 'Not implemented yet';
+          return t_i18n('Not implemented yet');
         }
         return (
           <PublicStixCoreObjectsHorizontalBars
@@ -167,7 +164,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       default:
-        return 'Not implemented yet';
+        return t_i18n('Not implemented yet');
     }
   };
 
@@ -310,7 +307,14 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       default:
-        return 'Not implemented yet';
+        return t_i18n('Not implemented yet');
+    }
+  };
+
+  const auditWidget = (widget: PublicManifestWidget) => {
+    switch (widget.type) {
+      default:
+        return t_i18n('Audits are not supported in public dashboards');
     }
   };
 
@@ -324,13 +328,14 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
           />
         );
       default:
-        return 'Not implemented yet';
+        return t_i18n('Not implemented yet');
     }
   };
 
   return {
     entityWidget,
     relationshipWidget,
+    auditWidget,
     rawWidget,
   };
 };

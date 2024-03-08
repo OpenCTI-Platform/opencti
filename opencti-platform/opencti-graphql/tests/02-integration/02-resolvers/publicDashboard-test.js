@@ -1,8 +1,11 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, participantQuery, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -37,6 +40,7 @@ const READ_QUERY = gql`
       id
       name
       uri_key
+      enabled
     }
   }
 `;
@@ -47,6 +51,7 @@ const READ_URI_KEY_QUERY = gql`
       id
       name
       uri_key
+      enabled
     }
   }
 `;
@@ -75,6 +80,25 @@ const UPDATE_QUERY = gql`
     publicDashboardFieldPatch(id: $id, input: $input) {
       id
       name
+      enabled
+    }
+  }
+`;
+
+const UPDATE_MEMBERS_QUERY = gql`
+  mutation workspaceEditAuthorizedMembers(
+    $id: ID!
+    $input: [MemberAccessInput!]!
+  ) {
+    workspaceEditAuthorizedMembers(id: $id, input: $input) {
+      id
+      name
+      authorizedMembers {
+        id
+        name
+        entity_type
+        access_right
+      }
     }
   }
 `;
@@ -130,8 +154,10 @@ describe('PublicDashboard resolver', () => {
     // Create the publicDashboard
     const PUBLICDASHBOARD_TO_CREATE = {
       input: {
-        name: 'private dashboard',
+        name: 'public dashboard',
+        uri_key: 'public-dashboard',
         dashboard_id: privateDashboardInternalId,
+        enabled: true,
       },
     };
     const emptyPublicDashboard = await queryAsAdmin({
@@ -161,12 +187,14 @@ describe('PublicDashboard resolver', () => {
       let publicDashboardInternalId;
       let publicDashboardUriKey;
 
-      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create private dashboards', async () => {
+      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create public dashboards', async () => {
         // Create the publicDashboard
         const PUBLICDASHBOARD2_TO_CREATE = {
           input: {
             name: publicDashboardName,
+            uri_key: publicDashboardName,
             dashboard_id: privateDashboardInternalId,
+            enabled: true,
           },
         };
         const publicDashboard = await participantQuery({
@@ -179,12 +207,51 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboard.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
       });
 
+      it('User with EXPLORE_EXUPDATE_PUBLISH capability but private dashboard view access right cannot create public dashboard', async () => {
+        // Add editor user in private dashboard authorizedMembers with view access right
+        const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+        const authorizedMembersUpdate = [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin',
+          },
+          {
+            id: userEditorId,
+            access_right: 'view',
+          },
+        ];
+        const authorizedMembersUpdateQuery = await queryAsAdmin({
+          query: UPDATE_MEMBERS_QUERY,
+          variables: { id: privateDashboardInternalId, input: authorizedMembersUpdate },
+        });
+        expect(authorizedMembersUpdateQuery.data.workspaceEditAuthorizedMembers.authorizedMembers.length).toEqual(2);
+
+        // Create the publicDashboard
+        const PUBLICDASHBOARD3_TO_CREATE = {
+          input: {
+            name: publicDashboardName,
+            uri_key: publicDashboardName,
+            dashboard_id: privateDashboardInternalId,
+            enabled: true,
+          },
+        };
+        const queryResult = await editorQuery({
+          query: CREATE_QUERY,
+          variables: PUBLICDASHBOARD3_TO_CREATE,
+        });
+        expect(queryResult).not.toBeNull();
+        expect(queryResult.errors.length).toEqual(1);
+        expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
+      });
+
       it('should publicDashboard created', async () => {
         // Create the publicDashboard
         const PUBLIC_DASHBOARD_TO_CREATE = {
           input: {
             name: publicDashboardName,
+            uri_key: publicDashboardName,
             dashboard_id: privateDashboardInternalId,
+            enabled: true,
           },
         };
         const publicDashboard = await queryAsAdmin({
@@ -237,7 +304,7 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.errors.length).toEqual(1);
-        expect(queryResult.errors.at(0).message).toEqual('Only name and uri_key can be updated');
+        expect(queryResult.errors.at(0).message).toEqual('Validation error');
       });
 
       it('should update publicDashboard', async () => {
@@ -263,6 +330,28 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult).not.toBeNull();
         expect(queryResult.errors.length).toEqual(1);
         expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
+      });
+
+      it('should disabled/enabled publicDashboard', async () => {
+        // Disabled public dashboard
+        const disabledQueryResult = await queryAsAdmin({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'enabled', value: false },
+          },
+        });
+        expect(disabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(false);
+
+        // Enabled public dashboard
+        const enabledQueryResult = await queryAsAdmin({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'enabled', value: true },
+          },
+        });
+        expect(enabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(true);
       });
 
       describe('Tests widgets API', () => {
@@ -403,6 +492,55 @@ describe('PublicDashboard resolver', () => {
           // endregion
         });
 
+        it('should not return data if disabled publicDashboard', async () => {
+          // Disabled public dashboard
+          const disabledQueryResult = await queryAsAdmin({
+            query: UPDATE_QUERY,
+            variables: {
+              id: publicDashboardInternalId,
+              input: { key: 'enabled', value: false },
+            },
+          });
+          expect(disabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(false);
+
+          const API_SCO_NUMBER_QUERY = gql`
+            query PublicStixCoreObjectsNumber(
+              $startDate: DateTime
+              $endDate: DateTime
+              $uriKey: String!
+              $widgetId : String!
+            ) {
+              publicStixCoreObjectsNumber(
+                startDate: $startDate
+                endDate: $endDate
+                uriKey: $uriKey
+                widgetId : $widgetId
+              ) {
+                total
+                count
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_SCO_NUMBER_QUERY,
+            variables: {
+              uriKey: publicDashboardUriKey,
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+            },
+          });
+          expect(data.publicStixCoreObjectsNumber).toBeNull();
+
+          // Enabled public dashboard
+          const enabledQueryResult = await queryAsAdmin({
+            query: UPDATE_QUERY,
+            variables: {
+              id: publicDashboardInternalId,
+              input: { key: 'enabled', value: true },
+            },
+          });
+          expect(enabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(true);
+        });
+
         it('should return the data for API: SCO Number', async () => {
           const API_SCO_NUMBER_QUERY = gql`
             query PublicStixCoreObjectsNumber(
@@ -422,6 +560,8 @@ describe('PublicDashboard resolver', () => {
               }
             }
           `;
+          resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
+
           const { data } = await queryAsAdmin({
             query: API_SCO_NUMBER_QUERY,
             variables: {
@@ -730,6 +870,281 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.data.publicDashboards.edges.length).toEqual(0);
+      });
+    });
+
+    describe('Tests widgets API with markings', () => {
+      const READ_MAX_MARKINGS_QUERY = gql`
+        query settingsMaxMarkings {
+          settings {
+            id
+          }
+        }
+      `;
+      const EDIT_MAX_MARKINGS_QUERY = gql`
+        mutation edtSettingsMaxMarkings($id: ID!, $input: [EditInput]!) {
+          settingsEdit(id: $id) {
+            fieldPatch(input: $input) {
+              platform_data_sharing_max_markings {
+                id
+                definition
+                definition_type
+                x_opencti_order
+              }
+            }
+          }
+        }
+      `;
+      const API_SCR_NUMBER_QUERY = gql`
+        query PublicStixRelationshipsNumber(
+          $startDate: DateTime
+          $endDate: DateTime
+          $uriKey: String!
+          $widgetId : String!
+        ) {
+          publicStixRelationshipsNumber(
+            startDate: $startDate
+            endDate: $endDate
+            uriKey: $uriKey
+            widgetId : $widgetId
+          ) {
+            total
+            count
+          }
+        }
+      `;
+
+      let publicDashboardInternalId;
+
+      let tlpClear;
+      let tlpGreen;
+      let tlpRed;
+
+      let spainId;
+      let raditzId;
+      let vegetaId;
+
+      let settingsId;
+
+      afterAll(async () => {
+        // region Reset max markings.
+        await queryAsAdmin({
+          query: EDIT_MAX_MARKINGS_QUERY,
+          variables: {
+            id: settingsId,
+            input: {
+              key: 'platform_data_sharing_max_markings',
+              value: []
+            }
+          },
+        });
+        // endregion
+        // region Delete areas.
+        const DELETE_AREA = gql`
+          mutation administrativeAreaDelete($id: ID!) {
+            administrativeAreaDelete(id: $id)
+          }
+        `;
+        await queryAsAdmin({
+          query: DELETE_AREA,
+          variables: { id: spainId },
+        });
+        // endregion
+        // region Delete malwares.
+        const DELETE_MALWARE = gql`
+          mutation malwareDelete($id: ID!) {
+            malwareEdit(id: $id) {
+              delete
+            }
+          }
+        `;
+        await queryAsAdmin({
+          query: DELETE_MALWARE,
+          variables: { id: raditzId },
+        });
+        await queryAsAdmin({
+          query: DELETE_MALWARE,
+          variables: { id: vegetaId },
+        });
+        // endregion
+        // region Delete the publicDashboard.
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: publicDashboardInternalId },
+        });
+        // endregion
+      });
+
+      beforeAll(async () => {
+        // region Fetch markings.
+        const MARKINGS_QUERY = gql`
+          query markings {
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+          }
+        `;
+        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
+        const markings = data.markingDefinitions.edges.map((e) => e.node);
+        tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
+        tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
+        tlpRed = markings.find((m) => m.definition === 'TLP:RED');
+        // endregion
+        // region Set max markings
+        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
+        settingsId = settingsResult.data.settings.id;
+        await queryAsAdmin({
+          query: EDIT_MAX_MARKINGS_QUERY,
+          variables: {
+            id: settingsId,
+            input: {
+              key: 'platform_data_sharing_max_markings',
+              value: [tlpRed.id]
+            }
+          },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+        // endregion
+        // region Create the publicDashboard.
+        const PUBLIC_DASHBOARD_TO_CREATE = {
+          input: {
+            name: 'public dashboard markings',
+            uri_key: 'public-dashboard-markings',
+            dashboard_id: privateDashboardInternalId,
+            allowed_markings_ids: [tlpGreen.id],
+            enabled: true,
+          },
+        };
+        const publicDashboard = await queryAsAdmin({
+          query: CREATE_QUERY,
+          variables: PUBLIC_DASHBOARD_TO_CREATE,
+        });
+        resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
+        publicDashboardInternalId = publicDashboard.data.publicDashboardAdd.id;
+        // endregion
+        // region Create some areas.
+        const CREATE_AREA = gql`
+          mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
+            administrativeAreaAdd(input: $input) { id }
+          }
+        `;
+        const spain = await queryAsAdmin({
+          query: CREATE_AREA,
+          variables: {
+            input: {
+              name: 'spain',
+              description: 'widget tests',
+              objectMarking: [tlpGreen.id]
+            }
+          },
+        });
+        spainId = spain.data.administrativeAreaAdd.id;
+        // endregion
+        // region Create some malwares.
+        const CREATE_MALWARES = gql`
+          mutation MalwareAdd($input: MalwareAddInput!) {
+            malwareAdd(input: $input) { id }
+          }
+        `;
+        const raditz = await queryAsAdmin({
+          query: CREATE_MALWARES,
+          variables: {
+            input: {
+              name: 'raditz',
+              malware_types: ['ddos'],
+              description: 'widget tests',
+              objectMarking: [tlpGreen.id]
+            }
+          },
+        });
+        raditzId = raditz.data.malwareAdd.id;
+        const vegeta = await editorQuery({
+          query: CREATE_MALWARES,
+          variables: {
+            input: {
+              name: 'vegeta',
+              malware_types: ['backdoor'],
+              description: 'widget tests',
+              objectMarking: [tlpGreen.id]
+            }
+          },
+        });
+        vegetaId = vegeta.data.malwareAdd.id;
+        // endregion
+        // region Create targets relationships between areas and malwares.
+        const ADD_TARGETS_REL = gql`
+          mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+            stixCoreRelationshipAdd(input: $input) { id }
+          }
+        `;
+        await editorQuery({
+          query: ADD_TARGETS_REL,
+          variables: {
+            input: {
+              relationship_type: 'targets',
+              fromId: raditzId,
+              toId: spainId,
+              objectMarking: [tlpGreen.id]
+            }
+          },
+        });
+        await editorQuery({
+          query: ADD_TARGETS_REL,
+          variables: {
+            input: {
+              relationship_type: 'targets',
+              fromId: vegetaId,
+              toId: spainId,
+              objectMarking: [tlpGreen.id]
+            }
+          },
+        });
+        // endregion
+      });
+
+      it('should return the data for API: SCR Number', async () => {
+        const aaa = await queryAsAdmin({
+          query: API_SCR_NUMBER_QUERY,
+          variables: {
+            uriKey: 'public-dashboard-markings',
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+          },
+        });
+        console.log(aaa);
+        const result = aaa.data.publicStixRelationshipsNumber;
+        expect(result.total).toEqual(2);
+        expect(result.count).toEqual(0);
+      });
+
+      it('should return the data for API: SCR Number with limited max marking', async () => {
+        // Change the max marking to something more restrictive.
+        await queryAsAdmin({
+          query: EDIT_MAX_MARKINGS_QUERY,
+          variables: {
+            id: settingsId,
+            input: {
+              key: 'platform_data_sharing_max_markings',
+              value: [tlpClear.id]
+            }
+          },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+        const { data } = await queryAsAdmin({
+          query: API_SCR_NUMBER_QUERY,
+          variables: {
+            uriKey: 'public-dashboard-markings',
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+          },
+        });
+        const result = data.publicStixRelationshipsNumber;
+        expect(result.total).toEqual(0);
+        expect(result.count).toEqual(0);
       });
     });
   });
