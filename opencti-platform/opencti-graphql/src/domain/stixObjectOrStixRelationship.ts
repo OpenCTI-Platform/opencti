@@ -4,7 +4,7 @@ import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { buildRelationData, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs } from '../database/middleware';
+import { buildRelationData, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -47,6 +47,11 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   opts = {}
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   const to = await findById(context, user, input.toId);
+
+  if (input.relationship_type === 'created-by') {
+    await validateCreatedBy(context, user, input.toId);
+  }
+
   const patchedFrom = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, [input.toId], UPDATE_OPERATION_ADD, opts);
   const { element: refRelation } = await buildRelationData(context, user, { from: patchedFrom, to, relationship_type: input.relationship_type });
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, refRelation, user);

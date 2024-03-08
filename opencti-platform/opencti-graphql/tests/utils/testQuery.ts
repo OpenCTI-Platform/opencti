@@ -148,7 +148,7 @@ interface Organization {
   id: string
 }
 
-const TEST_ORGANIZATION: Organization = {
+export const TEST_ORGANIZATION: Organization = {
   name: 'TestOrganization',
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
