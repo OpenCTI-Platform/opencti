@@ -309,7 +309,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
   const [targetEntities, setTargetEntities] = useState(
-    targetEntitiesProps
+    targetEntitiesProps,
   );
   const [selectedElements, setSelectedElements] = useState<Record<string, StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data>>({});
   useEffect(() => {
