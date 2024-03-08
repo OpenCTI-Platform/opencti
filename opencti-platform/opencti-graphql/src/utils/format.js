@@ -74,9 +74,9 @@ export const computeRangeIntersection = (a, b) => {
 
 export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
 export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');
-export const dayAgo = () => {
+export const dayAgo = (days = 1) => {
   const currentDate = new Date();
-  currentDate.setDate(currentDate.getDate() - 1);
+  currentDate.setDate(currentDate.getDate() - days);
   return currentDate.toISOString().split('T')[0];
 };
 
