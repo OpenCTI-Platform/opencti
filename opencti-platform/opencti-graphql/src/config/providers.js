@@ -225,13 +225,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const firstname = samlAttributes[mappedConfig.firstname_attribute] || '';
           const lastname = samlAttributes[mappedConfig.lastname_attribute] || '';
           const { nameID, nameIDFormat } = samlAttributes;
-        const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
-        logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
+          const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+          const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
+          logApp.info('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
           // region roles mapping
-        if (isRoleBaseAccess) {
-          logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
-        }
+          if (isRoleBaseAccess) {
+            logApp.error('SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+          }
           const computeRolesMapping = () => {
             const attrRoles = roleAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
             const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
