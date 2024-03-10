@@ -321,7 +321,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenBAS now')}>
-                      <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io'} target="_blank" rel="noreferrer">
+                      <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color={isNotEmptyField(openBASUrl) ? 'success' : 'warning'}>
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
                         </Badge>
@@ -331,7 +331,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
-                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer">
+                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="info">
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? oermDark : oermLight)} alt="OERM" />
                         </Badge>
@@ -341,7 +341,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
-                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer">
+                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="info">
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? omtdDark : omtdLight)} alt="OMTD" />
                         </Badge>
