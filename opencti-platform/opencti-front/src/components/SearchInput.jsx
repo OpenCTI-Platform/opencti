@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     padding: '1px 10px 0 10px',
     marginRight: 5,
     backgroundColor: theme.palette.background.paper,
-    minWidth: 400,
+    minWidth: 550,
     width: '50%',
   },
   searchRootInDrawer: {
