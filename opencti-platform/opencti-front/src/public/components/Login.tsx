@@ -31,6 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textAlign: 'center',
     margin: '0 auto',
     width: '80%',
+    paddingBottom: 50,
   },
   login: {
     textAlign: 'center',
@@ -184,23 +185,25 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const isAuthButtons = authSSOs.length > 0;
   const isLoginMessage = isNotEmptyField(loginMessage);
   const isConsentMessage = isNotEmptyField(consentMessage);
-  let loginHeight = 280;
+  let loginHeight = 320;
   if (type === '2FA_ACTIVATION') {
-    loginHeight = 280;
+    loginHeight = 320;
   } else if (type === '2FA_VALIDATION') {
-    loginHeight = 230;
+    loginHeight = 270;
   } else if (isAuthButtons && isAuthForm && isLoginMessage) {
-    loginHeight = 400;
+    loginHeight = 440;
   } else if (isAuthButtons && isAuthForm) {
-    loginHeight = 350;
-  } else if (isAuthButtons && isLoginMessage) {
-    loginHeight = 250;
-  } else if (isAuthForm && (isLoginMessage || isConsentMessage)) {
-    loginHeight = 400;
+    loginHeight = 390;
   } else if (isAuthForm && isLoginMessage && isConsentMessage) {
-    loginHeight = 500;
+    loginHeight = 540;
+  } else if (isAuthButtons && isLoginMessage && isConsentMessage) {
+    loginHeight = 490;
+  } else if (isAuthButtons && (isLoginMessage || isConsentMessage)) {
+    loginHeight = 290;
+  } else if (isAuthForm && (isLoginMessage || isConsentMessage)) {
+    loginHeight = 440;
   } else if (isAuthButtons) {
-    loginHeight = 150;
+    loginHeight = 190;
   }
   const marginTop = dimension.height / 2 - loginHeight / 2 - 100;
   const [checked, setChecked] = useState(false);
