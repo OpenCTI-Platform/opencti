@@ -297,6 +297,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <BriefcaseCheckOutline style={style} fontSize={fontSize} role="img" />
       );
+    case 'task-template':
+      return (
+        <BriefcaseCheckOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'feedback':
       return (
         <BriefcaseEditOutline style={style} fontSize={fontSize} role="img" />
