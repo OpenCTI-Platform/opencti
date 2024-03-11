@@ -205,7 +205,7 @@ const DashboardSettings = () => {
                                 root: classes.muiSelectIcon,
                               }}
                               >
-                                <ItemIcon type="Dashboard" variant="inline" />
+                                <ItemIcon type="Dashboard" />
                               </ListItemIcon>
                               <ListItemText>{name}</ListItemText>
                             </MenuItem>
