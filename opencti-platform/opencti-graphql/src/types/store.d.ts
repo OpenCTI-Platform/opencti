@@ -79,8 +79,8 @@ interface StoreFile {
   version: string;
   mime_type: string;
   description: string;
-  order: number;
-  inCarousel: boolean;
+  order?: number;
+  inCarousel?: boolean;
 }
 
 interface BasicStoreIdentifier {

@@ -7549,8 +7549,8 @@ type StixCoreObjectEditMutations {
 
 input StixDomainObjectFileEditInput {
   id: String!
-  order: Int
   description: String
+  order: Int
   inCarousel: Boolean
 }
 

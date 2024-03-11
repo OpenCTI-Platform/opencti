@@ -413,6 +413,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     await elUpdateElement({
       _index: previous._index,
       internal_id: internalId,
+      entity_type: previous.entity_type, // required for schema validation
       updated_at: now(),
       x_opencti_files: files
     });

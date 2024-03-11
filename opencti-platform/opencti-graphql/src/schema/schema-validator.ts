@@ -28,7 +28,11 @@ export const validateAndFormatSchemaAttribute = (
   if (!attributeDefinition || isEmptyField(editInput.value)) {
     return;
   }
-  if (!attributeDefinition.multiple && editInput.value.length > 1) {
+  const isPatchObject = attributeDefinition.type === 'object' && !!editInput.object_path;
+  if (!isPatchObject && !attributeDefinition.multiple && editInput.value.length > 1) {
+    // with a patch object, the value matches something inside the object and not the object itself
+    // so we cannot check directly the multiplicity as it concerns an internal mapping
+    // let's assume it's OK, and validateDataBeforeIndexing would check it.
     throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple`, data: editInput });
   }
   // Data validation
@@ -78,9 +82,6 @@ export const validateAndFormatSchemaAttribute = (
         throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a numeric/string`, data: editInput });
       }
     });
-  }
-  if (attributeDefinition.type === 'object') {
-    // TODO JRI Implements a checker
   }
 };
 

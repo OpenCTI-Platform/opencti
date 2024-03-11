@@ -100,7 +100,8 @@ import {
   isNumericAttribute,
   isObjectAttribute,
   isObjectFlatAttribute,
-  schemaAttributesDefinition
+  schemaAttributesDefinition,
+  validateDataBeforeIndexing
 } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
@@ -3059,6 +3060,7 @@ export const elDeleteElements = async (context, user, elements) => {
   await elDeleteInstances(elements);
 };
 
+// TODO: get rid of this function and let elastic fail queries, so we can fix all of them by using the right type of data
 export const prepareElementForIndexing = (element) => {
   const thing = {};
   Object.keys(element).forEach((key) => {
@@ -3320,6 +3322,7 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
 };
 export const elUpdateElement = async (instance) => {
   const esData = prepareElementForIndexing(instance);
+  validateDataBeforeIndexing(esData);
   const dataToReplace = R.dissoc('representative', esData);
   const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
