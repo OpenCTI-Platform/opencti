@@ -69,7 +69,7 @@ import { createStixPattern } from '../../python/pythonBridge';
 import { generateKeyValueForIndicator } from '../../domain/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-sro';
-import { extractObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
+import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
@@ -962,7 +962,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
     for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
       const indicator = indicators[indexIndicator] as StixIndicator;
       if (indicator.type === 'indicator') {
-        const observables = extractObservablesFromIndicatorPattern(indicator.pattern);
+        const observables = extractValidObservablesFromIndicatorPattern(indicator.pattern);
         for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
           const observable = observables[indexObservable];
           const description = indicator.description ?? `Simple observable of indicator {${indicator.name || indicator.pattern}}`;

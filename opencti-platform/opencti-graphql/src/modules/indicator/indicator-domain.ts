@@ -6,7 +6,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError } from '../../config/errors';
-import { ENTITY_EMAIL_MESSAGE, ENTITY_NETWORK_TRAFFIC, isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -20,7 +20,7 @@ import {
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { cleanupIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -152,16 +152,6 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
   return listAllEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
-export const validateObservableGeneration = (observableType: string, indicatorPattern: string) => {
-  if (observableType === ENTITY_NETWORK_TRAFFIC && (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))) {
-    return false; // we can't create this type of observables (issue #5293)
-  }
-  if (observableType === ENTITY_EMAIL_MESSAGE && (indicatorPattern.includes('from_ref') || indicatorPattern.includes('sender_ref'))) {
-    return false; // we can't create this type of observables (issue #5293)
-  }
-  return true;
-};
-
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
@@ -169,11 +159,10 @@ export const createObservablesFromIndicator = async (
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
-  const observables = extractObservablesFromIndicatorPattern(pattern);
-  const filteredObservables = observables.filter((obs) => validateObservableGeneration(obs.type, pattern));
+  const observables = extractValidObservablesFromIndicatorPattern(pattern);
   const observablesToLink = [];
-  for (let index = 0; index < filteredObservables.length; index += 1) {
-    const observable = filteredObservables[index];
+  for (let index = 0; index < observables.length; index += 1) {
+    const observable = observables[index];
     const observableInput = {
       ...R.dissoc('type', observable),
       x_opencti_description: indicator.description
