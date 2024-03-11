@@ -1323,7 +1323,7 @@ class ToolBar extends Component {
         {({ bannerSettings, schema }) => {
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id);
-          const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
+          const promotionTypes = stixCyberObservableTypes.concat(['Indicator', 'Stix-Cyber-Observable']);
           const observablesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
@@ -1331,7 +1331,7 @@ class ToolBar extends Component {
           const isManualPromoteSelect = !selectAll
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
-          const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
+          const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
           const filterKeysMap = new Map();
           entityTypeFilterValues.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
@@ -1460,7 +1460,7 @@ class ToolBar extends Component {
                       </span>
                     </Tooltip>
                   )}
-                  {!promoteDisable && (
+                  {promoteEnabled && (
                     <Tooltip title={t('Indicators/observables generation')}>
                       <span>
                         <IconButton
