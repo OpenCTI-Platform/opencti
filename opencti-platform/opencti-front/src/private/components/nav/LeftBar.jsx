@@ -74,7 +74,7 @@ import {
 import Popover from '@mui/material/Popover';
 import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
-import Security from '../../../utils/Security';
+import Security, { KnowledgeSecurity } from '../../../utils/Security';
 import useGranted, {
   EXPLORE,
   KNOWLEDGE,
@@ -336,23 +336,25 @@ const LeftBar = () => {
         <MenuList component="nav" disablePadding={true}>
           {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
             return (
-              <StyledTooltip key={entry.label} title={t_i18n(entry.label)} placement="right">
-                <MenuItem
-                  component={Link}
-                  to={entry.link}
-                  selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
-                  dense={true}
-                  classes={{ root: classes.menuSubItem }}
-                >
-                  {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    {entry.icon}
-                  </ListItemIcon>}
-                  <ListItemText
-                    classes={{ primary: classes.menuSubItemText }}
-                    primary={t_i18n(entry.label)}
-                  />
-                </MenuItem>
-              </StyledTooltip>
+              <KnowledgeSecurity key={entry.label} needs={[KNOWLEDGE]} entity={entry.type}>
+                <StyledTooltip title={t_i18n(entry.label)} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to={entry.link}
+                    selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
+                    dense={true}
+                    classes={{ root: classes.menuSubItem }}
+                  >
+                    {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      {entry.icon}
+                    </ListItemIcon>}
+                    <ListItemText
+                      classes={{ primary: classes.menuSubItemText }}
+                      primary={t_i18n(entry.label)}
+                    />
+                  </MenuItem>
+                </StyledTooltip>
+              </KnowledgeSecurity>
             );
           })}
         </MenuList>
@@ -385,23 +387,28 @@ const LeftBar = () => {
         <MenuList component="nav">
           {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
             return (
-              <MenuItem
+              <KnowledgeSecurity
                 key={entry.label}
-                component={Link}
-                to={entry.link}
-                selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
-                dense={true}
-                classes={{ root: classes.menuHoverItem }}
-                onClick={handleSelectedMenuClose}
+                needs={[KNOWLEDGE]}
+                entity={entry.type}
               >
-                {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  {entry.icon}
-                </ListItemIcon>}
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n(entry.label)}
-                />
-              </MenuItem>
+                <MenuItem
+                  component={Link}
+                  to={entry.link}
+                  selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
+                  dense={true}
+                  classes={{ root: classes.menuHoverItem }}
+                  onClick={handleSelectedMenuClose}
+                >
+                  {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    {entry.icon}
+                  </ListItemIcon>}
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n(entry.label)}
+                  />
+                </MenuItem>
+              </KnowledgeSecurity>
             );
           })}
         </MenuList>
