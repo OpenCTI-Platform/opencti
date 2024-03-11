@@ -3074,9 +3074,7 @@ export const prepareElementForIndexing = (element) => {
         if (R.is(String, f)) { // For string, trim by default
           return f.trim();
         }
-        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, limited transform
-          // there is no attribute registration for inner mappings, so we cannot simply use isXXXAttribute functions in a recursion
-          // this would only make basic transform like string trimming
+        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
           return prepareElementForIndexing(f);
         }
         // For all other types, no transform (list of boolean is not supported)
@@ -3088,7 +3086,7 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
-    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, limited transform
+    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();
@@ -3330,7 +3328,7 @@ export const elUpdateElement = async (instance) => {
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
-    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative?.main ?? esData.name });
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative.main });
   }
   return Promise.all([replacePromise, connectionPromise]);
 };
