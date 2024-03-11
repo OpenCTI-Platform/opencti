@@ -119,11 +119,6 @@ class StixCoreObjectHistory extends Component {
                   mode: 'and',
                   filters: [
                     {
-                      key: 'context_data.id',
-                      values: [stixCoreObjectId],
-                      operator: 'wildcard',
-                    },
-                    {
                       key: 'event_type',
                       values: ['create', 'delete', 'mutation'], // retro-compatibility
                     },
@@ -139,6 +134,20 @@ class StixCoreObjectHistory extends Component {
                         key: 'event_scope',
                         values: [], // if event_scope is null, event_type is not
                         operator: 'nil',
+                      },
+                    ],
+                    filterGroups: [],
+                  },
+                  {
+                    mode: 'or',
+                    filters: [
+                      {
+                        key: 'context_data.from_id',
+                        values: [stixCoreObjectId],
+                      },
+                      {
+                        key: 'context_data.to_id',
+                        values: [stixCoreObjectId],
                       },
                     ],
                     filterGroups: [],
