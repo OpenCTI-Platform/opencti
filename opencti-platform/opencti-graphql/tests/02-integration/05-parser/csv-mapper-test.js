@@ -64,11 +64,8 @@ const mapData = async (fileName, mapper, user = ADMIN_USER) => {
  * /!\
  * To run those tests, we need the data injected by loader-test.
  * So if you want to run only this file follow the steps below:
- * - run 'yarn test:dev loader-test' to inject data in your DB,
- * - after test is done, stop the run,
- * - comment the line 'await elDeleteIndices(...);' in globalSetup.js (DO NOT COMMIT THIS CHANGES),
- * - comment the line 'await createTestUsers();' in globalSetup.js (DO NOT COMMIT THIS CHANGES),
- * - run 'yarn test:dev csv-mapper-test' should be ok
+ * - run 'yarn test:dev:init" to set up a seeded test DB
+ * - run 'yarn test:dev:resume csv-mapper-test'
  */
 describe('CSV-MAPPER', () => {
   let individual;

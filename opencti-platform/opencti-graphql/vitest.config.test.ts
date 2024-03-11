@@ -10,7 +10,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     include,
     testTimeout: 1200000,
     teardownTimeout: 20000,
-    globalSetup: ['./tests/utils/globalSetup.js'],
+    globalSetup: ['./tests/utils/globalSetup.ts'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {
       provider: 'v8',
@@ -41,4 +41,3 @@ export const buildTestConfig = (include: string[]) => defineConfig({
 });
 
 export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
-// export default buildTestConfig(['tests/(02)-*/**/(loader|filterGroup|workspace)*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);

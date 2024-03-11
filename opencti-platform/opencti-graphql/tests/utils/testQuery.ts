@@ -473,6 +473,20 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
   };
 };
 
+// TODO: use a real healthcheck query
+const HEALTHCHECK_QUERY = `
+  query {
+    about {
+      version
+    }
+  }
+`;
+
+export const isPlatformAlive = async () => {
+  const { data } = await adminQuery(HEALTHCHECK_QUERY, { });
+  return !!data?.about.version;
+};
+
 export const serverFromUser = (user = ADMIN_USER) => {
   return new ApolloServer({
     schema: createSchema(),
