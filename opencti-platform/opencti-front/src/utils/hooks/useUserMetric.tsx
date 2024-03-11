@@ -1,5 +1,5 @@
 import { FormatNumberOptions, useIntl } from 'react-intl';
-import convert, { Length, Mass } from 'convert';
+import convert, { Length, Mass, Unit } from 'convert';
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
@@ -45,7 +45,7 @@ const heightsConverterLoad = (userMetricType: SupportedUnitType) => {
       const { measure, date_seen, index } = data;
       const numericMeasure = parseFloat(String(measure));
       const lengthPrimaryUnit = Units[userMetricType].length;
-      const converted = convert<number>(numericMeasure, 'm').to(lengthPrimaryUnit).toFixed(2); // Meter is the pivot format
+      const converted = convert<number, Unit>(numericMeasure, 'm').to(lengthPrimaryUnit).toFixed(2); // Meter is the pivot format
       return { measure: Number(converted), date_seen, index };
     });
   };
@@ -54,7 +54,7 @@ const heightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const lengthPrimaryUnit = Units[userMetricType].length;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, lengthPrimaryUnit).to('m').toFixed(8)); // Meter is the pivot format
+    return Number(convert<number, Unit>(numericMeasure, lengthPrimaryUnit).to('m').toFixed(8)); // Meter is the pivot format
   };
 };
 const heightsConverterSave = (userMetricType: SupportedUnitType) => {
@@ -71,7 +71,7 @@ const weightsConverterLoad = (userMetricType: SupportedUnitType) => {
     return (weights ?? []).map(({ measure, date_seen, index }) => {
       const numericMeasure = parseFloat(String(measure));
       const weightPrimaryUnit = Units[userMetricType].weight;
-      const converted = convert<number>(numericMeasure, 'kg').to(weightPrimaryUnit).toFixed(2); // Meter is the pivot format
+      const converted = convert<number, Unit>(numericMeasure, 'kg').to(weightPrimaryUnit).toFixed(2); // Meter is the pivot format
       return { measure: Number(converted), date_seen, index };
     });
   };
@@ -80,7 +80,7 @@ const weightToPivotFormat = (userMetricType: SupportedUnitType) => {
   return (measure: number | string | null | undefined) => {
     const weightPrimaryUnit = Units[userMetricType].weight;
     const numericMeasure = parseFloat(String(measure));
-    return Number(convert<number>(numericMeasure, weightPrimaryUnit).to('kg').toFixed(8)); // Kg is the pivot format
+    return Number(convert<number, Unit>(numericMeasure, weightPrimaryUnit).to('kg').toFixed(8)); // Kg is the pivot format
   };
 };
 const weightsConverterSave = (userMetricType: SupportedUnitType) => {
