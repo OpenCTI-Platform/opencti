@@ -136,7 +136,7 @@ Before pushing your code you need to validate the syntax and ensure the testing 
 For starting the test you will need to create a test.json configuration file.
 You can use the same dependencies by only adapting all prefix for all dependencies.
 
-Tests are using dedicated indices in the Elastic database (prefixed with `test-*`).
+Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have setup in test.json).
 
 The following command will run the complete test suite using vitest, which might take more than 30 minutes.
 It starts by cleaning up the test database and seeding a minimal dataset.
@@ -156,7 +156,7 @@ to the command line to run only this file.
 
 `yarn test:dev:resume`
 
-This command will NOT cleanup & initialize the test database and thus will be quicker to execute. 
+This last command will NOT cleanup & initialize the test database and thus will be quicker to execute. 
 
 ## Frontend
 
