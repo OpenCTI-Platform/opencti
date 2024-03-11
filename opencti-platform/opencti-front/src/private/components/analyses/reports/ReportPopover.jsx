@@ -3,11 +3,12 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
+import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
@@ -16,6 +17,7 @@ const ReportPopover = ({ id }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
+  const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -30,6 +32,13 @@ const ReportPopover = ({ id }) => {
     handleClose();
   };
   const handleCloseEdit = () => setDisplayEdit(false);
+  const handleOpenEnrichment = () => {
+    setDisplayEnrichment(true);
+    handleClose();
+  };
+  const handleCloseEnrichment = () => {
+    setDisplayEnrichment(false);
+  };
   return (
     <>
       <ToggleButton
@@ -41,10 +50,14 @@ const ReportPopover = ({ id }) => {
       </ToggleButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
+        </Security>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
+      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
       <ReportPopoverDeletion
         reportId={id}
         displayDelete={displayDelete}
