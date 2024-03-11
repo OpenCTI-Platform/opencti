@@ -470,13 +470,7 @@ class AttackPattern:
                 )
             elif "external_references" in stix_object:
                 for external_reference in stix_object["external_references"]:
-                    if (
-                        external_reference["source_name"] == "mitre-attack"
-                        or external_reference["source_name"] == "mitre-pre-attack"
-                        or external_reference["source_name"] == "mitre-mobile-attack"
-                        or external_reference["source_name"] == "mitre-ics-attack"
-                        or external_reference["source_name"] == "amitt-attack"
-                    ):
+                    if external_reference["source_name"].startswith("mitre-"):
                         x_mitre_id = (
                             external_reference["external_id"]
                             if "external_id" in external_reference
