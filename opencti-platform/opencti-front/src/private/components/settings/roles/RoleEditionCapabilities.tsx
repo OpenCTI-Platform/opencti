@@ -60,6 +60,14 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
   }
 `;
 
+export const overridableCapabilities = [
+  'KNOWLEDGE',
+  'KNOWLEDGE_KNPARTICIPATE',
+  'KNOWLEDGE_KNUPDATE',
+  'KNOWLEDGE_KNUPDATE_KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
+  'KNOWLEDGE_KNUPDATE_KNDELETE',
+];
+
 interface RoleEditionCapabilitiesComponentProps {
   role: RoleEditionCapabilities_role$data;
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
@@ -137,13 +145,16 @@ RoleEditionCapabilitiesComponentProps
             const isChecked = isDisabled || roleCapability !== undefined;
 
             const overrides = [];
-            for (const override of role.capabilities_overrides ?? []) {
-              let hasCapability = false;
-              for (const c of override?.capabilities ?? []) {
-                if (c?.name === capability.name) hasCapability = true;
+            if (overridableCapabilities.includes(capability.name)) {
+              for (const override of role.capabilities_overrides ?? []) {
+                const overriddenCapabilities = override?.capabilities ?? [];
+                let isOverridden = false;
+                for (const c of overriddenCapabilities) {
+                  if (c?.name === capability.name) isOverridden = true;
+                }
+                if (!isOverridden && isChecked) overrides.push(override?.entity);
+                else if (isOverridden && !isChecked) overrides.push(override?.entity);
               }
-              if (!hasCapability && isChecked) overrides.push(override?.entity);
-              else if (hasCapability && !isChecked) overrides.push(override?.entity);
             }
 
             return (

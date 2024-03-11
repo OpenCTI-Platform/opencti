@@ -7,7 +7,7 @@ import { LocalPoliceOutlined } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import usePreloadedFragment from 'src/utils/hooks/usePreloadedFragment';
-import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
+import { overridableCapabilities, roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import { SubTypesLinesQuery } from '../sub_types/__generated__/SubTypesLinesQuery.graphql';
@@ -80,7 +80,7 @@ const addOverrideUnique = (
     ...existing,
     {
       entity,
-      capabilities,
+      capabilities: capabilities.filter((c) => overridableCapabilities.includes(c.name)),
     },
   ];
   return result;
@@ -121,13 +121,6 @@ RoleEditionOverrideComponentProps
   const [commitEditOverrides] = useMutation(roleEditionEditOverrides);
   const { capabilities_overrides } = role;
   const [selected, setSelected] = useState<string>('');
-  const overridableCapabilities = [
-    'KNOWLEDGE',
-    'KNOWLEDGE_KNPARTICIPATE',
-    'KNOWLEDGE_KNUPDATE',
-    'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
-    'KNOWLEDGE_KNUPDATE_KNDELETE',
-  ];
 
   if (capabilities?.edges) {
     return (
@@ -220,8 +213,6 @@ RoleEditionOverrideComponentProps
                       divider={true}
                       style={{
                         paddingLeft,
-                        flex: 1,
-                        overflowY: 'scroll',
                       }}
                     >
                       <ListItemIcon style={{ minWidth: 32 }}>
