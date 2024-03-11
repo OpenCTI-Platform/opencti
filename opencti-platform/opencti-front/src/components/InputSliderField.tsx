@@ -72,7 +72,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               label={label}
               onSubmit={onSubmit}
               onFocus={onFocus}
-              disabled={disabled || value > max}
+              disabled={disabled}
               helpertext={
                 <SubscriptionFocus context={editContext} fieldName={name} />
               }
