@@ -35,6 +35,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
+import useAuth from '../../../../utils/hooks/useAuth';
 import { TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
 import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
@@ -95,6 +96,7 @@ StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
@@ -102,7 +104,8 @@ StixCoreObjectQuickSubscriptionContentProps
   const [existingInstanceTriggersData, refetch] = useRefetchableFragment<TriggerQuery, FragmentKey>(stixCoreObjectTriggersFragment, triggerData);
 
   const existingInstanceTriggersEdges = existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
-  const triggerUpdate = existingInstanceTriggersEdges.length > 0;
+  const myInstanceTriggers = existingInstanceTriggersEdges.filter((e) => e.node.recipients?.some((r) => r.id === me.id)) ?? [];
+  const triggerUpdate = myInstanceTriggers.length > 0;
 
   const [commitAddTrigger] = useMutation<TriggerLiveCreationKnowledgeMutation>(
     triggerLiveKnowledgeCreationMutation,
@@ -392,7 +395,7 @@ StixCoreObjectQuickSubscriptionContentProps
   };
 
   const updateInstanceTrigger = () => {
-    const triggerValues = existingInstanceTriggersEdges
+    const triggerValues = myInstanceTriggers
       .filter((l) => l)
       .map((n) => ({
         ...pick(['id', 'name', 'description', 'filters'], n?.node),
