@@ -2110,28 +2110,43 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   if (![WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID].includes(arrayKeys[0])) {
     throw UnsupportedError('The key is not correct', { keys: arrayKeys });
   }
+  let newFilterGroup;
+  let newFilter;
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
-    return {
+    newFilter = {
       ...filter,
       key: ['x_opencti_workflow_id'], // we just have to change the key
     };
-  }
-  if (operator === 'eq' || operator === 'not_eq') {
-    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
-    // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
-    statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
-    // we construct a new filter that matches against the status internal_id with a template id in the filters values
-    // !!! it works to do the mode/operator filter on the status (and not on the template)
-    // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
-    const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
-    return {
-      key: ['x_opencti_workflow_id'],
-      values: statusIds,
+  } else if (operator === 'eq' || operator === 'not_eq') {
+    const statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+    const filters = [];
+    for (let i = 0; i < values.length; i += 1) {
+      const filterValue = values[i];
+      // fetch the statuses associated to the filter value
+      // (keep the statuses with their id corresponding to the filter value, or with their template id corresponding to the filter value)
+      const associatedStatuses = statuses.filter((status) => (filterValue === status.id || filterValue === status.template_id));
+      // we construct a new filter that matches against the status internal_id with a template id in the filters values
+      // !!! it works to do the mode/operator filter on the status (and not on the template)
+      // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
+      const associatedStatuseIds = associatedStatuses.length > 0 ? associatedStatuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+      filters.push({
+        key: ['x_opencti_workflow_id'],
+        values: associatedStatuseIds,
+        mode: operator === 'eq'
+          ? 'or' // at least one associated status should match
+          : 'and', // all the associated status of the value shouldn't match
+        operator,
+      });
+    }
+    newFilterGroup = {
       mode,
-      operator,
+      filters,
+      filerGroups: [],
     };
+  } else {
+    throw UnsupportedError('The operators supported for a filter with key=workflow_id is not supported.', { operator });
   }
-  throw UnsupportedError('The operators supported for a filter with key=workflow_id is not supported.', { operator });
+  return { newFilter, newFilterGroup };
 };
 
 /**
@@ -2213,8 +2228,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (filterKey === WORKFLOW_FILTER || filterKey === X_OPENCTI_WORKFLOW_ID) {
         // in case we want to filter by status template (template of a workflow status) or status
         // we need to find all statuses filtered by status template and filter on these statuses
-        const newFilter = await adaptFilterToWorkflowFilterKey(context, user, filter);
-        finalFilters.push(newFilter);
+        const { newFilter, newFilterGroup } = await adaptFilterToWorkflowFilterKey(context, user, filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
       if (filterKey === COMPUTED_RELIABILITY_FILTER) {
         // filter by computed reliability (reliability, or reliability of author if no reliability)
