@@ -1,5 +1,5 @@
 import { Field, FieldProps } from 'formik';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Grid, MenuItem, Select, SelectChangeEvent, Slider } from '@mui/material';
 import SimpleTextField from './SimpleTextField';
 import { SubscriptionFocus } from './Subscription';
@@ -59,6 +59,8 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   };
   const currentLevel = buildScaleLevel(value, scale);
 
+  const [initialValue] = useState(value);
+
   if (variant === 'edit') {
     return (
       <>
@@ -72,7 +74,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               label={label}
               onSubmit={onSubmit}
               onFocus={onFocus}
-              disabled={disabled || value > max}
+              disabled={disabled || initialValue > max}
               helpertext={
                 <SubscriptionFocus context={editContext} fieldName={name} />
               }
@@ -84,7 +86,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
-              disabled={disabled || value > max}
+              disabled={disabled || initialValue > max}
               sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
@@ -111,7 +113,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
-          disabled={disabled || value > max}
+          disabled={disabled || initialValue > max}
         />
       </>
     );
