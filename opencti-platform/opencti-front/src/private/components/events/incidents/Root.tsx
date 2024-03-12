@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Redirect, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -153,49 +153,39 @@ const RootIncidentComponent = ({ queryRef }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId"
-              render={() => <Incident incidentData={incident} />}
+              path="/"
+              element={<Incident incidentData={incident} />}
             />
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={<Navigate
+                to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
+                       />}
             />
             <Route
-              path="/dashboard/events/incidents/:incidentId/knowledge"
-              render={() => <IncidentKnowledge incidentData={incident} />}
+              path="/knowledge/*"
+              element={<IncidentKnowledge incidentData={incident} />}
             />
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={(
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={incident}
                 />
               )}
             />
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId/analyses"
-              render={(routeProps) => (
+              path="/analyses"
+              element={(
                 <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={incident}
                 />
               )}
             />
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={(
                 <FileManager
-                  {...routeProps}
                   id={incidentId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
@@ -204,11 +194,9 @@ const RootIncidentComponent = ({ queryRef }) => {
               )}
             />
             <Route
-              exact
-              path="/dashboard/events/incidents/:incidentId/history"
-              render={(routeProps) => (
+              path="/history"
+              element={(
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={incidentId}
                 />
               )}
@@ -230,22 +218,20 @@ const RootIncident = () => {
   const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
   return (
     <div>
-      <Route path="/dashboard/events/incidents/:incidentId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'attribution',
-            'victimology',
-            'attack_patterns',
-            'malwares',
-            'channels',
-            'narratives',
-            'tools',
-            'vulnerabilities',
-            'observables',
-          ]}
-        />
-      </Route>
+      <StixCoreObjectKnowledgeBar
+        stixCoreObjectLink={link}
+        availableSections={[
+          'attribution',
+          'victimology',
+          'attack_patterns',
+          'malwares',
+          'channels',
+          'narratives',
+          'tools',
+          'vulnerabilities',
+          'observables',
+        ]}
+      />
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootIncidentComponent queryRef={queryRef} />
