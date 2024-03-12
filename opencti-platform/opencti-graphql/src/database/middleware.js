@@ -1384,16 +1384,6 @@ const prepareAttributesForUpdate = async (context, user, instance, elements, ups
         value: input.value.map((v) => v.toLowerCase())
       };
     }
-    // Specific case for name in aliased entities
-    // If name change already inside aliases, name must be kep untouched
-    if (upsert && input.key === NAME_FIELD && isStixObjectAliased(instanceType)) {
-      const aliasField = resolveAliasesField(instanceType).name;
-      const normalizeAliases = instance[aliasField] ? instance[aliasField].map((e) => normalizeName(e)) : [];
-      const name = normalizeName(input.value.at(0));
-      if ((normalizeAliases).includes(name)) {
-        return null;
-      }
-    }
     // Aliases can't have the same name as entity name and an already existing normalized alias
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
@@ -1524,7 +1514,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
             // If name changing is part of an upsert, the previous name must be copied into aliases
             aliases.push(instance.name);
           }
-          const uniqAliases = R.uniqBy((e) => normalizeName(e), aliases);
+          const uniqAliases = R.uniqBy((e) => normalizeName(e), aliases).filter((a) => a !== askedModificationName);
           if (aliasesInput) { // If aliases input also exists
             aliasesInput.value = uniqAliases;
           } else { // We need to create an extra input getting existing aliases
