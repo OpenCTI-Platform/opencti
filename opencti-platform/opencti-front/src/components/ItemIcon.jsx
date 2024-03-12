@@ -62,6 +62,8 @@ import {
   TroubleshootOutlined,
   DiamondOutlined,
   CircleOutlined,
+  TaskAlt,
+  AutoAwesomeMotion,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -297,10 +299,6 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <BriefcaseCheckOutline style={style} fontSize={fontSize} role="img" />
       );
-    case 'task-template':
-      return (
-        <BriefcaseCheckOutline style={style} fontSize={fontSize} role="img" />
-      );
     case 'feedback':
       return (
         <BriefcaseEditOutline style={style} fontSize={fontSize} role="img" />
@@ -315,6 +313,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'task':
       return <TaskAltOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'task-template':
+      return (
+        <TaskAlt style={style} fontSize={fontSize} role="img" />
+      );
     case 'history':
       return (
         <ClipboardTextClockOutline
@@ -523,7 +525,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:
-      return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
+      return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" />;
   }
 };
 

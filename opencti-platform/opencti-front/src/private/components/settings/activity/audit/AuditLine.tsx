@@ -93,7 +93,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
       : ''
   }`;
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-  console.log('data', data);
+
   return (
     <>
       <Drawer
