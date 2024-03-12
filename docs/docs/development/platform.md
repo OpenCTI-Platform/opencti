@@ -136,7 +136,7 @@ Before pushing your code you need to validate the syntax and ensure the testing 
 For starting the test you will need to create a test.json configuration file.
 You can use the same dependencies by only adapting all prefix for all dependencies.
 
-Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have setup in test.json).
+Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have set up in test.json).
 
 The following command will run the complete test suite using vitest, which might take more than 30 minutes.
 It starts by cleaning up the test database and seeding a minimal dataset.
@@ -144,15 +144,15 @@ The file `vitest.config.test.ts` can be edited to run only a specific file patte
 
 `yarn test:dev`
 
-We also provide utility scripts to ease the development of new tests, especially integration tests that rely the data 
+We also provide utility scripts to ease the development of new tests, especially integration tests that rely on the sample data 
 loaded after executing `00-inject/loader-test.ts`.
 
-To solely initialize the test database run:
+To solely initialize the test database with this sample dataset run:
 
 `yarn test:dev:init`
 
-And then, run the following command to run the pattern specified in the file `vitest.config.test.ts`, or add a file name
-to the command line to run only this file.
+And then, execute the following command to run the pattern specified in the file `vitest.config.test.ts`, or add a file name
+to the command line to run only this test file.
 
 `yarn test:dev:resume`
 
