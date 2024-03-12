@@ -13,7 +13,6 @@ import {
   ExtensionOutlined,
   FactCheckOutlined,
   FlagOutlined,
-  HelpOutlined,
   LayersClearOutlined,
   LocalOfferOutlined,
   LoginOutlined,
