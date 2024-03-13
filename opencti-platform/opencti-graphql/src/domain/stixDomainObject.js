@@ -8,7 +8,8 @@ import {
   storeLoadByIdWithRefs,
   timeSeriesEntities,
   updateAttribute,
-  updateAttributeFromLoadedWithRefs
+  updateAttributeFromLoadedWithRefs,
+  validateCreatedBy
 } from '../database/middleware';
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
@@ -200,6 +201,12 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
+
+  const createdByKey = input.find((inputData) => inputData.key === 'createdBy');
+  if (createdByKey) {
+    await validateCreatedBy(context, user, input.value[0]);
+  }
+
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {

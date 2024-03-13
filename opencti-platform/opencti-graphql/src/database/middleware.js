@@ -108,7 +108,7 @@ import {
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
-  RULE_PREFIX,
+  RULE_PREFIX
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import {
@@ -141,6 +141,7 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   isStixDomainObject,
+  isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
   resolveAliasesField,
@@ -565,7 +566,32 @@ const idLabel = (label) => {
   return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
 };
 
+/**
+ * Verify that the Entity in createdBy is one of Identity entity.
+ * If not throw functional error to stop creation or update.
+ * @param context
+ * @param user
+ * @param createdById
+ * @returns {Bluebird.Promise<void>}
+ */
+export const validateCreatedBy = async (context, user, createdById) => {
+  if (createdById) {
+    const createdByEntity = await internalLoadById(context, user, createdById);
+    if (createdByEntity && createdByEntity.entity_type) {
+      if (!isStixDomainObjectIdentity(createdByEntity.entity_type)) {
+        throw FunctionalError('CreatedBy relation must be an Identity entity.', {
+          createdBy: createdById
+        });
+      }
+    }
+  }
+};
+
 const inputResolveRefs = async (context, user, input, type, entitySetting) => {
+  if (input.createdBy) {
+    await validateCreatedBy(context, user, input.createdBy);
+  }
+
   const inputResolveRefsFn = async () => {
     const fetchingIds = [];
     const expectedIds = [];
