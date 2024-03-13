@@ -516,6 +516,8 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
+    R.assoc('submenu_show_icons', newUser.submenu_show_icons),
+    R.assoc('submenu_auto_collapse', newUser.submenu_auto_collapse),
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.dissoc('roles'),
     R.dissoc('groups')
@@ -1147,6 +1149,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
     unit_system: user.unit_system,
+    submenu_show_icons: user.submenu_show_icons,
+    submenu_auto_collapse: user.submenu_auto_collapse,
     groups: user.groups,
     roles: user.roles,
     impersonate: impersonate !== undefined,

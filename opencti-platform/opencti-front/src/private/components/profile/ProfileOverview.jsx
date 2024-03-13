@@ -17,6 +17,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
+import { ListItem, ListItemText, Switch } from '@mui/material';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -44,6 +45,9 @@ const styles = () => ({
     textAlign: 'left',
     borderRadius: 4,
     position: 'relative',
+  },
+  switchField: {
+    padding: '20px 0 0',
   },
 });
 
@@ -103,6 +107,8 @@ const userValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   otp_activated: Yup.boolean(),
   unit_system: Yup.string().nullable(),
+  submenu_show_icons: Yup.boolean(),
+  submenu_auto_collapse: Yup.boolean(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -217,6 +223,8 @@ const ProfileOverviewComponent = (props) => {
     'language',
     'otp_activated',
     'unit_system',
+    'submenu_show_icons',
+    'submenu_auto_collapse',
   ];
   const initialValues = { ...pick(fieldNames, me), objectOrganization };
 
@@ -379,6 +387,30 @@ const ProfileOverviewComponent = (props) => {
                 <MenuItem value={'Imperial'}>{t('Imperial')}</MenuItem>
                 <MenuItem value={'Metric'}>{t('Metric')}</MenuItem>
               </Field>
+              <ListItem classes={{ root: classes.switchField }}>
+                <ListItemText
+                  primary={t('Show left navigation submenu icons')}
+                />
+                <Field
+                  component={Switch}
+                  variant="standard"
+                  name="submenu_show_icons"
+                  checked={initialValues.submenu_show_icons}
+                  onChange={(_, value) => handleSubmitField('submenu_show_icons', value)}
+                />
+              </ListItem>
+              <ListItem classes={{ root: classes.switchField }}>
+                <ListItemText
+                  primary={t('Auto collapse submenus in left navigation')}
+                />
+                <Field
+                  component={Switch}
+                  variant="standard"
+                  name="submenu_auto_collapse"
+                  checked={initialValues.submenu_auto_collapse}
+                  onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
+                />
+              </ListItem>
               <Field
                 component={TextField}
                 variant="standard"
@@ -556,6 +588,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       otp_qr
       description
       unit_system
+      submenu_show_icons
+      submenu_auto_collapse
       objectOrganization {
         edges {
           node {

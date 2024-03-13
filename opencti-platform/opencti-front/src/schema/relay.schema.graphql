@@ -1465,6 +1465,8 @@ type User implements BasicObject & InternalObject {
   account_lock_after_date: DateTime
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
   editContext: [EditUserContext!]
 }
 
@@ -1501,6 +1503,8 @@ type MeUser implements BasicObject & InternalObject {
   account_lock_after_date: DateTime
   administrated_organizations: [Organization!]!
   unit_system: UnitSystem
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
 }
 
 type SessionDetail {
@@ -1528,6 +1532,8 @@ input UserAddInput {
   account_status: String
   account_lock_after_date: DateTime
   unit_system: String
+  submenu_show_icons: Boolean
+  submenu_auto_collapse: Boolean
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
 }
