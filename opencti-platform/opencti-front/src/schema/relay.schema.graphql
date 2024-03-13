@@ -4284,6 +4284,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   implementation_languages: [String]
   capabilities: [String]
   killChainPhases: [KillChainPhase!]
+  samples: [StixCyberObservable!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -4319,6 +4320,7 @@ input MalwareAddInput {
   objectLabel: [String]
   externalReferences: [String]
   killChainPhases: [String]
+  samples: [String]
   created: DateTime
   modified: DateTime
   x_opencti_workflow_id: String
