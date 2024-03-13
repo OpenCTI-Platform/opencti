@@ -1060,7 +1060,7 @@ class ToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values ? actionsInputs[i]?.values[0] : ''}
+            value={actionsInputs[i]?.values || []}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -1095,7 +1095,7 @@ class ToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values ? actionsInputs[i]?.values[0] : ''}
+            value={actionsInputs[i]?.values || []}
             renderInput={(params) => (
               <TextField
                 {...params}
