@@ -2673,5 +2673,7 @@
   "Strategic": "战略",
   "Link created": "创建的链接",
   "Public dashboard": "公共仪表板",
+  "Show left navigation submenu icons": "显示左侧导航子菜单图标",
+  "Auto collapse submenus in left navigation": "自动折叠左侧导航中的子菜单",
   "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
 }

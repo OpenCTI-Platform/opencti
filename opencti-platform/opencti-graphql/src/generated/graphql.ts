@@ -11854,6 +11854,8 @@ export type MeUser = BasicObject & InternalObject & {
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
+  submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
   unit_system?: Maybe<UnitSystem>;
   user_confidence_level?: Maybe<ConfidenceLevel>;
@@ -26054,6 +26056,8 @@ export type User = BasicObject & InternalObject & {
   roles: Array<Role>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
+  submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
+  submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
   unit_system?: Maybe<UnitSystem>;
   updated_at: Scalars['DateTime']['output'];
@@ -26296,6 +26300,8 @@ export type UserAddInput = {
   name: Scalars['String']['input'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password: Scalars['String']['input'];
+  submenu_auto_collapse?: InputMaybe<Scalars['Boolean']['input']>;
+  submenu_show_icons?: InputMaybe<Scalars['Boolean']['input']>;
   theme?: InputMaybe<Scalars['String']['input']>;
   unit_system?: InputMaybe<Scalars['String']['input']>;
   user_confidence_level?: InputMaybe<ConfidenceLevelInput>;
@@ -33343,6 +33349,8 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   user_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
@@ -37236,6 +37244,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
