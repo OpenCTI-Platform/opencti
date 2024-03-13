@@ -4,7 +4,7 @@ import { filter, map } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
-import { DialogTitle } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
@@ -19,6 +19,7 @@ import { FileManagerExportMutation } from '@components/common/files/__generated_
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
 import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -44,6 +45,9 @@ const stixCoreObjectFileExportQuery = graphql`
 
 const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
   format: Yup.string().trim().required(t('This field is required')),
+  type: Yup.string().required(t('This field is required')),
+  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')),
+  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')),
 });
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
@@ -55,7 +59,8 @@ interface StixCoreObjectFileExportComponentProps {
 interface FormValues {
   format: string;
   type: string;
-  maxMarkingDefinition: string | null;
+  contentMaxMarkingDefinitions: string[];
+  fileMarkingsDefinitions: string[];
 }
 
 const StixCoreObjectFileExportComponent = ({
@@ -78,15 +83,15 @@ const StixCoreObjectFileExportComponent = ({
     values: FormValues,
     { setSubmitting, resetForm }: FormikHelpers<FormValues>,
   ) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map((value) => value); // rename to contentMaxMarkings
+    const fileMarkingDefinitions = values.fileMarkingsDefinitions.map((value) => value); // rename to fileMarkingDefinitions
     commitExport({
       variables: {
         id,
         format: values.format,
         exportType: values.type,
-        maxMarkingDefinition,
+        contentMaxMarkings: contentMaxMarkingDefinitions,
+        fileMarkings: fileMarkingDefinitions,
       },
       onCompleted: (exportData) => {
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
@@ -153,7 +158,8 @@ const StixCoreObjectFileExportComponent = ({
         initialValues={{
           format: formatValue,
           type: 'full',
-          maxMarkingDefinition: 'none',
+          contentMaxMarkingDefinitions: [], // rename to contentMaxMarkings
+          fileMarkingsDefinitions: [], // rename to fileMarkings
         }}
         validationSchema={exportValidation(t_i18n)}
         onSubmit={onSubmitExport}
@@ -213,27 +219,16 @@ const StixCoreObjectFileExportComponent = ({
                             {t_i18n('Full export (entity and first neighbours)')}
                           </MenuItem>
                         </Field>
-                        <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="maxMarkingDefinition"
-                          label={t_i18n('Max marking definition level')}
-                          fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                        >
-                          <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                          {map(
-                            (markingDefinition) => (
-                              <MenuItem
-                                key={markingDefinition.node.id}
-                                value={markingDefinition.node.id}
-                              >
-                                {markingDefinition.node.definition}
-                              </MenuItem>
-                            ),
-                            props.markingDefinitions.edges,
-                          )}
-                        </Field>
+                        <ObjectMarkingField
+                          name="contentMaxMarkingDefinitions"
+                          label={t_i18n('Content max marking definition levels')}
+                          style={fieldSpacingContainerStyle}
+                        />
+                        <ObjectMarkingField
+                          name="fileMarkingDefinitions"
+                          label={t_i18n('File marking definition levels')}
+                          style={fieldSpacingContainerStyle}
+                        />
                       </DialogContent>
                     );
                   }

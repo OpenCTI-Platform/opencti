@@ -316,9 +316,9 @@ export const stixCyberObservablesExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCyberObservableExportAsk = async (context, user, stixCyberObservableId, args) => {
-  const { format, exportType, maxMarkingDefinition = null } = args;
+  const { format, exportType, contentMaxMarkings = [], fileMarkings = [] } = args;
   const entity = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
+  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w.work));
 };
 // endregion

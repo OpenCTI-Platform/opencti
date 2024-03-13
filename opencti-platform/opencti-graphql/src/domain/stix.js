@@ -114,12 +114,15 @@ export const askListExport = async (context, user, exportContext, format, select
   return worksForExport;
 };
 
-export const askEntityExport = async (context, user, format, entity, type = 'simple', maxMarkingId = null) => {
+export const askEntityExport = async (context, user, format, entity, type = 'simple', contentMaxMarkings = [], fileMarkings = []) => {
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
+  const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
+    return await findMarkingDefinitionById(context, user, id);
+  }));
+  const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
-    return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
+    return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
     format,
@@ -128,7 +131,8 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type
     export_type: type, // Simple or full
-    max_marking: maxMarkingId, // Max marking id
+    content_max_markings: contentMaxMarkings,
+    file_markings: fileMarkings,
   };
   const buildExportMessage = (work, fileName) => {
     return {
@@ -145,7 +149,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   };
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
-    map(async (connector) => {
+    map(async (connector) => { // can be refactored to native map
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}`;
       const work = await createWork(context, user, connector, fileIdentifier, path);

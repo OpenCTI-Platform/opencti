@@ -833,6 +833,8 @@ type FileMetadata {
   entity: StixObject
   labels_text: String
   labels: [String]
+  content_markings: [String]
+  file_markings: [String]
   creator_id: String
   external_reference_id: String
   creator: Creator
@@ -848,6 +850,7 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
+  objectMarking: [String]
   uploadStatus: State!
   works: [Work]
 }
@@ -7674,7 +7677,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
+  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
   exportPush(file: Upload!): Boolean
 }
 
@@ -7695,8 +7698,8 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
-  exportPush(file: Upload!): Boolean
+  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
+  exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
 }
 

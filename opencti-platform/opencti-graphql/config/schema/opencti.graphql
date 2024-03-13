@@ -790,6 +790,8 @@ type FileMetadata {
   entity: StixObject
   labels_text: String
   labels: [String]
+  content_markings: [String]
+  file_markings: [String]
   creator_id: String
   external_reference_id: String
   creator: Creator
@@ -804,6 +806,7 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
+  objectMarking: [String]
   uploadStatus: State!
   works: [Work]
 }
@@ -12287,7 +12290,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
+  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
@@ -12312,9 +12315,9 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
+  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type AttackPatternEditMutations {

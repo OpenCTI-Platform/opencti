@@ -19,10 +19,8 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import Loader from '../../../../components/Loader';
+import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
@@ -70,13 +68,15 @@ export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
     $id: ID!
     $format: String!
     $exportType: String!
-    $maxMarkingDefinition: String
+    $contentMaxMarkings: [String]
+    $fileMarkings: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
       exportAsk(
         format: $format
         exportType: $exportType
-        maxMarkingDefinition: $maxMarkingDefinition
+        contentMaxMarkings: $contentMaxMarkings
+        fileMarkings: $fileMarkings
       ) {
         id
         name
@@ -92,10 +92,11 @@ export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
             message
           }
         }
+        objectMarking
       }
     }
   }
-`;
+`; // retrieve objectMarking or rel_object-marking.internal_id
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
@@ -113,19 +114,21 @@ export const scopesConn = (exportConnectors) => {
   return fromPairs(zipped);
 };
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().trim().required(t('This field is required')),
-  type: Yup.string().trim().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+    format: Yup.string().trim().required(t_i18n('This field is required')),
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+    contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+    fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
-const importValidation = (t, configurations) => {
+const importValidation = (t_i18n, configurations) => {
   const shape = {
-    connector_id: Yup.string().trim().required(t('This field is required')),
+    connector_id: Yup.string().trim().required(t_i18n('This field is required')),
   };
   if (configurations) {
     return Yup.object().shape({
       ...shape,
-      configuration: Yup.string().trim().required(t('This field is required')),
+      configuration: Yup.string().trim().required(t_i18n('This field is required')),
     });
   }
   return Yup.object().shape(shape);
@@ -134,13 +137,13 @@ const importValidation = (t, configurations) => {
 const StixCoreObjectFilesAndHistory = ({
   id,
   entity,
-  t,
   classes,
   connectorsExport,
   connectorsImport,
   withoutRelations,
   bypassEntityId,
 }) => {
+  const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
@@ -186,23 +189,24 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value);
+    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value);
     commitMutation({
       mutation: stixCoreObjectFilesAndHistoryExportMutation,
       variables: {
         id,
         format: values.format,
         exportType: values.type,
-        maxMarkingDefinition,
+        contentMaxMarkings: contentMaxMarkingDefinitions,
+        fileMarkings: fileMarkingDefinitions,
       },
       updater: (store) => {
         const root = store.getRootField('stixDomainObjectEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
           format: values.format,
           exportType: values.type,
-          maxMarkingDefinition,
+          contentMaxMarkings: contentMaxMarkingDefinitions,
+          fileMarkings: fileMarkingDefinitions,
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
@@ -214,6 +218,9 @@ const StixCoreObjectFilesAndHistory = ({
           const newEdge = payload.setLinkedRecord(payload, 'node');
           ConnectionHandler.insertEdgeBefore(conn, newEdge);
         }
+      },
+      onError: (error) => {
+        handleError(error);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -267,7 +274,7 @@ const StixCoreObjectFilesAndHistory = ({
       <Formik
         enableReinitialize={true}
         initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
-        validationSchema={importValidation(t, selectedConnector?.configurations?.length > 0)}
+        validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
@@ -280,13 +287,13 @@ const StixCoreObjectFilesAndHistory = ({
               onClose={handleCloseImport}
               fullWidth={true}
             >
-              <DialogTitle>{t('Launch an import')}</DialogTitle>
+              <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={SelectField}
                   variant="standard"
                   name="connector_id"
-                  label={t('Connector')}
+                  label={t_i18n('Connector')}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                   onChange={handleSelectConnector}
@@ -314,7 +321,7 @@ const StixCoreObjectFilesAndHistory = ({
                         component={SelectField}
                         variant="standard"
                         name="configuration"
-                        label={t('Configuration')}
+                        label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                          >
@@ -338,7 +345,7 @@ const StixCoreObjectFilesAndHistory = ({
                         style={fieldSpacingContainerStyle}
                       />
                       <DialogContentText>
-                        {t('Marking definitions to use by the csv mapper...')}
+                        {t_i18n('Marking definitions to use by the csv mapper...')}
                       </DialogContentText>
                     </>
                   )
@@ -346,14 +353,14 @@ const StixCoreObjectFilesAndHistory = ({
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {t_i18n('Create')}
                 </Button>
               </DialogActions>
             </Dialog>
@@ -366,9 +373,10 @@ const StixCoreObjectFilesAndHistory = ({
           initialValues={{
             format: '',
             type: 'full',
-            maxMarkingDefinition: 'none',
+            contentMaxMarkingDefinitions: [],
+            fileMarkingDefinitions: [],
           }}
-          validationSchema={exportValidation(t)}
+          validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
@@ -381,84 +389,62 @@ const StixCoreObjectFilesAndHistory = ({
                 onClose={handleCloseExport}
                 fullWidth={true}
               >
-                <DialogTitle>{t('Generate an export')}</DialogTitle>
-                <QueryRenderer
-                  query={markingDefinitionsLinesSearchQuery}
-                  variables={{ first: 200 }}
-                  render={({ props }) => {
-                    if (props && props.markingDefinitions) {
-                      return (
-                        <DialogContent>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="format"
-                            label={t('Export format')}
-                            fullWidth={true}
-                            containerstyle={{ width: '100%' }}
-                          >
-                            {exportScopes.map((value, i) => (
-                              <MenuItem
-                                key={i}
-                                value={value}
-                                disabled={!isExportActive(value)}
-                              >
-                                {value}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="type"
-                            label={t('Export type')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="simple">
-                              {t('Simple export (just the entity)')}
-                            </MenuItem>
-                            <MenuItem value="full">
-                              {t('Full export (entity and first neighbours)')}
-                            </MenuItem>
-                          </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="maxMarkingDefinition"
-                            label={t('Max marking definition level')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
-                              (markingDefinition) => (
-                                <MenuItem
-                                  key={markingDefinition.node.id}
-                                  value={markingDefinition.node.id}
-                                >
-                                  {markingDefinition.node.definition}
-                                </MenuItem>
-                              ),
-                              props.markingDefinitions.edges,
-                            )}
-                          </Field>
-                        </DialogContent>
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-                />
+                <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="format"
+                    label={t_i18n('Export format')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    {exportScopes.map((value, i) => (
+                      <MenuItem
+                        key={i}
+                        value={value}
+                        disabled={!isExportActive(value)}
+                      >
+                        {value}
+                      </MenuItem>
+                    ))}
+                  </Field>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="type"
+                    label={t_i18n('Export type')}
+                    fullWidth={true}
+                    containerstyle={fieldSpacingContainerStyle}
+                  >
+                    <MenuItem value="simple">
+                      {t_i18n('Simple export (just the entity)')}
+                    </MenuItem>
+                    <MenuItem value="full">
+                      {t_i18n('Full export (entity and first neighbours)')}
+                    </MenuItem>
+                  </Field>
+                  <ObjectMarkingField
+                    name="contentMaxMarkingDefinitions"
+                    label={t_i18n('Content max marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <ObjectMarkingField
+                    name="fileMarkingDefinitions"
+                    label={t_i18n('File marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                  />
+                </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
+                    {t_i18n('Cancel')}
                   </Button>
                   <Button
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >
-                    {t('Create')}
+                    {t_i18n('Create')}
                   </Button>
                 </DialogActions>
               </Dialog>

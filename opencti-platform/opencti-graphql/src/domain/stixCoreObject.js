@@ -354,9 +354,9 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, args) => {
-  const { format, exportType = null, maxMarkingDefinition = null } = args;
+  const { format, exportType = null, contentMaxMarkings = null, fileMarkings = null } = args;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
+  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
 
@@ -366,13 +366,13 @@ export const stixCoreObjectsExportPush = async (context, user, entity_id, entity
   return true;
 };
 
-export const stixCoreObjectExportPush = async (context, user, entityId, file) => {
+export const stixCoreObjectExportPush = async (context, user, entityId, args) => {
   const previous = await storeLoadByIdWithRefs(context, user, entityId);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await upload(context, user, path, file, { entity: previous });
+  const { upload: up } = await upload(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
