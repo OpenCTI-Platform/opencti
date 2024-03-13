@@ -283,6 +283,7 @@ const useSearchEntities = ({
     cacheEntities: Record< string, { label: string; value: string; type: string }[] >,
     setCacheEntities: Dispatch< Record<string, { label: string; value: string; type: string }[]> >,
     event: SelectChangeEvent<string | number>,
+    isSubKey?: boolean,
   ) => {
     if (!event) {
       return;
@@ -765,7 +766,7 @@ const useSearchEntities = ({
           }
           break;
         case 'relationship_type': {
-          if (availableRelationshipTypes) {
+          if (availableRelationshipTypes && !isSubKey) { // if relationship_type is the subKey of regarding_of, we always display all the relationship types
             const relationshipsTypes = availableRelationshipTypes
               .map((n) => ({
                 label: t_i18n(`relationship_${n.toString()}`),
@@ -774,7 +775,7 @@ const useSearchEntities = ({
               }))
               .sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, relationshipsTypes);
-          } else if (searchContext.entityTypes.length === 1 && searchContext.entityTypes[0] === 'stix-core-relationship') {
+          } else if (searchContext.entityTypes.length === 1 && searchContext.entityTypes[0] === 'stix-core-relationship' && !isSubKey) {
             const relationshipsTypes = (schema.scrs ?? [])
               .map((n) => ({
                 label: t_i18n(`relationship_${n.label}`),

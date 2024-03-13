@@ -261,7 +261,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={[...selectedOptions, ...entitiesOptions]}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
+        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
@@ -281,6 +281,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               cacheEntities,
               setCacheEntities,
               event,
+              !!subKey,
             )
             }
           />
