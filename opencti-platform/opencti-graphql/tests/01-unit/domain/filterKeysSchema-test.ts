@@ -133,7 +133,7 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.filterKey).toEqual('fromId');
     expect(filterDefinition?.type).toEqual('id');
     expect(filterDefinition?.label).toEqual('Source entity');
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(2);
     expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
     // 'toTypes' for relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('toTypes');
