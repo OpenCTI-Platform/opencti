@@ -580,7 +580,6 @@ export const validateCreatedBy = async (context, user, createdById) => {
     if (createdByEntity && createdByEntity.parent_types) {
       if (!createdByEntity.parent_types.some((parent) => parent === ENTITY_TYPE_IDENTITY)) {
         throw FunctionalError('CreatedBy relation must be with an Identity entity.', {
-          type: createdByEntity.type,
           createdBy: createdById
         });
       }

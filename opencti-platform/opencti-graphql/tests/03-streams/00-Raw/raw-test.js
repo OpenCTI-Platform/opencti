@@ -42,7 +42,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['campaign'].length).toBe(7);
       expect(updateEventsByTypes['relationship'].length).toBe(8);
       expect(updateEventsByTypes['identity'].length).toBe(12);
-      expect(updateEventsByTypes['malware'].length).toBe(12);
+      expect(updateEventsByTypes['malware'].length).toBe(15);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
       expect(updateEventsByTypes['data-component'].length).toBe(2);
       expect(updateEventsByTypes['location'].length).toBe(12);
@@ -65,7 +65,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['threat-actor'].length).toBe(17);
       expect(updateEventsByTypes['vocabulary'].length).toBe(3);
       expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(132);
+      expect(updateEvents.length).toBe(135);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;
@@ -78,7 +78,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(94);
+      expect(deleteEvents.length).toBe(95);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
