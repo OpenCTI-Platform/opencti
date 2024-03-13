@@ -1,5 +1,5 @@
 import { ENTITY_TYPE_USER } from './internalObject';
-import { ABSTRACT_STIX_CORE_OBJECT } from './general';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
 
 export const shortMapping = {
   type: 'text',
@@ -70,13 +70,14 @@ export const id: AttributeDefinition = {
   name: 'id',
   label: 'Id',
   type: 'string',
-  format: 'short',
+  format: 'id',
   update: false,
   mandatoryType: 'no',
   multiple: false,
   editDefault: false,
   upsert: false,
   isFilterable: false,
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
 export const internalId: AttributeDefinition = {
@@ -90,7 +91,7 @@ export const internalId: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_STIX_CORE_OBJECT]
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
 export const creators: AttributeDefinition = {
