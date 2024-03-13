@@ -74,7 +74,7 @@ describe('Database sync raw', () => {
       const counters = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
       const countersMap = new Map(counters.map((i) => [i.label, i.value]));
       expect(countersMap.get('Indicator')).toEqual(28);
-      expect(countersMap.get('Malware')).toEqual(27);
+      expect(countersMap.get('Malware')).toEqual(28);
       expect(countersMap.get('Label')).toEqual(13);
       expect(countersMap.get('Vocabulary')).toEqual(335);
 
