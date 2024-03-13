@@ -7131,6 +7131,7 @@ export type File = {
   lastModifiedSinceMin?: Maybe<Scalars['Int']['output']>;
   metaData?: Maybe<FileMetadata>;
   name: Scalars['String']['output'];
+  objectMarking?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   size?: Maybe<Scalars['Int']['output']>;
   uploadStatus: State;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -7150,6 +7151,7 @@ export type FileEdge = {
 
 export type FileMetadata = {
   __typename?: 'FileMetadata';
+  content_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   creator?: Maybe<Creator>;
   creator_id?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -7158,6 +7160,7 @@ export type FileMetadata = {
   entity_id?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   external_reference_id?: Maybe<Scalars['String']['output']>;
+  file_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   inCarousel?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   labels_text?: Maybe<Scalars['String']['output']>;
@@ -21866,9 +21869,10 @@ export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
 
 
 export type StixCoreObjectEditMutationsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22724,14 +22728,16 @@ export type StixDomainObjectEditMutationsContextPatchArgs = {
 
 
 export type StixDomainObjectEditMutationsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type StixDomainObjectEditMutationsExportPushArgs = {
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
 };
 
 
@@ -31702,6 +31708,7 @@ export type FileResolvers<ContextType = any, ParentType extends ResolversParentT
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metaData?: Resolver<Maybe<ResolversTypes['FileMetadata']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uploadStatus?: Resolver<ResolversTypes['State'], ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType>;
@@ -31721,6 +31728,7 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
+  content_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31729,6 +31737,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  file_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36058,7 +36067,7 @@ export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType
   contextPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
-  exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file'>>;
+  exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file' | 'file_markings'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationAddArgs, 'input'>>;

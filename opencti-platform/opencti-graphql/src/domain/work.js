@@ -193,7 +193,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     messages: [],
     errors: [],
   };
-  await elIndex(INDEX_HISTORY, work);
+  await elIndex(INDEX_HISTORY, work); // createEntity -> modele du work, /!\ index History mais avec CreateEntity risque de basculer dans l'index internalObject = NON pas du tout cF isHistyObject
   return loadWorkById(context, user, workId);
 };
 

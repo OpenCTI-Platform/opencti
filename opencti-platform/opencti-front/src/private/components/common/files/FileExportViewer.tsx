@@ -13,6 +13,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from './FileLine';
 import { useFormatter } from '../../../../components/i18n';
 import { FileExportViewer_entity$data } from './__generated__/FileExportViewer_entity.graphql';
+// import useAuth from '../../../../utils/hooks/useAuth';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -38,6 +39,7 @@ FileExportViewerComponentProps
 > = ({ entity, relay, handleOpenExport, isExportPossible }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  // const { me: currentMe } = useAuth(); // available markings in me.allowed_marking
   const { id, exportFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -81,18 +83,16 @@ FileExportViewerComponentProps
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {exportFiles?.edges?.length ? (
             <List>
-              {exportFiles.edges.map((file) => {
-                return (
-                  file?.node && (
-                    <FileLine
-                      key={file?.node.id}
-                      file={file?.node}
-                      dense={true}
-                      disableImport={true}
-                    />
-                  )
-                );
-              })}
+              {exportFiles.edges.map((file) => (
+                file?.node && (
+                  <FileLine
+                    key={file?.node.id}
+                    file={file?.node}
+                    dense={true}
+                    disableImport={true}
+                  />
+                )
+              ))}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>

@@ -109,9 +109,9 @@ export const stixDomainObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectId, args) => {
-  const { format, exportType = null, maxMarkingDefinition = null } = args;
+  const { format, exportType = null, contentMaxMarkings = null, fileMarkings = null } = args;
   const entity = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
+  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
 

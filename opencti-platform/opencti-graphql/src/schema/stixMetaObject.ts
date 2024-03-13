@@ -3,6 +3,7 @@ import { schemaTypesDefinition } from './schema-types';
 
 export const ENTITY_TYPE_LABEL = 'Label';
 export const ENTITY_TYPE_EXTERNAL_REFERENCE = 'External-Reference';
+export const ENTITY_TYPE_INTERNAL_FILE = 'Internal-File';
 export const ENTITY_TYPE_KILL_CHAIN_PHASE = 'Kill-Chain-Phase';
 export const ENTITY_TYPE_MARKING_DEFINITION = 'Marking-Definition';
 
