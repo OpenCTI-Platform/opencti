@@ -61,6 +61,13 @@ interface IncidentLineComponentProps {
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
+  onToggleShiftEntity:(
+    index: number,
+    entity: IncidentLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
+
 }
 
 const IncidentLineFragment = graphql`
@@ -114,6 +121,8 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
   deSelectedElements,
   selectAll,
   onToggleEntity,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { fd, t_i18n } = useFormatter();
@@ -129,7 +138,10 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => onToggleEntity(data, event)}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+        }
       >
         <Checkbox
           edge="start"
