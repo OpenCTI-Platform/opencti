@@ -63,6 +63,7 @@ import {
   CircleOutlined,
   TaskAlt,
   AutoAwesomeMotion,
+  ViewStreamTwoTone,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -521,6 +522,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     case 'notifier':
       return <UpcomingOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'synchronizer':
+      return <ViewStreamTwoTone style={style} fontSize={fontSize} role="img" />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" />;
     default:

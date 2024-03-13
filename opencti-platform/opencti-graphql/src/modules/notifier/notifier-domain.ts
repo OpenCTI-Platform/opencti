@@ -80,8 +80,8 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for synchronizer \`${updatedElem.name}\``,
-    context_data: { id: notifierId, entity_type: ENTITY_TYPE_SYNC, input }
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for notifier \`${updatedElem.name}\``,
+    context_data: { id: notifierId, entity_type: ENTITY_TYPE_NOTIFIER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFIER].EDIT_TOPIC, updatedElem, user);
 };
