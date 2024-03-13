@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, useParams, Routes, Link, useLocation } from 'react-router-dom';
+import { Route, Redirect, useParams, Routes, Link, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -148,24 +148,18 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId"
-              render={() => <Infrastructure data={infrastructure} />}
+              path="/"
+              element={<Infrastructure data={infrastructure} />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={<Navigate
+                to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
+                       />}
             />
             <Route
-              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-              render={() => (
-                <InfrastructureKnowledge infrastructure={infrastructure} />
-              )}
+              path="/knowledge"
+              element={<InfrastructureKnowledge infrastructure={infrastructure} />}
             />
             <Route
               exact
@@ -178,27 +172,23 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               )}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
                   {...routeProps}
                   id={infrastructureId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
-                />
-              )}
+                />}
             />
             <Route
-              exact
               path="/dashboard/observations/infrastructures/:infrastructureId/history"
-              render={(routeProps) => (
+              element={
                 <StixCoreObjectHistory
                   {...routeProps}
                   stixCoreObjectId={infrastructureId}
-                />
-              )}
+                />}
             />
           </Routes>
         </div>
