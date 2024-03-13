@@ -104,7 +104,7 @@ const Root = () => {
           path="/dashboard/data/processing"
           render={() => (
             <Security
-              needs={[KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES]}
+              needs={[SETTINGS_SETACCESSES]}
               placeholder={(
                 <Security
                   needs={[TAXIIAPI_SETCSVMAPPERS]}
@@ -143,7 +143,14 @@ const Root = () => {
         <BoundaryRoute
           exact
           path="/dashboard/data/processing/tasks"
-          component={Tasks}
+          render={() => (
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              placeholder={<Redirect to="/dashboard" />}
+            >
+              <Tasks />
+            </Security>
+          )}
         />
       </Switch>
     </Suspense>
