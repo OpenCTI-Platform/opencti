@@ -203,8 +203,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
 
   const createdByKey = input.find((inputData) => inputData.key === 'createdBy');
-  if (createdByKey) {
-    await validateCreatedBy(context, user, input.value[0]);
+  if (createdByKey && createdByKey.value?.length > 0) {
+    await validateCreatedBy(context, user, createdByKey.value[0]);
   }
 
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
