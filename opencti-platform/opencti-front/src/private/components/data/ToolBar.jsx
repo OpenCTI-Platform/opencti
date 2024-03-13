@@ -821,17 +821,15 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const externalReferences = R.pipe(
-          R.pathOr([], ['externalReferences', 'edges']),
-          R.sortWith([R.ascend(R.path(['node', 'source_name']))]),
-          R.map((n) => ({
+        const externalReferences = (data?.externalReferences?.edges ?? [])
+          .map((n) => ({
             label: `[${n.node.source_name}] ${truncate(
               n.node.description || n.node.external_id,
               150,
             )} ${n.node.url && `(${n.node.url})`}`,
             value: n.node.id,
-          })),
-        )(data);
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({
           externalReferences: R.union(
             this.state.externalReferences,
@@ -853,18 +851,18 @@ class ToolBar extends Component {
     fetchQuery(identitySearchIdentitiesSearchQuery, {
       types: ['Individual', 'Organization', 'System'],
       search: newValue && newValue.length > 0 ? newValue : '',
-      first: 10,
+      first: 100,
     })
       .toPromise()
       .then((data) => {
-        const identities = R.pipe(
-          R.pathOr([], ['identities', 'edges']),
-          R.map((n) => ({
+        const identities = (data?.identities?.edges ?? [])
+          .map((n) => ({
             label: n.node.name,
             value: n.node.id,
             type: n.node.entity_type,
-          })),
-        )(data);
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({
           identities: R.union(this.state.identities, identities),
         });
@@ -881,7 +879,7 @@ class ToolBar extends Component {
     );
     this.setState({ actionsInputs });
     fetchQuery(statusFieldStatusesSearchQuery, {
-      first: 10,
+      first: 100,
       filters: {
         mode: 'and',
         filterGroups: [],
