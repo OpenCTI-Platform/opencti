@@ -166,31 +166,26 @@ class RootArtifact extends Component {
                     <Routes>
                       <Route
                         exact
-                        path="/dashboard/observations/artifacts/:observableId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={(
                           <StixCyberObservable
-                            {...routeProps}
                             stixCyberObservable={stixCyberObservable}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/artifacts/:observableId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={(
                           <StixCyberObservableKnowledge
-                            {...routeProps}
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/artifacts/:observableId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={(
                           <EntityStixSightingRelationships
-                            {...routeProps}
                             entityId={observableId}
                             entityLink={link}
                             noRightBar={true}
@@ -209,11 +204,9 @@ class RootArtifact extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/artifacts/:observableId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={observableId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -224,32 +217,28 @@ class RootArtifact extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/artifacts/:observableId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={observableId}
                           />
                         )}
                       />
                       <Route
                         exact
-                        path="/dashboard/observations/artifacts/:observableId/knowledge/relations/:relationId"
-                        render={(routeProps) => (
+                        path="/knowledge/relations/:relationId"
+                        element={(
                           <StixCoreRelationship
                             entityId={observableId}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/artifacts/:observableId/knowledge/sightings/:sightingId"
-                        render={(routeProps) => (
+                        path="/knowledge/sightings/:sightingId"
+                        element={(
                           <StixSightingRelationship
                             entityId={observableId}
-                            {...routeProps}
+                            paddingRight
                           />
                         )}
                       />
