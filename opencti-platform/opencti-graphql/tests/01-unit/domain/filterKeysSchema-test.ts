@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
 import {
+  ABSTRACT_BASIC_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -134,7 +135,7 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.type).toEqual('id');
     expect(filterDefinition?.label).toEqual('Source entity');
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(2);
-    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
+    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_BASIC_OBJECT);
     // 'toTypes' for relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('toTypes');
     expect(filterDefinition?.filterKey).toEqual('toTypes');
