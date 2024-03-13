@@ -746,11 +746,14 @@ class ToolBar extends Component {
       .toPromise()
       .then((data) => {
         const elements = data.containers.edges.map((e) => e.node);
-        const containers = elements.map((n) => ({
-          label: n.representative.main,
-          type: n.entity_type,
-          value: n.id,
-        }));
+        const containers = elements
+          .map((n) => ({
+            label: n.representative.main,
+            type: n.entity_type,
+            value: n.id,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({ containers });
       });
   }
@@ -767,14 +770,13 @@ class ToolBar extends Component {
     fetchQuery(objectMarkingFieldAllowedMarkingsQuery)
       .toPromise()
       .then((data) => {
-        const markingDefinitions = R.pipe(
-          R.pathOr([], ['me', 'allowed_marking']),
-          R.map((n) => ({
+        const markingDefinitions = (data?.me?.allowed_marking ?? [])
+          .map((n) => ({
             label: n.definition,
             value: n.id,
             color: n.x_opencti_color,
-          })),
-        )(data);
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({ markingDefinitions });
       });
   }
@@ -793,14 +795,13 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const labels = R.pipe(
-          R.pathOr([], ['labels', 'edges']),
-          R.map((n) => ({
+        const labels = (data?.labels?.edges ?? [])
+          .map((n) => ({
             label: n.node.value,
             value: n.node.id,
             color: n.node.color,
-          })),
-        )(data);
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label));
         this.setState({
           labels: R.union(this.state.labels, labels),
         });
@@ -891,15 +892,15 @@ class ToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const statuses = R.pipe(
-          R.pathOr([], ['statuses', 'edges']),
-          R.map((n) => ({
+        const statuses = (data?.statuses?.edges ?? [])
+          .map((n) => ({
             label: n.node.template.name,
             value: n.node.id,
             order: n.node.order,
             color: n.node.template.color,
-          })),
-        )(data);
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.order - b.order);
         this.setState({ statuses: R.union(this.state.statuses, statuses) });
       });
   }
