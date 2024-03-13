@@ -334,7 +334,10 @@ class OpenCTIStix2:
             for field in self.mapping_cache_permanent["vocabularies_definition_fields"]
         ):
             for f in self.mapping_cache_permanent["vocabularies_definition_fields"]:
-                if stix_object.get(f["key"]) is None:
+                if (
+                    stix_object.get(f["key"]) is None
+                    or len(stix_object.get(f["key"])) == 0
+                ):
                     continue
                 if isinstance(stix_object.get(f["key"]), list):
                     object_open_vocabularies[f["key"]] = []
