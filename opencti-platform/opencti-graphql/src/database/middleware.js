@@ -98,7 +98,6 @@ import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
-  ENTITY_TYPE_IDENTITY,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -142,6 +141,7 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   isStixDomainObject,
+  isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
   resolveAliasesField,
@@ -577,9 +577,9 @@ const idLabel = (label) => {
 export const validateCreatedBy = async (context, user, createdById) => {
   if (createdById) {
     const createdByEntity = await internalLoadById(context, user, createdById);
-    if (createdByEntity && createdByEntity.parent_types) {
-      if (!createdByEntity.parent_types.some((parent) => parent === ENTITY_TYPE_IDENTITY)) {
-        throw FunctionalError('CreatedBy relation must be with an Identity entity.', {
+    if (createdByEntity && createdByEntity.entity_type) {
+      if (!isStixDomainObjectIdentity(createdByEntity.entity_type)) {
+        throw FunctionalError('CreatedBy relation must be an Identity entity.', {
           createdBy: createdById
         });
       }
