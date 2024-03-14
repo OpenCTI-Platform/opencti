@@ -61,7 +61,8 @@ export const getUseSearch = (searchScope?: Record<string, string[]>, entityTypes
       filterKey: string,
       cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
       setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
-      event: SyntheticEvent
+      event: SyntheticEvent,
+      isSubKey?: boolean,
     ) => Record<string, OptionValue[]>,
   ];
 };
