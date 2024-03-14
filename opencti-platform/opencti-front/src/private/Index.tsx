@@ -147,7 +147,7 @@ const Index = ({ settings }: IndexProps) => {
                 Component={boundaryWrapper(RootProfile)}
               />
               <Route
-                path="/observations"
+                path="/observations/*"
                 Component={boundaryWrapper(RootObservations)}
               />
               <Route

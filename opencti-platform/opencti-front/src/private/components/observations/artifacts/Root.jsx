@@ -65,9 +65,7 @@ class RootArtifact extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { observableId },
-      },
+      params: { observableId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -83,9 +81,7 @@ class RootArtifact extends Component {
     const {
       t,
       location,
-      match: {
-        params: { observableId },
-      },
+      params: { observableId },
     } = this.props;
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
@@ -258,7 +254,7 @@ class RootArtifact extends Component {
 
 RootArtifact.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootArtifact);

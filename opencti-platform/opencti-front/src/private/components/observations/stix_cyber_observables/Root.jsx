@@ -66,9 +66,7 @@ class RootStixCyberObservable extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { observableId },
-      },
+      params: { observableId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -84,9 +82,7 @@ class RootStixCyberObservable extends Component {
     const {
       t,
       location,
-      match: {
-        params: { observableId },
-      },
+      params: { observableId },
     } = this.props;
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
@@ -278,7 +274,7 @@ class RootStixCyberObservable extends Component {
 
 RootStixCyberObservable.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootStixCyberObservable);
