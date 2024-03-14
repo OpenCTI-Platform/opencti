@@ -148,7 +148,7 @@ const Index = ({ settings }: IndexProps) => {
               />
               <Route
                 path="/observations"
-                Component={ boundaryWrapper(RootObservations) }
+                Component={boundaryWrapper(RootObservations)}
               />
               <Route
                 element={<NoMatch/>}
