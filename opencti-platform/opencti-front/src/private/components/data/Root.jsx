@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -44,7 +44,23 @@ const Root = () => {
         <BoundaryRoute
           exact
           path="/dashboard/data/ingestion"
-          render={() => <Redirect to="/dashboard/data/ingestion/sync" />}
+          render={() => (
+            <Security
+              needs={[SETTINGS]}
+              placeholder={(
+                <Security
+                  needs={[MODULES]}
+                  placeholder={(
+                    <Redirect to="/dashboard" />
+                  )}
+                >
+                  <Redirect to="/dashboard/data/ingestion/connectors" />
+                </Security>
+              )}
+            >
+              <Redirect to="/dashboard/data/ingestion/sync" />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
@@ -104,7 +120,7 @@ const Root = () => {
           path="/dashboard/data/processing"
           render={() => (
             <Security
-              needs={[KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES]}
+              needs={[SETTINGS_SETACCESSES]}
               placeholder={(
                 <Security
                   needs={[TAXIIAPI_SETCSVMAPPERS]}
@@ -143,7 +159,14 @@ const Root = () => {
         <BoundaryRoute
           exact
           path="/dashboard/data/processing/tasks"
-          component={Tasks}
+          render={() => (
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              placeholder={<Redirect to="/dashboard" />}
+            >
+              <Tasks />
+            </Security>
+          )}
         />
       </Switch>
     </Suspense>

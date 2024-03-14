@@ -201,6 +201,7 @@ const LeftBar = () => {
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI_SETCOLLECTIONS]);
   const isGrantedToSettings = useGranted([SETTINGS]);
+  const isGrantedToIngestion = useGranted([SETTINGS, MODULES]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -783,7 +784,7 @@ const LeftBar = () => {
                 [
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
-                  { granted: isGrantedToSettings, link: '/dashboard/data/ingestion', label: 'Ingestion' },
+                  { granted: isGrantedToIngestion, link: '/dashboard/data/ingestion', label: 'Ingestion' },
                   { granted: isGrantedToImport, link: '/dashboard/data/import', label: 'Import' },
                   { granted: isGrantedToProcessing, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing, link: '/dashboard/data/sharing', label: 'Data sharing' },

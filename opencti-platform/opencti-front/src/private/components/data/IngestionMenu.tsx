@@ -1,10 +1,11 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
-import useGranted, { MODULES } from '../../../utils/hooks/useGranted';
+import useGranted, { MODULES, SETTINGS } from '../../../utils/hooks/useGranted';
 
 const IngestionMenu = () => {
   const isConnectorReader = useGranted([MODULES]);
-  const entries: MenuEntry[] = [
+  const isGrantedSettings = useGranted([SETTINGS]);
+  const settingsEntries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/sync',
       label: 'Remote OCTI Streams',
@@ -22,6 +23,7 @@ const IngestionMenu = () => {
       label: 'CSV Feeds',
     },
   ];
+  const entries: MenuEntry[] = isGrantedSettings ? [...settingsEntries] : [];
   if (isConnectorReader) {
     entries.push({
       path: '/dashboard/data/ingestion/connectors',
