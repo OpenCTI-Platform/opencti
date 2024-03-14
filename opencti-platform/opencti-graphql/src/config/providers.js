@@ -300,7 +300,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // endregion
         const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
-        const openIDStrategy = new OpenIDStrategy(options, (_, tokenset, userinfo, done) => {
+        const debugCallback = (message, meta) => logApp.info(message, meta);
+        const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logApp.info('[OPENID] Successfully logged', { userinfo });
           const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
           logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });

@@ -1,0 +1,82 @@
+diff --git a/lib/passport_strategy.js b/lib/passport_strategy.js
+index 523458f..fd76242 100644
+--- a/lib/passport_strategy.js
++++ b/lib/passport_strategy.js
+@@ -20,6 +20,7 @@ function verified(err, user, info = {}) {
+ 
+ function OpenIDConnectStrategy(
+   { client, params = {}, passReqToCallback = false, sessionKey, usePKCE = true, extras = {} } = {},
++  debugCallback,
+   verify,
+ ) {
+   if (!(client instanceof BaseClient)) {
+@@ -35,6 +36,7 @@ function OpenIDConnectStrategy(
+   }
+ 
+   this._client = client;
++  this._debugCallback = debugCallback;
+   this._issuer = client.issuer;
+   this._verify = verify;
+   this._passReqToCallback = passReqToCallback;
+@@ -79,6 +81,7 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
+   (async () => {
+     const client = this._client;
+     if (!req.session) {
++      this._debugCallback("[OPENID] ERROR authentication requires session support")
+       throw new TypeError('authentication requires session support');
+     }
+     const reqParams = client.callbackParams(req);
+@@ -119,16 +122,17 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
+             break;
+         }
+       }
+-
++      this._debugCallback("[OPENID] Start authentication request", { params, url: client.authorizationUrl(params) })
+       this.redirect(client.authorizationUrl(params));
+       return;
+     }
+     /* end authentication request */
+ 
+     /* start authentication response */
+-
++    this._debugCallback("[OPENID] Start authentication response", { sessionKey })
+     const session = req.session[sessionKey];
+     if (Object.keys(session || {}).length === 0) {
++      this._debugCallback("[OPENID] Error Did not find expected authorization request details in session", { sessionKey, session })
+       throw new Error(
+         format(
+           'did not find expected authorization request details in session, req.session["%s"] is %j',
+@@ -162,16 +166,17 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
+       code_verifier: codeVerifier,
+       response_type: responseType,
+     };
+-
++    this._debugCallback("[OPENID] Start callback response", { reqParams, checks, extras: this._extras, uri: opts.redirect_uri })
+     const tokenset = await client.callback(opts.redirect_uri, reqParams, checks, this._extras);
+-
++    this._debugCallback("[OPENID] End callback response tokenset", { tokenset })
+     const passReq = this._passReqToCallback;
+     const loadUserinfo = this._verify.length > (passReq ? 3 : 2) && client.issuer.userinfo_endpoint;
+-
++    this._debugCallback("[OPENID] End callback response loadUserinfo", { loadUserinfo })
+     const args = [tokenset, verified.bind(this)];
+ 
+     if (loadUserinfo) {
+       if (!tokenset.access_token) {
++        this._debugCallback("[OPENID] ERROR RPError expected access_token to be returned when asking for userinfo in verify callback", { tokenset })
+         throw new RPError({
+           message:
+             'expected access_token to be returned when asking for userinfo in verify callback',
+@@ -185,10 +190,11 @@ OpenIDConnectStrategy.prototype.authenticate = function authenticate(req, option
+     if (passReq) {
+       args.unshift(req);
+     }
+-
++    this._debugCallback("[OPENID] _verify", { args })
+     this._verify(...args);
+     /* end authentication response */
+   })().catch((error) => {
++    this._debugCallback("[OPENID] ERROR General openid passport error", { error })
+     if (
+       (error instanceof OPError &&
+         error.error !== 'server_error' &&
