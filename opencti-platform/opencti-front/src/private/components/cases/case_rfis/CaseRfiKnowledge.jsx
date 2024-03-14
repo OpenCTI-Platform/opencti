@@ -18,7 +18,6 @@ import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from '.
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = () => ({
   container: {
@@ -254,194 +253,186 @@ class CaseRfiKnowledgeComponent extends Component {
       orderMode: 'desc',
     };
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const { filterKeysSchema } = schema;
-          return (
-            <div
-              className={classes.container}
-              id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-            >
-              {mode !== 'graph' && (
-              <ContainerHeader
-                container={caseData}
-                PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
-                link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-                modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
-                currentMode={mode}
-                knowledge={true}
-                enableSuggestions={true}
-                investigationAddFromContainer={investigationAddFromContainer}
-              />
-              )}
-              <Route
-                exact
-                path="/dashboard/cases/rfis/:caseId/knowledge/graph"
-                render={() => (
-                  <QueryRenderer
-                    query={caseRfiKnowledgeGraphQuery}
-                    variables={{ id: caseData.id }}
-                    render={({ props }) => {
-                      if (props && props.caseRfi) {
-                        return (
-                          <CaseRfiKnowledgeGraph
-                            caseData={props.caseRfi}
-                            mode={mode}
-                          />
-                        );
-                      }
-                      return (
-                        <Loader
-                          variant={LoaderVariant.inElement}
-                          withTopMargin={true}
-                        />
-                      );
-                    }}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/cases/rfis/:caseId/knowledge/content"
-                render={() => (
-                  <QueryRenderer
-                    query={containerContentQuery}
-                    variables={{ id: caseData.id }}
-                    render={({ props }) => {
-                      if (props && props.container) {
-                        return <ContainerContent containerData={props.container}/>;
-                      }
-                      return (
-                        <Loader
-                          variant={LoaderVariant.inElement}
-                          withTopMargin={true}
-                        />
-                      );
-                    }}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/cases/rfis/:caseId/knowledge/timeline"
-                render={() => (
-                  <>
-                    <ContentKnowledgeTimeLineBar
-                      handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
-                      timeLineSearchTerm={timeLineSearchTerm}
-                      timeLineDisplayRelationships={timeLineDisplayRelationships}
-                      handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
-                        this,
-                      )}
-                      timeLineFunctionalDate={timeLineFunctionalDate}
-                      handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
-                        this,
-                      )}
-                      timeLineFilters={timeLineFilters}
-                      handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
-                        this,
-                        filterKeysSchema,
-                      )}
-                      handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
-                        this,
-                      )}
-                      handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
-                      handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
+      <div
+        className={classes.container}
+        id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+      >
+        {mode !== 'graph' && (
+        <ContainerHeader
+          container={caseData}
+          PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
+          link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          currentMode={mode}
+          knowledge={true}
+          enableSuggestions={true}
+          investigationAddFromContainer={investigationAddFromContainer}
+        />
+        )}
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/graph"
+          render={() => (
+            <QueryRenderer
+              query={caseRfiKnowledgeGraphQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.caseRfi) {
+                  return (
+                    <CaseRfiKnowledgeGraph
+                      caseData={props.caseRfi}
+                      mode={mode}
                     />
-                    <QueryRenderer
-                      query={caseRfiKnowledgeTimeLineQuery}
-                      variables={{ id: caseData.id, ...timeLinePaginationOptions }}
-                      render={({ props }) => {
-                        if (props && props.caseRfi) {
-                          return (
-                            <CaseRfiKnowledgeTimeLine
-                              caseData={props.caseRfi}
-                              dateAttribute={orderBy}
-                              displayRelationships={timeLineDisplayRelationships}
-                            />
-                          );
-                        }
-                        return (
-                          <Loader
-                            variant={LoaderVariant.inElement}
-                            withTopMargin={true}
-                          />
-                        );
-                      }}
+                  );
+                }
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container}/>;
+                }
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/timeline"
+          render={() => (
+            <>
+              <ContentKnowledgeTimeLineBar
+                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                timeLineSearchTerm={timeLineSearchTerm}
+                timeLineDisplayRelationships={timeLineDisplayRelationships}
+                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                  this,
+                )}
+                timeLineFunctionalDate={timeLineFunctionalDate}
+                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                  this,
+                )}
+                timeLineFilters={timeLineFilters}
+                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                  this,
+                )}
+                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                  this,
+                )}
+                handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
+                handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
+              />
+              <QueryRenderer
+                query={caseRfiKnowledgeTimeLineQuery}
+                variables={{ id: caseData.id, ...timeLinePaginationOptions }}
+                render={({ props }) => {
+                  if (props && props.caseRfi) {
+                    return (
+                      <CaseRfiKnowledgeTimeLine
+                        caseData={props.caseRfi}
+                        dateAttribute={orderBy}
+                        displayRelationships={timeLineDisplayRelationships}
+                      />
+                    );
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
                     />
-                  </>
-                )}
+                  );
+                }}
               />
-              <Route
-                exact
-                path="/dashboard/cases/rfis/:caseId/knowledge/correlation"
-                render={() => (
-                  <QueryRenderer
-                    query={caseRfiKnowledgeCorrelationQuery}
-                    variables={{ id: caseData.id }}
-                    render={({ props }) => {
-                      if (props && props.caseRfi) {
-                        return (
-                          <CaseRfiKnowledgeCorrelation caseData={props.caseRfi}/>
-                        );
-                      }
-                      return (
-                        <Loader
-                          variant={LoaderVariant.inElement}
-                          withTopMargin={true}
-                        />
-                      );
-                    }}
+            </>
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/correlation"
+          render={() => (
+            <QueryRenderer
+              query={caseRfiKnowledgeCorrelationQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.caseRfi) {
+                  return (
+                    <CaseRfiKnowledgeCorrelation caseData={props.caseRfi}/>
+                  );
+                }
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
                   />
-                )}
-              />
-              <Route
-                exact
-                path="/dashboard/cases/rfis/:caseId/knowledge/matrix"
-                render={() => (
-                  <QueryRenderer
-                    query={caseRfiKnowledgeAttackPatternsGraphQuery}
-                    variables={{ id: caseData.id }}
-                    render={({ props }) => {
-                      if (props && props.caseRfi) {
-                        const attackPatterns = R.pipe(
-                          R.map((n) => n.node),
-                          R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                        )(props.caseRfi.objects.edges);
-                        return (
-                          <AttackPatternsMatrix
-                            entity={caseData}
-                            attackPatterns={attackPatterns}
-                            searchTerm=""
-                            currentKillChain={currentKillChain}
-                            currentModeOnlyActive={currentModeOnlyActive}
-                            currentColorsReversed={currentColorsReversed}
-                            handleChangeKillChain={this.handleChangeKillChain.bind(
-                              this,
-                            )}
-                            handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                              this,
-                            )}
-                            handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                              this,
-                            )}
-                          />
-                        );
-                      }
-                      return (
-                        <Loader
-                          variant={LoaderVariant.inElement}
-                          withTopMargin={true}
-                        />
-                      );
-                    }}
+                );
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/matrix"
+          render={() => (
+            <QueryRenderer
+              query={caseRfiKnowledgeAttackPatternsGraphQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.caseRfi) {
+                  const attackPatterns = R.pipe(
+                    R.map((n) => n.node),
+                    R.filter((n) => n.entity_type === 'Attack-Pattern'),
+                  )(props.caseRfi.objects.edges);
+                  return (
+                    <AttackPatternsMatrix
+                      entity={caseData}
+                      attackPatterns={attackPatterns}
+                      searchTerm=""
+                      currentKillChain={currentKillChain}
+                      currentModeOnlyActive={currentModeOnlyActive}
+                      currentColorsReversed={currentColorsReversed}
+                      handleChangeKillChain={this.handleChangeKillChain.bind(
+                        this,
+                      )}
+                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                        this,
+                      )}
+                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                        this,
+                      )}
+                    />
+                  );
+                }
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
                   />
-                )}
-              />
-            </div>
-          );
-        }}
-      </UserContext.Consumer>
+                );
+              }}
+            />
+          )}
+        />
+      </div>
     );
   }
 }
