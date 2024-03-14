@@ -129,6 +129,7 @@ class RootIntrusionSet extends Component {
                         ? 200
                         : 0,
                     }}
+                    data-testid="intrusionSet-details-page"
                   >
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
@@ -214,10 +215,12 @@ class RootIntrusionSet extends Component {
                       <Route
                         path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
                         render={(routeProps) => (
-                          <IntrusionSetKnowledge
-                            {...routeProps}
-                            intrusionSet={props.intrusionSet}
-                          />
+                          <div data-testid="instrusionSet-knowledge">
+                            <IntrusionSetKnowledge
+                              {...routeProps}
+                              intrusionSet={props.intrusionSet}
+                            />
+                          </div>
                         )}
                       />
                       <Route
