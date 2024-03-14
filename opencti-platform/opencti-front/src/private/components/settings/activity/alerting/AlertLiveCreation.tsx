@@ -214,6 +214,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         filters={filters}
         redirection
         helpers={helpers}
+        entityTypes={['History']}
       />
     </React.Fragment>
   );

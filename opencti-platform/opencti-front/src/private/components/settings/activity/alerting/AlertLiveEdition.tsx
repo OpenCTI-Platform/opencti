@@ -249,6 +249,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                   filters={filters}
                   styleNumber={2}
                   helpers={helpers}
+                  entityTypes={['History']}
                 />
               )}
             </Form>
