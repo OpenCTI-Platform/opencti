@@ -18,6 +18,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = () => ({
   container: {
@@ -168,7 +169,7 @@ class IncidentKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
+  handleAddTimeLineFilter(filterKeysSchema, key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -177,6 +178,7 @@ class IncidentKnowledgeComponent extends Component {
       this.state.timeLineFilters,
       key,
       id,
+      filterKeysSchema,
       op,
     );
     this.setState(
@@ -252,188 +254,196 @@ class IncidentKnowledgeComponent extends Component {
       orderMode: 'desc',
     };
     return (
-      <div
-        className={classes.container}
-        id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-      >
-        {mode !== 'graph' && (
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-            link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
-            currentMode={mode}
-            knowledge={true}
-            enableSuggestions={true}
-            investigationAddFromContainer={investigationAddFromContainer}
-          />
-        )}
-        <Route
-          exact
-          path="/dashboard/cases/incidents/:caseId/knowledge/graph"
-          render={() => (
-            <QueryRenderer
-              query={incidentKnowledgeGraphQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseIncident) {
-                  return (
-                    <IncidentKnowledgeGraph
-                      caseData={props.caseIncident}
-                      mode={mode}
-                    />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
+      <UserContext.Consumer>
+        {({ schema }) => {
+          const { filterKeysSchema } = schema;
+          return (
+            <div
+              className={classes.container}
+              id={location.pathname.includes('matrix') ? 'parent' : 'container'}
+            >
+              {mode !== 'graph' && (
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+                  modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+                  currentMode={mode}
+                  knowledge={true}
+                  enableSuggestions={true}
+                  investigationAddFromContainer={investigationAddFromContainer}
+                />
+              )}
+              <Route
+                exact
+                path="/dashboard/cases/incidents/:caseId/knowledge/graph"
+                render={() => (
+                  <QueryRenderer
+                    query={incidentKnowledgeGraphQuery}
+                    variables={{ id: caseData.id }}
+                    render={({ props }) => {
+                      if (props && props.caseIncident) {
+                        return (
+                          <IncidentKnowledgeGraph
+                            caseData={props.caseIncident}
+                            mode={mode}
+                          />
+                        );
+                      }
+                      return (
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                          withTopMargin={true}
+                        />
+                      );
+                    }}
                   />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/incidents/:caseId/knowledge/content"
-          render={() => (
-            <QueryRenderer
-              query={containerContentQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.container) {
-                  return <ContainerContent containerData={props.container} />;
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/incidents/:incidentId/knowledge/timeline"
-          render={() => (
-            <>
-              <ContentKnowledgeTimeLineBar
-                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
-                timeLineSearchTerm={timeLineSearchTerm}
-                timeLineDisplayRelationships={timeLineDisplayRelationships}
-                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
-                  this,
                 )}
-                timeLineFunctionalDate={timeLineFunctionalDate}
-                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
-                  this,
-                )}
-                timeLineFilters={timeLineFilters}
-                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
-                  this,
-                )}
-                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
-                  this,
-                )}
-                handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
-                handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
               />
-              <QueryRenderer
-                query={incidentKnowledgeTimeLineQuery}
-                variables={{ id: caseData.id, ...timeLinePaginationOptions }}
-                render={({ props }) => {
-                  if (props && props.caseIncident) {
-                    return (
-                      <IncidentKnowledgeTimeLine
-                        caseData={props.caseIncident}
-                        dateAttribute={orderBy}
-                        displayRelationships={timeLineDisplayRelationships}
-                      />
-                    );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
+              <Route
+                exact
+                path="/dashboard/cases/incidents/:caseId/knowledge/content"
+                render={() => (
+                  <QueryRenderer
+                    query={containerContentQuery}
+                    variables={{ id: caseData.id }}
+                    render={({ props }) => {
+                      if (props && props.container) {
+                        return <ContainerContent containerData={props.container} />;
+                      }
+                      return (
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                          withTopMargin={true}
+                        />
+                      );
+                    }}
+                  />
+                )}
               />
-            </>
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/incidents/:incidentId/knowledge/correlation"
-          render={() => (
-            <QueryRenderer
-              query={incidentKnowledgeCorrelationQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseIncident) {
-                  return (
-                    <IncidentKnowledgeCorrelation
-                      caseData={props.caseIncident}
+              <Route
+                exact
+                path="/dashboard/cases/incidents/:incidentId/knowledge/timeline"
+                render={() => (
+                  <>
+                    <ContentKnowledgeTimeLineBar
+                      handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                      timeLineSearchTerm={timeLineSearchTerm}
+                      timeLineDisplayRelationships={timeLineDisplayRelationships}
+                      handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                        this,
+                      )}
+                      timeLineFunctionalDate={timeLineFunctionalDate}
+                      handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                        this,
+                      )}
+                      timeLineFilters={timeLineFilters}
+                      handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                        this,
+                        filterKeysSchema,
+                      )}
+                      handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                        this,
+                      )}
+                      handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
+                      handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
                     />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/cases/incidents/:incidentId/knowledge/matrix"
-          render={() => (
-            <QueryRenderer
-              query={incidentKnowledgeAttackPatternsGraphQuery}
-              variables={{ id: caseData.id }}
-              render={({ props }) => {
-                if (props && props.caseIncident) {
-                  const attackPatterns = R.pipe(
-                    R.map((n) => n.node),
-                    R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                  )(props.caseIncident.objects.edges);
-                  return (
-                    <AttackPatternsMatrix
-                      entity={caseData}
-                      attackPatterns={attackPatterns}
-                      searchTerm=""
-                      currentKillChain={currentKillChain}
-                      currentModeOnlyActive={currentModeOnlyActive}
-                      currentColorsReversed={currentColorsReversed}
-                      handleChangeKillChain={this.handleChangeKillChain.bind(
-                        this,
-                      )}
-                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                        this,
-                      )}
-                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                        this,
-                      )}
+                    <QueryRenderer
+                      query={incidentKnowledgeTimeLineQuery}
+                      variables={{ id: caseData.id, ...timeLinePaginationOptions }}
+                      render={({ props }) => {
+                        if (props && props.caseIncident) {
+                          return (
+                            <IncidentKnowledgeTimeLine
+                              caseData={props.caseIncident}
+                              dateAttribute={orderBy}
+                              displayRelationships={timeLineDisplayRelationships}
+                            />
+                          );
+                        }
+                        return (
+                          <Loader
+                            variant={LoaderVariant.inElement}
+                            withTopMargin={true}
+                          />
+                        );
+                      }}
                     />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
+                  </>
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/cases/incidents/:incidentId/knowledge/correlation"
+                render={() => (
+                  <QueryRenderer
+                    query={incidentKnowledgeCorrelationQuery}
+                    variables={{ id: caseData.id }}
+                    render={({ props }) => {
+                      if (props && props.caseIncident) {
+                        return (
+                          <IncidentKnowledgeCorrelation
+                            caseData={props.caseIncident}
+                          />
+                        );
+                      }
+                      return (
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                          withTopMargin={true}
+                        />
+                      );
+                    }}
                   />
-                );
-              }}
-            />
-          )}
-        />
-      </div>
+                )}
+              />
+              <Route
+                exact
+                path="/dashboard/cases/incidents/:incidentId/knowledge/matrix"
+                render={() => (
+                  <QueryRenderer
+                    query={incidentKnowledgeAttackPatternsGraphQuery}
+                    variables={{ id: caseData.id }}
+                    render={({ props }) => {
+                      if (props && props.caseIncident) {
+                        const attackPatterns = R.pipe(
+                          R.map((n) => n.node),
+                          R.filter((n) => n.entity_type === 'Attack-Pattern'),
+                        )(props.caseIncident.objects.edges);
+                        return (
+                          <AttackPatternsMatrix
+                            entity={caseData}
+                            attackPatterns={attackPatterns}
+                            searchTerm=""
+                            currentKillChain={currentKillChain}
+                            currentModeOnlyActive={currentModeOnlyActive}
+                            currentColorsReversed={currentColorsReversed}
+                            handleChangeKillChain={this.handleChangeKillChain.bind(
+                              this,
+                            )}
+                            handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                              this,
+                            )}
+                            handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                              this,
+                            )}
+                          />
+                        );
+                      }
+                      return (
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                          withTopMargin={true}
+                        />
+                      );
+                    }}
+                  />
+                )}
+              />
+            </div>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }
