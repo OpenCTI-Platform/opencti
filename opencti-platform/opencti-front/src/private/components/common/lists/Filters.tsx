@@ -154,7 +154,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       />
     );
   }
-  console.log('helpers', helpers);
   return (
     <>
       {helpers ? (
