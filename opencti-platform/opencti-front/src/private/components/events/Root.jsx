@@ -40,7 +40,7 @@ const Root = () => {
           Component={boundaryWrapper(ObservedDatas)}
         />
         <Route
-          path="/observed_data/:observedDataId"
+          path="/observed_data/:observedDataId/*"
           Component={boundaryWrapper(RootObservedData)}
         />
         <Route
@@ -48,7 +48,7 @@ const Root = () => {
           Component={boundaryWrapper(StixSightingRelationships)}
         />
         <Route
-          path="/sightings/:sightingId"
+          path="/sightings/:sightingId/*"
           Component={boundaryWrapper(StixSightingRelationship)}
         />
       </Routes>

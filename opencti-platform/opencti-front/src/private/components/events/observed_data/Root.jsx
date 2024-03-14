@@ -63,9 +63,7 @@ class RootObservedData extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { observedDataId },
-      },
+      params: { observedDataId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -81,9 +79,7 @@ class RootObservedData extends Component {
     const {
       t,
       location,
-      match: {
-        params: { observedDataId },
-      },
+      params: { observedDataId },
     } = this.props;
     return (
       <>
@@ -167,57 +163,39 @@ class RootObservedData extends Component {
                   </Box>
                   <Routes>
                     <Route
-                      exact
-                      path="/dashboard/events/observed_data/:observedDataId"
-                      render={(routeProps) => (
-                        <ObservedData
-                          {...routeProps}
-                          observedData={props.observedData}
-                        />
-                      )}
+                      path="/"
+                      element={
+                        <ObservedData observedData={props.observedData} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/events/observed_data/:observedDataId/entities"
-                      render={(routeProps) => (
-                        <ContainerStixDomainObjects
-                          {...routeProps}
-                          container={props.observedData}
-                        />
-                      )}
+                      path="/entities"
+                      element={
+                        <ContainerStixDomainObjects container={props.observedData} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/events/observed_data/:observedDataId/observables"
-                      render={(routeProps) => (
-                        <ContainerStixCyberObservables
-                          {...routeProps}
-                          container={props.observedData}
-                        />
-                      )}
+                      path="/observables"
+                      element={
+                        <ContainerStixCyberObservables container={props.observedData} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/events/observed_data/:observedDataId/files"
-                      render={(routeProps) => (
+                      path="/files"
+                      element={
                         <FileManager
-                          {...routeProps}
                           id={observedDataId}
                           connectorsExport={props.connectorsForExport}
                           connectorsImport={props.connectorsForImport}
                           entity={props.observedData}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/events/observed_data/:observedDataId/history"
-                      render={(routeProps) => (
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={observedDataId}
-                        />
-                      )}
+                      path="/history"
+                      element={
+                        <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
+                      }
                     />
                   </Routes>
                 </div>
