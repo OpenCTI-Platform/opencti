@@ -167,7 +167,7 @@ class CaseRftKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
+  handleAddTimeLineFilter(filterKeysSchema, key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -176,6 +176,7 @@ class CaseRftKnowledgeComponent extends Component {
       this.state.timeLineFilters,
       key,
       id,
+      filterKeysSchema,
       op,
     );
     this.setState(
@@ -256,16 +257,16 @@ class CaseRftKnowledgeComponent extends Component {
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
         {mode !== 'graph' && (
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseRftPopover id={caseData.id} />}
-            link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
-            currentMode={mode}
-            knowledge={true}
-            enableSuggestions={true}
-            investigationAddFromContainer={investigationAddFromContainer}
-          />
+        <ContainerHeader
+          container={caseData}
+          PopoverComponent={<CaseRftPopover id={caseData.id}/>}
+          link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          currentMode={mode}
+          knowledge={true}
+          enableSuggestions={true}
+          investigationAddFromContainer={investigationAddFromContainer}
+        />
         )}
         <Route
           exact
@@ -353,7 +354,7 @@ class CaseRftKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.caseRft) {
                   return (
-                    <CaseRftKnowledgeCorrelation caseData={props.caseRft} />
+                    <CaseRftKnowledgeCorrelation caseData={props.caseRft}/>
                   );
                 }
                 return (

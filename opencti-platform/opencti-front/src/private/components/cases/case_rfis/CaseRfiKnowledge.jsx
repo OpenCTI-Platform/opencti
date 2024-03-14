@@ -168,7 +168,7 @@ class CaseRfiKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
+  handleAddTimeLineFilter(filterKeysSchema, key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -177,6 +177,7 @@ class CaseRfiKnowledgeComponent extends Component {
       this.state.timeLineFilters,
       key,
       id,
+      filterKeysSchema,
       op,
     );
     this.setState(
@@ -257,16 +258,16 @@ class CaseRfiKnowledgeComponent extends Component {
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
         {mode !== 'graph' && (
-          <ContainerHeader
-            container={caseData}
-            PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-            link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
-            currentMode={mode}
-            knowledge={true}
-            enableSuggestions={true}
-            investigationAddFromContainer={investigationAddFromContainer}
-          />
+        <ContainerHeader
+          container={caseData}
+          PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
+          link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          currentMode={mode}
+          knowledge={true}
+          enableSuggestions={true}
+          investigationAddFromContainer={investigationAddFromContainer}
+        />
         )}
         <Route
           exact
@@ -303,7 +304,7 @@ class CaseRfiKnowledgeComponent extends Component {
               variables={{ id: caseData.id }}
               render={({ props }) => {
                 if (props && props.container) {
-                  return <ContainerContent containerData={props.container} />;
+                  return <ContainerContent containerData={props.container}/>;
                 }
                 return (
                   <Loader
@@ -375,7 +376,7 @@ class CaseRfiKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.caseRfi) {
                   return (
-                    <CaseRfiKnowledgeCorrelation caseData={props.caseRfi} />
+                    <CaseRfiKnowledgeCorrelation caseData={props.caseRfi}/>
                   );
                 }
                 return (

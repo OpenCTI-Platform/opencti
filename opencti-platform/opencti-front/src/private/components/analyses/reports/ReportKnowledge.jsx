@@ -167,7 +167,7 @@ class ReportKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
+  handleAddTimeLineFilter(filterKeysSchema, key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -176,6 +176,7 @@ class ReportKnowledgeComponent extends Component {
       this.state.timeLineFilters,
       key,
       id,
+      filterKeysSchema,
       op,
     );
     this.setState(
@@ -256,16 +257,16 @@ class ReportKnowledgeComponent extends Component {
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
       >
         {mode !== 'graph' && (
-          <ContainerHeader
-            container={report}
-            PopoverComponent={<ReportPopover />}
-            link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
-            currentMode={mode}
-            knowledge={true}
-            enableSuggestions={true}
-            investigationAddFromContainer={investigationAddFromContainer}
-          />
+        <ContainerHeader
+          container={report}
+          PopoverComponent={<ReportPopover />}
+          link={`/dashboard/analyses/reports/${report.id}/knowledge`}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          currentMode={mode}
+          knowledge={true}
+          enableSuggestions={true}
+          investigationAddFromContainer={investigationAddFromContainer}
+        />
         )}
         <Route
           exact

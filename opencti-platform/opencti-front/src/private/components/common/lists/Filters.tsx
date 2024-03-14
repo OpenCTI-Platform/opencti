@@ -8,6 +8,7 @@ import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter, handleFilterHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 interface FiltersProps {
   variant?: string;
@@ -97,13 +98,14 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setOpen(false);
     setAnchorEl(null);
   };
+  const { filterKeysSchema } = useAuth().schema;
   const defaultHandleAddFilter = handleAddFilter
     || ((key, id, operator = 'eq', event = undefined) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      setFilters(constructHandleAddFilter(filters, key, id, operator));
+      setFilters(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
     });
   const defaultHandleRemoveFilter = handleRemoveFilter
     || ((key, operator = 'eq') => {

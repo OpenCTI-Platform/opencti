@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { FunctionComponent, SyntheticEvent, useEffect, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { RelationManyToMany, CalendarMultiselectOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -10,7 +10,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
+import { Filter, FilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   bottomNav: {
@@ -25,8 +26,22 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+interface ContentKnowledgeTimeLineBarProps {
+  handleTimeLineSearch: (search: string) => void;
+  timeLineSearchTerm: string;
+  timeLineDisplayRelationships: boolean;
+  handleToggleTimeLineDisplayRelationships: () => void;
+  timeLineFunctionalDate: boolean;
+  handleToggleTimeLineFunctionalDate: () => void;
+  timeLineFilters: FilterGroup;
+  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string, op?: string, event?: SyntheticEvent) => void;
+  handleRemoveTimeLineFilter: (key: string, id?: string) => void;
+  handleSwitchFilterLocalMode: (filter: Filter) => void;
+  handleSwitchFilterGlobalMode: () => void;
+}
+
 // TODO Fix ContentKnowledge
-const ContentKnowledgeTimeLineBar = ({
+const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBarProps> = ({
   handleTimeLineSearch,
   timeLineSearchTerm,
   timeLineDisplayRelationships,
@@ -39,6 +54,7 @@ const ContentKnowledgeTimeLineBar = ({
   handleSwitchFilterLocalMode,
   handleSwitchFilterGlobalMode,
 }) => {
+  const { filterKeysSchema } = useAuth().schema;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [navOpen, setNavOpen] = useState(
@@ -53,6 +69,9 @@ const ContentKnowledgeTimeLineBar = ({
       sub.unsubscribe();
     };
   });
+  const handleAddFilter = (key: string, id: string, op = 'eq', event?: SyntheticEvent) => {
+    handleAddTimeLineFilter(filterKeysSchema, key, id, op, event);
+  };
   return (
     <UserContext.Consumer>
       {({ bannerSettings }) => (
@@ -65,7 +84,7 @@ const ContentKnowledgeTimeLineBar = ({
             elevation: 1,
             style: {
               paddingLeft: navOpen ? 185 : 60,
-              bottom: bannerSettings.bannerHeightNumber,
+              bottom: bannerSettings?.bannerHeightNumber,
             },
           }}
         >
@@ -139,7 +158,7 @@ const ContentKnowledgeTimeLineBar = ({
                     'Stix-Domain-Object',
                     'Stix-Cyber-Observable',
                   ]}
-                  handleAddFilter={handleAddTimeLineFilter}
+                  handleAddFilter={handleAddFilter}
                 />
               </div>
 

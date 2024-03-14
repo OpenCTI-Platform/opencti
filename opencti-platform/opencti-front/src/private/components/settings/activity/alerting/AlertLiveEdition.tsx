@@ -4,8 +4,9 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
@@ -13,14 +14,7 @@ import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  deserializeFilterGroupForFrontend,
-  Filter,
-  filtersAfterSwitchLocalMode,
-  serializeFilterGroupForBackend,
-} from '../../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
@@ -30,6 +24,7 @@ import { AlertingPaginationQuery$variables } from './__generated__/AlertingPagin
 import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
 import { liveActivityTriggerValidation } from './AlertLiveCreation';
+import useFiltersState from '../../../../../utils/filters/useFiltersState';
 
 interface AlertLiveEditionProps {
   handleClose: () => void;
@@ -105,8 +100,19 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
     alertLiveEditionFragment,
     data.triggerKnowledge,
   );
-  const filters = deserializeFilterGroupForFrontend(trigger?.filters ?? null);
+  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger?.filters ?? undefined) ?? undefined);
   const [commitFieldPatch] = useMutation(alertLiveEditionFieldPatch);
+  useEffect(() => {
+    commitFieldPatch({
+      variables: {
+        id: trigger?.id,
+        input: {
+          key: 'filters',
+          value: serializeFilterGroupForBackend(filters),
+        },
+      },
+    });
+  }, [filters]);
   const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (
     values,
     { setSubmitting },
@@ -149,61 +155,6 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key: string, id: string, op = 'eq') => {
-    const updatedFilters = constructHandleAddFilter(filters, key, id, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger?.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(updatedFilters),
-        },
-      },
-    });
-  };
-  const handleRemoveFilter = (key: string, op = 'eq') => {
-    const updatedFilters = constructHandleRemoveFilter(filters, key, op);
-    commitFieldPatch({
-      variables: {
-        id: trigger?.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(updatedFilters),
-        },
-      },
-    });
-  };
-
-  const handleSwitchLocalMode = (localFilter: Filter) => {
-    const updatedFilters = filtersAfterSwitchLocalMode(filters, localFilter);
-    commitFieldPatch({
-      variables: {
-        id: trigger?.id,
-        input: {
-          key: 'filters',
-          value: serializeFilterGroupForBackend(updatedFilters),
-        },
-      },
-    });
-  };
-
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      const updatedFilters = {
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      };
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: {
-            key: 'filters',
-            value: serializeFilterGroupForBackend(updatedFilters),
-          },
-        },
-      });
-    }
-  };
 
   const initialValues = {
     name: trigger?.name,
@@ -273,9 +224,14 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                 multiple={true}
                 name={'recipients'}
               />
-              <div style={{ marginTop: 35 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  marginTop: '20px',
+                }}
+              >
                 <Filters
-                  variant="text"
                   availableFilterKeys={[
                     'event_type',
                     'event_scope',
@@ -283,27 +239,17 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
                     'members_group',
                     'members_organization',
                   ]}
-                  handleAddFilter={handleAddFilter}
-                  handleRemoveFilter={undefined}
-                  handleSwitchFilter={undefined}
-                  disabled={undefined}
-                  size={undefined}
-                  fontSize={undefined}
-                  availableEntityTypes={undefined}
-                  availableRelationshipTypes={undefined}
-                  type={undefined}
-                  availableRelationFilterTypes={undefined}
+                  helpers={helpers}
                   searchContext={{ entityTypes: ['History'] }}
                 />
-              </div>
+              </Box>
               <div className="clearfix" />
               {filters && (
                 <FilterIconButton
                   filters={filters}
-                  handleRemoveFilter={handleRemoveFilter}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
                   styleNumber={2}
+                  helpers={helpers}
+                  entityTypes={['History']}
                 />
               )}
             </Form>
