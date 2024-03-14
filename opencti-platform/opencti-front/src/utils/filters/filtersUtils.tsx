@@ -537,7 +537,6 @@ const defaultFilterObject: Filter = {
 export const getDefaultOperatorFilter = (
   filterDefinition?: FilterDefinition,
 ) => {
-  console.log('filterDef', filterDefinition);
   if (!filterDefinition) {
     return 'eq';
   }
@@ -622,7 +621,6 @@ export const getAvailableOperatorForFilter = (
   filterDefinition: FilterDefinition | undefined,
   subKey?: string,
 ): string[] => {
-  console.log('filterDef in available', filterDefinition);
   if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition?.filterKey, subKey);
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
