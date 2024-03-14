@@ -29,6 +29,7 @@ import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
+import {Option} from "@components/common/form/ReferenceField";
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -58,8 +59,8 @@ interface StixCoreObjectFileExportComponentProps {
 interface FormValues {
   format: string;
   type: string;
-  contentMaxMarkingDefinitions: string[];
-  fileMarkingsDefinitions: string[];
+  contentMaxMarkingDefinitions: Option[];
+  fileMarkingsDefinitions: Option[];
 }
 
 const StixCoreObjectFileExportComponent = ({
@@ -82,8 +83,8 @@ const StixCoreObjectFileExportComponent = ({
     values: FormValues,
     { setSubmitting, resetForm }: FormikHelpers<FormValues>,
   ) => {
-    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map((value) => value); // rename to contentMaxMarkings
-    const fileMarkingDefinitions = values.fileMarkingsDefinitions.map((value) => value); // rename to fileMarkingDefinitions
+    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value); // rename to contentMaxMarkings
+    const fileMarkingDefinitions = values.fileMarkingsDefinitions.map(({ value }) => value); // rename to fileMarkingDefinitions
     commitExport({
       variables: {
         id,
