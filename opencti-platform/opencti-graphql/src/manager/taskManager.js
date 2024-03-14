@@ -239,7 +239,7 @@ const executeRemove = async (context, user, actionContext, element) => {
     await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
 };
-const executeReplace = async (context, user, actionContext, element) => {
+export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
   if (contextType === ACTION_TYPE_RELATION) {
     // 01 - Delete all relations of the element
