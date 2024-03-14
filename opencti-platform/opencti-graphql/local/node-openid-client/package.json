@@ -1,0 +1,106 @@
+{
+  "name": "openid-client",
+  "version": "5.6.5",
+  "description": "OpenID Connect Relying Party (RP, Client) implementation for Node.js runtime, supports passportjs",
+  "keywords": [
+    "auth",
+    "authentication",
+    "basic",
+    "certified",
+    "client",
+    "connect",
+    "dynamic",
+    "electron",
+    "hybrid",
+    "identity",
+    "implicit",
+    "oauth",
+    "oauth2",
+    "oidc",
+    "openid",
+    "passport",
+    "relying party",
+    "strategy"
+  ],
+  "homepage": "https://github.com/panva/node-openid-client",
+  "repository": "panva/node-openid-client",
+  "funding": {
+    "url": "https://github.com/sponsors/panva"
+  },
+  "license": "MIT",
+  "author": "Filip Skokan <panva.ip@gmail.com>",
+  "exports": {
+    "types": "./types/index.d.ts",
+    "import": "./lib/index.mjs",
+    "require": "./lib/index.js"
+  },
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types/index.d.ts"
+  ],
+  "scripts": {
+    "format": "npx prettier --loglevel silent --write ./lib ./test ./certification ./types",
+    "test": "mocha test/**/*.test.js"
+  },
+  "dependencies": {
+    "jose": "^4.15.5",
+    "lru-cache": "^6.0.0",
+    "object-hash": "^2.2.0",
+    "oidc-token-hash": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.87",
+    "@types/passport": "^1.0.16",
+    "base64url": "^3.0.1",
+    "chai": "^4.4.1",
+    "mocha": "^10.3.0",
+    "nock": "^13.5.4",
+    "prettier": "^2.8.8",
+    "readable-mock-req": "^0.2.2",
+    "sinon": "^9.2.4",
+    "timekeeper": "^2.3.1"
+  },
+  "standard-version": {
+    "scripts": {
+      "postchangelog": "sed -i '' -e 's/### \\[/## [/g' CHANGELOG.md"
+    },
+    "types": [
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "fix",
+        "section": "Fixes"
+      },
+      {
+        "type": "chore",
+        "hidden": true
+      },
+      {
+        "type": "docs",
+        "hidden": true
+      },
+      {
+        "type": "style",
+        "hidden": true
+      },
+      {
+        "type": "refactor",
+        "section": "Refactor",
+        "hidden": false
+      },
+      {
+        "type": "perf",
+        "section": "Performance",
+        "hidden": false
+      },
+      {
+        "type": "test",
+        "hidden": true
+      }
+    ]
+  }
+}

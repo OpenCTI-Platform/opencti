@@ -11500,7 +11500,7 @@ __metadata:
     node-fetch: "npm:3.3.2"
     nodemailer: "npm:6.9.11"
     openai: "npm:4.28.4"
-    openid-client: "npm:5.6.4"
+    openid-client: "file:./local/node-openid-client"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
     passport: "npm:0.7.0"
@@ -11536,15 +11536,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"openid-client@npm:5.6.4":
-  version: 5.6.4
-  resolution: "openid-client@npm:5.6.4"
+"openid-client@file:./local/node-openid-client::locator=opencti-graphql%40workspace%3A.":
+  version: 5.6.5
+  resolution: "openid-client@file:./local/node-openid-client#./local/node-openid-client::hash=1c1fe9&locator=opencti-graphql%40workspace%3A."
   dependencies:
-    jose: "npm:^4.15.4"
+    jose: "npm:^4.15.5"
     lru-cache: "npm:^6.0.0"
     object-hash: "npm:^2.2.0"
     oidc-token-hash: "npm:^5.0.3"
-  checksum: 10/ab9b1ec59be68f13b10c4e4eb1979e204d211701b139c2363e58faeb4bb0b67e26782fd2080d7488bb3e7e2ebc3c2aac43cff7284c3da3723cfe4f9b29852c24
+  checksum: 10/f8a3726283f55206aa154d0fc2f93d67ec29a503a21d90f17ad422e120bf8c0dbfd04204464586c970b470c6891b7b353088737d0e6bd1fa55bc1e0ecedcf5ff
   languageName: node
   linkType: hard
 
