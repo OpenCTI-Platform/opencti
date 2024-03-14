@@ -126,11 +126,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     const time = moment
       .duration(file.lastModifiedSinceMin, 'minutes')
       .humanize();
-    navigate({
+    history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
   } else if (file?.metaData?.messages && file?.metaData?.errors) {
-    navigate(
+    history.push(
       ...[...file.metaData.messages.map((o) => o), ...file.metaData.errors],
     );
   }
