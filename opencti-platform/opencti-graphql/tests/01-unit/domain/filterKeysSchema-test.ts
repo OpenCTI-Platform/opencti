@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
 import {
-  ABSTRACT_BASIC_OBJECT,
+  ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -129,19 +129,22 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(3); // create, update, delete
   });
   it('should construct correct filter definition for nested object attributes', () => {
-    // 'fromId' for relationships
+    // 'fromId' for stix core relationships
     let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('fromId');
     expect(filterDefinition?.filterKey).toEqual('fromId');
     expect(filterDefinition?.type).toEqual('id');
     expect(filterDefinition?.label).toEqual('Source entity');
-    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(2);
-    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_BASIC_OBJECT);
-    // 'toTypes' for relationships
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
+    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
+    // 'toTypes' for stix core relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('toTypes');
     expect(filterDefinition?.filterKey).toEqual('toTypes');
     expect(filterDefinition?.type).toEqual('string');
     expect(filterDefinition?.label).toEqual('Target type');
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(0);
+    // 'fromId' for basic relationships: not filterable
+    filterDefinition = filterKeysSchema.get(ABSTRACT_BASIC_RELATIONSHIP)?.get('fromId');
+    expect(filterDefinition).toBeUndefined();
   });
   it('should construct correct filter definition for special filter keys', () => {
     // 'regardingOf' for stix core objects
