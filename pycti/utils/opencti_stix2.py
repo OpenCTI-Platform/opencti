@@ -770,6 +770,10 @@ class OpenCTIStix2:
             )
         elif "x_opencti_granted_refs" in stix_object:
             granted_refs_ids = stix_object["x_opencti_granted_refs"]
+        # Sample refs
+        sample_refs_ids = (
+            stix_object["sample_refs"] if "sample_refs" in stix_object else []
+        )
 
         return {
             "created_by": created_by_id,
@@ -779,6 +783,7 @@ class OpenCTIStix2:
             "kill_chain_phases": kill_chain_phases_ids,
             "object_refs": object_refs_ids,
             "granted_refs": granted_refs_ids,
+            "sample_refs": sample_refs_ids,
             "external_references": external_references_ids,
             "reports": reports,
         }
@@ -863,6 +868,7 @@ class OpenCTIStix2:
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
+        sample_refs_ids = embedded_relationships["sample_refs"]
 
         # Extra
         extras = {
@@ -874,6 +880,7 @@ class OpenCTIStix2:
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
             "reports": reports,
+            "sample_ids": sample_refs_ids,
         }
 
         # Import
@@ -1000,6 +1007,7 @@ class OpenCTIStix2:
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
+        sample_refs_ids = embedded_relationships["sample_refs"]
 
         # Extra
         extras = {
@@ -1012,6 +1020,7 @@ class OpenCTIStix2:
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
             "reports": reports,
+            "sample_ids": sample_refs_ids,
         }
         if stix_object["type"] == "simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
@@ -1176,6 +1185,7 @@ class OpenCTIStix2:
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
+        sample_refs_ids = embedded_relationships["sample_refs"]
 
         # Extra
         extras = {
@@ -1188,6 +1198,7 @@ class OpenCTIStix2:
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
             "reports": reports,
+            "sample_ids": sample_refs_ids,
         }
 
         # Create the relation
@@ -1271,6 +1282,7 @@ class OpenCTIStix2:
         object_refs_ids = embedded_relationships["object_refs"]
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
+        sample_refs_ids = embedded_relationships["sample_refs"]
 
         # Extra
         extras = {
@@ -1283,6 +1295,7 @@ class OpenCTIStix2:
             "object_ids": object_refs_ids,
             "external_references_ids": external_references_ids,
             "reports": reports,
+            "sample_ids": sample_refs_ids,
         }
 
         # Create the sighting
