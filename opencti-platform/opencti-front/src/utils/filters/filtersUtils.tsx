@@ -87,8 +87,7 @@ export const isFilterFormatCorrect = (stringFilters: string): boolean => {
   return filters.mode && filters.filters && filters.filterGroups;
 };
 
-export const useIsUniqFilter = (key: string) => {
-  const { filterKeysSchema } = useAuth().schema;
+export const isUniqFilter = (key: string, filterKeysSchema: Map<string, Map<string, FilterDefinition>>) => {
   const filterDefinition = filterKeysSchema.get('Stix-Core-Object')?.get(key);
   if (filterDefinition && ['boolean', 'date', 'integer', 'float'].includes(filterDefinition.type)) {
     return true;
@@ -443,18 +442,19 @@ export const addFilter = (
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
-export const constructHandleAddFilter = (
+export const useConstructHandleAddFilter = (
   filters: FilterGroup | undefined | null,
   k: string,
   id: string | null,
   op = 'eq',
 ) => {
+  const { filterKeysSchema } = useAuth().schema;
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
     let newValues: FilterValue[] = [];
     if (id !== null) {
-      newValues = useIsUniqFilter(k)
+      newValues = isUniqFilter(k, filterKeysSchema)
         ? [id]
         : R.uniq([...(filter?.values ?? []), id]);
     }

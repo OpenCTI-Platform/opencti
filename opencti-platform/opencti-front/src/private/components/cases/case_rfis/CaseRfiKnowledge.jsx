@@ -10,7 +10,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
+import { useConstructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import CaseRfiPopover from './CaseRfiPopover';
 import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
 import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
@@ -173,7 +173,7 @@ class CaseRfiKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const newFilters = constructHandleAddFilter(
+    const newFilters = useConstructHandleAddFilter(
       this.state.timeLineFilters,
       key,
       id,

@@ -14,7 +14,7 @@ import CaseIncidentPopover from './CaseIncidentPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery } from './IncidentKnowledgeTimeLine';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
+import { useConstructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
@@ -173,7 +173,7 @@ class IncidentKnowledgeComponent extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    const newFilters = constructHandleAddFilter(
+    const newFilters = useConstructHandleAddFilter(
       this.state.timeLineFilters,
       key,
       id,

@@ -2,7 +2,7 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import { uniq } from 'ramda';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import { useConstructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
@@ -103,7 +103,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
         event.stopPropagation();
         event.preventDefault();
       }
-      setFilters(constructHandleAddFilter(filters, key, id, operator));
+      setFilters(useConstructHandleAddFilter(filters, key, id, operator));
     });
   const defaultHandleRemoveFilter = handleRemoveFilter
     || ((key, operator = 'eq') => {

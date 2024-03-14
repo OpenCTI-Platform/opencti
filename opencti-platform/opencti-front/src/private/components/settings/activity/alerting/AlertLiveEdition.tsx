@@ -14,7 +14,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {
-  constructHandleAddFilter,
+  useConstructHandleAddFilter,
   constructHandleRemoveFilter,
   deserializeFilterGroupForFrontend,
   Filter,
@@ -150,7 +150,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
     })
     .catch(() => false);
   const handleAddFilter = (key: string, id: string, op = 'eq') => {
-    const updatedFilters = constructHandleAddFilter(filters, key, id, op);
+    const updatedFilters = useConstructHandleAddFilter(filters, key, id, op);
     commitFieldPatch({
       variables: {
         id: trigger?.id,

@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, useIsUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -16,6 +16,7 @@ import {
   handleChangeRepresentationFilterUtil,
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
+import useAuth from './useAuth';
 
 export interface handleFilterHelpers {
   handleSwitchGlobalMode: () => void;
@@ -258,6 +259,8 @@ export const usePaginationLocalStorage = <U>(
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
   const paginationOptions = localStorageToPaginationOptions({ count: 25, ...viewStorage });
+  const { filterKeysSchema } = useAuth().schema;
+
   const helpers: UseLocalStorageHelpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilterById: (id: string) => {
@@ -355,7 +358,9 @@ export const usePaginationLocalStorage = <U>(
       if (viewStorage.filters && filter) {
         let newValues: string[] = [];
         if (id !== null) {
-          newValues = useIsUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
+          newValues = isUniqFilter(k, filterKeysSchema)
+            ? [id]
+            : R.uniq([...filter.values, id]);
         }
         const newFilterElement = {
           id: uuid(),

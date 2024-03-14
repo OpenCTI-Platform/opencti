@@ -22,7 +22,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import {
-  constructHandleAddFilter,
+  useConstructHandleAddFilter,
   constructHandleRemoveFilter,
   Filter,
   FilterGroup,
@@ -122,7 +122,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     setFilters(undefined);
   };
   const handleAddFilter = (key: string, id: string, op = 'eq') => {
-    setFilters(constructHandleAddFilter(filters, key, id, op));
+    setFilters(useConstructHandleAddFilter(filters, key, id, op));
   };
   const handleRemoveFilter = (key: string, op = 'eq') => {
     setFilters(constructHandleRemoveFilter(filters, key, op));
