@@ -2,12 +2,13 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import { uniq } from 'ramda';
-import { useConstructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, Filter, FilterGroup, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter, handleFilterHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { setSearchEntitiesScope } from '../../../../utils/filters/SearchEntitiesUtil';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 interface FiltersProps {
   variant?: string;
@@ -97,13 +98,14 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setOpen(false);
     setAnchorEl(null);
   };
+  const { filterKeysSchema } = useAuth().schema;
   const defaultHandleAddFilter = handleAddFilter
     || ((key, id, operator = 'eq', event = undefined) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      setFilters(useConstructHandleAddFilter(filters, key, id, operator));
+      setFilters(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
     });
   const defaultHandleRemoveFilter = handleRemoveFilter
     || ((key, operator = 'eq') => {
@@ -152,6 +154,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
       />
     );
   }
+  console.log('helpers', helpers);
   return (
     <>
       {helpers ? (

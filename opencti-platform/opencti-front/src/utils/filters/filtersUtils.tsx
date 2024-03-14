@@ -442,13 +442,13 @@ export const addFilter = (
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
-export const useConstructHandleAddFilter = (
+export const constructHandleAddFilter = (
   filters: FilterGroup | undefined | null,
   k: string,
   id: string | null,
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   op = 'eq',
 ) => {
-  const { filterKeysSchema } = useAuth().schema;
   // if the filter key is already used, update it
   if (filters && findFilterFromKey(filters.filters, k, op)) {
     const filter = findFilterFromKey(filters.filters, k, op);
@@ -472,7 +472,6 @@ export const useConstructHandleAddFilter = (
       ],
     };
   }
-
   // new filter key, add it ot the list
   const newFilterElement = {
     key: k,

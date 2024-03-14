@@ -14,6 +14,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
+import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
@@ -21,14 +22,7 @@ import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import {
-  useConstructHandleAddFilter,
-  constructHandleRemoveFilter,
-  Filter,
-  FilterGroup,
-  filtersAfterSwitchLocalMode,
-  serializeFilterGroupForBackend,
-} from '../../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
@@ -36,6 +30,7 @@ import { Option } from '../../../common/form/ReferenceField';
 import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import useFiltersState from '../../../../../utils/filters/useFiltersState';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -116,29 +111,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FilterGroup | undefined>(undefined);
+  const [filters, helpers] = useFiltersState();
   const onReset = () => {
     handleClose?.();
-    setFilters(undefined);
-  };
-  const handleAddFilter = (key: string, id: string, op = 'eq') => {
-    setFilters(useConstructHandleAddFilter(filters, key, id, op));
-  };
-  const handleRemoveFilter = (key: string, op = 'eq') => {
-    setFilters(constructHandleRemoveFilter(filters, key, op));
-  };
-  const handleSwitchLocalMode = (localFilter: Filter) => {
-    if (filters) {
-      setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
-    }
-  };
-  const handleSwitchGlobalMode = () => {
-    if (filters) {
-      setFilters({
-        ...filters,
-        mode: filters.mode === 'and' ? 'or' : 'and',
-      });
-    }
+    helpers.handleClearAllFilters();
   };
   const [commitActivity] = useMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
   const liveInitialValues: TriggerActivityLiveAddInput = {
@@ -190,9 +166,14 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         multiple={true} name={'recipients'}
       />
       <span>
-        <div style={{ marginTop: 35 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            marginTop: '20px',
+          }}
+        >
           <Filters
-            variant="text"
             availableFilterKeys={[
               'event_type',
               'event_scope',
@@ -200,10 +181,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
               'members_group',
               'members_organization',
             ]}
-            handleAddFilter={handleAddFilter}
+            helpers={helpers}
             searchContext={{ entityTypes: ['History'] }}
           />
-        </div>
+        </Box>
         <div className="clearfix"/>
       </span>
     </>;
@@ -231,10 +212,8 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       {renderActivityTrigger(values, setFieldValue)}
       <FilterIconButton
         filters={filters}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
         redirection
+        helpers={helpers}
       />
     </React.Fragment>
   );
