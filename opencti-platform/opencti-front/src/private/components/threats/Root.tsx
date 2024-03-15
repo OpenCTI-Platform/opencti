@@ -3,8 +3,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Routes } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 
@@ -31,46 +31,41 @@ const Root = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats"
-          render={() => <Redirect to={`/dashboard/threats/${redirect}`} />}
+        <Route
+          path="/"
+          element={() => <Navigate to={`/dashboard/threats/${redirect}`} />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/threat_actors_group"
-          component={ThreatActorsGroup}
+        <Route
+          path="/threat_actors_group"
+          Component={boundaryWrapper(ThreatActorsGroup)}
         />
-        <BoundaryRoute
-          path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
-          component={RootThreatActorGroup}
+        <Route
+          path="/threat_actors_group/:threatActorGroupId/*"
+          Component={boundaryWrapper(RootThreatActorGroup)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/threat_actors_individual"
-          component={ThreatActorsIndividual}
+        <Route
+          path="/threat_actors_individual"
+          Component={boundaryWrapper(ThreatActorsIndividual)}
         />
-        <BoundaryRoute
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
-          component={RootThreatActorIndividual}
+        <Route
+          path="/threat_actors_individual/:threatActorIndividualId"
+          Component={boundaryWrapper(RootThreatActorIndividual)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/intrusion_sets"
-          component={IntrusionSets}
+        <Route
+          path="/intrusion_sets"
+          Component={boundaryWrapper(IntrusionSets)}
         />
-        <BoundaryRoute
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId"
-          component={RootIntrusionSet}
+        <Route
+          path="/intrusion_sets/:intrusionSetId/*"
+          Component={boundaryWrapper(RootIntrusionSet)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/campaigns"
-          component={Campaigns}
+        <Route
+          path="/campaigns"
+          Component={boundaryWrapper(Campaigns)}
         />
-        <BoundaryRoute
-          path="/dashboard/threats/campaigns/:campaignId"
-          component={RootCampaign}
+        <Route
+          path="/campaigns/:campaignId/*"
+          Component={boundaryWrapper(RootCampaign)}
         />
       </Routes>
     </Suspense>
