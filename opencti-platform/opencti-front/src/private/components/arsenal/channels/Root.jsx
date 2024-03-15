@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Redirect, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -19,7 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import withRouter from '../../../../utils/compat-router/withRouter';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -65,9 +65,7 @@ class RootChannel extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { channelId },
-      },
+      params: { channelId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -83,31 +81,31 @@ class RootChannel extends Component {
     const {
       t,
       location,
-      match: {
-        params: { channelId },
-      },
+      params: { channelId },
     } = this.props;
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
     return (
       <div>
-        <Route path="/dashboard/arsenal/channels/:channelId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'victimology',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'vulnerabilities',
-              'observables',
-              'sightings',
-              'channels',
-            ]}
-          />
-        </Route>
+        <Routes>
+          <Route path="/knowledge/*"
+            element= {<StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'victimology',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'vulnerabilities',
+                'observables',
+                'sightings',
+                'channels',
+              ]}
+                      />}
+          ></Route>
+        </Routes>
         <QueryRenderer
           query={channelQuery}
           variables={{ id: channelId }}
@@ -187,36 +185,31 @@ class RootChannel extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/arsenal/channels/:channelId"
-                        render={(routeProps) => (
-                          <Channel {...routeProps} channel={props.channel} />
+                        path="/"
+                        element={(
+                          <Channel channel={props.channel} />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/channels/:channelId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={(
+                          <Navigate
                             to={`/dashboard/arsenal/channels/${channelId}/knowledge/overview`}
                           />
                         )}
                       />
                       <Route
-                        path="/dashboard/arsenal/channels/:channelId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={(
                           <ChannelKnowledge
-                            {...routeProps}
                             channel={props.channel}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/channels/:channelId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.channel
                             }
@@ -224,11 +217,9 @@ class RootChannel extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/channels/:channelId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={ (
                           <FileManager
-                            {...routeProps}
                             id={channelId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -237,11 +228,9 @@ class RootChannel extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/channels/:channelId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        render={ (
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={channelId}
                           />
                         )}
@@ -262,7 +251,7 @@ class RootChannel extends Component {
 
 RootChannel.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootChannel);
