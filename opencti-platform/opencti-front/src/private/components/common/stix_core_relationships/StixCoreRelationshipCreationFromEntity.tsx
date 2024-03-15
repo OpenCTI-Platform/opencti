@@ -516,7 +516,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   const renderSelectEntity = () => {
     return (
-      <>
+      <div data-testid="stixCoreRelationshipCreationFromEntity-component">
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -678,7 +678,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           </Fab>
           )}
         </div>
-      </>
+      </div>
     );
   };
 
