@@ -218,20 +218,27 @@ const RootIncident = () => {
   const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
   return (
     <div>
-      <StixCoreObjectKnowledgeBar
-        stixCoreObjectLink={link}
-        availableSections={[
-          'attribution',
-          'victimology',
-          'attack_patterns',
-          'malwares',
-          'channels',
-          'narratives',
-          'tools',
-          'vulnerabilities',
-          'observables',
-        ]}
-      />
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'attribution',
+                'victimology',
+                'attack_patterns',
+                'malwares',
+                'channels',
+                'narratives',
+                'tools',
+                'vulnerabilities',
+                'observables',
+              ]}
+            />
+          }
+        />
+      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootIncidentComponent queryRef={queryRef} />
