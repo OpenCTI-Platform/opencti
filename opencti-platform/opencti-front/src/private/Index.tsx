@@ -101,24 +101,13 @@ const Index = ({ settings }: IndexProps) => {
 
               {/* Search need to be rework */}
               <Route path="/search/*" Component={boundaryWrapper(SearchRoot)} />
-              <Route
-                path="/id/:id"
-                Component={boundaryWrapper(StixObjectOrStixRelationship)}
-              />
-              <Route
-                path="/search_bulk"
-                Component={boundaryWrapper(SearchBulk)}
-              />
-              <Route
-                path="/analyses/*"
-                Component={boundaryWrapper(RootAnalyses)}
-              />
-
+              <Route path="/id/:id" Component={boundaryWrapper(StixObjectOrStixRelationship)} />
+              <Route path="/search_bulk" Component={boundaryWrapper(SearchBulk)} />
+              <Route path="/analyses/*" Component={boundaryWrapper(RootAnalyses)} />
               <Route path="/cases/*" Component={boundaryWrapper(RootCases)} />
-              {/* Need to refactor below */}
               <Route path="/events/*" Component={boundaryWrapper(RootEvents)} />
-
-              <Route path="/threats" Component={boundaryWrapper(RootThreats)} />
+              {/* Need to refactor below */}
+              <Route path="/threats/*" Component={boundaryWrapper(RootThreats)} />
               <Route path="/arsenal" Component={boundaryWrapper(RootArsenal)} />
               <Route
                 path="/techniques"
