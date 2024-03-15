@@ -15,7 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
+  ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis', 'External-Reference']],
   ['Cases', ['Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task']],
   ['Events', ['stix-sighting-relationship', 'Incident', 'Observed-Data']],
   ['Observations', ['Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure']],
