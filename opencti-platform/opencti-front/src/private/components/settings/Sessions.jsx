@@ -9,7 +9,7 @@ import SessionsList, { sessionsListQuery } from './SessionsList';
 import SearchInput from '../../../components/SearchInput';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import withRouter from '../../../utils/compat-router/withRouter';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

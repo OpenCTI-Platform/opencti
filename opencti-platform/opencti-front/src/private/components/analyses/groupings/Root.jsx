@@ -19,7 +19,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
 import withRouter from '../../../../utils/compat-router/withRouter';
-import Breadcrumbs from '../../../../components/Breadcrumps';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {

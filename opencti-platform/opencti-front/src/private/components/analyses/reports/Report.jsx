@@ -21,7 +21,6 @@ const styles = () => ({
 class ReportComponent extends Component {
   render() {
     const { classes, report } = this.props;
-    console.log(report);
     return (
       <>
         <Grid

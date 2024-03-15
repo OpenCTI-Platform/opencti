@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Redirect, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';

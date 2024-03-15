@@ -10,7 +10,7 @@ import MarkingDefinitionsLines, { markingDefinitionsLinesQuery } from './marking
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
 import AccessesMenu from './AccessesMenu';
 import withRouter from '../../../utils/compat-router/withRouter';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

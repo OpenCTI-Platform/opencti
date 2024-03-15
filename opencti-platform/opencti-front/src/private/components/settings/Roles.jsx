@@ -10,7 +10,7 @@ import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 import RoleCreation from './roles/RoleCreation';
 import withRouter from '../../../utils/compat-router/withRouter';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const styles = () => ({
   container: {

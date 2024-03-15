@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { propOr } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
