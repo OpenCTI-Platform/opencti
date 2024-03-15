@@ -6,7 +6,7 @@ import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
-import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
+import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elList } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
@@ -43,7 +43,7 @@ import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { listAllRelations, listEntities } from '../database/middleware-loader';
+import { listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
@@ -59,6 +59,7 @@ const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
+const CONTAINER_FINDER_BATCH_RESOLUTION = conf.get('app:live_stream:container_finder_batch_resolution') ?? 50;
 
 const createBroadcastClient = (channel) => {
   return {
@@ -552,8 +553,8 @@ const createSseMiddleware = () => {
         throw UnsupportedError('Recovery mode is only possible with a start date.');
       }
       // Init stream and broadcasting
-      const userEmail = user.user_email;
       let error;
+      const userEmail = user.user_email;
       const opts = { autoReconnect: true };
       const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
@@ -598,23 +599,34 @@ const createSseMiddleware = () => {
                   } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                     // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    const filters = {
-                      mode: 'and',
-                      filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
-                      filterGroups: [],
-                    };
-                    const args = { connectionFormat: false, filters };
-                    const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
                     let isContainerMatching = false;
-                    for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
-                      const container = containers[containerIndex];
-                      const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, streamFilters);
-                      if (containerMatch) {
-                        isContainerMatching = true;
-                        break;
+                    const safeFilters = structuredClone(streamFilters); // Safe clone to be compliant with async iteration usage
+                    const listToCallback = async (containers) => {
+                      const containersIds = containers.map((c) => c.internal_id);
+                      const containersData = await stixLoadByIds(context, req.user, containersIds);
+                      for (let containerIndex = 0; containerIndex < containersData.length; containerIndex += 1) {
+                        const stixContainer = containersData[containerIndex];
+                        const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, safeFilters);
+                        if (containerMatch) {
+                          isContainerMatching = true;
+                          break;
+                        }
                       }
-                    }
+                      return !isContainerMatching; // If match is found, stop the listing process
+                    };
+                    await listAllEntities(context, user, [ENTITY_TYPE_CONTAINER], {
+                      first: CONTAINER_FINDER_BATCH_RESOLUTION,
+                      baseData: true,
+                      orderBy: 'updated_at', // Get container by newly updated
+                      orderMode: 'desc',
+                      connectionFormat: false,
+                      filters: {
+                        mode: 'and',
+                        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
+                        filterGroups: [],
+                      },
+                      callback: listToCallback
+                    });
                     // At least one container is matching the filter, so publishing the event
                     if (isContainerMatching) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
