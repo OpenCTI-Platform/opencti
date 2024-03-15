@@ -206,7 +206,7 @@ class RootVulnerability extends Component {
                         path="/knowledge"
                         element={(
                           <VulnerabilityKnowledge
-                            vulnerability={props.vulnerability}
+                            vulnerability={vulnerability}
                           />
                         )}
                       />
@@ -214,20 +214,18 @@ class RootVulnerability extends Component {
                         path="/analyses"
                         element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.vulnerability
-                            }
+                            stixDomainObjectOrStixCoreRelationship={vulnerability}
                           />
                         )}
                       />
                       <Route
                         path="/files"
-                        element={ (
+                        element={(
                           <FileManager
                             id={vulnerabilityId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.vulnerability}
+                            entity={vulnerability}
                           />
                         )}
                       />
