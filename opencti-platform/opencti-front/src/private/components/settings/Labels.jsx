@@ -11,7 +11,7 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import withRouter from '../../../utils/compat-router/withRouter';
 
 const styles = () => ({

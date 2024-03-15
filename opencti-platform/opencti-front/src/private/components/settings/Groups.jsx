@@ -10,7 +10,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import GroupsLines, { groupsLinesQuery } from './groups/GroupsLines';
 import GroupCreation from './groups/GroupCreation';
 import AccessesMenu from './AccessesMenu';
-import Breadcrumbs from '../../../components/Breadcrumps';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import withRouter from '../../../utils/compat-router/withRouter';
 
 export const groupsSearchQuery = graphql`

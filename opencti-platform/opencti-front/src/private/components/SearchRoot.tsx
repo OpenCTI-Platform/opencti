@@ -60,9 +60,9 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
               </Badge>
             </>
               }
-            />
-          </Tabs>
-        </Box>
+          />
+        </Tabs>
+      </Box>
       <Routes>
         <Route
           path="/knowledge"
