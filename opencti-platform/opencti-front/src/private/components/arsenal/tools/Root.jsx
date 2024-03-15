@@ -220,7 +220,7 @@ class RootTool extends Component {
                             id={toolId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.tool}
+                            entity={tool}
                           />
                         )}
                       />
