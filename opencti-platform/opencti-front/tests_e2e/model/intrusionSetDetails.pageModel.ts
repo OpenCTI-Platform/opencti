@@ -23,8 +23,4 @@ export default class IntrusionSetDetailsPage {
   getCreateRelationshipButton() {
     return this.page.getByLabel('Add', { exact: true });
   }
-
-  getStixCoreRelationshipCreationFromEntityComponent() {
-    return this.page.getByRole('heading', { name: 'Create a relationship' });
-  }
 }
