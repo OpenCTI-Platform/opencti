@@ -48,7 +48,7 @@ const Root = () => {
           Component={boundaryWrapper(ThreatActorsIndividual)}
         />
         <Route
-          path="/threat_actors_individual/:threatActorIndividualId"
+          path="/threat_actors_individual/:threatActorIndividualId/*"
           Component={boundaryWrapper(RootThreatActorIndividual)}
         />
         <Route

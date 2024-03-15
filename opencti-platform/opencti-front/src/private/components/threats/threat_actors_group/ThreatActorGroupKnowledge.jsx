@@ -20,7 +20,6 @@ class ThreatActorGroupKnowledgeComponent extends Component {
     return (
       <>
         <Routes>
-
           <Route
             path="/relations/:relationId"
             element={

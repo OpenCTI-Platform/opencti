@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -95,30 +95,35 @@ const RootThreatActorIndividualComponent = ({
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
   return (
     <>
-      <Route path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'victimology',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'organizations',
-            'malwares',
-            'attack_patterns',
-            'channels',
-            'narratives',
-            'tools',
-            'vulnerabilities',
-            'indicators',
-            'observables',
-            'infrastructures',
-            'sightings',
-            'countries',
-          ]}
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'victimology',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'organizations',
+                'malwares',
+                'attack_patterns',
+                'channels',
+                'narratives',
+                'tools',
+                'vulnerabilities',
+                'indicators',
+                'observables',
+                'infrastructures',
+                'sightings',
+                'countries',
+              ]}
+            />
+          }
         />
-      </Route>
+      </Routes>
       <>
         {data ? (
           <div
@@ -188,62 +193,45 @@ const RootThreatActorIndividualComponent = ({
             </Box>
             <Routes>
               <Route
-                exact
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
-                render={(routeProps: any) => (
-                  <ThreatActorIndividual {...routeProps} data={data} />
-                )}
+                path="/"
+                element={
+                  <ThreatActorIndividual data={data} />
+                }
               />
               <Route
-                exact
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
-                render={() => (
-                  <Redirect
-                    to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`}
-                  />
-                )}
+                path="/knowledge"
+                element={
+                  <Navigate to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`} />
+                }
               />
               <Route
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge"
-                render={(routeProps: any) => (
-                  <ThreatActorIndividualKnowledge
-                    {...routeProps}
-                    threatActorIndividualData={data}
-                  />
-                )}
+                path="/knowledge/*"
+                element={
+                  <ThreatActorIndividualKnowledge threatActorIndividualData={data} />
+                }
               />
               <Route
-                exact
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/analyses"
-                render={(routeProps: any) => (
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    {...routeProps}
-                    stixDomainObjectOrStixCoreRelationship={data}
-                  />
-                )}
+                path="/analyses"
+                element={
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={data} />
+                }
               />
               <Route
-                exact
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/files"
-                render={(routeProps: any) => (
+                path="/files"
+                element={
                   <FileManager
-                    {...routeProps}
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={data}
                   />
-                )}
+                }
               />
               <Route
-                exact
-                path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/history"
-                render={(routeProps: any) => (
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={threatActorIndividualId}
-                  />
-                )}
+                path="/history"
+                element={
+                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />
+                }
               />
             </Routes>
           </div>
