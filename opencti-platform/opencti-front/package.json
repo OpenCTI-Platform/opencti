@@ -169,6 +169,8 @@
     "test:e2e": "E2E_TEST=true yarn playwright test",
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
+    "test:e2e:ui-testing": "BASE_URL=https://testing.octi.staging.filigran.io/ yarn playwright test --ui",
+    "generate-test-e2e-on-testing": "npx playwright codegen https://testing.octi.staging.filigran.io/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
     "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
   },
