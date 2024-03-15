@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, useParams, Routes, Link, useLocation, Navigate } from 'react-router-dom';
+import { Route, useParams, Routes, Link, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -162,20 +162,16 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               element={<InfrastructureKnowledge infrastructure={infrastructure} />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/analyses"
-              render={(routeProps) => (
+              path="/analyses"
+              element={
                 <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
-                />
-              )}
+                />}
             />
             <Route
               path="/files"
               element={
                 <FileManager
-                  {...routeProps}
                   id={infrastructureId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
@@ -183,10 +179,9 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 />}
             />
             <Route
-              path="/dashboard/observations/infrastructures/:infrastructureId/history"
+              path="/history"
               element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={infrastructureId}
                 />}
             />
