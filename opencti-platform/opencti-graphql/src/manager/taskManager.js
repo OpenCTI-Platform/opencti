@@ -244,14 +244,26 @@ export const executeReplace = async (context, user, actionContext, element) => {
   if (contextType === ACTION_TYPE_RELATION) {
     // 01 - Delete all relations of the element
     const rels = await listAllRelations(context, user, field, { fromId: element.id });
-    for (let indexRel = 0; indexRel < rels.length; indexRel += 1) {
-      const rel = rels[indexRel];
-      await deleteElementById(context, user, rel.id, rel.entity_type);
-    }
-    // 02 - Create new ones
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+    if (rels.length > 0) {
+      for (let index = 0; index < rels.length; index += 1) {
+        if (!values.includes(rels[index].toId)) {
+          for (let indexRel = 0; indexRel < rels.length; indexRel += 1) {
+            const rel = rels[indexRel];
+            await deleteElementById(context, user, rel.id, rel.entity_type);
+          }
+          // 02 - Create new ones
+          for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+            const target = values[indexCreate];
+            await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+          }
+        }
+      }
+    } else if (rels.length === 0) {
+      // 02 - Create relations if no relation to replace
+      for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+        const target = values[indexCreate];
+        await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+      }
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
