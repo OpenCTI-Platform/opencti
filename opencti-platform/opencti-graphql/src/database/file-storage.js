@@ -6,7 +6,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
-import conf, { booleanConf, BUS_TOPICS, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
@@ -15,7 +15,8 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById } from '../modules/internal/document/document-domain';
+// eslint-disable-next-line import/no-cycle
 import { createEntity } from './middleware';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
