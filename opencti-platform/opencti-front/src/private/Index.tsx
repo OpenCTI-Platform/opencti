@@ -114,7 +114,7 @@ const Index = ({ settings }: IndexProps) => {
                 Component={boundaryWrapper(RootTechnique)}
               />
               <Route
-                path="/entities"
+                path="/entities/*"
                 Component={boundaryWrapper(RootEntities)}
               />
               <Route
