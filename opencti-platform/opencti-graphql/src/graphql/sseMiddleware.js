@@ -6,8 +6,8 @@ import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
-import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elList } from '../database/engine';
+import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
+import { elCount, elList } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -59,7 +59,6 @@ const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
-const CONTAINER_FINDER_BATCH_RESOLUTION = conf.get('app:live_stream:container_finder_batch_resolution') ?? 50;
 
 const createBroadcastClient = (channel) => {
   return {
@@ -599,36 +598,14 @@ const createSseMiddleware = () => {
                   } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                     // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    let isContainerMatching = false;
-                    const safeFilters = structuredClone(streamFilters); // Safe clone to be compliant with async iteration usage
-                    const listToCallback = async (containers) => {
-                      const containersIds = containers.map((c) => c.internal_id);
-                      const containersData = await stixLoadByIds(context, req.user, containersIds);
-                      for (let containerIndex = 0; containerIndex < containersData.length; containerIndex += 1) {
-                        const stixContainer = containersData[containerIndex];
-                        const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, safeFilters);
-                        if (containerMatch) {
-                          isContainerMatching = true;
-                          break;
-                        }
-                      }
-                      return !isContainerMatching; // If match is found, stop the listing process
-                    };
-                    await listAllEntities(context, user, [ENTITY_TYPE_CONTAINER], {
-                      first: CONTAINER_FINDER_BATCH_RESOLUTION,
-                      baseData: true,
-                      orderBy: 'updated_at', // Get container by newly updated
-                      orderMode: 'desc',
-                      connectionFormat: false,
-                      filters: {
-                        mode: 'and',
-                        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
-                        filterGroups: [],
-                      },
-                      callback: listToCallback
+                    // So we need to list the containers with stream filters restricted through type and the connected element rel
+                    const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
+                      defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
+                      extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }] // Connected rel
                     });
+                    const countRelatedContainers = await elCount(context, user, queryIndices, queryOptions);
                     // At least one container is matching the filter, so publishing the event
-                    if (isContainerMatching) {
+                    if (countRelatedContainers > 0) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
                       client.sendEvent(eventId, event, eventData);
                       cache.set(stix.id, 'hit');

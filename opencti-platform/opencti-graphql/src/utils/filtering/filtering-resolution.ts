@@ -217,11 +217,11 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
 };
 
 export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, opts: any = {}) => {
-  const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
+  const { after, before, defaultTypes = [], extraFilters = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const types = [...defaultTypes];
   let finalFilters = filters;
-  if (after || before) {
-    const filtersContent = [];
+  if (after || before || extraFilters.length > 0) {
+    const filtersContent = [...extraFilters];
     if (after) {
       filtersContent.push({ key: field, values: [after], operator: FilterOperator.Gte });
     }
