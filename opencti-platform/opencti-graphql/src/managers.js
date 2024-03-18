@@ -13,6 +13,7 @@ import conf, {
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
+  ENABLED_TELEMETRY_MANAGER,
   logApp
 } from './config/conf';
 import httpServer from './http/httpServer';
@@ -36,6 +37,7 @@ import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
 import supportPackageListener from './listener/supportPackageListener';
+import telemetryManager from './manager/telemetryManager';
 
 export const startModules = async () => {
   // region API initialization
@@ -117,6 +119,13 @@ export const startModules = async () => {
     await publisherManager.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Publisher manager not started (disabled by configuration)');
+  }
+  // endregion
+  // region telemetry
+  if (ENABLED_TELEMETRY_MANAGER) {
+    await telemetryManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Telemetry manager not started (disabled by configuration)');
   }
   // endregion
   // region playbook manager
@@ -205,6 +214,11 @@ export const shutdownModules = async () => {
   }
   if (ENABLED_PUBLISHER_MANAGER) {
     stoppingPromises.push(publisherManager.shutdown());
+  }
+  // endregion
+  // region notification
+  if (ENABLED_TELEMETRY_MANAGER) {
+    stoppingPromises.push(telemetryManager.shutdown());
   }
   // endregion
   // region playbook manager

@@ -18,6 +18,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import playbookManager from './playbookManager';
 import { getAllManagersStatuses } from './managerModule';
+import telemetryManager from './telemetryManager';
 
 const SCHEDULE_TIME = 30000;
 
@@ -45,6 +46,7 @@ const initClusterManager = () => {
       retentionManager.status(),
       publisherManager.status(),
       notificationManager.status(),
+      telemetryManager.status(),
       ingestionManager.status(),
       activityManager.status(settings),
       playbookManager.status(settings),
