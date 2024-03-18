@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -65,9 +65,7 @@ class RootAttackPattern extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { attackPatternId },
-      },
+      params: { attackPatternId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -83,30 +81,33 @@ class RootAttackPattern extends Component {
     const {
       t,
       location,
-      match: {
-        params: { attackPatternId },
-      },
+      params: { attackPatternId },
     } = this.props;
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
-        <Route path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'victimology',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'tools',
-              'vulnerabilities',
-              'malwares',
-              'indicators',
-              'observables',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'victimology',
+                  'threat_actors',
+                  'intrusion_sets',
+                  'campaigns',
+                  'incidents',
+                  'tools',
+                  'vulnerabilities',
+                  'malwares',
+                  'indicators',
+                  'observables',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={attackPatternQuery}
           variables={{ id: attackPatternId }}
@@ -186,67 +187,45 @@ class RootAttackPattern extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId"
-                        render={(routeProps) => (
-                          <AttackPattern
-                            {...routeProps}
-                            attackPattern={props.attackPattern}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <AttackPattern attackPattern={props.attackPattern} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
-                        render={(routeProps) => (
-                          <AttackPatternKnowledge
-                            {...routeProps}
-                            attackPattern={props.attackPattern}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <AttackPatternKnowledge attackPattern={props.attackPattern} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.attackPattern
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.attackPattern} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={attackPatternId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.attackPattern}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={attackPatternId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
+                        }
                       />
                     </Routes>
                   </div>
