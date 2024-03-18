@@ -18,42 +18,35 @@ class NarrativeKnowledgeComponent extends Component {
       <>
         <Routes>
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId"
+            element={
               <StixCoreRelationship
                 entityId={narrative.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId"
+            element={
               <StixSightingRelationship
                 entityId={narrative.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={narrative.id}
                 stixDomainObjectType="Narrative"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['related-to']}
@@ -75,86 +68,73 @@ class NarrativeKnowledgeComponent extends Component {
                 ]}
                 entityLink={link}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/threat_actors"
-            render={(routeProps) => (
+            path="/threat_actors"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/intrusion_sets"
-            render={(routeProps) => (
+            path="/intrusion_sets"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/campaigns"
-            render={(routeProps) => (
+            path="/campaigns"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/channels"
-            render={(routeProps) => (
+            path="/channels"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationshipsStixCyberObservable
-                {...routeProps}
                 entityId={narrative.id}
                 entityLink={link}
                 defaultStartTime={narrative.first_seen}
@@ -162,12 +142,11 @@ class NarrativeKnowledgeComponent extends Component {
                 isRelationReversed={true}
                 relationshipTypes={['related-to']}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/sightings"
-            render={(routeProps) => (
+            path="/sightings"
+            element={
               <EntityStixSightingRelationships
                 entityId={narrative.id}
                 entityLink={link}
@@ -182,9 +161,8 @@ class NarrativeKnowledgeComponent extends Component {
                   'Individual',
                   'System',
                 ]}
-                {...routeProps}
               />
-            )}
+            }
           />
         </Routes>
       </>
