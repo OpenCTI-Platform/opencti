@@ -2673,5 +2673,6 @@
   "Strategic": "Stratégique",
   "Link created": "Lien créé",
   "Public dashboard": "Tableau de bord public",
-  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement."
+  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement.",
+  "TELEMETRY_MANAGER": "Gestionnaire de télémétrie"
 }

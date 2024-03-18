@@ -1696,6 +1696,7 @@
   "RETENTION_MANAGER": "Retention manager",
   "PUBLISHER_MANAGER": "Notification publishing manager",
   "NOTIFICATION_MANAGER": "Notification generation manager",
+  "TELEMETRY_MANAGER": "Telemetry manager",
   "HISTORY_MANAGER": "History manager",
   "INGESTION_MANAGER": "Ingestion manager",
   "PLAYBOOK_MANAGER": "Playbook manager",

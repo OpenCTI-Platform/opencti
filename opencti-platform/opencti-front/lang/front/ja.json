@@ -2673,5 +2673,6 @@
   "Strategic": "戦略的",
   "Link created": "リンク作成",
   "Public dashboard": "公開ダッシュボード",
-  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
+  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。",
+  "TELEMETRY_MANAGER": "テレメトリー・マネージャー"
 }
