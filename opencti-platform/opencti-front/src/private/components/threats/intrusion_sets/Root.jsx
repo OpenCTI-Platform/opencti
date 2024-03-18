@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -67,9 +67,7 @@ class RootIntrusionSet extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { intrusionSetId },
-      },
+      params: { intrusionSetId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -85,34 +83,37 @@ class RootIntrusionSet extends Component {
     const {
       t,
       location,
-      match: {
-        params: { intrusionSetId },
-      },
+      params: { intrusionSetId },
     } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'victimology',
-              'attribution',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'channels',
-              'narratives',
-              'vulnerabilities',
-              'indicators',
-              'observables',
-              'infrastructures',
-              'sightings',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'victimology',
+                  'attribution',
+                  'campaigns',
+                  'incidents',
+                  'malwares',
+                  'attack_patterns',
+                  'tools',
+                  'channels',
+                  'narratives',
+                  'vulnerabilities',
+                  'indicators',
+                  'observables',
+                  'infrastructures',
+                  'sightings',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={intrusionSetQuery}
           variables={{ id: intrusionSetId }}
@@ -194,69 +195,47 @@ class RootIntrusionSet extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId"
-                        render={(routeProps) => (
-                          <IntrusionSet
-                            {...routeProps}
-                            intrusionSet={props.intrusionSet}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <IntrusionSet intrusionSet={props.intrusionSet} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge/*"
+                        element={
                           <div data-testid="instrusionSet-knowledge">
-                            <IntrusionSetKnowledge
-                              {...routeProps}
-                              intrusionSet={props.intrusionSet}
-                            />
+                            <IntrusionSetKnowledge intrusionSet={props.intrusionSet} />
                           </div>
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.intrusionSet
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.intrusionSet} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={intrusionSetId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.intrusionSet}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/intrusion_sets/:intrusionSetId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={intrusionSetId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />
+                        }
                       />
                     </Routes>
                   </div>
