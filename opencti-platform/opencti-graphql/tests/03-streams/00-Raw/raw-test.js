@@ -61,7 +61,7 @@ describe('Raw streams tests', () => {
 
       updateEventsByTypes['report'].forEach((ev) => {
         console.log(`EVENT UPDATE REPORT ${JSON.stringify(ev, null, '  ')}`);
-        logApp(`EVENT UPDATE REPORT ${JSON.stringify(ev, null, '  ')}`);
+        logApp.info(`EVENT UPDATE REPORT ${JSON.stringify(ev, null, '  ')}`);
       });
       expect(updateEventsByTypes['report']).toEqual([]);
       expect(updateEventsByTypes['report'].length).toBe(7);
