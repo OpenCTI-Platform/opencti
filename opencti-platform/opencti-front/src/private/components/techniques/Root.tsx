@@ -3,8 +3,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Routes } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 
@@ -35,55 +35,49 @@ const Root = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques"
-          render={() => <Redirect to={`/dashboard/techniques/${redirect}`} />}
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/techniques/${redirect}`} />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques/attack_patterns"
-          component={AttackPatterns}
+        <Route
+          path="/attack_patterns"
+          Component={boundaryWrapper(AttackPatterns)}
         />
-        <BoundaryRoute
-          path="/dashboard/techniques/attack_patterns/:attackPatternId"
-          component={RootAttackPattern}
+        <Route
+          path="/attack_patterns/:attackPatternId/*"
+          Component={boundaryWrapper(RootAttackPattern)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques/narratives"
-          component={Narratives}
+        <Route
+          path="/narratives"
+          Component={boundaryWrapper(Narratives)}
         />
-        <BoundaryRoute
-          path="/dashboard/techniques/narratives/:narrativeId"
-          component={RootNarrative}
+        <Route
+          path="/narratives/:narrativeId/*"
+          Component={boundaryWrapper(RootNarrative)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques/courses_of_action"
-          component={CoursesOfAction}
+        <Route
+          path="/courses_of_action"
+          Component={boundaryWrapper(CoursesOfAction)}
         />
-        <BoundaryRoute
-          path="/dashboard/techniques/courses_of_action/:courseOfActionId"
-          component={RootCourseOfAction}
+        <Route
+          path="/courses_of_action/:courseOfActionId/*"
+          Component={boundaryWrapper(RootCourseOfAction)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques/data_components"
-          component={DataComponents}
+        <Route
+          path="/data_components"
+          Component={boundaryWrapper(DataComponents)}
         />
-        <BoundaryRoute
-          path="/dashboard/techniques/data_components/:dataComponentId"
-          component={RootDataComponent}
+        <Route
+          path="/data_components/:dataComponentId/*"
+          Component={boundaryWrapper(RootDataComponent)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/techniques/data_sources"
-          component={DataSources}
+        <Route
+          path="/data_sources"
+          Component={boundaryWrapper(DataSources)}
         />
-        <BoundaryRoute
-          path="/dashboard/techniques/data_sources/:dataSourceId"
-          component={RootDataSource}
+        <Route
+          path="/data_sources/:dataSourceId/*"
+          Component={boundaryWrapper(RootDataSource)}
         />
       </Routes>
     </Suspense>
