@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES, RAW_EVENTS_SIZE } from '../../utils/testQuery';
 import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
-import { PORT } from '../../../src/config/conf';
+import { logApp, PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 
 describe('Raw streams tests', () => {
@@ -58,9 +58,12 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
       expect(updateEventsByTypes['note'].length).toBe(3);
       expect(updateEventsByTypes['opinion'].length).toBe(6);
+
       updateEventsByTypes['report'].forEach((ev) => {
         console.log(`EVENT UPDATE REPORT ${JSON.stringify(ev, null, '  ')}`);
+        logApp(`EVENT UPDATE REPORT ${JSON.stringify(ev, null, '  ')}`);
       });
+      expect(updateEventsByTypes['report']).toEqual([]);
       expect(updateEventsByTypes['report'].length).toBe(7);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
       expect(updateEventsByTypes['tool'].length).toBe(7);
