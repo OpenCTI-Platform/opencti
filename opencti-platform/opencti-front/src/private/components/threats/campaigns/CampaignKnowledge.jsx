@@ -21,42 +21,35 @@ class CampaignKnowledgeComponent extends Component {
       <>
         <Routes>
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId"
+            element={
               <StixCoreRelationship
                 entityId={campaign.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId"
+            element={
               <StixSightingRelationship
                 entityId={campaign.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={campaign.id}
                 stixDomainObjectType="Campaign"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['related-to']}
@@ -80,14 +73,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/attribution"
-            render={(routeProps) => (
+            path="/attribution"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
@@ -96,40 +87,34 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
-            render={(routeProps) => (
+            path="/victimology"
+            element={
               <StixDomainObjectVictimology
                 stixDomainObjectId={campaign.id}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/attack_patterns"
-            render={(routeProps) => (
+            path="/attack_patterns"
+            element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={campaign.id}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/malwares"
-            render={(routeProps) => (
+            path="/malwares"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
@@ -138,14 +123,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/tools"
-            render={(routeProps) => (
+            path="/tools"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
@@ -154,14 +137,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/channels"
-            render={(routeProps) => (
+            path="/channels"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
@@ -170,14 +151,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/narratives"
-            render={(routeProps) => (
+            path="/narratives"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses']}
@@ -186,14 +165,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/vulnerabilities"
-            render={(routeProps) => (
+            path="/vulnerabilities"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['targets']}
@@ -202,14 +179,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
@@ -218,29 +193,24 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/indicators"
-            render={(routeProps) => (
+            path="/indicators"
+            element={
               <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
                 entityId={campaign.id}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationshipsStixCyberObservable
-                {...routeProps}
                 entityId={campaign.id}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
@@ -248,12 +218,11 @@ class CampaignKnowledgeComponent extends Component {
                 isRelationReversed={true}
                 relationshipTypes={['related-to']}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/infrastructures"
-            render={(routeProps) => (
+            path="/infrastructures"
+            element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['uses', 'compromises']}
@@ -262,14 +231,12 @@ class CampaignKnowledgeComponent extends Component {
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/sightings"
-            render={(routeProps) => (
+            path="/sightings"
+            element={
               <EntityStixSightingRelationships
                 entityId={campaign.id}
                 entityLink={link}
@@ -286,9 +253,8 @@ class CampaignKnowledgeComponent extends Component {
                 ]}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
-                {...routeProps}
               />
-            )}
+            }
           />
         </Routes>
       </>
