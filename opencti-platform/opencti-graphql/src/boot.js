@@ -1,9 +1,13 @@
-import { getStoppingState, logApp, setStoppingState } from './config/conf';
+import { getStoppingState, logApp, PLATFORM_VERSION, setStoppingState } from './config/conf';
 import platformInit, { checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
+
+const initDynamicTelemetry = () => {
+  const version = PLATFORM_VERSION;
+};
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -36,6 +40,8 @@ export const platformStart = async () => {
       });
       throw platformError;
     }
+    // Get telemetry at init
+    initDynamicTelemetry();
     // Init the modules
     try {
       await startModules();
