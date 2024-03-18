@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import { APP_BASE_PATH } from './relay/environment';
-import RedirectManager from './components/RedirectManager';
+import { RedirectManager } from './components/RedirectManager';
 import AuthBoundaryComponent from './private/components/AuthBoundary';
 import Loader from './components/Loader';
 

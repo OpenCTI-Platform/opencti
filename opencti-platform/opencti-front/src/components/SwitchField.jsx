@@ -5,6 +5,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import { fieldToSwitch } from 'formik-mui';
 import { useFormatter } from './i18n';
 
 const SwitchField = (props) => {
