@@ -190,26 +190,28 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
     return items;
   };
   return (
-    <Field
-      component={SelectField}
-      variant="standard"
-      name="platform_hidden_types"
-      label={t_i18n('Hidden entity types')}
-      fullWidth={true}
-      multiple={true}
-      containerstyle={fieldSpacingContainerStyle}
-      value={entitySettingsEntityType}
-      onChange={(_: string, values: string[]) => onChange(values)}
-      renderValue={(selected: string[]) => (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {selected.map((value) => (
-            <Chip key={value} label={t_i18n(`entity_${value}`)} />
-          ))}
-        </Box>
-      )}
-    >
-      {computeItems()}
-    </Field>
+    <div data-testid="hiddenEntityTypes">
+      <Field
+        component={SelectField}
+        variant="standard"
+        name="platform_hidden_types"
+        label={t_i18n('Hidden entity types')}
+        fullWidth={true}
+        multiple={true}
+        containerstyle={fieldSpacingContainerStyle}
+        value={entitySettingsEntityType}
+        onChange={(_: string, values: string[]) => onChange(values)}
+        renderValue={(selected: string[]) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {selected.map((value) => (
+              <Chip key={value} label={t_i18n(`entity_${value}`)} />
+            ))}
+          </Box>
+        )}
+      >
+        {computeItems()}
+      </Field>
+    </div>
   );
 };
 
