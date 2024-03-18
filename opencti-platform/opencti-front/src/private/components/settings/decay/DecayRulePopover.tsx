@@ -10,7 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
 import { decayRuleEditionMutation } from './DecayRuleEdition';
 import Transition from '../../../../components/Transition';

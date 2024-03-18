@@ -2,8 +2,8 @@ import React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { loadQuery, usePreloadedQuery } from 'react-relay';
-import { Switch } from 'react-router-dom';
-import { BoundaryRoute } from '@components/Error';
+import { Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '@components/Error';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { environment } from '../relay/environment';
@@ -30,10 +30,10 @@ const PublicRoot = () => {
         <ConnectedThemeProvider settings={settings}>
           <CssBaseline />
           <ConnectedIntlProvider settings={settings}>
-            <Switch>
-              <BoundaryRoute exact path="/public" component={PublicDataSharing} />
-              <BoundaryRoute exact path="/public/dashboard/:uriKey" component={PublicDashboard} />
-            </Switch>
+            <Routes>
+              <Route path="/" Component={boundaryWrapper(PublicDataSharing)} />
+              <Route path="/dashboard/:uriKey/*" Component={boundaryWrapper(PublicDashboard)} />
+            </Routes>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

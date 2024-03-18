@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
 import { ErrorBoundary, SimpleError } from '@components/Error';
 import Paper from '@mui/material/Paper';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
