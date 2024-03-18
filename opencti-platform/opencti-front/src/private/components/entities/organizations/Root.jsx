@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Organization from './Organization';
 import OrganizationKnowledge from './OrganizationKnowledge';
@@ -68,9 +67,7 @@ class RootOrganization extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { organizationId },
-      },
+      params: { organizationId },
     } = props;
     const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
     const params = buildViewParamsFromUrlAndStorage(
@@ -93,9 +90,7 @@ class RootOrganization extends Component {
 
   saveView() {
     const {
-      match: {
-        params: { organizationId },
-      },
+      params: { organizationId },
     } = this.props;
     const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
     saveViewParameters(
@@ -114,38 +109,38 @@ class RootOrganization extends Component {
     const {
       t,
       location,
-      match: {
-        params: { organizationId },
-      },
+      params: { organizationId },
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/entities/organizations/:organizationId/knowledge">
+        <Routes>
           {viewAs === 'knowledge' && (
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'sectors',
-                'organizations',
-                'individuals',
-                'locations',
-                'used_tools',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'vulnerabilities',
-                'observables',
-              ]}
-            />
+          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'sectors',
+              'organizations',
+              'individuals',
+              'locations',
+              'used_tools',
+              'threats',
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'attack_patterns',
+              'tools',
+              'vulnerabilities',
+              'observables',
+            ]}
+                                              />}
+          >
+          </Route>
           )}
-        </Route>
+        </Routes>
         <QueryRenderer
           query={organizationQuery}
           variables={{ id: organizationId }}
@@ -235,41 +230,35 @@ class RootOrganization extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={(
                           <Organization
-                            {...routeProps}
                             organization={props.organization}
                             viewAs={viewAs}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={(
+                          <Navigate
                             to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
                           />
                         )}
                       />
                       <Route
-                        path="/dashboard/entities/organizations/:organizationId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge/*"
+                        element={(
                           <OrganizationKnowledge
-                            {...routeProps}
                             organization={organization}
                             viewAs={viewAs}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={(
                           <OrganizationAnalysis
-                            {...routeProps}
                             organization={organization}
                             viewAs={viewAs}
                             onViewAs={this.handleChangeViewAs.bind(this)}
@@ -277,24 +266,20 @@ class RootOrganization extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={(
                           <EntityStixSightingRelationships
                             entityId={organization.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={organizationId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -303,11 +288,9 @@ class RootOrganization extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/organizations/:organizationId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={organizationId}
                           />
                         )}
@@ -328,7 +311,7 @@ class RootOrganization extends Component {
 
 RootOrganization.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootOrganization);
