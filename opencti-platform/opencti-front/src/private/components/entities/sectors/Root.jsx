@@ -266,7 +266,7 @@ class RootSector extends Component {
 
 RootSector.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootSector);
