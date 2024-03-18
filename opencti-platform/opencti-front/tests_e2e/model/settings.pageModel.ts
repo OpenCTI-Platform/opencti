@@ -6,4 +6,12 @@ export default class SettingsPage {
   getSettingsPage() {
     return this.page.getByTestId('settings-page');
   }
+
+  getHiddenEntityTypeSelect() {
+    return this.page.getByTestId('hiddenEntityTypes').getByLabel('');
+  }
+
+  getExternalReference() {
+    return this.page.getByRole('option', { name: 'External reference' });
+  }
 }
