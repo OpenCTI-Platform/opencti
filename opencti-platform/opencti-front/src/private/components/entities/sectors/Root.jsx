@@ -207,7 +207,7 @@ class RootSector extends Component {
                         )}
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
                           <SectorKnowledge sector={sector} />
                         )}
