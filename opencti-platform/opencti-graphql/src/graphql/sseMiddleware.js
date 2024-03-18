@@ -7,7 +7,7 @@ import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elList } from '../database/engine';
+import { elCount, elList } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -43,7 +43,7 @@ import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { listAllRelations, listEntities } from '../database/middleware-loader';
+import { listAllRelations } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
@@ -552,8 +552,8 @@ const createSseMiddleware = () => {
         throw UnsupportedError('Recovery mode is only possible with a start date.');
       }
       // Init stream and broadcasting
-      const userEmail = user.user_email;
       let error;
+      const userEmail = user.user_email;
       const opts = { autoReconnect: true };
       const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
@@ -598,25 +598,14 @@ const createSseMiddleware = () => {
                   } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                     // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    const filters = {
-                      mode: 'and',
-                      filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }],
-                      filterGroups: [],
-                    };
-                    const args = { connectionFormat: false, filters };
-                    const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);
-                    let isContainerMatching = false;
-                    for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
-                      const container = containers[containerIndex];
-                      const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilterGroup(context, user, stixContainer, streamFilters);
-                      if (containerMatch) {
-                        isContainerMatching = true;
-                        break;
-                      }
-                    }
+                    // So we need to list the containers with stream filters restricted through type and the connected element rel
+                    const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
+                      defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
+                      extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }] // Connected rel
+                    });
+                    const countRelatedContainers = await elCount(context, user, queryIndices, queryOptions);
                     // At least one container is matching the filter, so publishing the event
-                    if (isContainerMatching) {
+                    if (countRelatedContainers > 0) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
                       client.sendEvent(eventId, event, eventData);
                       cache.set(stix.id, 'hit');
