@@ -7,10 +7,11 @@ import { addReport, findById as findReportById } from '../../../src/domain/repor
 import { findById } from '../../../src/domain/markingDefinition';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
-describe('REPLACE tests ', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'decay-integration-test', otp_mandatory: false };
+describe('TaskManager executeReplace tests ', () => {
+  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
   const reportsId: string[] = [];
   afterAll(async () => {
+    expect(reportsId.length).toBe(3);
     for (let index = 0; index < reportsId.length; index += 1) {
       await stixDomainObjectDelete(adminContext, adminContext.user, reportsId[index]);
       const report = await findReportById(adminContext, adminContext.user, reportsId[index]);
