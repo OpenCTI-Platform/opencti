@@ -120,7 +120,7 @@ const Index = ({ settings }: IndexProps) => {
               />
               <Route path="/data" Component={boundaryWrapper(RootData)} />
               <Route
-                path="/workspaces"
+                path="/workspaces/*"
                 Component={boundaryWrapper(RootWorkspaces)}
               />
               <Route
