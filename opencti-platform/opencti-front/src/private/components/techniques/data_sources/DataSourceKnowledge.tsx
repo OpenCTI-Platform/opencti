@@ -28,10 +28,10 @@ DataSourceKnowledgeComponentProps
     <>
       <Routes>
         <Route
-          path="/dashboard/techniques/data_sources/:dataSourceId/knowledge/relations/:relationId"
-          render={(routeProps) => (
-            <StixCoreRelationship entityId={dataSource.id} {...routeProps} />
-          )}
+          path="/relations/:relationId"
+          render={
+            <StixCoreRelationship entityId={dataSource.id} />
+          }
         />
       </Routes>
     </>

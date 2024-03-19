@@ -135,44 +135,38 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId"
-              render={() => <DataSource data={dataSource} />}
+              path="/"
+              element={
+                <DataSource data={dataSource} />
+              }
             />
             <Route
-              path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
-              render={(routeProps: any) => (
+              path="/knowledge/*"
+              element={
                 <DataSourceKnowledgeComponent
-                  {...routeProps}
                   data={dataSource}
-                  enableReferences={settings.platform_enable_reference?.includes(
+                  enableReferences={settings?.platform_enable_reference?.includes(
                     'Data-Source',
                   )}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/files"
-              render={(routeProps: any) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={dataSourceId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/history"
-              render={(routeProps: any) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={dataSourceId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
+              }
             />
           </Routes>
         </div>
