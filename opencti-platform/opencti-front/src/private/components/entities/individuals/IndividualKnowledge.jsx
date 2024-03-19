@@ -16,49 +16,41 @@ class IndividualKnowledgeComponent extends Component {
     return (
       <Routes>
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/relations/:relationId"
-          render={(routeProps) => (
+          path="/relations/:relationId"
+          element={
             <StixCoreRelationship
               entityId={individual.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/sightings/:sightingId"
-          render={(routeProps) => (
+          path="/sightings/:sightingId"
+          element={
             <StixSightingRelationship
               entityId={individual.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/overview"
-          render={(routeProps) => (viewAs === 'knowledge' ? (
+          path="/overview"
+          element={(viewAs === 'knowledge' ? (
             <StixDomainObjectKnowledge
               stixDomainObjectId={individual.id}
               stixDomainObjectType="Individual"
-              {...routeProps}
             />
           ) : (
             <StixDomainObjectAuthorKnowledge
               stixDomainObjectId={individual.id}
               stixDomainObjectType="Individual"
-              {...routeProps}
             />
           ))
             }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/threats"
-          render={(routeProps) => (
+          path="/threats"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
@@ -73,153 +65,131 @@ class IndividualKnowledgeComponent extends Component {
                 'Malware',
                 'Tool',
               ]}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/related"
-          render={(routeProps) => (
+          path="/related"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['related-to']}
               entityLink={link}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/organizations"
-          render={(routeProps) => (
+          path="/organizations"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['part-of']}
               stixCoreObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/locations"
-          render={(routeProps) => (
+          path="/locations"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City', 'Country', 'Region']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/threat_actors"
-          render={(routeProps) => (
+          path="/threat_actors"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/intrusion_sets"
-          render={(routeProps) => (
+          path="/intrusion_sets"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/campaigns"
-          render={(routeProps) => (
+          path="/campaigns"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/incidents"
-          render={(routeProps) => (
+          path="/incidents"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/malwares"
-          render={(routeProps) => (
+          path="/malwares"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/attack_patterns"
-          render={(routeProps) => (
+          path="/attack_patterns"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/tools"
-          render={(routeProps) => (
+          path="/tools"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/entities/individuals/:individualId/knowledge/observables"
-          render={(routeProps) => (
+          path="/observables"
+          element={
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipTypes={['related-to']}
@@ -227,9 +197,8 @@ class IndividualKnowledgeComponent extends Component {
               entityLink={link}
               allDirections={true}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
       </Routes>
     );

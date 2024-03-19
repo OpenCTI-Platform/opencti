@@ -116,30 +116,31 @@ class RootOrganization extends Component {
     return (
       <>
         <Routes>
-          {viewAs === 'knowledge' && (
-          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'sectors',
-              'organizations',
-              'individuals',
-              'locations',
-              'used_tools',
-              'threats',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'vulnerabilities',
-              'observables',
-            ]}
-                                              />}
+          <Route
+            path="/knowledge/*"
+            element={viewAs === 'knowledge' && (
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'sectors',
+                'organizations',
+                'individuals',
+                'locations',
+                'used_tools',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'vulnerabilities',
+                'observables',
+              ]}
+            />)}
           >
           </Route>
-          )}
         </Routes>
         <QueryRenderer
           query={organizationQuery}
@@ -231,69 +232,69 @@ class RootOrganization extends Component {
                     <Routes>
                       <Route
                         path="/"
-                        element={(
+                        element={
                           <Organization
                             organization={props.organization}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge"
-                        element={(
+                        element={
                           <Navigate
                             to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge/*"
-                        element={(
+                        element={
                           <OrganizationKnowledge
                             organization={organization}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"
-                        element={(
+                        element={
                           <OrganizationAnalysis
                             organization={organization}
                             viewAs={viewAs}
                             onViewAs={this.handleChangeViewAs.bind(this)}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/sightings"
-                        element={(
+                        element={
                           <EntityStixSightingRelationships
                             entityId={organization.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/files"
-                        element={(
+                        element={
                           <FileManager
                             id={organizationId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.organization}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/history"
-                        element={(
+                        element={
                           <StixCoreObjectHistory
                             stixCoreObjectId={organizationId}
                           />
-                        )}
+                        }
                       />
                     </Routes>
                   </div>
