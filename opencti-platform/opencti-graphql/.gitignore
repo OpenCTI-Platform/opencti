@@ -8,6 +8,7 @@ node_modules
 public
 config/ssl
 config/demo.json
+config/cluster.json
 config/development.json
 config/development.json.bak
 config/production.json
@@ -20,6 +21,7 @@ config/prod-*.json
 coverage
 test-results
 logs
+.support
 yarn-error.log
 graphql.schema.json
 __pycache__
