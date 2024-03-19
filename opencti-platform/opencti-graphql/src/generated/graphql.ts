@@ -3649,11 +3649,15 @@ export type ContainerEditMutationsKnowledgeAddFromInvestigationArgs = {
 
 
 export type ContainerEditMutationsRelationAddArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
   input: StixRefRelationshipAddInput;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
 export type ContainerEditMutationsRelationDeleteArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
 };
@@ -20775,11 +20779,15 @@ export type ReportEditMutationsFieldPatchArgs = {
 
 
 export type ReportEditMutationsRelationAddArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
   input: StixRefRelationshipAddInput;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
 export type ReportEditMutationsRelationDeleteArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
 };
