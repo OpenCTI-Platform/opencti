@@ -46,4 +46,8 @@ export default class ReportPage {
   checkItemInList(name: string) {
     return this.getItemFromList(name).getByRole('checkbox').click();
   }
+
+  selectAllReports() {
+    return this.page.getByTestId('report-page').getByRole('listitem').getByRole('checkbox').check();
+  }
 }
