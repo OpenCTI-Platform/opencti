@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Frontend start dev" type="js.build_tools.npm">
+  <configuration default="false" name="1 - Frontend start dev (first platform)" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/opencti-platform/opencti-front/package.json" />
     <command value="start" />
     <node-interpreter value="project" />

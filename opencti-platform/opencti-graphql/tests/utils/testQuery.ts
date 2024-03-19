@@ -4,7 +4,7 @@ import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
-import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, logApp, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
@@ -153,6 +153,12 @@ export const TEST_ORGANIZATION: Organization = {
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
 
+// not the plateform one
+export const EXTERNAL_ORGANIZATION: Organization = {
+  name: 'External TestOrganization',
+  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'External TestOrganization', identity_class: 'organization' }),
+};
+
 // Users
 interface User {
   id: string,
@@ -221,6 +227,16 @@ export const USER_SECURITY: User = {
   client: createHttpClient('security@opencti.io', 'security')
 };
 TESTING_USERS.push(USER_SECURITY);
+
+export const USER_EXTERNAL: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'external@opencti.io' }),
+  email: 'external@opencti.io',
+  password: 'external',
+  organizations: [EXTERNAL_ORGANIZATION],
+  groups: [GREEN_GROUP],
+  client: createHttpClient('external@opencti.io', 'external')
+};
+TESTING_USERS.push(USER_EXTERNAL);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
@@ -310,6 +326,7 @@ const ORGANIZATION_ASSIGN_MUTATION = `
   }
 `;
 const createOrganization = async (input: { name: string }): Promise<string> => {
+  logApp.warn('ANGIE - create org');
   const organization = await adminQuery(ORGANIZATION_CREATION_MUTATION, input);
   return organization.data.organizationAdd.id;
 };

@@ -239,13 +239,13 @@ const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 const appLogTransports = [];
+const logsDirname = nconf.get('app:app_logs:logs_directory');
 if (appLogFileTransport) {
-  const dirname = nconf.get('app:app_logs:logs_directory');
   const maxFiles = nconf.get('app:app_logs:logs_max_files');
   appLogTransports.push(
     new DailyRotateFile({
       filename: 'error.log',
-      dirname,
+      logsDirname,
       level: 'error',
       maxFiles,
     })
@@ -253,7 +253,7 @@ if (appLogFileTransport) {
   appLogTransports.push(
     new DailyRotateFile({
       filename: 'opencti.log',
-      dirname,
+      logsDirname,
       maxFiles,
     })
   );
@@ -261,6 +261,17 @@ if (appLogFileTransport) {
 if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());
 }
+
+appLogTransports.push(
+  new DailyRotateFile({
+    filename: 'support.log',
+    dirname: logsDirname || '.support',
+    maxFiles: 3,
+    maxSize: '1g',
+    level: 'error'
+  })
+);
+
 const appLogger = winston.createLogger({
   level: appLogLevel,
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
@@ -338,8 +349,10 @@ export const logApp = {
   debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
   info: (message, meta = {}) => logApp._log('info', message, null, meta),
   warn: (messageOrError, meta = {}) => logApp._logWithError('warn', messageOrError, meta),
-  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta)
+  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta),
+  query: (options, errCallback) => appLogger.query(options, errCallback),
 };
+
 
 const LOG_AUDIT = 'AUDIT';
 export const logAudit = {

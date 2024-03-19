@@ -21,6 +21,7 @@ const Roles = lazy(() => import('./Roles'));
 const RootRole = lazy(() => import('./roles/Root'));
 const Rules = lazy(() => import('./Rules'));
 const RootDecay = lazy(() => import('./decay/Root'));
+const RootSupport = lazy(() => import('./support/Root'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
@@ -38,8 +39,8 @@ const Root = () => {
   return (
     <div data-testid="settings-page">
       <Suspense fallback={<Loader />}>
-        <Switch>
-          <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
+        <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
+          <Switch>
             <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
             <BoundaryRoute
               exact
@@ -222,6 +223,10 @@ const Root = () => {
               component={RootDecay}
             />
             <BoundaryRoute
+              path="/dashboard/settings/customization/support"
+              component={RootSupport}
+            />
+            <BoundaryRoute
               path="/dashboard/settings/customization/notifiers"
               component={Notifiers}
             />
@@ -309,8 +314,8 @@ const Root = () => {
                 </Security>
               )}
             />
-          </Security>
-        </Switch>
+          </Switch>
+        </Security>
       </Suspense>
     </div>
   );

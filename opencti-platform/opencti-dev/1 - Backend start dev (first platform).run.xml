@@ -1,15 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Backend start cluster" type="js.build_tools.npm">
+  <configuration default="false" name="1 - Backend start dev (first platform)" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/opencti-platform/opencti-graphql/package.json" />
     <command value="run" />
     <scripts>
-      <script value="start:cluster" />
+      <script value="start" />
     </scripts>
     <node-interpreter value="project" />
     <package-manager value="yarn" />
     <envs>
-      <env name="NODE_ENV" value="cluster" />
-      <env name="APP__PORT" value="4001" />
+      <env name="APP__PORT" value="4000" />
     </envs>
     <method v="2" />
   </configuration>

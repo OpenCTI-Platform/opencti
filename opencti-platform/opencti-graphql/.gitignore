@@ -21,6 +21,7 @@ config/prod-*.json
 coverage
 test-results
 logs
+.support
 yarn-error.log
 graphql.schema.json
 __pycache__

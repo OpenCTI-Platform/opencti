@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Frontend start cluster" type="js.build_tools.npm">
+  <configuration default="false" name="2 - Frontend start cluster (second platform)" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/opencti-platform/opencti-front/package.json" />
     <command value="start" />
     <node-interpreter value="project" />
