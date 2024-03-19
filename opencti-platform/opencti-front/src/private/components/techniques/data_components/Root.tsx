@@ -147,43 +147,33 @@ const RootDataComponent = () => {
                   </Box>
                   <Routes>
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId"
-                      render={(routeProps: any) => (
-                        <DataComponent {...routeProps} data={dataComponent} />
-                      )}
+                      path="/"
+                      element={
+                        <DataComponent data={dataComponent} />
+                      }
                     />
                     <Route
-                      path="/dashboard/techniques/data_components/:dataComponentId/knowledge"
-                      render={(routeProps: any) => (
-                        <DataComponentKnowledge
-                          {...routeProps}
-                          data={dataComponent}
-                        />
-                      )}
+                      path="/knowledge/*"
+                      element={
+                        <DataComponentKnowledge data={dataComponent} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId/files"
-                      render={(routeProps: any) => (
+                      path="/files"
+                      element={
                         <FileManager
-                          {...routeProps}
                           id={dataComponentId}
                           connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
                           entity={dataComponent}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId/history"
-                      render={(routeProps: any) => (
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={dataComponentId}
-                        />
-                      )}
+                      path="/history"
+                      element={
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
+                      }
                     />
                   </Routes>
                 </div>
