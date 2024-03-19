@@ -40,7 +40,7 @@ export const platformStart = async () => {
       });
       throw platformError;
     }
-    // Get telemetry a init
+    // Get telemetry at init
     initDynamicTelemetry();
     // Init the modules
     try {
