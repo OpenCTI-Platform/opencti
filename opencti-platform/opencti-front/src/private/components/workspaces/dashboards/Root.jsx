@@ -35,9 +35,7 @@ class RootDashboard extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -51,9 +49,7 @@ class RootDashboard extends Component {
 
   render() {
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = this.props;
     return (
       <div data-testid="dashboard-details-page">
@@ -65,11 +61,9 @@ class RootDashboard extends Component {
               if (props.workspace) {
                 return (
                   <Route
-                    exact
-                    path="/dashboard/workspaces/dashboards/:workspaceId"
-                    render={(routeProps) => (
+                    path="/dashboards/:workspaceId/*"
+                    element={(
                       <Dashboard
-                        {...routeProps}
                         workspace={props.workspace}
                         settings={props.settings}
                       />
@@ -89,7 +83,7 @@ class RootDashboard extends Component {
 
 RootDashboard.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default withRouter(RootDashboard);
