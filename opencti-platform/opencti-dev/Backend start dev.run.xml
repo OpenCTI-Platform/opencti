@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Backend start dev" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/opencti-platform/opencti-graphql/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="start:dev" />
+    </scripts>
+    <node-interpreter value="project" />
+    <package-manager value="yarn" />
+    <envs>
+      <env name="NODE_ENV" value="development" />
+      <env name="APP__PORT" value="4000" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

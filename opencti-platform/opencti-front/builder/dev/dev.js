@@ -132,6 +132,6 @@ esbuild.context({
     }
     return res.send(withOptionValued);
   });
-  app.listen(3000);
+  app.listen( process.env.FRONT_END_URL ?? 3000);
   // endregion
 });
