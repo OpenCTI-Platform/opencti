@@ -4,7 +4,7 @@ import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, pushToSync, registerConnectorQueues } from '../../database/rabbitmq';
-import { downloadFile, upload } from '../../database/file-storage';
+import { downloadFile } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
@@ -14,6 +14,7 @@ import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { internalLoadById } from '../../database/middleware-loader';
 import { DatabaseError } from '../../config/errors';
+import { uploadToStorage } from '../../database/file-storage-helper';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 
@@ -75,7 +76,7 @@ const initImportCsvConnector = () => {
                   filename: `${workId}.json`,
                   mimetype: 'application/json',
                 };
-                await upload(context, applicantUser, 'import/pending', file, { entity });
+                await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
 
                 await reportExpectation(context, applicantUser, workId);
               } else {

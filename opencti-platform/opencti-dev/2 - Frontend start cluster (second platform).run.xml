@@ -1,10 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Frontend start" type="js.build_tools.npm">
+  <configuration default="false" name="2 - Frontend start cluster (second platform)" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/opencti-platform/opencti-front/package.json" />
     <command value="start" />
     <node-interpreter value="project" />
     <package-manager value="yarn" />
-    <envs />
+    <envs>
+      <env name="BACK_END_URL" value="http://localhost:4001" />
+      <env name="FRONT_END_URL" value="3001" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>

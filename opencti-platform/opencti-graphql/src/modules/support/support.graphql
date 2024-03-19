@@ -1,0 +1,63 @@
+type SupportPackage implements InternalObject & BasicObject {
+    id: ID!
+    name: String!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    created: DateTime!
+    package_status: PackageStatus!
+    package_url: String
+    package_upload_dir: String
+    nodes_status: [SupportNodeStatus]
+}
+
+type SupportPackageConnection {
+    pageInfo: PageInfo!
+    edges: [SupportPackageEdge!]!
+}
+
+type SupportNodeStatus {
+    node_id: String!
+    package_status: PackageStatus!
+}
+
+type SupportPackageEdge {
+    cursor: String!
+    node: SupportPackage!
+}
+
+enum PackageStatus {
+    IN_PROGRESS
+    READY
+    IN_ERROR
+}
+
+enum SupportPackageOrdering {
+    name
+}
+
+input SupportPackageAddInput {
+    name: String! @constraint(minLength: 2)
+}
+
+input SupportPackageForceZipInput {
+    id: String! @constraint(minLength: 2)
+}
+
+type Query {
+    supportPackage(id: String!): SupportPackage @auth(for: [SETTINGS])
+    supportPackages(
+        first: Int
+        after: ID
+        orderBy: SupportPackageOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): SupportPackageConnection @auth(for: [SETTINGS])
+}
+
+type Mutation {
+    supportPackageAdd(input: SupportPackageAddInput!): SupportPackage @auth(for: [SETTINGS])
+    supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage @auth(for: [SETTINGS])
+    supportPackageDelete(id: ID!): ID @auth(for: [SETTINGS])
+}

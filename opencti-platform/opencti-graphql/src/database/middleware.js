@@ -155,7 +155,6 @@ import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
 import { FROM_START, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
-import { deleteAllObjectFiles, storeFileConverter, upload } from './file-storage';
 import {
   BYPASS_REFERENCE,
   executionContext,
@@ -206,6 +205,8 @@ import {
   controlUpsertInputWithUserConfidence,
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
+import { uploadToStorage } from './file-storage-helper';
+import { deleteAllObjectFiles, storeFileConverter } from './file-storage';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;
@@ -2520,7 +2521,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
-    const { upload: file } = await upload(context, user, path, updatePatch.file, { entity: element });
+    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: element });
     const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
@@ -3122,7 +3123,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   if (!isEmptyField(input.file)) {
     const path = `import/${type}/${internalId}`;
     const file_markings = input.objectMarking.map(({ id }) => id);
-    const { upload: file } = await upload(context, user, path, input.file, { entity: data, file_markings });
+    const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: data, file_markings });
     data.x_opencti_files = [storeFileConverter(user, file)];
     // Add external references from files if necessary
     const entitySetting = await getEntitySettingFromCache(context, type);

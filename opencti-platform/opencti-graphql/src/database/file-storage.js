@@ -317,6 +317,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
   return connectors;
 };
 
+// Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [] } = opts;
   const metadata = { ...meta };
@@ -403,4 +404,14 @@ export const deleteAllObjectFiles = async (context, user, element) => {
   ]);
   const ids = [...importFiles, ...exportFiles].map((file) => file.id);
   return deleteFiles(context, user, ids);
+};
+
+export const streamConverter = (stream) => {
+  return new Promise((resolve) => {
+    let data = '';
+    stream.on('data', (chunk) => {
+      data += chunk.toString();
+    });
+    stream.on('end', () => resolve(data));
+  });
 };

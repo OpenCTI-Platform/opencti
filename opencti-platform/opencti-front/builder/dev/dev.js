@@ -11,6 +11,7 @@ const fsExtra = require("fs-extra");
 const basePath = "";
 const clients = [];
 const buildPath = "./builder/dev/build/";
+const frontPort = process.env.FRONT_END_URL ?? 3000;
 const debounce = (func, timeout = 500) => {
   let timer;
   return (...args) => {
@@ -34,7 +35,7 @@ esbuild.context({
   publicPath: "/",
   bundle: true,
   banner: {
-    js: ' (() => new EventSource("http://localhost:3000/dev").onmessage = () => location.reload())();',
+    js: ` (() => new EventSource("http://localhost:${frontPort}/dev").onmessage = () => location.reload())();`,
   },
   loader: {
     ".js": "jsx",
@@ -132,6 +133,6 @@ esbuild.context({
     }
     return res.send(withOptionValued);
   });
-  app.listen(3000);
+  app.listen(frontPort);
   // endregion
 });

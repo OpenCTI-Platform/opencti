@@ -6,6 +6,7 @@ import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { utcDate } from '../utils/format';
+import { wait } from '../database/utils';
 
 export interface ManagerCronScheduler {
   handler: () => void;
@@ -41,11 +42,6 @@ const initManager = (manager: ManagerDefinition) => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
 
   const cronHandler = async () => {
     if (manager.cronSchedulerHandler) {

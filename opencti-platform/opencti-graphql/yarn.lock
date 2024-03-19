@@ -4387,6 +4387,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/archiver@npm:6.0.2":
+  version: 6.0.2
+  resolution: "@types/archiver@npm:6.0.2"
+  dependencies:
+    "@types/readdir-glob": "npm:*"
+  checksum: 10/bbeeacbb4c294adc9722a121e07653523cea7baf20f35d9c07a0910bf46c43d27e364f25030cec142e3c0c185dfdb45dd6d1980f31af196f809f907ad0184ccf
+  languageName: node
+  linkType: hard
+
 "@types/bcryptjs@npm:2.4.6":
   version: 2.4.6
   resolution: "@types/bcryptjs@npm:2.4.6"
@@ -4733,6 +4742,15 @@ __metadata:
   version: 1.2.7
   resolution: "@types/range-parser@npm:1.2.7"
   checksum: 10/95640233b689dfbd85b8c6ee268812a732cf36d5affead89e806fe30da9a430767af8ef2cd661024fd97e19d61f3dec75af2df5e80ec3bea000019ab7028629a
+  languageName: node
+  linkType: hard
+
+"@types/readdir-glob@npm:*":
+  version: 1.1.5
+  resolution: "@types/readdir-glob@npm:1.1.5"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10/58625586589a2cbcf19d7bff5a9b61e961b42e438e5a4f537633785efdcacfad15d3b32df3d27926696b36b43eb86eeb790fce9373fa357ab87720c64f86618b
   languageName: node
   linkType: hard
 
@@ -11055,6 +11073,7 @@ __metadata:
     "@opentelemetry/sdk-trace-node": "npm:1.23.0"
     "@opentelemetry/semantic-conventions": "npm:1.23.0"
     "@rollup/plugin-graphql": "npm:2.0.4"
+    "@types/archiver": "npm:6.0.2"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/bluebird": "npm:3.5.42"
     "@types/dot-object": "npm:2.1.6"

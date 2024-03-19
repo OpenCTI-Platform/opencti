@@ -9,7 +9,7 @@ import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './tes
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient, shutdownRedisClients } from '../../src/database/redis';
-import { logApp } from '../../src/config/conf';
+import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
@@ -17,21 +17,20 @@ import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
-
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
  *   SKIP_CLEANUP_PLATFORM=1 > skip cleanup, and directly start the platform
  *
- * run yarn test:dev-init-only to cleanup and reinit a test platform (it also provision the data)
- * run yarn test:dev-no-cleanup <file-pattern> to run directly some tests without cleanup and init of the test platform
+ * run yarn test:dev:init to cleanup and reinit a test platform (it also provision the data)
+ * run yarn test:dev:resume <file-pattern> to run directly some tests without cleanup and init of the test platform
  */
 
 const { INIT_TEST_PLATFORM, SKIP_CLEANUP_PLATFORM } = process.env;
 
 const initializePlatform = async () => {
   const context = executionContext('platform_test_initialization');
-  logApp.info('[vitest-global-setup] initializing platform');
+  logApp.info(`[vitest-global-setup] initializing platform with env=${environment}`);
   const stopTime = new Date().getTime();
 
   await initializeInternalQueues();

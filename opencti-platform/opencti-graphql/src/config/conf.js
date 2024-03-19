@@ -9,6 +9,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { ApolloError } from 'apollo-errors';
+import { v4 as uuid } from 'uuid';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -32,6 +33,9 @@ import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { UnknownError, UnsupportedError } from './errors';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { AI_BUS } from '../modules/ai/ai-types';
+import { SUPPORT_BUS } from '../modules/support/support-types';
+
+export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -186,6 +190,9 @@ export const BUS_TOPICS = {
   [AI_BUS]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AI_BUS_EDIT_TOPIC`,
   },
+  [SUPPORT_BUS]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`,
+  },
 };
 
 export const getBusTopicForEntityType = (entityType) => {
@@ -220,7 +227,7 @@ nconf.add('argv', {
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
-const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
+export const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
 const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
@@ -239,13 +246,13 @@ const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
 const appLogTransports = [];
+const logsDirname = nconf.get('app:app_logs:logs_directory');
 if (appLogFileTransport) {
-  const dirname = nconf.get('app:app_logs:logs_directory');
   const maxFiles = nconf.get('app:app_logs:logs_max_files');
   appLogTransports.push(
     new DailyRotateFile({
       filename: 'error.log',
-      dirname,
+      dirname: logsDirname,
       level: 'error',
       maxFiles,
     })
@@ -253,7 +260,7 @@ if (appLogFileTransport) {
   appLogTransports.push(
     new DailyRotateFile({
       filename: 'opencti.log',
-      dirname,
+      dirname: logsDirname,
       maxFiles,
     })
   );
@@ -261,6 +268,7 @@ if (appLogFileTransport) {
 if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());
 }
+
 const appLogger = winston.createLogger({
   level: appLogLevel,
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
@@ -289,6 +297,26 @@ const auditLogger = winston.createLogger({
   level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: auditLogTransports,
+});
+
+// Setup support logs
+export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
+export const SUPPORT_LOG_FILE_PREFIX = 'support';
+const supportLogTransports = [];
+supportLogTransports.push(
+  new DailyRotateFile({
+    filename: SUPPORT_LOG_FILE_PREFIX,
+    dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
+    maxFiles: 3,
+    maxSize: '10m',
+    level: 'warn'
+  })
+);
+
+const supportLogger = winston.createLogger({
+  level: 'warn',
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: supportLogTransports,
 });
 
 // Specific case to fail any test that produce an error log
@@ -323,22 +351,20 @@ export const logApp = {
   },
   _logWithError: (level, messageOrError, meta = {}) => {
     const isError = messageOrError instanceof Error;
-    const message = isError ? messageOrError.message : messageOrError;
-    if (isError) {
-      if (messageOrError instanceof ApolloError) {
-        logApp._log(level, message, messageOrError, meta);
-      } else {
-        const error = UnknownError(message, { cause: messageOrError });
-        logApp._log(level, 'Platform unmanaged direct error', error, meta);
-      }
-    } else {
-      logApp._log(level, message, null, meta);
+    let message = isError ? messageOrError.message : messageOrError;
+    let error = null;
+    if (isError && !(messageOrError instanceof ApolloError)) {
+      error = UnknownError(message, { cause: messageOrError });
+      message = 'Platform unmanaged direct error';
     }
+    logApp._log(level, message, error, meta);
+    logSupport._log(level, message, error, meta);
   },
   debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
   info: (message, meta = {}) => logApp._log('info', message, null, meta),
   warn: (messageOrError, meta = {}) => logApp._logWithError('warn', messageOrError, meta),
-  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta)
+  error: (messageOrError, meta = {}) => logApp._logWithError('error', messageOrError, meta),
+  query: (options, errCallback) => appLogger.query(options, errCallback),
 };
 
 const LOG_AUDIT = 'AUDIT';
@@ -352,6 +378,14 @@ export const logAudit = {
   },
   info: (user, operation, meta = {}) => logAudit._log('info', user, operation, meta),
   error: (user, operation, meta = {}) => logAudit._log('error', user, operation, meta),
+};
+
+const LOG_SUPPORT = 'SUPPORT';
+export const logSupport = {
+  _log: (level, message, error, meta = {}) => {
+    supportLogger.log(level, message, addBasicMetaInformation(LOG_SUPPORT, error, meta));
+  },
+  warn: (message, meta = {}) => logSupport._log('warn', message, null, meta),
 };
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
