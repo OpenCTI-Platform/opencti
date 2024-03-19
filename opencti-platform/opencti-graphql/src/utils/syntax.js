@@ -92,6 +92,21 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
   return observables;
 };
 
+export const validateObservableGeneration = (observableType, indicatorPattern) => {
+  if (observableType === C.ENTITY_NETWORK_TRAFFIC && (indicatorPattern.includes('dst_ref') || indicatorPattern.includes('src_ref'))) {
+    return false; // we can't create this type of observables (issue #5293)
+  }
+  if (observableType === C.ENTITY_EMAIL_MESSAGE && (indicatorPattern.includes('from_ref') || indicatorPattern.includes('sender_ref'))) {
+    return false; // we can't create this type of observables (issue #5293)
+  }
+  return true;
+};
+
+export const extractValidObservablesFromIndicatorPattern = (pattern) => {
+  const observables = extractObservablesFromIndicatorPattern(pattern);
+  return observables.filter((obs) => validateObservableGeneration(obs.type, pattern));
+};
+
 export const cleanupIndicatorPattern = (patternType, pattern) => {
   if (pattern && patternType.toLowerCase() === STIX_PATTERN_TYPE) {
     const grabInterestingTokens = (ctx, parser, acc) => {

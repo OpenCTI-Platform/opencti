@@ -20,7 +20,7 @@ import {
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../../utils/syntax';
+import { cleanupIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { computeValidPeriod } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -159,7 +159,7 @@ export const createObservablesFromIndicator = async (
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
-  const observables = extractObservablesFromIndicatorPattern(pattern);
+  const observables = extractValidObservablesFromIndicatorPattern(pattern);
   const observablesToLink = [];
   for (let index = 0; index < observables.length; index += 1) {
     const observable = observables[index];
