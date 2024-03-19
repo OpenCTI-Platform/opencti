@@ -1605,17 +1605,25 @@ const buildLocalMustFilter = async (validFilter) => {
       const parentKey = arrayKeys.at(0);
       const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
       const nestedShould = [];
-      for (let i = 0; i < nestedValues.length; i += 1) {
-        const nestedFieldKey = `${parentKey}.${nestedKey}`;
-        const nestedSearchValues = nestedValues[i].toString();
-        if (nestedOperator === 'wildcard') {
-          nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
-        } else if (nestedOperator === 'not_eq') {
-          nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
-        } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-          nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+      const nestedFieldKey = `${parentKey}.${nestedKey}`;
+      if (nestedKey === ID_INTERNAL) {
+        if (nestedOperator === 'not_eq') {
+          nestedMustNot.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         } else {
-          nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+          nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
+        }
+      } else {
+        for (let i = 0; i < nestedValues.length; i += 1) {
+          const nestedSearchValues = nestedValues[i].toString();
+          if (nestedOperator === 'wildcard') {
+            nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+          } else if (nestedOperator === 'not_eq') {
+            nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+          } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+            nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+          } else {
+            nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+          }
         }
       }
       const should = {
