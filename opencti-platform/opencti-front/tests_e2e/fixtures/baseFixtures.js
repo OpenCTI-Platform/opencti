@@ -1,7 +1,5 @@
 // fixtures.js for v8 coverage
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { test as testBase, expect } from '@playwright/test';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { addCoverageReport } from 'monocart-reporter';
 
 const test = testBase.extend({
