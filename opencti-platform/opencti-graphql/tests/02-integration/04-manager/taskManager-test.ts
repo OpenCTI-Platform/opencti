@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { executeReplace } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
+import { MARKING_TLP_CLEAR, MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { addReport, findById as findReportById } from '../../../src/domain/report';
 import { findById } from '../../../src/domain/markingDefinition';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
@@ -24,13 +24,16 @@ describe('TaskManager executeReplace tests ', () => {
       objectMarking: [MARKING_TLP_CLEAR],
     };
     const report = await addReport(adminContext, adminContext.user, reportInput);
+
     expect(report.id).toBeDefined();
     reportsId.push(report.id);
     const reportId = report.id;
+    const marking = await findById(adminContext, adminContext.user, MARKING_TLP_AMBER);
+
     const actionContext = {
       field: 'object-marking',
       type: 'RELATION',
-      values: [MARKING_TLP_AMBER]
+      values: [marking.id]
     };
 
     await executeReplace(adminContext, adminContext.user, actionContext, report);
@@ -52,10 +55,13 @@ describe('TaskManager executeReplace tests ', () => {
     expect(report.id).toBeDefined();
     reportsId.push(report.id);
     const reportId = report.id;
+
+    const marking = await findById(adminContext, adminContext.user, MARKING_TLP_CLEAR);
+
     const actionContext = {
       field: 'object-marking',
       type: 'RELATION',
-      values: [MARKING_TLP_CLEAR]
+      values: [marking.id]
     };
 
     await executeReplace(adminContext, adminContext.user, actionContext, report);
@@ -77,10 +83,13 @@ describe('TaskManager executeReplace tests ', () => {
     expect(report.id).toBeDefined();
     reportsId.push(report.id);
     const reportId = report.id;
+
+    const marking = await findById(adminContext, adminContext.user, MARKING_TLP_CLEAR);
+
     const actionContext = {
       field: 'object-marking',
       type: 'RELATION',
-      values: [MARKING_TLP_CLEAR]
+      values: [marking.id]
     };
 
     await executeReplace(adminContext, adminContext.user, actionContext, report);
