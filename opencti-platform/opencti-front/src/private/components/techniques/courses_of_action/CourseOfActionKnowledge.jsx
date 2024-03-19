@@ -11,14 +11,10 @@ class CourseOfActionKnowledgeComponent extends Component {
       <>
         <Routes>
           <Route
-            exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/relations/:relationId"
-            render={(routeProps) => (
-              <StixCoreRelationship
-                entityId={courseOfAction.id}
-                {...routeProps}
-              />
-            )}
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship entityId={courseOfAction.id} />
+            }
           />
         </Routes>
       </>

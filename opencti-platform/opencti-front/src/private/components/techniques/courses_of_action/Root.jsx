@@ -61,9 +61,7 @@ class RootCourseOfAction extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { courseOfActionId },
-      },
+      params: { courseOfActionId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -79,9 +77,7 @@ class RootCourseOfAction extends Component {
     const {
       t,
       location,
-      match: {
-        params: { courseOfActionId },
-      },
+      params: { courseOfActionId },
     } = this.props;
     return (
       <div>
@@ -145,46 +141,33 @@ class RootCourseOfAction extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId"
-                        render={(routeProps) => (
-                          <CourseOfAction
-                            {...routeProps}
-                            courseOfAction={props.courseOfAction}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <CourseOfAction courseOfAction={props.courseOfAction} />
+                        }
                       />
                       <Route
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
-                        render={(routeProps) => (
-                          <CourseOfActionKnowledge
-                            {...routeProps}
-                            courseOfAction={props.courseOfAction}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={courseOfActionId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.courseOfAction}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={courseOfActionId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />
+                        }
                       />
                     </Routes>
                   </div>

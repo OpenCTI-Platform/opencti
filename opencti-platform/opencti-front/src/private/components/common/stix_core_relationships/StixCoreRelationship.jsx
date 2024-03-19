@@ -29,9 +29,7 @@ class StixCoreRelationship extends Component {
       classes,
       entityId,
       paddingRight,
-      match: {
-        params: { relationId },
-      },
+      params: { relationId },
     } = this.props;
     return (
       <div className={classes.container}>
