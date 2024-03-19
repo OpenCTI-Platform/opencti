@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Routes, Link, Navigate } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
 import * as R from 'ramda';
@@ -115,28 +115,28 @@ class RootSystem extends Component {
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
     return (
       <>
-        {viewAs === 'knowledge' && (
         <Routes>
-          <Route path="/knowledge" element ={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'systems',
-              'systems',
-              'threats',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'observables',
-            ]}
-                                             />}
+          <Route path="/knowledge/*"
+            element = { viewAs === 'knowledge' && (
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'systems',
+                'systems',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />)}
           >
           </Route>
         </Routes>
-        )}
         <QueryRenderer
           query={systemQuery}
           variables={{ id: systemId }}
@@ -226,70 +226,69 @@ class RootSystem extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
                         path="/"
-                        element={ (
+                        element={
                           <System
                             system={system}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge"
-                        element={() => (
+                        element={
                           <Navigate
                             to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        path="/knowledge"
-                        element={ (
+                        path="/knowledge/*"
+                        element={
                           <SystemKnowledge
                             system={system}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        path="/analyses"
-                        element={ (
+                        path="/analyses/*"
+                        element={
                           <SystemAnalysis
                             system={system}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/sightings"
-                        element={ (
+                        element={
                           <EntityStixSightingRelationships
                             entityId={system.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/files"
-                        element={ (
+                        element={
                           <FileManager
                             id={systemId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={system}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/history"
-                        element={(
+                        element={
                           <StixCoreObjectHistory
                             stixCoreObjectId={systemId}
                           />
-                        )}
+                        }
                       />
                     </Routes>
                   </div>
