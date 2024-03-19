@@ -21,168 +21,142 @@ class ToolKnowledgeComponent extends Component {
       <>
         <Routes>
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId/*"
+            element={
               <StixCoreRelationship
                 entityId={tool.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId/*"
+            element={
               <StixSightingRelationship
                 entityId={tool.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={tool.id}
                 stixDomainObjectType="Tool"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/threat_actors"
-            render={(routeProps) => (
+            path="/threat_actors"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/intrusion_sets"
-            render={(routeProps) => (
+            path="/intrusion_sets"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/campaigns"
-            render={(routeProps) => (
+            path="/campaigns"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/attack_patterns"
-            render={(routeProps) => (
+            path="/attack_patterns"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/malwares"
-            render={(routeProps) => (
+            path="/malwares"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['delivers', 'drops']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/vulnerabilities"
-            render={(routeProps) => (
+            path="/vulnerabilities"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses', 'has', 'targets']}
                 stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/indicators"
-            render={(routeProps) => (
+            path="/indicators"
+            element={
               <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
                 entityId={tool.id}
                 entityLink={link}
                 defaultStartTime={tool.first_seen}
                 defaultStopTime={tool.last_seen}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationshipsStixCyberObservable
-                {...routeProps}
                 entityId={tool.id}
                 entityLink={link}
                 defaultStartTime={tool.first_seen}
@@ -190,12 +164,11 @@ class ToolKnowledgeComponent extends Component {
                 isRelationReversed={true}
                 relationshipTypes={['related-to']}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/tools/:toolId/knowledge/sightings"
-            render={(routeProps) => (
+            path="/sightings"
+            element={
               <EntityStixSightingRelationships
                 entityId={tool.id}
                 entityLink={link}
@@ -210,9 +183,8 @@ class ToolKnowledgeComponent extends Component {
                   'Individual',
                   'System',
                 ]}
-                {...routeProps}
               />
-            )}
+            }
           />
         </Routes>
       </>

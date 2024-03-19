@@ -193,20 +193,20 @@ class RootTool extends Component {
                       />
                       <Route
                         path="/knowledge"
-                        element={() => (
+                        element={
                           <Navigate
                             to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
                           <ToolKnowledge tool={tool} />
                         )}
                       />
                       <Route
-                        path="/analyses"
+                        path="/analyses/*"
                         element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             stixDomainObjectOrStixCoreRelationship={tool}

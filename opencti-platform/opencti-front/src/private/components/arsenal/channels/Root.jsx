@@ -199,7 +199,7 @@ class RootChannel extends Component {
                         )}
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
                           <ChannelKnowledge
                             channel={props.channel}
@@ -207,14 +207,14 @@ class RootChannel extends Component {
                         )}
                       />
                       <Route
-                        path="/analyses"
-                        element={(
+                        path="/analyses/*"
+                        element={
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             stixDomainObjectOrStixCoreRelationship={
                               props.channel
                             }
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/files"
@@ -229,7 +229,7 @@ class RootChannel extends Component {
                       />
                       <Route
                         path="/history"
-                        render={ (
+                        element={ (
                           <StixCoreObjectHistory
                             stixCoreObjectId={channelId}
                           />

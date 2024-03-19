@@ -200,11 +200,11 @@ class RootSector extends Component {
                       />
                       <Route
                         path="/knowledge"
-                        element={() => (
+                        element={
                           <Navigate
                             to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge/*"

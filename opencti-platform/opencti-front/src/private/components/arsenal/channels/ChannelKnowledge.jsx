@@ -21,180 +21,153 @@ class ChannelKnowledgeComponent extends Component {
       <>
         <Routes>
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId"
+            element={
               <StixCoreRelationship
                 entityId={channel.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId"
+            element={
               <StixSightingRelationship
                 entityId={channel.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={channel.id}
                 stixDomainObjectType="Channel"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/victimology"
-            render={(routeProps) => (
+            path="/victimology"
+            element={
               <StixDomainObjectVictimology
                 stixDomainObjectId={channel.id}
                 entityLink={link}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/threat_actors"
-            render={(routeProps) => (
+            path="/threat_actors"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/intrusion_sets"
-            render={(routeProps) => (
+            path="/intrusion_sets"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/campaigns"
-            render={(routeProps) => (
+            path="/campaigns"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/attack_patterns"
-            render={(routeProps) => (
+            path="/attack_patterns"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/channels"
-            render={(routeProps) => (
+            path="/channels"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['amplifies']}
                 stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/malwares"
-            render={(routeProps) => (
+            path="/malwares"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses', 'delivers', 'drops']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
             exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/vulnerabilities"
-            render={(routeProps) => (
+            path="/vulnerabilities"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
                 stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationshipsStixCyberObservable
-                {...routeProps}
                 entityId={channel.id}
                 entityLink={link}
                 defaultStartTime={channel.first_seen}
@@ -207,12 +180,11 @@ class ChannelKnowledgeComponent extends Component {
                   'belongs-to',
                 ]}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/sightings"
-            render={(routeProps) => (
+            path="/sightings"
+            element={
               <EntityStixSightingRelationships
                 entityId={channel.id}
                 entityLink={link}
@@ -227,9 +199,8 @@ class ChannelKnowledgeComponent extends Component {
                   'Individual',
                   'System',
                 ]}
-                {...routeProps}
               />
-            )}
+            }
           />
         </Routes>
       </>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Routes, Link } from 'react-router-dom';
+import { Route, Redirect, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
 import * as R from 'ramda';
@@ -66,9 +66,7 @@ class RootSystem extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { systemId },
-      },
+      params: { systemId },
     } = props;
     const LOCAL_STORAGE_KEY = `system-${systemId}`;
     const params = buildViewParamsFromUrlAndStorage(
@@ -91,9 +89,7 @@ class RootSystem extends Component {
 
   saveView() {
     const {
-      match: {
-        params: { systemId },
-      },
+      params: { systemId },
     } = this.props;
     const LOCAL_STORAGE_KEY = `system-${systemId}`;
     saveViewParameters(
@@ -113,34 +109,34 @@ class RootSystem extends Component {
     const {
       t,
       location,
-      match: {
-        params: { systemId },
-      },
+      params: { systemId },
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/entities/systems/:systemId/knowledge">
-          {viewAs === 'knowledge' && (
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'systems',
-                'systems',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-            />
-          )}
-        </Route>
+        {viewAs === 'knowledge' && (
+        <Routes>
+          <Route path="/knowledge" element ={<StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'systems',
+              'systems',
+              'threats',
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'attack_patterns',
+              'tools',
+              'observables',
+            ]}
+                                             />}
+          >
+          </Route>
+        </Routes>
+        )}
         <QueryRenderer
           query={systemQuery}
           variables={{ id: systemId }}
@@ -231,64 +227,55 @@ class RootSystem extends Component {
                     <Routes>
                       <Route
                         exact
-                        path="/dashboard/entities/systems/:systemId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={ (
                           <System
-                            {...routeProps}
                             system={system}
                             viewAs={viewAs}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/systems/:systemId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={() => (
+                          <Navigate
                             to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                           />
                         )}
                       />
                       <Route
-                        path="/dashboard/entities/systems/:systemId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={ (
                           <SystemKnowledge
-                            {...routeProps}
                             system={system}
                             viewAs={viewAs}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/systems/:systemId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={ (
                           <SystemAnalysis
-                            {...routeProps}
                             system={system}
                             viewAs={viewAs}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/systems/:systemId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={ (
                           <EntityStixSightingRelationships
                             entityId={system.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/systems/:systemId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={ (
                           <FileManager
-                            {...routeProps}
                             id={systemId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -297,11 +284,9 @@ class RootSystem extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/systems/:systemId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={systemId}
                           />
                         )}
@@ -322,7 +307,7 @@ class RootSystem extends Component {
 
 RootSystem.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootSystem);

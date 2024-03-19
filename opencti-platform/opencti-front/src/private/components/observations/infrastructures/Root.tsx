@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectKnowledgeBar from '@components/common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -147,6 +148,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             </Tabs>
           </Box>
           <Routes>
+
             <Route
               path="/"
               element={<Infrastructure data={infrastructure} />}
@@ -158,11 +160,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                        />}
             />
             <Route
-              path="/knowledge"
+              path="/knowledge/*"
               element={<InfrastructureKnowledge infrastructure={infrastructure} />}
             />
             <Route
-              path="/analyses"
+              path="/analyses/*"
               element={
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={infrastructure}

@@ -191,31 +191,31 @@ class RootEvent extends Component {
                     <Routes>
                       <Route
                         path="/"
-                        element={(
+                        element={
                           <Event event={props.event} />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge"
-                        element={(
+                        element={
                           <Navigate
                             to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/knowledge/*"
-                        element={(
+                        element={
                           <EventKnowledge event={event} />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"
-                        element={(
+                        element={
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             stixDomainObjectOrStixCoreRelationship={event}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/sightings"
