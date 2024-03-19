@@ -73,6 +73,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
+  ENTITY_CREDENTIAL,
   ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
@@ -95,6 +96,7 @@ import {
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_TEXT,
+  ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
   ENTITY_USER_AGENT,
@@ -972,6 +974,40 @@ const convertBankAccountToStix = (instance: StoreCyberObservable, type: string):
     }
   };
 };
+const convertCredentialToStix = (instance: StoreCyberObservable, type: string): SCO.StixCredential => {
+  assertType(ENTITY_CREDENTIAL, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
+const convertTrackingNumberToStix = (instance: StoreCyberObservable, type: string): SCO.StixTrackingNumber => {
+  assertType(ENTITY_TRACKING_NUMBER, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string): SCO.StixPhoneNumber => {
   assertType(ENTITY_PHONE_NUMBER, type);
   const stixCyberObject = buildStixCyberObservable(instance);
@@ -1439,6 +1475,12 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_BANK_ACCOUNT === type) {
       return convertBankAccountToStix(cyber, type);
+    }
+    if (ENTITY_CREDENTIAL === type) {
+      return convertCredentialToStix(cyber, type);
+    }
+    if (ENTITY_TRACKING_NUMBER === type) {
+      return convertTrackingNumberToStix(cyber, type);
     }
     if (ENTITY_CRYPTOGRAPHIC_WALLET === type) {
       return convertCryptocurrencyWalletToStix(cyber, type);

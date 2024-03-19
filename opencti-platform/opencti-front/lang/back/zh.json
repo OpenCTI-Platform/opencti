@@ -279,6 +279,7 @@
   "Languages": "语言",
   "Vendor": "供应商",
   "Credential": "证书",
+  "Credentials": "证书",
   "Account login": "账户登录",
   "Account type": "账户类型",
   "Service account": "服务帐户",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_别名",
   "Samples": "样本",
   "Contains observable": "包含观测值",
-  "Artifact content": "工件内容"
+  "Artifact content": "工件内容",
+  "Tracking number": "追踪号码"
 }

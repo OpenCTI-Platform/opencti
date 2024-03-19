@@ -279,6 +279,7 @@
   "Languages": "Idiomas",
   "Vendor": "Proveedor",
   "Credential": "Credencial",
+  "Credentials": "Cartas_credenciales",
   "Account login": "Acceso a la cuenta",
   "Account type": "Tipo de cuenta",
   "Service account": "Cuenta de servicio",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Muestras",
   "Contains observable": "Contiene observable",
-  "Artifact content": "Contenido del artefacto"
+  "Artifact content": "Contenido del artefacto",
+  "Tracking number": "El número de rastreo"
 }

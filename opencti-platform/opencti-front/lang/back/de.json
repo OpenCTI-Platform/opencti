@@ -278,7 +278,8 @@
   "SWID": "SWID",
   "Languages": "Sprachen",
   "Vendor": "Anbieter",
-  "Credential": "Berechtigungsnachweis",
+  "Credential": "Berechtigung",
+  "Credentials": "Berechtigungsnachweis",
   "Account login": "Kontoanmeldung",
   "Account type": "Kontotyp",
   "Service account": "Dienstkonto",
@@ -626,5 +627,6 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Stichproben",
   "Contains observable": "Enthält beobachtbar",
-  "Artifact content": "Artefaktinhalt"
+  "Artifact content": "Artefaktinhalt",
+  "Tracking number": "Tracking nummer"
 }

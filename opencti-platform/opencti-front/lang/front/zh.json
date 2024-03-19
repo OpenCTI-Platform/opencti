@@ -2673,5 +2673,9 @@
   "Strategic": "战略",
   "Link created": "创建的链接",
   "Public dashboard": "公共仪表板",
-  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
+  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
+  "Credential": "证书",
+  "Credentials": "证书",
+  "entity_Tracking-Number": "追踪号码",
+  "entity_Credential": "凭据"
 }
