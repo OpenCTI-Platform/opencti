@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import RoleEdition from './RoleEdition';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -192,4 +193,4 @@ RolePopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RolePopover);
+export default compose(inject18n, withRouter, withStyles(styles))(RolePopover);

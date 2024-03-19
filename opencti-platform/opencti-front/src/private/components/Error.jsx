@@ -36,11 +36,9 @@ export const SimpleError = () => (
 );
 
 export const boundaryWrapper = (Component) => {
-  return (routeProps) => (
-    <ErrorBoundary display={<SimpleError />}>
-      <Component {...routeProps} />
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary display={<SimpleError />}>
+    <Component/>
+  </ErrorBoundary>;
 };
 
 // 404
