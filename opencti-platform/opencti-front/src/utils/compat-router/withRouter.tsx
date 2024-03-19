@@ -12,6 +12,7 @@ export interface WithRouterProps {
 const withRouter = <Props extends WithRouterProps>(
   Component: React.ComponentType<Props>,
 ) => {
+  // eslint-disable-next-line react/display-name
   return (props: Omit<Props, keyof WithRouterProps>) => {
     const location = useLocation();
     const params = useParams();

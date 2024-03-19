@@ -97,7 +97,7 @@ const Role = ({
           {role.name}
         </Typography>
         <div className={classes.popover}>
-          <RolePopover history={history} roleId={role.id} />
+          <RolePopover roleId={role.id} />
         </div>
         <div className="clearfix" />
       </div>
