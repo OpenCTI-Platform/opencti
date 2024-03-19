@@ -239,20 +239,35 @@ const executeRemove = async (context, user, actionContext, element) => {
     await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
 };
-const executeReplace = async (context, user, actionContext, element) => {
+export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
   if (contextType === ACTION_TYPE_RELATION) {
+    const toCreate = [];
     // 01 - Delete all relations of the element
     const rels = await listAllRelations(context, user, field, { fromId: element.id });
-    for (let indexRel = 0; indexRel < rels.length; indexRel += 1) {
-      const rel = rels[indexRel];
-      await deleteElementById(context, user, rel.id, rel.entity_type);
+    if (rels.length > 0) {
+      // Items to Delete
+      for (let index = 0; index < rels.length; index += 1) {
+        if (!values.includes(rels[index].toId)) {
+          const rel = rels[index];
+          await deleteElementById(context, user, rel.id, rel.entity_type);
+        }
+      }
+      // 02 - Create new ones
+      for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+        const target = values[indexCreate];
+        if (!rels.some(({ toId }) => toId === target)) {
+          toCreate.push(target);
+        }
+      }
+    } else if (rels.length === 0) {
+      // 02 - Create relations if no relation to replace
+      for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+        const target = values[indexCreate];
+        toCreate.push(target);
+      }
     }
-    // 02 - Create new ones
-    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-      const target = values[indexCreate];
-      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
-    }
+    await Promise.all(toCreate.map(async (tc) => await createRelation(context, user, { fromId: element.id, toId: tc, relationship_type: field })));
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = generatePatch(field, values, element.entity_type);
