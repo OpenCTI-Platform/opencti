@@ -203,7 +203,7 @@ class RootVulnerability extends Component {
                         )}
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
                           <VulnerabilityKnowledge
                             vulnerability={vulnerability}

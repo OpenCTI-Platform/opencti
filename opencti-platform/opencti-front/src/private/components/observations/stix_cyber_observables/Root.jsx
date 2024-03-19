@@ -161,43 +161,35 @@ class RootStixCyberObservable extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={
                           <StixCyberObservable
-                            {...routeProps}
                             stixCyberObservable={props.stixCyberObservable}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={
                           <StixCyberObservableKnowledge
-                            {...routeProps}
                             stixCyberObservable={props.stixCyberObservable}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={
                               props.stixCyberObservable
                             }
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={
                           <EntityStixSightingRelationships
-                            {...routeProps}
                             entityId={observableId}
                             entityLink={link}
                             noRightBar={true}
@@ -213,50 +205,42 @@ class RootStixCyberObservable extends Component {
                               'System',
                             ]}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={observableId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.stixCyberObservable}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={observableId}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
-                        render={(routeProps) => (
+                        path="/relations/:relationId"
+                        element={
                           <StixCoreRelationship
                             entityId={observableId}
-                            {...routeProps}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/observables/:observableId/knowledge/sightings/:sightingId"
-                        render={(routeProps) => (
+                        path="/sightings/:sightingId"
+                        element={
                           <StixSightingRelationship
                             entityId={observableId}
-                            {...routeProps}
                           />
-                        )}
+                        }
                       />
                     </Routes>
                   </>

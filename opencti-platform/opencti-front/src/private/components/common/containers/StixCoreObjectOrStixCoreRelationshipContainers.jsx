@@ -300,7 +300,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             filters: queryPaginationOptions.filters,
             search: searchTerm,
           }}
-          render={({ props }) => {
+          element={({ props }) => {
             if (props) {
               return (
                 <StixCoreObjectOrStixCoreRelationshipContainersGraph
