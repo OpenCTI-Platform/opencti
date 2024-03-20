@@ -152,8 +152,8 @@ class StixDomainObjectVictimology extends Component {
           {viewMode === 'nested' && (
           <QueryRenderer
             query={
-                  stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery
-                }
+              stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery
+            }
             variables={{ first: 500, ...paginationOptionsSectors }}
             render={({ props }) => {
               if (props) {

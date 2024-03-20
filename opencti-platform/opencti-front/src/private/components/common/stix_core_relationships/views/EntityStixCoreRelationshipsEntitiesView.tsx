@@ -109,7 +109,9 @@ EntityStixCoreRelationshipsEntitiesViewProps
 
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']);
-  const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0 ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }] : [];
+  const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0
+    ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }]
+    : [];
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
@@ -203,6 +205,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         enableContextualView={enableContextualView}
         currentView={finalView}
         entityTypes={stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']}
+        additionalFilterKeys={{ filterKeys: ['entity_type'] }}
       >
         <EntityStixCoreRelationshipsEntitiesViewLines
           paginationOptions={paginationOptions}

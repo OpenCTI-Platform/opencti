@@ -553,7 +553,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   availableEntityTypes={virtualEntityTypes}
                   handleToggleSelectAll="no"
                   entityTypes={virtualEntityTypes}
-                  additionalFilterKeys={['entity_type']}
+                  additionalFilterKeys={{ filterKeys: ['entity_type'], restrictedFiltersConfig: { filterRemoving: ['entity_type'] } }}
                 >
                   <QueryRenderer
                     query={stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery}
