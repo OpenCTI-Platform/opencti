@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
@@ -14,9 +14,7 @@ class RootConnector extends Component {
   render() {
     const {
       t,
-      match: {
-        params: { connectorId },
-      },
+      params: { connectorId },
     } = this.props;
     return (
       <QueryRenderer
@@ -28,16 +26,14 @@ class RootConnector extends Component {
               return (
                 <>
                   <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Connectors'), link: '/dashboard/data/ingestion/connectors' }, { label: props.connector.name, current: true }]} />
-                  <Route
-                    exact
-                    path="/dashboard/data/ingestion/connectors/:connectorId"
-                    render={(routeProps) => (
-                      <Connector
-                        {...routeProps}
-                        connector={props.connector}
-                      />
-                    )}
-                  />
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Connector connector={props.connector} />
+                      }
+                    />
+                  </Routes>
                 </>
               );
             }

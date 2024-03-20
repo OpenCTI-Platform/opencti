@@ -6,7 +6,7 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
-import { boundaryWrapper } from '@components/Error';
+import { boundaryWrapper } from '../Error';
 
 const Countries = lazy(() => import('./Countries'));
 const RootCountry = lazy(() => import('./countries/Root'));
