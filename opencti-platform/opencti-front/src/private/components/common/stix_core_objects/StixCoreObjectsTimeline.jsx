@@ -1,36 +1,13 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
-import Timeline from '@mui/lab/Timeline';
-import TimelineItem from '@mui/lab/TimelineItem';
-import TimelineSeparator from '@mui/lab/TimelineSeparator';
-import TimelineConnector from '@mui/lab/TimelineConnector';
-import TimelineContent from '@mui/lab/TimelineContent';
-import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
-import TimelineDot from '@mui/lab/TimelineDot';
-import makeStyles from '@mui/styles/makeStyles';
-import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { resolveLink } from '../../../../utils/Entity';
-import { defaultValue } from '../../../../utils/Graph';
-import { itemColor } from '../../../../utils/Colors';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-  },
-  paper: {
-    padding: 15,
-  },
-});
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
+import { resolveLink } from '../../../../utils/Entity';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -223,8 +200,7 @@ const StixCoreObjectsTimeline = ({
   dataSelection,
   parameters = {},
 }) => {
-  const classes = useStyles();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -249,109 +225,32 @@ const StixCoreObjectsTimeline = ({
             && props.stixCoreObjects.edges.length > 0
           ) {
             const stixCoreObjectsEdges = props.stixCoreObjects.edges;
-            return (
-              <div id="container" className={classes.container}>
-                <Timeline position="alternate">
-                  {stixCoreObjectsEdges.map((stixCoreObjectEdge) => {
-                    const stixCoreObject = stixCoreObjectEdge.node;
-                    const link = `${resolveLink(stixCoreObject.entity_type)}/${
-                      stixCoreObject.id
-                    }`;
-                    return (
-                      <TimelineItem key={stixCoreObject.id}>
-                        <TimelineOppositeContent
-                          sx={{ paddingTop: '18px' }}
-                          color="text.secondary"
-                        >
-                          {fldt(stixCoreObject.created)}
-                        </TimelineOppositeContent>
-                        <TimelineSeparator>
-                          <Link to={link}>
-                            <TimelineDot
-                              sx={{
-                                borderColor: itemColor(
-                                  stixCoreObject.entity_type,
-                                ),
-                              }}
-                              variant="outlined"
-                              className="noDrag"
-                            >
-                              <ItemIcon type={stixCoreObject.entity_type} />
-                            </TimelineDot>
-                          </Link>
-                          <TimelineConnector />
-                        </TimelineSeparator>
-                        <TimelineContent>
-                          <Paper variant="outlined" classes={{ root: classes.paper }} className="noDrag">
-                            <Typography variant="h2">
-                              {defaultValue(stixCoreObject)}
-                            </Typography>
-                            <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <MarkdownDisplay
-                                content={stixCoreObject.description}
-                                limit={150}
-                              />
-                            </div>
-                          </Paper>
-                        </TimelineContent>
-                      </TimelineItem>
-                    );
-                  })}
-                </Timeline>
-              </div>
-            );
+            const data = stixCoreObjectsEdges.map((stixCoreObjectEdge) => {
+              const stixCoreObject = stixCoreObjectEdge.node;
+              const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+              return {
+                value: stixCoreObject,
+                link,
+              };
+            });
+            return <WidgetTimeline data={data} />;
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-        }}
-      >
-        {parameters.title ?? t_i18n('Entities list')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Entities list')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

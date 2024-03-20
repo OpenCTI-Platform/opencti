@@ -10,8 +10,22 @@ export interface PublicManifestWidget {
     static: boolean
   }
   parameters: {
-    title: string
+    title?: string
+    interval?: string
+    stacked?: boolean
+    legend?: boolean
+    distributed?: boolean
   }
+  dataSelection: {
+    label?: string
+    number?: number
+    attribute?: string
+    date_attribute?: string
+    centerLat?: number
+    centerLng?: number
+    zoom?: number
+    isTo?: boolean
+  }[]
   perspective: 'entities' | 'relationships' | 'audits' | null
   type: string
 }

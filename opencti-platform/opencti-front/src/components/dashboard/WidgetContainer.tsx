@@ -16,7 +16,7 @@ const useStyles = makeStyles({
 interface WidgetContainerProps {
   children: ReactNode
   height?: CSSProperties['height']
-  title: string
+  title?: string
   variant: string
   withoutTitle?: boolean
 }

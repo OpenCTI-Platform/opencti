@@ -15,27 +15,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
-import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { treeMapOptions } from '../../../../utils/Charts';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { defaultValue } from '../../../../utils/Graph';
-
-const useStyles = makeStyles(() => ({
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetTree from '../../../../components/dashboard/WidgetTree';
 
 const auditsTreeMapDistributionQuery = graphql`
   query AuditsTreeMapDistributionQuery(
@@ -199,8 +186,6 @@ const AuditsTreeMap = ({
   withExportPopover = false,
   isReadOnly = false,
 }) => {
-  const classes = useStyles();
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -248,88 +233,32 @@ const AuditsTreeMap = ({
             && props.auditsDistribution.length > 0
           ) {
             const data = props.auditsDistribution;
-            const chartData = data.map((n) => ({
-              x:
-                // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('_id')
-                || selection.attribute.endsWith('_ids')
-                  ? defaultValue(n.entity)
-                  : selection.attribute === 'entity_type'
-                    ? t_i18n(`entity_${n.label}`)
-                    : n.label,
-              y: n.value,
-            }));
-            const series = [{ data: chartData }];
             return (
-              <Chart
-                options={treeMapOptions(
-                  theme,
-                  'bottom',
-                  parameters.distributed,
-                )}
-                series={series}
-                type="treemap"
-                width="100%"
-                height="100%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+              <WidgetTree
+                data={data}
+                groupBy={selection.attribute}
+                isDistributed={parameters.distributed}
+                readonly={isReadOnly}
+                withExport={withExportPopover}
               />
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || t_i18n('Distribution of entities')}
-      </Typography>
-      {variant === 'inLine' ? (
-        renderContent()
-      ) : (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Distribution of entities')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

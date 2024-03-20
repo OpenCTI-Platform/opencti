@@ -1,19 +1,29 @@
 import { v4 as uuidv4 } from 'uuid';
+import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type BasicStoreEntityPublicDashboard, type PublicDashboardCached } from './publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
 import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { fromBase64, isNotEmptyField, toBase64 } from '../../database/utils';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import type {
-  EditInput,
-  FilterGroup,
-  PublicDashboardAddInput,
-  QueryPublicDashboardsArgs,
-  QueryPublicStixCoreObjectsNumberArgs,
-  QueryPublicStixCoreObjectsMultiTimeSeriesArgs
+import {
+  type EditInput,
+  type FilterGroup,
+  FilterMode,
+  FilterOperator,
+  type PublicDashboardAddInput,
+  type QueryPublicBookmarksArgs,
+  type QueryPublicDashboardsArgs,
+  type QueryPublicStixCoreObjectsArgs,
+  type QueryPublicStixCoreObjectsDistributionArgs,
+  type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
+  type QueryPublicStixCoreObjectsNumberArgs,
+  type QueryPublicStixRelationshipsArgs,
+  type QueryPublicStixRelationshipsDistributionArgs,
+  type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+  type QueryPublicStixRelationshipsNumberArgs
 } from '../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { SYSTEM_USER } from '../../utils/access';
@@ -21,10 +31,21 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { NumberResult, StoreMarkingDefinition } from '../../types/store';
+import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
 import { getWidgetArguments } from './publicDashboard-utils';
-import { stixCoreObjectsMultiTimeSeries, stixCoreObjectsNumber } from '../../domain/stixCoreObject';
+import {
+  findAll as stixCoreObjects,
+  stixCoreObjectsDistribution,
+  stixCoreObjectsDistributionByEntity,
+  stixCoreObjectsMultiTimeSeries,
+  stixCoreObjectsNumber
+} from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
+import { findAll as stixRelationships, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
+import { bookmarks } from '../../domain/user';
+import { daysAgo } from '../../utils/format';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
+import { ES_MAX_CONCURRENCY } from '../../database/engine';
 
 export const findById = (
   context: AuthContext,
@@ -77,9 +98,12 @@ export const getAllowedMarkings = async (
   user: AuthUser,
   publicDashboard: BasicStoreEntityPublicDashboard | PublicDashboardCached,
 ): Promise<StoreMarkingDefinition[]> => {
+  const publicDashboardMarkingsIds = publicDashboard.allowed_markings_ids;
+  if (!publicDashboardMarkingsIds) {
+    return [];
+  }
   // get markings from cache
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  const publicDashboardMarkingsIds = publicDashboard.allowed_markings_ids;
   return publicDashboardMarkingsIds.flatMap((id: string) => markingsMap.get(id) || []);
 };
 
@@ -102,10 +126,21 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = JSON.parse(fromBase64(dashboard.manifest) ?? '{}');
-  // Removing the "dataSelection" key
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
-      delete parsedManifest.widgets[widgetId].dataSelection;
+      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
+        .widgets[widgetId]
+        .dataSelection.map((selection: any) => {
+          return {
+            ...(selection.label && { label: selection.label }),
+            ...(selection.attribute && { attribute: selection.attribute }),
+            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
+            ...(selection.number && { number: selection.number }),
+            ...(selection.centerLat && { centerLat: selection.centerLat }),
+            ...(selection.centerLng && { centerLng: selection.centerLng }),
+            ...(selection.zoom && { zoom: selection.zoom }),
+          };
+        });
     });
   }
 
@@ -207,16 +242,27 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
   return notify(BUS_TOPICS[ENTITY_TYPE_PUBLIC_DASHBOARD].DELETE_TOPIC, deleted, user).then(() => id);
 };
 
-// Widgets Public API
+// region Widgets Public API
 
-// Heatmap
+// heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { user, config, timeSeriesParameters } = await getWidgetArguments(context, args.uriKey, args.widgetId, true);
+  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
 
   const standardArgs = {
     startDate: args.startDate,
     endDate: args.endDate,
-    interval: config.interval,
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters
   };
 
@@ -224,20 +270,50 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
-// Number
+export const publicStixRelationshipsMultiTimeSeries = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
+) => {
+  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const filters = {
+      filterGroups: [selection.filters],
+      filters: [],
+      mode: 'and'
+    };
+    return {
+      field: selection.date_attribute,
+      filters,
+    };
+  });
+
+  const standardArgs = {
+    operation: 'count',
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: parameters?.interval ?? 'day',
+    timeSeriesParameters
+  };
+
+  // Use standard API
+  return stixRelationshipsMultiTimeSeries(context, user, standardArgs);
+};
+
+// number
 export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
-  const { user, config, filters, dateAttribute } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
 
   const parameters = {
-    dateAttribute,
+    dateAttribute: selection.date_attribute,
     startDate: args.startDate,
-    endDate: args.endDate,
+    endDate: daysAgo(1),
     filters,
-    onlyInferred: config.onlyInferred,
-    search: config.search,
     types: [
       ABSTRACT_STIX_CORE_OBJECT,
     ]
@@ -246,3 +322,261 @@ export const publicStixCoreObjectsNumber = async (
   // Use standard API
   return stixCoreObjectsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
 };
+
+export const publicStixRelationshipsNumber = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsNumberArgs
+): Promise<NumberResult> => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: daysAgo(1),
+    filters,
+    dateAttribute: selection.date_attribute,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+  };
+
+  // Use standard API
+  return stixRelationshipsNumber(context, user, parameters) as unknown as Promise<NumberResult>;
+};
+
+// donut & horizontal-bar & distribution-list & radar & tree
+export const publicStixCoreObjectsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsDistributionArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const mainSelection = dataSelection[0];
+  const breakdownSelection = dataSelection[1];
+  const { filters: mainFilters } = mainSelection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters: mainFilters,
+    toTypes: mainSelection.toTypes,
+    field: mainSelection.attribute,
+    dateAttribute: mainSelection.date_attribute || 'created_at',
+    operation: 'count',
+    limit: mainSelection.number ?? 10,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+  };
+
+  // Use standard API
+  const mainDistribution = await stixCoreObjectsDistribution(context, user, parameters);
+  if (!breakdownSelection) {
+    // Stop here if there is no breakdown to make with a second selection.
+    return mainDistribution;
+  }
+
+  return BluePromise.map(
+    mainDistribution,
+    async (distributionItem) => {
+      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+        return distributionItem;
+      }
+
+      const breakdownFilters: FilterGroup = {
+        filterGroups: breakdownSelection.filters ? [breakdownSelection.filters] : [],
+        filters: [{
+          key: ['fromId'],
+          values: [distributionItem.entity.id],
+          mode: FilterMode.And,
+          operator: FilterOperator.Eq,
+        }],
+        mode: FilterMode.And
+      };
+
+      const breakdownParameters = {
+        startDate: args.startDate,
+        endDate: args.endDate,
+        filters: breakdownFilters,
+        toTypes: breakdownSelection.toTypes,
+        field: breakdownSelection.attribute,
+        dateAttribute: breakdownSelection.date_attribute || 'created_at',
+        operation: 'count',
+        limit: breakdownSelection.number ?? 10,
+        types: [
+          ABSTRACT_STIX_CORE_OBJECT,
+        ],
+      };
+
+      return {
+        ...distributionItem,
+        breakdownDistribution: await stixCoreObjectsDistribution(context, user, breakdownParameters),
+      };
+    },
+    { concurrency: ES_MAX_CONCURRENCY }
+  );
+};
+
+export const publicStixRelationshipsDistribution = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsDistributionArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
+  const mainSelection = dataSelection[0];
+  const breakdownSelection = dataSelection[1];
+  const { filters: mainFilters } = mainSelection;
+
+  const parameters = {
+    operation: 'count',
+    field: mainSelection.attribute || 'entity_type', // TODO check for StixRelationshipsDonut
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters: mainFilters,
+    dynamicFrom: mainSelection.dynamicFrom,
+    dynamicTo: mainSelection.dynamicTo,
+    dateAttribute: mainSelection.date_attribute,
+    isTo: mainSelection.isTo,
+    limit: mainSelection.number ?? 10,
+  };
+
+  // Use standard API
+  const mainDistribution = await stixRelationshipsDistribution(context, user, parameters);
+  if (!breakdownSelection) {
+    // Stop here if there is no breakdown to make with a second selection.
+    return mainDistribution;
+  }
+
+  return BluePromise.map(
+    mainDistribution,
+    async (distributionItem) => {
+      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+        return distributionItem;
+      }
+
+      const breakdownFilters: FilterGroup = {
+        filterGroups: breakdownSelection.filters ? [breakdownSelection.filters] : [],
+        filters: breakdownSelection.perspective === 'entities' ? [] : [{
+          key: ['fromId'],
+          values: [distributionItem.entity.id],
+          mode: FilterMode.And,
+          operator: FilterOperator.Eq,
+        }],
+        mode: FilterMode.And
+      };
+
+      const breakdownParameters = {
+        operation: 'count',
+        field: breakdownSelection.attribute || 'entity_type',
+        startDate: args.startDate,
+        endDate: args.endDate,
+        filters: breakdownFilters,
+        dynamicFrom: breakdownSelection.dynamicFrom,
+        dynamicTo: breakdownSelection.dynamicTo,
+        dateAttribute: breakdownSelection.date_attribute,
+        limit: breakdownSelection.number ?? 10,
+      };
+
+      let breakdownDistribution: any;
+      if (breakdownSelection.perspective === 'entities') {
+        breakdownDistribution = await stixCoreObjectsDistributionByEntity(
+          context,
+          user,
+          {
+            ...breakdownParameters,
+            types: ['Stix-Core-Object'],
+            objectId: distributionItem.entity.id
+          }
+        );
+      } else {
+        breakdownDistribution = await stixRelationshipsDistribution(
+          context,
+          user,
+          {
+            ...breakdownParameters,
+            isTo: breakdownSelection.isTo,
+            fromOrToId: distributionItem.entity.id,
+          }
+        );
+      }
+
+      return {
+        ...distributionItem,
+        breakdownDistribution,
+      };
+    },
+    { concurrency: ES_MAX_CONCURRENCY }
+  );
+};
+
+// bookmarks
+export const publicBookmarks = async (
+  context: AuthContext,
+  args: QueryPublicBookmarksArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    filters
+  };
+
+  // Use standard API
+  return bookmarks(context, user, parameters);
+};
+
+// list & timeline
+export const publicStixCoreObjects = async (
+  context: AuthContext,
+  args: QueryPublicStixCoreObjectsArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user; // context.user is used in standard api
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    types: [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ],
+    filters,
+    orderBy: selection.date_attribute,
+    orderMode: 'desc',
+    first: selection.number ?? 10,
+  };
+
+  // Use standard API
+  return stixCoreObjects(context, user, parameters);
+};
+
+export const publicStixRelationships = async (
+  context: AuthContext,
+  args: QueryPublicStixRelationshipsArgs
+) => {
+  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  context.user = user;
+
+  const selection = dataSelection[0];
+  const { filters } = selection;
+
+  const parameters = {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    filters,
+    dynamicFrom: selection.dynamicFrom,
+    dynamicTo: selection.dynamicTo,
+    orderBy: selection.date_attribute,
+    orderMode: 'desc',
+    first: 50,
+  };
+
+  // Use standard API
+  return (await stixRelationships(context, user, parameters) as unknown as StoreRelationConnection<BasicStoreRelation>);
+};
+// endregion
