@@ -1,15 +1,14 @@
 import React from 'react';
-import { Routes } from 'react-router-dom';
-import { BoundaryRoute } from '../../Error';
+import { Route, Routes } from 'react-router-dom';
 import Import from './Import';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 
 const Root = () => (
   <Routes>
-    <BoundaryRoute exact path="/dashboard/data/import" component={Import} />
-    <BoundaryRoute
-      path="/dashboard/data/import/pending/:fileId"
-      render={(routeProps) => <WorkbenchFile {...routeProps} />}
+    <Route path="/" Component={Import} />
+    <Route
+      path="/pending/:fileId"
+      element={<WorkbenchFile />}
     />
   </Routes>
 );

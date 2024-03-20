@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Routes } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '../Error';
 import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -26,147 +26,129 @@ const Root = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        <BoundaryRoute
-          exact
-          path="/dashboard/data"
-          render={() => <Redirect to="/dashboard/data/entities" />}
+        <Route
+          path="/"
+          element={<Navigate to="/dashboard/data/entities" />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/entities"
-          component={Entities}
+        <Route
+          path="/entities"
+          Component={boundaryWrapper(Entities)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/relationships"
-          component={Relationships}
+        <Route
+          path="/relationships"
+          Component={boundaryWrapper(Relationships)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion"
-          render={() => (
+        <Route
+          path="/ingestion"
+          element={
             <Security
               needs={[SETTINGS]}
               placeholder={(
                 <Security
                   needs={[MODULES]}
                   placeholder={(
-                    <Redirect to="/dashboard" />
+                    <Navigate to="/dashboard" />
                   )}
                 >
-                  <Redirect to="/dashboard/data/ingestion/connectors" />
+                  <Navigate to="/dashboard/data/ingestion/connectors" />
                 </Security>
               )}
             >
-              <Redirect to="/dashboard/data/ingestion/sync" />
+              <Navigate to="/dashboard/data/ingestion/sync" />
             </Security>
-          )}
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion/sync"
-          component={Sync}
+        <Route
+          path="/ingestion/sync"
+          Component={boundaryWrapper(Sync)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion/rss"
-          component={IngestionRss}
+        <Route
+          path="/ingestion/rss"
+          Component={boundaryWrapper(IngestionRss)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion/taxii"
-          component={IngestionTaxiis}
+        <Route
+          path="/ingestion/taxii"
+          Component={boundaryWrapper(IngestionTaxiis)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion/csv"
-          component={IngestionCsv}
+        <Route
+          path="/ingestion/csv"
+          Component={boundaryWrapper(IngestionCsv)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/ingestion/connectors"
-          component={Connectors}
+        <Route
+          path="/ingestion/connectors"
+          Component={boundaryWrapper(Connectors)}
         />
-        <BoundaryRoute
-          path="/dashboard/data/ingestion/connectors/:connectorId"
-          render={(routeProps) => <RootConnector {...routeProps} />}
+        <Route
+          path="/ingestion/connectors/:connectorId"
+          element={<RootConnector />}
         />
-        <BoundaryRoute
-          path="/dashboard/data/import"
-          component={RootImport}
+        <Route
+          path="/import"
+          Component={boundaryWrapper(RootImport)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/sharing"
-          render={() => <Redirect to="/dashboard/data/sharing/streams" />}
+        <Route
+          path="/sharing"
+          element={<Navigate to="/dashboard/data/sharing/streams" />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/sharing/streams"
-          component={Stream}
+        <Route
+          path="/sharing/streams"
+          Component={boundaryWrapper(Stream)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/sharing/feeds"
-          component={Feed}
+        <Route
+          path="/sharing/feeds"
+          Component={boundaryWrapper(Feed)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/sharing/taxii"
-          component={Taxii}
+        <Route
+          path="/sharing/taxii"
+          Component={boundaryWrapper(Taxii)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/processing"
-          render={() => (
+        <Route
+          path="/processing"
+          element={
             <Security
               needs={[SETTINGS_SETACCESSES]}
               placeholder={(
                 <Security
                   needs={[TAXIIAPI_SETCSVMAPPERS]}
-                  placeholder={<Redirect to="/dashboard/data/processing/tasks" />}
+                  placeholder={<Navigate to="/dashboard/data/processing/tasks" />}
                 >
-                  <Redirect to="/dashboard/data/processing/csv_mapper" />
+                  <Navigate to="/dashboard/data/processing/csv_mapper" />
                 </Security>
               )}
             >
-              <Redirect to="/dashboard/data/processing/automation" />
+              <Navigate to="/dashboard/data/processing/automation" />
             </Security>
-          )}
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/processing/automation"
-          component={Playbooks}
+        <Route
+          path="/processing/automation"
+          Component={boundaryWrapper(Playbooks)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/processing/automation/:playbookId"
-          component={RootPlaybook}
+        <Route
+          path="/processing/automation/:playbookId"
+          Component={boundaryWrapper(RootPlaybook)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/processing/csv_mapper"
-          render={() => (
+        <Route
+          path="/processing/csv_mapper"
+          element={
             <Security
               needs={[TAXIIAPI_SETCSVMAPPERS]}
-              placeholder={<Redirect to="/dashboard" />}
+              placeholder={<Navigate to="/dashboard" />}
             >
               <CsvMappers/>
             </Security>
-          )}
+          }
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/data/processing/tasks"
-          render={() => (
+        <Route
+          path="/processing/tasks"
+          element={
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={<Redirect to="/dashboard" />}
+              placeholder={<Navigate to="/dashboard" />}
             >
               <Tasks />
             </Security>
-          )}
+          }
         />
       </Routes>
     </Suspense>
