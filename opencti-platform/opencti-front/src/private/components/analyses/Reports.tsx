@@ -3,7 +3,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -182,9 +182,9 @@ const Reports: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Report'>
         <ReportCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

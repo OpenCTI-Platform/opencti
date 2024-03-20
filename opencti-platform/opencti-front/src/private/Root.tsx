@@ -84,6 +84,26 @@ const rootPrivateQuery = graphql`
       capabilities {
         name
       }
+      groups {
+        edges {
+          node {
+            name
+            roles {
+              edges {
+                node {
+                  name
+                  capabilities_overrides {
+                    entity
+                    capabilities {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       unit_system
       default_dashboards {
         id

@@ -137,7 +137,7 @@ type DataComponentEdge {
 
 # Queries
 type Query {
-    dataComponent(id: String!): DataComponent @auth(for: [KNOWLEDGE])
+    dataComponent(id: String!): DataComponent @auth(for: [KNOWLEDGE], type: DataComponent)
     dataComponents(
         first: Int
         after: ID
@@ -145,7 +145,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): DataComponentConnection @auth(for: [KNOWLEDGE])
+    ): DataComponentConnection @auth(for: [KNOWLEDGE], type: DataComponent)
 }
 
 # Mutations
@@ -172,11 +172,11 @@ input DataComponentAddInput {
 }
 
 type Mutation {
-    dataComponentAdd(input: DataComponentAddInput!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentContextClean(id: ID!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentAdd(input: DataComponentAddInput!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
+    dataComponentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: DataComponent)
+    dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
+    dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
+    dataComponentContextClean(id: ID!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
+    dataComponentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
+    dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE], type: DataComponent)
 }

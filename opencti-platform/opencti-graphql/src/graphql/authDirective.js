@@ -6,6 +6,45 @@ import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
+import { logApp } from '../config/conf';
+
+/**
+ * Retrieves the user's capabilities for an optionally specified entity type.
+ * @param {*} user The user
+ * @param {string?} entityType The entity type to look for in the user's role's overrides.
+ * @returns {Record<string | number | symbol, any>} The user's capabilities
+ */
+const getUserCapabilities = (user, entityType = null) => {
+  let userCapabilities = map((capability) => capability.name, user?.capabilities);
+
+  // Handle bypass
+  if (userCapabilities.includes(BYPASS) || user?.id === OPENCTI_ADMIN_UUID) {
+    return userCapabilities;
+  }
+
+  try {
+    if (entityType) {
+      // Find the overrides of the user's role
+      const overrides = user?.roles?.flatMap((role) => role?.capabilities_overrides);
+
+      // Filter the overrides to be of the specified entity type
+      const filteredOverrides = overrides
+        ?.filter((capability) => capability?.entity.replace(/-/g, '') === entityType);
+
+      // Map the override capabilities to just their names
+      userCapabilities = map(
+        (capability) => capability.name,
+        filteredOverrides?.[0]?.capabilities
+      );
+    }
+  } catch (error) {
+    logApp.error(
+      '[AUTH] Error occurred retrieving entity override capabilities',
+      { error }
+    );
+  }
+  return userCapabilities;
+};
 
 // eslint-disable-next-line
 export const authDirectiveBuilder = (directiveName) => {
@@ -24,7 +63,7 @@ export const authDirectiveBuilder = (directiveName) => {
         const directive = getDirective(schema, fieldConfig, directiveName);
         const authDirective = directive?.[0] ?? typeDirectiveArgumentMaps[typeName];
         if (authDirective) {
-          const { for: requiredCapabilities, and: requiredAll } = authDirective;
+          const { for: requiredCapabilities, and: requiredAll, type: entityType } = authDirective;
           if (requiredCapabilities) {
             const { resolve = defaultFieldResolver } = fieldConfig;
             fieldConfig.resolve = (source, args, context, info) => {
@@ -52,7 +91,7 @@ export const authDirectiveBuilder = (directiveName) => {
                 return resolve(source, args, context, info);
               }
               // Compute user capabilities
-              const userCapabilities = map((c) => c.name, user.capabilities);
+              const userCapabilities = getUserCapabilities(user, entityType);
               // Accept everything if bypass capability or the system user (protection).
               const shouldBypass = userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
               if (shouldBypass) {

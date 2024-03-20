@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import CountriesLines, { countriesLinesQuery } from './countries/CountriesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CountryCreation from './countries/CountryCreation';
 import { CountriesLinesPaginationQuery, CountriesLinesPaginationQuery$variables } from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
@@ -107,9 +107,9 @@ const Countries: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Countries'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Country'>
         <CountryCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

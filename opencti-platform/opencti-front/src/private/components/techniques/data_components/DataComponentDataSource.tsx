@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
 import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 
 const dataComponentDataSourcesRemoveMutation = graphql`
   mutation DataComponentDataSourcesRemoveMutation(
@@ -89,7 +89,7 @@ DataComponentDataSourcesProps
             </ListItemIcon>
             <ListItemText primary={data.dataSource?.name} />
             <ListItemSecondaryAction>
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Data-Component'>
                 <IconButton
                   aria-label="Remove"
                   onClick={removeDataSource}
@@ -97,7 +97,7 @@ DataComponentDataSourcesProps
                 >
                   <LinkOff />
                 </IconButton>
-              </Security>
+              </KnowledgeSecurity>
             </ListItemSecondaryAction>
           </ListItem>
         )}

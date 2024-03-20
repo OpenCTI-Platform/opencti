@@ -169,7 +169,7 @@ type CaseIncidentEdge {
 
 # Queries
 type Query {
-  caseIncident(id: String!): CaseIncident @auth(for: [KNOWLEDGE])
+  caseIncident(id: String!): CaseIncident @auth(for: [KNOWLEDGE], type: CaseIncident)
   caseIncidents(
     first: Int
     after: ID
@@ -179,7 +179,7 @@ type Query {
     search: String
     toStix: Boolean
   ): CaseIncidentConnection @auth(for: [KNOWLEDGE])
-  caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: CaseIncident)
 }
 
 # Mutations
@@ -214,6 +214,6 @@ input CaseIncidentAddInput {
 }
 
 type Mutation {
-  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
-  caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE], type: CaseIncident)
+  caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: CaseIncident)
 }

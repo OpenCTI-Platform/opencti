@@ -19,7 +19,7 @@ import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
@@ -67,15 +67,16 @@ class IntrusionSetLocationsComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Originates from')}
         </Typography>
-        <Security
+        <KnowledgeSecurity
           needs={[KNOWLEDGE_KNUPDATE]}
+          entity='Intrusion-Set'
           placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocations
             intrusionSet={intrusionSet}
             intrusionSetLocations={intrusionSet.locations.edges}
           />
-        </Security>
+        </KnowledgeSecurity>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {intrusionSet.locations.edges.length === 0 && (
@@ -116,7 +117,7 @@ class IntrusionSetLocationsComponent extends Component {
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Intrusion-Set'>
                     <IconButton
                       aria-label="Remove"
                       onClick={this.removeLocation.bind(this, locationEdge)}
@@ -124,7 +125,7 @@ class IntrusionSetLocationsComponent extends Component {
                     >
                       <LinkOff />
                     </IconButton>
-                  </Security>
+                  </KnowledgeSecurity>
                 </ListItemSecondaryAction>
               </ListItem>
             );

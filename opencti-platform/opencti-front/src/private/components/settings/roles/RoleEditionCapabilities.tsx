@@ -10,6 +10,8 @@ import ListSubheader from '@mui/material/ListSubheader';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
+import { Tooltip } from '@mui/material';
+import ErrorIcon from '@mui/icons-material/Error';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -57,6 +59,14 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
     }
   }
 `;
+
+export const overridableCapabilities = [
+  'KNOWLEDGE',
+  'KNOWLEDGE_KNPARTICIPATE',
+  'KNOWLEDGE_KNUPDATE',
+  'KNOWLEDGE_KNUPDATE_KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
+  'KNOWLEDGE_KNUPDATE_KNDELETE',
+];
 
 interface RoleEditionCapabilitiesComponentProps {
   role: RoleEditionCapabilities_role$data;
@@ -133,6 +143,20 @@ RoleEditionCapabilitiesComponentProps
             );
             const isDisabled = matchingCapabilities.length > 0;
             const isChecked = isDisabled || roleCapability !== undefined;
+
+            const overrides = [];
+            if (overridableCapabilities.includes(capability.name)) {
+              for (const override of role.capabilities_overrides ?? []) {
+                const overriddenCapabilities = override?.capabilities ?? [];
+                let isOverridden = false;
+                for (const c of overriddenCapabilities) {
+                  if (c?.name === capability.name) isOverridden = true;
+                }
+                if (!isOverridden && isChecked) overrides.push(override?.entity);
+                else if (isOverridden && !isChecked) overrides.push(override?.entity);
+              }
+            }
+
             return (
               <ListItem
                 key={capability.name}
@@ -143,6 +167,11 @@ RoleEditionCapabilitiesComponentProps
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
+                {overrides.length > 0
+                  && <Tooltip title={`${t_i18n('Except for')} ${overrides.join(', ')}`} placement='left'>
+                    <ErrorIcon color='error' />
+                  </Tooltip>
+                }
                 <ListItemSecondaryAction>
                   <Checkbox
                     onChange={(event) => handleToggle(capability.id, event)}
@@ -171,6 +200,14 @@ const RoleEditionCapabilities = createFragmentContainer(
           id
           name
           description
+        }
+        capabilities_overrides {
+          entity
+          capabilities {
+            id
+            name
+            description
+          }
         }
       }
     `,

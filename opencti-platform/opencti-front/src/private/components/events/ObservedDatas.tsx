@@ -3,7 +3,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
@@ -162,10 +162,12 @@ const ObservedDatas: FunctionComponent = () => {
       {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
-          {renderLines(platformModuleHelpers)}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-          </Security>
+          <div>
+            {renderLines(platformModuleHelpers)}
+            <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Observed-Data'>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+            </KnowledgeSecurity>
+          </div>
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

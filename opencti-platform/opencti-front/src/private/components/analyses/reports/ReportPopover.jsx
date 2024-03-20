@@ -7,8 +7,8 @@ import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObj
 import { useFormatter } from '../../../../components/i18n';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer } from '../../../../relay/environment';
 import ReportPopoverDeletion from './ReportPopoverDeletion';
 
@@ -40,47 +40,51 @@ const ReportPopover = ({ id }) => {
     setDisplayEnrichment(false);
   };
   return (
-    <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-          <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-      <ReportPopoverDeletion
-        reportId={id}
-        displayDelete={displayDelete}
-        handleClose={handleClose}
-        handleCloseDelete={handleCloseDelete}
-      />
-      <QueryRenderer
-        query={reportEditionQuery}
-        variables={{ id }}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <ReportEditionContainer
-                report={props.report}
-                handleClose={handleCloseEdit}
-                open={displayEdit}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
-    </>
+    <div>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Report'>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Report'>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Report'>
+            <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Report'>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </KnowledgeSecurity>
+        </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+        <ReportPopoverDeletion
+          reportId={id}
+          displayDelete={displayDelete}
+          handleClose={handleClose}
+          handleCloseDelete={handleCloseDelete}
+        />
+        <QueryRenderer
+          query={reportEditionQuery}
+          variables={{ id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <ReportEditionContainer
+                  report={props.report}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      </KnowledgeSecurity>
+    </div>
   );
 };
 

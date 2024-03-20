@@ -6398,6 +6398,47 @@ export enum EntitySettingsOrdering {
   TargetType = 'target_type'
 }
 
+export enum EntityType {
+  AdministrativeArea = 'AdministrativeArea',
+  AttackPattern = 'AttackPattern',
+  Campaign = 'Campaign',
+  CaseIncident = 'CaseIncident',
+  CaseRfi = 'CaseRfi',
+  CaseRft = 'CaseRft',
+  Channel = 'Channel',
+  City = 'City',
+  Country = 'Country',
+  CourseOfAction = 'CourseOfAction',
+  DataComponent = 'DataComponent',
+  DataSource = 'DataSource',
+  Event = 'Event',
+  ExternalReference = 'ExternalReference',
+  Feedback = 'Feedback',
+  Grouping = 'Grouping',
+  Incident = 'Incident',
+  Indicator = 'Indicator',
+  Individual = 'Individual',
+  Infrastructure = 'Infrastructure',
+  IntrusionSet = 'IntrusionSet',
+  Malware = 'Malware',
+  MalwareAnalysis = 'MalwareAnalysis',
+  Narrative = 'Narrative',
+  Note = 'Note',
+  ObservedData = 'ObservedData',
+  Organization = 'Organization',
+  Position = 'Position',
+  Region = 'Region',
+  Report = 'Report',
+  Sector = 'Sector',
+  StixSightingRelationship = 'StixSightingRelationship',
+  System = 'System',
+  Task = 'Task',
+  ThreatActorGroup = 'ThreatActorGroup',
+  ThreatActorIndividual = 'ThreatActorIndividual',
+  Tool = 'Tool',
+  Vulnerability = 'Vulnerability'
+}
+
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -20861,6 +20902,7 @@ export type RetentionRuleEditMutationsFieldPatchArgs = {
 export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
   capabilities?: Maybe<Array<Maybe<Capability>>>;
+  capabilities_overrides?: Maybe<Array<Maybe<RoleEntityOverride>>>;
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -20919,6 +20961,12 @@ export type RoleEditMutationsRelationAddArgs = {
 export type RoleEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+export type RoleEntityOverride = {
+  __typename?: 'RoleEntityOverride';
+  capabilities?: Maybe<Array<Maybe<Capability>>>;
+  entity?: Maybe<Scalars['String']['output']>;
 };
 
 export enum RolesOrdering {
@@ -23634,6 +23682,7 @@ export type SubType = {
   __typename?: 'SubType';
   id: Scalars['ID']['output'];
   label: Scalars['String']['output'];
+  overridable?: Maybe<Scalars['Boolean']['output']>;
   settings?: Maybe<EntitySetting>;
   statuses: Array<Status>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -28076,6 +28125,7 @@ export type ResolversTypes = ResolversObject<{
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
   EntitySettingsOrdering: EntitySettingsOrdering;
+  EntityType: EntityType;
   Event: ResolverTypeWrapper<BasicStoreEntityEvent>;
   EventAddInput: EventAddInput;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
@@ -28406,6 +28456,7 @@ export type ResolversTypes = ResolversObject<{
   RoleConnection: ResolverTypeWrapper<RoleConnection>;
   RoleEdge: ResolverTypeWrapper<RoleEdge>;
   RoleEditMutations: ResolverTypeWrapper<RoleEditMutations>;
+  RoleEntityOverride: ResolverTypeWrapper<RoleEntityOverride>;
   RolesOrdering: RolesOrdering;
   Rule: ResolverTypeWrapper<Rule>;
   RuleExecutionError: ResolverTypeWrapper<RuleExecutionError>;
@@ -29114,6 +29165,7 @@ export type ResolversParentTypes = ResolversObject<{
   RoleConnection: RoleConnection;
   RoleEdge: RoleEdge;
   RoleEditMutations: RoleEditMutations;
+  RoleEntityOverride: RoleEntityOverride;
   Rule: Rule;
   RuleExecutionError: RuleExecutionError;
   RuleManager: RuleManager;
@@ -29315,6 +29367,7 @@ export type ResolversParentTypes = ResolversObject<{
 export type AuthDirectiveArgs = {
   and?: Maybe<Scalars['Boolean']['input']>;
   for?: Maybe<Array<Maybe<Capabilities>>>;
+  type?: Maybe<EntityType>;
 };
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
@@ -35395,6 +35448,7 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
+  capabilities_overrides?: Resolver<Maybe<Array<Maybe<ResolversTypes['RoleEntityOverride']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -35426,6 +35480,12 @@ export type RoleEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type RoleEntityOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['RoleEntityOverride'] = ResolversParentTypes['RoleEntityOverride']> = ResolversObject<{
+  capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -36439,6 +36499,7 @@ export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  overridable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   settings?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType>;
   statuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -38133,6 +38194,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RoleConnection?: RoleConnectionResolvers<ContextType>;
   RoleEdge?: RoleEdgeResolvers<ContextType>;
   RoleEditMutations?: RoleEditMutationsResolvers<ContextType>;
+  RoleEntityOverride?: RoleEntityOverrideResolvers<ContextType>;
   Rule?: RuleResolvers<ContextType>;
   RuleExecutionError?: RuleExecutionErrorResolvers<ContextType>;
   RuleManager?: RuleManagerResolvers<ContextType>;

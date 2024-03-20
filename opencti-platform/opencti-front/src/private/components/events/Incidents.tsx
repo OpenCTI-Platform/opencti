@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import IncidentsLines, { incidentsLinesPaginationQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -179,9 +179,9 @@ const Incidents: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Incident'>
         <IncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

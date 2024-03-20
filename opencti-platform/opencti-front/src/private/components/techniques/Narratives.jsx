@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativeCreation from './narratives/NarrativeCreation';
 import SearchInput from '../../../components/SearchInput';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -76,9 +76,9 @@ class Narratives extends Component {
             <NarrativesLines data={props} keyword={searchTerm} />
           )}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Narrative'>
           <NarrativeCreation />
-        </Security>
+        </KnowledgeSecurity>
       </>
     );
   }

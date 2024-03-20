@@ -5,7 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -61,9 +61,9 @@ class IndicatorComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={indicator.id}
           defaultMarkings={indicator.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Indicator'>
           <IndicatorEdition indicatorId={indicator.id} />
-        </Security>
+        </KnowledgeSecurity>
       </>
     );
   }

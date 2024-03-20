@@ -3,6 +3,7 @@ import { filter, includes } from 'ramda';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 import useAuth from './hooks/useAuth';
 import useGranted, { BYPASS, KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from './hooks/useGranted';
+import useKnowledgeGranted from './hooks/useKnowledgeGranted';
 
 export const CAPABILITY_INFORMATION = {
   [KNOWLEDGE_KNUPDATE_KNORGARESTRICT]:
@@ -15,6 +16,10 @@ interface SecurityProps {
   hasAccess?: boolean;
   matchAll?: boolean;
   placeholder?: ReactElement;
+}
+
+interface KnowledgeSecurityProps extends SecurityProps {
+  entity: string;
 }
 
 interface DataSecurityProps extends SecurityProps {
@@ -56,6 +61,18 @@ const Security: FunctionComponent<SecurityProps> = ({
   placeholder = <span />,
 }) => {
   const isGranted = useGranted(needs, matchAll);
+  return isGranted && hasAccess ? children : placeholder;
+};
+
+export const KnowledgeSecurity: FunctionComponent<KnowledgeSecurityProps> = ({
+  needs,
+  entity,
+  matchAll = false,
+  hasAccess = true,
+  children,
+  placeholder = <span />,
+}) => {
+  const isGranted = useKnowledgeGranted(needs, entity, matchAll);
   return isGranted && hasAccess ? children : placeholder;
 };
 

@@ -35,7 +35,10 @@ export const isOnlyOrganizationAdmin = () => {
   return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS);
 };
 
-const useGranted = (capabilities: string[], matchAll = false): boolean => {
+const useGranted = (
+  capabilities: string[],
+  matchAll = false,
+): boolean => {
   const { me } = useAuth();
 
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);

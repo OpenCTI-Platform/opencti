@@ -169,7 +169,7 @@ type CaseRftEdge {
 
 # Queries
 type Query {
-  caseRft(id: String!): CaseRft @auth(for: [KNOWLEDGE])
+  caseRft(id: String!): CaseRft @auth(for: [KNOWLEDGE], type: CaseRft)
   caseRfts(
     first: Int
     after: ID
@@ -178,8 +178,8 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): CaseRftConnection @auth(for: [KNOWLEDGE])
-  caseRftContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  ): CaseRftConnection @auth(for: [KNOWLEDGE], type: CaseRft)
+  caseRftContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: CaseRft)
 }
 
 # Mutations
@@ -214,6 +214,6 @@ input CaseRftAddInput {
 }
 
 type Mutation {
-  caseRftAdd(input: CaseRftAddInput!): CaseRft @auth
-  caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRftAdd(input: CaseRftAddInput!): CaseRft @auth(for: [KNOWLEDGE_KNUPDATE], type: CaseRft)
+  caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: CaseRft)
 }

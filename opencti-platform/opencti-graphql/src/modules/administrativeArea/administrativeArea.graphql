@@ -139,7 +139,7 @@ type AdministrativeAreaEdge {
 
 # Queries
 type Query {
-    administrativeArea(id: String!): AdministrativeArea @auth(for: [KNOWLEDGE])
+    administrativeArea(id: String!): AdministrativeArea @auth(for: [KNOWLEDGE], type: AdministrativeArea)
     administrativeAreas(
         first: Int
         after: ID
@@ -147,7 +147,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])
+    ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE], type: AdministrativeArea)
 }
 
 # Mutations
@@ -176,11 +176,11 @@ input AdministrativeAreaAddInput {
 }
 
 type Mutation {
-    administrativeAreaAdd(input: AdministrativeAreaAddInput!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaContextClean(id: ID!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaAdd(input: AdministrativeAreaAddInput!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
+    administrativeAreaDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: AdministrativeArea)
+    administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
+    administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
+    administrativeAreaContextClean(id: ID!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
+    administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
+    administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE], type: AdministrativeArea)
 }

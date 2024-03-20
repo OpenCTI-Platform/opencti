@@ -17,7 +17,7 @@ import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
@@ -51,8 +51,9 @@ class ThreatActorIndividualLocationsComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Located at')}
         </Typography>
-        <Security
+        <KnowledgeSecurity
           needs={[KNOWLEDGE_KNUPDATE]}
+          entity='Threat-Actor-Individual'
           placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocationsThreatActorIndividual
@@ -61,7 +62,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
               threatActorIndividual.locations.edges
             }
           />
-        </Security>
+        </KnowledgeSecurity>
         <div className="clearfix" />
         <FieldOrEmpty source={threatActorIndividual.locations}>
           <List style={{ marginTop: -10 }}>
@@ -98,7 +99,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   <ListItemText primary={location.name} />
                   {types.includes('manual') ? (
                     <ListItemSecondaryAction style={{ right: 0 }} >
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
                         <IconButton
                           aria-label="Remove"
                           onClick={() => this.removeLocation(locationEdge)}
@@ -106,7 +107,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                         >
                           <LinkOff />
                         </IconButton>
-                      </Security>
+                      </KnowledgeSecurity>
                     </ListItemSecondaryAction>
                   ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
                 </ListItem>

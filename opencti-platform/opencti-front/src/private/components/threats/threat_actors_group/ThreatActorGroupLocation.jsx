@@ -17,7 +17,7 @@ import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AddLocationsThreatActorGroup from './AddLocationsThreatActorGroup';
 import { addLocationsThreatActorGroupMutationRelationDelete } from './AddLocationsThreatActorGroupLines';
@@ -50,15 +50,16 @@ class ThreatActorGroupLocationsComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Located at')}
         </Typography>
-        <Security
+        <KnowledgeSecurity
           needs={[KNOWLEDGE_KNUPDATE]}
+          entity='Threat-Actor-Group'
           placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocationsThreatActorGroup
             threatActorGroup={threatActorGroup}
             threatActorGroupLocations={threatActorGroup.locations.edges}
           />
-        </Security>
+        </KnowledgeSecurity>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {threatActorGroup.locations.edges.length === 0 && (
@@ -101,7 +102,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                 <ListItemText primary={location.name} />
                 {types.includes('manual') ? (
                   <ListItemSecondaryAction>
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Group'>
                       <IconButton
                         aria-label="Remove"
                         onClick={() => this.removeLocation(locationEdge)}
@@ -109,7 +110,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       >
                         <LinkOff />
                       </IconButton>
-                    </Security>
+                    </KnowledgeSecurity>
                   </ListItemSecondaryAction>
                 ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
               </ListItem>

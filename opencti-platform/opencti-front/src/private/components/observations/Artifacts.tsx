@@ -3,7 +3,7 @@ import { ArtifactLine_node$data } from '@components/observations/artifacts/__gen
 import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
 import ListLines from '../../../components/list_lines/ListLines';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
@@ -181,12 +181,14 @@ const Artifacts: FunctionComponent = () => {
     <div data-testid="artifact-page">
       <ExportContextProvider>
         <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationOptions={queryPaginationOptions}
-          />
-        </Security>
+        <div>
+          {renderLines()}
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Artifact'>
+            <ArtifactCreation
+              paginationOptions={queryPaginationOptions}
+            />
+          </KnowledgeSecurity>
+        </div>
       </ExportContextProvider>
     </div>
   );

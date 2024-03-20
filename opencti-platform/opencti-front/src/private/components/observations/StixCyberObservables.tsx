@@ -1,7 +1,6 @@
-import { FunctionComponent } from 'react';
-import { React } from 'mdi-material-ui';
+import React, { FunctionComponent } from 'react';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, { stixCyberObservablesLinesQuery, stixCyberObservablesLinesSearchQuery } from './stix_cyber_observables/StixCyberObservablesLines';
@@ -191,7 +190,7 @@ const StixCyberObservables: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Stix-Cyber-Observable'>
         <StixCyberObservableCreation
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}
@@ -203,7 +202,7 @@ const StixCyberObservables: FunctionComponent = () => {
           speeddial={false}
           inputValue={undefined}
         />
-      </Security>
+      </KnowledgeSecurity>
     </ExportContextProvider>
   );
 };

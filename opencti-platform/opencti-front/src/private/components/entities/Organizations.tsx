@@ -7,7 +7,7 @@ import { OrganizationLineDummy } from '@components/entities/organizations/Organi
 import ListLines from '../../../components/list_lines/ListLines';
 import OrganizationsLines, { organizationsLinesQuery } from './organizations/OrganizationsLines';
 import OrganizationCreation from './organizations/OrganizationCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -121,9 +121,9 @@ const Organizations = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Organizations'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Organization'>
         <OrganizationCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

@@ -6,7 +6,7 @@ import GroupingDetails from './GroupingDetails';
 import GroupingEdition from './GroupingEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -43,9 +43,9 @@ const GroupingComponent = ({ grouping }) => {
         stixCoreObjectOrStixCoreRelationshipId={grouping.id}
         defaultMarkings={grouping.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Grouping'>
         <GroupingEdition groupingId={grouping.id} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

@@ -15,8 +15,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
-import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { CollaborativeSecurity, KnowledgeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import Transition from '../../../../components/Transition';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
@@ -96,77 +96,85 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     handleClose();
   };
   return (
-    <>
-      {variant === 'inLine' ? (
-        <IconButton
-          onClick={handleOpen}
-          aria-haspopup="true"
-          size={size || 'large'}
-          style={{ marginTop: size === 'small' ? -3 : 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-      ) : (
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-      )}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        {handleOpenRemoveExternal && (
-          <MenuItem onClick={handleOpenRemove}>
-            {t_i18n('Remove from this entity')}
-          </MenuItem>
+    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Note'>
+      <>
+        {variant === 'inLine' ? (
+          <IconButton
+            onClick={handleOpen}
+            aria-haspopup="true"
+            size={size || 'large'}
+            style={{ marginTop: size === 'small' ? -3 : 3 }}
+            color="primary"
+          >
+            <MoreVert />
+          </IconButton>
+        ) : (
+          <ToggleButton
+            value="popover"
+            size="small"
+            onClick={handleOpen}
+          >
+            <MoreVert fontSize="small" color="primary" />
+          </ToggleButton>
         )}
-        <CollaborativeSecurity
-          data={note}
-          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </KnowledgeSecurity>
+          {handleOpenRemoveExternal && (
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Note'>
+            <MenuItem onClick={handleOpenRemove}>
+              {t_i18n('Remove from this entity')}
+            </MenuItem>
+          </KnowledgeSecurity>
+          )}
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Note'>
+            <CollaborativeSecurity
+              data={note}
+              needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+            >
+              <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            </CollaborativeSecurity>
+          </KnowledgeSecurity>
+        </Menu>
+        <Dialog
+          open={displayDelete}
+          PaperProps={{ elevation: 1 }}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
         >
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </CollaborativeSecurity>
-      </Menu>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this note?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <QueryRenderer
-        query={noteEditionQuery}
-        variables={{ id }}
-        render={({ props }: { props: NoteEditionContainerQuery$data }) => {
-          if (props && props.note) {
-            return (
-              <NoteEditionContainer
-                note={props.note}
-                handleClose={handleCloseEdit}
-                open={displayEdit}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
-    </>
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this note?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <QueryRenderer
+          query={noteEditionQuery}
+          variables={{ id }}
+          render={({ props }: { props: NoteEditionContainerQuery$data }) => {
+            if (props && props.note) {
+              return (
+                <NoteEditionContainer
+                  note={props.note}
+                  handleClose={handleCloseEdit}
+                  open={displayEdit}
+                />
+              );
+            }
+            return <div />;
+          }}
+        />
+      </>
+    </KnowledgeSecurity>
   );
 };
 

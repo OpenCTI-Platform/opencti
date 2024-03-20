@@ -17,7 +17,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { ThreatActorGroupEditionQuery } from './ThreatActorGroupEdition';
 import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
 
@@ -100,7 +100,7 @@ class ThreatActorGroupPopover extends Component {
   render() {
     const { t, id } = this.props;
     return (
-      <>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Group'>
         <ToggleButton
           value="popover"
           size="small"
@@ -114,21 +114,21 @@ class ThreatActorGroupPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Group'>
             <MenuItem onClick={this.handleOpenEdit.bind(this)}>
               {t('Update')}
             </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Threat-Actor-Group'>
             <MenuItem onClick={this.handleOpenEnrichment.bind(this)}>
               {t('Enrich')}
             </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Group'>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
-          </Security>
+          </KnowledgeSecurity>
         </Menu>
         <StixCoreObjectEnrichment stixCoreObjectId={id} open={this.state.displayEnrichment} handleClose={this.handleCloseEnrichment.bind(this)} />
         <Dialog
@@ -175,7 +175,7 @@ class ThreatActorGroupPopover extends Component {
             return <div />;
           }}
         />
-      </>
+      </KnowledgeSecurity>
     );
   }
 }

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import PositionCreation from './positions/PositionCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { PositionsLinesPaginationQuery, PositionsLinesPaginationQuery$variables } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
@@ -107,9 +107,9 @@ const Positions: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Position'>
         <PositionCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };

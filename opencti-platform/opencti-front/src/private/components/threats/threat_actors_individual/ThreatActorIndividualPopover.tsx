@@ -13,7 +13,7 @@ import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
 import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
+import { KnowledgeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -86,57 +86,59 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
     });
   };
   return (
-    <>
-      <ToggleButton
-        value="popover"
-        size="small"
-        onClick={handleOpen}
-      >
-        <MoreVert fontSize="small" color="primary" />
-      </ToggleButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-          <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
-      </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this threat actor individual?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {queryRef && (
-        <React.Suspense fallback={<div />}>
-          <ThreatActorIndividualEditionContainer
-            queryRef={queryRef}
-            handleClose={handleCloseEdit}
-            open={displayEdit}
-          />
-        </React.Suspense>
-      )}
-    </>
+    <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Individual'>
+      <>
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Threat-Actor-Individual'>
+            <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNENRICHMENT]} entity='Threat-Actor-Individual'>
+            <MenuItem onClick={handleOpenEnrichment}>{t_i18n('Enrich')}</MenuItem>
+          </KnowledgeSecurity>
+          <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} entity='Threat-Actor-Individual'>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </KnowledgeSecurity>
+        </Menu>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+        <Dialog
+          open={displayDelete}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this threat actor individual?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete} disabled={deleting}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {queryRef && (
+          <React.Suspense fallback={<div />}>
+            <ThreatActorIndividualEditionContainer
+              queryRef={queryRef}
+              handleClose={handleCloseEdit}
+              open={displayEdit}
+            />
+          </React.Suspense>
+        )}
+      </>
+    </KnowledgeSecurity>
   );
 };
 

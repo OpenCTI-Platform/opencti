@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import AdministrativeAreasLines, { administrativeAreasLinesQuery } from './administrative_areas/AdministrativeAreasLines';
 import AdministrativeAreaCreation from './administrative_areas/AdministrativeAreaCreation';
-import Security from '../../../utils/Security';
+import { KnowledgeSecurity } from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { AdministrativeAreaLineDummy } from './administrative_areas/AdministrativeAreaLine';
@@ -113,9 +113,9 @@ const AdministrativeAreas: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Administrative areas'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <KnowledgeSecurity needs={[KNOWLEDGE_KNUPDATE]} entity='Administrative-Area'>
         <AdministrativeAreaCreation paginationOptions={paginationOptions} />
-      </Security>
+      </KnowledgeSecurity>
     </>
   );
 };
