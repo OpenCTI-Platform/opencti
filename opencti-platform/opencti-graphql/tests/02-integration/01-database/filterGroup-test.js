@@ -1459,7 +1459,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'and',
           filters: [{
             key: 'description',
-            // Look for this description value'Report for testing purposes (random data).'
+            // Look for this description value 'Report for testing purposes (random data).'
             values: ['for rt testing (rando purposes '],
             operator: 'search',
             mode: 'or',
