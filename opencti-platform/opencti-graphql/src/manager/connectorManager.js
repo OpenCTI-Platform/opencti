@@ -67,7 +67,10 @@ const closeOldWorks = async (context, connector) => {
       filters,
       noFiltersChecking: true,
       types: ['Work'],
+      orderBy: 'timestamp',
       connectionFormat: false,
+      baseData: true,
+      baseFields: ['internal_id', 'timestamp'],
       callback: queryCallback
     });
   }
@@ -93,8 +96,11 @@ const deleteCompletedWorks = async (context, connector) => {
   await elList(context, SYSTEM_USER, [INDEX_HISTORY], {
     filters,
     types: ['Work'],
+    orderBy: 'timestamp',
     noFiltersChecking: true,
     connectionFormat: false,
+    baseData: true,
+    baseFields: ['internal_id'],
     callback: queryCallback
   });
 };
