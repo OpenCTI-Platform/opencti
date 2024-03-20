@@ -92,7 +92,6 @@ export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
             message
           }
         }
-        objectMarking
       }
     }
   }

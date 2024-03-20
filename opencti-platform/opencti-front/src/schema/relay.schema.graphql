@@ -851,7 +851,6 @@ type File {
   lastModified: DateTime
   lastModifiedSinceMin: Int
   metaData: FileMetadata
-  objectMarking: [String]
   uploadStatus: State!
   works: [Work]
 }

@@ -507,6 +507,7 @@ const FileLine = createFragmentContainer(FileLineComponent, { // objectMarking -
         mimetype
         list_filters
         external_reference_id
+        file_markings
         messages {
           timestamp
           message
@@ -517,7 +518,6 @@ const FileLine = createFragmentContainer(FileLineComponent, { // objectMarking -
         }
         labels
       }
-      objectMarking 
       ...FileWork_file
     }
   `,
