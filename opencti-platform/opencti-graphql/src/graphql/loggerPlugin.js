@@ -4,7 +4,7 @@ import { stripIgnoredCharacters } from 'graphql/index.js';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
+import { ALREADY_DELETED_ERROR, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR, VALIDATION_ERROR } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
@@ -88,7 +88,11 @@ export default {
         if (isCallError) {
           const currentError = head(context.errors);
           const callError = currentError.originalError ? currentError.originalError : currentError;
-          const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && callError.name !== UNSUPPORTED_ERROR;
+          const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && ![
+            UNSUPPORTED_ERROR,
+            ALREADY_DELETED_ERROR,
+            VALIDATION_ERROR,
+          ].includes(callError.name);
           const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED]);
           // Don't log for a simple missing authentication
           if (isAuthenticationCall) {
