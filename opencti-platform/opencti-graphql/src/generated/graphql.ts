@@ -7369,7 +7369,6 @@ export type File = {
   lastModifiedSinceMin?: Maybe<Scalars['Int']['output']>;
   metaData?: Maybe<FileMetadata>;
   name: Scalars['String']['output'];
-  objectMarking?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   size?: Maybe<Scalars['Int']['output']>;
   uploadStatus: State;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -32286,7 +32285,6 @@ export type FileResolvers<ContextType = any, ParentType extends ResolversParentT
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   metaData?: Resolver<Maybe<ResolversTypes['FileMetadata']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uploadStatus?: Resolver<ResolversTypes['State'], ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType>;
