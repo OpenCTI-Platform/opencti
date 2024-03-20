@@ -445,9 +445,10 @@ StixDomainObjectThreatKnowledgeProps
             'createdBy',
             'objectLabel',
             'created',
-            'targets',
+            'toId',
           ]}
           handleAddFilter={helpers.handleAddFilter}
+          searchContext={{ entityTypes: ['stix-core-relationship'] }}
         />
         <IconButton color="primary" onClick={handleOpenTimeField} size="small">
           <SettingsOutlined fontSize="small" />
@@ -508,6 +509,7 @@ StixDomainObjectThreatKnowledgeProps
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        entityTypes={['stix-core-relationship']}
       />
       <QueryRenderer
         query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
