@@ -627,14 +627,32 @@ export const getAvailableOperatorForFilter = (
 
 export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
   const { filterKeysSchema } = useAuth().schema;
+  // 1. case one entity type
   if (entityTypes.length === 1) {
     return filterKeysSchema.get(entityTypes[0]) ?? new Map();
   }
+  // 2. case several entity types
   const filterKeysMap = new Map();
   entityTypes.forEach((entityType) => {
     const currentMap = filterKeysSchema.get(entityType);
-    currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+    currentMap?.forEach((value, key) => {
+      if (filterKeysMap.has(key)) { // add entity type in subEntityTypes of the filter definition
+        filterKeysMap.set(key, { ...value, subEntityTypes: filterKeysMap.get(key).subEntityTypes.concat([entityType]) });
+      } else { // add the filter definition in the map
+        filterKeysMap.set(key, value);
+      }
+    });
   });
+  if (entityTypes.length > 0) { // add entity_type filter if several types are given (entity_type filter already present for abstract types)
+    filterKeysMap.set('entity_type', {
+      filterKey: 'entity_type',
+      type: 'string',
+      label: 'Entity type',
+      multiple: true,
+      subEntityTypes: entityTypes,
+      elementsForFilterValuesSearch: [],
+    });
+  }
   return filterKeysMap;
 };
 
