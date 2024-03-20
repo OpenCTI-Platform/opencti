@@ -62,13 +62,13 @@ class RootDashboard extends Component {
                 return (
                   <Routes>
                     <Route
-                      path="/dashboards/:workspaceId/*"
-                      element={(
+                      path="/"
+                      element={
                         <Dashboard
                           workspace={props.workspace}
                           settings={props.settings}
                         />
-                    )}
+                    }
                     />
                   </Routes>
                 );
