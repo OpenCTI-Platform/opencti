@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
@@ -60,15 +60,17 @@ class RootDashboard extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <Route
-                    path="/dashboards/:workspaceId/*"
-                    element={(
-                      <Dashboard
-                        workspace={props.workspace}
-                        settings={props.settings}
-                      />
+                  <Routes>
+                    <Route
+                      path="/dashboards/:workspaceId/*"
+                      element={(
+                        <Dashboard
+                          workspace={props.workspace}
+                          settings={props.settings}
+                        />
                     )}
-                  />
+                    />
+                  </Routes>
                 );
               }
               return <ErrorNotFound />;
