@@ -108,14 +108,14 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/events/*" Component={boundaryWrapper(RootEvents)} />
               <Route path="/threats/*" Component={boundaryWrapper(RootThreats)} />
               <Route path="/arsenal/*" Component={boundaryWrapper(RootArsenal)} />
-              {/* Need to refactor below */}
               <Route path="/techniques/*" Component={boundaryWrapper(RootTechnique)} />
+              {/* Need to refactor below */}
               <Route
                 path="/entities/*"
                 Component={boundaryWrapper(RootEntities)}
               />
               <Route
-                path="/locations"
+                path="/locations/*"
                 Component={boundaryWrapper(RootLocation)}
               />
               <Route path="/data" Component={boundaryWrapper(RootData)} />
