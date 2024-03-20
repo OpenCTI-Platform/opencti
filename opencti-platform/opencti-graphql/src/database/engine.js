@@ -1421,6 +1421,10 @@ const BASE_SEARCH_ATTRIBUTES = [
   'holder_name',
   'title',
   'result_name',
+  'phase_name',
+  'kill_chain_name',
+  'definition',
+  'definition_type',
 ];
 
 function processSearch(search, args) {
