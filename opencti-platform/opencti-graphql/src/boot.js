@@ -16,7 +16,7 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] System dependencies check failed', {
         dependencyError,
       });
-      throw dependencyError; // Re-throw the error to exit the main try block
+      throw dependencyError; //  Re-throw the error to exit the main try block
     }
 
     // Init the cache manager
