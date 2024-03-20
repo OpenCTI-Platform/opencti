@@ -129,7 +129,7 @@ const Index = ({ settings }: IndexProps) => {
               />
               <Route path="/audits" Component={boundaryWrapper(RootActivity)} />
               <Route
-                path="/profile"
+                path="/profile/*"
                 Component={boundaryWrapper(RootProfile)}
               />
               <Route

@@ -1,31 +1,27 @@
 import React from 'react';
-import { Redirect, Routes } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';
 import Triggers from './Triggers';
 
 const Root = () => (
   <Routes>
-    <BoundaryRoute
-      exact
-      path="/dashboard/profile"
-      render={() => <Redirect to="/dashboard/profile/me" />}
+    <Route
+      path="/"
+      element={<Navigate to="/dashboard/profile/me" />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/profile/me"
-      render={(routeProps) => <Profile {...routeProps} />}
+    <Route
+      path="/me"
+      element={<Profile />}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/profile/notifications"
-      component={Notifications}
+    <Route
+      path="/notifications"
+      Component={boundaryWrapper(Notifications)}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/profile/triggers"
-      component={Triggers}
+    <Route
+      path="/triggers"
+      Component={boundaryWrapper(Triggers)}
     />
   </Routes>
 );
