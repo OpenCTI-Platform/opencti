@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -166,76 +166,56 @@ const RootAdministrativeAreaComponent = ({
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea"
-              render={() => (
-                <AdministrativeArea
-                  administrativeAreaData={administrativeArea}
-                />
-              )}
+              path="/"
+              element={
+                <AdministrativeArea administrativeAreaData={administrativeArea} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={
+                <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} />
+              }
             />
             <Route
-              path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge"
-              render={() => (
-                <AdministrativeAreaKnowledge
-                  administrativeAreaData={administrativeArea}
-                />
-              )}
+              path="/knowledge/*"
+              element={
+                <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea/analyses"
-              render={(routeProps) => (
-                <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
-                  stixDomainObjectOrStixCoreRelationship={administrativeArea}
-                />
-              )}
+              path="/analyses"
+              element={
+                <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea/sightings"
-              render={(routeProps) => (
+              path="/sightings"
+              element={
                 <EntityStixSightingRelationships
                   entityId={administrativeArea.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={true}
-                  {...routeProps}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={administrativeAreaId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={administrativeArea}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/administrative_areas/:administrativeArea/history"
-              render={(routeProps) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={administrativeAreaId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
+              }
             />
           </Routes>
         </div>
@@ -257,26 +237,31 @@ const RootAdministrativeArea = () => {
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   return (
     <>
-      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'organizations',
-            'regions',
-            'countries',
-            'cities',
-            'threats',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'organizations',
+                'regions',
+                'countries',
+                'cities',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />
+          }
         />
-      </Route>
+      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootAdministrativeAreaComponent
