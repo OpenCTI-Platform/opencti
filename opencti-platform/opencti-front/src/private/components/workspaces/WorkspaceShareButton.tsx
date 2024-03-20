@@ -74,6 +74,7 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
       variables: {
         input: {
           name: values.name,
+          uri_key: values.uri_key,
           dashboard_id: workspaceId,
           allowed_markings_ids: values.max_markings.map((marking) => marking.value),
         },

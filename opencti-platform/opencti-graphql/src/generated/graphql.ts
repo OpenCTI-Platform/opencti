@@ -17390,6 +17390,7 @@ export type PublicDashboardAddInput = {
   dashboard_id: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  uri_key: Scalars['String']['input'];
 };
 
 export type PublicDashboardConnection = {

@@ -47,6 +47,9 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             variant="standard"
             label={t_i18n('Name')}
             style={{ width: '100%' }}
+            onChange={(_: string, val: string) => {
+              setFieldValue('uri_key', val.replace(/[^a-zA-Z0-9 ]+/g, '').replace(/\s+/g, '-'));
+            }}
           />
           <Field
             disabled

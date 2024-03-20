@@ -175,7 +175,7 @@ export const addPublicDashboard = async (
     private_manifest: dashboard.manifest,
     dashboard_id: input.dashboard_id,
     user_id: user.id,
-    uri_key: uuidv4(),
+    uri_key: uriKey,
     authorized_members: authorizedMembers,
     allowed_markings_ids: input.allowed_markings_ids,
   };
