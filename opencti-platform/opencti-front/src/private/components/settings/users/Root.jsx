@@ -139,17 +139,15 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/settings/accesses/users/:userId"
-              render={(routeProps) => (
-                <User {...routeProps} data={data} refetch={refetch} />
-              )}
+              path="/"
+              element={
+                <User data={data} refetch={refetch} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/settings/accesses/users/:userId/analytics"
-              render={(routeProps) => (
-                <UserAnalytics {...routeProps} data={data} refetch={refetch} />
+              path="/analytics"
+              element={ (
+                <UserAnalytics data={data} refetch={refetch} />
               )}
             />
           </Routes>

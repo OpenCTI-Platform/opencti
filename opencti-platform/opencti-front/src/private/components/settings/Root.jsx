@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '../Error';
 import { isOnlyOrganizationAdmin, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
-import { BoundaryRoute } from '../Error';
 import Loader from '../../../components/Loader';
 
 const Security = lazy(() => import('../../../utils/Security'));
@@ -38,279 +38,258 @@ const Root = () => {
   return (
     <div data-testid="settings-page">
       <Suspense fallback={<Loader />}>
-        <Routes>
-          <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
-            <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses"
-              render={() => (
+        <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to="/dashboard" />}>
+          <Routes>
+            <Route path="/" Component={boundaryWrapper(Settings)} />
+            <Route
+              path="/accesses"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                   placeholder={
-                    <BoundaryRoute
-                      exact
-                      path="/dashboard/settings/accesses"
-                      render={() => (
+                    <Route
+                      path="/"
+                      element={
                         <Security
                           needs={[SETTINGS_SETMARKINGS]}
-                          placeholder={<Redirect to="/dashboard/settings" />}
+                          placeholder={<Navigate to="/dashboard/settings" />}
                         >
-                          <Redirect to="/dashboard/settings/accesses/marking" />
+                          <Navigate to="/dashboard/settings/accesses/marking" />
                         </Security>
-                      )}
+                      }
                     />
                 }
                 >
-                  <Redirect to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
+                  <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/users"
-              render={() => (
+            <Route
+              path="/accesses/users"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Users />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              path="/dashboard/settings/accesses/users/:userId"
-              render={() => (
+            <Route
+              path="/accesses/users/:userId/*"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <RootUser />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/organizations"
-              render={() => (
+            <Route
+              path="/accesses/organizations"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <SettingsOrganizations />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              path="/dashboard/settings/accesses/organizations/:organizationId"
-              component={RootSettingsOrganization}
+            <Route
+              path="/accesses/organizations/:organizationId/*"
+              Component={boundaryWrapper(RootSettingsOrganization)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/roles"
-              render={() => (
+            <Route
+              path="/accesses/roles"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Roles />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/policies"
-              render={() => (
+            <Route
+              path="/accesses/policies"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Redirect to={'/dashboard/policies'} />}
+                  placeholder={<Navigate to={'/dashboard/policies'} />}
                 >
                   <Policies />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              path="/dashboard/settings/accesses/roles/:roleId"
-              component={RootRole}
+            <Route
+              path="/accesses/roles/:roleId/*"
+              Component={boundaryWrapper(RootRole)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/groups"
-              render={() => (
+            <Route
+              path="/accesses/groups"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Groups />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              path="/dashboard/settings/accesses/groups/:groupId"
-              component={RootGroup}
+            <Route
+              path="/accesses/groups/:groupId/*"
+              Component={boundaryWrapper(RootGroup)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/sessions"
-              render={() => (
+            <Route
+              path="/accesses/sessions"
+              element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Sessions />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/accesses/marking"
-              render={() => (
+            <Route
+              path="/accesses/marking"
+              element={
                 <Security
                   needs={[SETTINGS_SETMARKINGS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <MarkingDefinitions />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/activity"
-              render={() => <Redirect to="/dashboard/settings/activity/audit" />}
+            <Route
+              path="/activity"
+              element={ <Navigate to="/dashboard/settings/activity/audit" />}
             />
-            <BoundaryRoute
-              path="/dashboard/settings/activity"
-              render={() => <RootActivity />}
+            <Route
+              path="/activity"
+              element={<RootActivity />}
             />
-            <BoundaryRoute
-              path="/dashboard/settings/file_indexing"
-              render={() => <FileIndexing />}
+            <Route
+              path="/file_indexing"
+              element={ <FileIndexing />}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/customization"
-              render={() => (
-                <Redirect to="/dashboard/settings/customization/entity_types" />
-              )}
+            <Route
+              path="/customization"
+              element={
+                <Navigate to="/dashboard/settings/customization/entity_types" />
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/customization/entity_types"
-              component={SubTypes}
+            <Route
+              path="/customization/entity_types"
+              Component={boundaryWrapper(SubTypes)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/customization/retention"
-              component={Retention}
+            <Route
+              path="/customization/retention"
+              Component={boundaryWrapper(Retention)}
             />
-            <BoundaryRoute
-              path="/dashboard/settings/customization/entity_types/:subTypeId"
-              render={() => <RootSubType />}
+            <Route
+              path="/customization/entity_types/:subTypeId/*"
+              element={ <RootSubType />}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/status_templates"
-              component={StatusTemplates}
+            <Route
+              path="/vocabularies/status_templates"
+              Component={boundaryWrapper(StatusTemplates)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/customization/rules"
-              component={Rules}
+            <Route
+              path="/customization/rules"
+              Component={boundaryWrapper(Rules)}
             />
-            <BoundaryRoute
-              path="/dashboard/settings/customization/decay"
-              component={RootDecay}
+            <Route
+              path="/customization/decay"
+              Component={boundaryWrapper(RootDecay)}
             />
-            <BoundaryRoute
-              path="/dashboard/settings/customization/notifiers"
-              component={Notifiers}
+            <Route
+              path="/customization/notifiers"
+              Component={boundaryWrapper(Notifiers)}
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies"
-              render={() => (
+            <Route
+              path="/vocabularies"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
-                  <Redirect to="/dashboard/settings/vocabularies/labels" />
+                  <Navigate to="/settings/vocabularies/labels" />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/labels"
-              render={() => (
+            <Route
+              path="/vocabularies/labels"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Labels />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/case_templates"
-              render={() => (
+            <Route
+              path="/vocabularies/case_templates"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <CaseTemplates />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/case_templates/:caseTemplateId"
-              render={() => (
+            <Route
+              path="/vocabularies/case_templates/:caseTemplateId/*"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <CaseTemplateTasks />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/kill_chain_phases"
-              render={() => (
+            <Route
+              path="/vocabularies/kill_chain_phases"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <KillChainPhases />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/fields"
-              render={() => (
+            <Route
+              path="/vocabularies/fields"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <VocabularyCategories />
                 </Security>
-              )}
+              }
             />
-            <BoundaryRoute
-              exact
-              path="/dashboard/settings/vocabularies/fields/:category"
-              render={() => (
+            <Route
+              path="/vocabularies/fields/:category"
+              element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Redirect to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Vocabularies />
                 </Security>
-              )}
+              }
             />
-          </Security>
-        </Routes>
+
+          </Routes>
+        </Security>
       </Suspense>
     </div>
   );

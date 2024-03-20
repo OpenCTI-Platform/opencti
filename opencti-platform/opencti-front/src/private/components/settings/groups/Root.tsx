@@ -67,11 +67,10 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
       {group ? (
         <Routes>
           <Route
-            exact
-            path="/dashboard/settings/accesses/groups/:groupId"
-            render={(routeProps) => (
-              <Group {...routeProps} groupData={group} />
-            )}
+            path="/"
+            element={
+              <Group groupData={group} />
+            }
           />
         </Routes>
       ) : (

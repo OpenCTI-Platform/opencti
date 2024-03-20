@@ -47,10 +47,9 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
           {groupsQueryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
               <Route
-                exact
-                path="/dashboard/settings/accesses/roles/:roleId"
-                render={(routeProps) => (
-                  <Role {...routeProps} roleData={role} groupsQueryRef={groupsQueryRef} />
+                path="/"
+                element={ (
+                  <Role roleData={role} groupsQueryRef={groupsQueryRef} />
                 )}
               />
             </React.Suspense>
