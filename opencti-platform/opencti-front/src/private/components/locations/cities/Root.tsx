@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -158,68 +158,52 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId"
-              render={() => <City cityData={city} />}
+              path="/"
+              element={<City cityData={city} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/locations/cities/${cityId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={
+                <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} />
+              }
             />
             <Route
-              path="/dashboard/locations/cities/:cityId/knowledge"
-              render={() => <CityKnowledge cityData={city} />}
+              path="/knowledge/*"
+              element={<CityKnowledge cityData={city} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/analyses"
-              render={(routeProps) => (
-                <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
-                  stixDomainObjectOrStixCoreRelationship={city}
-                />
-              )}
+              path="/analyses"
+              element={
+                <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/sightings"
-              render={(routeProps) => (
+              path="/sightings"
+              element={
                 <EntityStixSightingRelationships
                   entityId={city.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={true}
-                  {...routeProps}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={cityId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={city}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/cities/:cityId/history"
-              render={(routeProps) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={cityId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={cityId} />
+              }
             />
           </Routes>
         </div>
@@ -236,26 +220,31 @@ const RootCity = () => {
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   return (
     <>
-      <Route path="/dashboard/locations/cities/:cityId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'organizations',
-            'regions',
-            'countries',
-            'areas',
-            'threats',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'organizations',
+                'regions',
+                'countries',
+                'areas',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />
+          }
         />
-      </Route>
+      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCityComponent queryRef={queryRef} cityId={cityId} link={link} />
