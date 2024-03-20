@@ -54,7 +54,7 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
             value='files'
             label={<>
               <Badge badgeContent={filesCount} color="primary">
-                <div style={{ padding: '0px 12px' }}>{t_i18n('Files search')}<EEChip /></div>
+                <div style={{ padding: '0px 12px', display: 'flex' }}>{t_i18n('Files search')}<EEChip /></div>
               </Badge>
             </>
               }

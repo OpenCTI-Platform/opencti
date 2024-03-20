@@ -5,6 +5,7 @@ import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom-v5-compat';
 import makeStyles from '@mui/styles/makeStyles';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from './i18n';
 
 const useStyles = makeStyles((theme) => ({
@@ -116,31 +117,35 @@ const SearchInput = (props) => {
         ),
         endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
-            <IconButton
-              component={Link}
-              to="/dashboard/search"
-              size="medium"
-              color={
-                location.pathname.includes('/dashboard/search')
-                && !location.pathname.includes('/dashboard/search_bulk')
-                  ? 'primary'
-                  : 'inherit'
-              }
-            >
-              <BiotechOutlined fontSize='medium'/>
-            </IconButton>
-            <IconButton
-              component={Link}
-              to="/dashboard/search_bulk"
-              size="medium"
-              color={
+            <Tooltip title={t_i18n('Advanced search')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/search"
+                size="medium"
+                color={
+                   location.pathname.includes('/dashboard/search')
+                    && !location.pathname.includes('/dashboard/search_bulk')
+                     ? 'primary'
+                     : 'inherit'
+                    }
+              >
+                <BiotechOutlined fontSize='medium'/>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Bulk search')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/search_bulk"
+                size="medium"
+                color={
                 location.pathname.includes('/dashboard/search_bulk')
                   ? 'primary'
                   : 'inherit'
               }
-            >
-              <ContentPasteSearchOutlined fontSize="medium"/>
-            </IconButton>
+              >
+                <ContentPasteSearchOutlined fontSize="medium"/>
+              </IconButton>
+            </Tooltip>
           </InputAdornment>
         ),
         classes: {
