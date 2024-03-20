@@ -59,6 +59,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelations
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -241,38 +242,12 @@ const executeRemove = async (context, user, actionContext, element) => {
 };
 export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
+  let input = field;
   if (contextType === ACTION_TYPE_RELATION) {
-    const toCreate = [];
-    // 01 - Delete all relations of the element
-    const rels = await listAllRelations(context, user, field, { fromId: element.id });
-    if (rels.length > 0) {
-      // Items to Delete
-      for (let index = 0; index < rels.length; index += 1) {
-        if (!values.includes(rels[index].toId)) {
-          const rel = rels[index];
-          await deleteElementById(context, user, rel.id, rel.entity_type);
-        }
-      }
-      // 02 - Create new ones
-      for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-        const target = values[indexCreate];
-        if (!rels.some(({ toId }) => toId === target)) {
-          toCreate.push(target);
-        }
-      }
-    } else if (rels.length === 0) {
-      // 02 - Create relations if no relation to replace
-      for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
-        const target = values[indexCreate];
-        toCreate.push(target);
-      }
-    }
-    await Promise.all(toCreate.map(async (tc) => await createRelation(context, user, { fromId: element.id, toId: tc, relationship_type: field })));
+    input = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, field);
   }
-  if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    const patch = generatePatch(field, values, element.entity_type);
-    await patchAttribute(context, user, element.id, element.entity_type, patch);
-  }
+  const patch = generatePatch(input, values, element.entity_type);
+  await patchAttribute(context, user, element.id, element.entity_type, patch);
 };
 const executeMerge = async (context, user, actionContext, element) => {
   const { values } = actionContext;

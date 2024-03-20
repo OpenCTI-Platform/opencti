@@ -22,7 +22,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 980;
+export const RAW_EVENTS_SIZE = 998;
 export const SYNC_LIVE_EVENTS_SIZE = 598;
 
 export const PYTHON_PATH = './src/python/testing';
@@ -153,6 +153,12 @@ export const TEST_ORGANIZATION: Organization = {
   id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
 };
 
+// not the plateform one
+export const EXTERNAL_ORGANIZATION: Organization = {
+  name: 'External TestOrganization',
+  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'External TestOrganization', identity_class: 'organization' }),
+};
+
 // Users
 interface User {
   id: string,
@@ -221,6 +227,16 @@ export const USER_SECURITY: User = {
   client: createHttpClient('security@opencti.io', 'security')
 };
 TESTING_USERS.push(USER_SECURITY);
+
+export const USER_EXTERNAL: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'external@opencti.io' }),
+  email: 'external@opencti.io',
+  password: 'external',
+  organizations: [EXTERNAL_ORGANIZATION],
+  groups: [GREEN_GROUP],
+  client: createHttpClient('external@opencti.io', 'external')
+};
+TESTING_USERS.push(USER_EXTERNAL);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
