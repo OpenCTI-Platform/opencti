@@ -31,9 +31,8 @@ const RootSubType = () => {
             return (
               <Routes>
                 <Route
-                  exact
-                  path="/dashboard/settings/customization/entity_types/:subTypeId"
-                  render={() => <SubType data={props.subType} />}
+                  path="/"
+                  element={ <SubType data={props.subType} />}
                 />
               </Routes>
             );

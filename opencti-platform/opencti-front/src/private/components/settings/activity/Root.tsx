@@ -27,19 +27,16 @@ const RootActivity = () => {
   return (
     <Routes>
       <Route
-        exact
-        path="/dashboard/settings/activity/audit"
-        render={() => <Audit />}
+        path="/audit"
+        element={<Audit />}
       />
       <Route
-        exact
-        path="/dashboard/settings/activity/configuration"
-        render={() => <Configuration />}
+        path="/configuration"
+        element={ <Configuration />}
       />
       <Route
-        exact
-        path="/dashboard/settings/activity/alerting"
-        render={() => <Alerting />}
+        path="/alerting"
+        element={ <Alerting />}
       />
     </Routes>
   );

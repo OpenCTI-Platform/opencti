@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Route, Routes, useRouteMatch } from 'react-router-dom';
 import DecayRules from './DecayRules';
 import DecayRule from './DecayRule';
 
@@ -10,10 +10,10 @@ const RootDecayRule = () => {
   const match = useRouteMatch();
 
   return (
-    <Switch>
-      <Route path={`${match.path}/:decayRuleId`} component={DecayRule} />
-      <Route path="" component={DecayRules} />
-    </Switch>
+    <Routes>
+      <Route path={`${match.path}/:decayRuleId`} Component={DecayRule} />
+      <Route path="/" Component={DecayRules} />
+    </Routes>
   );
 };
 

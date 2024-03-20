@@ -124,10 +124,10 @@ const Index = ({ settings }: IndexProps) => {
                 Component={boundaryWrapper(RootWorkspaces)}
               />
               <Route
-                path="/settings"
+                path="/settings/*"
                 Component={boundaryWrapper(RootSettings)}
               />
-              <Route path="/audits" Component={boundaryWrapper(RootActivity)} />
+              <Route path="/audits/*" Component={boundaryWrapper(RootActivity)} />
               <Route
                 path="/profile/*"
                 Component={boundaryWrapper(RootProfile)}

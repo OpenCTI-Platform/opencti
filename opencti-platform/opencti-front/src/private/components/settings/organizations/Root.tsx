@@ -55,11 +55,10 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
       {organization ? (
         <Routes>
           <Route
-            exact
-            path="/dashboard/settings/accesses/organizations/:organizationId"
-            render={(routeProps) => (
-              <SettingsOrganization {...routeProps} organizationData={organization} />
-            )}
+            path="/"
+            element={
+              <SettingsOrganization organizationData={organization} />
+            }
           />
         </Routes>
       ) : (
