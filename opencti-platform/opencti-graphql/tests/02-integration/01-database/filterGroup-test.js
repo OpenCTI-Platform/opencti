@@ -7,7 +7,14 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { COMPUTED_RELIABILITY_FILTER, IDS_FILTER, SOURCE_RELIABILITY_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import {
+  COMPUTED_RELIABILITY_FILTER,
+  IDS_FILTER,
+  INSTANCE_RELATION_TYPES_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_TYPES_FILTER,
+  SOURCE_RELIABILITY_FILTER
+} from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 
 // test queries involving dynamic filters
@@ -49,6 +56,23 @@ const LIST_QUERY = gql`
                 node {
                     id
                     entity_type
+                }
+            }
+        }
+    }
+`;
+
+const RELATIONSHIP_QUERY = gql`
+    query stixCoreRelationships(
+        $filters: FilterGroup
+    ) {
+        stixCoreRelationships(
+            filters: $filters
+        ) {
+            edges {
+                node {
+                    id
+                    relationship_type
                 }
             }
         }
@@ -1411,6 +1435,185 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
+  });
+  it(`should list relationships according to filters: combinations of operators and modes with the special filter key ${INSTANCE_RELATION_TYPES_FILTER}`, async () => {
+    // all stix core relationships
+    let queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: undefined,
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // 24 stix core relationships
+    // (fromOrToTypes = Malware)
+    // <-> fromType = Malware OR toType = Malware
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware'],
+              mode: 'or',
+            },
+            {
+              key: RELATION_TO_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
+    // (fromOrToTypes != Malware-Analysis)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'not_eq',
+              values: ['Malware-Analysis'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) involving a Malware-Analysis
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
+    // (fromTypes != Malware-Analysis)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_TYPES_FILTER,
+              operator: 'not_eq',
+              values: ['Malware-Analysis'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) with a Malware-Analysis as source ref
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
+    // (toTypes != Malware-Analysis)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_TO_TYPES_FILTER,
+              operator: 'not_eq',
+              values: ['Malware-Analysis'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships have no malware analysis as target ref
+    // (fromOrToTypes = Attack-Pattern OR Malware)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Attack-Pattern', 'Malware'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(5);
+    // (fromOrToTypes = Attack-Pattern AND Malware)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Attack-Pattern', 'Malware'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2);
+    // (fromOrToTypes != Attack-Pattern AND Malware)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'not_eq',
+              values: ['Attack-Pattern', 'Malware'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(19); // (24 relationships) - (5 relationships involving malware or attack pattern) = 19
   });
   it('should list entities according to filters: filters with not supported keys', async () => {
     // bad_filter_key = XX
