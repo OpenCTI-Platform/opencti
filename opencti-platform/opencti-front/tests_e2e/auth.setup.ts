@@ -1,18 +1,20 @@
+import * as fs from 'fs';
 import { expect, test as setup } from './fixtures/baseFixtures';
 import DashboardPage from './model/dashboard.pageModel';
 import LoginPage from './model/login.pageModel';
-import * as fs from 'fs';
 
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 const prepLogoutFile = 'tests_e2e/.setup/.auth/logout-user.json';
 
-let authSessionStorage
-let logoutSessionStorage
+let authSessionStorage;
+let logoutSessionStorage;
 try {
 // For quicker local testing, don't redo the auth if the seed is still valid
   authSessionStorage = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
   logoutSessionStorage = JSON.parse(fs.readFileSync(prepLogoutFile, 'utf-8'));
 } catch (e) {
+  // eslint-disable-next-line no-console
+  console.log('Initialing auth setup');
 }
 
 setup('authenticate', async ({ page }) => {
