@@ -50,7 +50,13 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
             <Tab label={t_i18n('Overview')} />
             <Tab disabled={external} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
-            {hasSetAccess && <Tab label={<div>{t_i18n('Organizations admin')}<EEChip /></div>} />}
+            {hasSetAccess
+              && <Tab label={
+                <div style={{ alignItems: 'center', display: 'flex' }}>
+                  {t_i18n('Organizations admin')}<EEChip />
+                </div>}
+                 />
+            }
           </Tabs>
         </Box>
         {currentTab === 0 && (

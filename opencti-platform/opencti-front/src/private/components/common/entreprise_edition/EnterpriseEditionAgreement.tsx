@@ -91,6 +91,7 @@ EnterpriseEditionAgreementProps
             control={
               <Checkbox
                 checked={enterpriseEditionConsent}
+                disabled={false}
                 onChange={(event) => setEnterpriseEditionConsent(event.target.checked)
                 }
               />
