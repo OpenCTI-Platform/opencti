@@ -33,7 +33,7 @@ const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
-const RootActivity = lazy(() => import('./components/settings/activity/Root'));
+const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 
 const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -127,7 +127,7 @@ const Index = ({ settings }: IndexProps) => {
                 path="/settings/*"
                 Component={boundaryWrapper(RootSettings)}
               />
-              <Route path="/audits/*" Component={boundaryWrapper(RootActivity)} />
+              <Route path="/audits/*" Component={boundaryWrapper(RootAudit)} />
               <Route
                 path="/profile/*"
                 Component={boundaryWrapper(RootProfile)}

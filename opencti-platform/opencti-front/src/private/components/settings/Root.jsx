@@ -228,7 +228,7 @@ const Root = () => {
                 <Security
                   needs={[SETTINGS_SETLABELS]}
                 >
-                  <Navigate to="/settings/vocabularies/labels" />
+                  <Navigate to="/dashboard/settings/vocabularies/labels" />
                 </Security>
               }
             />
