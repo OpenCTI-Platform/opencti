@@ -75,7 +75,7 @@ export const complexConversionFilterKeys = [
   SOURCE_RELIABILITY_FILTER, // reliability of the author
   COMPUTED_RELIABILITY_FILTER, // reliability, or reliabilityof the author if no reliability
   INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
-  INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or type type of a relationship
+  INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or to type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
   RELATION_TO_FILTER, // nested relation for the to of a relationship
   RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting
