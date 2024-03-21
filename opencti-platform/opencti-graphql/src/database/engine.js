@@ -2023,6 +2023,78 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
+// fromOrToId and elementWithTargetTypes filters
+// are composed of a condition on fromId/fromType and a condition on toId/toType of a relationship
+const adaptFilterToRelatedRelationsFilterKeys = (filter) => {
+  const { key, operator = 'eq', mode = 'or', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys.length > 1) {
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+  }
+  let nestedKey;
+  if (arrayKeys[0] === INSTANCE_RELATION_TYPES_FILTER) {
+    nestedKey = 'types';
+  } else if (arrayKeys[0] === INSTANCE_RELATION_FILTER) {
+    nestedKey = 'internal_id';
+  } else {
+    throw UnsupportedError('A related relations filter with this key is not supported', { key: arrayKeys[0] });
+  }
+
+  let newFilterGroup;
+  // define mode for the filter group
+  let globalMode = 'or';
+  if (operator === 'eq' || operator === 'not_nil') {
+    // relatedType = malware <-> fromType = malware OR toType = malware
+    // relatedType is not empty <-> fromType is not empty OR toType is not empty
+    globalMode = 'or';
+  } else if (operator === 'not_eq' || operator === 'nil') {
+    // relatedType != malware <-> fromType != malware AND toType != malware
+    // relatedType is empty <-> fromType is empty AND toType is empty
+    globalMode = 'and';
+  } else {
+    throw Error(`${INSTANCE_RELATION_TYPES_FILTER} filter only support 'eq', 'not_eq', 'nil' and 'not_nil' operators, not ${operator}.`);
+  }
+  // define the filter group
+  if (operator === 'eq' || operator === 'not_eq') {
+    const filterGroupsForValues = values.map((val) => {
+      const nestedFrom = [
+        { key: nestedKey, operator, values: [val] },
+        { key: 'role', operator: 'wildcard', values: ['*_from'] }
+      ];
+      const nestedTo = [
+        { key: nestedKey, operator, values: [val] },
+        { key: 'role', operator: 'wildcard', values: ['*_to'] }
+      ];
+      return {
+        mode: globalMode,
+        filters: [{ key: 'connections', nested: nestedFrom, mode }, { key: 'connections', nested: nestedTo, mode }],
+        filterGroups: [],
+      };
+    });
+    newFilterGroup = {
+      mode,
+      filters: [],
+      filterGroups: filterGroupsForValues,
+    };
+  } else if (operator === 'nil' || operator === 'not_nil') {
+    const nestedFrom = [
+      { key: nestedKey, operator, values: [] },
+      { key: 'role', operator: 'wildcard', values: ['*_from'] }
+    ];
+    const nestedTo = [
+      { key: nestedKey, operator, values: [] },
+      { key: 'role', operator: 'wildcard', values: ['*_to'] }
+    ];
+    const innerFilters = [{ key: 'connections', nested: nestedFrom, mode }, { key: 'connections', nested: nestedTo, mode }];
+    newFilterGroup = {
+      mode: globalMode,
+      filters: innerFilters,
+      filterGroups: [],
+    };
+  }
+  return { newFilter: undefined, newFilterGroup };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2270,8 +2342,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === INSTANCE_RELATION_FILTER) {
-        const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
+        const { newFilterGroup } = adaptFilterToRelatedRelationsFilterKeys(filter);
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
       if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_TO_FILTER || filterKey === RELATION_TO_SIGHTING_FILTER) {
         const side = filterKey === RELATION_FROM_FILTER ? 'from' : 'to';
@@ -2290,58 +2364,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (filterKey === INSTANCE_RELATION_TYPES_FILTER) {
-        // define mode for the filter group
-        let globalMode = 'or';
-        if (filter.operator === 'eq' || filter.operator === 'not_nil') {
-          // relatedType = malware <-> fromType = malware OR toType = malware
-          // relatedType is not empty <-> fromType is not empty OR toType is not empty
-          globalMode = 'or';
-        } else if (filter.operator === 'not_eq' || filter.operator === 'nil') {
-          // relatedType != malware <-> fromType != malware AND toType != malware
-          // relatedType is empty <-> fromType is empty AND toType is empty
-          globalMode = 'and';
-        } else {
-          throw Error(`${INSTANCE_RELATION_TYPES_FILTER} filter only support 'eq', 'not_eq', 'nil' and 'not_nil' operators, not ${filter.operator}.`);
-        }
-        // define the filter group
-        if (filter.operator === 'eq' || filter.operator === 'not_eq') {
-          const filterGroupsForValues = filter.values.map((val) => {
-            const nestedFrom = [
-              { key: 'types', operator: filter.operator, values: [val] },
-              { key: 'role', operator: 'wildcard', values: ['*_from'] }
-            ];
-            const nestedTo = [
-              { key: 'types', operator: filter.operator, values: [val] },
-              { key: 'role', operator: 'wildcard', values: ['*_to'] }
-            ];
-            return {
-              mode: globalMode,
-              filters: [{ key: 'connections', nested: nestedFrom, mode: filter.mode }, { key: 'connections', nested: nestedTo, mode: filter.mode }],
-              filterGroups: [],
-            };
-          });
-          finalFilterGroups.push({
-            mode: filter.mode,
-            filters: [],
-            filterGroups: filterGroupsForValues,
-          });
-        } else if (filter.operator === 'nil' || filter.operator === 'not_nil') {
-          const nestedFrom = [
-            { key: 'types', operator: filter.operator, values: [] },
-            { key: 'role', operator: 'wildcard', values: ['*_from'] }
-          ];
-          const nestedTo = [
-            { key: 'types', operator: filter.operator, values: [] },
-            { key: 'role', operator: 'wildcard', values: ['*_to'] }
-          ];
-          const innerFilters = [{ key: 'connections', nested: nestedFrom, mode: filter.mode }, { key: 'connections', nested: nestedTo, mode: filter.mode }];
-          console.log('filters', innerFilters);
-          console.log('filters00', innerFilters[0].nested);
-          finalFilterGroups.push({
-            mode: globalMode,
-            filters: innerFilters,
-            filterGroups: [],
-          });
+        const { newFilterGroup } = adaptFilterToRelatedRelationsFilterKeys(filter);
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
         }
       }
       if (filterKey === RELATION_FROM_ROLE_FILTER || filterKey === RELATION_TO_ROLE_FILTER) {
