@@ -6,12 +6,17 @@ import * as fs from 'fs';
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 const prepLogoutFile = 'tests_e2e/.setup/.auth/logout-user.json';
 
+let authSessionStorage
+let logoutSessionStorage
+try {
 // For quicker local testing, don't redo the auth if the seed is still valid
-const authSessionStorage = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
-const logoutSessionStorage = JSON.parse(fs.readFileSync(prepLogoutFile, 'utf-8'));
+  authSessionStorage = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
+  logoutSessionStorage = JSON.parse(fs.readFileSync(prepLogoutFile, 'utf-8'));
+} catch (e) {
+}
 
 setup('authenticate', async ({ page }) => {
-  if (authSessionStorage.cookies[0].expires > (Date.now() / 1000)) {
+  if ((authSessionStorage?.cookies[0]?.expires ?? 0) > (Date.now() / 1000)) {
     return;
   }
   const dashboardPage = new DashboardPage(page);
@@ -23,7 +28,7 @@ setup('authenticate', async ({ page }) => {
 });
 
 setup('authenticate for logout user', async ({ page }) => {
-  if (logoutSessionStorage.cookies[0].expires > (Date.now() / 1000)) {
+  if ((logoutSessionStorage?.cookies[0]?.expires ?? 0) > (Date.now() / 1000)) {
     return;
   }
   const dashboardPage = new DashboardPage(page);
