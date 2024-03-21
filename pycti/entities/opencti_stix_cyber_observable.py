@@ -2349,13 +2349,9 @@ class StixCyberObservable:
                                             created
                                             modified
                                             objectLabel {
-                                                edges {
-                                                    node {
-                                                        id
-                                                        value
-                                                        color
-                                                    }
-                                                }
+                                                id
+                                                value
+                                                color
                                             }
                                         }
                                         ... on Organization {
@@ -2480,13 +2476,9 @@ class StixCyberObservable:
                                             created
                                             modified
                                             objectLabel {
-                                                edges {
-                                                    node {
-                                                        id
-                                                        value
-                                                        color
-                                                    }
-                                                }
+                                                id
+                                                value
+                                                color
                                             }
                                         }
                                         ... on Organization {
@@ -2612,13 +2604,9 @@ class StixCyberObservable:
                                                 created
                                                 modified
                                                 objectLabel {
-                                                    edges {
-                                                        node {
-                                                            id
-                                                            value
-                                                            color
-                                                        }
-                                                    }
+                                                    id
+                                                    value
+                                                    color
                                                 }
                                             }
                                             ... on Organization {
