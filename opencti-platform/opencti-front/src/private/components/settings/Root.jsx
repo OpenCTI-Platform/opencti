@@ -30,7 +30,7 @@ const Users = lazy(() => import('./Users'));
 const RootUser = lazy(() => import('./users/Root'));
 const Vocabularies = lazy(() => import('./Vocabularies'));
 const VocabularyCategories = lazy(() => import('./VocabularyCategories'));
-const Audit = lazy(() => import('./activity/audit/Audit'));
+const Audit = lazy(() => import('./activity/audit/Root'));
 const Configuration = lazy(() => import('./activity/configuration/Configuration'));
 const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
@@ -169,8 +169,14 @@ const Root = () => {
               }
             />
             <Route
+              path="/activity"
+              element={
+                <Navigate to="/dashboard/settings/activity/audit" />
+                  }
+            />
+            <Route
               path="activity/audit"
-              element={boundaryWrapper(Audit)}
+              Component={boundaryWrapper(Audit)}
             />
             <Route
               path="activity/configuration"
@@ -180,18 +186,6 @@ const Root = () => {
               path="activity/alerting"
               Component={ boundaryWrapper(Alerting)}
             />
-            {/* /!* <Route *!/ */}
-            {/* /!*  path="/activity/audit" *!/ */}
-            {/* /!*  Component={boundaryWrapper(RootActivity)} *!/ */}
-            {/* /!* /> *!/ */}
-            {/* <Route */}
-            {/*  path="/activity/configuration" */}
-            {/*  Component={boundaryWrapper(Configuration)} */}
-            {/* /> */}
-            {/* <Route */}
-            {/*  path="/activity/alerting" */}
-            {/*  Component={boundaryWrapper(Alerting)} */}
-            {/* /> */}
             <Route
               path="/file_indexing"
               element={ <FileIndexing />}
@@ -238,6 +232,7 @@ const Root = () => {
                 </Security>
               }
             />
+
             <Route
               path="/vocabularies/labels"
               element={
