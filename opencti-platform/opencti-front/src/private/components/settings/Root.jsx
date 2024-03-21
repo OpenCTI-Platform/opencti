@@ -5,7 +5,6 @@ import { isOnlyOrganizationAdmin, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS, SETTINGS
 import Loader from '../../../components/Loader';
 
 const Security = lazy(() => import('../../../utils/Security'));
-const RootActivity = lazy(() => import('./activity/Root'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
 const CaseTemplateTasks = lazy(() => import('./case_templates/CaseTemplateTasks'));
 const Groups = lazy(() => import('./Groups'));
@@ -20,7 +19,6 @@ const Retention = lazy(() => import('./Retention'));
 const Roles = lazy(() => import('./Roles'));
 const RootRole = lazy(() => import('./roles/Root'));
 const Rules = lazy(() => import('./Rules'));
-const RootDecay = lazy(() => import('./decay/Root'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
@@ -32,9 +30,15 @@ const Users = lazy(() => import('./Users'));
 const RootUser = lazy(() => import('./users/Root'));
 const Vocabularies = lazy(() => import('./Vocabularies'));
 const VocabularyCategories = lazy(() => import('./VocabularyCategories'));
+const Audit = lazy(() => import('./activity/audit/Audit'));
+const Configuration = lazy(() => import('./activity/configuration/Configuration'));
+const Alerting = lazy(() => import('./activity/alerting/Alerting'));
+const DecayRules = lazy(() => import('./decay/DecayRules'));
+const DecayRule = lazy(() => import('./decay/DecayRule'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
+
   return (
     <div data-testid="settings-page">
       <Suspense fallback={<Loader />}>
@@ -165,13 +169,29 @@ const Root = () => {
               }
             />
             <Route
-              path="/activity"
-              element={ <Navigate to="/dashboard/settings/activity/audit" />}
+              path="activity/audit"
+              element={boundaryWrapper(Audit)}
             />
             <Route
-              path="/activity"
-              element={<RootActivity />}
+              path="activity/configuration"
+              Component={ boundaryWrapper(Configuration)}
             />
+            <Route
+              path="activity/alerting"
+              Component={ boundaryWrapper(Alerting)}
+            />
+            {/* /!* <Route *!/ */}
+            {/* /!*  path="/activity/audit" *!/ */}
+            {/* /!*  Component={boundaryWrapper(RootActivity)} *!/ */}
+            {/* /!* /> *!/ */}
+            {/* <Route */}
+            {/*  path="/activity/configuration" */}
+            {/*  Component={boundaryWrapper(Configuration)} */}
+            {/* /> */}
+            {/* <Route */}
+            {/*  path="/activity/alerting" */}
+            {/*  Component={boundaryWrapper(Alerting)} */}
+            {/* /> */}
             <Route
               path="/file_indexing"
               element={ <FileIndexing />}
@@ -195,16 +215,14 @@ const Root = () => {
               element={ <RootSubType />}
             />
             <Route
-              path="/vocabularies/status_templates"
-              Component={boundaryWrapper(StatusTemplates)}
-            />
-            <Route
               path="/customization/rules"
               Component={boundaryWrapper(Rules)}
             />
-            <Route
-              path="/customization/decay"
-              Component={boundaryWrapper(RootDecay)}
+            <Route path="customization/decay"
+              Component={boundaryWrapper(DecayRules)}
+            />
+            <Route path='customization/decay/:decayRuleId/*'
+              Component={boundaryWrapper(DecayRule)}
             />
             <Route
               path="/customization/notifiers"
@@ -215,7 +233,6 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Navigate to="/settings/vocabularies/labels" />
                 </Security>
@@ -231,6 +248,21 @@ const Root = () => {
                   <Labels />
                 </Security>
               }
+            />
+            <Route
+              path="/vocabularies/kill_chain_phases"
+              element={
+                <Security
+                  needs={[SETTINGS_SETLABELS]}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                >
+                  <KillChainPhases />
+                </Security>
+                  }
+            />
+            <Route
+              path="/vocabularies/status_templates"
+              Component={boundaryWrapper(StatusTemplates)}
             />
             <Route
               path="/vocabularies/case_templates"
@@ -254,17 +286,7 @@ const Root = () => {
                 </Security>
               }
             />
-            <Route
-              path="/vocabularies/kill_chain_phases"
-              element={
-                <Security
-                  needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
-                >
-                  <KillChainPhases />
-                </Security>
-              }
-            />
+
             <Route
               path="/vocabularies/fields"
               element={
