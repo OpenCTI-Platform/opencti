@@ -853,7 +853,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           type = 'StixFile';
         }
         const pattern = await createStixPattern(context, AUTOMATION_MANAGER_USER, key, value);
-        const { score } = observable.extensions[STIX_EXT_OCTI_SCO];
+        const score = observable.extensions[STIX_EXT_OCTI_SCO]?.score;
         const { granted_refs } = observable.extensions[STIX_EXT_OCTI];
         if (pattern) {
           const indicatorData = {
@@ -881,13 +881,13 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           if (observable.object_marking_refs) {
             indicator.object_marking_refs = observable.object_marking_refs;
           }
-          if (observable.extensions[STIX_EXT_OCTI_SCO].labels) {
+          if (observable.extensions[STIX_EXT_OCTI_SCO]?.labels) {
             indicator.labels = observable.extensions[STIX_EXT_OCTI_SCO].labels;
           }
-          if (observable.extensions[STIX_EXT_OCTI_SCO].created_by_ref) {
+          if (observable.extensions[STIX_EXT_OCTI_SCO]?.created_by_ref) {
             indicator.created_by_ref = observable.extensions[STIX_EXT_OCTI_SCO].created_by_ref;
           }
-          if (observable.extensions[STIX_EXT_OCTI_SCO].external_references) {
+          if (observable.extensions[STIX_EXT_OCTI_SCO]?.external_references) {
             indicator.external_references = observable.extensions[STIX_EXT_OCTI_SCO].external_references;
           }
           if (granted_refs) {
