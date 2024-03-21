@@ -140,7 +140,6 @@ class ChannelKnowledgeComponent extends Component {
             }
           />
           <Route
-            exact
             path="/vulnerabilities"
             element={
               <EntityStixCoreRelationships

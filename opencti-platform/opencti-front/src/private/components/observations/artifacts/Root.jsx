@@ -161,7 +161,6 @@ class RootArtifact extends Component {
                     </Box>
                     <Routes>
                       <Route
-                        exact
                         path="/"
                         element={(
                           <StixCyberObservable
@@ -221,7 +220,6 @@ class RootArtifact extends Component {
                         )}
                       />
                       <Route
-                        exact
                         path="/knowledge/relations/:relationId"
                         element={(
                           <StixCoreRelationship
