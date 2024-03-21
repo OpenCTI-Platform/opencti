@@ -25,7 +25,7 @@ export const RELATION_FROM_ROLE_FILTER = 'fromRole';
 export const RELATION_TO_ROLE_FILTER = 'toRole';
 export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
 export const RELATION_TO_TYPES_FILTER = 'toTypes';
-export const INSTANCE_FILTER_TARGET_TYPES = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
+export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
@@ -75,7 +75,7 @@ export const complexConversionFilterKeys = [
   SOURCE_RELIABILITY_FILTER, // reliability of the author
   COMPUTED_RELIABILITY_FILTER, // reliability, or reliabilityof the author if no reliability
   INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
-  INSTANCE_FILTER_TARGET_TYPES, // nested relation for the from or type type of a relationship
+  INSTANCE_RELATION_TYPES_FILTER, // nested relation for the from or type type of a relationship
   RELATION_FROM_FILTER, // nested relation for the from of a relationship
   RELATION_TO_FILTER, // nested relation for the to of a relationship
   RELATION_TO_SIGHTING_FILTER, // nested sigthing relation for the to of a sighting

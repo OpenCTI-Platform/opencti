@@ -22,7 +22,7 @@ import {
   ALIAS_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
-  INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_REGARDING_OF,
   RELATION_FROM_FILTER,
   RELATION_TO_TYPES_FILTER,
@@ -152,8 +152,8 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.label).toEqual('Target type');
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(0);
     // 'elementWithTargetTypes' for stix core relationships
-    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(INSTANCE_FILTER_TARGET_TYPES);
-    expect(filterDefinition?.filterKey).toEqual(INSTANCE_FILTER_TARGET_TYPES);
+    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(INSTANCE_RELATION_TYPES_FILTER);
+    expect(filterDefinition?.filterKey).toEqual(INSTANCE_RELATION_TYPES_FILTER);
     expect(filterDefinition?.type).toEqual('string');
     // 'fromId' for basic relationships: not filterable
     filterDefinition = filterKeysSchema.get(ABSTRACT_BASIC_RELATIONSHIP)?.get(RELATION_FROM_FILTER);

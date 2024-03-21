@@ -112,7 +112,7 @@ import {
   complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
-  INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_REGARDING_OF,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
@@ -2289,9 +2289,60 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         ];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (filterKey === INSTANCE_FILTER_TARGET_TYPES) {
-        const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
+      if (filterKey === INSTANCE_RELATION_TYPES_FILTER) {
+        // define mode for the filter group
+        let globalMode = 'or';
+        if (filter.operator === 'eq' || filter.operator === 'not_nil') {
+          // relatedType = malware <-> fromType = malware OR toType = malware
+          // relatedType is not empty <-> fromType is not empty OR toType is not empty
+          globalMode = 'or';
+        } else if (filter.operator === 'not_eq' || filter.operator === 'nil') {
+          // relatedType != malware <-> fromType != malware AND toType != malware
+          // relatedType is empty <-> fromType is empty AND toType is empty
+          globalMode = 'and';
+        } else {
+          throw Error(`${INSTANCE_RELATION_TYPES_FILTER} filter only support 'eq', 'not_eq', 'nil' and 'not_nil' operators, not ${filter.operator}.`);
+        }
+        // define the filter group
+        if (filter.operator === 'eq' || filter.operator === 'not_eq') {
+          const filterGroupsForValues = filter.values.map((val) => {
+            const nestedFrom = [
+              { key: 'types', operator: filter.operator, values: [val] },
+              { key: 'role', operator: 'wildcard', values: ['*_from'] }
+            ];
+            const nestedTo = [
+              { key: 'types', operator: filter.operator, values: [val] },
+              { key: 'role', operator: 'wildcard', values: ['*_to'] }
+            ];
+            return {
+              mode: globalMode,
+              filters: [{ key: 'connections', nested: nestedFrom, mode: filter.mode }, { key: 'connections', nested: nestedTo, mode: filter.mode }],
+              filterGroups: [],
+            };
+          });
+          finalFilterGroups.push({
+            mode: filter.mode,
+            filters: [],
+            filterGroups: filterGroupsForValues,
+          });
+        } else if (filter.operator === 'nil' || filter.operator === 'not_nil') {
+          const nestedFrom = [
+            { key: 'types', operator: filter.operator, values: [] },
+            { key: 'role', operator: 'wildcard', values: ['*_from'] }
+          ];
+          const nestedTo = [
+            { key: 'types', operator: filter.operator, values: [] },
+            { key: 'role', operator: 'wildcard', values: ['*_to'] }
+          ];
+          const innerFilters = [{ key: 'connections', nested: nestedFrom, mode: filter.mode }, { key: 'connections', nested: nestedTo, mode: filter.mode }];
+          console.log('filters', innerFilters);
+          console.log('filters00', innerFilters[0].nested);
+          finalFilterGroups.push({
+            mode: globalMode,
+            filters: innerFilters,
+            filterGroups: [],
+          });
+        }
       }
       if (filterKey === RELATION_FROM_ROLE_FILTER || filterKey === RELATION_TO_ROLE_FILTER) {
         const side = filterKey === RELATION_FROM_ROLE_FILTER ? 'from' : 'to';
@@ -2303,7 +2354,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (filterKey === ALIAS_FILTER) {
         finalFilters.push({ ...filter, key: [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI] });
       }
-    } else if (arrayKeys.some((fiterKey) => isObjectAttribute(fiterKey)) && !arrayKeys.some((fiterKey) => fiterKey === 'connections')) {
+    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }

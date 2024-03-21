@@ -15,7 +15,7 @@ import {
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../../schema/general';
 import {
-  INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -44,7 +44,7 @@ export const connections: AttributeDefinition = {
     },
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false, associatedFilterKeys: [{ key: RELATION_FROM_TYPES_FILTER, label: 'Source type' }, { key: RELATION_TO_TYPES_FILTER, label: 'Target type' }, { key: INSTANCE_FILTER_TARGET_TYPES, label: 'Related type' }] },
+    { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false, associatedFilterKeys: [{ key: RELATION_FROM_TYPES_FILTER, label: 'Source type' }, { key: RELATION_TO_TYPES_FILTER, label: 'Target type' }, { key: INSTANCE_RELATION_TYPES_FILTER, label: 'Related type' }] },
   ],
 };
 
