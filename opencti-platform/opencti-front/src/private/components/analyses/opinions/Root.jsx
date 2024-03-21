@@ -53,9 +53,7 @@ class RootOpinion extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { opinionId },
-      },
+      params: { opinionId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -69,9 +67,7 @@ class RootOpinion extends Component {
 
   render() {
     const {
-      match: {
-        params: { opinionId },
-      },
+      params: { opinionId },
     } = this.props;
     return (
       <>
@@ -84,10 +80,9 @@ class RootOpinion extends Component {
                 return (
                   <Routes>
                     <Route
-                      exact
-                      path="/dashboard/analyses/opinions/:opinionId"
-                      render={(routeProps) => (
-                        <Opinion {...routeProps} opinion={props.opinion} />
+                      path="/"
+                      element={(
+                        <Opinion opinion={props.opinion} />
                       )}
                     />
                   </Routes>
@@ -105,7 +100,7 @@ class RootOpinion extends Component {
 
 RootOpinion.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default withRouter(RootOpinion);
