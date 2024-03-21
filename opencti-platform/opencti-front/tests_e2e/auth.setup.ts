@@ -2,12 +2,13 @@ import * as fs from 'fs';
 import { expect, test as setup } from './fixtures/baseFixtures';
 import DashboardPage from './model/dashboard.pageModel';
 import LoginPage from './model/login.pageModel';
+import type { BrowserContextOptions } from 'playwright-core';
 
 const authFile = 'tests_e2e/.setup/.auth/user.json';
 const prepLogoutFile = 'tests_e2e/.setup/.auth/logout-user.json';
 
-let authSessionStorage;
-let logoutSessionStorage;
+let authSessionStorage: BrowserContextOptions['storageState'];
+let logoutSessionStorage: BrowserContextOptions['storageState'];
 try {
 // For quicker local testing, don't redo the auth if the seed is still valid
   authSessionStorage = JSON.parse(fs.readFileSync(authFile, 'utf-8'));
@@ -18,7 +19,7 @@ try {
 }
 
 setup('authenticate', async ({ page }) => {
-  if ((authSessionStorage?.cookies[0]?.expires ?? 0) > (Date.now() / 1000)) {
+  if ((authSessionStorage?.cookies?.[0]?.expires ?? 0) > (Date.now() / 1000)) {
     return;
   }
   const dashboardPage = new DashboardPage(page);
@@ -30,7 +31,7 @@ setup('authenticate', async ({ page }) => {
 });
 
 setup('authenticate for logout user', async ({ page }) => {
-  if ((logoutSessionStorage?.cookies[0]?.expires ?? 0) > (Date.now() / 1000)) {
+  if ((logoutSessionStorage?.cookies?.[0]?.expires ?? 0) > (Date.now() / 1000)) {
     return;
   }
   const dashboardPage = new DashboardPage(page);
