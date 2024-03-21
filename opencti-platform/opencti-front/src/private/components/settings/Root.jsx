@@ -227,6 +227,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
                 >
                   <Navigate to="/dashboard/settings/vocabularies/labels" />
                 </Security>
