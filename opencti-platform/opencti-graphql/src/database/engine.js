@@ -1611,22 +1611,49 @@ const buildLocalMustFilter = async (validFilter) => {
       const nestedShould = [];
       const nestedFieldKey = `${parentKey}.${nestedKey}`;
       if (nestedKey === ID_INTERNAL) {
-        if (nestedOperator === 'not_eq') {
+        if (nestedOperator === 'nil') {
+          nestedMustNot.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_nil') {
+          nestedShould.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_eq') {
           nestedMustNot.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
-        } else {
+        } else { // nestedOperator = 'eq'
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
-      } else {
-        for (let i = 0; i < nestedValues.length; i += 1) {
-          const nestedSearchValues = nestedValues[i].toString();
-          if (nestedOperator === 'wildcard') {
-            nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
-          } else if (nestedOperator === 'not_eq') {
-            nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
-          } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-            nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
-          } else {
-            nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+      } else { // nested key !== internal_id
+        // eslint-disable-next-line no-lonely-if
+        if (nestedOperator === 'nil') {
+          nestedMustNot.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_nil') {
+          nestedShould.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else {
+          for (let i = 0; i < nestedValues.length; i += 1) {
+            const nestedSearchValues = nestedValues[i].toString();
+            if (nestedOperator === 'wildcard') {
+              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+            } else if (nestedOperator === 'not_eq') {
+              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+            } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+            } else { // nestedOperator = 'eq'
+              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+            }
           }
         }
       }
@@ -2025,7 +2052,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
 
 // fromOrToId and elementWithTargetTypes filters
 // are composed of a condition on fromId/fromType and a condition on toId/toType of a relationship
-const adaptFilterToRelatedRelationsFilterKeys = (filter) => {
+const adaptFilterToFromOrToFilterKeys = (filter) => {
   const { key, operator = 'eq', mode = 'or', values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys.length > 1) {
@@ -2342,7 +2369,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === INSTANCE_RELATION_FILTER) {
-        const { newFilterGroup } = adaptFilterToRelatedRelationsFilterKeys(filter);
+        const { newFilterGroup } = adaptFilterToFromOrToFilterKeys(filter);
         if (newFilterGroup) {
           finalFilterGroups.push(newFilterGroup);
         }
@@ -2364,7 +2391,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
       if (filterKey === INSTANCE_RELATION_TYPES_FILTER) {
-        const { newFilterGroup } = adaptFilterToRelatedRelationsFilterKeys(filter);
+        const { newFilterGroup } = adaptFilterToFromOrToFilterKeys(filter);
         if (newFilterGroup) {
           finalFilterGroups.push(newFilterGroup);
         }

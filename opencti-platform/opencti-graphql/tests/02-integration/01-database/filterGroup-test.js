@@ -9,7 +9,7 @@ import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAI
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
   COMPUTED_RELIABILITY_FILTER,
-  IDS_FILTER,
+  IDS_FILTER, INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_TYPES_FILTER,
@@ -1614,6 +1614,86 @@ describe('Complex filters combinations for elastic queries', () => {
       }
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(19); // (24 relationships) - (5 relationships involving malware or attack pattern) = 19
+    // (fromOrToTypes is empty)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'nil',
+              values: [],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
+    // (fromOrToId is empty)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_FILTER,
+              operator: 'nil',
+              values: [],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
+    // (fromOrToTypes is not empty)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_TYPES_FILTER,
+              operator: 'not_nil',
+              values: [],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
+    // (fromOrToId is not empty)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: INSTANCE_RELATION_FILTER,
+              operator: 'not_nil',
+              values: [],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
   });
   it('should list entities according to filters: filters with not supported keys', async () => {
     // bad_filter_key = XX
