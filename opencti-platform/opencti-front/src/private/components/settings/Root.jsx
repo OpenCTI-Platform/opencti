@@ -232,7 +232,6 @@ const Root = () => {
                 </Security>
               }
             />
-
             <Route
               path="/vocabularies/labels"
               element={
@@ -281,7 +280,6 @@ const Root = () => {
                 </Security>
               }
             />
-
             <Route
               path="/vocabularies/fields"
               element={
@@ -304,7 +302,6 @@ const Root = () => {
                 </Security>
               }
             />
-
           </Routes>
         </Security>
       </Suspense>

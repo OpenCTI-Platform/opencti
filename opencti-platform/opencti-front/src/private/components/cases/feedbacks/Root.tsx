@@ -180,42 +180,38 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
           </Box>
           <Routes>
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId"
-              render={() => <Feedback data={feedbackData} />}
+              path="/"
+              element={
+                <Feedback
+                  data={feedbackData}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={feedbackData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
                   entity={feedbackData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/history"
-              render={(routeProps) => (
+              path="/history"
+              element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={caseId}
                 />
-              )}
+              }
             />
           </Routes>
         </div>
