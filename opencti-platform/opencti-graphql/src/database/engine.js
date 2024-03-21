@@ -112,7 +112,7 @@ import {
   complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
-  INSTANCE_FILTER_TARGET_TYPES,
+  INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_REGARDING_OF,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
@@ -1611,22 +1611,49 @@ const buildLocalMustFilter = async (validFilter) => {
       const nestedShould = [];
       const nestedFieldKey = `${parentKey}.${nestedKey}`;
       if (nestedKey === ID_INTERNAL) {
-        if (nestedOperator === 'not_eq') {
+        if (nestedOperator === 'nil') {
+          nestedMustNot.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_nil') {
+          nestedShould.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_eq') {
           nestedMustNot.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
-        } else {
+        } else { // nestedOperator = 'eq'
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
-      } else {
-        for (let i = 0; i < nestedValues.length; i += 1) {
-          const nestedSearchValues = nestedValues[i].toString();
-          if (nestedOperator === 'wildcard') {
-            nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
-          } else if (nestedOperator === 'not_eq') {
-            nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
-          } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-            nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
-          } else {
-            nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+      } else { // nested key !== internal_id
+        // eslint-disable-next-line no-lonely-if
+        if (nestedOperator === 'nil') {
+          nestedMustNot.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else if (nestedOperator === 'not_nil') {
+          nestedShould.push({
+            exists: {
+              field: nestedFieldKey
+            }
+          });
+        } else {
+          for (let i = 0; i < nestedValues.length; i += 1) {
+            const nestedSearchValues = nestedValues[i].toString();
+            if (nestedOperator === 'wildcard') {
+              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+            } else if (nestedOperator === 'not_eq') {
+              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+            } else if (RANGE_OPERATORS.includes(nestedOperator)) {
+              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+            } else { // nestedOperator = 'eq'
+              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+            }
           }
         }
       }
@@ -2023,6 +2050,78 @@ const adaptFilterToSourceReliabilityFilterKey = async (context, user, filter) =>
   return { newFilter, newFilterGroup };
 };
 
+// fromOrToId and elementWithTargetTypes filters
+// are composed of a condition on fromId/fromType and a condition on toId/toType of a relationship
+const adaptFilterToFromOrToFilterKeys = (filter) => {
+  const { key, operator = 'eq', mode = 'or', values } = filter;
+  const arrayKeys = Array.isArray(key) ? key : [key];
+  if (arrayKeys.length > 1) {
+    throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
+  }
+  let nestedKey;
+  if (arrayKeys[0] === INSTANCE_RELATION_TYPES_FILTER) {
+    nestedKey = 'types';
+  } else if (arrayKeys[0] === INSTANCE_RELATION_FILTER) {
+    nestedKey = 'internal_id';
+  } else {
+    throw UnsupportedError('A related relations filter with this key is not supported', { key: arrayKeys[0] });
+  }
+
+  let newFilterGroup;
+  // define mode for the filter group
+  let globalMode = 'or';
+  if (operator === 'eq' || operator === 'not_nil') {
+    // relatedType = malware <-> fromType = malware OR toType = malware
+    // relatedType is not empty <-> fromType is not empty OR toType is not empty
+    globalMode = 'or';
+  } else if (operator === 'not_eq' || operator === 'nil') {
+    // relatedType != malware <-> fromType != malware AND toType != malware
+    // relatedType is empty <-> fromType is empty AND toType is empty
+    globalMode = 'and';
+  } else {
+    throw Error(`${INSTANCE_RELATION_TYPES_FILTER} filter only support 'eq', 'not_eq', 'nil' and 'not_nil' operators, not ${operator}.`);
+  }
+  // define the filter group
+  if (operator === 'eq' || operator === 'not_eq') {
+    const filterGroupsForValues = values.map((val) => {
+      const nestedFrom = [
+        { key: nestedKey, operator, values: [val] },
+        { key: 'role', operator: 'wildcard', values: ['*_from'] }
+      ];
+      const nestedTo = [
+        { key: nestedKey, operator, values: [val] },
+        { key: 'role', operator: 'wildcard', values: ['*_to'] }
+      ];
+      return {
+        mode: globalMode,
+        filters: [{ key: 'connections', nested: nestedFrom, mode }, { key: 'connections', nested: nestedTo, mode }],
+        filterGroups: [],
+      };
+    });
+    newFilterGroup = {
+      mode,
+      filters: [],
+      filterGroups: filterGroupsForValues,
+    };
+  } else if (operator === 'nil' || operator === 'not_nil') {
+    const nestedFrom = [
+      { key: nestedKey, operator, values: [] },
+      { key: 'role', operator: 'wildcard', values: ['*_from'] }
+    ];
+    const nestedTo = [
+      { key: nestedKey, operator, values: [] },
+      { key: 'role', operator: 'wildcard', values: ['*_to'] }
+    ];
+    const innerFilters = [{ key: 'connections', nested: nestedFrom, mode }, { key: 'connections', nested: nestedTo, mode }];
+    newFilterGroup = {
+      mode: globalMode,
+      filters: innerFilters,
+      filterGroups: [],
+    };
+  }
+  return { newFilter: undefined, newFilterGroup };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -2270,8 +2369,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === INSTANCE_RELATION_FILTER) {
-        const nested = [{ key: 'internal_id', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
+        const { newFilterGroup } = adaptFilterToFromOrToFilterKeys(filter);
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
       if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_TO_FILTER || filterKey === RELATION_TO_SIGHTING_FILTER) {
         const side = filterKey === RELATION_FROM_FILTER ? 'from' : 'to';
@@ -2289,9 +2390,11 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         ];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
-      if (filterKey === INSTANCE_FILTER_TARGET_TYPES) {
-        const nested = [{ key: 'types', operator: filter.operator, values: filter.values }];
-        finalFilters.push({ key: 'connections', nested, mode: filter.mode });
+      if (filterKey === INSTANCE_RELATION_TYPES_FILTER) {
+        const { newFilterGroup } = adaptFilterToFromOrToFilterKeys(filter);
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
+        }
       }
       if (filterKey === RELATION_FROM_ROLE_FILTER || filterKey === RELATION_TO_ROLE_FILTER) {
         const side = filterKey === RELATION_FROM_ROLE_FILTER ? 'from' : 'to';
@@ -2303,7 +2406,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       if (filterKey === ALIAS_FILTER) {
         finalFilters.push({ ...filter, key: [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI] });
       }
-    } else if (arrayKeys.some((fiterKey) => isObjectAttribute(fiterKey)) && !arrayKeys.some((fiterKey) => fiterKey === 'connections')) {
+    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
