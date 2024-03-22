@@ -179,6 +179,7 @@ const Relationships = () => {
                 filters={contextFilters}
                 search={searchTerm}
                 handleClearSelectedElements={handleClearSelectedElements}
+                type={'stix-core-relationship'}
               />
             </React.Suspense>
           )}
