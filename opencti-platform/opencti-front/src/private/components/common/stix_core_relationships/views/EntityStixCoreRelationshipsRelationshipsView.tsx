@@ -143,7 +143,18 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   }
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: predefinedFilters,
+    filters: [
+      ...predefinedFilters,
+      {
+        key: 'regardingOf',
+        operator: 'eq',
+        mode: 'and',
+        values: [
+          { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
+          { key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' },
+        ] as unknown as string[], // Workaround for typescript waiting for better solution
+      },
+    ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
@@ -203,16 +214,16 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       >
         <QueryRenderer
           query={
-                        // eslint-disable-next-line no-nested-ternary
-                        allDirections
-                          ? entityStixCoreRelationshipsLinesAllQuery
-                          : isRelationReversed
-                            ? entityStixCoreRelationshipsLinesToQuery
-                            : entityStixCoreRelationshipsLinesFromQuery
-                    }
+            // eslint-disable-next-line no-nested-ternary
+            allDirections
+              ? entityStixCoreRelationshipsLinesAllQuery
+              : isRelationReversed
+                ? entityStixCoreRelationshipsLinesToQuery
+                : entityStixCoreRelationshipsLinesFromQuery
+          }
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }: { props: unknown }) =>
-          /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
             (allDirections ? (
               <EntityStixCoreRelationshipsLinesAll
                 data={props}
@@ -254,7 +265,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectAll={selectAll}
               />
             ))
-                    }
+          }
         />
       </ListLines>
       <ToolBar
