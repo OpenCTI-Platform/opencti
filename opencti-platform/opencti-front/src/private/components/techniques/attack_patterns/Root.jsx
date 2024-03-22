@@ -101,7 +101,6 @@ class RootAttackPattern extends Component {
               'tools',
               'vulnerabilities',
               'malwares',
-              'sightings',
               'indicators',
               'observables',
             ]}

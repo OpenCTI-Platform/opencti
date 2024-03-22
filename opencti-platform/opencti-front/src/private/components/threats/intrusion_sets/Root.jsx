@@ -109,7 +109,6 @@ class RootIntrusionSet extends Component {
               'observables',
               'infrastructures',
               'sightings',
-              'observed_data',
             ]}
           />
         </Route>
