@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { uniq } from 'ramda';
+import React from 'react';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -790,4 +791,23 @@ export const getSelectedOptions = (
     }
   });
   return mapFilterValues.sort((a, b) => a.label.localeCompare(b.label));
+};
+
+export const convertOperatorToIcon = (operator: string) => {
+  switch (operator) {
+    case 'lt':
+      return <>&nbsp;&#60;</>;
+    case 'lte':
+      return <>&nbsp;&#8804;</>;
+    case 'gt':
+      return <>&nbsp;&#62;</>;
+    case 'gte':
+      return <>&nbsp;&#8805;</>;
+    case 'eq':
+      return <>&nbsp;=</>;
+    case 'not_eq':
+      return <>&nbsp;&#8800;</>;
+    default:
+      return null;
+  }
 };
