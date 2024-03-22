@@ -340,6 +340,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                         {selectAll ? (
                           <TasksFilterValueContainer
                             filters={filters}
+                            entityTypes={['Notification']}
                           />
                         ) : (
                           <span>

@@ -1331,7 +1331,7 @@ class ToolBar extends Component {
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
-          const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type];
+          const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
           entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
