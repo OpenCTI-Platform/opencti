@@ -654,7 +654,7 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
         delete newFilter.id;
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group)) as FilterGroup[],
+    filterGroups: filters.filterGroups.map((group) => useRemoveIdAndIncorrectKeysFromFilterGroupObject(group, entityTypes)) as FilterGroup[],
   };
 };
 

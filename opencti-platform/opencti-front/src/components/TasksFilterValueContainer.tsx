@@ -6,8 +6,8 @@ import TaskFilterValue from './TaskFilterValue';
 import Loader from './Loader';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 
-const TasksFilterValueContainer = ({ filters }: { filters: FilterGroup }) => {
-  const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters) as FilterGroup;
+const TasksFilterValueContainer = ({ filters, entityTypes }: { filters: FilterGroup, entityTypes?: string[] }) => {
+  const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as FilterGroup;
   const queryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     { filters: cleanUpFilters as unknown as GqlFilterGroup },

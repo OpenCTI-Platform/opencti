@@ -1331,8 +1331,9 @@ class ToolBar extends Component {
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
+          const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
-          entityTypeFilterValues.forEach((entityType) => {
+          entityTypes.forEach((entityType) => {
             const currentMap = schema.filterKeysSchema.get(entityType);
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
@@ -1645,9 +1646,7 @@ class ToolBar extends Component {
                                     )}
                                   </span>
                                 )}
-                                <TasksFilterValueContainer
-                                  filters={filters}
-                                ></TasksFilterValueContainer>
+                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
                               </div>
                             ) : (
                               <span>

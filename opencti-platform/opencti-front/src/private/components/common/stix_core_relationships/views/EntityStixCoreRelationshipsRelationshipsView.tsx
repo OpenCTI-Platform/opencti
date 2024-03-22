@@ -203,16 +203,16 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       >
         <QueryRenderer
           query={
-                        // eslint-disable-next-line no-nested-ternary
-                        allDirections
-                          ? entityStixCoreRelationshipsLinesAllQuery
-                          : isRelationReversed
-                            ? entityStixCoreRelationshipsLinesToQuery
-                            : entityStixCoreRelationshipsLinesFromQuery
-                    }
+            // eslint-disable-next-line no-nested-ternary
+            allDirections
+              ? entityStixCoreRelationshipsLinesAllQuery
+              : isRelationReversed
+                ? entityStixCoreRelationshipsLinesToQuery
+                : entityStixCoreRelationshipsLinesFromQuery
+          }
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }: { props: unknown }) =>
-          /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
             (allDirections ? (
               <EntityStixCoreRelationshipsLinesAll
                 data={props}
@@ -254,7 +254,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectAll={selectAll}
               />
             ))
-                    }
+          }
         />
       </ListLines>
       <ToolBar
@@ -266,6 +266,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
+        type={'stix-core-relationship'}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
