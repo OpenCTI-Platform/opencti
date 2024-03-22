@@ -92,15 +92,7 @@ class RootCourseOfAction extends Component {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Techniques') },
                       { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
@@ -126,7 +118,7 @@ class RootCourseOfAction extends Component {
                           location.pathname.includes(
                             `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
                           )
-                            ? `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`
+                            ? `/dashboard/techniques/courses_of_action/${courseOfAction.id}`
                             : location.pathname
                         }
                       >
