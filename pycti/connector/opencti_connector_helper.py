@@ -424,7 +424,7 @@ class PingAlive(threading.Thread):
     def __init__(
         self, connector_logger, connector_id, api, get_state, set_state, metric
     ) -> None:
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, daemon=True)
         self.connector_logger = connector_logger
         self.connector_id = connector_id
         self.in_error = False
