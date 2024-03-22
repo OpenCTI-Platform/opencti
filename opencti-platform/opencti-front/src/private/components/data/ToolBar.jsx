@@ -1645,9 +1645,7 @@ class ToolBar extends Component {
                                     )}
                                   </span>
                                 )}
-                                <TasksFilterValueContainer
-                                  filters={filters}
-                                ></TasksFilterValueContainer>
+                                <TasksFilterValueContainer filters={filters} entityTypes={selectedTypes.length > 0 ? selectedTypes : [this.props.type]}></TasksFilterValueContainer>
                               </div>
                             ) : (
                               <span>

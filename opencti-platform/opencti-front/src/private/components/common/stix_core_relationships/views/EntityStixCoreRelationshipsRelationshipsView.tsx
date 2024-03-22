@@ -143,18 +143,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   }
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: [
-      ...predefinedFilters,
-      {
-        key: 'regardingOf',
-        operator: 'eq',
-        mode: 'and',
-        values: [
-          { key: 'id', values: [entityId], operator: 'eq', mode: 'or' },
-          { key: 'relationship_type', values: relationshipTypes, operator: 'eq', mode: 'or' },
-        ] as unknown as string[], // Workaround for typescript waiting for better solution
-      },
-    ],
+    filters: predefinedFilters,
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
@@ -277,6 +266,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
+        type={'stix-core-relationship'}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
