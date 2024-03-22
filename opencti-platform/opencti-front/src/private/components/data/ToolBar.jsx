@@ -1646,7 +1646,7 @@ class ToolBar extends Component {
                                     )}
                                   </span>
                                 )}
-                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes}></TasksFilterValueContainer>
+                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
                               </div>
                             ) : (
                               <span>
