@@ -316,6 +316,22 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           />
         )}
       />
+      <Route
+        exact
+        path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/incidents"
+        render={(routeProps) => (
+          <EntityStixCoreRelationships
+            entityId={infrastructureData.id}
+            relationshipTypes={['uses', 'compromises']}
+            stixCoreObjectTypes={['Incident']}
+            entityLink={link}
+            isRelationReversed={true}
+            defaultStartTime={infrastructureData.first_seen}
+            defaultStopTime={infrastructureData.last_seen}
+            {...routeProps}
+          />
+        )}
+      />
     </>
   );
 };
