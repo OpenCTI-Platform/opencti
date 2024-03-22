@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import React, { Fragment } from 'react';
+import Tooltip from '@mui/material/Tooltip';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
@@ -105,16 +106,28 @@ const TaskFilterValue = ({
                         (currentFilter.mode ?? 'or').toUpperCase(),
                       );
                       return (
-                        <span key={o}>
-                          <FilterValuesContent
-                            filterKey={currentFilter.key}
-                            id={o}
-                            value={filtersRepresentativesMap.get(o)?.value ?? o}
-                          />
-                          {R.last(currentFilter.values) !== o && (
+                        <Tooltip
+                          key={o}
+                          title={
+                            <FilterValuesContent
+                              filterKey={currentFilter.key}
+                              id={o}
+                              value={filtersRepresentativesMap.get(o)?.value ?? o}
+                              isFilterTooltip={true}
+                            />
+                          }
+                        >
+                          <span key={o}>
+                            <FilterValuesContent
+                              filterKey={currentFilter.key}
+                              id={o}
+                              value={filtersRepresentativesMap.get(o)?.value ?? o}
+                            />
+                            {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>
-                          )}{' '}
-                        </span>
+                            )}{' '}
+                          </span>
+                        </Tooltip>
                       );
                     })
                   )}
