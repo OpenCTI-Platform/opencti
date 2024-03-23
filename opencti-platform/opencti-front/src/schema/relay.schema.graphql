@@ -10593,6 +10593,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   authentication_value: String
   user_id: String
   user: Creator
+  current_state_cursor: String
   added_after_start: DateTime
   ingestion_running: Boolean
 }
