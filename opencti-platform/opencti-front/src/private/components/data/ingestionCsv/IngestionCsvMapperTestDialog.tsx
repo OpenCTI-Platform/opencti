@@ -6,7 +6,6 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
-import { IngestionCsvMapperTestDialogQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogQuery.graphql';
 import Alert from '@mui/material/Alert';
 import { Option } from '@components/common/form/ReferenceField';
 import { IngestionCsvMapperTestDialogMutation$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogMutation.graphql';
@@ -48,7 +47,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   setIsCreateDisabled,
 }) => {
   const { t_i18n } = useFormatter();
-  const [result, setResult] = useState<IngestionCsvMapperTestDialogQuery$data | undefined>(undefined);
+  const [result, setResult] = useState<IngestionCsvMapperTestDialogMutation$data | undefined>(undefined);
   const [commitTest] = useMutation(ingestionCsvMapperTestMutation);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -74,15 +73,11 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionCsvMapperTestDialogMutation$data).ingestionCsvTester;
+        const resultTest = (data as IngestionCsvMapperTestDialogMutation$data);
         if (resultTest) {
-          setResult({
-            test_mapper: {
-              ...resultTest,
-            },
-          });
+          setResult(resultTest);
           if (setIsCreateDisabled) {
-            setIsCreateDisabled(resultTest.nbEntities === 0);
+            setIsCreateDisabled(resultTest.ingestionCsvTester?.nbEntities === 0);
           }
         }
         setLoading(false);
@@ -114,7 +109,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         >
           <Button
             variant="contained"
-            color={result?.test_mapper?.nbEntities ? 'primary' : 'secondary'}
+            color={result?.ingestionCsvTester?.nbEntities ? 'primary' : 'secondary'}
             onClick={() => onTest()}
           >
             {t_i18n('Test')}
@@ -136,14 +131,14 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               }}
                >
               <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.test_mapper?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+              <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+              <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.test_mapper?.objects || t_i18n('You will find here the result in JSON format.')}
+            code={result?.ingestionCsvTester?.objects || t_i18n('You will find here the result in JSON format.')}
             language={'json'}
           />
         </Box>
