@@ -10538,14 +10538,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import-newlines@npm:1.3.4":
-  version: 1.3.4
-  resolution: "eslint-plugin-import-newlines@npm:1.3.4"
+"eslint-plugin-import-newlines@npm:1.4.0":
+  version: 1.4.0
+  resolution: "eslint-plugin-import-newlines@npm:1.4.0"
   peerDependencies:
     eslint: ">=6.0.0"
   bin:
     import-linter: lib/index.js
-  checksum: 10/90e050d4a0390501136d291ab80ca3065c283f873eb47d4c90f8f84b2fadab31849a408f006eddc18bbe3074b9451e0e4440efaed7a3a376931cf5e5d9609849
+  checksum: 10/66cbf205433e4f31afa0dcdce4f66a55fe33123bfda9ff265b93efcf201cccde382b225c3b5403c890dff558bf596874d0e398fe182b42eb109e9191b8851063
   languageName: node
   linkType: hard
 
@@ -16222,7 +16222,7 @@ __metadata:
     eslint-config-react-app: "npm:7.0.1"
     eslint-plugin-custom-rules: "link:packages/eslint-plugin-custom-rules"
     eslint-plugin-import: "npm:2.29.1"
-    eslint-plugin-import-newlines: "npm:1.3.4"
+    eslint-plugin-import-newlines: "npm:1.4.0"
     eslint-plugin-react: "npm:7.34.1"
     express: "npm:4.19.1"
     extract-files: "npm:13.0.0"
