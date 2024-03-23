@@ -23,7 +23,7 @@ copyright = "2024, Filigran"
 author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
-release = "5.12.20"
+release = "6.0.7"
 
 master_doc = "index"
 
