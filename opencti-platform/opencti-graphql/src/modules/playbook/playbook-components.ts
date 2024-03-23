@@ -1032,10 +1032,6 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
     }
     if (objectsToPush.length > 0) {
       bundle.objects.push(...objectsToPush);
-      return { output_port: 'out', bundle };
-    }
-    if (objectsToPush.length > 0) {
-      bundle.objects.push(...objectsToPush);
       return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };

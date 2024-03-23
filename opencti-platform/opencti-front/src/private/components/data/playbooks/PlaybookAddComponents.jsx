@@ -495,7 +495,7 @@ const PlaybookAddComponentsContent = ({
                         {Array(actionsInputs.length)
                           .fill(0)
                           .map((_, i) => (
-                            <>
+                            <React.Fragment key={i}>
                               {(actionsInputs[i]?.op === 'remove' || (actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel'].includes(actionsInputs[i]?.attribute))) && (
                                 <Alert severity="warning" style={{ marginBottom: 20 }}>
                                   {t_i18n('This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.')}
@@ -544,7 +544,7 @@ const PlaybookAddComponentsContent = ({
                                   </Grid>
                                 </Grid>
                               </div>
-                            </>
+                            </React.Fragment>
                           ))}
                         <div className={classes.add}>
                           <Button
