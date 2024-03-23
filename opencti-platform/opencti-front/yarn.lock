@@ -15017,7 +15017,7 @@ __metadata:
     unified: "npm:11.0.4"
     use-analytics: "npm:1.1.0"
     uuid: "npm:9.0.1"
-    vite: "npm:5.2.3"
+    vite: "npm:5.2.4"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:1.0.1"
     vitest: "npm:1.4.0"
@@ -20062,7 +20062,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:5.2.3, vite@npm:^5.0.0":
+"vite@npm:5.2.4":
+  version: 5.2.4
+  resolution: "vite@npm:5.2.4"
+  dependencies:
+    esbuild: "npm:^0.20.1"
+    fsevents: "npm:~2.3.3"
+    postcss: "npm:^8.4.36"
+    rollup: "npm:^4.13.0"
+  peerDependencies:
+    "@types/node": ^18.0.0 || >=20.0.0
+    less: "*"
+    lightningcss: ^1.21.0
+    sass: "*"
+    stylus: "*"
+    sugarss: "*"
+    terser: ^5.4.0
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+    less:
+      optional: true
+    lightningcss:
+      optional: true
+    sass:
+      optional: true
+    stylus:
+      optional: true
+    sugarss:
+      optional: true
+    terser:
+      optional: true
+  bin:
+    vite: bin/vite.js
+  checksum: 10/ed3d4fa2023642dd578e90eb02876e01729fda0af196304bb1c3a7f037b457f1a505bfa36c10f28d0466945b9da7d7972219716554d43ff3c025f26ed3d89e11
+  languageName: node
+  linkType: hard
+
+"vite@npm:^5.0.0":
   version: 5.2.3
   resolution: "vite@npm:5.2.3"
   dependencies:
