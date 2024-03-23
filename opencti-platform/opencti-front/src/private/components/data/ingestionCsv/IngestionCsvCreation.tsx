@@ -99,7 +99,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
-    const userId = typeof values.user_id === 'string' ? values.user_id : values.user_id.value;
     const input = {
       name: values.name,
       description: values.description,
@@ -108,7 +107,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
-      user_id: userId,
+      user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
     };
     commit({
       variables: {
@@ -330,8 +329,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               <IngestionCsvMapperTestDialog
                 open={open}
                 onClose={() => setOpen(false)}
-                uri={values.uri}
-                csvMapperId={values.csv_mapper_id}
+                values={values}
                 setIsCreateDisabled={setIsCreateDisabled}
               />
             </Form>

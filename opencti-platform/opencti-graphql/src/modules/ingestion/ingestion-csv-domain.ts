@@ -1,4 +1,3 @@
-import axios from 'axios';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
@@ -8,10 +7,11 @@ import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../..
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
+import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
+import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -77,35 +77,52 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
   return ingestionId;
 };
 
-export const fetchCsvFromUrl = async (url: string, csvMapperSkipLineChar: string | undefined): Promise<Buffer> => {
-  const response = await axios.get(url, { responseType: 'arraybuffer' });
-  const dataExtract = response.data.toString().split('\n')
+interface CsvResponseData {
+  data: Buffer,
+  addedLast: string | undefined | null
+}
+
+export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: BasicStoreEntityIngestionCsv, opts: { limit?: number } = {}): Promise<CsvResponseData> => {
+  const { limit = undefined } = opts;
+  const headers = new OpenCTIHeaders();
+  headers.Accept = 'application/csv';
+  if (ingestion.authentication_type === 'basic') {
+    const auth = Buffer.from(ingestion.authentication_value || '', 'utf-8').toString('base64');
+    headers.Authorization = `Basic ${auth}`;
+  }
+  if (ingestion.authentication_type === 'bearer') {
+    headers.Authorization = `Bearer ${ingestion.authentication_value}`;
+  }
+  let certificates;
+  if (ingestion.authentication_type === 'certificate') {
+    const [cert, key, ca] = (ingestion.authentication_value || '').split(':');
+    certificates = { cert, key, ca };
+  }
+  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'arraybuffer', certificates };
+  const httpClient = getHttpClient(httpClientOptions);
+  const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
+  const dataLines = data.toString().split('\n');
+  const dataExtract = dataLines
     .filter((line: string) => (
-      (!!csvMapperSkipLineChar && !line.startsWith(csvMapperSkipLineChar))
-      || (!csvMapperSkipLineChar && !!line)
+      (!!csvMapper.skipLineChar && !line.startsWith(csvMapper.skipLineChar))
+          || (!csvMapper.skipLineChar && !!line)
     ))
+    .slice(0, limit ?? dataLines.length)
     .join('\n');
-  return Buffer.from(dataExtract);
+  return { data: Buffer.from(dataExtract), addedLast: resultHeaders['x-csv-date-added-last'] };
 };
 
-export const fetchCsvExtractFromUrl = async (url: string, csvMapperSkipLineChar: string | undefined): Promise<Buffer> => {
-  const response = await axios.get(url, { responseType: 'arraybuffer' });
-  const TEST_LIMIT = 50;
-  const dataExtract = response.data.toString().split('\n')
-    .filter((line: string) => (
-      (!!csvMapperSkipLineChar && !line.startsWith(csvMapperSkipLineChar))
-      || (!csvMapperSkipLineChar && !!line)
-    ))
-    .slice(0, TEST_LIMIT)
-    .join('\n');
-  return Buffer.from(dataExtract);
-};
-
-export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, uri: string, csv_mapper_id: string): Promise<CsvMapperTestResult> => {
-  const csvMapper = await findCsvMapperById(context, user, csv_mapper_id);
+export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput): Promise<CsvMapperTestResult> => {
+  const csvMapper = await findCsvMapperById(context, user, input.csv_mapper_id);
   const parsedMapper = parseCsvMapper(csvMapper);
-  const csvBuffer = await fetchCsvExtractFromUrl(uri, csvMapper.skipLineChar);
-  const bundle = await bundleProcess(context, user, csvBuffer, parsedMapper);
+  const ingestion = {
+    csv_mapper_id: input.csv_mapper_id,
+    uri: input.uri,
+    authentication_type: input.authentication_type,
+    authentication_value: input.authentication_value
+  } as BasicStoreEntityIngestionCsv;
+  const { data } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
+  const bundle = await bundleProcess(context, user, data, parsedMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,

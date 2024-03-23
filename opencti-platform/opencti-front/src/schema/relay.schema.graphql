@@ -7375,7 +7375,6 @@ type Query {
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
-  test_mapper(uri: String!, csv_mapper_id: String!): CsvMapperTestResult
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -8125,6 +8124,7 @@ type Mutation {
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult
   ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
@@ -10593,6 +10593,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   authentication_value: String
   user_id: String
   user: Creator
+  current_state_cursor: String
   added_after_start: DateTime
   ingestion_running: Boolean
 }

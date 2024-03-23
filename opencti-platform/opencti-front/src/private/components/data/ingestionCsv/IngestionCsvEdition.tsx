@@ -361,8 +361,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           <IngestionCsvMapperTestDialog
             open={open}
             onClose={() => setOpen(false)}
-            uri={values.uri}
-            csvMapperId={values.csv_mapper_id}
+            values={values}
           />
         </Form>
       )}

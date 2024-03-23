@@ -207,7 +207,7 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
     const httpClientOptions = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
     const httpClient = getHttpClient(httpClientOptions);
     const remoteUri = `${uri.endsWith('/') ? uri.slice(0, -1) : uri}/graphql`;
-    const { data } = await httpClient.post(remoteUri, { query }, { withCredentials: true });
+    const { data } = await httpClient.post(remoteUri, { query });
     return data.data.streamCollections.edges.map((e) => e.node);
   } catch (e) {
     throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', cause: e });

@@ -1,4 +1,4 @@
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -6,17 +6,16 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
-import { IngestionCsvMapperTestDialogQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogQuery.graphql';
-import { Option } from '@components/common/form/ReferenceField';
-import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
+import { Option } from '@components/common/form/ReferenceField';
+import { IngestionCsvMapperTestDialogMutation$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogMutation.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery, handleError } from '../../../../relay/environment';
+import { handleError } from '../../../../relay/environment';
 
-const ingestionCsvMapperTestQuery = graphql`
-  query IngestionCsvMapperTestDialogQuery($uri: String!, $csv_mapper_id: String!) {
-    test_mapper(uri: $uri, csv_mapper_id: $csv_mapper_id) {
+const ingestionCsvMapperTestMutation = graphql`
+  mutation IngestionCsvMapperTestDialogMutation($input: IngestionCsvAddInput!) {
+    ingestionCsvTester(input: $input) {
       nbEntities
       nbRelationships
       objects
@@ -27,20 +26,29 @@ const ingestionCsvMapperTestQuery = graphql`
 interface IngestionCsvMapperTestDialogProps {
   open: boolean
   onClose: () => void
-  uri: string
-  csvMapperId: string | Option
+  values: {
+    name: string,
+    description?: string | null,
+    authentication_type: string,
+    authentication_value?: string | null,
+    current_state_date: Date | null,
+    uri: string,
+    ingestion_running?: boolean | null,
+    csv_mapper_id: string | Option,
+    user_id: string | Option
+  }
   setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDialogProps> = ({
   open,
   onClose,
-  uri,
-  csvMapperId,
+  values,
   setIsCreateDisabled,
 }) => {
   const { t_i18n } = useFormatter();
-  const [result, setResult] = useState<IngestionCsvMapperTestDialogQuery$data | undefined>(undefined);
+  const [result, setResult] = useState<IngestionCsvMapperTestDialogMutation$data | undefined>(undefined);
+  const [commitTest] = useMutation(ingestionCsvMapperTestMutation);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -48,55 +56,43 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
     onClose();
   };
 
-  const onTest = (url: string, csv_mapper_id: string) => {
+  const onTest = () => {
     setLoading(true);
-    fetchQuery(ingestionCsvMapperTestQuery, { uri: url, csv_mapper_id })
-      .toPromise()
-      .then((data) => {
-        const resultTest = (data as IngestionCsvMapperTestDialogQuery$data)
-          .test_mapper;
+    commitTest({
+      variables: {
+        input: {
+          name: values.name,
+          description: values.description,
+          authentication_type: values.authentication_type,
+          authentication_value: values.authentication_value,
+          current_state_date: values.current_state_date,
+          uri: values.uri,
+          ingestion_running: values.ingestion_running,
+          user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
+          csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id.value,
+        },
+      },
+      onCompleted: (data) => {
+        const resultTest = (data as IngestionCsvMapperTestDialogMutation$data);
         if (resultTest) {
-          setResult({
-            test_mapper: {
-              ...resultTest,
-            },
-          });
+          setResult(resultTest);
           if (setIsCreateDisabled) {
-            setIsCreateDisabled(resultTest.nbEntities === 0);
+            setIsCreateDisabled(resultTest.ingestionCsvTester?.nbEntities === 0);
           }
         }
         setLoading(false);
-      }).catch((error) => {
+      },
+      onError: (error) => {
         handleError(error);
         setLoading(false);
-      });
+      },
+    });
   };
 
   return (
     <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
       <DialogContent>
-        <Box
-          sx={{ marginBottom: '12px' }}
-        >
-          <TextField
-            label="CSV feed URL"
-            defaultValue={uri}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-            sx={{ marginBottom: '12px' }}
-          />
-          <TextField
-            label="CSV mapper"
-            defaultValue={typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.label}
-            InputProps={{
-              readOnly: true,
-            }}
-            fullWidth
-          />
-        </Box>
         <Box>
           <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
@@ -113,8 +109,8 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         >
           <Button
             variant="contained"
-            color={result?.test_mapper?.nbEntities ? 'primary' : 'secondary'}
-            onClick={() => onTest(uri, typeof csvMapperId === 'string' ? csvMapperId : csvMapperId.value)}
+            color={result?.ingestionCsvTester?.nbEntities ? 'primary' : 'secondary'}
+            onClick={() => onTest()}
           >
             {t_i18n('Test')}
           </Button>
@@ -135,14 +131,14 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
               }}
                >
               <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.test_mapper?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.test_mapper?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+              <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+              <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.test_mapper?.objects || t_i18n('You will find here the result in JSON format.')}
+            code={result?.ingestionCsvTester?.objects || t_i18n('You will find here the result in JSON format.')}
             language={'json'}
           />
         </Box>
