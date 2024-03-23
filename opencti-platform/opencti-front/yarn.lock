@@ -5084,9 +5084,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/react@npm:14.2.1":
-  version: 14.2.1
-  resolution: "@testing-library/react@npm:14.2.1"
+"@testing-library/react@npm:14.2.2":
+  version: 14.2.2
+  resolution: "@testing-library/react@npm:14.2.2"
   dependencies:
     "@babel/runtime": "npm:^7.12.5"
     "@testing-library/dom": "npm:^9.0.0"
@@ -5094,7 +5094,7 @@ __metadata:
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: 10/e02b2f32ae79665a79fc4d8ee053fd3832bfcd4753aa1dba05cdece1a9f59c72a0fae91e0a9387597dcb686d631a722729f2878e38dc95e6f23b291ad8d09b6c
+  checksum: 10/3605577fda8d5e27b8919f390f749af91494d03e7ba5ccaf6480ed1184248372c5a4e8fe1c8c3ad4c1a7b3536f37144ba4b4626900ed46dc9811312f280eee31
   languageName: node
   linkType: hard
 
@@ -16183,7 +16183,7 @@ __metadata:
     "@rjsf/mui": "npm:5.17.1"
     "@rjsf/utils": "npm:5.17.1"
     "@rollup/plugin-graphql": "npm:2.0.4"
-    "@testing-library/react": "npm:14.2.1"
+    "@testing-library/react": "npm:14.2.2"
     "@types/node": "npm:20.11.24"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.11"
