@@ -5666,7 +5666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mdast@npm:^4.0.0":
+"@types/mdast@npm:^4.0.0, @types/mdast@npm:^4.0.3":
   version: 4.0.3
   resolution: "@types/mdast@npm:4.0.3"
   dependencies:
@@ -16279,7 +16279,7 @@ __metadata:
     relay-compiler: "npm:16.2.0"
     relay-runtime: "npm:16.2.0"
     relay-test-utils: "npm:16.2.0"
-    remark-flexible-markers: "npm:1.0.4"
+    remark-flexible-markers: "npm:1.2.1"
     remark-gfm: "npm:4.0.0"
     remark-parse: "npm:11.0.0"
     rxjs: "npm:7.8.1"
@@ -18496,15 +18496,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-flexible-markers@npm:1.0.4":
-  version: 1.0.4
-  resolution: "remark-flexible-markers@npm:1.0.4"
+"remark-flexible-markers@npm:1.2.1":
+  version: 1.2.1
+  resolution: "remark-flexible-markers@npm:1.2.1"
   dependencies:
-    "@types/mdast": "npm:^4.0.0"
-    textr: "npm:^0.3.0"
+    "@types/mdast": "npm:^4.0.3"
     unist-builder: "npm:^4.0.0"
+    unist-util-find-after: "npm:^5.0.0"
+    unist-util-find-all-after: "npm:^5.0.0"
+    unist-util-find-all-before: "npm:^5.0.0"
+    unist-util-find-between-all: "npm:^1.0.5"
     unist-util-visit: "npm:^5.0.0"
-  checksum: 10/0e7cf949b2b1f1bcf7d09935fc69575ac92ee394a4a2a120891af1c1f9a5908b0213876a57deaa6b46327cb8d2ec7a31e62e2c194440dce7ac72ccc086c51cdf
+  checksum: 10/30d9c0d24387ef1cca7a6afabe5c5a8b2a66afd3bd82b705b3f78ef37e3c90d249f1edc5c2f6cff8b2800d11cf0333f36cb612f110e47980383fd11afe21e094
   languageName: node
   linkType: hard
 
@@ -20447,13 +20450,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"textr@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "textr@npm:0.3.0"
-  checksum: 10/7618df3551b5f2704cc13ec4dc7bc4ba5fb0c8350097a10c0e5e55031c0d45fe10e35be9607c5ba22b03bed3f2ef50dfe4b5170c8019ecf33262da9687a137b4
-  languageName: node
-  linkType: hard
-
 "three-forcegraph@npm:1":
   version: 1.41.13
   resolution: "three-forcegraph@npm:1.41.13"
@@ -21186,6 +21182,46 @@ __metadata:
   dependencies:
     "@types/unist": "npm:^3.0.0"
   checksum: 10/4657177eb71eaa45f53e8a8c8b453f60be8e3b1e6b736a2bb1272cc9ccafb98018e43bb4e853a9f35c5030d4e6f7d27d392af2c82d57d9f91e02a760c857d61f
+  languageName: node
+  linkType: hard
+
+"unist-util-find-after@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "unist-util-find-after@npm:5.0.0"
+  dependencies:
+    "@types/unist": "npm:^3.0.0"
+    unist-util-is: "npm:^6.0.0"
+  checksum: 10/7960f98f99ae3c2585a8e16b23f338e5851b7c0f40c3e82e2aef9ddb4887ae63d4cb3906e793dc8ff8242f252425ef846a4e59afa1d3d91ebf0ac84732df2509
+  languageName: node
+  linkType: hard
+
+"unist-util-find-all-after@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "unist-util-find-all-after@npm:5.0.0"
+  dependencies:
+    "@types/unist": "npm:^3.0.0"
+    unist-util-is: "npm:^6.0.0"
+  checksum: 10/e4e6de227c406f1ce7bf7006153ffbae506194d65528bde6e74e032ff992c8c5f57dded5ba6309defcb636493661f26c19a0fa5d53e357705d74266bbc44ac8b
+  languageName: node
+  linkType: hard
+
+"unist-util-find-all-before@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "unist-util-find-all-before@npm:5.0.0"
+  dependencies:
+    "@types/unist": "npm:^3.0.0"
+    unist-util-is: "npm:^6.0.0"
+  checksum: 10/2f1b6a5748999a5bec356f76c0671f4bc6386aab7b89c1c8aeb2f2501df03d07475730b9c5302e9e4dab63a01410faa7f9bafd6d92d82228ddf64f8a0fabcee1
+  languageName: node
+  linkType: hard
+
+"unist-util-find-between-all@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "unist-util-find-between-all@npm:1.0.5"
+  dependencies:
+    "@types/unist": "npm:^3.0.0"
+    unist-util-is: "npm:^6.0.0"
+  checksum: 10/93e1a4be712cfa5da0b9a7ef19993a59e29f5f128591bb39c3a24206ab81e70705464ffa952d7292b742024d28a61aca3b1f4e23ab31223bc9993939afb05b04
   languageName: node
   linkType: hard
 

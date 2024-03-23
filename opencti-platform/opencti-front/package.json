@@ -77,7 +77,7 @@
     "reactflow": "11.10.4",
     "recharts": "2.12.2",
     "relay-runtime": "16.2.0",
-    "remark-flexible-markers": "1.0.4",
+    "remark-flexible-markers": "1.2.1",
     "remark-gfm": "4.0.0",
     "remark-parse": "11.0.0",
     "rxjs": "7.8.1",
