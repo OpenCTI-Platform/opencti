@@ -6,13 +6,12 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { AxiosHeaders } from 'axios';
 import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { type GetHttpClient, getHttpClient } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, sanitizeForMomentParsing, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
@@ -210,7 +209,7 @@ interface TaxiiResponseData {
 }
 
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
-  const headers = new AxiosHeaders();
+  const headers = new OpenCTIHeaders();
   headers.Accept = 'application/taxii+json;version=2.1';
   if (ingestion.authentication_type === 'basic') {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
@@ -291,8 +290,9 @@ const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStor
   if (objects === undefined) {
     const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
+  } else {
+    logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${objects.length} items`);
   }
-  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${objects.length} items`);
   return objects;
 };
 

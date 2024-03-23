@@ -1,4 +1,3 @@
-import { AxiosHeaders } from 'axios';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
@@ -12,7 +11,7 @@ import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_M
 import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
-import { type GetHttpClient, getHttpClient } from '../../utils/http-client';
+import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -85,7 +84,7 @@ interface CsvResponseData {
 
 export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: BasicStoreEntityIngestionCsv, opts: { limit?: number } = {}): Promise<CsvResponseData> => {
   const { limit = undefined } = opts;
-  const headers = new AxiosHeaders();
+  const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
   if (ingestion.authentication_type === 'basic') {
     const auth = Buffer.from(ingestion.authentication_value || '', 'utf-8').toString('base64');

@@ -1,8 +1,10 @@
 import https from 'node:https';
-import axios, { type AxiosHeaders, type AxiosRequestConfig, type HeadersDefaults, type RawAxiosRequestHeaders } from 'axios';
+import axios, { AxiosHeaders, type AxiosRequestConfig, type HeadersDefaults, type RawAxiosRequestHeaders } from 'axios';
 import { Agent } from 'https';
 import { getPlatformHttpProxyAgent } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
+
+export class OpenCTIHeaders extends AxiosHeaders {}
 
 export interface Certificates {
   cert: string,
