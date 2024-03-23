@@ -55,10 +55,6 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionCsvConnection @auth(for: [SETTINGS])
-    test_mapper(
-        uri: String!
-        csv_mapper_id: String!
-    ): CsvMapperTestResult @auth(for: [SETTINGS])
 }
 
 # Mutations
@@ -75,6 +71,7 @@ input IngestionCsvAddInput {
 }
 
 type Mutation {
+    ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [SETTINGS])
     ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [SETTINGS])
     ingestionCsvDelete(id: ID!): ID @auth(for: [SETTINGS])
     ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [SETTINGS])

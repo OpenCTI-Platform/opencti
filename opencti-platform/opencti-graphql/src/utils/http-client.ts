@@ -26,7 +26,7 @@ const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHtt
   return {
     httpAgent: getPlatformHttpProxyAgent(agentUri),
     httpsAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpsAgent,
-    proxy: false // Disable direct proxy protocol in axios http adapter
+    proxy: false // Disable direct proxy protocol in http adapter
   };
 };
 export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseType, certificates, auth }: GetHttpClient) => {
@@ -35,7 +35,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
   const key = isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined;
   const ca = isNotEmptyField(certificates?.ca) ? fromBase64(certificates?.ca) : undefined;
   const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: rejectUnauthorized === true, cert, key, ca });
-  // Create the default axios caller
+  // Create the default caller
   const caller = axios.create({
     baseURL,
     responseType,

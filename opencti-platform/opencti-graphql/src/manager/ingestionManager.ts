@@ -24,7 +24,7 @@ import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
-import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion, testCsvIngestionMapping } from '../modules/ingestion/ingestion-csv-domain';
+import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { bundleProcess } from '../parser/csv-bundler';
@@ -286,55 +286,23 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 // region Csv ingestion
-interface CsvResponseData {
-  data: string,
-  addedLast: string | undefined | null
-}
-const csvHttpGet = async (ingestion: BasicStoreEntityIngestionCsv): Promise<CsvResponseData> => {
-  const headers = new AxiosHeaders();
-  headers.Accept = 'application/csv';
-  if (ingestion.authentication_type === 'basic') {
-    const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
-    headers.Authorization = `Basic ${auth}`;
-  }
-  if (ingestion.authentication_type === 'bearer') {
-    headers.Authorization = `Bearer ${ingestion.authentication_value}`;
-  }
-  let certificates;
-  if (ingestion.authentication_type === 'certificate') {
-    const [cert, key, ca] = ingestion.authentication_value.split(':');
-    certificates = { cert, key, ca };
-  }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
-  const httpClient = getHttpClient(httpClientOptions);
-  const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
-  return { data, addedLast: resultHeaders['x-csv-date-added-last'] };
-};
-const csvDataToObjects = async (data: string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
-  const entitiesData = data.split('\n');
-  const csvBuffer = await fetchCsvFromUrl(ingestion.uri, csvMapper.skipLineChar);
+const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
   const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
   if (objects === undefined) {
-    const error = UnknownError('Undefined CSV objects', data);
+    const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
   }
-  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${entitiesData.length} items`);
+  logApp.info(`[OPENCTI-MODULE] CSV ingestion execution for ${objects.length} items`);
   return objects;
 };
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
-  const { data, addedLast } = await csvHttpGet(ingestion);
   const user = context.user ?? SYSTEM_USER;
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
-  const csvMappingTestResult = await testCsvIngestionMapping(context, user, ingestion.uri, ingestion.csv_mapper_id);
 
-  if (!csvMappingTestResult.nbEntities) {
-    const error = UnknownError('Invalid data from URL', data);
-    logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
-  }
-
-  const isUnchangedData = bcrypt.compareSync(data, ingestion.current_state_hash ?? '');
+  const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+  const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');
   if (isUnchangedData) {
     return;
   }
@@ -354,7 +322,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   }
 
   // Update the state
-  const hashedIncomingData = bcrypt.hashSync(data);
+  const hashedIncomingData = bcrypt.hashSync(data.toString());
   await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, {
     current_state_hash: hashedIncomingData,
     added_after_start: utcDate(addedLast)
