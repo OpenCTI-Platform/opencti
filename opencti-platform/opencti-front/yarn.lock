@@ -15002,7 +15002,7 @@ __metadata:
     react-timeline-range-slider: "npm:1.4.1"
     react-virtualized: "npm:9.22.5"
     reactflow: "npm:11.10.4"
-    recharts: "npm:2.12.2"
+    recharts: "npm:2.12.3"
     relay-compiler: "npm:16.2.0"
     relay-runtime: "npm:16.2.0"
     relay-test-utils: "npm:16.2.0"
@@ -17003,9 +17003,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.12.2":
-  version: 2.12.2
-  resolution: "recharts@npm:2.12.2"
+"recharts@npm:2.12.3":
+  version: 2.12.3
+  resolution: "recharts@npm:2.12.3"
   dependencies:
     clsx: "npm:^2.0.0"
     eventemitter3: "npm:^4.0.1"
@@ -17018,7 +17018,7 @@ __metadata:
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 10/a6208f4f98b4eb2ed646c718411565c2e6e9a55f4f97f6fd73754cac3aeb872e4fa8b5aaeb73c920eb67934bcefde993ab93ce640742507ac801fb3654278168
+  checksum: 10/2ddc8fe628a50f1a4d61d875d5dc18885d2e233bbc937a1ae6065a48ac59cd8ea90bd84290487bf02113f1ed40d890e716ee907d46cb90c36bca67a985e3236f
   languageName: node
   linkType: hard
 
