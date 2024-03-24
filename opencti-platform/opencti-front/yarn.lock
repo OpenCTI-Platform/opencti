@@ -7618,7 +7618,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"console-grid@npm:~2.2.1":
+"console-grid@npm:^2.2.2":
   version: 2.2.2
   resolution: "console-grid@npm:2.2.2"
   checksum: 10/677bc5e4eb2cc75be3a780abde4a5f38c8c04635a0c8035ebf18de451e6a09dcdd9446a5424156e50b8fd2cc1cc7323a88e9e83191ac857f09606b0bc66dfb38
@@ -8801,7 +8801,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eight-colors@npm:~1.3.0":
+"eight-colors@npm:^1.3.0":
   version: 1.3.0
   resolution: "eight-colors@npm:1.3.0"
   checksum: 10/33db17b2b72a931141eef4598c09d5b7cca7bac28a9c35dc095f52f225ed40e876987aecf3709bbbc2c0978642212d40a82ec3db281668be536718eb1a9b9bad
@@ -12176,7 +12176,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0, istanbul-lib-coverage@npm:~3.2.2":
+"istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.0, istanbul-lib-coverage@npm:^3.2.2":
   version: 3.2.2
   resolution: "istanbul-lib-coverage@npm:3.2.2"
   checksum: 10/40bbdd1e937dfd8c830fa286d0f665e81b7a78bdabcd4565f6d5667c99828bda3db7fb7ac6b96a3e2e8a2461ddbc5452d9f8bc7d00cb00075fa6a3e99f5b6a81
@@ -12196,7 +12196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"istanbul-lib-report@npm:^3.0.0, istanbul-lib-report@npm:^3.0.1, istanbul-lib-report@npm:~3.0.1":
+"istanbul-lib-report@npm:^3.0.0, istanbul-lib-report@npm:^3.0.1":
   version: 3.0.1
   resolution: "istanbul-lib-report@npm:3.0.1"
   dependencies:
@@ -12207,7 +12207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"istanbul-reports@npm:^3.1.6, istanbul-reports@npm:~3.1.7":
+"istanbul-reports@npm:^3.1.6, istanbul-reports@npm:^3.1.7":
   version: 3.1.7
   resolution: "istanbul-reports@npm:3.1.7"
   dependencies:
@@ -12791,14 +12791,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koa-static-resolver@npm:~1.0.5":
+"koa-static-resolver@npm:^1.0.6":
   version: 1.0.6
   resolution: "koa-static-resolver@npm:1.0.6"
   checksum: 10/a4fdcc26e5dbdb7af8b70a8140f85c30a5728c82d4c13c8afc5d5393155678bafa343c39c8532d25f0d079261cc5eb8055536b484b998c72e9d97e1018266c7b
   languageName: node
   linkType: hard
 
-"koa@npm:~2.15.0":
+"koa@npm:^2.15.1":
   version: 2.15.2
   resolution: "koa@npm:2.15.2"
   dependencies:
@@ -13052,7 +13052,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lz-utils@npm:~2.0.2":
+"lz-utils@npm:^2.0.2":
   version: 2.0.2
   resolution: "lz-utils@npm:2.0.2"
   checksum: 10/34d3ab5ebed32cdd7023f485eeac909666fc5d2651ab178f6fd23b73a8416bc550d4824a705148ed1d7503a72f3c681bb98ea030b75aef03f583dbf086345c32
@@ -14198,55 +14198,55 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-code-viewer@npm:~1.1.1":
+"monocart-code-viewer@npm:^1.1.2":
   version: 1.1.2
   resolution: "monocart-code-viewer@npm:1.1.2"
   checksum: 10/09aa67cbb21e17c40f35bf9a941e0fa124aada68e3d883f2bab2909a4a2deec9209295d39e368e7575fe12cba0f7e1d05db54d3f9a48d35ef403ba3a22718a83
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:~2.5.8":
-  version: 2.5.9
-  resolution: "monocart-coverage-reports@npm:2.5.9"
+"monocart-coverage-reports@npm:^2.7.4":
+  version: 2.7.6
+  resolution: "monocart-coverage-reports@npm:2.7.6"
   dependencies:
-    console-grid: "npm:~2.2.1"
-    eight-colors: "npm:~1.3.0"
-    istanbul-lib-coverage: "npm:~3.2.2"
-    istanbul-lib-report: "npm:~3.0.1"
-    istanbul-reports: "npm:~3.1.7"
-    lz-utils: "npm:~2.0.2"
-    monocart-code-viewer: "npm:~1.1.1"
-    monocart-formatter: "npm:~2.3.2"
-    turbogrid: "npm:~3.0.13"
+    console-grid: "npm:^2.2.2"
+    eight-colors: "npm:^1.3.0"
+    istanbul-lib-coverage: "npm:^3.2.2"
+    istanbul-lib-report: "npm:^3.0.1"
+    istanbul-reports: "npm:^3.1.7"
+    lz-utils: "npm:^2.0.2"
+    monocart-code-viewer: "npm:^1.1.2"
+    monocart-formatter: "npm:^2.3.2"
+    turbogrid: "npm:^3.0.13"
   bin:
     mcr: lib/cli.js
-  checksum: 10/912d394cb30310d2dbcb4079a79db66707c3eaab0225bf000fd76469a738fa741f49328dfd5a7ce2ab6df51406e1aa035a2254d3bc3cd8debcb1665b8a1637cc
+  checksum: 10/cf3db2c6ed3bc0311f4cb0cdb01002590d55ed48eaa21ef458920dccaacdbea2d88f17c8de15abf471ed49328e5703bd9f55bf1657f6e582b5c823a8a759ea45
   languageName: node
   linkType: hard
 
-"monocart-formatter@npm:~2.3.2":
+"monocart-formatter@npm:^2.3.2":
   version: 2.3.2
   resolution: "monocart-formatter@npm:2.3.2"
   checksum: 10/e426a9daab2123bba16dbd471dd0abb8af216713aee9b7e7790596dbfbde6e57097ac8bc8d947af568a0a6f560db16140bd688654b3ae28ebbb25d5ec1459b56
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.4.0":
-  version: 2.4.0
-  resolution: "monocart-reporter@npm:2.4.0"
+"monocart-reporter@npm:2.4.5":
+  version: 2.4.5
+  resolution: "monocart-reporter@npm:2.4.5"
   dependencies:
-    console-grid: "npm:~2.2.1"
-    eight-colors: "npm:~1.3.0"
-    koa: "npm:~2.15.0"
-    koa-static-resolver: "npm:~1.0.5"
-    lz-utils: "npm:~2.0.2"
-    monocart-coverage-reports: "npm:~2.5.8"
-    monocart-formatter: "npm:~2.3.2"
-    nodemailer: "npm:~6.9.10"
-    turbogrid: "npm:~3.0.13"
+    console-grid: "npm:^2.2.2"
+    eight-colors: "npm:^1.3.0"
+    koa: "npm:^2.15.1"
+    koa-static-resolver: "npm:^1.0.6"
+    lz-utils: "npm:^2.0.2"
+    monocart-coverage-reports: "npm:^2.7.4"
+    monocart-formatter: "npm:^2.3.2"
+    nodemailer: "npm:^6.9.12"
+    turbogrid: "npm:^3.0.13"
   bin:
     monocart: lib/cli.js
-  checksum: 10/e4383d0a916404a899ff327493ffa6067406a4eb4a7f6d0d0d3564dde351f70d39847f6385f806e21e1b7fc72b9697dac5af47eb8d1481a7ae173479fbb61b2a
+  checksum: 10/85f21b3c9b2066229e13fd71b71cb53c64b708c6b882459fa7d00f6bba1ce22030e76b3b01ec3a50d95067d8ea725ec6cd021aa1b2ee246c24b290347d4fd8b1
   languageName: node
   linkType: hard
 
@@ -14476,7 +14476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:~6.9.10":
+"nodemailer@npm:^6.9.12":
   version: 6.9.13
   resolution: "nodemailer@npm:6.9.13"
   checksum: 10/efbc6fc415ec1e1dc1b91530920b0bcfc648183003c3d79718cd54fc2efef4b7dd1917ddd3853ab127e4b5ebd7353903b5859f0ac3ccea487374b076d41ac8b8
@@ -14971,7 +14971,7 @@ __metadata:
     mdi-material-ui: "npm:7.8.0"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.45"
-    monocart-reporter: "npm:2.4.0"
+    monocart-reporter: "npm:2.4.5"
     pdfmake: "npm:0.2.9"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.3"
@@ -19275,7 +19275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbogrid@npm:~3.0.13":
+"turbogrid@npm:^3.0.13":
   version: 3.0.13
   resolution: "turbogrid@npm:3.0.13"
   checksum: 10/5dbdfeb04570ea11200bf956775fced7f806880fceac76a25326b09875aff1203125692383e1b3083f03a10a8e94441c0a149fe29ba673d3a09d64995b84f2a2
