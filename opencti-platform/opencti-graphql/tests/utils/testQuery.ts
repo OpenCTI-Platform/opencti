@@ -116,7 +116,7 @@ export const GREEN_GROUP: Group = {
   markings: [MARKING_TLP_GREEN],
   roles: [ROLE_PARTICIPATE],
   group_confidence_level: {
-    max_confidence: 100,
+    max_confidence: 50,
     overrides: [],
   }
 };
@@ -126,7 +126,7 @@ export const AMBER_GROUP: Group = {
   markings: [MARKING_TLP_AMBER],
   roles: [ROLE_EDITOR],
   group_confidence_level: {
-    max_confidence: 20,
+    max_confidence: 100,
     overrides: [],
   }
 };
@@ -137,7 +137,7 @@ export const AMBER_STRICT_GROUP: Group = {
   markings: [MARKING_TLP_AMBER_STRICT],
   roles: [ROLE_SECURITY],
   group_confidence_level: {
-    max_confidence: 100,
+    max_confidence: 80,
     overrides: [],
   }
 };
@@ -224,14 +224,8 @@ TESTING_USERS.push(USER_SECURITY);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
-  mutation groupCreation($name: String!) {
-    groupAdd(input: {
-      name: $name
-      group_confidence_level: {
-        max_confidence: 100
-        overrides: []
-      }
-    }) {
+  mutation groupCreation($input: GroupAddInput!) {
+    groupAdd(input: $input) {
       id
     }
   }
@@ -272,8 +266,10 @@ const GROUP_ASSIGN_MUTATION = `
     }
   }
 `;
-const createGroup = async (input: { name: string, markings: string[], roles: Role[] }): Promise<string> => {
-  const { data } = await adminQuery(GROUP_CREATION_MUTATION, { name: input.name });
+const createGroup = async (input: Group): Promise<string> => {
+  const { data } = await adminQuery(GROUP_CREATION_MUTATION, {
+    input: { name: input.name, group_confidence_level: input.group_confidence_level }
+  });
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
     await adminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });

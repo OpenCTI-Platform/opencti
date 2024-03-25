@@ -613,6 +613,44 @@ describe('Elasticsearch pagination', () => {
     expect(markings[8]).toEqual('PAP:CLEAR');
     expect(markings[9]).toEqual('PAP:AMBER');
   });
+  it('should entity paginate with object ordering (desc)', async () => {
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Group'] }],
+      filterGroups: [],
+    };
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
+      filters,
+      orderBy: 'group_confidence_level',
+      orderMode: 'desc',
+    });
+    expect(data.edges.length).toEqual(5);
+    const groups = R.map((e) => e.node.group_confidence_level.max_confidence, data.edges);
+    expect(groups[0]).toEqual(100);
+    expect(groups[1]).toEqual(100);
+    expect(groups[2]).toEqual(100);
+    expect(groups[3]).toEqual(80);
+    expect(groups[4]).toEqual(50);
+  });
+  it('should entity paginate with object ordering (asc)', async () => {
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['Group'] }],
+      filterGroups: [],
+    };
+    const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
+      filters,
+      orderBy: 'group_confidence_level',
+      orderMode: 'asc',
+    });
+    expect(data.edges.length).toEqual(5);
+    const groups = R.map((e) => e.node.group_confidence_level.max_confidence, data.edges);
+    expect(groups[0]).toEqual(50);
+    expect(groups[1]).toEqual(80);
+    expect(groups[2]).toEqual(100);
+    expect(groups[3]).toEqual(100);
+    expect(groups[4]).toEqual(100);
+  });
   it('should relation paginate everything', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });
     expect(data).not.toBeNull();

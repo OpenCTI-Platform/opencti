@@ -38,11 +38,17 @@ type BasicDefinition = {
   update?: boolean // If attribute can be updated (null = true)
 };
 
+export type MappingDefinition = AttributeDefinition & {
+  associatedFilterKeys?: { key: string, label: string }[] // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
+};
+
 type BasicObjectDefinition = BasicDefinition & {
-  mappings: (
-    { associatedFilterKeys?: { key: string, label: string }[] } // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
-    & AttributeDefinition
-  )[],
+  mappings: MappingDefinition[],
+  // if the object attribute can be used for sorting, we need to know how
+  sortBy?: {
+    path: string // path leading to the value that serves for sorting
+    type: string // type of this value, copied for convenience from corresponding mapping (checked at registration)
+  }
 };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
@@ -148,7 +154,7 @@ export const files: AttributeDefinition = {
   mappings: [
     id,
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Name', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+    { name: 'description', label: 'Description', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'version', label: 'Version', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'mime_type', label: 'Mime type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },

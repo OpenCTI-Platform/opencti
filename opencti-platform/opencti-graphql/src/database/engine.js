@@ -134,6 +134,7 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
+import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2482,8 +2483,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
     }
   }
   // Handle search
-  const orderConfigration = isEmptyField(orderBy) ? [] : orderBy;
-  const orderCriterion = Array.isArray(orderConfigration) ? orderConfigration : [orderConfigration];
+  const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
+  const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
@@ -2505,17 +2506,11 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (isNotEmptyField(orderCriterion)) {
     for (let index = 0; index < orderCriterion.length; index += 1) {
       const orderCriteria = orderCriterion[index];
-      const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
-      const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
-      if (orderKeyword === '_score') {
-        ordering = R.append({ [orderKeyword]: scoreSearchOrder }, ordering);
-      } else if (isDateAttribute(orderCriteria)) {
-        // sorting on null dates results to an error, one way to fix it is to use missing: 0
-        // see https://github.com/elastic/elasticsearch/issues/81960
-        ordering = R.append({ [orderKeyword]: { order: orderMode, missing: 0 } }, ordering);
+      if (orderCriteria === '_score') {
+        ordering = R.append({ [orderCriteria]: scoreSearchOrder }, ordering);
       } else {
-        const order = { [orderKeyword]: { order: orderMode, missing: '_last' } };
-        ordering = R.append(order, ordering);
+        const sortingForCriteria = buildElasticSortingForAttributeCriteria(orderCriteria, orderMode);
+        ordering = R.append(sortingForCriteria, ordering);
       }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
