@@ -5,12 +5,10 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-// import StixCoreObjectKnowledgeBar from '@components/common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectKnowledgeBar from '@components/common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-// import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
