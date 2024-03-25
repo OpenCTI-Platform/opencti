@@ -38,9 +38,7 @@ const workbenchFileQuery = graphql`
 class WorkbenchFile extends Component {
   render() {
     const {
-      match: {
-        params: { fileId },
-      },
+      params: { fileId },
     } = this.props;
     const decodedFileId = fromB64(fileId);
     return (

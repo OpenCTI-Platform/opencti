@@ -83,7 +83,7 @@ const Root = () => {
           element={<RootConnector />}
         />
         <Route
-          path="/import"
+          path="/import/*"
           Component={boundaryWrapper(RootImport)}
         />
         <Route
