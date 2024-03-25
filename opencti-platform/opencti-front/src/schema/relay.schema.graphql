@@ -272,7 +272,6 @@ type ObjectTotals {
 }
 
 type OverviewMetrics {
-  node: String
   object_totals: ObjectTotals
   queue_totals: QueueTotals
   message_stats: MessagesStats
