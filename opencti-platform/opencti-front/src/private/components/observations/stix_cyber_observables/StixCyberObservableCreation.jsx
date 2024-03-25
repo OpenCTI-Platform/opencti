@@ -19,7 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import * as PropTypes from 'prop-types';
-import { commitMutation, handleErrorInForm, QueryRenderer, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, QueryRenderer, MESSAGING$, commitMutationWithPromise } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -370,12 +370,42 @@ const StixCyberObservableCreation = ({
         const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined;
         if (valueList) {
           // Loop and Commit
-          for (const value of valueList) {
-            if (value) {
-              finalValues[observableType] = { value };
-              await new Promise((resolve) => commit(resolve, false));
-            }
-          }
+          // for (const value of valueList) {
+          //   if (value) {
+          //     finalValues[observableType] = { value };
+          //     await new Promise((resolve) => commit(resolve, false));
+          //   }
+          // }
+          const promises = valueList.map((value) => commitMutationWithPromise({
+            mutation: stixCyberObservableMutation,
+            variables: {
+              ...finalValues,
+              [observableType]: { value },
+            },
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              localHandleClose();
+            },
+            onError: () => {
+              setSubmitting(false);
+            },
+          }));
+          Promise.allSettled(promises).then((results) => {
+            results.forEach(({ status, reason }) => {
+              if (status === 'fulfilled') {
+                validObservables += 1;
+              } else {
+                error_array.push(reason);
+              }
+            })
+          });
           const totalObservables = valueList.length;
           if (error_array.length > 0) {
             const errorObservables = error_array.length;
