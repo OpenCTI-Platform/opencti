@@ -1,12 +1,13 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { executeReplace } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
-import { ADMIN_USER, EXTERNAL_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { MARKING_TLP_CLEAR, MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { addReport, findById as findReportById } from '../../../src/domain/report';
 import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
-import { findById as findOrganizationById } from '../../../src/modules/organization/organization-domain';
+import { addOrganization, findById as findOrganizationById } from '../../../src/modules/organization/organization-domain';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
+import { type OrganizationAddInput } from '../../../src/generated/graphql';
 
 describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
@@ -106,6 +107,15 @@ describe('TaskManager executeReplace tests ', () => {
     });
   });
   describe('REPLACE createdBy ', () => {
+    let newOrganizationId: string;
+    it('Create a new organisation', async () => {
+      const orgInput: OrganizationAddInput = {
+        name: 'Temporary org for tests',
+      };
+      const createdOrg = await addOrganization(adminContext, ADMIN_USER, orgInput);
+      newOrganizationId = createdOrg.id;
+    });
+
     it('REPLACE report author with different author', async () => {
       const reportInput = {
         name: 'test replace report author with different author',
@@ -116,19 +126,17 @@ describe('TaskManager executeReplace tests ', () => {
       reportsId.push(report.id);
       const reportId = report.id;
 
-      const extOrganization = await findOrganizationById(adminContext, ADMIN_USER, EXTERNAL_ORGANIZATION.id);
-
       const actionContext = {
         field: 'created-by',
         type: 'RELATION',
-        values: [extOrganization.id]
+        values: [newOrganizationId]
       };
 
       await executeReplace(adminContext, adminContext.user, actionContext, report);
 
       const { 'created-by': authorId } = await findReportById(adminContext, adminContext.user, reportId);
       if (authorId) {
-        expect(authorId).toEqual(extOrganization.id);
+        expect(authorId).toEqual(newOrganizationId);
       }
     });
     it('REPLACE report author with same author', async () => {
@@ -179,6 +187,10 @@ describe('TaskManager executeReplace tests ', () => {
       if (authorId) {
         expect(authorId).toEqual(organization.id);
       }
+    });
+
+    it('Delete the new organisation', async () => {
+      await stixDomainObjectDelete(adminContext, ADMIN_USER, newOrganizationId);
     });
   });
   describe('REPLACE description ', () => {

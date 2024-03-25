@@ -1121,14 +1121,16 @@ describe('Complex filters combinations for elastic queries', () => {
     let queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: {
+        first: 20,
         filters: undefined,
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(42);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(41);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: {
+        first: 20,
         filters: {
           mode: 'or',
           filters: [
@@ -1143,7 +1145,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(33); // 42 entities - 9 entities with a source reliability = 33
+    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 41 entities - 9 entities with a source reliability = 32
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1203,7 +1205,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(36); // 42 entities - 6 entities with source reliability equals to A = 36
+    expect(queryResult.data.globalSearch.edges.length).toEqual(35); // 41 entities - 6 entities with source reliability equals to A = 35
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1306,7 +1308,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(31); // 42 - 9 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(30); // 41 - 9 with a source reliability - 2 with a reliability (and no source reliability) = 30
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
