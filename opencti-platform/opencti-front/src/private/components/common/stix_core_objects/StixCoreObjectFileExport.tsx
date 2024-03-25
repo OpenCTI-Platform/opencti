@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { filter, map } from 'ramda';
+import { filter } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -20,6 +20,7 @@ import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_obje
 import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { Option } from '@components/common/form/ReferenceField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -29,7 +30,6 @@ import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
-import {Option} from "@components/common/form/ReferenceField";
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
