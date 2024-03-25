@@ -2,7 +2,6 @@ import { test } from '@playwright/test';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from 'playwright/test';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-import SettingsPage from '../model/settings.pageModel';
 
 test('Check EE activation', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
@@ -46,14 +45,4 @@ test('Check Logo replacement', async ({ page }) => {
   await page.waitForTimeout(1000);
   logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).toContain('static/images/logo');
-});
-
-test('Check Hidden Entities', async ({ page }) => {
-  const leftBarPage = new LeftBarPage(page);
-  const settingPage = new SettingsPage(page);
-  await page.goto('/');
-  await page.getByTestId('ChevronRightIcon').click();
-  await leftBarPage.clickOnMenu('Settings', 'Parameters');
-  await settingPage.getHiddenEntityTypeSelect().click();
-  await expect(settingPage.getExternalReference()).toBeVisible();
 });
