@@ -12359,10 +12359,9 @@ type Mutation {
   synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
 
   ### WORK
-  workAdd(connectorId: String!, friendlyName: String): Work!
-  @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  workDelete(connectorId: String!): Boolean
+  workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [CONNECTORAPI, MODULES_MODMANAGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  workEdit(id: ID!): WorkEditMutations @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
+  workDelete(connectorId: String!): Boolean @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
 
   ### TASK
   deleteBackgroundTask(id: ID!): ID!
