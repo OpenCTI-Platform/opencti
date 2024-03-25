@@ -626,6 +626,12 @@ export const radarChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {string[]} labels
+ * @param {function} formatter
+ * @param {string} legendPosition
+ */
 export const polarAreaChartOptions = (
   theme,
   labels,

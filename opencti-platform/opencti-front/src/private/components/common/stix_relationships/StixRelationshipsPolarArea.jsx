@@ -1,26 +1,14 @@
 import React from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
-import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { polarAreaChartOptions } from '../../../../utils/Charts';
 import { defaultValue } from '../../../../utils/Graph';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-
-const useStyles = makeStyles(() => ({
-  paper: {
-    height: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px 0 0 0',
-    borderRadius: 4,
-  },
-}));
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 
 const stixRelationshipsPolarAreasDistributionQuery = graphql`
   query StixRelationshipsPolarAreaDistributionQuery(
@@ -226,8 +214,6 @@ const StixRelationshipsPolarArea = ({
   withExportPopover = false,
   isReadOnly = false,
 }) => {
-  const classes = useStyles();
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection = {};
@@ -267,74 +253,30 @@ const StixRelationshipsPolarArea = ({
                 props.stixRelationshipsDistribution,
               );
             }
-            const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => n.label);
             return (
-              <Chart
-                options={polarAreaChartOptions(theme, labels)}
-                series={chartData}
-                type="polarArea"
-                width="100%"
-                height="100%"
-                withExportPopover={withExportPopover}
-                isReadOnly={isReadOnly}
+              <WidgetPolarArea
+                data={data}
+                withExport={withExportPopover}
+                readonly={isReadOnly}
               />
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n('No entities of this type has been found.')}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2}/>
-              </span>
-            </div>
-          );
+          return <WidgetLoader />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || title || t_i18n('Relationships distribution')}
-      </Typography>
-      {variant !== 'inLine' ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      ) : (
-        renderContent()
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

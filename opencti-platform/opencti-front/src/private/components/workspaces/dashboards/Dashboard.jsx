@@ -5,6 +5,7 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
+import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
 import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
@@ -510,6 +511,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'radar':
         return (
           <StixRelationshipsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
+      case 'polar-area':
+        return (
+          <StixRelationshipsPolarArea
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
