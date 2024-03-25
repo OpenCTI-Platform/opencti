@@ -671,6 +671,7 @@ const useSearchEntities = ({
         case 'fromTypes':
         case 'toTypes':
         case 'type':
+        case 'main_entity_type':
           if ( // case not abstract types
             availableEntityTypes
             && !availableEntityTypes.includes('Stix-Cyber-Observable')

@@ -36,7 +36,7 @@ const executeProcessing = async (context, retentionRule) => {
     const { updated_at: up } = node;
     const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
     try {
-      await deleteElementById(context, RETENTION_MANAGER_USER, node.internal_id, node.entity_type);
+      await deleteElementById(context, RETENTION_MANAGER_USER, node.internal_id, node.entity_type, { forceDelete: true });
       logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
     } catch (e) {
       logApp.error(e, { id: node.id, manager: 'RETENTION_MANAGER' });

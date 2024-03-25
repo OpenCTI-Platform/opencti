@@ -17,6 +17,7 @@ import {
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import {
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -47,6 +48,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
+import { generateInternalId } from '../../../src/schema/identifier';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -813,6 +815,51 @@ const isOneOfThisIdsExists = async (ids) => {
 const MD5 = '0a330361c8475ca475cbb5678643789b';
 const SHA1 = '4e6441ffd23006dc3be69e28ddc1978c3da2e7cd';
 const SHA256 = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+
+describe('Create entities', () => {
+  it('should entity created and deleted', async () => {
+    const input = {
+      name: 'AttackPattern 001',
+      x_mitre_id: 'T001',
+      description: 'AttackPattern 001 description',
+      killChainPhases: ['kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'],
+    };
+
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(createdAttackPattern).toBeDefined();
+
+    let readAttackPattern = await internalLoadById(testContext, ADMIN_USER, createdAttackPattern.id);
+    expect(readAttackPattern.id).toEqual(createdAttackPattern.id);
+    expect(readAttackPattern.name).toEqual('AttackPattern 001');
+
+    const deleted = await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(deleted?.id).toEqual(createdAttackPattern.id);
+
+    readAttackPattern = await internalLoadById(testContext, ADMIN_USER, createdAttackPattern.id);
+    expect(readAttackPattern).toBeUndefined();
+  });
+
+  // prerequisite to proper restoration after logical delete: we can createEntity with a fixed internal_id
+  it('should createEntity with given internal_id', async () => {
+    const attackPatternInternalId = generateInternalId();
+    const input = {
+      name: 'AttackPattern 002',
+      x_mitre_id: 'T002',
+      description: 'AttackPattern 002 description',
+      killChainPhases: ['kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'],
+      internal_id: attackPatternInternalId,
+    };
+
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(createdAttackPattern?.id).toEqual(attackPatternInternalId);
+
+    const readAttackPattern = await internalLoadById(testContext, ADMIN_USER, attackPatternInternalId);
+    expect(readAttackPattern?.id).toEqual(attackPatternInternalId);
+
+    const deleted = await deleteElementById(testContext, ADMIN_USER, attackPatternInternalId, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(deleted?.id).toEqual(attackPatternInternalId);
+  });
+});
 
 describe('Upsert and merge entities', () => {
   const amberMarking = 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82';
