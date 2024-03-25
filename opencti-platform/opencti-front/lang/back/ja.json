@@ -628,5 +628,9 @@
   "Samples": "サンプル",
   "Contains observable": "観測値を含む",
   "Artifact content": "人工物の内容",
-  "Tracking number": "追跡番号"
+  "Tracking number": "追跡番号",
+  "Entity ID": "エンティティID",
+  "Source connector": "ソースコネクター",
+  "Malware analysis operating System": "マルウェア解析オペレーティングシステム",
+  "Allowed markings": "許可マーク"
 }

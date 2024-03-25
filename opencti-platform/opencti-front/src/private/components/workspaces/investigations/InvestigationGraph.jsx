@@ -7,9 +7,11 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import RectangleSelection from 'react-rectangle-selection';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import InvestigationRollBackExpandDialog from './Dialog/InvestigationRollBackExpandDialog';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
@@ -964,6 +966,7 @@ class InvestigationGraphComponent extends Component {
       prevClick: null,
       navOpen: localStorage.getItem('navOpen') === 'true',
       openCreatedRelation: false,
+      isRollBackPreExpandStateDialogOpen: false,
     };
     this.canvas = null;
   }
@@ -1537,7 +1540,6 @@ class InvestigationGraphComponent extends Component {
 
   async handleDeleteSelected() {
     let idsToRemove = [];
-
     // Retrieve selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.filter(
@@ -1834,6 +1836,7 @@ class InvestigationGraphComponent extends Component {
       this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
+      this.setPreExpansionStateOnSessionStorage(newElementsIds);
       this.graphData = buildGraphData(
         this.graphObjects,
         decodeGraphData(this.props.workspace.graph_data),
@@ -1876,6 +1879,80 @@ class InvestigationGraphComponent extends Component {
       );
     }
     this.handleToggleDisplayProgress();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  setPreExpansionStateOnSessionStorage(investigatedEntitiesIdsList) {
+    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
+    const currentStoredPreExpansion = storedPreExpansion ? JSON.parse(storedPreExpansion) : [];
+
+    currentStoredPreExpansion.unshift({
+      dateTime: new Date().getTime(),
+      investigatedEntitiesIdsList,
+    });
+
+    if (currentStoredPreExpansion.length > 10) currentStoredPreExpansion.pop();
+
+    sessionStorage.setItem('preExpansionStateList', JSON.stringify(currentStoredPreExpansion));
+  }
+
+  handleRollBackToPreExpansionState() {
+    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
+
+    if (storedPreExpansion) {
+      const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
+      const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
+
+      commitMutation({
+        mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+        variables: {
+          id: this.props.workspace.id,
+          input: {
+            key: 'investigated_entities_ids',
+            value: investigatedEntitiesIdsList,
+            operation: 'remove',
+          },
+        },
+        onCompleted: () => {
+          const currentGraphObjects = this.graphObjects;
+          const newGraphObjects = currentGraphObjects.filter((graphObjects) => !investigatedEntitiesIdsList.includes(graphObjects.id));
+
+          this.graphObjects = newGraphObjects;
+
+          this.graphData = buildGraphData(
+            newGraphObjects,
+            decodeGraphData(this.props.workspace.graph_data),
+            this.props.t,
+          );
+
+          this.setState({
+            graphData: applyFilters(
+              this.graphData,
+              this.state.stixCoreObjectsTypes,
+              this.state.markedBy,
+              this.state.createdBy,
+              [],
+              this.state.selectedTimeRangeInterval,
+            ),
+          });
+
+          currentStoredPreExpansion.shift();
+          if (currentStoredPreExpansion.length === 0) {
+            sessionStorage.removeItem('preExpansionStateList');
+          } else {
+            sessionStorage.setItem('preExpansionStateList', JSON.stringify(currentStoredPreExpansion));
+          }
+        },
+      });
+    }
+  }
+
+  handleOpenRollBackToPreExpansionStateDialog() {
+    this.setState({ isRollBackPreExpandStateDialogOpen: true });
+  }
+
+  handleCloseRollBackToPreExpansionStateDialog() {
+    this.setState({ isRollBackPreExpandStateDialogOpen: false });
   }
 
   handleResetLayout() {
@@ -1976,6 +2053,7 @@ class InvestigationGraphComponent extends Component {
       height,
       openExpandElements,
       navOpen,
+      isRollBackPreExpandStateDialogOpen,
     } = this.state;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
@@ -2011,9 +2089,17 @@ class InvestigationGraphComponent extends Component {
                   onReset={this.onResetExpandElements.bind(this)}
                 />
               </Dialog>
+
+              <InvestigationRollBackExpandDialog
+                isRollBackPreExpandStateDialogOpen={isRollBackPreExpandStateDialogOpen}
+                closeDialog={this.handleCloseRollBackToPreExpansionStateDialog.bind(this)}
+                handleRollBackToPreExpansionState={this.handleRollBackToPreExpansionState.bind(this)}
+              />
+
               <InvestigationGraphBar
                 displayProgress={displayProgress}
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
+                handleOpenRollBackToPreExpansionStateDialog={this.handleOpenRollBackToPreExpansionStateDialog.bind(this)}
                 currentMode3D={mode3D}
                 handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
                 currentModeTree={modeTree}

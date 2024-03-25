@@ -628,5 +628,9 @@
   "Samples": "Stichproben",
   "Contains observable": "Enthält beobachtbar",
   "Artifact content": "Artefaktinhalt",
-  "Tracking number": "Tracking nummer"
+  "Tracking number": "Tracking nummer",
+  "Entity ID": "Entitäts-ID",
+  "Source connector": "Quellverbinder",
+  "Malware analysis operating System": "Betriebssystem der Malware-Analyse",
+  "Allowed markings": "Erlaubte Markierungen"
 }

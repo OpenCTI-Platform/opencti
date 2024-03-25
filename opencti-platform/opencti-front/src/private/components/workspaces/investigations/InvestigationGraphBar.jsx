@@ -11,6 +11,7 @@ import {
   LinkOutlined,
   OpenWithOutlined,
   ScatterPlotOutlined,
+  Undo,
 } from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
@@ -288,6 +289,7 @@ class InvestigationGraphBar extends Component {
       handleOpenExpandElements,
       navOpen,
       resetAllFilters,
+      handleOpenRollBackToPreExpansionStateDialog,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -352,6 +354,9 @@ class InvestigationGraphBar extends Component {
         : [selectedNodes[0]];
     }
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
+
+    const isRollBackToLastPreExpansionStateEnabled = !sessionStorage.getItem('preExpansionStateList');
+
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => (
@@ -865,6 +870,13 @@ class InvestigationGraphBar extends Component {
                           />
                         </>
                       )}
+                      <Tooltip title={t('Restore the state of the graphic before the last expansion')}>
+                        <span>
+                          <IconButton color="primary" onClick={handleOpenRollBackToPreExpansionStateDialog} size="large" disabled={isRollBackToLastPreExpansionStateEnabled}>
+                            <Undo />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                       <Tooltip title={t('Expand')}>
                         <span>
                           <IconButton
@@ -1072,6 +1084,7 @@ InvestigationGraphBar.propTypes = {
   handleResetLayout: PropTypes.func,
   displayTimeRange: PropTypes.bool,
   handleToggleDisplayTimeRange: PropTypes.func,
+  handleOpenRollBackToPreExpansionStateDialog: PropTypes.func,
   handleTimeRangeChange: PropTypes.func,
   timeRangeInterval: PropTypes.array,
   selectedTimeRangeInterval: PropTypes.array,
