@@ -449,16 +449,11 @@ export const stixLoadByFilters = async (context, user, types, args) => {
 
 // region Graphics
 const convertAggregateDistributions = async (context, user, limit, orderingFunction, distribution) => {
-  const data = R.sortWith([orderingFunction(R.prop('value'))])(distribution);
-  // we try to resolve the complete batch of 100 results
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   const resolveLabels = await elFindByIds(context, user, data.map((d) => d.label), { toMap: true });
-  // Depending of user access, info can be empty, must be filtered
-  const filteredEntities = data
+  return data // Depending of user access, info can be empty, must be filtered
     .filter((n) => isNotEmptyField(resolveLabels[n.label.toLowerCase()]))
     .map((n) => R.assoc('entity', resolveLabels[n.label.toLowerCase()], n));
-  // take only the 'limit' first match
-  // TODO: integrate data access restriction into aggregation query, and directly return 'limit' element instead of 100
-  return R.take(limit, filteredEntities);
 };
 export const timeSeriesHistory = async (context, user, types, args) => {
   const { startDate, endDate, interval } = args;
