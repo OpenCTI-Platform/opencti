@@ -2695,5 +2695,13 @@
   "Disable vertical tree mode": "Vertikalen Baummodus deaktivieren",
   "Enable vertical tree mode": "Vertikalen Baummodus einschalten",
   "Disable horizontal tree mode": "Deaktivieren des horizontalen Baummodus",
-  "Enable horizontal tree mode": "Horizontalen Baummodus einschalten"
+  "Enable horizontal tree mode": "Horizontalen Baummodus einschalten",
+  "Trash": "Papierkorb",
+  "Deleted by": "Gelöscht von",
+  "Deletion date": "Datum der Löschung",
+  "Delete permanently": "Dauerhaft löschen",
+  "Restore": "Wiederherstellen",
+  "Are you sure?": "Sind Sie sicher?",
+  "This operation cannot be undone.": "Dieser Vorgang kann nicht rückgängig gemacht werden.",
+  "The main object and the ... relationships/references linked to it will be deleted permanently.": "Das Hauptobjekt und die damit verknüpften {count} Beziehungen/Referenzen werden dauerhaft gelöscht."
 }

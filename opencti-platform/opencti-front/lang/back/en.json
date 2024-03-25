@@ -632,5 +632,9 @@
   "Entity ID": "Entity ID",
   "Source connector": "Source connector",
   "Malware analysis operating System": "Malware analysis operating System",
-  "Allowed markings": "Allowed markings"
+  "Allowed markings": "Allowed markings",
+  "Deleted entity type": "Deleted entity type",
+  "Deleted entity id": "Deleted entity id",
+  "Deleted entity name": "Deleted entity name",
+  "Deleted elements": "Deleted elements"
 }

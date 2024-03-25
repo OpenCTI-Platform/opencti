@@ -7519,6 +7519,8 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
+  deleteOperation(id: String!): DeleteOperation
+  deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
 }
 
 type Subscription {
@@ -8286,6 +8288,8 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
+  deleteOperationRestore(id: ID!): ID
+  deleteOperationConfirm(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11379,4 +11383,39 @@ enum IndicatorFormat {
 type AIBus {
   bus_id: String!
   content: String!
+}
+
+type DeletedElement {
+  id: String!
+  source_index: String!
+}
+
+type DeleteOperation implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  timestamp: DateTime!
+  user_id: String!
+  deletedBy: Creator!
+  main_entity_type: String!
+  main_entity_id: String!
+  main_entity_name: String!
+  deleted_elements: [DeletedElement!]!
+}
+
+enum DeleteOperationOrdering {
+  main_entity_name
+  timestamp
+  deletedBy
+}
+
+type DeleteOperationConnection {
+  pageInfo: PageInfo!
+  edges: [DeleteOperationEdge!]!
+}
+
+type DeleteOperationEdge {
+  cursor: String!
+  node: DeleteOperation!
 }

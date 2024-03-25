@@ -2695,5 +2695,13 @@
   "Disable vertical tree mode": "Désactiver le mode arbre verticale",
   "Enable vertical tree mode": "Activer le mode arbre verticale",
   "Disable horizontal tree mode": "Désactiver le mode arbre horizontal",
-  "Enable horizontal tree mode": "Activer le mode arbre horizontal"
+  "Enable horizontal tree mode": "Activer le mode arbre horizontal",
+  "Trash": "Poubelle",
+  "Deleted by": "Supprimé par",
+  "Deletion date": "Date de suppression",
+  "Delete permanently": "Supprimer définitivement",
+  "Restore": "Restaurer",
+  "Are you sure?": "Êtes-vous sûr ?",
+  "This operation cannot be undone.": "Cette opération ne peut pas être annulée.",
+  "The main object and the ... relationships/references linked to it will be deleted permanently.": "L'objet principal et les {count} relations/références qui lui sont liées seront définitivement supprimés."
 }

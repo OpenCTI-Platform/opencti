@@ -2695,5 +2695,13 @@
   "Disable vertical tree mode": "垂直ツリーモードを無効にする",
   "Enable vertical tree mode": "垂直ツリーモードを有効にする",
   "Disable horizontal tree mode": "水平ツリーモードを無効にする",
-  "Enable horizontal tree mode": "水平ツリーモードを有効にする"
+  "Enable horizontal tree mode": "水平ツリーモードを有効にする",
+  "Trash": "ゴミ",
+  "Deleted by": "削除者",
+  "Deletion date": "削除日",
+  "Delete permanently": "永久削除",
+  "Restore": "復元",
+  "Are you sure?": "よろしいですか？",
+  "This operation cannot be undone.": "この操作は元に戻せません。",
+  "The main object and the ... relationships/references linked to it will be deleted permanently.": "メインオブジェクトとそれにリンクされた {count} リレーションシップ/参照は永久に削除されます。"
 }

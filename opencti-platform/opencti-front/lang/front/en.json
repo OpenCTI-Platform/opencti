@@ -2695,5 +2695,13 @@
   "Disable vertical tree mode": "Disable vertical tree mode",
   "Enable vertical tree mode": "Enable vertical tree mode",
   "Disable horizontal tree mode": "Disable horizontal tree mode",
-  "Enable horizontal tree mode": "Enable horizontal tree mode"
+  "Enable horizontal tree mode": "Enable horizontal tree mode",
+  "Trash": "Trash",
+  "Deleted by": "Deleted by",
+  "Deletion date": "Deletion date",
+  "Delete permanently": "Delete permanently",
+  "Restore": "Restore",
+  "Are you sure?": "Are you sure?",
+  "The main object and the ... relationships/references linked to it will be deleted permanently.": "The main object and the {count} relationships/references linked to it will be deleted permanently.",
+  "This operation cannot be undone.": "This operation cannot be undone."
 }

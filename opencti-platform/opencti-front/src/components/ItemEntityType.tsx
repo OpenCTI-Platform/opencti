@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { hexToRGB, itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
+import useSchema from '../utils/hooks/useSchema';
 
 const useStyles = makeStyles(() => ({
   chip: {
@@ -35,6 +36,9 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
+
+  const { isRelationship } = useSchema();
+
   return (
     <Chip
       classes={{ root: style }}
@@ -43,7 +47,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
         color: itemColor(entityType),
         border: `1px solid ${itemColor(entityType)}`,
       }}
-      label={t_i18n(`entity_${entityType}`)}
+      label={t_i18n(isRelationship(entityType) ? `relationship_${entityType}` : `entity_${entityType}`)}
     />
   );
 };

@@ -10,6 +10,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  INDEX_DELETED_OBJECTS,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -37,7 +38,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, loadCert, logApp } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -52,6 +53,7 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_REF_RELATIONSHIP,
+  BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -63,7 +65,7 @@ import {
   INTERNAL_IDS_ALIASES,
   isAbstract,
   REL_INDEX_PREFIX,
-  RULE_PREFIX,
+  RULE_PREFIX
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
 import { getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
@@ -85,7 +87,7 @@ import {
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { generateInternalId, generateStandardId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
@@ -104,7 +106,7 @@ import {
   validateDataBeforeIndexing
 } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
-import { extractEntityRepresentativeName } from './entity-representative';
+import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
@@ -135,6 +137,7 @@ import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/intern
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -935,6 +938,24 @@ export const RUNTIME_ATTRIBUTES = {
     `,
     getParams: async (context, user) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY)
   },
+  deletedBy: {
+    field: 'deletedBy.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('user_id')) {
+          def userId = doc['user_id.keyword'];
+          if (userId.size() == 1) {
+            def userName = params[userId[0]];
+            emit(userName != null ? userName : 'Unknown')
+          } else {
+            emit('Unknown')
+          }
+        } else {
+          emit('Unknown')
+        }
+    `,
+    getParams: async (context, user) => getRuntimeUsers(context, user),
+  },
   bornIn: {
     field: 'bornIn.keyword',
     type: 'keyword',
@@ -1426,6 +1447,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'kill_chain_name',
   'definition',
   'definition_type',
+  'main_entity_name', // deletedOperation
 ];
 
 function processSearch(search, args) {
@@ -3171,8 +3193,30 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   return elementsImpact;
 };
 
-export const elDeleteElements = async (context, user, elements) => {
+export const elReindexElements = async (context, user, ids, sourceIndex, destIndex) => {
+  const reindexParams = {
+    body: {
+      source: {
+        index: sourceIndex,
+        query: {
+          ids: {
+            values: ids
+          }
+        }
+      },
+      dest: {
+        index: destIndex
+      }
+    }
+  };
+  return engine.reindex(reindexParams).catch((err) => {
+    throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+  });
+};
+
+export const elDeleteElements = async (context, user, elements, opts = {}) => {
   if (elements.length === 0) return;
+  const { forceDelete = true } = opts;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
@@ -3180,6 +3224,26 @@ export const elDeleteElements = async (context, user, elements) => {
   const cleanupRelations = relations.concat(basicCleanup);
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  const entitiesToDelete = [...elements, ...relations];
+  // store deleted objects
+  if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete && elements.length === 1) {
+    // map of index => ids to save
+    const idsByIndex = new Map();
+    entitiesToDelete.forEach((element) => {
+      if (!idsByIndex.has(element._index)) {
+        idsByIndex.set(element._index, []);
+      }
+      idsByIndex.get(element._index).push(element.id);
+    });
+    const reindexPromises = [];
+    [...idsByIndex.keys()].forEach((sourceIndex) => {
+      const ids = idsByIndex.get(sourceIndex);
+      reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
+    });
+
+    const indexDeleteOperationPromise = createDeleteOpererationElement(context, user, elements[0], entitiesToDelete);
+    await Promise.all([...reindexPromises, indexDeleteOperationPromise]);
+  }
   // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact);
   // 02. Remove all related relations and elements
@@ -3188,6 +3252,31 @@ export const elDeleteElements = async (context, user, elements) => {
   // 03/ Remove all elements
   logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
   await elDeleteInstances(elements);
+};
+
+const createDeleteOpererationElement = async (context, user, mainElement, deletedElements) => {
+  // We currently only handle deleteOperations of 1 element
+  const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
+  const deleteOperationInput = {
+    timestamp: new Date().getTime(),
+    user_id: user.id,
+    main_entity_type: mainElement.entity_type,
+    main_entity_id: mainElement.internal_id,
+    main_entity_name: extractRepresentative(mainElement).main ?? mainElement.internal_id,
+    deleted_elements: deleteOperationDeletedElements,
+  };
+  const internalID = generateInternalId();
+  const standardID = generateStandardId(ENTITY_TYPE_DELETE_OPERATION, deleteOperationInput);
+  const deleteOperationRawElement = {
+    ...deleteOperationInput,
+    _index: INDEX_INTERNAL_OBJECTS,
+    [ID_INTERNAL]: internalID,
+    [ID_STANDARD]: standardID,
+    entity_type: ENTITY_TYPE_DELETE_OPERATION,
+    base_type: BASE_TYPE_ENTITY,
+    parent_types: getParentTypes(ENTITY_TYPE_DELETE_OPERATION),
+  };
+  await elIndexElements(context, user, ENTITY_TYPE_DELETE_OPERATION, [deleteOperationRawElement]);
 };
 
 // TODO: get rid of this function and let elastic fail queries, so we can fix all of them by using the right type of data

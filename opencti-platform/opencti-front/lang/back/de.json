@@ -632,5 +632,9 @@
   "Entity ID": "Entitäts-ID",
   "Source connector": "Quellverbinder",
   "Malware analysis operating System": "Betriebssystem der Malware-Analyse",
-  "Allowed markings": "Erlaubte Markierungen"
+  "Allowed markings": "Erlaubte Markierungen",
+  "Deleted entity type": "Gelöschter Entitätstyp",
+  "Deleted entity id": "Gelöschte Entitäts-ID",
+  "Deleted entity name": "Gelöschter Entitätsname",
+  "Deleted elements": "Gelöschte Elemente"
 }

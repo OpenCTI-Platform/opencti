@@ -632,5 +632,9 @@
   "Entity ID": "エンティティID",
   "Source connector": "ソースコネクター",
   "Malware analysis operating System": "マルウェア解析オペレーティングシステム",
-  "Allowed markings": "許可マーク"
+  "Allowed markings": "許可マーク",
+  "Deleted entity type": "削除されたエンティティタイプ",
+  "Deleted entity id": "削除されたエンティティID",
+  "Deleted entity name": "削除されたエンティティ名",
+  "Deleted elements": "削除された要素"
 }

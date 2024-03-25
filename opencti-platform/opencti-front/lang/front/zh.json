@@ -2695,5 +2695,13 @@
   "Disable vertical tree mode": "禁用垂直树模式",
   "Enable vertical tree mode": "启用垂直树模式",
   "Disable horizontal tree mode": "禁用水平树模式",
-  "Enable horizontal tree mode": "启用水平树模式"
+  "Enable horizontal tree mode": "启用水平树模式",
+  "Trash": "垃圾",
+  "Deleted by": "已删除",
+  "Deletion date": "删除日期",
+  "Delete permanently": "永久删除",
+  "Restore": "恢复",
+  "Are you sure?": "你确定吗？",
+  "This operation cannot be undone.": "此操作不可撤销。",
+  "The main object and the ... relationships/references linked to it will be deleted permanently.": "主对象和与之链接的 {count} 关系/引用将被永久删除。"
 }

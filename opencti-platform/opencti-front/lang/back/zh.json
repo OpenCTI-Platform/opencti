@@ -632,5 +632,9 @@
   "Entity ID": "实体 ID",
   "Source connector": "源连接器",
   "Malware analysis operating System": "恶意软件分析操作系统",
-  "Allowed markings": "允许的标记"
+  "Allowed markings": "允许的标记",
+  "Deleted entity type": "删除的实体类型",
+  "Deleted entity id": "删除的实体 ID",
+  "Deleted entity name": "删除的实体名称",
+  "Deleted elements": "删除的元素"
 }

@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ConstructionOutlined,
   DashboardOutlined,
+  DeleteOutlined,
   DescriptionOutlined,
   DiamondOutlined,
   DomainOutlined,
@@ -80,6 +81,7 @@ import useGranted, {
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
   SETTINGS,
   SETTINGS_SETACCESSES,
@@ -99,6 +101,7 @@ import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark
 import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
@@ -327,6 +330,7 @@ const LeftBar = () => {
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
   const isMobile = dimension.width < 768;
@@ -815,6 +819,29 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
+            {isFeatureEnable('LOGICAL_DELETION') && (
+              <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/trash"
+                    selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <DeleteOutlined />
+                    </ListItemIcon>
+                    {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Trash')}
+                      />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              </Security>
+            )}
           </MenuList>
         </Security>
         <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>

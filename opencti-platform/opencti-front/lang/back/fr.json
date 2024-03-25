@@ -632,5 +632,9 @@
   "Entity ID": "ID de l'entité",
   "Source connector": "Connecteur source",
   "Malware analysis operating System": "Système d'exploitation pour l'analyse des logiciels malveillants",
-  "Allowed markings": "Marquages autorisés"
+  "Allowed markings": "Marquages autorisés",
+  "Deleted entity type": "Type de l'entité supprimée",
+  "Deleted entity id": "Id de l'entité supprimée",
+  "Deleted entity name": "Nom de l'entité supprimée",
+  "Deleted elements": "Éléments supprimés"
 }
