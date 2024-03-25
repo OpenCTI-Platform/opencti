@@ -6,7 +6,7 @@ describe('Schema utilities', () => {
   it('getAttributeMappingFromPath gives access to internal attribute definitions', () => {
     mapping = schemaAttributesDefinition.getAttributeMappingFromPath('name');
     expect(mapping).toEqual({
-      editDefault: true,
+      editDefault: false,
       format: 'short',
       isFilterable: true,
       label: 'Name',
