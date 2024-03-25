@@ -24,7 +24,7 @@ export const buildElasticSortingForAttributeCriteria = (orderCriteria: string, o
       }
       return { [`${sortBy.path}.keyword`]: { order: orderMode, missing: '_last' } };
     }
-    throw UnsupportedError(`Sorting on [${orderCriteria}] is not supported: this criteria does not have a sortByPath definition in schema`);
+    throw UnsupportedError(`Sorting on [${orderCriteria}] is not supported: this criteria does not have a sortBy definition in schema`);
   }
 
   return { [`${orderCriteria}.keyword`]: { order: orderMode, missing: '_last' } };

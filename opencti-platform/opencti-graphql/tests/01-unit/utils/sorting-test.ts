@@ -49,6 +49,6 @@ describe('Sorting utilities', () => {
 
   it('buildElasticSortingForAttributeCriteria throws on error', () => {
     sorting = () => buildElasticSortingForAttributeCriteria('context_data', 'asc');
-    expect(sorting).toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortByPath definition in schema');
+    expect(sorting).toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
   });
 });
