@@ -6872,6 +6872,13 @@ export enum EventsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ExportAskInput = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportType: Scalars['String']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  format: Scalars['String']['input'];
+};
+
 export type ExportContext = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
@@ -23013,10 +23020,7 @@ export type StixDomainObjectEditMutationsContextPatchArgs = {
 
 
 export type StixDomainObjectEditMutationsExportAskArgs = {
-  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  exportType: Scalars['String']['input'];
-  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  format: Scalars['String']['input'];
+  input: ExportAskInput;
 };
 
 
@@ -28576,6 +28580,7 @@ export type ResolversTypes = ResolversObject<{
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
+  ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: ResolverTypeWrapper<ExternalReference>;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -29335,6 +29340,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
+  ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: ExternalReference;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -36649,7 +36655,7 @@ export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType
   contextClean?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
+  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportAskArgs, 'input'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file' | 'file_markings'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsImportPushArgs, 'file'>>;

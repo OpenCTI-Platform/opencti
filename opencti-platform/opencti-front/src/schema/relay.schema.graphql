@@ -1634,6 +1634,13 @@ enum ConnectorType {
   STREAM
 }
 
+input ExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
+}
+
 input RegisterConnectorInput {
   id: ID!
   name: String!
@@ -7697,7 +7704,7 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
+  exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
 }
