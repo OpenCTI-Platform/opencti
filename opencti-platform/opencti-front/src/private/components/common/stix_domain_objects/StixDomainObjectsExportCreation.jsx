@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import SelectField from '../../../../components/SelectField';
@@ -49,7 +49,8 @@ export const StixDomainObjectsExportCreationMutation = graphql`
   mutation StixDomainObjectsExportCreationMutation(
     $format: String!
     $exportType: String!
-    $maxMarkingDefinition: String
+    $contentMaxMarkings: [String]
+    $fileMarkings: [String]
     $exportContext: ExportContext
     $search: String
     $orderBy: StixDomainObjectsOrdering
@@ -61,7 +62,8 @@ export const StixDomainObjectsExportCreationMutation = graphql`
     stixDomainObjectsExportAsk(
       format: $format
       exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
+      contentMaxMarkings: $contentMaxMarkings
+      fileMarkings: $fileMarkings
       exportContext: $exportContext
       search: $search
       orderBy: $orderBy
@@ -114,9 +116,6 @@ class StixDomainObjectsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
 
     const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value); // rename to contentMaxMarkings
     const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value); // rename to fileMarkings
@@ -126,7 +125,6 @@ class StixDomainObjectsExportCreationComponent extends Component {
       variables: {
         format: values.format,
         exportType: values.type,
-        maxMarkingDefinition,
         contentMaxMarkings: contentMaxMarkingDefinitions,
         fileMarkings: fileMarkingDefinitions,
         exportContext,

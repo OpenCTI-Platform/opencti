@@ -8049,7 +8049,7 @@ type Mutation {
   stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
-  stixDomainObjectsExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
+  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern

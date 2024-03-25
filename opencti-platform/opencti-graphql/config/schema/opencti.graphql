@@ -12712,7 +12712,8 @@ type Mutation {
   stixDomainObjectsExportAsk(
     format: String!
     exportType: String!
-    maxMarkingDefinition: String
+    contentMaxMarkings: [String],
+    fileMarkings: [String]
     search: String
     exportContext: ExportContext
     relationship_type: [String]

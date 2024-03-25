@@ -14254,11 +14254,12 @@ export type MutationStixDomainObjectsDeleteArgs = {
 
 
 export type MutationStixDomainObjectsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
