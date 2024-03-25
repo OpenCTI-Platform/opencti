@@ -66,17 +66,11 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
 export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryExportMutation(
     $id: ID!
-    $format: String!
-    $exportType: String!
-    $contentMaxMarkings: [String]
-    $fileMarkings: [String]
+    $input: ExportAskInput!
   ) {
     stixDomainObjectEdit(id: $id) {
       exportAsk(
-        format: $format
-        exportType: $exportType
-        contentMaxMarkings: $contentMaxMarkings
-        fileMarkings: $fileMarkings
+        input: $input
       ) {
         id
         name
@@ -194,18 +188,22 @@ const StixCoreObjectFilesAndHistory = ({
       mutation: stixCoreObjectFilesAndHistoryExportMutation,
       variables: {
         id,
-        format: values.format,
-        exportType: values.type,
-        contentMaxMarkings: contentMaxMarkingDefinitions,
-        fileMarkings: fileMarkingDefinitions,
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixDomainObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
+        input: {
           format: values.format,
           exportType: values.type,
           contentMaxMarkings: contentMaxMarkingDefinitions,
           fileMarkings: fileMarkingDefinitions,
+        },
+      },
+      updater: (store) => {
+        const root = store.getRootField('stixDomainObjectEdit');
+        const payloads = root.getLinkedRecords('exportAsk', {
+          input: {
+            format: values.format,
+            exportType: values.type,
+            contentMaxMarkings: contentMaxMarkingDefinitions,
+            fileMarkings: fileMarkingDefinitions,
+          },
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
