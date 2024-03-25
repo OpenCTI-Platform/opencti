@@ -1,5 +1,4 @@
 import { test } from '@playwright/test';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from 'playwright/test';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 
