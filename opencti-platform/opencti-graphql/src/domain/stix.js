@@ -47,10 +47,10 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
+export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type = 'simple', contentMaxMarkings = null, fileMarkings = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const { entity_id, entity_type } = exportContext;
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
+  const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
   const entity = entity_id ? await storeLoadById(context, user, entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
@@ -64,7 +64,8 @@ export const askListExport = async (context, user, exportContext, format, select
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type, // Exported entity type
     // All the params needed to execute the export on python connector
-    max_marking: maxMarkingId, // Max marking id
+    content_max_markings: contentMaxMarkings,
+    file_markings: fileMarkings,
   };
   const buildExportMessage = (work, fileName) => {
     const internal = {
