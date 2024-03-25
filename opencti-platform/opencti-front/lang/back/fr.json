@@ -626,5 +626,9 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Échantillons",
   "Contains observable": "Contient des observables",
-  "Artifact content": "Contenu de l'artefact"
+  "Artifact content": "Contenu de l'artefact",
+  "Entity ID": "ID de l'entité",
+  "Source connector": "Connecteur source",
+  "Malware analysis operating System": "Système d'exploitation pour l'analyse des logiciels malveillants",
+  "Allowed markings": "Marques autorisées"
 }

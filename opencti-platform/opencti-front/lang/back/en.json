@@ -626,5 +626,9 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Samples",
   "Contains observable": "Contains observable",
-  "Artifact content": "Artifact content"
+  "Artifact content": "Artifact content",
+  "Entity ID": "Entity ID",
+  "Source connector": "Source connector",
+  "Malware analysis operating System": "Malware analysis operating System",
+  "Allowed markings": "Allowed markings"
 }
