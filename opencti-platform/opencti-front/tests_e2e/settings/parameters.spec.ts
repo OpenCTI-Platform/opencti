@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import { expect } from '../fixtures/baseFixtures';
+import { expect } from 'playwright/test';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 test('Check EE activation', async ({ page }) => {

@@ -15,9 +15,9 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
-  ['Cases', ['Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task']],
-  ['Events', ['stix-sighting-relationship', 'Incident', 'Observed-Data']],
+  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Note', 'External-Reference']],
+  ['Cases', ['Case-Incident', 'Case-Rfi', 'Case-Rft', 'Task', 'Feedback']],
+  ['Events', ['Incident', 'stix-sighting-relationship', 'Observed-Data']],
   ['Observations', ['Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure']],
   ['Threats', ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign']],
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
@@ -169,27 +169,31 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           {t_i18n(key)}
         </MenuItem>,
       );
-      (values as EntitySettingHidden[]).map((platformHiddenType) => items.push(
-        <MenuItem
-          key={platformHiddenType.target_type}
-          value={platformHiddenType.target_type}
-          dense={true}
-        >
-          <Checkbox
-            checked={
+      const valuesKeys = groups.get(key) ?? [];
+      (values as EntitySettingHidden[])
+        .sort((a, b) => valuesKeys.indexOf(a.target_type) - valuesKeys.indexOf(b.target_type))
+        .forEach((platformHiddenType) => items.push(
+          <MenuItem
+            key={platformHiddenType.target_type}
+            value={platformHiddenType.target_type}
+            dense={true}
+          >
+            <Checkbox
+              checked={
               entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
-            style={{ marginLeft: 10 }}
-          />
-          {t_i18n(`entity_${platformHiddenType.target_type}`)}
-          <Security needs={[SETTINGS_SETACCESSES]}>
-            <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
-          </Security>
-        </MenuItem>,
-      ));
+              style={{ marginLeft: 10 }}
+            />
+            {t_i18n(`entity_${platformHiddenType.target_type}`)}
+            <Security needs={[SETTINGS_SETACCESSES]}>
+              <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
+            </Security>
+          </MenuItem>,
+        ));
     });
     return items;
   };
   return (
+
     <Field
       component={SelectField}
       variant="standard"

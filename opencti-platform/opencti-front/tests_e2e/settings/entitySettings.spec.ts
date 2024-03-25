@@ -18,6 +18,11 @@ test('Testing content customization for Report', async ({ page }) => {
   // Opening customization in settings
   await leftBarPage.clickOnMenu('Settings', 'Customization');
 
+  // Don't know why but report is the first item we can't click on directly
+  await page.getByPlaceholder('Search these results...').click();
+  await page.getByPlaceholder('Search these results...').fill('report');
+  await page.getByPlaceholder('Search these results...').press('Enter');
+
   // Opening Report configuration
   await page.getByRole('link', { name: 'Report' }).click();
   await page.getByRole('button', { name: 'Content' }).click();
