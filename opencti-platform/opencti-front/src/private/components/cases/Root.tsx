@@ -65,7 +65,7 @@ const Root = () => {
           Component={boundaryWrapper(Tasks)}
         />
         <Route
-          path="/tasks/:taskId"
+          path="/tasks/:taskId/*"
           Component={boundaryWrapper(RootTask)}
         />
         <Route
@@ -73,7 +73,7 @@ const Root = () => {
           Component={boundaryWrapper(Feedbacks)}
         />
         <Route
-          path="/feedbacks/:caseId"
+          path="/feedbacks/:caseId/*"
           Component={boundaryWrapper(RootFeedback)}
         />
       </Routes>
