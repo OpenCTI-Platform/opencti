@@ -179,7 +179,6 @@ const DefaultDashboard = ({ timeField }) => {
               <StixCoreObjectsNumber
                 variant="inLine"
                 withoutTitle={true}
-                height={110}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -211,7 +210,6 @@ const DefaultDashboard = ({ timeField }) => {
               <StixCoreObjectsNumber
                 variant="inLine"
                 withoutTitle={true}
-                height={110}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -243,7 +241,6 @@ const DefaultDashboard = ({ timeField }) => {
               <StixCoreObjectsNumber
                 variant="inLine"
                 withoutTitle={true}
-                height={110}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
@@ -275,7 +272,6 @@ const DefaultDashboard = ({ timeField }) => {
               <StixCoreObjectsNumber
                 variant="inLine"
                 withoutTitle={true}
-                height={110}
                 dataSelection={[{
                   filters: {
                     mode: 'and',
