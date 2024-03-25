@@ -79,7 +79,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
         render={(routeProps) => (
           <StixDomainObjectThreatKnowledge
             stixDomainObjectId={infrastructureData.id}
-            stixDomainObjectType="Intrusion-Set"
+            stixDomainObjectType="Infrastructure"
             {...routeProps}
           />
         )}
