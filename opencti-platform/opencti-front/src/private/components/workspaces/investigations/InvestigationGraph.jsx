@@ -17,6 +17,7 @@ import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
+import setStackDataInSessionStorage from '../../../../utils/sessionStorage/setStackDataInSessionStorage/setStackDataInSessionStorage';
 import {
   applyFilters,
   buildGraphData,
@@ -1836,7 +1837,13 @@ class InvestigationGraphComponent extends Component {
       this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
-      this.setPreExpansionStateOnSessionStorage(newElementsIds);
+      setStackDataInSessionStorage({ valueToStore: {
+        dateTime: new Date().getTime(),
+        investigatedEntitiesIdsList: newElementsIds,
+      },
+      key: 'preExpansionStateList',
+      stackValue: 10 });
+
       this.graphData = buildGraphData(
         this.graphObjects,
         decodeGraphData(this.props.workspace.graph_data),
@@ -1879,21 +1886,6 @@ class InvestigationGraphComponent extends Component {
       );
     }
     this.handleToggleDisplayProgress();
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  setPreExpansionStateOnSessionStorage(investigatedEntitiesIdsList) {
-    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
-    const currentStoredPreExpansion = storedPreExpansion ? JSON.parse(storedPreExpansion) : [];
-
-    currentStoredPreExpansion.unshift({
-      dateTime: new Date().getTime(),
-      investigatedEntitiesIdsList,
-    });
-
-    if (currentStoredPreExpansion.length > 10) currentStoredPreExpansion.pop();
-
-    sessionStorage.setItem('preExpansionStateList', JSON.stringify(currentStoredPreExpansion));
   }
 
   handleRollBackToPreExpansionState() {
