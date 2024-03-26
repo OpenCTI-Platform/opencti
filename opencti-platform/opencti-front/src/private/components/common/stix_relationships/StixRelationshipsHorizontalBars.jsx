@@ -260,28 +260,28 @@ const StixRelationshipsHorizontalBars = ({
           ) {
             const data = props.stixRelationshipsDistribution.map((n) => {
               let color = selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
+                ? itemColor(n.entity?.entity_type)
                 : itemColor(n.label);
               if (n.entity?.color) {
-                color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+                color = theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
                   ? '#000000'
-                  : n.entity.color;
+                  : n.entity?.color;
               }
               if (n.entity?.x_opencti_color) {
                 color = theme.palette.mode === 'light'
-                && n.entity.x_opencti_color === '#ffffff'
+                && n.entity?.x_opencti_color === '#ffffff'
                   ? '#000000'
-                  : n.entity.x_opencti_color;
+                  : n.entity?.x_opencti_color;
               }
               if (n.entity?.template?.color) {
                 color = theme.palette.mode === 'light'
-                && n.entity.template.color === '#ffffff'
+                && n.entity?.template.color === '#ffffff'
                   ? '#000000'
-                  : n.entity.template.color;
+                  : n.entity?.template.color;
               }
               return {
                 x: finalField.endsWith('_id')
-                  ? defaultValue(n.entity)
+                  ? defaultValue(n.entity, 'Restricted')
                   : n.label,
                 y: n.value,
                 fillColor: color,
@@ -291,7 +291,7 @@ const StixRelationshipsHorizontalBars = ({
             const redirectionUtils = finalField.endsWith('_id')
               ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
-                entity_type: n.entity.entity_type,
+                entity_type: n.entity?.entity_type,
               }))
               : undefined;
             return (

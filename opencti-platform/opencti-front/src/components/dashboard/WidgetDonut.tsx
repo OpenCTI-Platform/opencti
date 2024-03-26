@@ -27,27 +27,26 @@ const WidgetDonut = ({
   const chartData = data.map((n) => n.value);
   // eslint-disable-next-line no-nested-ternary
   const labels = data.map((n) => (groupBy.endsWith('_id')
-    ? defaultValue(n.entity)
+    ? defaultValue(n.entity, 'Restricted')
     : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
       ? t_i18n(`entity_${n.label}`)
       : n.label));
 
   let chartColors = [];
   if (data.at(0)?.entity?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
       ? '#000000'
-      : n.entity.color));
+      : n.entity?.color));
   }
   if (data.at(0)?.entity?.x_opencti_color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light'
-    && n.entity.x_opencti_color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
       ? '#000000'
-      : n.entity.x_opencti_color));
+      : n.entity?.x_opencti_color));
   }
   if (data.at(0)?.entity?.template?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
       ? '#000000'
-      : n.entity.template.color));
+      : n.entity?.template.color));
   }
 
   return (

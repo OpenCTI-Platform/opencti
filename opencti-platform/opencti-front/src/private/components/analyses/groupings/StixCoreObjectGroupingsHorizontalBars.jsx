@@ -68,7 +68,7 @@ class StixCoreObjectGroupingsHorizontalBars extends Component {
             && props.groupingsDistribution.length > 0
           ) {
             const data = props.groupingsDistribution.map((n) => ({
-              x: n.entity.name,
+              x: n.entity?.name ?? 'Restricted',
               y: n.value,
             }));
             const chartData = [{ name: t('Number of groupings'), data }];

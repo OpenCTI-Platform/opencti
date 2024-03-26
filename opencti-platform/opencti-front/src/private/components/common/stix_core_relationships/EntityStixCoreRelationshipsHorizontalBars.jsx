@@ -238,14 +238,14 @@ const EntityStixCoreRelationshipsHorizontalBars = (
               x:
               // eslint-disable-next-line no-nested-ternary
                 field === 'internal_id'
-                  ? defaultValue(n.entity)
+                  ? defaultValue(n.entity, 'Restricted')
                   : field === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,
               y: n.value,
               fillColor:
                 field === 'internal_id'
-                  ? itemColor(n.entity.entity_type)
+                  ? itemColor(n.entity?.entity_type)
                   : itemColor(n.label),
             }));
             const chartData = [
@@ -257,7 +257,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
             const redirectionUtils = (field === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
               (n) => ({
                 id: n.label,
-                entity_type: n.entity.entity_type,
+                entity_type: n.entity?.entity_type,
               }),
             ) : null;
             return (

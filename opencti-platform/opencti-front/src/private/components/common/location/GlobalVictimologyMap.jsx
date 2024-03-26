@@ -96,14 +96,14 @@ class GlobalVictimologyMap extends Component {
                   x.entity,
                 ),
                 R.filter(
-                  (n) => n.entity.entity_type === 'Country',
+                  (n) => n.entity?.entity_type === 'Country',
                   props.stixCoreRelationshipsDistribution,
                 ),
               );
               const cities = R.map(
                 (x) => x.entity,
                 R.filter(
-                  (n) => n.entity.entity_type === 'City',
+                  (n) => n.entity?.entity_type === 'City',
                   props.stixCoreRelationshipsDistribution,
                 ),
               );

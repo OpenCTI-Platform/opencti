@@ -444,7 +444,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
           ) {
             const data = props.stixCoreObjectsDistribution.map((n) => {
               let color = selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
+                ? itemColor(n.entity?.entity_type)
                 : itemColor(n.label);
               if (n.entity?.color) {
                 color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
@@ -467,7 +467,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 x:
                   // eslint-disable-next-line no-nested-ternary
                   selection.attribute.endsWith('_id')
-                    ? defaultValue(n.entity)
+                    ? defaultValue(n.entity, 'Restricted')
                     : selection.attribute === 'entity_type'
                       ? t_i18n(`entity_${n.label}`)
                       : n.label,
@@ -483,8 +483,8 @@ const stixCoreObjectsMultiHorizontalBars = ({
             ];
             const redirectionUtils = selection.attribute === 'name'
               ? props.stixCoreObjectsDistribution.map((n) => ({
-                id: n.entity.id,
-                entity_type: n.entity.entity_type,
+                id: n.entity?.id,
+                entity_type: n.entity?.entity_type,
               }))
               : null;
             return (

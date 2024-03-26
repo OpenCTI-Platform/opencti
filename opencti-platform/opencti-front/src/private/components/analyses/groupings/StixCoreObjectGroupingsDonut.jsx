@@ -72,7 +72,7 @@ class StixCoreObjectGroupingsDonut extends Component {
             let data = props.groupingsDistribution;
             if (field && field.includes('internal_id')) {
               data = R.map(
-                (n) => R.assoc('label', n.entity.name, n),
+                (n) => R.assoc('label', n.entity?.name ?? 'Restricted', n),
                 props.groupingsDistribution,
               );
             }
