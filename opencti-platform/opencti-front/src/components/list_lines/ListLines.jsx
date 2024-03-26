@@ -442,9 +442,7 @@ class ListLines extends Component {
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
           entityTypes={entityTypes}
-          restrictedFiltersConfig={{
-            filterRemoving: additionalFilterKeys,
-          }}
+          restrictedFiltersConfig={additionalFilterKeys?.restrictedFiltersConfig ?? undefined}
         />
         <ErrorBoundary key={keyword}>
           {message && (
@@ -634,7 +632,7 @@ class ListLines extends Component {
             });
             availableFilterKeys = uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
           }
-          if (additionalFilterKeys) availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
+          if (additionalFilterKeys) availableFilterKeys = uniq(availableFilterKeys.concat(additionalFilterKeys.filterKeys));
           if (disableExport) {
             return this.renderContent(availableFilterKeys, entityTypes);
           }
@@ -700,7 +698,7 @@ ListLines.propTypes = {
   handleExportCsv: PropTypes.func,
   helpers: PropTypes.object,
   availableFilterKeys: PropTypes.array,
-  additionalFilterKeys: PropTypes.array,
+  additionalFilterKeys: PropTypes.object,
   entityTypes: PropTypes.array,
 };
 

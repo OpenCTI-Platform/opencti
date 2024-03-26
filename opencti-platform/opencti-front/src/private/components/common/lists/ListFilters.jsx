@@ -63,7 +63,8 @@ const ListFilters = ({
     ? availableFilterKeys
       .map((key) => {
         const subEntityTypes = filterKeysMap.get(key)?.subEntityTypes ?? [];
-        const isFilterKeyForAllTypes = subEntityTypes.some((subType) => entityTypes.includes(subType));
+        const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
+          || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
         return {
           value: key,
           label: t_i18n(filterKeysMap.get(key)?.label ?? key),
