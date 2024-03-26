@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO Remove this when V6
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';

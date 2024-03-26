@@ -20,7 +20,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   defaultStopTime: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   relationshipTypes: string[];
-  stixCoreObjectTypes: string[];
+  stixCoreObjectTypes?: string[];
   isRelationReversed: boolean;
   currentView: string;
   enableNestedView?: boolean;
