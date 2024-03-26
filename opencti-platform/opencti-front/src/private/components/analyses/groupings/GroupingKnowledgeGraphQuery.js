@@ -48,3 +48,11 @@ export const groupingKnowledgeGraphQueryStixRelationshipDeleteMutation = graphql
     }
   }
 `;
+
+export const groupingKnowledgeGraphQueryStixObjectDeleteMutation = graphql`
+  mutation GroupingKnowledgeGraphQueryStixCoreObjectDeleteMutation($id: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      delete
+    }
+  }
+`;

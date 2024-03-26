@@ -31,6 +31,7 @@ import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
 import {
   groupingKnowledgeGraphMutationRelationDeleteMutation,
+  groupingKnowledgeGraphQueryStixObjectDeleteMutation,
   groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
   groupingKnowledgeGraphtMutationRelationAddMutation,
 } from './GroupingKnowledgeGraphQuery';
@@ -81,6 +82,63 @@ const groupingKnowledgeGraphCheckRelationQuery = graphql`
         }
       }
       ... on StixSightingRelationship {
+        groupings {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const groupingKnowledgeGraphCheckObjectQuery = graphql`
+  query GroupingKnowledgeGraphCheckObjectQuery($id: String!) {
+    stixObjectOrStixRelationship(id: $id) {
+      ... on BasicObject {
+        id
+      }
+      ... on StixCoreObject {
+        is_inferred
+        parent_types
+        groupings {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      ... on BasicRelationship {
+        id
+      }
+      ... on StixCoreRelationship {
+        is_inferred
+        parent_types
+        groupings {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      ... on StixRefRelationship {
+        is_inferred
+        parent_types
+        groupings {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+      ... on StixSightingRelationship {
+        is_inferred
+        parent_types
         groupings {
           edges {
             node {
@@ -969,7 +1027,7 @@ class GroupingKnowledgeGraphComponent extends Component {
     });
   }
 
-  async handleDeleteSelected() {
+  async handleDeleteSelected(deleteObject = false) {
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
@@ -980,7 +1038,8 @@ class GroupingKnowledgeGraphComponent extends Component {
         .toPromise()
         .then(async (data) => {
           if (
-            !data.stixRelationship.is_inferred
+            deleteObject
+            && !data.stixRelationship.is_inferred
             && data.stixRelationship.groupings.edges.length === 1
           ) {
             commitMutation({
@@ -1033,14 +1092,33 @@ class GroupingKnowledgeGraphComponent extends Component {
       });
     }, relationshipsToRemove);
     R.forEach((n) => {
-      commitMutation({
-        mutation: groupingKnowledgeGraphMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.grouping.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
-      });
+      fetchQuery(groupingKnowledgeGraphCheckObjectQuery, {
+        id: n.id,
+      })
+        .toPromise()
+        .then(async (data) => {
+          if (
+            deleteObject
+            && !data.stixObjectOrStixRelationship.is_inferred
+            && data.stixObjectOrStixRelationship.groupings.edges.length === 1
+          ) {
+            commitMutation({
+              mutation: groupingKnowledgeGraphQueryStixObjectDeleteMutation,
+              variables: {
+                id: n.id,
+              },
+            });
+          } else {
+            commitMutation({
+              mutation: groupingKnowledgeGraphMutationRelationDeleteMutation,
+              variables: {
+                id: this.props.grouping.id,
+                toId: n.id,
+                relationship_type: 'object',
+              },
+            });
+          }
+        });
     }, selectedNodes);
     this.selectedNodes.clear();
     this.graphData = buildGraphData(
