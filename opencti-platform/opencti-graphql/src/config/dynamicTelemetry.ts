@@ -1,13 +1,17 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import nodeMetrics from 'opentelemetry-node-metrics';
+import { type ObservableResult } from '@opentelemetry/api-metrics';
 
 class DynamicTelemetryManager {
   meterProvider: MeterProvider;
 
+  private version = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
+  }
+
+  setVersion(val: number) {
+    this.version = val;
   }
 
   registerMetrics() {
@@ -15,8 +19,13 @@ class DynamicTelemetryManager {
     // Register manual metrics
     // - Basic counters
     // TODO
+    // - Manual metrics
+    const versionGauge = meter.createObservableGauge('opencti-api_version');
+    versionGauge.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.version);
+    });
     // - Library metrics
-    nodeMetrics(this.meterProvider, { prefix: '' });
+    // nodeMetrics(this.meterProvider, { prefix: '' }); // TODO: keep or uncomment
   }
 }
 export const dynamicTelemetryProvider = new MeterProvider({});
