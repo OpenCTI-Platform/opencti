@@ -81,7 +81,7 @@ services:
   # docker compose --profile openid up -d
   opencti-dev-keycloak:
     profiles: [ openid ]
-    image: quay.io/keycloak/keycloak
+    image: quay.io/keycloak/keycloak:23.0.1
     container_name: opencti-dev-keycloak
     command: start-dev
     environment:
