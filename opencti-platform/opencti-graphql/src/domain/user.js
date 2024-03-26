@@ -1429,7 +1429,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
     const patch = {
       account_status: ACCOUNT_STATUS_ACTIVE,
       user_email: email,
-      password: bcrypt.hashSync(password),
+      password: bcrypt.hashSync(password.toString()),
       api_token: tokenValue,
       external: true,
     };
@@ -1445,7 +1445,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       lastname: 'OpenCTI',
       description: 'Principal admin account',
       api_token: tokenValue,
-      password,
+      password: password.toString(),
       user_confidence_level: {
         max_confidence: 100,
         overrides: [],
