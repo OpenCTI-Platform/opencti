@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import React, { Fragment } from 'react';
+import React from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
