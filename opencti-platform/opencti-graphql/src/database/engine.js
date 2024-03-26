@@ -10,6 +10,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  INDEX_DELETED_OBJECTS,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -37,7 +38,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled, loadCert, logApp } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -3171,6 +3172,27 @@ const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, re
   return elementsImpact;
 };
 
+export const elReindexElements = async (context, user, ids, sourceIndex, destIndex = INDEX_DELETED_OBJECTS) => {
+  const reindexParams = {
+    body: {
+      source: {
+        index: sourceIndex,
+        query: {
+          ids: {
+            values: ids
+          }
+        }
+      },
+      dest: {
+        index: destIndex
+      }
+    }
+  };
+  return engine.reindex(reindexParams).catch((err) => {
+    throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+  });
+};
+
 export const elDeleteElements = async (context, user, elements) => {
   if (elements.length === 0) return;
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
@@ -3180,6 +3202,25 @@ export const elDeleteElements = async (context, user, elements) => {
   const cleanupRelations = relations.concat(basicCleanup);
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  // store deleted objects
+  if (isFeatureEnabled('LOGICAL_DELETION')) {
+    // map of index => ids to save
+    const idsByIndex = new Map();
+    [...elements, ...relations].forEach((element) => {
+      if (!idsByIndex.has(element._index)) {
+        idsByIndex.set(element._index, []);
+      }
+      idsByIndex.get(element._index).push(element.id);
+    });
+    logApp.info('==== DEBUG ==== idsByIndex', { idsByIndex });
+    const reindexPromises = [];
+    [...idsByIndex.keys()].forEach((sourceIndex) => {
+      const ids = idsByIndex.get(sourceIndex);
+      logApp.info('==== DEBUG ==== call reindex', { sourceIndex, ids });
+      reindexPromises.push(elReindexElements(context, user, ids, sourceIndex));
+    });
+    await Promise.all(reindexPromises);
+  }
   // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact);
   // 02. Remove all related relations and elements
