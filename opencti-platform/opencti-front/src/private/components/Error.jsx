@@ -1,22 +1,49 @@
 import React from 'react';
+import { includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
-class ErrorBoundaryComponent extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null, stack: null };
-  }
+// Really simple error display
+export const SimpleError = () => (
+  <Alert severity="error">
+    <AlertTitle>Error</AlertTitle>
+    An unknown error occurred. Please contact your administrator or the OpenCTI
+    maintainers.
+  </Alert>
+);
 
-  componentDidCatch(error, stack) {
-    this.setState({ error, stack });
+export const DedicatedWarning = ({ title, description }) => (
+  <Alert severity="warning">
+    <AlertTitle>{title}</AlertTitle>
+    {description}
+  </Alert>
+);
+
+class ErrorBoundaryComponent extends React.Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { error };
   }
 
   render() {
-    if (this.state.stack) {
-      return this.props.display;
+    if (this.state.error) {
+      const baseErrors = this.state.error.res?.errors ?? [];
+      const retroErrors = this.state.error.data?.res?.errors ?? [];
+      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+      // Specific error catching
+      if (includes('COMPLEX_SEARCH_ERROR', types)) {
+        return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'}/>;
+      }
+      // Access error must be forwarded
+      if (includes('FORBIDDEN_ACCESS', types) || includes('AUTH_REQUIRED', types)) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw this.state.error;
+      }
+      return this.props.display ?? <SimpleError/>;
     }
     return this.props.children;
   }
@@ -26,14 +53,6 @@ ErrorBoundaryComponent.propTypes = {
   children: PropTypes.node,
 };
 export const ErrorBoundary = ErrorBoundaryComponent;
-
-export const SimpleError = () => (
-  <Alert severity="error">
-    <AlertTitle>Error</AlertTitle>
-    An unknown error occurred. Please contact your administrator or the OpenCTI
-    maintainers.
-  </Alert>
-);
 
 export const boundaryWrapper = (Component) => {
   // eslint-disable-next-line react/display-name
