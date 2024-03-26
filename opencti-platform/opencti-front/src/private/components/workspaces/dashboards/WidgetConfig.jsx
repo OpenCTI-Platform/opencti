@@ -424,6 +424,9 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type]?.isRelationships ?? false;
   };
+  const isWidgetListOrTimeline = () => {
+    return indexedVisualizationTypes[type]?.key === 'list' || indexedVisualizationTypes[type]?.key === 'timeline';
+  };
   const getCurrentIsEntities = () => {
     return indexedVisualizationTypes[type]?.isEntities ?? false;
   };
@@ -928,15 +931,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         labelId="relative"
                         size="small"
                         fullWidth={true}
-                        value={
-                                                        dataSelection[i].date_attribute ?? 'created_at'
-                                                    }
-                        onChange={(event) => handleChangeDataValidationParameter(
-                          i,
-                          'date_attribute',
-                          event.target.value,
-                        )
-                                                    }
+                        value={dataSelection[i].date_attribute ?? 'created_at'}
+                        onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
                       >
                         <MenuItem value="created_at">
                           created_at ({t_i18n('Technical date')})
@@ -960,12 +956,12 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           stop_time ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
-                        {getCurrentIsRelationships() && (
+                        {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
                         <MenuItem value="first_seen">
                           first_seen ({t_i18n('Functional date')})
                         </MenuItem>
                         )}
-                        {getCurrentIsRelationships() && (
+                        {getCurrentIsRelationships() && !isWidgetListOrTimeline() && (
                         <MenuItem value="last_seen">
                           last_seen ({t_i18n('Functional date')})
                         </MenuItem>
