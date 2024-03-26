@@ -4,9 +4,11 @@ import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
+import { dynamicTelemetryManager } from './config/dynamicTelemetry';
 
 const initDynamicTelemetry = () => {
   const version = PLATFORM_VERSION;
+  dynamicTelemetryManager.setVersion(version);
 };
 
 // region platform start and stop

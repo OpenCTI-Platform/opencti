@@ -507,6 +507,7 @@ export const GRAPHQL_ARMOR_ENABLED = booleanConf('app:graphql:armor_enabled', tr
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
 export const ENABLED_METRICS = booleanConf('app:telemetry:metrics:enabled', false);
+export const ENABLED_TELEMETRY = booleanConf('app:telemetry:filigran:enabled', false);
 export const ENABLED_EVENT_LOOP_MONITORING = booleanConf('app:event_loop_logs:enabled', false);
 export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled', true);
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
