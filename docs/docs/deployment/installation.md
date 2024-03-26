@@ -44,7 +44,7 @@ OpenCTI can be deployed using the *docker-compose* command.
 **:material-linux:{ .middle } Linux**
 
 ```bash
-$ sudo apt install docker-compose
+sudo apt install docker-compose
 ```
 
 **:material-microsoft-windows:{ .middle } Windows and MacOS**
@@ -56,9 +56,9 @@ Just download the appropriate [Docker for Desktop](https://www.docker.com/produc
 Docker helpers are available in the [Docker GitHub repository](https://github.com/OpenCTI-Platform/docker).
 
 ```bash
-$ mkdir -p /path/to/your/app && cd /path/to/your/app
-$ git clone https://github.com/OpenCTI-Platform/docker.git
-$ cd docker
+mkdir -p /path/to/your/app && cd /path/to/your/app
+git clone https://github.com/OpenCTI-Platform/docker.git
+cd docker
 ```
 
 ### Configure the environment
@@ -84,9 +84,9 @@ You can either rename the file `.env.sample` in `.env` and put the expected valu
 Here is an example to quickly generate the `.env` file under Linux, especially all the default UUIDv4:
 
 ```bash
-$ sudo apt install -y jq
-$ cd ~/docker
-$ (cat << EOF
+sudo apt install -y jq
+cd ~/docker
+(cat << EOF
 OPENCTI_ADMIN_EMAIL=admin@opencti.io
 OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
@@ -110,19 +110,19 @@ EOF
 If your `docker-compose` deployment does not support `.env` files, just export all environment variables before launching the platform:
 
 ```bash
-$ export $(cat .env | grep -v "#" | xargs)
+export $(cat .env | grep -v "#" | xargs)
 ```
 
 As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
-$ sudo sysctl -w vm.max_map_count=1048575
+sudo sysctl -w vm.max_map_count=1048575
 ```
 
 To make this parameter persistent, add the following to the end of your `/etc/sysctl.conf`:
 
 ```bash
-$ vm.max_map_count=1048575
+vm.max_map_count=1048575
 ```
     
 
@@ -147,9 +147,9 @@ volumes:
 After changing your `.env` file run `docker-compose` in detached (-d) mode:
 
 ```bash
-$ sudo systemctl start docker.service
+sudo systemctl start docker.service
 # Run docker-compose in detached
-$ docker-compose up -d
+docker-compose up -d
 ```
 
 #### Using Docker swarm
@@ -158,16 +158,16 @@ In order to have the best experience with Docker, we recommend using the Docker 
 
 ```bash
 # If your virtual machine is not a part of a Swarm cluster, please use:
-$ docker swarm init
+docker swarm init
 ```
 
 Put your environment variables in `/etc/environment`:
 
 ```bash
 # If you already exported your variables to .env from above:
-$ sudo cat .env >> /etc/environment
-$ sudo bash -c 'cat .env >> /etc/environment’
-$ sudo docker stack deploy --compose-file docker-compose.yml opencti
+sudo cat .env >> /etc/environment
+sudo bash -c 'cat .env >> /etc/environment'
+sudo docker stack deploy --compose-file docker-compose.yml opencti
 ```
 
 !!! success "Installation done"
@@ -185,7 +185,8 @@ $ sudo docker stack deploy --compose-file docker-compose.yml opencti
 You have to install all the needed dependencies for the main application and the workers. The example below is for Debian-based systems:
 
 ```bash
-$ sudo apt-get install build-essential nodejs npm python3 python3-pip python3-dev
+sudo apt-get update
+sudo apt-get install build-essential nodejs npm python3 python3-pip python3-dev
 ```
 
 #### Download the application files
@@ -202,9 +203,9 @@ First, you have to [download and extract the latest release file](https://github
 We don't provide any Windows release for now. However it is still possible to check the code out, manually install the dependencies and build the software.
 
 ```bash
-$ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget <https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.tar.gz>
-$ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
+mkdir /path/to/your/app && cd /path/to/your/app
+wget <https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.tar.gz>
+tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 ```
 
 ### Install the main platform
@@ -214,8 +215,8 @@ $ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 The main application has just one JSON configuration file to change and a few Python modules to install
 
 ```bash
-$ cd opencti
-$ cp config/default.json config/production.json
+cd opencti
+cp config/default.json config/production.json
 ```
 
 Change the *config/production.json* file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
@@ -223,19 +224,30 @@ Change the *config/production.json* file according to your configuration of Elas
 #### Install the Python modules
 
 ```bash
-$ cd src/python
-$ pip3 install -r requirements.txt
-$ cd ../..
+cd src/python
+pip3 install -r requirements.txt
+cd ../..
 ```
 
 #### Start the application
 
 The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.
 
+> Please verify that yarn version is greater than 4 and node version is greater or equals to v19.
+> Please note that some Node.js version are outdated in linux package manager, you can download a recent one in https://nodejs.org/en/download or alternatively nvm can help to chose a recent version of Node.js https://github.com/nvm-sh/nvm
+
 ```bash
-$ yarn install
-$ yarn build
-$ yarn serv
+yarn --version
+#4.1.0
+node --version
+#v20.11.1
+```
+
+Once Node.js is setup, you can build and run with (from inside `opencti` folder):
+```bash
+yarn install
+yarn build
+yarn serv
 ```
 
 The default username and password are those you have put in the `config/production.json` file.
@@ -247,9 +259,9 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 #### Configure the worker
 
 ```bash
-$ cd worker
-$ pip3 install -r requirements.txt
-$ cp config.yml.sample config.yml
+cd worker
+pip3 install -r requirements.txt
+cp config.yml.sample config.yml
 ```
 
 Change the *config.yml* file according to your OpenCTI token.
@@ -257,8 +269,8 @@ Change the *config.yml* file according to your OpenCTI token.
 #### Start as many workers as you need
 
 ```bash
-$ python3 worker.py &
-$ python3 worker.py &
+python3 worker.py &
+python3 worker.py &
 ```
 
 !!! success "Installation done"
