@@ -826,17 +826,17 @@ const StixRelationshipsMultiHorizontalBars = ({
             && props.stixRelationshipsDistribution
             && props.stixRelationshipsDistribution.length > 0
           ) {
-            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity));
+            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity, 'Restricted'));
             const entitiesMapping = {};
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
                 entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity)
+                    ? defaultValue(subDistrib.entity, 'Restricted')
                     : subDistrib.label
                 ] = (entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity)
+                    ? defaultValue(subDistrib.entity, 'Restricted')
                     : subDistrib.label
                 ] || 0) + subDistrib.value;
               }
@@ -849,7 +849,7 @@ const StixRelationshipsMultiHorizontalBars = ({
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const sortedEntity of sortedEntityMapping) {
                 const entityData = R.head(
-                  distrib.entity[key].filter(
+                  distrib.entity?.[key].filter(
                     (n) => (finalSubDistributionField === 'internal_id'
                       ? defaultValue(n.entity)
                       : n.label) === sortedEntity[0],
@@ -907,14 +907,14 @@ const StixRelationshipsMultiHorizontalBars = ({
             const redirectionUtils = finalField === 'internal_id'
               ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
-                entity_type: n.entity.entity_type,
+                entity_type: n.entity?.entity_type,
                 series: subSectionIdsOrder.map((subSectionId) => {
-                  const [entity] = n.entity[key].filter(
+                  const [entity] = n.entity[key]?.filter(
                     (e) => e.label === subSectionId,
-                  );
+                  ) ?? [];
                   return {
                     id: subSectionId,
-                    entity_type: entity ? entity.entity.entity_type : null,
+                    entity_type: entity ? entity.entity?.entity_type : null,
                   };
                 }),
               }))

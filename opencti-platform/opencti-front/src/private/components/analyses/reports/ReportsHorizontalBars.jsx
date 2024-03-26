@@ -71,7 +71,7 @@ class ReportsHorizontalBars extends Component {
             && props.reportsDistribution.length > 0
           ) {
             const data = props.reportsDistribution.map((n) => ({
-              x: n.entity.name,
+              x: n.entity?.name ?? 'Restricted',
               y: n.value,
             }));
             const chartData = [{ name: t('Number of reports'), data }];

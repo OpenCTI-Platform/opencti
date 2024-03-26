@@ -257,8 +257,8 @@ const StixRelationshipsDistributionList = ({
                 ? defaultValue(o.entity)
                 : o.label,
               value: o.value,
-              id: finalField.endsWith('_id') ? o.entity.id : null,
-              type: finalField.endsWith('_id') ? o.entity.entity_type : o.label,
+              id: finalField.endsWith('_id') ? o.entity?.id : null,
+              type: finalField.endsWith('_id') ? o.entity?.entity_type : o.label,
             }));
             return (
               <WidgetDistributionList

@@ -67,7 +67,7 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
               <TimelineContent>
                 <Paper variant="outlined" sx={{ padding: '15px' }} className="noDrag">
                   <Typography variant="h2">
-                    {defaultValue(value)}
+                    {defaultValue(value, 'Restricted')}
                   </Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay

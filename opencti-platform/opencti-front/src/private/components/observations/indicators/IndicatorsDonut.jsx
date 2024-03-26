@@ -72,7 +72,7 @@ class IndicatorsDonut extends Component {
             let data = props.indicatorsDistribution;
             if (field && field.includes('internal_id')) {
               data = map(
-                (n) => assoc('label', n.entity.name, n),
+                (n) => assoc('label', n.entity?.name ?? 'Restricted', n),
                 props.indicatorsDistribution,
               );
             }

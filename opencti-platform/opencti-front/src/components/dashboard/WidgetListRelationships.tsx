@@ -149,7 +149,7 @@ const WidgetListRelationships = ({
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.to
-                          ? defaultValue(stixRelationship.to)
+                          ? defaultValue(stixRelationship.to, t_i18n('Restricted'))
                           : t_i18n('Restricted')}
                       </code>
                     </div>

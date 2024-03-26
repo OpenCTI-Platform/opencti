@@ -382,7 +382,7 @@ export const defaultKey = (n) => {
 };
 
 export const defaultValue = (n, fallback = 'Unknown') => {
-  if (!n) return '';
+  if (!n) return fallback;
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);
   }

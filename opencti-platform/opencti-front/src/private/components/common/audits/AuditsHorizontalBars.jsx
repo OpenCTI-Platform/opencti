@@ -292,7 +292,7 @@ const AuditsHorizontalBars = ({
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? itemColor(n.entity.entity_type)
+                  ? itemColor(n.entity?.entity_type)
                   : itemColor(n.label),
             }));
             const chartData = [
@@ -305,11 +305,11 @@ const AuditsHorizontalBars = ({
               || selection.attribute.endsWith('_id')
               || selection.attribute.endsWith('_ids')
               ? props.auditsDistribution.map((n) => ({
-                id: n.entity.id,
+                id: n.entity?.id,
                 entity_type:
-                      n.entity.entity_type === 'Workspace'
-                        ? n.entity.type
-                        : n.entity.entity_type,
+                  n.entity?.entity_type === 'Workspace'
+                    ? n.entity.type
+                    : n.entity?.entity_type,
               }))
               : null;
             return (

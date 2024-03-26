@@ -241,7 +241,7 @@ const StixCoreObjectsHorizontalBars = ({
           ) {
             const data = props.stixCoreObjectsDistribution.map((n) => {
               let color = selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
+                ? itemColor(n.entity?.entity_type)
                 : itemColor(n.label);
               if (n.entity?.color) {
                 color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
@@ -250,13 +250,13 @@ const StixCoreObjectsHorizontalBars = ({
               }
               if (n.entity?.x_opencti_color) {
                 color = theme.palette.mode === 'light'
-                                && n.entity.x_opencti_color === '#ffffff'
+                  && n.entity.x_opencti_color === '#ffffff'
                   ? '#000000'
                   : n.entity.x_opencti_color;
               }
               if (n.entity?.template?.color) {
                 color = theme.palette.mode === 'light'
-                                && n.entity.template.color === '#ffffff'
+                  && n.entity.template.color === '#ffffff'
                   ? '#000000'
                   : n.entity.template.color;
               }
@@ -279,8 +279,8 @@ const StixCoreObjectsHorizontalBars = ({
             ];
             const redirectionUtils = selection.attribute === 'name'
               ? props.stixCoreObjectsDistribution.map((n) => ({
-                id: n.entity.id,
-                entity_type: n.entity.entity_type,
+                id: n.entity?.id,
+                entity_type: n.entity?.entity_type,
               }))
               : undefined;
             return (
