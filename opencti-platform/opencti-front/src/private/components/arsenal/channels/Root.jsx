@@ -159,7 +159,7 @@ class RootChannel extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
+                          to={`/dashboard/arsenal/channels/${channel.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
                           label={t('Knowledge')}
                         />
