@@ -14,6 +14,7 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
+import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH } from './IngestionTaxiiCreation';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -104,31 +105,31 @@ const IngestionTaxiiEditionContainer = ({
     R.assoc('user_id', convertUser(ingestionTaxii, 'user')),
     R.assoc(
       'username',
-      ingestionTaxii.authentication_type === 'basic'
+      ingestionTaxii.authentication_type === BASIC_AUTH
         ? ingestionTaxii.authentication_value.split(':')[0]
         : '',
     ),
     R.assoc(
       'password',
-      ingestionTaxii.authentication_type === 'basic'
+      ingestionTaxii.authentication_type === BASIC_AUTH
         ? ingestionTaxii.authentication_value.split(':')[1]
         : '',
     ),
     R.assoc(
       'cert',
-      ingestionTaxii.authentication_type === 'certificate'
+      ingestionTaxii.authentication_type === CERT_AUTH
         ? ingestionTaxii.authentication_value.split(':')[0]
         : '',
     ),
     R.assoc(
       'key',
-      ingestionTaxii.authentication_type === 'certificate'
+      ingestionTaxii.authentication_type === CERT_AUTH
         ? ingestionTaxii.authentication_value.split(':')[1]
         : '',
     ),
     R.assoc(
       'ca',
-      ingestionTaxii.authentication_type === 'certificate'
+      ingestionTaxii.authentication_type === CERT_AUTH
         ? ingestionTaxii.authentication_value.split(':')[2]
         : '',
     ),
@@ -237,7 +238,7 @@ const IngestionTaxiiEditionContainer = ({
                 {t('Client certificate')}
               </MenuItem>
             </Field>
-            {values.authentication_type === 'basic' && (
+            {values.authentication_type === BASIC_AUTH && (
               <>
                 <Field
                   component={TextField}
@@ -259,7 +260,7 @@ const IngestionTaxiiEditionContainer = ({
                 />
               </>
             )}
-            {values.authentication_type === 'bearer' && (
+            {values.authentication_type === BEARER_AUTH && (
               <Field
                 component={TextField}
                 variant="standard"
@@ -270,7 +271,7 @@ const IngestionTaxiiEditionContainer = ({
                 style={fieldSpacingContainerStyle}
               />
             )}
-            {values.authentication_type === 'certificate' && (
+            {values.authentication_type === CERT_AUTH && (
               <>
                 <Field
                   component={TextField}

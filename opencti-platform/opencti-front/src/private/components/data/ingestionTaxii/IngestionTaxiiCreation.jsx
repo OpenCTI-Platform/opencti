@@ -17,6 +17,10 @@ import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 
+export const BASIC_AUTH = 'basic';
+export const CERT_AUTH = 'certificate';
+export const BEARER_AUTH = 'bearer';
+
 const styles = (theme) => ({
   buttons: {
     marginTop: 20,
@@ -58,11 +62,12 @@ const IngestionTaxiiCreation = (props) => {
   const { t, classes } = props;
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     let authentifcationValue = values.authentication_value;
-    if (values.authentication_type === 'basic') {
+    if (values.authentication_type === BASIC_AUTH) {
       authentifcationValue = `${values.username}:${values.password}`;
-    } else if (values.authentication_type === 'certificate') {
+    } else if (values.authentication_type === CERT_AUTH) {
       authentifcationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
+
     const input = {
       name: values.name,
       description: values.description,
@@ -193,7 +198,7 @@ const IngestionTaxiiCreation = (props) => {
                   {t('Client certificate')}
                 </MenuItem>
               </Field>
-              {values.authentication_type === 'basic' && (
+              {values.authentication_type === BASIC_AUTH && (
                 <>
                   <Field
                     component={TextField}
@@ -213,7 +218,7 @@ const IngestionTaxiiCreation = (props) => {
                   />
                 </>
               )}
-              {values.authentication_type === 'bearer' && (
+              {values.authentication_type === BEARER_AUTH && (
                 <Field
                   component={TextField}
                   variant="standard"
@@ -223,7 +228,7 @@ const IngestionTaxiiCreation = (props) => {
                   style={fieldSpacingContainerStyle}
                 />
               )}
-              {values.authentication_type === 'certificate' && (
+              {values.authentication_type === CERT_AUTH && (
                 <>
                   <Field
                     component={TextField}
