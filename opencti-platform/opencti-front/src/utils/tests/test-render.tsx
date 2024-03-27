@@ -40,7 +40,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
       user_email: 'admin@opencti.io',
       firstname: 'Admin',
       lastname: 'OpenCTI',
-      language: 'auto',
+      language: 'en-us',
       unit_system: 'auto',
       theme: 'default',
       external: true,
@@ -74,7 +74,7 @@ const ProvidersWrapper = ({ children, relayConfig, userContext }: ProvidersWrapp
             {children}
           </UserContext.Provider>
         </ThemeProvider>
-      </AppIntlProvider>W
+      </AppIntlProvider>
     </RelayEnvironmentProvider>
   );
 };
