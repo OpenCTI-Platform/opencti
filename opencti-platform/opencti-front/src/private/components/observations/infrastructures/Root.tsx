@@ -122,7 +122,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge/overview`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
