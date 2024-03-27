@@ -23,10 +23,12 @@ export const getWidgetArguments = async (
 ): Promise<WidgetArguments> => {
   // Get publicDashboard from cache
   const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
-  console.log(publicDashboardsMapByUriKey);
   const publicDashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!publicDashboard) {
     throw UnsupportedError('Dashboard not found');
+  }
+  if (!publicDashboard.enabled) {
+    throw UnsupportedError('Dashboard not enabled');
   }
 
   const { user_id, private_manifest, allowed_markings }: PublicDashboardCached = publicDashboard;

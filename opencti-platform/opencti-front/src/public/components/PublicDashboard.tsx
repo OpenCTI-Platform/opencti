@@ -18,6 +18,7 @@ const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
     publicDashboardByUriKey(uri_key: $uri_key) {
       name
+      enabled
       public_manifest
     }
   }
@@ -42,6 +43,10 @@ const PublicDashboardComponent = ({
 
   useEffect(() => {
     if (publicDashboardByUriKey === null) {
+      navigate('/');
+    }
+    const enabled = publicDashboardByUriKey?.enabled;
+    if (!enabled) {
       navigate('/');
     }
   }, [publicDashboardByUriKey]);

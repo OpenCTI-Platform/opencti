@@ -170,6 +170,7 @@ export const addPublicDashboard = async (
   // Create publicDashboard
   const publicDashboardToCreate = {
     name: input.name,
+    enabled: input.enabled,
     description: input.description,
     public_manifest: publicManifest,
     private_manifest: dashboard.manifest,
@@ -209,7 +210,8 @@ export const publicDashboardEditField = async (
   id: string,
   input: EditInput[],
 ) => {
-  const invalidInput = input.some((item: EditInput) => item.key !== 'name' && item.key !== 'uri_key');
+  const validKeys = ['name', 'uri_key', 'enabled'];
+  const invalidInput = input.some((item: EditInput) => !validKeys.includes(item.key));
   if (invalidInput) {
     throw UnsupportedError('Only name and uri_key can be updated');
   }

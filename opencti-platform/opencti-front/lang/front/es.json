@@ -2656,7 +2656,6 @@
   "No public dashboard created yet": "Aún no se ha creado ningún panel público",
   "Create a new public dashboard": "Crear un nuevo panel público",
   "Public dashboard ID": "ID del panel público",
-  "Specify the ID of your public dashboard": "Especifique el ID de su panel de control público",
   "Disable public dashboard": "Desactivar panel público",
   "Delete public dashboard": "Borrar panel público",
   "Are you sure you want to delete this public dashboard?": "¿Está seguro de que desea eliminar este panel público?",
@@ -2673,5 +2672,11 @@
   "Strategic": "Estratégico",
   "Link created": "Enlace creado",
   "Public dashboard": "Cuadro de mandos público",
-  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto."
+  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto.",
+  "ID of your public dashboard": "ID de su panel de control público (utilizado en la URL)",
+  "Data sharing configuration": "Configuración de compartición de datos",
+  "Not shareable": "No compartible",
+  "Disabled dashboard...": "El tablero público deshabilitado no se puede ver. Puede cambiar este booleano en cualquier momento.",
+  "The public dashboard is disabled": "El panel público está desactivado",
+  "Enable public dashboard": "Activar el panel de control público"
 }

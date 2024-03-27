@@ -17373,6 +17373,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   dashboard_id?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
+  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -17389,6 +17390,7 @@ export type PublicDashboardAddInput = {
   allowed_markings_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   dashboard_id: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
+  enabled: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   uri_key: Scalars['String']['input'];
 };
@@ -34774,6 +34776,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

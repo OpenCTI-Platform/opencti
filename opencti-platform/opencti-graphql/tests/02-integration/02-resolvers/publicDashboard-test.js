@@ -136,6 +136,7 @@ describe('PublicDashboard resolver', () => {
         name: 'public dashboard',
         uri_key: 'public-dashboard',
         dashboard_id: privateDashboardInternalId,
+        enabled: true,
       },
     };
     const emptyPublicDashboard = await queryAsAdmin({
@@ -165,13 +166,14 @@ describe('PublicDashboard resolver', () => {
       let publicDashboardInternalId;
       let publicDashboardUriKey;
 
-      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create private dashboards', async () => {
+      it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create public dashboards', async () => {
         // Create the publicDashboard
         const PUBLICDASHBOARD2_TO_CREATE = {
           input: {
             name: publicDashboardName,
             uri_key: publicDashboardName,
             dashboard_id: privateDashboardInternalId,
+            enabled: true,
           },
         };
         const publicDashboard = await participantQuery({
@@ -191,6 +193,7 @@ describe('PublicDashboard resolver', () => {
             name: publicDashboardName,
             uri_key: publicDashboardName,
             dashboard_id: privateDashboardInternalId,
+            enabled: true,
           },
         };
         const publicDashboard = await queryAsAdmin({
@@ -882,7 +885,8 @@ describe('PublicDashboard resolver', () => {
             name: 'public dashboard markings',
             uri_key: 'public-dashboard-markings',
             dashboard_id: privateDashboardInternalId,
-            allowed_markings_ids: [tlpGreen.id]
+            allowed_markings_ids: [tlpGreen.id],
+            enabled: true,
           },
         };
         const publicDashboard = await queryAsAdmin({

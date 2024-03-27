@@ -47,7 +47,6 @@ const PublicDataSharing = () => {
 
   return (
     <>
-      <Message />
       <div className={classes.container}>
         <img
           src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}

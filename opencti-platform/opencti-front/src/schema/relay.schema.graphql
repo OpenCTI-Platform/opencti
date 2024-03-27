@@ -11207,6 +11207,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   updated_at: DateTime
   editContext: [EditUserContext!]
   authorized_members: [MemberAccess!]
+  enabled: Boolean!
 }
 
 type PublicDistribution {
@@ -11239,6 +11240,7 @@ input PublicDashboardAddInput {
   description: String
   dashboard_id: String!
   allowed_markings_ids: [String!]
+  enabled: Boolean!
 }
 
 enum Tone {

@@ -2568,7 +2568,7 @@
   "To prevent people seeing all the data...": "To prevent people seeing all the data in the public dashboard, select a marking definition to restrict the shared data.",
   "Max level markings": "Max level markings",
   "Public dashboard ID": "Public dashboard ID",
-  "Specify the ID of your public dashboard": "Specify the ID of your public dashboard",
+  "ID of your public dashboard": "ID of your public dashboard (used in the URL)",
   "Copy link": "Copy link",
   "Disable public dashboard": "Disable public dashboard",
   "Delete public dashboard": "Delete public dashboard",
@@ -2675,5 +2675,8 @@
   "Link created": "Link created",
   "Public dashboard": "Public dashboard",
   "Data sharing configuration": "Data sharing configuration",
-  "Not shareable": "Not shareable"
+  "Not shareable": "Not shareable",
+  "Disabled dashboard...": "Disabled public dashboard cannot be viewed. You can change this boolean at anytime.",
+  "The public dashboard is disabled": "The public dashboard is disabled",
+  "Enable public dashboard": "Enable public dashboard"
 }
