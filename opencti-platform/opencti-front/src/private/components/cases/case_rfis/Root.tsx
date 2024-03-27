@@ -147,7 +147,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
+                to={`/dashboard/cases/rfis/${caseData.id}/knowledge/graph`}
                 value={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />

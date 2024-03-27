@@ -148,7 +148,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+                to={`/dashboard/cases/incidents/${caseData.id}/knowledge/graph`}
                 value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
