@@ -158,7 +158,7 @@ class RootNarrative extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
+                          to={`/dashboard/techniques/narratives/${narrative.id}/knowledge/overview`}
                           value={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
                           label={t('Knowledge')}
                         />
