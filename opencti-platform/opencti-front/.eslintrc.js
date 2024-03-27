@@ -90,6 +90,7 @@ module.exports = {
       'error',
       {
         devDependencies: [
+          'src/utils/tests/*.{ts,tsx}',
           '**/*.test.{ts,tsx}',
           'tests_e2e/**/*.{ts,tsx,js}',
         ],
