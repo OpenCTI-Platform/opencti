@@ -127,7 +127,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/events/incidents/${incident.id}/knowledge`}
+                to={`/dashboard/events/incidents/${incident.id}/knowledge/overview`}
                 value={`/dashboard/events/incidents/${incident.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
