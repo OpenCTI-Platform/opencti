@@ -37,7 +37,7 @@ const MarkingsSelectField = ({
     markingDefinitions.map((m) => m.definition_type),
   ));
 
-  const initialValues = (markingTypes ?? []).reduce((acc, type) => ({
+  const initialValues = markingTypes.reduce((acc, type) => ({
     ...acc,
     [type]: value.find((defId) => {
       const marking = markingDefinitions.find((def) => def.id === defId);
