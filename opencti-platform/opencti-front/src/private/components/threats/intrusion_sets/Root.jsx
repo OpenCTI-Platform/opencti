@@ -169,7 +169,7 @@ class RootIntrusionSet extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
                           value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
                           label={t('Knowledge')}
                         />

@@ -168,7 +168,7 @@ class RootThreatActorGroup extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge/overview`}
                           value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
                           label={t('Knowledge')}
                         />

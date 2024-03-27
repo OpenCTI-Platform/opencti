@@ -167,7 +167,7 @@ const RootThreatActorIndividualComponent = ({
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
