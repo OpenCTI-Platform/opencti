@@ -260,6 +260,16 @@ const visualizationTypes = [
     isAudits: true,
   },
   {
+    key: 'polar-area',
+    name: 'Polar Area',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: ['attribute'],
+    isRelationships: true,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
     key: 'heatmap',
     name: 'Heatmap',
     dataSelectionLimit: 5,
@@ -559,6 +569,8 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       case 'line':
         return <ChartLine fontSize="large" color="primary"/>;
       case 'radar':
+        return <Radar fontSize="large" color="primary"/>;
+      case 'polar-area':
         return <Radar fontSize="large" color="primary"/>;
       case 'tree':
         return <ChartTree fontSize="large" color="primary"/>;
