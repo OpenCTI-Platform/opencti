@@ -161,7 +161,7 @@ class RootAttackPattern extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
+                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge/overview`}
                           value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
                           label={t('Knowledge')}
                         />
