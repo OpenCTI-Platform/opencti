@@ -197,7 +197,7 @@ class RootIndividual extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+                          to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
                           value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
                           label={t('Knowledge')}
                         />

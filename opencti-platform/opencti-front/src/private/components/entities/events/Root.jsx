@@ -158,7 +158,7 @@ class RootEvent extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/events/${event.id}/knowledge`}
+                          to={`/dashboard/entities/events/${event.id}/knowledge/overview`}
                           value={`/dashboard/entities/events/${event.id}/knowledge`}
                           label={t('Knowledge')}
                         />
