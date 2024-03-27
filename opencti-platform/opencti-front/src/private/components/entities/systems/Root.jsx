@@ -194,7 +194,7 @@ class RootSystem extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/systems/${system.id}/knowledge`}
+                          to={`/dashboard/entities/systems/${system.id}/knowledge/overview`}
                           value={`/dashboard/entities/systems/${system.id}/knowledge`}
                           label={t('Knowledge')}
                         />
