@@ -47,6 +47,10 @@
         "enabled": false,
         "exporter_otlp": "",
         "exporter_prometheus": 14269
+      },
+      "filigran": {
+        "enabled": false,
+        "exporter_otlp": ""
       }
     },
     "health_access_key": "ChangeMe",

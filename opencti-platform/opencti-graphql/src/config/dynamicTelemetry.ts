@@ -20,7 +20,7 @@ class DynamicTelemetryManager {
     // - Basic counters
     // TODO
     // - Manual metrics
-    const versionGauge = meter.createObservableGauge('opencti_api_version');
+    const versionGauge = meter.createObservableGauge('opencti-api_version');
     versionGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.version);
     });

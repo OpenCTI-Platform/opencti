@@ -92,6 +92,10 @@
     "lock_key": "retention_manager_lock",
     "interval": 60000
   },
+  "telemetry_manager": {
+    "enabled": true,
+    "lock_key": "telemetry_manager_lock"
+  },
   "redis": {
     "namespace": "",
     "hostname": "redis",
