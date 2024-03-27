@@ -452,13 +452,13 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // resolve all of them, limited to ids for comparison in next step
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
-  const grantedResolveLabels = await elFindByIds(context, user, data.map((d) => d.label), { toMap: true });
   // entities not granted shall be sent as "restricted" with limited information
   return data
     .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
     .map((n) => {
-      if (grantedResolveLabels[n.label.toLowerCase()]) {
-        return R.assoc('entity', grantedResolveLabels[n.label.toLowerCase()], n);
+      const element = allResolveLabels[n.label.toLowerCase()];
+      if (isUserCanAccessStoreElement(context, user, element)) {
+        return R.assoc('entity', element, n);
       }
       // return R.assoc('entity', { id: n.label, entity_type: n.entity_type, name: 'Restricted' }, n);
       return n; // no entity details
