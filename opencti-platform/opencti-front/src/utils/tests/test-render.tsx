@@ -4,6 +4,7 @@ import React, { ReactNode } from 'react';
 import { render } from '@testing-library/react';
 import { createMockEnvironment } from 'relay-test-utils';
 import { EnvironmentConfig } from 'relay-runtime';
+import userEvent from '@testing-library/user-event';
 import { UserContext, UserContextType } from '../hooks/useAuth';
 import AppIntlProvider from '../../components/AppIntlProvider';
 
@@ -93,13 +94,16 @@ interface TestRenderOptions {
  */
 const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
   const { relayConfig, userContext } = options ?? {};
-  return render(ui, {
-    wrapper: ({ children }) => (
-      <ProvidersWrapper relayConfig={relayConfig} userContext={userContext}>
-        {children}
-      </ProvidersWrapper>
-    ),
-  });
+  return {
+    user: userEvent.setup(),
+    ...render(ui, {
+      wrapper: ({ children }) => (
+        <ProvidersWrapper relayConfig={relayConfig} userContext={userContext}>
+          {children}
+        </ProvidersWrapper>
+      ),
+    }),
+  };
 };
 
 export default testRender;
