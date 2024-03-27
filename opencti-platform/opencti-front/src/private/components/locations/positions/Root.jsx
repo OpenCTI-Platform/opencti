@@ -165,7 +165,7 @@ class RootPosition extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/knowledge`}
+                          to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
                           value={`/dashboard/locations/positions/${position.id}/knowledge`}
                           label={t('Knowledge')}
                         />

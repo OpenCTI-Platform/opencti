@@ -134,7 +134,7 @@ const RootAdministrativeAreaComponent = ({
               />
               <Tab
                 component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
