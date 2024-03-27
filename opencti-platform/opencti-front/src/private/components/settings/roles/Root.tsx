@@ -43,21 +43,23 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       {role ? (
-        <Routes>
+        <>
           {groupsQueryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-              <Route
-                path="/"
-                element={ (
-                  <Role roleData={role} groupsQueryRef={groupsQueryRef} />
-                )}
-              />
+              <Routes>
+                <Route
+                  path="/"
+                  element={ (
+                    <Role roleData={role} groupsQueryRef={groupsQueryRef} />
+                  )}
+                />
+              </Routes>
             </React.Suspense>
           ) : (
             <Loader variant={LoaderVariant.inElement} />
           )
           }
-        </Routes>
+        </>
       ) : (
         <ErrorNotFound />
       )}
