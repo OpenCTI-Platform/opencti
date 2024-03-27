@@ -826,17 +826,17 @@ const StixRelationshipsMultiHorizontalBars = ({
             && props.stixRelationshipsDistribution
             && props.stixRelationshipsDistribution.length > 0
           ) {
-            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity, 'Restricted'));
+            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity, t_i18n('Restricted')));
             const entitiesMapping = {};
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
                 entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity, 'Restricted')
+                    ? defaultValue(subDistrib.entity, t_i18n('Restricted'))
                     : subDistrib.label
                 ] = (entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity, 'Restricted')
+                    ? defaultValue(subDistrib.entity, t_i18n('Restricted'))
                     : subDistrib.label
                 ] || 0) + subDistrib.value;
               }

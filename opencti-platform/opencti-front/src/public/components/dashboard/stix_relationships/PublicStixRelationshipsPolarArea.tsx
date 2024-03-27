@@ -182,6 +182,8 @@ const PublicStixRelationshipsPolarAreaComponent = ({
     queryRef,
   );
 
+  const { t_i18n } = useFormatter();
+
   if (
     publicStixRelationshipsDistribution
     && publicStixRelationshipsDistribution.length > 0
@@ -195,7 +197,9 @@ const PublicStixRelationshipsPolarAreaComponent = ({
             return [];
           }
           return {
-            label: attributeField.endsWith('_id') ? defaultValue(item.entity) : item.label,
+            label: attributeField.endsWith('_id')
+              ? defaultValue(item.entity, t_i18n('Restricted'))
+              : item.label,
             value: item.value ?? 0,
           };
         })}

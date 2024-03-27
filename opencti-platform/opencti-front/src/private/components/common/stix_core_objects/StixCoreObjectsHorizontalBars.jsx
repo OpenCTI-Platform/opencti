@@ -263,7 +263,7 @@ const StixCoreObjectsHorizontalBars = ({
               return {
                 // eslint-disable-next-line no-nested-ternary
                 x: selection.attribute.endsWith('_id')
-                  ? defaultValue(n.entity)
+                  ? defaultValue(n.entity, t_i18n('Restricted'))
                   : selection.attribute === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,

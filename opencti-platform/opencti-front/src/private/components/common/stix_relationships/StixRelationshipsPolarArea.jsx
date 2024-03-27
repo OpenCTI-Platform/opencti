@@ -247,7 +247,7 @@ const StixRelationshipsPolarArea = ({
               data = R.map(
                 (n) => R.assoc(
                   'label',
-                  defaultValue(n.entity, 'Restricted'),
+                  defaultValue(n.entity, t_i18n('Restricted')),
                   n,
                 ),
                 props.stixRelationshipsDistribution,

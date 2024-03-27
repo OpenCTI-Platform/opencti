@@ -222,7 +222,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
                   `${
                     toTypes.length > 1 && n.entity
                       ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
-                      : `${defaultValue(n.entity, 'Restricted')}`
+                      : `${defaultValue(n.entity, t_i18n('Restricted'))}`
                   }`,
                   n,
                 ),

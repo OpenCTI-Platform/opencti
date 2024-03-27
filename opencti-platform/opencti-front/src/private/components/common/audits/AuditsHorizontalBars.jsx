@@ -283,7 +283,7 @@ const AuditsHorizontalBars = ({
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? defaultValue(n.entity)
+                  ? defaultValue(n.entity, t_i18n('Restricted'))
                   : selection.attribute === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,

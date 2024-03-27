@@ -467,7 +467,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 x:
                   // eslint-disable-next-line no-nested-ternary
                   selection.attribute.endsWith('_id')
-                    ? defaultValue(n.entity, 'Restricted')
+                    ? defaultValue(n.entity, t_i18n('Restricted'))
                     : selection.attribute === 'entity_type'
                       ? t_i18n(`entity_${n.label}`)
                       : n.label,

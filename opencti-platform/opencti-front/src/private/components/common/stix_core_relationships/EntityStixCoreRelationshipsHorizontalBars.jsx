@@ -238,7 +238,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
               x:
               // eslint-disable-next-line no-nested-ternary
                 field === 'internal_id'
-                  ? defaultValue(n.entity, 'Restricted')
+                  ? defaultValue(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,

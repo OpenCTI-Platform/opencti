@@ -72,7 +72,7 @@ const WidgetListCoreObjects = ({
                 primary={
                   <>
                     <div style={bodyItemStyle('30%')}>
-                      {defaultValue(stixCoreObject, 'Restricted')}
+                      {defaultValue(stixCoreObject, t_i18n('Restricted'))}
                     </div>
                     <div style={bodyItemStyle('10%')}>
                       {fsd(date)}
