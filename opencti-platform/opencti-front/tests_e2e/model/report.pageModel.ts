@@ -30,4 +30,8 @@ export default class ReportPage {
   getItemFromList(name: string) {
     return this.page.getByRole('link', { name }).first();
   }
+
+  selectAllReports() {
+    return this.page.getByTestId('report-page').getByRole('listitem').getByRole('checkbox').check();
+  }
 }
