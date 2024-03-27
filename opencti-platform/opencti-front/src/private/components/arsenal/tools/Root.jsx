@@ -160,7 +160,7 @@ class RootTool extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
                           label={t('Knowledge')}
                         />

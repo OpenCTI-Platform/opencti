@@ -161,7 +161,7 @@ class RootVulnerability extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
+                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
                           label={t('Knowledge')}
                         />
