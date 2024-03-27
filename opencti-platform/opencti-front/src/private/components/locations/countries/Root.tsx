@@ -128,7 +128,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/locations/countries/${country.id}/knowledge`}
+                to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
                 value={`/dashboard/locations/countries/${country.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />

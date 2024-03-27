@@ -129,7 +129,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/locations/regions/${region.id}/knowledge`}
+                to={`/dashboard/locations/regions/${region.id}/knowledge/overview`}
                 value={`/dashboard/locations/regions/${region.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
