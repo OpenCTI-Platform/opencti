@@ -73,7 +73,7 @@ class ReportsDonut extends Component {
             let data = props.reportsDistribution;
             if (field && field.includes('internal_id')) {
               data = R.map(
-                (n) => R.assoc('label', n.entity.name, n),
+                (n) => R.assoc('label', n.entity?.name ?? 'Restricted', n),
                 props.reportsDistribution,
               );
             }

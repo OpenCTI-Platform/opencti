@@ -264,7 +264,7 @@ const AuditsDistributionList = ({
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? defaultValue(o.entity)
+                  ? defaultValue(o.entity, t_i18n('Restricted'))
                   : selection.attribute === 'entity_type'
                     ? t_i18n(`entity_${o.label}`)
                     : o.label,
@@ -273,13 +273,13 @@ const AuditsDistributionList = ({
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? o.entity.id
+                  ? o.entity?.id
                   : null,
               type:
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? o.entity.entity_type
+                  ? o.entity?.entity_type
                   : o.label,
             }));
             return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;

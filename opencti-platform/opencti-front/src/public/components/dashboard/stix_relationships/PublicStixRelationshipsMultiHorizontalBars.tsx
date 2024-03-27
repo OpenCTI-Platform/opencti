@@ -349,6 +349,8 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     queryRef,
   );
 
+  const { t_i18n } = useFormatter();
+
   if (
     publicStixRelationshipsDistribution
     && publicStixRelationshipsDistribution.length > 0
@@ -358,7 +360,7 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     const subSelection = dataSelection[1];
     const finalSubDistributionField = subSelection.attribute || 'entity_type';
 
-    const categories = publicStixRelationshipsDistribution.map((n) => defaultValue(n?.entity));
+    const categories = publicStixRelationshipsDistribution.map((n) => defaultValue(n?.entity, t_i18n('Restricted')));
     const entitiesMapping: Record<string, number> = {};
     for (const distrib of publicStixRelationshipsDistribution) {
       for (const subDistrib of distrib?.breakdownDistribution ?? []) {
@@ -383,7 +385,7 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
         const entityData = R.head(
           (distrib?.breakdownDistribution ?? []).filter(
             (n) => (finalSubDistributionField === 'internal_id'
-              ? defaultValue(n?.entity)
+              ? defaultValue(n?.entity, t_i18n('Restricted'))
               : n?.label) === sortedEntity[0],
           ),
         );

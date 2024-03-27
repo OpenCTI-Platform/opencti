@@ -131,7 +131,7 @@ const StixCoreObjectsDistributionList = ({
                     : o.label,
               value: o.value,
               color: o.entity?.color ?? o.entity?.x_opencti_color,
-              id: selection.attribute.endsWith('_id') ? o.entity.id : null,
+              id: selection.attribute.endsWith('_id') ? o.entity?.id : null,
               type: o.entity?.entity_type ?? o.label,
             }));
             return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;
