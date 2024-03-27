@@ -154,7 +154,7 @@ class RootReport extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/analyses/reports/${report.id}/knowledge`}
+                          to={`/dashboard/analyses/reports/${report.id}/knowledge/graph`}
                           value={`/dashboard/analyses/reports/${report.id}/knowledge`}
                           label={t('Knowledge')}
                         />

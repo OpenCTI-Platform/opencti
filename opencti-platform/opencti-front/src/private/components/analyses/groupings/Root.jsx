@@ -152,7 +152,7 @@ class RootGrouping extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                          to={`/dashboard/analyses/groupings/${grouping.id}/knowledge/graph`}
                           value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
                           label={t('Knowledge')}
                         />
