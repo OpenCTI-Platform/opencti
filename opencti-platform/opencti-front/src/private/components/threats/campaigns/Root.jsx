@@ -164,7 +164,7 @@ class RootCampaign extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                          to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
                           value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
                           label={t('Knowledge')}
                         />
