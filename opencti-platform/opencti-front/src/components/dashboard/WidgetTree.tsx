@@ -28,7 +28,7 @@ const WidgetTree = ({
   const chartData = data.map((n) => ({
     // eslint-disable-next-line no-nested-ternary
     x: groupBy.endsWith('_id')
-      ? defaultValue(n.entity, 'Restricted')
+      ? defaultValue(n.entity, t_i18n('Restricted'))
       : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
         ? t_i18n(`entity_${n.label}`)
         : n.label,

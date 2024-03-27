@@ -264,7 +264,7 @@ const AuditsDistributionList = ({
                 selection.attribute.endsWith('.id')
                 || selection.attribute.endsWith('_id')
                 || selection.attribute.endsWith('_ids')
-                  ? defaultValue(o.entity)
+                  ? defaultValue(o.entity, t_i18n('Restricted'))
                   : selection.attribute === 'entity_type'
                     ? t_i18n(`entity_${o.label}`)
                     : o.label,

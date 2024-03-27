@@ -281,7 +281,7 @@ const StixRelationshipsHorizontalBars = ({
               }
               return {
                 x: finalField.endsWith('_id')
-                  ? defaultValue(n.entity, 'Restricted')
+                  ? defaultValue(n.entity, t_i18n('Restricted'))
                   : n.label,
                 y: n.value,
                 fillColor: color,

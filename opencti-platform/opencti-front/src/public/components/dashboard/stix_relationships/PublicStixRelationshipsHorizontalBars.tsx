@@ -219,7 +219,7 @@ const PublicStixRelationshipsHorizontalBarsComponent = ({
       }
       return {
         x: finalField.endsWith('_id')
-          ? defaultValue(n?.entity)
+          ? defaultValue(n?.entity, t_i18n('Restricted'))
           : n?.label,
         y: n?.value,
         fillColor: color,

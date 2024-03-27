@@ -188,13 +188,15 @@ const PublicStixRelationshipsDistributionListComponent = ({
     queryRef,
   );
 
+  const { t_i18n } = useFormatter();
+
   if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     const finalField = dataSelection[0].attribute || 'entity_type';
     const data = publicStixRelationshipsDistribution.flatMap((o) => {
       if (!o) return [];
       return {
         label: finalField.endsWith('_id')
-          ? defaultValue(o.entity)
+          ? defaultValue(o.entity, t_i18n('Restricted'))
           : o.label,
         value: o.value,
         id: o.entity?.id ?? null,
