@@ -17,7 +17,7 @@
     "@mui/material": "5.15.14",
     "@mui/styles": "5.15.14",
     "@mui/utils": "5.15.14",
-    "@mui/x-date-pickers": "6.19.8",
+    "@mui/x-date-pickers": "7.0.0",
     "@rjsf/core": "5.18.1",
     "@rjsf/mui": "5.18.1",
     "@rjsf/utils": "5.18.1",
