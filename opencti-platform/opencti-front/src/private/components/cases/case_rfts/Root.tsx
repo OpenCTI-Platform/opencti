@@ -129,7 +129,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             <Tabs
               value={
                 location.pathname.includes(
-                  `/dashboard/cases/rfts/${caseData.id}/knowledge`,
+                  `/dashboard/cases/rfts/${caseData.id}/knowledge/graph`,
                 )
                   ? `/dashboard/cases/rfts/${caseData.id}/knowledge`
                   : location.pathname
