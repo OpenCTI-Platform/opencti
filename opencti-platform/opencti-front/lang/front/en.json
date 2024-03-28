@@ -2673,5 +2673,12 @@
   "Operational": "Operational",
   "Strategic": "Strategic",
   "Link created": "Link created",
-  "Public dashboard": "Public dashboard"
+  "Public dashboard": "Public dashboard",
+  "Multiple values entered. Edit with the TT button": "Multiple values entered. Edit with the TT button",
+  "Bulk Observable Creation": "Bulk Observable Creation",
+  "Observables listed must be of the same type.": "Observables listed must be of the same type.",
+  "One Observable per line.": "One Observable per line.",
+  "Bulk Content": "Bulk Content",
+  "were added successfully.": "were added successfully.",
+  "observables contained errors and were not added.": "observables contained errors and were not added."
 }

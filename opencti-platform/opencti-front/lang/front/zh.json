@@ -2673,5 +2673,12 @@
   "Strategic": "战略",
   "Link created": "创建的链接",
   "Public dashboard": "公共仪表板",
-  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
+  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
+  "Multiple values entered. Edit with the TT button": "输入多个值。使用 TT 按钮进行编辑",
+  "Bulk Observable Creation": "批量可观察创建",
+  "Observables listed must be of the same type.": "列出的可观察量必须属于同一类型。",
+  "One Observable per line.": "每行一个 Observable。",
+  "Bulk Content": "批量内容",
+  "were added successfully.": "已添加成功。",
+  "observables contained errors and were not added.": "observables 包含错误并且未添加。"
 }
