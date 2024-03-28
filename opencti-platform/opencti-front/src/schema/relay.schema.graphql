@@ -834,6 +834,8 @@ type FileMetadata {
   entity: StixObject
   labels_text: String
   labels: [String]
+  content_markings: [String]
+  file_markings: [String]
   creator_id: String
   external_reference_id: String
   creator: Creator
@@ -1623,6 +1625,13 @@ enum ConnectorType {
   INTERNAL_ENRICHMENT
   INTERNAL_EXPORT_FILE
   STREAM
+}
+
+input ExportAskInput {
+  format: String!
+  exportType: String!
+  contentMaxMarkings: [String]
+  fileMarkings: [String]
 }
 
 input RegisterConnectorInput {
@@ -7552,7 +7561,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
+  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
   exportPush(file: Upload!): Boolean
 }
 
@@ -7573,8 +7582,8 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
-  exportPush(file: Upload!): Boolean
+  exportAsk(input: ExportAskInput!): [File!]
+  exportPush(file: Upload!, file_markings: [String]!): Boolean
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
 }
 
@@ -7918,7 +7927,7 @@ type Mutation {
   stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
-  stixDomainObjectsExportAsk(format: String!, exportType: String!, maxMarkingDefinition: String, search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
+  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern

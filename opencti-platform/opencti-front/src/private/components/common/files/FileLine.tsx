@@ -495,7 +495,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   );
 };
 
-const FileLine = createFragmentContainer(FileLineComponent, {
+const FileLine = createFragmentContainer(FileLineComponent, { // objectMarking -> rel_object-marking.internal_id
   file: graphql`
     fragment FileLine_file on File {
       id
@@ -507,6 +507,7 @@ const FileLine = createFragmentContainer(FileLineComponent, {
         mimetype
         list_filters
         external_reference_id
+        file_markings
         messages {
           timestamp
           message

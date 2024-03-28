@@ -1,6 +1,7 @@
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, entityType, id, internalId, standardId } from '../../../schema/attribute-definition';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 
 const attributes: Array<AttributeDefinition> = [
   id,
@@ -13,6 +14,7 @@ const attributes: Array<AttributeDefinition> = [
   { name: 'lastModified', label: 'Last modification date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'lastModifiedSinceMin', label: 'Last modification since', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'uploadStatus', label: 'Upload status', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+  { name: 'objectMarking', label: 'Object markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   {
     name: 'metaData',
     label: 'File metadata',
@@ -39,6 +41,8 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'errors', label: 'File errors', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
       { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'file_markings', label: 'File markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+      { name: 'content_markings', label: 'Content markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     ]
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place

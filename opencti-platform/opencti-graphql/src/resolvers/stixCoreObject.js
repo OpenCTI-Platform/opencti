@@ -144,7 +144,7 @@ const stixCoreObjectResolvers = {
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, id, args),
-      exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
+      exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
     }),
     stixCoreObjectsExportAsk: (_, args, context) => stixCoreObjectsExportAsk(context, context.user, args),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {

@@ -9,6 +9,7 @@ import {
   INPUT_ETHNICITY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_INTERNAL_FILES,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -24,7 +25,7 @@ import {
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation
 } from './stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
@@ -650,6 +651,7 @@ export const RELATION_OBJECT_LABEL = 'object-label';
 
 export const RELATION_OBJECT = 'object'; // object_refs
 export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_references
+export const RELATION_INTERNAL_FILE = 'internal-file'; // internal-file
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
 export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
@@ -823,6 +825,24 @@ export const objectLabel: RefAttribute = {
   datable: false,
   isFilterable: true,
   toTypes: [ENTITY_TYPE_LABEL],
+};
+
+export const internalFiles: RefAttribute = {
+  name: INPUT_INTERNAL_FILES,
+  type: 'ref',
+  databaseName: RELATION_INTERNAL_FILE,
+  stixName: 'internal_files',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isRefExistingForTypes(this, _, toType) {
+    return this.toTypes.includes(toType);
+  },
+  label: 'Internal file',
+  datable: false,
+  isFilterable: true,
+  toTypes: [ENTITY_TYPE_INTERNAL_FILE]
 };
 
 export const externalReferences: RefAttribute = {

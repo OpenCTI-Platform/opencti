@@ -15,7 +15,10 @@ import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById } from '../modules/internal/document/document-domain';
+// eslint-disable-next-line import/no-cycle
+import { createEntity } from './middleware';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Minio configuration
@@ -318,7 +321,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 };
 
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [] } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -363,17 +366,17 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Register in elastic
   const file = {
-    id: key,
+    internal_id: key,
     name: truncatedFileName,
     size: uploadedFile.size,
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [] },
-    uploadStatus: 'complete'
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    uploadStatus: 'complete',
+    objectMarking: [...file_markings],
   };
-  await indexFileToDocument(file);
-
+  await createEntity(context, user, file, ENTITY_TYPE_INTERNAL_FILE);
   // confidence control on the context entity (like a report) if we want auto-enrichment
   // noThrow ; we do not want to fail here as it's an automatic process.
   // we will simply not start the job
