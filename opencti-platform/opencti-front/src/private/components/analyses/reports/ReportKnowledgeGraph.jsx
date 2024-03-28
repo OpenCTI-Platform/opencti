@@ -10,6 +10,13 @@ import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import {
+  knowledgeGraphStixCoreObjectQuery,
+  knowledgeGraphStixRelationshipQuery,
+  knowledgeGraphQueryCheckObjectQuery,
+  knowledgeGraphQueryStixObjectDeleteMutation,
+  knowledgeGraphQueryStixRelationshipDeleteMutation,
+} from '../../common/containers/KnowledgeGraphQuery';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
@@ -33,17 +40,13 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
-import {
-  reportKnowledgeGraphMutationRelationDeleteMutation,
-  reportKnowledgeGraphQueryStixObjectDeleteMutation,
-  reportKnowledgeGraphQueryStixRelationshipDeleteMutation,
-  reportKnowledgeGraphtMutationRelationAddMutation,
-} from './ReportKnowledgeGraphQuery';
+import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from './ReportKnowledgeGraphQuery';
 import ReportPopover from './ReportPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
+import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -54,373 +57,6 @@ export const reportKnowledgeGraphQuery = graphql`
   query ReportKnowledgeGraphQuery($id: String) {
     report(id: $id) {
       ...ReportKnowledgeGraph_report
-    }
-  }
-`;
-
-const reportKnowledgeGraphCheckObjectQuery = graphql`
-  query ReportKnowledgeGraphCheckObjectQuery($id: String!) {
-    stixObjectOrStixRelationship(id: $id) {
-      ... on BasicObject {
-        id
-      }
-      ... on StixCoreObject {
-        is_inferred
-        parent_types
-        reports {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on BasicRelationship {
-        id
-      }
-      ... on StixCoreRelationship {
-        is_inferred
-        parent_types
-        reports {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on StixRefRelationship {
-        is_inferred
-        parent_types
-        reports {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on StixSightingRelationship {
-        is_inferred
-        parent_types
-        reports {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const reportKnowledgeGraphStixCoreObjectQuery = graphql`
-  query ReportKnowledgeGraphStixCoreObjectQuery($id: String!) {
-    stixCoreObject(id: $id) {
-      id
-      entity_type
-      parent_types
-      created_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      ... on StixDomainObject {
-        created
-      }
-      ... on AttackPattern {
-        name
-        x_mitre_id
-      }
-      ... on Campaign {
-        name
-        first_seen
-        last_seen
-      }
-      ... on CourseOfAction {
-        name
-      }
-      ... on Note {
-        attribute_abstract
-        content
-      }
-      ... on ObservedData {
-        name
-        first_observed
-        last_observed
-      }
-      ... on Opinion {
-        opinion
-      }
-      ... on Report {
-        name
-        published
-      }
-      ... on Grouping {
-        name
-        description
-      }
-      ... on Individual {
-        name
-      }
-      ... on Organization {
-        name
-      }
-      ... on Sector {
-        name
-      }
-      ... on System {
-        name
-      }
-      ... on Indicator {
-        name
-        valid_from
-      }
-      ... on Infrastructure {
-        name
-      }
-      ... on IntrusionSet {
-        name
-        first_seen
-        last_seen
-      }
-      ... on Position {
-        name
-      }
-      ... on City {
-        name
-      }
-      ... on AdministrativeArea {
-        name
-      }
-      ... on Country {
-        name
-      }
-      ... on Region {
-        name
-      }
-      ... on Malware {
-        name
-        first_seen
-        last_seen
-      }
-      ... on MalwareAnalysis {
-        result_name
-      }
-      ... on ThreatActor {
-        name
-        entity_type
-        first_seen
-        last_seen
-      }
-      ... on Tool {
-        name
-      }
-      ... on Vulnerability {
-        name
-      }
-      ... on Incident {
-        name
-        first_seen
-        last_seen
-      }
-      ... on StixCyberObservable {
-        observable_value
-      }
-      ... on StixFile {
-        observableName: name
-      }
-      ... on Event {
-        name
-      }
-      ... on Case {
-        name
-      }
-      ... on Narrative {
-        name
-      }
-      ... on DataComponent {
-        name
-      }
-      ... on DataSource {
-        name
-      }
-      ... on Language {
-        name
-      }
-    }
-  }
-`;
-
-const reportKnowledgeGraphStixRelationshipQuery = graphql`
-  query ReportKnowledgeGraphStixRelationshipQuery($id: String!) {
-    stixRelationship(id: $id) {
-      id
-      entity_type
-      parent_types
-      ... on StixCoreRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-      ... on StixRefRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        datable
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-      ... on StixSightingRelationship {
-        relationship_type
-        first_seen
-        last_seen
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
     }
   }
 `;
@@ -994,22 +630,24 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   async handleDeleteSelected(deleteObject = false) {
+    const checkedContainerTypes = containerTypes.filter((type) => !ignoredStixCoreObjectsTypes.includes(type)); // containers checked when cascade delete
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
     R.forEach((n) => {
-      fetchQuery(reportKnowledgeGraphCheckObjectQuery, {
+      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
         id: n.id,
+        entityTypes: checkedContainerTypes,
       })
         .toPromise()
         .then(async (data) => {
           if (
             deleteObject
             && !data.stixObjectOrStixRelationship.is_inferred
-            && data.stixObjectOrStixRelationship.reports.edges.length === 1
+            && data.stixObjectOrStixRelationship.containers.edges.length === 1
           ) {
             commitMutation({
-              mutation: reportKnowledgeGraphQueryStixRelationshipDeleteMutation,
+              mutation: knowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1057,18 +695,19 @@ class ReportKnowledgeGraphComponent extends Component {
       });
     }, relationshipsToRemove);
     R.forEach((n) => {
-      fetchQuery(reportKnowledgeGraphCheckObjectQuery, {
+      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
         id: n.id,
+        entityTypes: checkedContainerTypes,
       })
         .toPromise()
         .then(async (data) => {
           if (
             deleteObject
             && !data.stixObjectOrStixRelationship.is_inferred
-            && data.stixObjectOrStixRelationship.reports.edges.length === 1
+            && data.stixObjectOrStixRelationship.containers.edges.length === 1
           ) {
             commitMutation({
-              mutation: reportKnowledgeGraphQueryStixObjectDeleteMutation,
+              mutation: knowledgeGraphQueryStixObjectDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1108,7 +747,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
+      fetchQuery(knowledgeGraphStixCoreObjectQuery, {
         id: entityId,
       })
         .toPromise()
@@ -1139,7 +778,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleCloseRelationEdition(relationId) {
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphStixRelationshipQuery, {
+      fetchQuery(knowledgeGraphStixRelationshipQuery, {
         id: relationId,
       })
         .toPromise()
