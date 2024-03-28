@@ -40,7 +40,16 @@ const WidgetDistributionList = ({
         {data.map((entry, key) => {
           let link: string | null = null;
           if (entry.type !== 'User' || hasSettingAccess) {
-            link = entry.id ? computeLink(entry) : null;
+            const node: {
+              id: string;
+              entity_type: string;
+              relationship_type?: string;
+              from?: { entity_type: string; id: string };
+            } = {
+              id: entry.id,
+              entity_type: entry.type,
+            };
+            link = entry.id ? computeLink(node) : null;
           }
           let linkProps = {};
           if (link) {
