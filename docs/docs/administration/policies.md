@@ -62,7 +62,7 @@ This configuration has two parameters:
 
 ### Maximum marking definitions shareable
 
-This configuration allows to define for each type of marking definitions until which level
+This configuration allows to define, for each type of marking definitions, until which level
 we allow to share data externally.
 
 > For now this max marking definitions is used only for Public dashboard.
