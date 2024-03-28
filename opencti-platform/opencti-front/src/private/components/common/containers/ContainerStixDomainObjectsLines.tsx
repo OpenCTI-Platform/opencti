@@ -33,6 +33,7 @@ interface ContainerStixDomainObjectsLinesProps {
   redirectionMode?: string;
   onTypesChange: (type: string) => void;
   openExports?: boolean,
+  enableReferences?: boolean;
 }
 
 export const containerStixDomainObjectsLinesQuery = graphql`
@@ -130,6 +131,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   queryRef,
   onTypesChange,
   openExports,
+  enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixDomainObjectsLinesQuery,
@@ -182,6 +184,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
             defaultCreatedBy={container.createdBy ?? null}
             defaultMarkingDefinitions={container.objectMarking ?? []}
             confidence={container.confidence}
+            enableReferences={enableReferences}
           />
         </Security>
       )}

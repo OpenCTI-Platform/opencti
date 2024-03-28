@@ -222,6 +222,7 @@ class IncidentKnowledgeComponent extends Component {
       match: {
         params: { mode },
       },
+      enableReferences,
     } = this.props;
     const {
       currentModeOnlyActive,
@@ -282,6 +283,7 @@ class IncidentKnowledgeComponent extends Component {
                     <IncidentKnowledgeGraph
                       caseData={props.caseIncident}
                       mode={mode}
+                      enableReferences={enableReferences}
                     />
                   );
                 }
@@ -378,6 +380,7 @@ class IncidentKnowledgeComponent extends Component {
                   return (
                     <IncidentKnowledgeCorrelation
                       caseData={props.caseIncident}
+                      enableReferences={enableReferences}
                     />
                   );
                 }
@@ -445,6 +448,7 @@ IncidentKnowledgeComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  enableReferences: PropTypes.bool,
 };
 
 const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {

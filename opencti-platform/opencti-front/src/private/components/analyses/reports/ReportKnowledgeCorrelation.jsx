@@ -825,7 +825,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   render() {
-    const { report, theme, t } = this.props;
+    const { report, theme, t, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -974,6 +974,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 timeRangeValues={timeRangeValues}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

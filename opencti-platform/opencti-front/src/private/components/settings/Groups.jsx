@@ -151,7 +151,7 @@ class Groups extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
+      <div className={classes.container} data-testid="groups-settings-page">
         <Breadcrumbs variant="list" elements={[{ label: t('Settings') }, { label: t('Security') }, { label: t('Groups'), current: true }]} />
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}

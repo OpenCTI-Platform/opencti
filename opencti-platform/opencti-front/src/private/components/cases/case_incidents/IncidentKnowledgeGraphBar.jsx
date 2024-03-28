@@ -345,6 +345,7 @@ class IncidentKnowledgeGraphBar extends Component {
       theme,
       navOpen,
       resetAllFilters,
+      enableReferences,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -875,6 +876,7 @@ class IncidentKnowledgeGraphBar extends Component {
                         onAdd={onAdd}
                         onDelete={onDelete}
                         confidence={caseData.confidence}
+                        enableReferences={enableReferences}
                       />
                     )}
                     <Tooltip title={t('Edit the selected item')}>
@@ -1230,6 +1232,7 @@ IncidentKnowledgeGraphBar.propTypes = {
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
   navOpen: PropTypes.bool,
+  enableReferences: PropTypes.bool,
 };
 
 export default R.compose(

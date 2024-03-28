@@ -26,6 +26,8 @@ import { RootIncidentQuery } from '../../events/incidents/__generated__/RootInci
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -79,6 +81,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
@@ -189,6 +192,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerStixDomainObjects
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -199,6 +203,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerStixCyberObservables
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -225,7 +230,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               exact
               path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
               render={(routeProps) => (
-                <IncidentKnowledge {...routeProps} caseData={caseData} />
+                <IncidentKnowledge {...routeProps} caseData={caseData} enableReferences={enableReferences} />
               )}
             />
             <Route
