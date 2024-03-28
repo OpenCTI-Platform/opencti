@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { Filter, FilterGroup, RestrictedFiltersConfig, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, Filter, FilterGroup, RestrictedFiltersConfig, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -213,24 +213,6 @@ FilterIconButtonContainerProps
     'eq',
     'not_eq',
   ];
-  const convertOperatorToIcon = (operator: string) => {
-    switch (operator) {
-      case 'lt':
-        return <>&nbsp;&#60;</>;
-      case 'lte':
-        return <>&nbsp;&#8804;</>;
-      case 'gt':
-        return <>&nbsp;&#62;</>;
-      case 'gte':
-        return <>&nbsp;&#8805;</>;
-      case 'eq':
-        return <>&nbsp;=</>;
-      case 'not_eq':
-        return <>&nbsp;&#8800;</>;
-      default:
-        return null;
-    }
-  };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
   let margin = '8px';

@@ -1,12 +1,13 @@
 import * as R from 'ramda';
 import React from 'react';
+import Tooltip from '@mui/material/Tooltip';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from './i18n';
-import { FilterGroup } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, FilterGroup } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
@@ -74,31 +75,59 @@ const TaskFilterValue = ({
           }
           return null;
         };
+        if (currentFilter.key === 'regardingOf') {
+          const sortedFilterValues = [...currentFilter.values].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
+          return (
+            <span key={currentFilter.key}>
+              <Chip
+                classes={{ root: classes.filter }}
+                label={
+                  <div>
+                    <strong>{label}</strong>:{' '}
+                    <TaskFilterValue filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }} queryRef={queryRef} />
+                  </div>
+              }
+              />
+            </span>
+          );
+        }
         return (
           <span key={currentFilter.key}>
             <Chip
               classes={{ root: classes.filter }}
               label={
                 <div>
-                  <strong>{label}</strong>:{' '}
+                  <strong>{label}</strong>{convertOperatorToIcon(currentFilter.operator ?? 'eq')}{' '}
                   {isOperatorNil ? (
                     <DisplayNilLabel/>
                   ) : (
                     currentFilter.values.map((o) => {
                       const localFilterMode = t_i18n(
-                        (currentFilter.mode ?? 'eq').toUpperCase(),
+                        (currentFilter.mode ?? 'or').toUpperCase(),
                       );
                       return (
-                        <span key={o}>
-                          <FilterValuesContent
-                            filterKey={currentFilter.key}
-                            id={o}
-                            value={filtersRepresentativesMap.get(o)?.value ?? o}
-                          />
-                          {R.last(currentFilter.values) !== o && (
+                        <Tooltip
+                          key={o}
+                          title={
+                            <FilterValuesContent
+                              filterKey={currentFilter.key}
+                              id={o}
+                              value={filtersRepresentativesMap.get(o)?.value ?? o}
+                              isFilterTooltip={true}
+                            />
+                          }
+                        >
+                          <span key={o}>
+                            <FilterValuesContent
+                              filterKey={currentFilter.key}
+                              id={o}
+                              value={filtersRepresentativesMap.get(o)?.value ?? o}
+                            />
+                            {R.last(currentFilter.values) !== o && (
                             <code>{localFilterMode}</code>
-                          )}{' '}
-                        </span>
+                            )}{' '}
+                          </span>
+                        </Tooltip>
                       );
                     })
                   )}
