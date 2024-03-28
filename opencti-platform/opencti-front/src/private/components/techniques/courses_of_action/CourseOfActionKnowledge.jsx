@@ -4,6 +4,7 @@ import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+
 class CourseOfActionKnowledgeComponent extends Component {
   render() {
     const { courseOfAction } = this.props;
