@@ -9,10 +9,10 @@ import { useFormatter } from 'src/components/i18n';
 type InvestigationRollBackExpandDialogProps = {
   closeDialog: () => void;
   handleRollBackToPreExpansionState: () => void;
-  isRollBackPreExpandStateDialogOpen: boolean;
+  isOpen: boolean;
 };
 
-const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExpansionState, isRollBackPreExpandStateDialogOpen }: InvestigationRollBackExpandDialogProps) => {
+const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExpansionState, isOpen }: InvestigationRollBackExpandDialogProps) => {
   const { t_i18n, fldt } = useFormatter();
 
   const handleSubmit = () => {
@@ -31,7 +31,7 @@ const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExp
   return (
     <Dialog
       PaperProps={{ elevation: 1 }}
-      open={isRollBackPreExpandStateDialogOpen}
+      open={isOpen}
       onClose={closeDialog}
       fullWidth={true}
       maxWidth="sm"

@@ -1837,12 +1837,14 @@ class InvestigationGraphComponent extends Component {
       this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
-      setStackDataInSessionStorage({ valueToStore: {
-        dateTime: new Date().getTime(),
-        investigatedEntitiesIdsList: newElementsIds,
-      },
-      key: 'preExpansionStateList',
-      stackValue: 10 });
+      setStackDataInSessionStorage(
+        'preExpansionStateList',
+        {
+          dateTime: new Date().getTime(),
+          investigatedEntitiesIdsList: newElementsIds,
+        },
+        10,
+      );
 
       this.graphData = buildGraphData(
         this.graphObjects,
@@ -1890,11 +1892,9 @@ class InvestigationGraphComponent extends Component {
 
   handleRollBackToPreExpansionState() {
     const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
-
     if (storedPreExpansion) {
       const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
       const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
-
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
         variables: {
@@ -2083,7 +2083,7 @@ class InvestigationGraphComponent extends Component {
               </Dialog>
 
               <InvestigationRollBackExpandDialog
-                isRollBackPreExpandStateDialogOpen={isRollBackPreExpandStateDialogOpen}
+                isOpen={isRollBackPreExpandStateDialogOpen}
                 closeDialog={this.handleCloseRollBackToPreExpansionStateDialog.bind(this)}
                 handleRollBackToPreExpansionState={this.handleRollBackToPreExpansionState.bind(this)}
               />

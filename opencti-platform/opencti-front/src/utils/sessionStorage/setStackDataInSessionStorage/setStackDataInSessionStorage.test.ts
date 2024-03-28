@@ -12,15 +12,11 @@ describe('Session Storage', () => {
 
     describe('When I set a data in session storage', () => {
       beforeEach(() => {
-        setStackDataInSessionStorage({
-          valueToStore: { test: 'value1' },
-          key: testKey,
-          stackValue,
-        });
+        setStackDataInSessionStorage(testKey, { test: 'value1' }, stackValue);
       });
 
       describe('If I get datas with my key from session storage', () => {
-        it('contains the my value', () => {
+        it('contains my value', () => {
           const storedData = sessionStorage.getItem('testKey');
           expect(storedData).to.not.equal(null);
 
@@ -35,11 +31,7 @@ describe('Session Storage', () => {
     describe('When I set three data in session storage with a stack value of 2', () => {
       beforeEach(() => {
         Array.from(Array(3).keys()).forEach((_, i) => {
-          setStackDataInSessionStorage({
-            valueToStore: { test: `value${i}` },
-            key: testKey,
-            stackValue,
-          });
+          setStackDataInSessionStorage(testKey, { test: `value${i}` }, stackValue);
         });
       });
 

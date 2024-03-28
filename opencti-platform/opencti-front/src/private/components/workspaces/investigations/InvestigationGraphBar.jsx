@@ -872,7 +872,12 @@ class InvestigationGraphBar extends Component {
                       )}
                       <Tooltip title={t('Restore the state of the graphic before the last expansion')}>
                         <span>
-                          <IconButton color="primary" onClick={handleOpenRollBackToPreExpansionStateDialog} size="large" disabled={isRollBackToLastPreExpansionStateEnabled}>
+                          <IconButton
+                            color="primary"
+                            disabled={isRollBackToLastPreExpansionStateEnabled}
+                            onClick={handleOpenRollBackToPreExpansionStateDialog}
+                            size="large"
+                          >
                             <Undo />
                           </IconButton>
                         </span>
