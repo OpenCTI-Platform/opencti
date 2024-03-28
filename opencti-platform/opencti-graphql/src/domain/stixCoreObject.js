@@ -47,6 +47,7 @@ import { INSTANCE_REGARDING_OF, specialFilterKeysWhoseValueToResolve } from '../
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
+import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -80,17 +81,26 @@ export const findById = async (context, user, stixCoreObjectId) => {
 
 export const batchInternalRels = async (context, user, elements, opts = {}) => {
   const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
-  const resolvedElements = await internalFindByIds(context, user, relIds, { toMap: true });
-  return elements.map(({ element, definition }) => {
+  // Get all rel resolutions with system user
+  // The visibility will be restricted in the data preparation
+  const resolvedElements = await internalFindByIds(context, SYSTEM_USER, relIds, { toMap: true });
+  return await Promise.all(elements.map(async ({ element, definition }) => {
     const relId = element[definition.databaseName];
     if (definition.multiple) {
-      const relElements = (relId ?? []).map((id) => {
+      const relElements = await Promise.all((relId ?? []).map(async (id) => {
         const resolve = resolvedElements[id];
+        // If resolution is empty the database is inconsistent, an error must be thrown
         if (isEmptyField(resolve)) {
           throw UnsupportedError('Invalid loading of batched elements', { ids: relId });
         }
-        return resolve;
-      });
+        // If user have correct access right, return the element
+        if (await isUserCanAccessStoreElement(context, user, resolve)) {
+          return resolve;
+        }
+        // If access is not possible, return a restricted entity
+        return { id: resolve.internal_id, name: 'Restricted', entity_type: resolve.entity_type };
+      }));
+      // Return sorted elements if needed
       if (opts.sortBy) {
         return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
       }
@@ -98,13 +108,19 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
     }
     if (relId) {
       const resolve = resolvedElements[relId];
+      // If resolution is empty the database is inconsistent, an error must be thrown
       if (isEmptyField(resolve)) {
         throw UnsupportedError('Invalid loading of batched element', { id: relId });
       }
-      return resolve;
+      // If user have correct access right, return the element
+      if (await isUserCanAccessStoreElement(context, user, resolve)) {
+        return resolve;
+      }
+      // If access is not possible, return a restricted entity
+      return { id: resolve.internal_id, name: 'Restricted', entity_type: resolve.entity_type };
     }
     return undefined;
-  });
+  }));
 };
 
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {

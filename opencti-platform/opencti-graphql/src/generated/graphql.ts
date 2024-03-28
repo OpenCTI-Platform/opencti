@@ -16337,7 +16337,6 @@ export type OtpElement = {
 export type OverviewMetrics = {
   __typename?: 'OverviewMetrics';
   message_stats?: Maybe<MessagesStats>;
-  node?: Maybe<Scalars['String']['output']>;
   object_totals?: Maybe<ObjectTotals>;
   queue_totals?: Maybe<QueueTotals>;
 };
@@ -34401,7 +34400,6 @@ export type OtpElementResolvers<ContextType = any, ParentType extends ResolversP
 
 export type OverviewMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewMetrics'] = ResolversParentTypes['OverviewMetrics']> = ResolversObject<{
   message_stats?: Resolver<Maybe<ResolversTypes['MessagesStats']>, ParentType, ContextType>;
-  node?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   object_totals?: Resolver<Maybe<ResolversTypes['ObjectTotals']>, ParentType, ContextType>;
   queue_totals?: Resolver<Maybe<ResolversTypes['QueueTotals']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

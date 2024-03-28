@@ -26,6 +26,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
+import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -224,15 +226,17 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
               >
                 {work.errors?.length} {t_i18n('errors')}
               </Button>
-              <Button
-                variant="outlined"
-                classes={{ root: classes.deleteButton }}
-                onClick={() => handleDeleteWork(work.id)}
-                size="small"
-                startIcon={<Delete/>}
-              >
-                {t_i18n('Delete')}
-              </Button>
+              <Security needs={[MODULES_MODMANAGE]}>
+                <Button
+                  variant="outlined"
+                  classes={{ root: classes.deleteButton }}
+                  onClick={() => handleDeleteWork(work.id)}
+                  size="small"
+                  startIcon={<Delete/>}
+                >
+                  {t_i18n('Delete')}
+                </Button>
+              </Security>
             </Grid>
           </Paper>
         );
