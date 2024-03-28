@@ -49,6 +49,7 @@ generates:
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
         Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook
         PublicDashboard: ../modules/publicDashboard/publicDashboard-types#BasicStoreEntityPublicDashboard
+        SupportPackage: ../modules/support/support-types#BasicStoreEntitySupportPackage
   ./graphql.schema.json:
     plugins:
       - "introspection"
