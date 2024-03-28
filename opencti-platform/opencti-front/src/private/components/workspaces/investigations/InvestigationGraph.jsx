@@ -11,6 +11,7 @@ import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import { getPreExpansionStateList, investigationPreExpansionStateListStorageKey, updatePreExpansionStateList } from './utils/investigationStorage';
 import InvestigationRollBackExpandDialog from './Dialog/InvestigationRollBackExpandDialog';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import InvestigationExpandForm from './InvestigationExpandForm';
@@ -1838,7 +1839,7 @@ class InvestigationGraphComponent extends Component {
     }
     if (newElementsIds.length > 0) {
       setStackDataInSessionStorage(
-        'preExpansionStateList',
+        investigationPreExpansionStateListStorageKey,
         {
           dateTime: new Date().getTime(),
           investigatedEntitiesIdsList: newElementsIds,
@@ -1891,7 +1892,7 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleRollBackToPreExpansionState() {
-    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
+    const storedPreExpansion = getPreExpansionStateList();
     if (storedPreExpansion) {
       const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
       const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
@@ -1928,12 +1929,7 @@ class InvestigationGraphComponent extends Component {
             ),
           });
 
-          currentStoredPreExpansion.shift();
-          if (currentStoredPreExpansion.length === 0) {
-            sessionStorage.removeItem('preExpansionStateList');
-          } else {
-            sessionStorage.setItem('preExpansionStateList', JSON.stringify(currentStoredPreExpansion));
-          }
+          updatePreExpansionStateList(currentStoredPreExpansion);
         },
       });
     }

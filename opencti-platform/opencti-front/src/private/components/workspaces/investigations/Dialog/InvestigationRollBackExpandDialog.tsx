@@ -4,7 +4,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { useFormatter } from 'src/components/i18n';
+import { getPreExpansionStateList } from '../utils/investigationStorage';
+import { useFormatter } from '../../../../../components/i18n';
 
 type InvestigationRollBackExpandDialogProps = {
   closeDialog: () => void;
@@ -21,7 +22,7 @@ const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExp
   };
 
   const getLastRollBackExpandDate = () => {
-    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
+    const storedPreExpansion = getPreExpansionStateList();
     if (storedPreExpansion) {
       return fldt(JSON.parse(storedPreExpansion)[0].dateTime);
     }

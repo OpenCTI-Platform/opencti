@@ -39,6 +39,7 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import TimeRange from 'react-timeline-range-slider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -355,7 +356,7 @@ class InvestigationGraphBar extends Component {
     }
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
 
-    const isRollBackToLastPreExpansionStateEnabled = !sessionStorage.getItem('preExpansionStateList');
+    const isRollBackToLastPreExpansionStateEnabled = !getPreExpansionStateList();
 
     return (
       <UserContext.Consumer>
