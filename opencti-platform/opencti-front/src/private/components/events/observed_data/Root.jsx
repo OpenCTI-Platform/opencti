@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ObservedData from './ObservedData';
@@ -18,7 +19,6 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
