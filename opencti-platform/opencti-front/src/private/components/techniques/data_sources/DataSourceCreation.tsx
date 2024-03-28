@@ -28,7 +28,7 @@ import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataS
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
@@ -110,8 +110,11 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    DATA_SOURCE_TYPE,
+  );
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
@@ -186,6 +189,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Data-Source']}
           />
@@ -197,6 +201,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -204,6 +209,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={{
               marginTop: 20,
               width: '100%',
@@ -212,6 +218,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={{
               marginTop: 20,
               width: '100%',
@@ -221,6 +228,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={{
               marginTop: 20,
               width: '100%',
@@ -228,6 +236,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={{
               marginTop: 20,
               width: '100%',
@@ -240,6 +249,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
+            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
@@ -248,6 +258,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
+            required={(mandatoryAttributes.includes('collection_layers'))}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}

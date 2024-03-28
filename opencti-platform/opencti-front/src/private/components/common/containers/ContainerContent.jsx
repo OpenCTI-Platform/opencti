@@ -21,7 +21,7 @@ import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -108,16 +108,32 @@ const ContainerContentComponent = ({ containerData }) => {
     description: Yup.string().nullable(),
   };
   let validator = null;
+  let mandatoryAttributes = null;
   if (containerData.entity_type === 'Report') {
     validator = useSchemaEditionValidation('Report', basicShape);
+    ({ mandatoryAttributes } = useIsMandatoryAttribute(
+      'Report',
+    ));
   } else if (containerData.entity_type === 'Grouping') {
     validator = useSchemaEditionValidation('Grouping', basicShape);
+    ({ mandatoryAttributes } = useIsMandatoryAttribute(
+      'Grouping',
+    ));
   } else if (containerData.entity_type === 'Case-Incident') {
     validator = useSchemaEditionValidation('Case-Incident', basicShape);
+    ({ mandatoryAttributes } = useIsMandatoryAttribute(
+      'Case-Incident',
+    ));
   } else if (containerData.entity_type === 'Case-Rfi') {
     validator = useSchemaEditionValidation('Case-Rfi', basicShape);
+    ({ mandatoryAttributes } = useIsMandatoryAttribute(
+      'Case-Rfi',
+    ));
   } else if (containerData.entity_type === 'Case-Rft') {
     validator = useSchemaEditionValidation('Case-Rft', basicShape);
+    ({ mandatoryAttributes } = useIsMandatoryAttribute(
+      'Case-Rft',
+    ));
   }
   const editor = useFormEditor(
     containerData,
@@ -364,6 +380,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     component={MarkdownField}
                     name="description"
                     label={t_i18n('Description')}
+                    required={(mandatoryAttributes.includes('description'))}
                     fullWidth
                     multiline
                     rows="4"
@@ -383,6 +400,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     component={RichTextField}
                     name="content"
                     label={t_i18n('Content')}
+                    required={(mandatoryAttributes.includes('content'))}
                     fullWidth
                     onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}

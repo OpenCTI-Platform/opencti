@@ -38,6 +38,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -147,14 +148,7 @@ const feedCreationMutation = graphql`
     }
 `;
 
-const feedCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  separator: Yup.string().required(t('This field is required')),
-  rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().required(t('This field is required')),
-  feed_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
-});
+const OBJECT_TYPE = 'Feed';
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
@@ -168,6 +162,21 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const FeedCreation = (props) => {
   const { t, classes } = props;
+
+  const basicShape = {
+    name: Yup.string(),
+    separator: Yup.string(),
+    rolling_time: Yup.number(),
+    feed_types: Yup.array(),
+    feed_public: Yup.bool().nullable(),
+    authorized_members: Yup.array().nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
@@ -186,8 +195,7 @@ const FeedCreation = (props) => {
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
     const updatedFeedAttributes = [];
-    for (let index = 0; index < attrValues.length; index += 1) {
-      const feedAttr = attrValues[index];
+    for (const feedAttr of attrValues) {
       const mappingEntries = isNotEmptyField(feedAttr)
         ? Object.entries(feedAttr.mappings)
         : [];
@@ -350,7 +358,7 @@ const FeedCreation = (props) => {
                     feed_date_attribute: 'created_at',
                     feed_public: false,
                   }}
-                  validationSchema={feedCreationValidation(t)}
+                  validationSchema={validator}
                   onSubmit={onSubmit}
                   onReset={onClose}
                 >
@@ -361,6 +369,7 @@ const FeedCreation = (props) => {
                         variant="standard"
                         name="name"
                         label={t('Name')}
+                        required={(mandatoryAttributes.includes('name'))}
                         fullWidth={true}
                       />
                       <Field
@@ -368,6 +377,7 @@ const FeedCreation = (props) => {
                         variant="standard"
                         name="description"
                         label={t('Description')}
+                        required={(mandatoryAttributes.includes('description'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -387,10 +397,12 @@ const FeedCreation = (props) => {
                           name="feed_public"
                           onChange={(_, checked) => setFieldValue('feed_public', checked)}
                           label={t('Public feed')}
+                          required={(mandatoryAttributes.includes('feed_public'))}
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
                             label={'Accessible for'}
+                            required={(mandatoryAttributes.includes('authorized_members'))}
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
@@ -404,6 +416,7 @@ const FeedCreation = (props) => {
                         variant="standard"
                         name="separator"
                         label={t('Separator')}
+                        required={(mandatoryAttributes.includes('separator'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -413,6 +426,7 @@ const FeedCreation = (props) => {
                         type="number"
                         name="rolling_time"
                         label={t('Rolling time (in minutes)')}
+                        required={(mandatoryAttributes.includes('rolling_time'))}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                         InputProps={{
@@ -438,6 +452,7 @@ const FeedCreation = (props) => {
                         variant="standard"
                         name="feed_date_attribute"
                         label={t('Base attribute')}
+                        required={(mandatoryAttributes.includes('feed_date_attribute'))}
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
@@ -450,9 +465,13 @@ const FeedCreation = (props) => {
                         name="feed_types"
                         onChange={(_, value) => handleSelectTypes(value)}
                         label={t('Entity types')}
+                        required={(mandatoryAttributes.includes('feed_types'))}
                         fullWidth={true}
                         multiple={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
+                        // FIXME: the popup obscures the main form,
+                        //    making it unclear what needs to be done
+                        //    width: 'fit-content' ... maybe
                       >
                         {entitiesTypes.map((type) => (
                           <MenuItem key={type.value} value={type.value}>
@@ -465,6 +484,7 @@ const FeedCreation = (props) => {
                         type="checkbox"
                         name="include_header"
                         label={t('Include headers in the feed')}
+                        required={(mandatoryAttributes.includes('include_header'))}
                         containerstyle={{ marginTop: 20 }}
                       />
                       <Box sx={{ paddingTop: 4,
@@ -522,6 +542,7 @@ const FeedCreation = (props) => {
                                     variant="standard"
                                     name="attribute"
                                     label={t('Column')}
+                                    required={true}
                                     fullWidth={true}
                                     value={feedAttributes[i].attribute}
                                     onChange={(event) => handleChangeField(i, event.target.value)
@@ -537,7 +558,9 @@ const FeedCreation = (props) => {
                                     <FormControl
                                       className={classes.formControl}
                                     >
-                                      <InputLabel>
+                                      <InputLabel
+                                        required={true}
+                                      >
                                         {t(`entity_${selectedType}`)}
                                       </InputLabel>
                                       <QueryRenderer

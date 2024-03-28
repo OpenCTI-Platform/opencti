@@ -21,6 +21,7 @@ interface FilterIconButtonProps {
   redirection?: boolean;
   helpers?: handleFilterHelpers;
   availableRelationFilterTypes?: Record<string, string[]>;
+  required?: boolean;
   entityTypes?: string[];
   restrictedFiltersConfig?: RestrictedFiltersConfig;
 }

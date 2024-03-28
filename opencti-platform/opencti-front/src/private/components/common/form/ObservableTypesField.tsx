@@ -24,6 +24,7 @@ interface ObservableTypesFieldProps {
   onChange?: (name: string, value: string | string[]) => void;
   style?: Record<string, string | number>;
   disabled?: boolean;
+  required?: boolean;
 }
 const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   name,
@@ -32,6 +33,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   onChange,
   style,
   disabled,
+  required,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -51,6 +53,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
         variant: 'standard',
         label,
       }}
+      required={required}
       options={allObservableTypes}
       onChange={typeof onChange === 'function' ? onChange : null}
       isOptionEqualToValue={(option: string, value: string) => option === value}

@@ -76,6 +76,7 @@ const SelectField = (props) => {
       <InputLabel
         style={{ color: props.disabled ? '#4f4f4f' : '' }}
         variant={props.variant}
+        required
       >
         {props.label}
       </InputLabel>

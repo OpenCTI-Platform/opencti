@@ -16,6 +16,8 @@ import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 import { handleError, MESSAGING$ } from '../../../relay/environment';
 
+// FIXME: code does not validate that the new name is different from existing name
+
 interface WorkspaceDuplicationDialogProps {
   workspace: {
     name: string;
@@ -131,6 +133,7 @@ WorkspaceDuplicationDialogProps
           fullWidth
           variant="standard"
           helperText={!newName ? `${t_i18n('This field is required')}` : ''}
+          required={true}
           defaultValue={newName}
           onChange={(event) => {
             event.preventDefault();

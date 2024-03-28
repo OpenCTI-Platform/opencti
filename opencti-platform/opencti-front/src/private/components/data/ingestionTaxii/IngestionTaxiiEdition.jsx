@@ -14,6 +14,7 @@ import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
+import { useSchemaEditionValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
   mutation IngestionTaxiiEditionFieldPatchMutation(
@@ -26,24 +27,7 @@ export const ingestionTaxiiMutationFieldPatch = graphql`
   }
 `;
 
-const ingestionTaxiiValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  uri: Yup.string().required(t('This field is required')),
-  version: Yup.string().required(t('This field is required')),
-  collection: Yup.string().required(t('This field is required')),
-  authentication_type: Yup.string().required(t('This field is required')),
-  authentication_value: Yup.string().nullable(),
-  username: Yup.string().nullable(),
-  password: Yup.string().nullable(),
-  cert: Yup.string().nullable(),
-  key: Yup.string().nullable(),
-  ca: Yup.string().nullable(),
-  user_id: Yup.mixed().nullable(),
-  added_after_start: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-});
+const OBJECT_TYPE = 'IngestionTaxii';
 
 const IngestionTaxiiEditionContainer = ({
   t,
@@ -51,8 +35,32 @@ const IngestionTaxiiEditionContainer = ({
   handleClose,
   ingestionTaxii,
 }) => {
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    uri: Yup.string(),
+    version: Yup.string(),
+    collection: Yup.string(),
+    authentication_type: Yup.string(),
+    authentication_value: Yup.string().nullable(),
+    username: Yup.string().nullable(),
+    password: Yup.string().nullable(),
+    cert: Yup.string().nullable(),
+    key: Yup.string().nullable(),
+    ca: Yup.string().nullable(),
+    user_id: Yup.mixed().nullable(),
+    added_after_start: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaEditionValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const handleSubmitField = (name, value) => {
-    ingestionTaxiiValidation(t)
+    validator
       .validateAt(name, { [name]: value })
       .then(() => {
         let finalName = name;
@@ -159,7 +167,7 @@ const IngestionTaxiiEditionContainer = ({
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={ingestionTaxiiValidation(t)}
+        validationSchema={validator}
       >
         {({ values }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -168,6 +176,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="name"
               label={t('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               onSubmit={handleSubmitField}
             />
@@ -176,6 +185,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="description"
               label={t('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
@@ -185,6 +195,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="uri"
               label={t('TAXII server URL')}
+              required={(mandatoryAttributes.includes('uri'))}
               fullWidth={true}
               onSubmit={handleSubmitField}
               style={fieldSpacingContainerStyle}
@@ -194,6 +205,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="version"
               label={t('TAXII version')}
+              required={(mandatoryAttributes.includes('version'))}
               onSubmit={handleSubmitField}
               fullWidth={true}
               containerstyle={{
@@ -214,6 +226,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="collection"
               label={t('TAXII Collection')}
+              required={(mandatoryAttributes.includes('collection'))}
               onSubmit={handleSubmitField}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
@@ -223,6 +236,7 @@ const IngestionTaxiiEditionContainer = ({
               variant="standard"
               name="authentication_type"
               label={t('Authentication type')}
+              required={(mandatoryAttributes.includes('authentication_type'))}
               onSubmit={handleSubmitField}
               fullWidth={true}
               containerstyle={{
@@ -244,6 +258,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="username"
                   label={t('Username')}
+                  required={(mandatoryAttributes.includes('username'))}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -253,6 +268,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="password"
                   label={t('Password')}
+                  required={(mandatoryAttributes.includes('password'))}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -265,6 +281,7 @@ const IngestionTaxiiEditionContainer = ({
                 variant="standard"
                 name="authentication_value"
                 label={t('Token')}
+                required={(mandatoryAttributes.includes('authentication_value'))}
                 onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -277,6 +294,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="cert"
                   label={t('Certificate (base64)')}
+                  required={(mandatoryAttributes.includes('cert'))}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -286,6 +304,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="key"
                   label={t('Key (base64)')}
+                  required={(mandatoryAttributes.includes('key'))}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -295,6 +314,7 @@ const IngestionTaxiiEditionContainer = ({
                   variant="standard"
                   name="ca"
                   label={t('CA certificate (base64)')}
+                  required={(mandatoryAttributes.includes('ca'))}
                   onSubmit={handleSubmitField}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
@@ -312,10 +332,12 @@ const IngestionTaxiiEditionContainer = ({
                 fullWidth: true,
                 style: { marginTop: 20 },
               }}
+              required={(mandatoryAttributes.includes('added_after_start'))}
             />
             <CreatorField
               name="user_id"
               label={t('User responsible for data creation (empty = System)')}
+              required={(mandatoryAttributes.includes('user_id'))}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
             />

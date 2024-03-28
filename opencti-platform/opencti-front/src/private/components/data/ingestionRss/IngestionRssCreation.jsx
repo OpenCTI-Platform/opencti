@@ -17,6 +17,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const styles = (theme) => ({
   createButton: {
@@ -62,21 +63,29 @@ const IngestionRssCreationMutation = graphql`
   }
 `;
 
-const ingestionRssCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  uri: Yup.string().required(t('This field is required')),
-  object_marking_refs: Yup.array().nullable(),
-  report_types: Yup.array().nullable(),
-  created_by_ref: Yup.object().nullable(),
-  user_id: Yup.object().nullable(),
-  current_state_date: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-});
+const OBJECT_TYPE = 'IngestionRss';
 
 const IngestionRssCreation = (props) => {
   const { t, classes } = props;
+
+  const basicShape = {
+    name: Yup.string(),
+    description: Yup.string().nullable(),
+    uri: Yup.string(),
+    object_marking_refs: Yup.array().nullable(),
+    report_types: Yup.array().nullable(),
+    created_by_ref: Yup.object().nullable(),
+    user_id: Yup.object().nullable(),
+    current_state_date: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+  };
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
       name: values.name,
@@ -120,7 +129,7 @@ const IngestionRssCreation = (props) => {
             objectMarking: [],
             current_state_date: null,
           }}
-          validationSchema={ingestionRssCreationValidation(t)}
+          validationSchema={validator}
           onSubmit={onSubmit}
           onReset={onClose}
         >
@@ -131,6 +140,7 @@ const IngestionRssCreation = (props) => {
                 variant="standard"
                 name="name"
                 label={t('Name')}
+                required={(mandatoryAttributes.includes('name'))}
                 fullWidth={true}
               />
               <Field
@@ -138,6 +148,7 @@ const IngestionRssCreation = (props) => {
                 variant="standard"
                 name="description"
                 label={t('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -146,12 +157,14 @@ const IngestionRssCreation = (props) => {
                 variant="standard"
                 name="uri"
                 label={t('RSS Feed URL')}
+                required={(mandatoryAttributes.includes('uri'))}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
               <CreatorField
                 name="user_id"
                 label={t('User responsible for data creation (empty = System)')}
+                required={(mandatoryAttributes.includes('user_id'))}
                 containerStyle={fieldSpacingContainerStyle}
               />
               <Field
@@ -165,11 +178,13 @@ const IngestionRssCreation = (props) => {
                   fullWidth: true,
                   style: { marginTop: 20 },
                 }}
+                required={(mandatoryAttributes.includes('current_state_date'))}
               />
               <OpenVocabField
                 label={t('Default report types')}
                 type="report_types_ov"
                 name="report_types"
+                required={(mandatoryAttributes.includes('report_types'))}
                 onChange={(name, value) => setFieldValue(name, value)}
                 containerStyle={fieldSpacingContainerStyle}
                 multiple={true}
@@ -177,12 +192,14 @@ const IngestionRssCreation = (props) => {
               <CreatedByField
                 name="created_by_ref"
                 label={t('Default author')}
+                required={(mandatoryAttributes.includes('created_by_ref'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
               <ObjectMarkingField
                 label={t('Default marking definitions')}
                 name="object_marking_refs"
+                required={(mandatoryAttributes.includes('object_marking_refs'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />

@@ -20,6 +20,9 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
+// FIXME: Attempted to make required field changes to code, but FORMIK errors
+// were not reported back to user. Uncertain how to fix, changes rolled back.
+
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

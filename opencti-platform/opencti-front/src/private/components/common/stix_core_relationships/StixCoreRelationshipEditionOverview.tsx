@@ -21,7 +21,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { StixCoreRelationshipEditionOverviewQuery } from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
@@ -200,12 +200,17 @@ interface StixCoreRelationshipAddInput {
   references?: Option[];
 }
 
+const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
+
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
 Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 > = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t_i18n } = useFormatter();
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    STIX_CORE_RELATIONSHIP_TYPE,
+  );
   const classes = useStyles();
   const enableReferences = useIsEnforceReference(stixCoreRelationshipType);
 
@@ -225,7 +230,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     x_opencti_workflow_id: Yup.object(),
   };
   const stixCoreRelationshipValidator = useSchemaEditionValidation(
-    'stix-core-relationship',
+    STIX_CORE_RELATIONSHIP_TYPE,
     basicShape,
   );
 
@@ -344,6 +349,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               <Field
                 component={DateTimePickerField}
                 name="start_time"
+                required={(mandatoryAttributes.includes('start_time'))}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
                 textFieldProps={{
@@ -362,6 +368,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               <Field
                 component={DateTimePickerField}
                 name="stop_time"
+                required={(mandatoryAttributes.includes('stop_time'))}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitFieldStopTime}
                 textFieldProps={{
@@ -381,6 +388,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
+                required={(mandatoryAttributes.includes('description'))}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
@@ -396,6 +404,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               />
               <KillChainPhasesField
                 name="killChainPhases"
+                required={(mandatoryAttributes.includes('killChainPhases'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
@@ -424,6 +433,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               )}
               <CreatedByField
                 name="createdBy"
+                required={(mandatoryAttributes.includes('createdBy'))}
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
@@ -436,6 +446,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               />
               <ObjectMarkingField
                 name="objectMarking"
+                required={(mandatoryAttributes.includes('objectMarking'))}
                 style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus

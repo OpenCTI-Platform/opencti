@@ -24,6 +24,9 @@ import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 
+// FIXME:  Attempted to make required field changes to code, but FORMIK errors
+//  were not reported back to user.  Uncertain how to fix, changes rolled back.
+
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

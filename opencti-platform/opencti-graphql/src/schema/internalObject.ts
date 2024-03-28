@@ -4,6 +4,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
+export const ENTITY_TYPE_SETTINGS_MESSAGES = 'SettingsMessages';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
 export const ENTITY_TYPE_MIGRATION_REFERENCE = 'MigrationReference';
 export const ENTITY_TYPE_RULE_MANAGER = 'RuleManager';
@@ -18,6 +19,9 @@ export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
+// FIXME: recommend 'Sync' be changed to 'Synchronizer' or vice versa
+//  this should be done for consistency across baseline.  GraphQL
+//  object is named 'Synchronizer'
 export const ENTITY_TYPE_SYNC = 'Sync';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_INTERNAL_FILE = 'InternalFile';
@@ -27,6 +31,7 @@ export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
 export const ENTITY_TYPE_STATUS = 'Status';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_SETTINGS_MESSAGES,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   ENTITY_TYPE_ROLE,
@@ -38,6 +43,7 @@ const DATED_INTERNAL_OBJECTS = [
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_SETTINGS_MESSAGES,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_FEED,
   ENTITY_TYPE_STREAM_COLLECTION,

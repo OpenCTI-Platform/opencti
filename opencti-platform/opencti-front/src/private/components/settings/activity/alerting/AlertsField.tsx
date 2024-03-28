@@ -62,6 +62,7 @@ interface TriggersFieldProps {
   }[];
   helpertext?: string;
   paginationOptions?: AlertingPaginationQuery$variables;
+  required?: boolean;
 }
 
 interface Option {
@@ -79,6 +80,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   values,
   helpertext,
   paginationOptions,
+  required,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -146,6 +148,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
           helperText: helpertext,
           onFocus: searchTriggers,
         }}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={triggers}
         onInputChange={searchTriggers}

@@ -3,6 +3,7 @@ import { graphql, useMutation } from 'react-relay';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
+import * as Yup from 'yup';
 import * as R from 'ramda';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
@@ -21,8 +22,8 @@ import SwitchField from '../../../../components/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import { handleErrorInForm } from '../../../../relay/environment';
-import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
+import { useSchemaCreationValidation, useMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -50,6 +51,8 @@ const decayRuleCreationMutation = graphql`
   }
 `;
 
+const OBJECT_TYPE = 'DecayRule';
+
 interface DecayRuleCreationFormData {
   name: string
   description: string
@@ -75,6 +78,33 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [commit] = useMutation(decayRuleCreationMutation);
+
+  const mandatoryAttributes = useMandatorySchemaAttributes(OBJECT_TYPE);
+  const basicShape = {
+    name: Yup.string().min(2),
+    description: Yup.string().nullable(),
+    active: Yup.boolean(),
+    order: Yup.number()
+      .min(1, t_i18n('The value must be greater than or equal to 1'))
+      .max(100000, t_i18n('The value is too long')),
+    decay_lifetime: Yup.number()
+      .min(1, t_i18n('The value must be greater than or equal to 1'))
+      .max(100000, t_i18n('The value is too long')),
+    decay_pound: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100000, t_i18n('The value is too long')),
+    decay_revoke_score: Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
+    decay_observable_types: Yup.array().of(Yup.string()),
+    decay_points: Yup.array().of(Yup.number()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100'))),
+  };
+  const validator = useSchemaCreationValidation(
+    OBJECT_TYPE,
+    basicShape,
+  );
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (
     values,
@@ -130,7 +160,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   return (
     <Formik<DecayRuleCreationFormData>
       initialValues={initialValues}
-      validationSchema={decayRuleValidator(t_i18n)}
+      validationSchema={validator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -140,12 +170,14 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows={2}
@@ -153,6 +185,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
           />
           <ObservableTypesField
             name="decay_observable_types"
+            required={(mandatoryAttributes.includes('decay_observable_types'))}
             label={t_i18n('Apply on indicator observable types (none = ALL)')}
             multiple={true}
             style={{ marginTop: 20 }}
@@ -162,6 +195,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             variant="standard"
             name="decay_lifetime"
             label={t_i18n('Lifetime (in days)')}
+            required={(mandatoryAttributes.includes('decay_lifetime'))}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
@@ -171,6 +205,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             variant="standard"
             name="decay_pound"
             label={t_i18n('Decay factor')}
+            required={(mandatoryAttributes.includes('decay_pound'))}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
@@ -205,6 +240,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
                           component={TextField}
                           variant="standard"
                           name={`decay_points.${index}`}
+                          required={(mandatoryAttributes.includes('decay_points'))}
                           type="number"
                           fullWidth={true}
                         />
@@ -231,6 +267,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             variant="standard"
             name="decay_revoke_score"
             label={t_i18n('Revoke score')}
+            required={(mandatoryAttributes.includes('decay_revoke_score'))}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
@@ -240,6 +277,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             variant="standard"
             name="order"
             label={t_i18n('Order')}
+            required={(mandatoryAttributes.includes('order'))}
             fullWidth={true}
             type="number"
             style={{ marginTop: 20 }}
@@ -249,6 +287,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
             type="checkbox"
             name="active"
             label={t_i18n('Active')}
+            required={(mandatoryAttributes.includes('active'))}
             containerstyle={fieldSpacingContainerStyle}
           />
           <div className={classes.buttons}>
