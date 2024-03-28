@@ -90,6 +90,7 @@ steps:
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
+      TEAMS_WEBHOOK: teams-webhook-url
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional
