@@ -17,7 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { resolveLink } from '../../../../utils/Entity';
 import { itemColor } from '../../../../utils/Colors';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';

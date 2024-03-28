@@ -9,7 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
 import type { PublicManifestWidget } from '../PublicManifest';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 
 const publicStixRelationshipsDistributionListQuery = graphql`
   query PublicStixRelationshipsDistributionListQuery(

@@ -15,7 +15,7 @@ import StixCoreObjectLabels from '../common/stix_core_objects/StixCoreObjectLabe
 import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
 import { resolveLink } from '../../../utils/Entity';
-import { defaultValue } from '../../../utils/Graph';
+import { defaultValue } from '../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../components/ItemEntityType';
 
 const useStyles = makeStyles((theme) => ({

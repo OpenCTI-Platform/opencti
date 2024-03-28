@@ -8,7 +8,7 @@ import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));

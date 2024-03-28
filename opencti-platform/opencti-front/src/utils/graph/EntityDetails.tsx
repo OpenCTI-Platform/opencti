@@ -21,7 +21,7 @@ import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import ItemIcon from '../../components/ItemIcon';
 import type { Theme } from '../../components/Theme';
-import { defaultValue } from '../Graph';
+import { defaultValue } from '../defaultRepresentatives';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreators from '../../components/ItemCreators';

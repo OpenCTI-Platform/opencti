@@ -7,7 +7,7 @@ import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 import ItemMarkings from '../ItemMarkings';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
@@ -115,7 +115,9 @@ const WidgetListRelationships = ({
                     </div>
                     <div style={bodyItemStyle('18%')}>
                       <code>
-                        {defaultValue(stixRelationship.from, t_i18n('Restricted')}
+                        {stixRelationship.from
+                          ? defaultValue(stixRelationship.from)
+                          : t_i18n('Restricted')}
                       </code>
                     </div>
                     <div style={bodyItemStyle('10%')}>
@@ -146,7 +148,9 @@ const WidgetListRelationships = ({
                     </div>
                     <div style={bodyItemStyle('18%')}>
                       <code>
-                        {defaultValue(stixRelationship.to, t_i18n('Restricted')}
+                        {stixRelationship.to
+                          ? defaultValue(stixRelationship.to)
+                          : t_i18n('Restricted')}
                       </code>
                     </div>
                     <div style={bodyItemStyle('10%')}>

@@ -11,7 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 

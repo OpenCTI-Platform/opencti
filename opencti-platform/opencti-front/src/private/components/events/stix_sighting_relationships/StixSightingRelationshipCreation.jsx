@@ -16,7 +16,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 
 const styles = (theme) => ({

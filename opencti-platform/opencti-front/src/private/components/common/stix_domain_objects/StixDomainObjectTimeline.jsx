@@ -20,7 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
-import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 
 const Transition = React.forwardRef((props, ref) => (

@@ -15,14 +15,13 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';

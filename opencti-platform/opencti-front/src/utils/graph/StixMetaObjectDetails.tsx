@@ -9,7 +9,7 @@ import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import { defaultValue } from '../Graph';
+import { defaultValue } from '../defaultRepresentatives';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreators from '../../components/ItemCreators';

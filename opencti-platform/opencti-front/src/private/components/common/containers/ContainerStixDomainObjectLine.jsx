@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 

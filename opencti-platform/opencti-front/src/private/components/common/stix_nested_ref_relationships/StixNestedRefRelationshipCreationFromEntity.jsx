@@ -27,7 +27,7 @@ import SelectField from '../../../../components/SelectField';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { onlyLinkedTo } from '../../../../utils/Relation';

@@ -25,14 +25,13 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';

@@ -21,7 +21,7 @@ import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 import { resolveLink } from '../../utils/Entity';
 import StixCoreObjectLabels from './common/stix_core_objects/StixCoreObjectLabels';
 import StixCoreObjectsExports from './common/stix_core_objects/StixCoreObjectsExports';

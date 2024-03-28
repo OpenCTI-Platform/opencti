@@ -23,7 +23,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';

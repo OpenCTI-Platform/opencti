@@ -2,7 +2,7 @@ import Chart from '@components/common/charts/Chart';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import type { ApexOptions } from 'apexcharts';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
 import { donutChartOptions } from '../../utils/Charts';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';

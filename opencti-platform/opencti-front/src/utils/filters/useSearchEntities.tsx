@@ -30,7 +30,7 @@ import { NotifierFieldSearchQuery$data } from '@components/common/form/__generat
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
-import { defaultValue } from '../Graph';
+import { defaultValue } from '../defaultRepresentatives';
 import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';

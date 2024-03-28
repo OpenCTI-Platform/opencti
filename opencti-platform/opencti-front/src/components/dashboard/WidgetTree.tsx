@@ -4,7 +4,7 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
 import { treeMapOptions } from '../../utils/Charts';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

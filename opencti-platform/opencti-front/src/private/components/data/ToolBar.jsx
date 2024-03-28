@@ -64,7 +64,7 @@ import { truncate } from '../../../utils/String';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
-import { defaultValue } from '../../../utils/Graph';
+import { defaultValue } from '../../../utils/defaultRepresentatives';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';

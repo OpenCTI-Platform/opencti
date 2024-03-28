@@ -16,7 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { computeLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 

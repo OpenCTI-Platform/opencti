@@ -14,7 +14,7 @@ import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { TEN_SECONDS } from '../../../../utils/Time';

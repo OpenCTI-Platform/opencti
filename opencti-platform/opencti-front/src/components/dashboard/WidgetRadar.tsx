@@ -3,7 +3,7 @@ import React from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { radarChartOptions } from '../../utils/Charts';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 

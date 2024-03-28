@@ -9,7 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsPolarAreaQuery } from './__generated__/PublicStixRelationshipsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 
 const publicStixRelationshipsPolarAreaQuery = graphql`
   query PublicStixRelationshipsPolarAreaQuery(

@@ -34,7 +34,7 @@ import StixCoreRelationshipExternalReferences from '../../analyses/external_refe
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreators from '../../../../components/ItemCreators';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';

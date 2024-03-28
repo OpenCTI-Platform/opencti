@@ -5,7 +5,7 @@ import type { PublicManifestWidget } from '../PublicManifest';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';

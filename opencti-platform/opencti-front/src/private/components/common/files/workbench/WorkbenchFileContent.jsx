@@ -40,7 +40,7 @@ import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
-import { defaultKey, defaultValue } from '../../../../../utils/Graph';
+import { defaultKey, defaultValue } from '../../../../../utils/defaultRepresentatives';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
 import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';

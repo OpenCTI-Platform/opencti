@@ -11,7 +11,7 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';

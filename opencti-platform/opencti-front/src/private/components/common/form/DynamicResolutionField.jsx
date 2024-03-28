@@ -17,7 +17,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { convertFromStixType, convertToStixType } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { isEmptyField } from '../../../../utils/utils';
 
 const inlineStyles = {

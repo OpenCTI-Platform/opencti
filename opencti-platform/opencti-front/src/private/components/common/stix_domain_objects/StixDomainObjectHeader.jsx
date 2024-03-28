@@ -39,7 +39,7 @@ import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 

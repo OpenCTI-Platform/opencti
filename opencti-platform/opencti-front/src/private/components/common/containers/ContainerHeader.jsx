@@ -33,7 +33,7 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';

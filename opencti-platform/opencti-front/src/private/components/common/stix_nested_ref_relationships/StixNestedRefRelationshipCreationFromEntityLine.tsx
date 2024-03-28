@@ -16,7 +16,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';

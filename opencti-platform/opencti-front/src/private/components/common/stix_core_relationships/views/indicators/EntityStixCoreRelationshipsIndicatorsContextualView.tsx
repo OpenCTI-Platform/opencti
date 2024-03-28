@@ -20,7 +20,7 @@ import {
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import { defaultValue } from '../../../../../../utils/Graph';
+import { defaultValue } from '../../../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../../components/ItemMarkings';
 import ListLines from '../../../../../../components/list_lines/ListLines';

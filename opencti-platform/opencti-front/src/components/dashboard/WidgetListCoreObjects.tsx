@@ -8,7 +8,7 @@ import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreO
 import React, { CSSProperties } from 'react';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../ItemIcon';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 import ItemStatus from '../ItemStatus';
 import ItemMarkings from '../ItemMarkings';
 import { useFormatter } from '../i18n';
@@ -72,7 +72,7 @@ const WidgetListCoreObjects = ({
                 primary={
                   <>
                     <div style={bodyItemStyle('30%')}>
-                      {defaultValue(stixCoreObject, t_i18n('Restricted'))}
+                      {defaultValue(stixCoreObject)}
                     </div>
                     <div style={bodyItemStyle('10%')}>
                       {fsd(date)}

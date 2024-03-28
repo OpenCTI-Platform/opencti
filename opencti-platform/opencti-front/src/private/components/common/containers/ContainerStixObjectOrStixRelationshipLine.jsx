@@ -17,7 +17,7 @@ import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const useStyles = makeStyles((theme) => ({

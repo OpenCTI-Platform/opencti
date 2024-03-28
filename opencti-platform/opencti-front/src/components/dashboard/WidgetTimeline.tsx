@@ -9,7 +9,7 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { defaultValue } from '../../utils/Graph';
+import { defaultValue } from '../../utils/defaultRepresentatives';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
@@ -67,7 +67,7 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
               <TimelineContent>
                 <Paper variant="outlined" sx={{ padding: '15px' }} className="noDrag">
                   <Typography variant="h2">
-                    {defaultValue(value, t_i18n('Restricted'))}
+                    {defaultValue(value)}
                   </Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay

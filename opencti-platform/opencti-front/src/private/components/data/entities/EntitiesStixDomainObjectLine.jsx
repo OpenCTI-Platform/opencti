@@ -16,7 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 
 const useStyles = makeStyles((theme) => ({
   item: {

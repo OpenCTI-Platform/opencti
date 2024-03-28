@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const useStyles = makeStyles((theme) => ({

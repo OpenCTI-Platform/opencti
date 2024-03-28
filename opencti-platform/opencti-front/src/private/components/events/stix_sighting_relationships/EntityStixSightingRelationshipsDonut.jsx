@@ -12,7 +12,7 @@ import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 
 const styles = () => ({
   paper: {

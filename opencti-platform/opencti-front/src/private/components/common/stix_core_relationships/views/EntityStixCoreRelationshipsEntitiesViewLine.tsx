@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { DataColumns } from '../../../../../components/list_lines';
 import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { defaultValue } from '../../../../../utils/Graph';
+import { defaultValue } from '../../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../../utils/Colors';
 import {
   EntityStixCoreRelationshipsEntitiesViewLine_node$data,

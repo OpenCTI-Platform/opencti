@@ -12,7 +12,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';

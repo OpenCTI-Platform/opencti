@@ -7,7 +7,7 @@ import { useFormatter } from '../../components/i18n';
 import useQueryLoading from '../hooks/useQueryLoading';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../String';
-import { defaultValue } from '../Graph';
+import { defaultValue } from '../defaultRepresentatives';
 
 const useStyles = makeStyles(() => ({
   label: {

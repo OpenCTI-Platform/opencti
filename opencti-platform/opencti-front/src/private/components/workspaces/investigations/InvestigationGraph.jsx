@@ -21,14 +21,13 @@ import {
   computeTimeRangeInterval,
   computeTimeRangeValues,
   decodeGraphData,
-  defaultSecondaryValue,
-  defaultValue,
   encodeGraphData,
   linkPaint,
   nodeAreaPaint,
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
+import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';

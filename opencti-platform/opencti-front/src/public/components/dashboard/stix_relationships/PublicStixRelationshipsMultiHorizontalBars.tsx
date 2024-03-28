@@ -3,7 +3,7 @@ import React from 'react';
 import * as R from 'ramda';
 import type { PublicManifestWidget } from '../PublicManifest';
 import { useFormatter } from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { defaultValue } from '../../../../utils/defaultRepresentatives';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -360,7 +360,7 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     const subSelection = dataSelection[1];
     const finalSubDistributionField = subSelection.attribute || 'entity_type';
 
-    const categories = publicStixRelationshipsDistribution.map((n) => defaultValue(n?.entity, t_i18n('Restricted')));
+    const categories = publicStixRelationshipsDistribution.map((n) => defaultValue(n?.entity));
     const entitiesMapping: Record<string, number> = {};
     for (const distrib of publicStixRelationshipsDistribution) {
       for (const subDistrib of distrib?.breakdownDistribution ?? []) {
