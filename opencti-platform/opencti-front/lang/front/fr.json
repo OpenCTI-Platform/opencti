@@ -2566,7 +2566,6 @@
   "No public dashboard created yet": "Aucun tableau de bord public n'a encore été créé",
   "Create a new public dashboard": "Créer un nouveau tableau de bord public",
   "Public dashboard ID": "ID du tableau de bord public",
-  "Specify the ID of your public dashboard": "Spécifiez l'ID de votre tableau de bord public",
   "Disable public dashboard": "Désactiver le tableau de bord public",
   "Delete public dashboard": "Supprimer le tableau de bord public",
   "Are you sure you want to delete this public dashboard?": "Êtes-vous sûr de vouloir supprimer ce tableau de bord public ?",
@@ -2673,5 +2672,11 @@
   "Strategic": "Stratégique",
   "Link created": "Lien créé",
   "Public dashboard": "Tableau de bord public",
-  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement."
+  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement.",
+  "ID of your public dashboard": "ID de votre tableau de bord public (utilisé dans l'URL)",
+  "Data sharing configuration": "Configuration du partage des données",
+  "Not shareable": "Non partageable",
+  "Disabled dashboard...": "Le tableau de bord public si désactivé ne peut pas être consulté. Vous pouvez modifier ce booléen à tout moment.",
+  "The public dashboard is disabled": "Le tableau de bord public est désactivé",
+  "Enable public dashboard": "Activer le tableau de bord public"
 }

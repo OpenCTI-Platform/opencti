@@ -2566,7 +2566,6 @@
   "No public dashboard created yet": "尚未创建公共仪表盘",
   "Create a new public dashboard": "创建新的公共仪表盘",
   "Public dashboard ID": "公共仪表板 ID",
-  "Specify the ID of your public dashboard": "指定公共仪表板的 ID",
   "Disable public dashboard": "禁用公共仪表盘",
   "Delete public dashboard": "删除公共仪表板",
   "Are you sure you want to delete this public dashboard?": "您确定要删除此公共仪表板吗？",
@@ -2673,5 +2672,11 @@
   "Strategic": "战略",
   "Link created": "创建的链接",
   "Public dashboard": "公共仪表板",
-  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
+  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
+  "ID of your public dashboard": "公共仪表板的 ID（在 URL 中使用）",
+  "Data sharing configuration": "数据共享配置",
+  "Not shareable": "不可共享",
+  "Disabled dashboard...": "无法查看已禁用的公共仪表板。您可以随时更改此布尔值。",
+  "The public dashboard is disabled": "公共仪表板已禁用",
+  "Enable public dashboard": "启用公共仪表板"
 }

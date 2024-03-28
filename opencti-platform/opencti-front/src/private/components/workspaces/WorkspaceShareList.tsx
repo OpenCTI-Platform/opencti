@@ -9,10 +9,13 @@ import Tooltip from '@mui/material/Tooltip';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
+import DoneIcon from '@mui/icons-material/Done';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { copyToClipboard } from '../../../utils/utils';
 import ItemMarkings from '../../../components/ItemMarkings';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {
@@ -21,6 +24,7 @@ export const workspaceShareListQuery = graphql`
         node {
           id
           uri_key
+          enabled
           name
           user_id
           created_at
@@ -39,9 +43,10 @@ export const workspaceShareListQuery = graphql`
 interface WorkspaceShareListProps {
   queryRef: PreloadedQuery<WorkspaceShareListQuery>
   onDelete: (id: string) => void
+  onToggleEnabled: (id: string, enabled: boolean) => void
 }
 
-const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => {
+const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceShareListProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
   const { publicDashboards } = usePreloadedQuery(workspaceShareListQuery, queryRef);
@@ -84,37 +89,46 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
               </Typography>
             </div>
 
-            <ToggleButtonGroup size="small">
-              <Tooltip title={t_i18n('Copy link')}>
-                <ToggleButton
-                  aria-label="Label"
-                  size="small"
-                  value="copy-link"
-                  onClick={() => copyLinkUrl(dashboard.uri_key)}
-                >
-                  <ContentCopyIcon fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
-              {/* <Tooltip title={t_i18n('Disable public dashboard')}> */}
-              {/*  <ToggleButton */}
-              {/*    aria-label="Label" */}
-              {/*    size="small" */}
-              {/*    value="disable-link" */}
-              {/*  > */}
-              {/*    <DoNotDisturbAltIcon fontSize="small" color="primary" /> */}
-              {/*  </ToggleButton> */}
-              {/* </Tooltip> */}
-              <Tooltip title={t_i18n('Delete public dashboard')}>
-                <ToggleButton
-                  aria-label="Label"
-                  size="small"
-                  value="delete-link"
-                  onClick={() => onDelete(dashboard.id)}
-                >
-                  <DeleteIcon fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
-            </ToggleButtonGroup>
+            <div style={{ display: 'flex' }}>
+              <ItemBoolean
+                status={dashboard.enabled}
+                label={dashboard.enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+              />
+
+              <ToggleButtonGroup size="small">
+                <Tooltip title={t_i18n('Copy link')}>
+                  <ToggleButton
+                    aria-label="Label"
+                    size="small"
+                    value="copy-link"
+                    onClick={() => copyLinkUrl(dashboard.uri_key)}
+                  >
+                    <ContentCopyIcon fontSize="small" color="primary" />
+                  </ToggleButton>
+                </Tooltip>
+                <Tooltip title={dashboard.enabled ? t_i18n('Disable public dashboard') : t_i18n('Enable public dashboard')}>
+                  <ToggleButton
+                    aria-label="Label"
+                    size="small"
+                    value="disable-link"
+                    onClick={() => onToggleEnabled(dashboard.id, !dashboard.enabled)}
+                  >
+                    {dashboard.enabled && <DoNotDisturbAltIcon fontSize="small" color="primary" />}
+                    {!dashboard.enabled && <DoneIcon fontSize="small" color="primary" />}
+                  </ToggleButton>
+                </Tooltip>
+                <Tooltip title={t_i18n('Delete public dashboard')}>
+                  <ToggleButton
+                    aria-label="Label"
+                    size="small"
+                    value="delete-link"
+                    onClick={() => onDelete(dashboard.id)}
+                  >
+                    <DeleteIcon fontSize="small" color="primary" />
+                  </ToggleButton>
+                </Tooltip>
+              </ToggleButtonGroup>
+            </div>
           </div>
 
           <div

@@ -7,6 +7,7 @@ const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): Sti
   return {
     ...stixDomainObject,
     name: instance.name,
+    enabled: instance.enabled,
     description: instance.description,
     dashboard_id: instance.dashboard_id,
     user_id: instance.user_id,

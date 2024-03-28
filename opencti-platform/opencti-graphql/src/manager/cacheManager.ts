@@ -199,6 +199,7 @@ const platformPublicDashboards = (context: AuthContext) => {
       publicDashboardsForCache.push(
         {
           id: dash.id,
+          enabled: dash.enabled,
           internal_id: dash.internal_id,
           uri_key: dash.uri_key,
           dashboard_id: dash.dashboard_id,

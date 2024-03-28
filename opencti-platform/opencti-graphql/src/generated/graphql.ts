@@ -17373,6 +17373,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   dashboard_id?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
+  enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -17389,7 +17390,9 @@ export type PublicDashboardAddInput = {
   allowed_markings_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   dashboard_id: Scalars['String']['input'];
   description?: InputMaybe<Scalars['String']['input']>;
+  enabled: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
+  uri_key: Scalars['String']['input'];
 };
 
 export type PublicDashboardConnection = {
@@ -21289,6 +21292,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
   platform_critical_alerts: Array<PlatformCriticalAlert>;
+  platform_data_sharing_max_markings?: Maybe<Array<MarkingDefinition>>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_favicon?: Maybe<Scalars['String']['output']>;
@@ -34772,6 +34776,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   dashboard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -35604,6 +35609,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
+  platform_data_sharing_max_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

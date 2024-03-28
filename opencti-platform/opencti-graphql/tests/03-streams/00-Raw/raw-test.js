@@ -22,7 +22,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(31);
-      expect(createEventsByTypes.relationship.length).toBe(130);
+      expect(createEventsByTypes.relationship.length).toBe(132);
       expect(createEventsByTypes.indicator.length).toBe(33);
       expect(createEventsByTypes['attack-pattern'].length).toBe(7);
       expect(createEventsByTypes.report.length).toBe(28);

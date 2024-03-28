@@ -1109,6 +1109,7 @@ type Settings implements InternalObject & BasicObject {
   parent_types: [String!]! @auth
   # Settings
   platform_organization: Organization
+  platform_data_sharing_max_markings: [MarkingDefinition!]
   platform_title: String
   platform_favicon: String
   platform_email: String @auth

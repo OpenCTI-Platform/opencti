@@ -2566,7 +2566,6 @@
   "No public dashboard created yet": "まだ作成されていない公開ダッシュボード",
   "Create a new public dashboard": "新しい公開ダッシュボードを作成する",
   "Public dashboard ID": "公開ダッシュボードID",
-  "Specify the ID of your public dashboard": "公開ダッシュボードのIDを指定する",
   "Disable public dashboard": "公開ダッシュボードを無効にする",
   "Delete public dashboard": "公開ダッシュボードを削除する",
   "Are you sure you want to delete this public dashboard?": "本当にこの公開ダッシュボードを削除しますか？",
@@ -2673,5 +2672,11 @@
   "Strategic": "戦略的",
   "Link created": "リンク作成",
   "Public dashboard": "公開ダッシュボード",
-  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
+  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。",
+  "ID of your public dashboard": "公開ダッシュボードのID（URLで使用される）",
+  "Data sharing configuration": "データ共有設定",
+  "Not shareable": "共有不可",
+  "Disabled dashboard...": "無効化された公開ダッシュボードは閲覧できません。このブール値はいつでも変更できます。",
+  "The public dashboard is disabled": "公開ダッシュボードは無効",
+  "Enable public dashboard": "公開ダッシュボードを有効にする"
 }
