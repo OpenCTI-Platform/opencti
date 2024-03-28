@@ -16,7 +16,7 @@ import {
   knowledgeGraphQueryCheckObjectQuery,
   knowledgeGraphQueryStixObjectDeleteMutation,
   knowledgeGraphQueryStixRelationshipDeleteMutation,
-} from '@components/analyses/KnowledgeGraphQuery';
+} from '../../common/containers/KnowledgeGraphQuery';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
