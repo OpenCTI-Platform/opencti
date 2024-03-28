@@ -1086,7 +1086,7 @@ const StixRelationshipsTimeline = ({
               return {
                 value: {
                   ...remoteNode,
-                  created: stixRelationship.created,
+                  created: stixRelationship[dateAttribute] ?? stixRelationship.created,
                 },
                 link,
               };
