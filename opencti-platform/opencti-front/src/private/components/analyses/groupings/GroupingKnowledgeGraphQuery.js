@@ -40,19 +40,3 @@ export const groupingKnowledgeGraphMutationRelationDeleteMutation = graphql`
     }
   }
 `;
-
-export const groupingKnowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
-  mutation GroupingKnowledgeGraphQueryStixRelationshipDeleteMutation($id: ID!) {
-    stixRelationshipEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-export const groupingKnowledgeGraphQueryStixObjectDeleteMutation = graphql`
-  mutation GroupingKnowledgeGraphQueryStixCoreObjectDeleteMutation($id: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      delete
-    }
-  }
-`;

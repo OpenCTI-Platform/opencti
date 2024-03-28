@@ -10,6 +10,13 @@ import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import {
+  knowledgeGraphQueryCheckObjectQuery,
+  knowledgeGraphQueryStixObjectDeleteMutation,
+  knowledgeGraphQueryStixRelationshipDeleteMutation,
+  knowledgeGraphStixCoreObjectQuery,
+  knowledgeGraphStixRelationshipQuery,
+} from '@components/analyses/KnowledgeGraphQuery';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
@@ -33,17 +40,13 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { caseRfiMutationFieldPatch } from './CaseRfiEditionOverview';
 import CaseRfiKnowledgeGraphBar from './CaseRfiKnowledgeGraphBar';
-import {
-  caseRfiKnowledgeGraphMutationRelationDeleteMutation,
-  caseRfiKnowledgeGraphQueryStixObjectDeleteMutation,
-  caseRfiKnowledgeGraphQueryStixRelationshipDeleteMutation,
-  caseRfiKnowledgeGraphtMutationRelationAddMutation,
-} from './CaseRfiKnowledgeGraphQuery';
+import { caseRfiKnowledgeGraphMutationRelationDeleteMutation, caseRfiKnowledgeGraphtMutationRelationAddMutation } from './CaseRfiKnowledgeGraphQuery';
 import CaseRfiPopover from './CaseRfiPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
 import RelationSelection from '../../../../utils/graph/RelationSelection';
+import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -54,389 +57,6 @@ export const caseRfiKnowledgeGraphQuery = graphql`
   query CaseRfiKnowledgeGraphQuery($id: String!) {
     caseRfi(id: $id) {
       ...CaseRfiKnowledgeGraph_case
-    }
-  }
-`;
-
-const caseRfiKnowledgeGraphCheckObjectQuery = graphql`
-  query CaseRfiKnowledgeGraphCheckObjectQuery($id: String!) {
-    stixObjectOrStixRelationship(id: $id) {
-      ... on BasicObject {
-        id
-      }
-      ... on StixCoreObject {
-        is_inferred
-        parent_types
-        cases {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on BasicRelationship {
-        id
-      }
-      ... on StixCoreRelationship {
-        is_inferred
-        parent_types
-        cases {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on StixRefRelationship {
-        is_inferred
-        parent_types
-        cases {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-      ... on StixSightingRelationship {
-        is_inferred
-        parent_types
-        cases {
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const caseRfiKnowledgeGraphStixCoreObjectQuery = graphql`
-  query CaseRfiKnowledgeGraphStixCoreObjectQuery($id: String!) {
-    stixCoreObject(id: $id) {
-      id
-      entity_type
-      parent_types
-      created_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      ... on StixDomainObject {
-        created
-      }
-      ... on AttackPattern {
-        name
-        x_mitre_id
-      }
-      ... on Campaign {
-        name
-        first_seen
-        last_seen
-      }
-      ... on CourseOfAction {
-        name
-      }
-      ... on Channel {
-        name
-      }
-      ... on Note {
-        attribute_abstract
-        content
-      }
-      ... on ObservedData {
-        name
-        first_observed
-        last_observed
-      }
-      ... on Opinion {
-        opinion
-      }
-      ... on Report {
-        name
-        published
-      }
-      ... on Grouping {
-        name
-        description
-      }
-      ... on Individual {
-        name
-      }
-      ... on Organization {
-        name
-      }
-      ... on Sector {
-        name
-      }
-      ... on System {
-        name
-      }
-      ... on Indicator {
-        name
-        valid_from
-      }
-      ... on Infrastructure {
-        name
-      }
-      ... on IntrusionSet {
-        name
-        first_seen
-        last_seen
-      }
-      ... on Position {
-        name
-      }
-      ... on City {
-        name
-      }
-      ... on AdministrativeArea {
-        name
-      }
-      ... on Country {
-        name
-      }
-      ... on Region {
-        name
-      }
-      ... on Malware {
-        name
-        first_seen
-        last_seen
-      }
-      ... on MalwareAnalysis {
-        result_name
-      }
-      ... on ThreatActor {
-        name
-        first_seen
-        last_seen
-      }
-      ... on Tool {
-        name
-      }
-      ... on Vulnerability {
-        name
-      }
-      ... on Incident {
-        name
-        first_seen
-        last_seen
-      }
-      ... on StixCyberObservable {
-        observable_value
-      }
-      ... on StixFile {
-        observableName: name
-      }
-      ... on Event {
-        name
-      }
-      ... on Case {
-        name
-      }
-      ... on CaseRfi {
-        name
-      }
-      ... on CaseIncident {
-        name
-      }
-      ... on Feedback {
-        name
-      }
-      ... on CaseRft {
-        name
-      }
-      ... on Task {
-        name
-      }
-      ... on Narrative {
-        name
-      }
-      ... on DataComponent {
-        name
-      }
-      ... on DataSource {
-        name
-      }
-      ... on Language {
-        name
-      }
-    }
-  }
-`;
-
-const caseRfiKnowledgeGraphStixRelationshipQuery = graphql`
-  query CaseRfiKnowledgeGraphStixRelationshipQuery($id: String!) {
-    stixRelationship(id: $id) {
-      id
-      entity_type
-      parent_types
-      ... on StixCoreRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-      ... on StixRefRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-      ... on StixSightingRelationship {
-        relationship_type
-        first_seen
-        last_seen
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
     }
   }
 `;
@@ -1010,23 +630,25 @@ class CaseRfiKnowledgeGraphComponent extends Component {
   }
 
   async handleDeleteSelected(deleteObject = false) {
+    const checkedContainerTypes = containerTypes.filter((type) => !ignoredStixCoreObjectsTypes.includes(type)); // containers checked when cascade delete
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
     R.forEach((n) => {
-      fetchQuery(caseRfiKnowledgeGraphCheckObjectQuery, {
+      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
         id: n.id,
+        entityTypes: checkedContainerTypes,
       })
         .toPromise()
         .then(async (data) => {
           if (
             deleteObject
             && !data.stixObjectOrStixRelationship.is_inferred
-            && data.stixObjectOrStixRelationship.cases.edges.length === 1
+            && data.stixObjectOrStixRelationship.containers.edges.length === 1
           ) {
             commitMutation({
               mutation:
-                caseRfiKnowledgeGraphQueryStixRelationshipDeleteMutation,
+                knowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1074,18 +696,19 @@ class CaseRfiKnowledgeGraphComponent extends Component {
       });
     }, relationshipsToRemove);
     R.forEach((n) => {
-      fetchQuery(caseRfiKnowledgeGraphCheckObjectQuery, {
+      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
         id: n.id,
+        entityTypes: checkedContainerTypes,
       })
         .toPromise()
         .then(async (data) => {
           if (
             deleteObject
             && !data.stixObjectOrStixRelationship.is_inferred
-            && data.stixObjectOrStixRelationship.cases.edges.length === 1
+            && data.stixObjectOrStixRelationship.containers.edges.length === 1
           ) {
             commitMutation({
-              mutation: caseRfiKnowledgeGraphQueryStixObjectDeleteMutation,
+              mutation: knowledgeGraphQueryStixObjectDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1125,7 +748,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
 
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
-      fetchQuery(caseRfiKnowledgeGraphStixCoreObjectQuery, {
+      fetchQuery(knowledgeGraphStixCoreObjectQuery, {
         id: entityId,
       })
         .toPromise()
@@ -1156,7 +779,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
 
   handleCloseRelationEdition(relationId) {
     setTimeout(() => {
-      fetchQuery(caseRfiKnowledgeGraphStixRelationshipQuery, {
+      fetchQuery(knowledgeGraphStixRelationshipQuery, {
         id: relationId,
       })
         .toPromise()
