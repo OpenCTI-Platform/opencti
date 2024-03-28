@@ -626,5 +626,9 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Samples",
   "Contains observable": "Contains observable",
-  "Artifact content": "Artifact content"
+  "Artifact content": "Artifact content",
+  "Deleted entity type": "Deleted entity type",
+  "Deleted entity id": "Deleted entity id",
+  "Deleted entity name": "Deleted entity name",
+  "Deleted elements": "Deleted elements"
 }

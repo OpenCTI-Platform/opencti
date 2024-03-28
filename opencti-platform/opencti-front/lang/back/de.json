@@ -626,5 +626,9 @@
   "X_Aliases": "X_Aliases",
   "Samples": "Stichproben",
   "Contains observable": "Enthält beobachtbar",
-  "Artifact content": "Artefaktinhalt"
+  "Artifact content": "Artefaktinhalt",
+  "Deleted entity type": "Gelöschter Entitätstyp",
+  "Deleted entity id": "Gelöschte Entitäts-ID",
+  "Deleted entity name": "Gelöschter Entitätsname",
+  "Deleted elements": "Gelöschte Elemente"
 }

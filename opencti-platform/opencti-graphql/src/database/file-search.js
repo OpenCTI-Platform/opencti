@@ -103,6 +103,29 @@ export const elUpdateFilesWithEntityRestrictions = async (entity) => {
   });
 };
 
+export const elUpdateRemovedFiles = async (entity, removed = true) => {
+  if (!entity) {
+    return null;
+  }
+  const params = { removed };
+  const source = 'ctx._source["removed"] = params.removed;';
+  return elRawUpdateByQuery({
+    index: READ_INDEX_FILES,
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source, params },
+      query: {
+        term: {
+          'entity_id.keyword': entity.internal_id
+        }
+      },
+    },
+  }).catch((err) => {
+    throw DatabaseError('Files entity removed update fail', { cause: err, entityId: entity.internal_id });
+  });
+};
+
 const buildFilesSearchResult = (data, first, searchAfter, connectionFormat = true, includeContent = false) => {
   const convertedHits = data.hits.hits.map((hit) => {
     const elementData = hit._source;
@@ -142,7 +165,7 @@ const decodeSearch = (search) => {
 };
 const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   const { search = null, fileIds = [], entityIds = [] } = options; // search options
-  const { includeAuthorities = false } = options;
+  const { includeAuthorities = false, excludeRemoved = true } = options;
   const dataRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
   const must = [...dataRestrictions.must];
   const mustNot = [...dataRestrictions.must_not];
@@ -161,6 +184,18 @@ const elBuildSearchFilesQueryBody = async (context, user, options = {}) => {
   }
   if (entityIds?.length > 0) {
     must.push({ terms: { 'entity_id.keyword': entityIds } });
+  }
+  // exclude removed files (logical deletion)
+  if (excludeRemoved) {
+    const excludeRemovedQuery = {
+      bool: {
+        should: [
+          { term: { removed: { value: false } } },
+          { bool: { must_not: [{ exists: { field: 'removed' } }] } }
+        ]
+      }
+    };
+    must.push(excludeRemovedQuery);
   }
   return {
     query: {

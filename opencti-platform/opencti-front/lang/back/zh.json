@@ -626,5 +626,9 @@
   "X_Aliases": "X_别名",
   "Samples": "样本",
   "Contains observable": "包含观测值",
-  "Artifact content": "工件内容"
+  "Artifact content": "工件内容",
+  "Deleted entity type": "删除的实体类型",
+  "Deleted entity id": "删除的实体 ID",
+  "Deleted entity name": "删除的实体名称",
+  "Deleted elements": "删除的元素"
 }
