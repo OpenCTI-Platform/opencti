@@ -2673,5 +2673,7 @@
   "Strategic": "Estratégico",
   "Link created": "Enlace creado",
   "Public dashboard": "Cuadro de mandos público",
+  "Show left navigation submenu icons": "Mostrar iconos del submenú de navegación izquierdo",
+  "Auto collapse submenus in left navigation": "Submenús contraídos automáticamente en la navegación izquierda",
   "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto."
 }
