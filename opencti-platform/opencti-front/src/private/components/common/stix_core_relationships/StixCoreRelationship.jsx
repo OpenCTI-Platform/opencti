@@ -39,7 +39,7 @@ class StixCoreRelationship extends Component {
           query={stixCoreRelationshipQuery}
           variables={{ id: relationId }}
           render={({ props }) => {
-            if (props && props.stixCoreRelationship) {
+            if (props?.stixCoreRelationship) {
               return (
                 <StixCoreRelationshipOverview
                   entityId={entityId}
@@ -60,7 +60,6 @@ StixCoreRelationship.propTypes = {
   entityId: PropTypes.string,
   paddingRight: PropTypes.bool,
   classes: PropTypes.object,
-  t: PropTypes.func,
   match: PropTypes.object,
 };
 

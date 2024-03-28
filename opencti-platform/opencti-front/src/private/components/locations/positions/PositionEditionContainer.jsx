@@ -3,7 +3,9 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import EditEntityControlledDial from '../../common/menus/EditEntityControlledDial';
+import PositionDelete from './PositionDelete';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
@@ -14,15 +16,20 @@ const PositionEditionContainer = (props) => {
       title={t_i18n('Update a position')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={EditEntityControlledDial()}
     >
-      <PositionEditionOverview
-        position={position}
-        enableReferences={useIsEnforceReference('Position')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <PositionEditionOverview
+          position={position}
+          enableReferences={useIsEnforceReference('Position')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference
+          && <PositionDelete id={position.id} />
+        }
+      </>
     </Drawer>
   );
 };

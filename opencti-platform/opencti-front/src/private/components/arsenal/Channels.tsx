@@ -96,6 +96,9 @@ const Channels = () => {
         filters={filters}
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ChannelCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -129,9 +132,6 @@ const Channels = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ChannelCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </>
   );
 };

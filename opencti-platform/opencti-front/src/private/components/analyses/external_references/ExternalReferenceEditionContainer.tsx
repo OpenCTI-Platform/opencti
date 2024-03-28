@@ -8,10 +8,19 @@ import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview
 interface ExternalReferenceEditionContainerProps {
   handleClose: () => void
   externalReference: ExternalReferenceEditionContainer_externalReference$data
+  controlledDial?: (({ onOpen, onClose }: {
+    onOpen: () => void;
+    onClose: () => void;
+  }) => React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>)
   open?: boolean
 }
 
-const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEditionContainerProps> = ({ handleClose, externalReference, open }) => {
+const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEditionContainerProps> = ({
+  handleClose,
+  externalReference,
+  controlledDial,
+  open,
+}) => {
   const { t_i18n } = useFormatter();
 
   const { editContext } = externalReference;
@@ -19,10 +28,13 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
   return (
     <Drawer
       title={t_i18n('Update an external reference')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={open == null && controlledDial === null
+        ? DrawerVariant.update
+        : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={controlledDial}
     >
       <ExternalReferenceEditionOverview
         externalReference={externalReference}

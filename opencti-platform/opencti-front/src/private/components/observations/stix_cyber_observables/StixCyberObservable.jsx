@@ -4,9 +4,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
-import StixCyberObservableEdition from './StixCyberObservableEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -66,11 +63,6 @@ class StixCyberObservableComponent extends Component {
           stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
           defaultMarkings={stixCyberObservable.objectMarking ?? []}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableEdition
-            stixCyberObservableId={stixCyberObservable.id}
-          />
-        </Security>
       </>
     );
   }

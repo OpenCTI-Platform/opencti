@@ -22,6 +22,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorIndividualDelete from './ThreatActorIndividualDelete';
 
 const ThreatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionOverviewFieldPatchMutation(
@@ -336,6 +337,7 @@ ThreatActorIndividualEditionOverviewProps
               open={false}
               values={values.references}
               id={threatActorIndividual.id}
+              deleteBtn={<ThreatActorIndividualDelete id={threatActorIndividual.id} />}
             />
           )}
         </Form>

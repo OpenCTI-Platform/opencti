@@ -24,6 +24,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import IncidentDelete from './IncidentDelete';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -374,6 +375,7 @@ IncidentEditionOverviewProps
               values={values.references}
               setFieldValue={setFieldValue}
               id={incident.id}
+              deleteBtn={<IncidentDelete id={incident.id} />}
             />
           )}
         </Form>

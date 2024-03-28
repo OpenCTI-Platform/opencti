@@ -734,6 +734,10 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           config={manifest.config}
           handleDateChange={handleDateChange}
           variant="dashboard"
+          widgetActions={<WidgetConfig
+            onComplete={handleAddWidget}
+            workspace={workspace}
+                         />}
         />
       )}
       {isExploreUpdater && userCanEdit ? (
@@ -850,7 +854,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {/* {!noToolbar && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />} */}
     </div>
   );
 };

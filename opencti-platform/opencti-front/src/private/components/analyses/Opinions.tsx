@@ -138,6 +138,9 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+            <OpinionCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -183,9 +186,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Opinions'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-        <OpinionCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

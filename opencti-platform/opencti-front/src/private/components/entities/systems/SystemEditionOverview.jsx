@@ -19,6 +19,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import SystemDelete from './SystemDelete';
 
 const systemMutationFieldPatch = graphql`
   mutation SystemEditionOverviewFieldPatchMutation(
@@ -286,6 +287,7 @@ const SystemEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={system.id}
+            deleteBtn={<SystemDelete id={system.id} />}
           />
           )}
         </Form>

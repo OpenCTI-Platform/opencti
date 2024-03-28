@@ -18,6 +18,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import PositionDelete from './PositionDelete';
 
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
@@ -327,6 +328,7 @@ const PositionEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={position.id}
+              deleteBtn={<PositionDelete id={position.id} />}
             />
           )}
         </Form>

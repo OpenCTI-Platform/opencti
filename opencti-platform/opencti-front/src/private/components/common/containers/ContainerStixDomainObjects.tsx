@@ -16,6 +16,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import ContainerAddStixCoreObjectsSelfContained from './ContainerAddStixCoreObjectsSelfContained';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -177,6 +178,13 @@ const ContainerStixDomainObjects = ({
       numberOfElements={numberOfElements}
       paginationOptions={queryPaginationOptions}
       availableEntityTypes={['Stix-Domain-Object']}
+      createButton={queryRef && (
+        <ContainerAddStixCoreObjectsSelfContained
+          queryRef={queryRef}
+          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+          paginationOptions={queryPaginationOptions}
+        />
+      )}
     >
       {queryRef && (
         <React.Suspense
@@ -198,8 +206,6 @@ const ContainerStixDomainObjects = ({
             paginationOptions={queryPaginationOptions}
             dataColumns={dataColumns}
             setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            onTypesChange={storageHelpers.handleToggleTypes}
-            openExports={openExports}
             selectedElements={selectedElements}
             deSelectedElements={deSelectedElements}
             onToggleEntity={onToggleEntity}

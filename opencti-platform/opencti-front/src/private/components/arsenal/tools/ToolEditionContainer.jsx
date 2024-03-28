@@ -1,14 +1,15 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ToolEditionOverview from './ToolEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import ToolDelete from './ToolDelete';
 
 const ToolEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, tool, open } = props;
+  const { handleClose, tool, open, controlledDial } = props;
   const { editContext } = tool;
 
   return (
@@ -16,15 +17,20 @@ const ToolEditionContainer = (props) => {
       title={t_i18n('Update a tool')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
-      <ToolEditionOverview
-        tool={tool}
-        enableReferences={useIsEnforceReference('Tool')}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <>
+        <ToolEditionOverview
+          tool={tool}
+          enableReferences={useIsEnforceReference('Tool')}
+          context={editContext}
+          handleClose={handleClose}
+        />
+        {!useIsEnforceReference('Tool')
+          && <ToolDelete id={tool.id} />
+        }
+      </>
     </Drawer>
   );
 };

@@ -12,7 +12,6 @@ import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import IndividualPopover from './IndividualPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndividualAnalysis from './IndividualAnalysis';
@@ -22,6 +21,11 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import IndividualEdition from './IndividualEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -43,9 +47,12 @@ const individualQuery = graphql`
   query RootIndividualQuery($id: String!) {
     individual(id: $id) {
       id
+      isUser
       entity_type
       name
       x_opencti_aliases
+      created_at
+      updated_at
       ...Individual_individual
       ...IndividualKnowledge_individual
       ...FileImportViewer_entity
@@ -121,7 +128,7 @@ class RootIndividual extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Route path="/dashboard/entities/individuals/:individualId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
@@ -171,7 +178,16 @@ class RootIndividual extends Component {
                       stixDomainObject={individual}
                       isOpenctiAlias={true}
                       enableQuickSubscription={true}
-                      PopoverComponent={<IndividualPopover />}
+                      EditComponent={!individual.isUser && (
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <IndividualEdition individualId={individual.id} />
+                        </Security>
+                      )}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={individual.id}
+                        defaultStartTime={individual.created_at}
+                        defaultStopTime={individual.updated_at}
+                                       />}
                       onViewAs={this.handleChangeViewAs.bind(this)}
                       viewAs={viewAs}
                     />
@@ -316,12 +332,15 @@ class RootIndividual extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }
 
 RootIndividual.propTypes = {
+  t: PropTypes.func,
+  history: PropTypes.object,
+  location: PropTypes.object,
   children: PropTypes.node,
   match: PropTypes.object,
 };

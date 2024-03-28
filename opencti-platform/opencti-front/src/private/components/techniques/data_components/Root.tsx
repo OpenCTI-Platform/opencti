@@ -10,11 +10,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import DataComponent from './DataComponent';
-import DataComponentPopover from './DataComponentPopover';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -23,6 +25,7 @@ import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import DataComponentEdition from './DataComponentEdition';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -47,6 +50,8 @@ const dataComponentQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      created_at
+      updated_at
       ...DataComponent_dataComponent
       ...DataComponentKnowledge_dataComponent
       ...FileImportViewer_entity
@@ -78,7 +83,7 @@ const RootDataComponent = () => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   return (
-    <>
+    <RelateComponentContextProvider>
       <QueryRenderer
         query={dataComponentQuery}
         variables={{ id: dataComponentId }}
@@ -105,10 +110,11 @@ const RootDataComponent = () => {
                   <StixDomainObjectHeader
                     entityType="Data-Component"
                     stixDomainObject={props.dataComponent}
-                    PopoverComponent={
-                      <DataComponentPopover dataComponentId={dataComponentId} />
-                    }
-                    noAliases={true}
+                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <DataComponentEdition
+                        dataComponentId={dataComponent.id}
+                      />
+                    </Security>}
                   />
                   <Box
                     sx={{
@@ -195,7 +201,7 @@ const RootDataComponent = () => {
           return <Loader />;
         }}
       />
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

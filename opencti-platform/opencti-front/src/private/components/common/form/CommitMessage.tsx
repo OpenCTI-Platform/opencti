@@ -15,12 +15,18 @@ import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
-  buttons: {
+  flex: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: 10,
+  },
+  deleteBtn: {
+    float: 'left',
+  },
+  updateBtns: {
+    float: 'right',
   },
 }));
 
@@ -37,6 +43,7 @@ interface CommitMessageProps {
   noStoreUpdate?: boolean;
   open: boolean;
   handleClose?: () => void;
+  deleteBtn?: JSX.Element;
 }
 
 const CommitMessage: FunctionComponent<CommitMessageProps> = ({
@@ -48,6 +55,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   open,
   noStoreUpdate,
   handleClose,
+  deleteBtn,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -70,27 +78,31 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   return (
     <>
       {!handleClose && (
-        <div className={classes.buttons}>
-          <Security needs={[BYPASSREFERENCE]}>
+        <div className={classes.flex}>
+          <div className={classes.deleteBtn}>
+            {deleteBtn}
+          </div>
+          <div className={classes.updateBtns}>
+            <Security needs={[BYPASSREFERENCE]}>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={submitForm} // directly submit
+                disabled={disabled}
+              >
+                {t_i18n('Update without references')}
+              </Button>
+            </Security>
             <Button
               variant="contained"
-              color="warning"
-              onClick={submitForm} // directly submit
+              color="primary"
+              onClick={handleOpenControl}
               disabled={disabled}
               classes={{ root: classes.button }}
             >
-              {t_i18n('Update without references')}
+              {t_i18n('Update')}
             </Button>
-          </Security>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenControl}
-            disabled={disabled}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Update')}
-          </Button>
+          </div>
         </div>
       )}
       <Dialog

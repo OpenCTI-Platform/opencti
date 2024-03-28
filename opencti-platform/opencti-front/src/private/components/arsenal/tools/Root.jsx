@@ -6,12 +6,13 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -19,6 +20,9 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ToolEdition from './ToolEdition';
+import CreateRelationshipButtonComponent from '../../common/menus/RelateComponent';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -45,6 +49,8 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Tool_tool
       ...ToolKnowledge_tool
       ...FileImportViewer_entity
@@ -90,7 +96,7 @@ class RootTool extends Component {
     } = this.props;
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
-      <>
+      <RelateComponentContextProvider>
         <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
@@ -134,7 +140,14 @@ class RootTool extends Component {
                     <StixDomainObjectHeader
                       entityType="Tool"
                       stixDomainObject={tool}
-                      PopoverComponent={<ToolPopover />}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <ToolEdition toolId={tool.id} />
+                      </Security>}
+                      RelateComponent={<CreateRelationshipButtonComponent
+                        id={tool.id}
+                        defaultStartTime={tool.created_at}
+                        defaultStopTime={tool.updated_at}
+                                       />}
                       enableQuickSubscription={true}
                     />
                     <Box
@@ -250,7 +263,7 @@ class RootTool extends Component {
             return <Loader />;
           }}
         />
-      </>
+      </RelateComponentContextProvider>
     );
   }
 }

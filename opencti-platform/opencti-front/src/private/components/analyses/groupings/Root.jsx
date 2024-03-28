@@ -6,10 +6,11 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Grouping from './Grouping';
-import GroupingPopover from './GroupingPopover';
 import GroupingKnowledge from './GroupingKnowledge';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
@@ -19,6 +20,8 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import GroupingEdition from './GroupingEdition';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -117,148 +120,154 @@ class RootGrouping extends Component {
                   paddingRight = 350;
                 }
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Analyses') },
-                      { label: t('Groupings'), link: '/dashboard/analyses/groupings' },
-                      { label: grouping.name, current: true },
-                    ]}
-                    />
-                    <ContainerHeader
-                      container={grouping}
-                      PopoverComponent={<GroupingPopover />}
-                      enableQuickSubscription={true}
-                      enableQuickExport={true}
-                      enableAskAi={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/analyses/groupings/${grouping.id}/knowledge`,
-                          )
-                            ? `/dashboard/analyses/groupings/${grouping.id}/knowledge`
-                            : location.pathname
-                        }
+                  <RelateComponentContextProvider>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Analyses') },
+                        { label: t('Groupings'), link: '/dashboard/analyses/groupings' },
+                        { label: grouping.name, current: true },
+                      ]}
+                      />
+                      <ContainerHeader
+                        container={grouping}
+                        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <GroupingEdition
+                            groupingId={grouping.id}
+                          />
+                        </Security>}
+                        enableQuickSubscription={true}
+                        enableQuickExport={true}
+                        enableAskAi={true}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
                       >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/content`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/entities`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}/entities`}
-                          label={t('Entities')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/observables`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}/observables`}
-                          label={t('Observables')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/files`}
-                          value={`/dashboard/analyses/groupings/${grouping.id}/files`}
-                          label={t('Data')}
-                        />
-                      </Tabs>
-                    </Box>
-                    <Switch>
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId"
-                        render={(routeProps) => (
-                          <Grouping {...routeProps} grouping={grouping} />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/entities"
-                        render={(routeProps) => (
-                          <ContainerStixDomainObjects
-                            {...routeProps}
-                            container={grouping}
+                        <Tabs
+                          value={
+                            location.pathname.includes(
+                              `/dashboard/analyses/groupings/${grouping.id}/knowledge`,
+                            )
+                              ? `/dashboard/analyses/groupings/${grouping.id}/knowledge`
+                              : location.pathname
+                          }
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}`}
+                            label={t('Overview')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/observables"
-                        render={(routeProps) => (
-                          <ContainerStixCyberObservables
-                            {...routeProps}
-                            container={grouping}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                            label={t('Knowledge')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}/content`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}/content`}
+                            label={t('Content')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/content"
-                        render={(routeProps) => (
-                          <StixDomainObjectContent
-                            {...routeProps}
-                            stixDomainObject={grouping}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}/entities`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}/entities`}
+                            label={t('Entities')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/knowledge/:mode"
-                        render={(routeProps) => (
-                          <GroupingKnowledge
-                            {...routeProps}
-                            grouping={grouping}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}/observables`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}/observables`}
+                            label={t('Observables')}
                           />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/files"
-                        render={(routeProps) => (
-                          <StixCoreObjectFilesAndHistory
-                            {...routeProps}
-                            id={groupingId}
-                            connectorsExport={props.connectorsForExport}
-                            connectorsImport={props.connectorsForImport}
-                            entity={props.grouping}
-                            withoutRelations={true}
-                            bypassEntityId={true}
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/analyses/groupings/${grouping.id}/files`}
+                            value={`/dashboard/analyses/groupings/${grouping.id}/files`}
+                            label={t('Data')}
                           />
-                        )}
-                      />
-                    </Switch>
-                  </div>
+                        </Tabs>
+                      </Box>
+                      <Switch>
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId"
+                          render={(routeProps) => (
+                            <Grouping {...routeProps} grouping={grouping} />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/entities"
+                          render={(routeProps) => (
+                            <ContainerStixDomainObjects
+                              {...routeProps}
+                              container={grouping}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/observables"
+                          render={(routeProps) => (
+                            <ContainerStixCyberObservables
+                              {...routeProps}
+                              container={grouping}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/knowledge"
+                          render={() => (
+                            <Redirect
+                              to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/content"
+                          render={(routeProps) => (
+                            <StixDomainObjectContent
+                              {...routeProps}
+                              stixDomainObject={grouping}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/knowledge/:mode"
+                          render={(routeProps) => (
+                            <GroupingKnowledge
+                              {...routeProps}
+                              grouping={grouping}
+                            />
+                          )}
+                        />
+                        <Route
+                          exact
+                          path="/dashboard/analyses/groupings/:groupingId/files"
+                          render={(routeProps) => (
+                            <StixCoreObjectFilesAndHistory
+                              {...routeProps}
+                              id={groupingId}
+                              connectorsExport={props.connectorsForExport}
+                              connectorsImport={props.connectorsForImport}
+                              entity={props.grouping}
+                              withoutRelations={true}
+                              bypassEntityId={true}
+                            />
+                          )}
+                        />
+                      </Switch>
+                    </div>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

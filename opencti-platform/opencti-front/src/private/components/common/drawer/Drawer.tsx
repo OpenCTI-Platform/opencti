@@ -160,7 +160,9 @@ const Drawer = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2">{title}</Typography>
+          <Typography style={{ width: '90%' }} variant="subtitle2">
+            {title}
+          </Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

@@ -26,6 +26,7 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import CaseIncidentDelete from './CaseIncidentDelete';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -408,6 +409,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               open={false}
               values={values.references}
               id={caseData.id}
+              deleteBtn={<CaseIncidentDelete id={caseData.id} />}
             />
           )}
         </Form>

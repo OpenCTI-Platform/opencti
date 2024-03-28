@@ -148,6 +148,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -192,9 +195,6 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Incident responses'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
     </ExportContextProvider>
   );
 };

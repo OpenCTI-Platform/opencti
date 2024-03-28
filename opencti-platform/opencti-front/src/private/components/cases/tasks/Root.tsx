@@ -10,6 +10,9 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -18,11 +21,11 @@ import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomain
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseTask from './Task';
-import TasksPopover from './TaskPopover';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import TaskEdition from './TaskEdition';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -86,7 +89,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     }
   }
   return (
-    <>
+    <RelateComponentContextProvider>
       {data ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
@@ -97,7 +100,9 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
           />
           <ContainerHeader
             container={data}
-            PopoverComponent={<TasksPopover id={data.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <TaskEdition caseId={data.id} />
+            </Security>}
             enableSuggestions={false}
           />
           <Box
@@ -188,7 +193,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

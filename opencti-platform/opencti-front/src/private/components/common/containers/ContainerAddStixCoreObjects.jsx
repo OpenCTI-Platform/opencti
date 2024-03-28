@@ -71,6 +71,7 @@ const ContainerAddStixCoreObjects = (props) => {
     selectedText,
     openDrawer,
     handleClose,
+    controlledDial,
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -418,7 +419,7 @@ const ContainerAddStixCoreObjects = (props) => {
   };
   return (
     <>
-      {!mapping && renderButton()}
+      {!mapping && controlledDial === undefined && renderButton()}
       <Drawer
         open={mapping ? openDrawer : open}
         onClose={() => {
@@ -430,6 +431,7 @@ const ContainerAddStixCoreObjects = (props) => {
         }}
         title={t_i18n('Add entities')}
         containerRef={containerRef}
+        controlledDial={controlledDial}
       >
         <>
           {renderSearchResults(searchPaginationOptions)}

@@ -8,9 +8,6 @@ import {
 import { ContainerStixDomainObjectsLines_container$key } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLines_container.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -31,8 +28,6 @@ interface ContainerStixDomainObjectsLinesProps {
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
   redirectionMode?: string;
-  onTypesChange: (type: string) => void;
-  openExports?: boolean,
 }
 
 export const containerStixDomainObjectsLinesQuery = graphql`
@@ -128,8 +123,6 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   paginationOptions,
   setNumberOfElements,
   queryRef,
-  onTypesChange,
-  openExports,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixDomainObjectsLinesQuery,
@@ -142,8 +135,6 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
     setNumberOfElements,
   });
   const { container } = data;
-  const currentSelection = container?.objects?.edges ?? [];
-  const selectWithoutInferred = currentSelection.filter((edge) => (edge?.types ?? ['manual']).includes('manual'));
   return (
     <div>
       <ListLinesContent
@@ -169,22 +160,6 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         selectAll={selectAll}
         onToggleEntity={onToggleEntity}
       />
-      {container && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddStixCoreObjects
-            containerId={container.id}
-            containerStixCoreObjects={selectWithoutInferred}
-            paginationOptions={paginationOptions}
-            withPadding={true}
-            targetStixCoreObjectTypes={['Stix-Domain-Object']}
-            onTypesChange={onTypesChange}
-            openExports={openExports}
-            defaultCreatedBy={container.createdBy ?? null}
-            defaultMarkingDefinitions={container.objectMarking ?? []}
-            confidence={container.confidence}
-          />
-        </Security>
-      )}
     </div>
   );
 };

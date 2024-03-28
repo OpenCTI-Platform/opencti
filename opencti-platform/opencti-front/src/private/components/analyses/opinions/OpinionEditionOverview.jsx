@@ -16,6 +16,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import OpinionDelete from './OpinionDelete';
 
 export const opinionMutationFieldPatch = graphql`
     mutation OpinionEditionOverviewFieldPatchMutation(
@@ -201,6 +202,7 @@ const OpinionEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            <OpinionDelete id={opinion.id} />
           </Form>
         </div>
       )}

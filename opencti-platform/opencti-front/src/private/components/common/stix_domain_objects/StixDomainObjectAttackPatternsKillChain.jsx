@@ -12,8 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import { KNOWLEDGE_KNGETEXPORT } from '../../../../utils/hooks/useGranted';
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
 import ExportButtons from '../../../../components/ExportButtons';
@@ -91,7 +90,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       t,
       classes,
       data,
-      stixDomainObjectId,
+      // stixDomainObjectId,
       entityLink,
       handleSearch,
       handleAddFilter,
@@ -187,7 +186,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             styleNumber={2}
             redirection
           />
-          <div style={{ float: 'right', margin: 0 }}>
+          <div style={{ float: 'right', display: 'flex', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               <Tooltip title={t('Matrix view')}>
                 <ToggleButton onClick={handleChangeView.bind(this, 'matrix')}>
@@ -301,17 +300,6 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             coursesOfAction={true}
           />
           )}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCoreRelationshipCreationFromEntity
-              entityId={stixDomainObjectId}
-              isRelationReversed={false}
-              paddingRight={220}
-              onCreate={this.props.relay.refetch.bind(this)}
-              targetStixDomainObjectTypes={['Attack-Pattern']}
-              paginationOptions={paginationOptions}
-              targetEntities={targetEntities}
-            />
-          </Security>
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixCoreRelationshipsExports
               open={openExports}

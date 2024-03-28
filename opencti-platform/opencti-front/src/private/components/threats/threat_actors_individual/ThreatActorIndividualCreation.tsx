@@ -6,15 +6,16 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import { styled } from '@mui/material/styles';
 import { Badge, BadgeProps } from '@mui/material';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import CountryField from '@components/common/form/CountryField';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -48,6 +49,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    marginLeft: '10px',
+    padding: '7px 10px',
   },
 }));
 
@@ -251,6 +256,7 @@ ThreatActorIndividualFormProps
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -259,6 +265,7 @@ ThreatActorIndividualFormProps
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Threat-Actor-Individual')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -600,6 +607,7 @@ const ThreatActorIndividualCreation = ({
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const classes = useStyles();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorsIndividuals',
@@ -609,7 +617,17 @@ const ThreatActorIndividualCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a threat actor individual')}
-      variant={DrawerVariant.create}
+      controlledDial={({ onOpen }) => (
+        <Button
+          className={classes.createBtn}
+          color='primary'
+          size='small'
+          variant='contained'
+          onClick={onOpen}
+        >
+          {t_i18n('Create')} {t_i18n('entity_Threat-Actor-Individual')} <Add />
+        </Button>
+      )}
     >
       {({ onClose }) => (
         <ThreatActorIndividualCreationForm

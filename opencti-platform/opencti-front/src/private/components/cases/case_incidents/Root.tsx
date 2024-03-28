@@ -10,6 +10,9 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useLocation } from 'react-router-dom-v5-compat';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -20,12 +23,12 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
-import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import CaseIncidentEdition from './CaseIncidentEdition';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -107,7 +110,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     }
   }
   return (
-    <>
+    <RelateComponentContextProvider>
       {caseData ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
@@ -118,7 +121,9 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
           />
           <ContainerHeader
             container={caseData}
-            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <CaseIncidentEdition caseId={caseData.id} />
+            </Security>}
             enableQuickSubscription={true}
             enableAskAi={true}
           />
@@ -248,7 +253,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

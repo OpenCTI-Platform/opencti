@@ -7,12 +7,13 @@ import { useFormatter } from '../../../../components/i18n';
 import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
+import IntrusionSetDelete from './IntrusionSetDelete';
 
 const IntrusionSetEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
 
-  const { handleClose, intrusionSet, open } = props;
+  const { handleClose, intrusionSet, open, controlledDial } = props;
   const { editContext } = intrusionSet;
 
   const [currentTab, setCurrentTab] = useState(0);
@@ -24,8 +25,8 @@ const IntrusionSetEditionContainer = (props) => {
       title={t_i18n('Update an intrusion set')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -50,6 +51,9 @@ const IntrusionSetEditionContainer = (props) => {
             handleClose={handleClose}
           />
         )}
+        {!useIsEnforceReference('Intrusion-Set')
+          && <IntrusionSetDelete id={intrusionSet.id} />
+        }
       </>
     </Drawer>
   );

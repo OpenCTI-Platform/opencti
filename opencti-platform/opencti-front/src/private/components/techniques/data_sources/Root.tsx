@@ -10,19 +10,22 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { useLocation } from 'react-router-dom-v5-compat';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import Security from 'src/utils/Security';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { RootDataSourceQuery } from './__generated__/RootDataSourceQuery.graphql';
 import { RootDataSourcesSubscription } from './__generated__/RootDataSourcesSubscription.graphql';
-import DataSourcePopover from './DataSourcePopover';
 import DataSourceKnowledgeComponent from './DataSourceKnowledge';
 import DataSource from './DataSource';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import DataSourceEdition from './DataSourceEdition';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -46,6 +49,8 @@ const dataSourceQuery = graphql`
       entity_type
       name
       x_opencti_graph_data
+      created_at
+      updated_at
       ...DataSource_dataSource
       ...DataSourceKnowledge_dataSource
       ...FileImportViewer_entity
@@ -78,7 +83,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {dataSource ? (
         <div
           style={{
@@ -100,7 +105,11 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             disableSharing={true}
             noAliases={true}
             stixDomainObject={dataSource}
-            PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <DataSourceEdition
+                dataSourceId={dataSource.id}
+              />
+            </Security>}
           />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
@@ -180,7 +189,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

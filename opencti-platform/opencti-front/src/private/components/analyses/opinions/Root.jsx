@@ -6,6 +6,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import RelateComponentContextProvider from '../../common/menus/RelateComponentProvider';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {
@@ -81,15 +82,17 @@ class RootOpinion extends Component {
             if (props) {
               if (props.opinion) {
                 return (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/analyses/opinions/:opinionId"
-                      render={(routeProps) => (
-                        <Opinion {...routeProps} opinion={props.opinion} />
-                      )}
-                    />
-                  </Switch>
+                  <RelateComponentContextProvider>
+                    <Switch>
+                      <Route
+                        exact
+                        path="/dashboard/analyses/opinions/:opinionId"
+                        render={(routeProps) => (
+                          <Opinion {...routeProps} opinion={props.opinion} />
+                        )}
+                      />
+                    </Switch>
+                  </RelateComponentContextProvider>
                 );
               }
               return <ErrorNotFound />;

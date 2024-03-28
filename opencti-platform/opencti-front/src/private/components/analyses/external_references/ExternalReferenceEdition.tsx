@@ -1,5 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
+import { useFormatter } from 'src/components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { externalReferenceEditionOverviewFocus } from './ExternalReferenceEditionOverview';
@@ -21,6 +24,7 @@ interface ExternalReferenceEditionProps {
 const ExternalReferenceEdition: FunctionComponent<
 ExternalReferenceEditionProps
 > = ({ externalReferenceId }) => {
+  const { t_i18n } = useFormatter();
   const handleClose = () => {
     commitMutation({
       mutation: externalReferenceEditionOverviewFocus,
@@ -51,6 +55,18 @@ ExternalReferenceEditionProps
             <ExternalReferenceEditionContainer
               externalReference={props.externalReference}
               handleClose={handleClose}
+              controlledDial={({ onOpen }) => (
+                <Button
+                  style={{
+                    fontSize: 'small',
+                  }}
+                  variant='contained'
+                  onClick={onOpen}
+                  disableElevation
+                >
+                  {t_i18n('Edit')} <Create />
+                </Button>
+              )}
             />
           );
         }

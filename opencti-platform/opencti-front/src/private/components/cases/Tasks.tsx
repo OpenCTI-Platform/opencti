@@ -82,6 +82,10 @@ const Tasks = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        // // TODO Add task creation when it will be possible to assign a task to something
+        // createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+        //   <TaskCreation paginationOptions={queryPaginationOptions} />
+        // </Security>}
       >
         {queryRef && (
           <>
@@ -124,10 +128,6 @@ const Tasks = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
       {renderLines()}
-      {/* TODO Add task creation when it will be possible to assign a task to something
-           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <TaskCreation paginationOptions={paginationOptions} />
-        </Security> */}
     </ExportContextProvider>
   );
 };

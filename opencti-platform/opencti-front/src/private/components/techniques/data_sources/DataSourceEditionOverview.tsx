@@ -22,6 +22,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import DataSourceDelete from './DataSourceDelete';
 
 const dataSourceMutationFieldPatch = graphql`
   mutation DataSourceEditionOverviewFieldPatchMutation(
@@ -354,6 +355,7 @@ DataSourceEditionOverviewProps
               open={false}
               values={values.references}
               id={dataSource.id}
+              deleteBtn={<DataSourceDelete id={dataSource.id} />}
             />
           )}
         </Form>

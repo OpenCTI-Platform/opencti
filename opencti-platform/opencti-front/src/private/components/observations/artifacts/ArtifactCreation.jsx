@@ -4,14 +4,13 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -30,15 +29,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
   },
   buttons: {
     marginTop: 20,
@@ -126,12 +116,14 @@ const ArtifactCreation = ({
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
+        MESSAGING$.notifyError(`${error}`);
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         handleClose();
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -142,14 +134,19 @@ const ArtifactCreation = ({
 
   return (
     <>
-      <Fab
+      <Button
+        style={{
+          marginLeft: '10px',
+          padding: '7px 10px',
+        }}
+        color='primary'
+        size='small'
+        variant='contained'
         onClick={handleOpen}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
+        data-testid='CreateArtifact'
       >
-        <Add />
-      </Fab>
+        {t_i18n('Create')} {t_i18n('entity_Artifact')} <Add />
+      </Button>
       <Drawer
         open={open}
         anchor="right"

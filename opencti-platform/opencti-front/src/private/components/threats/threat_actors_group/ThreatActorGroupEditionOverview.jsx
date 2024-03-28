@@ -19,6 +19,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ThreatActorGroupDelete from './ThreatActorGroupDelete';
 
 const ThreatActorGroupMutationFieldPatch = graphql`
   mutation ThreatActorGroupEditionOverviewFieldPatchMutation(
@@ -284,6 +285,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={threatActorGroup.id}
+              deleteBtn={<ThreatActorGroupDelete id={threatActorGroup.id} />}
             />
           )}
         </Form>

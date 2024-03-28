@@ -10,10 +10,13 @@ import { useLocation } from 'react-router-dom-v5-compat';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import Security from 'src/utils/Security';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import CreateRelationshipButtonComponent from '@components/common/menus/RelateComponent';
+import RelateComponentContextProvider from '@components/common/menus/RelateComponentProvider';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import InfrastructurePopover from './InfrastructurePopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -24,6 +27,7 @@ import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import InfrastructureEdition from './InfrastructureEdition';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -48,6 +52,8 @@ const infrastructureQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      created_at
+      updated_at
       ...Infrastructure_infrastructure
       ...InfrastructureKnowledge_infrastructure
       ...FileImportViewer_entity
@@ -80,7 +86,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   return (
-    <>
+    <RelateComponentContextProvider>
       {infrastructure ? (
         <div
           style={{
@@ -100,7 +106,14 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           <StixDomainObjectHeader
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
-            PopoverComponent={InfrastructurePopover}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <InfrastructureEdition infrastructureId={infrastructure.id} />
+            </Security>}
+            RelateComponent={<CreateRelationshipButtonComponent
+              id={infrastructure.id}
+              defaultStartTime={infrastructure.created_at}
+              defaultStopTime={infrastructure.updated_at}
+                             />}
             enableQuickSubscription={true}
           />
           <Box
@@ -206,7 +219,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </RelateComponentContextProvider>
   );
 };
 

@@ -1,5 +1,8 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { Button } from '@mui/material';
+import { Create } from '@mui/icons-material';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import { groupingEditionOverviewFocus } from './GroupingEditionOverview';
@@ -14,6 +17,7 @@ export const groupingEditionQuery = graphql`
 `;
 
 const GroupingEdition = ({ groupingId }) => {
+  const { t_i18n } = useFormatter();
   const handleClose = () => {
     commitMutation({
       mutation: groupingEditionOverviewFocus,
@@ -33,6 +37,19 @@ const GroupingEdition = ({ groupingId }) => {
             <GroupingEditionContainer
               grouping={props.grouping}
               handleClose={handleClose}
+              controlledDial={({ onOpen }) => (
+                <Button
+                  style={{
+                    marginLeft: '3px',
+                    fontSize: 'small',
+                  }}
+                  variant='contained'
+                  onClick={onOpen}
+                  disableElevation
+                >
+                  {t_i18n('Edit')} <Create />
+                </Button>
+              )}
             />
           );
         }

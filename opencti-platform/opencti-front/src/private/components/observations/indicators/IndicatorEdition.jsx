@@ -1,5 +1,8 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { Create } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
@@ -14,6 +17,7 @@ export const indicatorEditionQuery = graphql`
 `;
 
 const IndicatorEdition = ({ indicatorId }) => {
+  const { t_i18n } = useFormatter();
   const handleClose = () => {
     commitMutation({
       mutation: indicatorEditionOverviewFocus,
@@ -34,6 +38,18 @@ const IndicatorEdition = ({ indicatorId }) => {
             <IndicatorEditionContainer
               indicator={props.indicator}
               handleClose={handleClose}
+              controlledDial={({ onOpen }) => (
+                <Button
+                  onClick={onOpen}
+                  variant='outlined'
+                  style={{
+                    marginLeft: '3px',
+                    fontSize: 'small',
+                  }}
+                >
+                  {t_i18n('Edit')} <Create />
+                </Button>
+              )}
             />
           );
         }

@@ -119,6 +119,9 @@ const ObservedDatas: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ObservedDataCreation paginationOptions={paginationOptions}/>
+          </Security>}
         >
           <QueryRenderer
             query={observedDatasLinesQuery}
@@ -163,9 +166,6 @@ const ObservedDatas: FunctionComponent = () => {
         <ExportContextProvider>
           <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
           {renderLines(platformModuleHelpers)}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-          </Security>
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

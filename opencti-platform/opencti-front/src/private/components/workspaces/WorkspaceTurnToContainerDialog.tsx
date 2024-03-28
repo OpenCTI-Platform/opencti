@@ -191,6 +191,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           defaultMarkingDefinitions={undefined}
           paginationKey={undefined}
           paginationOptions={undefined}
+          controlledDial={undefined}
         />
         <Autocomplete
           size="small"

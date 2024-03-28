@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Button } from '@mui/material';
 import { buildDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,6 +24,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import ReportPopoverDeletion from './ReportPopoverDeletion';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -86,7 +88,15 @@ const reportMutationRelationDelete = graphql`
 
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
+  const [displayDelete, setDisplayDelete] = useState(false);
   const { t_i18n } = useFormatter();
+
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+  };
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
 
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -339,6 +349,21 @@ const ReportEditionOverviewComponent = (props) => {
               open={false}
               values={values.references}
               id={report.id}
+              deleteBtn={<>
+                <Button
+                  onClick={handleOpenDelete}
+                  variant='contained'
+                  color='error'
+                >
+                  {t_i18n('Delete')}
+                </Button>
+                <ReportPopoverDeletion
+                  reportId={report.id}
+                  displayDelete={displayDelete}
+                  handleClose={handleClose}
+                  handleCloseDelete={handleCloseDelete}
+                />
+              </>}
             />
           )}
         </Form>

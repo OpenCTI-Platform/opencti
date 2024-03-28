@@ -8,13 +8,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import Drawer from '@components/common/drawer/Drawer';
+import { MESSAGING$, commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -31,10 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     right: 30,
   },
   createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 3000,
+    marginLeft: '5px',
   },
   buttons: {
     marginTop: 20,
@@ -42,6 +38,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  createBtn: {
+    padding: '7px 10px',
   },
 }));
 
@@ -98,7 +97,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
@@ -132,6 +130,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       setSubmitting,
@@ -142,6 +141,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         if (onCreate) {
           onCreate(response.externalReferenceAdd, true);
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}`);
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -198,7 +198,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     return (
       <Drawer
         title={t_i18n('Create an external reference')}
-        variant={DrawerVariant.create}
+        controlledDial={({ onOpen }) => (
+          <Button
+            className={classes.createBtn}
+            color='primary'
+            size='small'
+            variant='contained'
+            onClick={onOpen}
+          >
+            {t_i18n('Create')} {t_i18n('entity_External-Reference')} <Add />
+          </Button>
+        )}
       >
         {({ onClose }) => (
           <Formik
@@ -285,14 +295,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!handleCloseContextual && (
-          <Fab
+          <Button
             onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
+            color="primary"
+            size="small"
+            variant="contained"
+            aria-label={t_i18n('Create an external reference')}
             className={classes.createButtonContextual}
+            disableElevation
           >
-            <Add />
-          </Fab>
+            {t_i18n('Create')} <Add />
+          </Button>
         )}
         <Dialog
           PaperProps={{ elevation: 1 }}

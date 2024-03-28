@@ -21,6 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import EventDelete from './EventDelete';
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -300,6 +301,7 @@ const EventEditionOverviewComponent = (props) => {
             open={false}
             values={values.references}
             id={event.id}
+            deleteBtn={<EventDelete id={event.id} />}
           />
           )}
         </Form>
