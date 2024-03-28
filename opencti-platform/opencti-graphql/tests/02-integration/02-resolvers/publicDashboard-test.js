@@ -40,6 +40,7 @@ const READ_QUERY = gql`
       id
       name
       uri_key
+      enabled
     }
   }
 `;
@@ -50,6 +51,7 @@ const READ_URI_KEY_QUERY = gql`
       id
       name
       uri_key
+      enabled
     }
   }
 `;
@@ -78,6 +80,7 @@ const UPDATE_QUERY = gql`
     publicDashboardFieldPatch(id: $id, input: $input) {
       id
       name
+      enabled
     }
   }
 `;
@@ -274,6 +277,28 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
       });
 
+      it('should disabled/enabled publicDashboard', async () => {
+        // Disabled public dashboard
+        const disabledQueryResult = await queryAsAdmin({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'enabled', value: false },
+          },
+        });
+        expect(disabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(false);
+
+        // Enabled public dashboard
+        const enabledQueryResult = await queryAsAdmin({
+          query: UPDATE_QUERY,
+          variables: {
+            id: publicDashboardInternalId,
+            input: { key: 'enabled', value: true },
+          },
+        });
+        expect(enabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(true);
+      });
+
       describe('Tests widgets API', () => {
         let vadorId;
         let magnetoId;
@@ -412,6 +437,55 @@ describe('PublicDashboard resolver', () => {
           // endregion
         });
 
+        it('should not return data if disabled publicDashboard', async () => {
+          // Disabled public dashboard
+          const disabledQueryResult = await queryAsAdmin({
+            query: UPDATE_QUERY,
+            variables: {
+              id: publicDashboardInternalId,
+              input: { key: 'enabled', value: false },
+            },
+          });
+          expect(disabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(false);
+
+          const API_SCO_NUMBER_QUERY = gql`
+            query PublicStixCoreObjectsNumber(
+              $startDate: DateTime
+              $endDate: DateTime
+              $uriKey: String!
+              $widgetId : String!
+            ) {
+              publicStixCoreObjectsNumber(
+                startDate: $startDate
+                endDate: $endDate
+                uriKey: $uriKey
+                widgetId : $widgetId
+              ) {
+                total
+                count
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_SCO_NUMBER_QUERY,
+            variables: {
+              uriKey: publicDashboardUriKey,
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+            },
+          });
+          expect(data.publicStixCoreObjectsNumber).toBeNull();
+
+          // Enabled public dashboard
+          const enabledQueryResult = await queryAsAdmin({
+            query: UPDATE_QUERY,
+            variables: {
+              id: publicDashboardInternalId,
+              input: { key: 'enabled', value: true },
+            },
+          });
+          expect(enabledQueryResult.data.publicDashboardFieldPatch.enabled).toEqual(true);
+        });
+
         it('should return the data for API: SCO Number', async () => {
           const API_SCO_NUMBER_QUERY = gql`
             query PublicStixCoreObjectsNumber(
@@ -431,6 +505,8 @@ describe('PublicDashboard resolver', () => {
               }
             }
           `;
+          resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
+
           const { data } = await queryAsAdmin({
             query: API_SCO_NUMBER_QUERY,
             variables: {
