@@ -850,7 +850,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           })}
         </ReactGridLayout>
       )}
-      {!noToolbar && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
+      {!noToolbar && userCanEdit && <WidgetConfig onComplete={handleAddWidget} workspace={workspace} />}
     </div>
   );
 };
