@@ -11,12 +11,12 @@ const investigationAddFromContainerMutation = graphql`
     }
 `;
 
-const investigationAddFromContainer = (groupingId, history) => {
+const investigationAddFromContainer = (groupingId, navigate) => {
   commitMutation({
     mutation: investigationAddFromContainerMutation,
     variables: { id: groupingId },
     onCompleted: (data) => {
-      history.push(`/dashboard/workspaces/investigations/${data.containerEdit.investigationAdd.id}`);
+      navigate(`/dashboard/workspaces/investigations/${data.containerEdit.investigationAdd.id}`);
     },
   });
 };

@@ -3,13 +3,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -130,7 +129,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             <Tabs
               value={
                 location.pathname.includes(
-                  `/dashboard/cases/rfts/${caseData.id}/knowledge`,
+                  `/dashboard/cases/rfts/${caseData.id}/knowledge/graph`,
                 )
                   ? `/dashboard/cases/rfts/${caseData.id}/knowledge`
                   : location.pathname
@@ -174,64 +173,53 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId"
-              render={() => <CaseRft data={caseData} />}
+              path="/"
+              element={<CaseRft data={caseData} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/entities"
-              render={(routeProps) => (
+              path="/entities"
+              element={(
                 <ContainerStixDomainObjects
-                  {...routeProps}
                   container={caseData}
                 />
               )}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/observables"
-              render={(routeProps) => (
+              path="/observables"
+              element={(
                 <ContainerStixCyberObservables
-                  {...routeProps}
                   container={caseData}
                 />
               )}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
-                />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={(
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={caseData}
                 />
               )}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <CaseRftKnowledge {...routeProps} caseData={caseData} />
+              path="/knowledge"
+              element={
+                <Navigate
+                  to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
+                />
+                }
+            />
+            <Route
+              path="/knowledge/*"
+              element={(
+                <CaseRftKnowledge caseData={caseData} />
               )}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={(
                 <StixCoreObjectFilesAndHistory
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
@@ -242,16 +230,13 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               )}
             />
             <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/history"
-              render={(routeProps: any) => (
+              path="/history"
+              element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={caseId}
-                />
-              )}
+                />}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

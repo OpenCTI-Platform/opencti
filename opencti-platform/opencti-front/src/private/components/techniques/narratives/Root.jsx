@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
@@ -64,9 +65,7 @@ class RootNarrative extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { narrativeId },
-      },
+      params: { narrativeId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -82,27 +81,30 @@ class RootNarrative extends Component {
     const {
       t,
       location,
-      match: {
-        params: { narrativeId },
-      },
+      params: { narrativeId },
     } = this.props;
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/techniques/narratives/:narrativeId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'channels',
-              'observables',
-              'sightings',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'threat_actors',
+                  'intrusion_sets',
+                  'campaigns',
+                  'incidents',
+                  'channels',
+                  'observables',
+                  'sightings',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={narrativeQuery}
           variables={{ id: narrativeId }}
@@ -156,7 +158,7 @@ class RootNarrative extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
+                          to={`/dashboard/techniques/narratives/${narrative.id}/knowledge/overview`}
                           value={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -180,71 +182,49 @@ class RootNarrative extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/techniques/narratives/:narrativeId"
-                        render={(routeProps) => (
-                          <Narrative
-                            {...routeProps}
-                            narrative={props.narrative}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <Narrative narrative={props.narrative} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/narratives/:narrativeId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/techniques/narratives/:narrativeId/knowledge"
-                        render={(routeProps) => (
-                          <NarrativeKnowledge
-                            {...routeProps}
-                            narrative={props.narrative}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <NarrativeKnowledge narrative={props.narrative} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/narratives/:narrativeId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.narrative
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.narrative} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/narratives/:narrativeId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={narrativeId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.narrative}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/narratives/:narrativeId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={narrativeId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

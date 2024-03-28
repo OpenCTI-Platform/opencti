@@ -3,8 +3,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Switch, Redirect } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 
@@ -31,49 +31,44 @@ const Root = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations"
-          render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/observations/${redirect}`}/>}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations/observables"
-          component={StixCyberObservables}
+        <Route
+          path="/observables"
+          Component={boundaryWrapper(StixCyberObservables)}
         />
-        <BoundaryRoute
-          path="/dashboard/observations/observables/:observableId"
-          component={RootStixCyberObservable}
+        <Route
+          path="/observables/:observableId/*"
+          Component={boundaryWrapper(RootStixCyberObservable)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations/artifacts"
-          component={Artifacts}
+        <Route
+          path="/artifacts"
+          Component={boundaryWrapper(Artifacts)}
         />
-        <BoundaryRoute
-          path="/dashboard/observations/artifacts/:observableId"
-          component={RootArtifact}
+        <Route
+          path="/artifacts/:observableId/*"
+          Component={boundaryWrapper(RootArtifact)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations/indicators"
-          component={Indicators}
+        <Route
+          path="/indicators"
+          Component={boundaryWrapper(Indicators)}
         />
-        <BoundaryRoute
-          path="/dashboard/observations/indicators/:indicatorId"
-          component={RootIndicator}
+        <Route
+          path="/indicators/:indicatorId/*"
+          Component={boundaryWrapper(RootIndicator)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations/infrastructures"
-          component={Infrastructures}
+        <Route
+          path="/infrastructures"
+          Component={boundaryWrapper(Infrastructures)}
         />
-        <BoundaryRoute
-          path="/dashboard/observations/infrastructures/:infrastructureId"
-          component={RootInfrastructure}
+        <Route
+          path="/infrastructures/:infrastructureId/*"
+          Component={boundaryWrapper(RootInfrastructure)}
         />
-      </Switch>
+      </Routes>
     </Suspense>
   );
 };

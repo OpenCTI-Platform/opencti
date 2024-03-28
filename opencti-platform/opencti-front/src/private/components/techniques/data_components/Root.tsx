@@ -3,13 +3,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -146,47 +145,37 @@ const RootDataComponent = () => {
                       />
                     </Tabs>
                   </Box>
-                  <Switch>
+                  <Routes>
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId"
-                      render={(routeProps: any) => (
-                        <DataComponent {...routeProps} data={dataComponent} />
-                      )}
+                      path="/"
+                      element={
+                        <DataComponent data={dataComponent} />
+                      }
                     />
                     <Route
-                      path="/dashboard/techniques/data_components/:dataComponentId/knowledge"
-                      render={(routeProps: any) => (
-                        <DataComponentKnowledge
-                          {...routeProps}
-                          data={dataComponent}
-                        />
-                      )}
+                      path="/knowledge/*"
+                      element={
+                        <DataComponentKnowledge data={dataComponent} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId/files"
-                      render={(routeProps: any) => (
+                      path="/files"
+                      element={
                         <FileManager
-                          {...routeProps}
                           id={dataComponentId}
                           connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
                           entity={dataComponent}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/techniques/data_components/:dataComponentId/history"
-                      render={(routeProps: any) => (
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={dataComponentId}
-                        />
-                      )}
+                      path="/history"
+                      element={
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
+                      }
                     />
-                  </Switch>
+                  </Routes>
                 </div>
               );
             }

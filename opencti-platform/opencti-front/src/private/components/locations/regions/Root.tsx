@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, Switch, useParams, Link, useLocation } from 'react-router-dom';
+import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -129,7 +129,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/locations/regions/${region.id}/knowledge`}
+                to={`/dashboard/locations/regions/${region.id}/knowledge/overview`}
                 value={`/dashboard/locations/regions/${region.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
@@ -159,72 +159,56 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId"
-              render={() => <Region regionData={region} />}
+              path="/"
+              element={<Region regionData={region} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/locations/regions/${regionId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={
+                <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} />
+              }
             />
             <Route
-              path="/dashboard/locations/regions/:regionId/knowledge"
-              render={() => <RegionKnowledge regionData={region} />}
+              path="/knowledge/*"
+              element={<RegionKnowledge regionData={region} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId/analyses"
-              render={(routeProps: any) => (
-                <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
-                  stixDomainObjectOrStixCoreRelationship={region}
-                />
-              )}
+              path="/analyses"
+              element={
+                <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId/sightings"
-              render={(routeProps: any) => (
+              path="/sightings"
+              element={
                 <EntityStixSightingRelationships
                   entityId={region.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={true}
-                  {...routeProps}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId/files"
-              render={(routeProps: any) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={regionId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={region}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/regions/:regionId/history"
-              render={(routeProps: any) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={regionId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={regionId} />
+              }
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />
@@ -241,27 +225,32 @@ const RootRegion = () => {
   const link = `/dashboard/locations/regions/${regionId}/knowledge`;
   return (
     <div>
-      <Route path="/dashboard/locations/regions/:regionId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'regions',
-            'countries',
-            'areas',
-            'cities',
-            'organizations',
-            'threats',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'regions',
+                'countries',
+                'areas',
+                'cities',
+                'organizations',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />
+          }
         />
-      </Route>
+      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootRegionComponent

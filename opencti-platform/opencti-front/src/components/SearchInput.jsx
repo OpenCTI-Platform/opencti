@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import { Link, useLocation } from 'react-router-dom-v5-compat';
+import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from './i18n';

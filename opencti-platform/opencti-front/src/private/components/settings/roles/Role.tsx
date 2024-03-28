@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ListItem from '@mui/material/ListItem';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccessesMenu from '../AccessesMenu';
@@ -73,7 +73,6 @@ const Role = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const history = useHistory();
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
     return (groupsData.groups?.edges ?? [])
@@ -98,7 +97,7 @@ const Role = ({
           {role.name}
         </Typography>
         <div className={classes.popover}>
-          <RolePopover history={history} roleId={role.id} />
+          <RolePopover roleId={role.id} />
         </div>
         <div className="clearfix" />
       </div>

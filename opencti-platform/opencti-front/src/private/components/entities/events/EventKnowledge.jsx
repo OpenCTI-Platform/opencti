@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class EventKnowledgeComponent extends Component {
   render() {
@@ -13,44 +14,37 @@ class EventKnowledgeComponent extends Component {
     const link = `/dashboard/entities/events/${event.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId"
+            element={
               <StixCoreRelationship
                 entityId={event.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId"
+            element={
               <StixSightingRelationship
                 entityId={event.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectKnowledge
                 stixDomainObjectId={event.id}
                 stixDomainObjectType="Event"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/threats"
-            render={(routeProps) => (
+            path="/threats"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
@@ -65,139 +59,119 @@ class EventKnowledgeComponent extends Component {
                   'Malware',
                   'Tool',
                 ]}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['related-to']}
                 entityLink={link}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/locations"
-            render={(routeProps) => (
+            path="/locations"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['located-at']}
                 stixCoreObjectTypes={['City', 'Country', 'Region']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/threat_actors"
-            render={(routeProps) => (
+            path="/threat_actors"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/intrusion_sets"
-            render={(routeProps) => (
+            path="/intrusion_sets"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Intrusion-Set']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/campaigns"
-            render={(routeProps) => (
+            path="/campaigns"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Campaign']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Incident']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/malwares"
-            render={(routeProps) => (
+            path="/malwares"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/attack_patterns"
-            render={(routeProps) => (
+            path="/attack_patterns"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Attack-Pattern']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/tools"
-            render={(routeProps) => (
+            path="/tools"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Tool']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/entities/events/:eventId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationships
                 entityId={event.id}
                 relationshipTypes={['related-to']}
@@ -205,11 +179,10 @@ class EventKnowledgeComponent extends Component {
                 entityLink={link}
                 allDirections={true}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

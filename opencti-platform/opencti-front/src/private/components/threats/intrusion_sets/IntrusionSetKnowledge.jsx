@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -18,44 +19,37 @@ class IntrusionSetKnowledgeComponent extends Component {
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
-            render={(routeProps) => (
+            path="/relations/:relationId"
+            element={
               <StixCoreRelationship
                 entityId={intrusionSet.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/sightings/:sightingId"
-            render={(routeProps) => (
+            path="/sightings/:sightingId"
+            element={
               <StixSightingRelationship
                 entityId={intrusionSet.id}
                 paddingRight={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
-            render={(routeProps) => (
+            path="/overview"
+            element={
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={intrusionSet.id}
                 stixDomainObjectType="Intrusion-Set"
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/related"
-            render={(routeProps) => (
+            path="/related"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['related-to']}
@@ -63,14 +57,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 allDirections={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attribution"
-            render={(routeProps) => (
+            path="/attribution"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['attributed-to']}
@@ -79,27 +71,23 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
-            render={(routeProps) => (
+            path="/victimology"
+            element={
               <StixDomainObjectVictimology
                 stixDomainObjectId={intrusionSet.id}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/campaigns"
-            render={(routeProps) => (
+            path="/campaigns"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['attributed-to']}
@@ -108,27 +96,23 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attack_patterns"
-            render={(routeProps) => (
+            path="/attack_patterns"
+            element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={intrusionSet.id}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/malwares"
-            render={(routeProps) => (
+            path="/malwares"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['uses']}
@@ -137,14 +121,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/tools"
-            render={(routeProps) => (
+            path="/tools"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['uses']}
@@ -153,14 +135,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/channels"
-            render={(routeProps) => (
+            path="/channels"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['uses']}
@@ -169,14 +149,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/narratives"
-            render={(routeProps) => (
+            path="/narratives"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['uses']}
@@ -185,14 +163,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
-            render={(routeProps) => (
+            path="/vulnerabilities"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['targets']}
@@ -201,14 +177,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
-            render={(routeProps) => (
+            path="/incidents"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['attributed-to']}
@@ -217,29 +191,24 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={true}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/indicators"
-            render={(routeProps) => (
+            path="/indicators"
+            element={
               <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
                 entityId={intrusionSet.id}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/observables"
-            render={(routeProps) => (
+            path="/observables"
+            element={
               <EntityStixCoreRelationshipsStixCyberObservable
-                {...routeProps}
                 entityId={intrusionSet.id}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
@@ -247,12 +216,11 @@ class IntrusionSetKnowledgeComponent extends Component {
                 isRelationReversed={true}
                 relationshipTypes={['related-to']}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/infrastructures"
-            render={(routeProps) => (
+            path="/infrastructures"
+            element={
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['uses', 'compromises']}
@@ -261,14 +229,12 @@ class IntrusionSetKnowledgeComponent extends Component {
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
-                {...routeProps}
               />
-            )}
+            }
           />
           <Route
-            exact
-            path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/sightings"
-            render={(routeProps) => (
+            path="/sightings"
+            element={
               <EntityStixSightingRelationships
                 entityId={intrusionSet.id}
                 entityLink={link}
@@ -285,11 +251,10 @@ class IntrusionSetKnowledgeComponent extends Component {
                   'Individual',
                   'System',
                 ]}
-                {...routeProps}
               />
-            )}
+            }
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

@@ -7,7 +7,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -90,7 +90,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -140,7 +140,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          history.push(
+          navigate(
             `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
           );
         }

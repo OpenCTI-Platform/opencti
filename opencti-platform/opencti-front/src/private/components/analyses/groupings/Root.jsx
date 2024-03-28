@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Switch, Redirect, Route, withRouter } from 'react-router-dom';
+import { Link, Routes, Navigate, Route } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -18,6 +18,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import inject18n from '../../../../components/i18n';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 const subscription = graphql`
@@ -67,9 +68,7 @@ class RootGrouping extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { groupingId },
-      },
+      params: { groupingId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -85,9 +84,7 @@ class RootGrouping extends Component {
     const {
       t,
       location,
-      match: {
-        params: { groupingId },
-      },
+      params: { groupingId },
     } = this.props;
     return (
       <>
@@ -155,7 +152,7 @@ class RootGrouping extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                          to={`/dashboard/analyses/groupings/${grouping.id}/knowledge/graph`}
                           value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -185,69 +182,56 @@ class RootGrouping extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId"
-                        render={(routeProps) => (
-                          <Grouping {...routeProps} grouping={grouping} />
-                        )}
+                        path="/"
+                        element={
+                          <Grouping grouping={grouping} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/entities"
-                        render={(routeProps) => (
+                        path="/entities"
+                        element={
                           <ContainerStixDomainObjects
-                            {...routeProps}
                             container={grouping}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/observables"
-                        render={(routeProps) => (
+                        path="/observables"
+                        element={
                           <ContainerStixCyberObservables
-                            {...routeProps}
                             container={grouping}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
-                          />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/content"
-                        render={(routeProps) => (
+                        path="/content"
+                        element={
                           <StixDomainObjectContent
-                            {...routeProps}
                             stixDomainObject={grouping}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/knowledge/:mode"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={
+                          <Navigate
+                            to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
+                          />}
+                      />
+                      <Route
+                        path="/knowledge/*"
+                        element={
                           <GroupingKnowledge
-                            {...routeProps}
                             grouping={grouping}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/groupings/:groupingId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <StixCoreObjectFilesAndHistory
-                            {...routeProps}
                             id={groupingId}
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
@@ -255,9 +239,9 @@ class RootGrouping extends Component {
                             withoutRelations={true}
                             bypassEntityId={true}
                           />
-                        )}
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

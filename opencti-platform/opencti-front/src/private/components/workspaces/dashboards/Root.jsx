@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Dashboard from './Dashboard';
 import Loader from '../../../../components/Loader';
@@ -34,9 +35,7 @@ class RootDashboard extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -50,9 +49,7 @@ class RootDashboard extends Component {
 
   render() {
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = this.props;
     return (
       <div data-testid="dashboard-details-page">
@@ -63,17 +60,17 @@ class RootDashboard extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <Route
-                    exact
-                    path="/dashboard/workspaces/dashboards/:workspaceId"
-                    render={(routeProps) => (
-                      <Dashboard
-                        {...routeProps}
-                        workspace={props.workspace}
-                        settings={props.settings}
-                      />
-                    )}
-                  />
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Dashboard
+                          workspace={props.workspace}
+                          settings={props.settings}
+                        />
+                    }
+                    />
+                  </Routes>
                 );
               }
               return <ErrorNotFound />;
@@ -88,7 +85,7 @@ class RootDashboard extends Component {
 
 RootDashboard.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default withRouter(RootDashboard);

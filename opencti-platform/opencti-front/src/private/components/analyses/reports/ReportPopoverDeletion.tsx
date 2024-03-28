@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useNavigate } from 'react-router-dom';
 import DialogContentText from '@mui/material/DialogContentText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';

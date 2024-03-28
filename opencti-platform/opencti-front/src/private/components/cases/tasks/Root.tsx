@@ -3,13 +3,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -142,28 +141,21 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId"
-              render={() => <CaseTask data={data} />}
+              path="/"
+              element={<CaseTask data={data} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/content"
-              render={(routeProps) => (
-                <StixDomainObjectContent
-                  {...routeProps}
-                  stixDomainObject={data}
-                />
-              )}
+              path="/content"
+              element={
+                <StixDomainObjectContent stixDomainObject={data} />
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <StixCoreObjectFilesAndHistory
-                  {...routeProps}
                   id={taskId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
@@ -171,19 +163,15 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/history"
-              render={(routeProps: any) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={taskId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={taskId} />
+              }
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

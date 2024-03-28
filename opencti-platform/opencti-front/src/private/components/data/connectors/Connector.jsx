@@ -17,7 +17,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { withRouter } from 'react-router-dom';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -187,7 +187,7 @@ class ConnectorComponent extends Component {
       },
       onCompleted: () => {
         this.handleCloseDelete();
-        this.props.history.push('/dashboard/data/ingestion/connectors');
+        this.props.navigate('/dashboard/data/ingestion/connectors');
       },
     });
   }
@@ -496,7 +496,7 @@ ConnectorComponent.propTypes = {
   connector: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 export const connectorQuery = graphql`

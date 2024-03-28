@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Badge } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -132,7 +131,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
   const theme = useTheme<Theme>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -207,7 +206,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'knowledge', history);
+    handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
   };
   const handleOpenDrawer = () => {
     setOpenDrawer(true);

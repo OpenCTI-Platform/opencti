@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ThreatActorGroup from './ThreatActorGroup';
 import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
@@ -66,9 +67,7 @@ class RootThreatActorGroup extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { threatActorGroupId },
-      },
+      params: { threatActorGroupId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -84,35 +83,38 @@ class RootThreatActorGroup extends Component {
     const {
       t,
       location,
-      match: {
-        params: { threatActorGroupId },
-      },
+      params: { threatActorGroupId },
     } = this.props;
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'victimology',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'channels',
-              'narratives',
-              'tools',
-              'vulnerabilities',
-              'indicators',
-              'observables',
-              'infrastructures',
-              'sightings',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'victimology',
+                  'threat_actors',
+                  'intrusion_sets',
+                  'campaigns',
+                  'incidents',
+                  'malwares',
+                  'attack_patterns',
+                  'channels',
+                  'narratives',
+                  'tools',
+                  'vulnerabilities',
+                  'indicators',
+                  'observables',
+                  'infrastructures',
+                  'sightings',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={ThreatActorGroupQuery}
           variables={{ id: threatActorGroupId }}
@@ -166,7 +168,7 @@ class RootThreatActorGroup extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge/overview`}
                           value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -190,71 +192,49 @@ class RootThreatActorGroup extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
-                        render={(routeProps) => (
-                          <ThreatActorGroup
-                            {...routeProps}
-                            threatActorGroup={props.threatActorGroup}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <ThreatActorGroup threatActorGroup={props.threatActorGroup} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge"
-                        render={(routeProps) => (
-                          <ThreatActorGroupKnowledge
-                            {...routeProps}
-                            threatActorGroup={props.threatActorGroup}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <ThreatActorGroupKnowledge threatActorGroup={props.threatActorGroup} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.threatActorGroup
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.threatActorGroup} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={threatActorGroupId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.threatActorGroup}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/threat_actors_group/:threatActorGroupId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={threatActorGroupId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={threatActorGroupId} />
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

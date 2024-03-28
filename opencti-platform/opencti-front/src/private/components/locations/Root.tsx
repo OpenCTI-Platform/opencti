@@ -3,10 +3,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Switch } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
+import { boundaryWrapper } from '../Error';
 
 const Countries = lazy(() => import('./Countries'));
 const RootCountry = lazy(() => import('./countries/Root'));
@@ -34,58 +34,52 @@ const Root = () => {
   }
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations"
-          render={() => <Redirect to={`/dashboard/locations/${redirect}`} />}
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/locations/${redirect}`} />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations/regions"
-          component={Regions}
+        <Route
+          path="/regions"
+          Component={boundaryWrapper(Regions)}
         />
-        <BoundaryRoute
-          path="/dashboard/locations/regions/:regionId"
-          component={RootRegion}
+        <Route
+          path="/regions/:regionId/*"
+          Component={boundaryWrapper(RootRegion)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations/countries"
-          component={Countries}
+        <Route
+          path="/countries"
+          Component={boundaryWrapper(Countries)}
         />
-        <BoundaryRoute
-          path="/dashboard/locations/countries/:countryId"
-          component={RootCountry}
+        <Route
+          path="/countries/:countryId/*"
+          Component={boundaryWrapper(RootCountry)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations/administrative_areas"
-          component={AdministrativeAreas}
+        <Route
+          path="/administrative_areas"
+          Component={boundaryWrapper(AdministrativeAreas)}
         />
-        <BoundaryRoute
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId"
-          component={RootAdministrativeArea}
+        <Route
+          path="/administrative_areas/:administrativeAreaId/*"
+          Component={boundaryWrapper(RootAdministrativeArea)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations/cities"
-          component={Cities}
+        <Route
+          path="/cities"
+          Component={boundaryWrapper(Cities)}
         />
-        <BoundaryRoute
-          path="/dashboard/locations/cities/:cityId"
-          component={RootCity}
+        <Route
+          path="/cities/:cityId/*"
+          Component={boundaryWrapper(RootCity)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/locations/positions"
-          component={Positions}
+        <Route
+          path="/positions"
+          Component={boundaryWrapper(Positions)}
         />
-        <BoundaryRoute
-          path="/dashboard/locations/positions/:positionId"
-          component={RootPosition}
+        <Route
+          path="/positions/:positionId/*"
+          Component={boundaryWrapper(RootPosition)}
         />
-      </Switch>
+      </Routes>
     </Suspense>
   );
 };

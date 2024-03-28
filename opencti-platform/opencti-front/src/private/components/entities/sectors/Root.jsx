@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
@@ -65,9 +66,7 @@ class RootSector extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { sectorId },
-      },
+      params: { sectorId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -83,15 +82,13 @@ class RootSector extends Component {
     const {
       t,
       location,
-      match: {
-        params: { sectorId },
-      },
+      params: { sectorId },
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
-          <StixCoreObjectKnowledgeBar
+        <Routes>
+          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
               'organizations',
@@ -105,8 +102,10 @@ class RootSector extends Component {
               'tools',
               'observables',
             ]}
-          />
-        </Route>
+                                              />}
+          >
+          </Route>
+        </Routes>
         <QueryRenderer
           query={sectorQuery}
           variables={{ id: sectorId }}
@@ -162,7 +161,7 @@ class RootSector extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/knowledge`}
+                          to={`/dashboard/entities/sectors/${sector.id}/knowledge/overview`}
                           value={`/dashboard/entities/sectors/${sector.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -192,58 +191,50 @@ class RootSector extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId"
-                        render={(routeProps) => (
-                          <Sector {...routeProps} sector={sector} />
+                        path="/"
+                        element={(
+                          <Sector sector={sector} />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={
+                          <Navigate
                             to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                           />
+                        }
+                      />
+                      <Route
+                        path="/knowledge/*"
+                        element={(
+                          <SectorKnowledge sector={sector} />
                         )}
                       />
                       <Route
-                        path="/dashboard/entities/sectors/:sectorId/knowledge"
-                        render={(routeProps) => (
-                          <SectorKnowledge {...routeProps} sector={sector} />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={ (
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={sector}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={ (
                           <EntityStixSightingRelationships
                             entityId={sector.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={sectorId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -252,16 +243,14 @@ class RootSector extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/sectors/:sectorId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={sectorId}
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }
@@ -277,7 +266,7 @@ class RootSector extends Component {
 
 RootSector.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootSector);

@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {
@@ -52,9 +53,7 @@ class RootOpinion extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { opinionId },
-      },
+      params: { opinionId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -68,9 +67,7 @@ class RootOpinion extends Component {
 
   render() {
     const {
-      match: {
-        params: { opinionId },
-      },
+      params: { opinionId },
     } = this.props;
     return (
       <>
@@ -81,15 +78,14 @@ class RootOpinion extends Component {
             if (props) {
               if (props.opinion) {
                 return (
-                  <Switch>
+                  <Routes>
                     <Route
-                      exact
-                      path="/dashboard/analyses/opinions/:opinionId"
-                      render={(routeProps) => (
-                        <Opinion {...routeProps} opinion={props.opinion} />
+                      path="/"
+                      element={(
+                        <Opinion opinion={props.opinion} />
                       )}
                     />
-                  </Switch>
+                  </Routes>
                 );
               }
               return <ErrorNotFound />;
@@ -104,7 +100,7 @@ class RootOpinion extends Component {
 
 RootOpinion.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default withRouter(RootOpinion);

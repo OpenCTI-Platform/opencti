@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -32,7 +32,7 @@ const OpinionPopoverDeletionMutation = graphql`
 `;
 
 const OpinionPopover = (data) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -53,7 +53,7 @@ const OpinionPopover = (data) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        history.push('/dashboard/analyses/opinions');
+        navigate('/dashboard/analyses/opinions');
       },
     });
   };

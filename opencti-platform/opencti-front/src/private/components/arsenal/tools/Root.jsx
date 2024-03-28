@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
@@ -66,9 +67,7 @@ class RootTool extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { toolId },
-      },
+      params: { toolId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -84,15 +83,13 @@ class RootTool extends Component {
     const {
       t,
       location,
-      match: {
-        params: { toolId },
-      },
+      params: { toolId },
     } = this.props;
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
-          <StixCoreObjectKnowledgeBar
+        <Routes>
+          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
               'threat_actors',
@@ -106,8 +103,10 @@ class RootTool extends Component {
               'observables',
               'sightings',
             ]}
-          />
-        </Route>
+                                              />}
+          >
+          </Route>
+        </Routes>
         <QueryRenderer
           query={toolQuery}
           variables={{ id: toolId }}
@@ -161,7 +160,7 @@ class RootTool extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -185,63 +184,55 @@ class RootTool extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/arsenal/tools/:toolId"
-                        render={(routeProps) => (
-                          <Tool {...routeProps} tool={props.tool} />
+                        path="/"
+                        element={ (
+                          <Tool tool={tool} />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/tools/:toolId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={
+                          <Navigate
                             to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                           />
+                        }
+                      />
+                      <Route
+                        path="/knowledge/*"
+                        element={(
+                          <ToolKnowledge tool={tool} />
                         )}
                       />
                       <Route
-                        path="/dashboard/arsenal/tools/:toolId/knowledge"
-                        render={(routeProps) => (
-                          <ToolKnowledge {...routeProps} tool={props.tool} />
-                        )}
-                      />
-                      <Route
-                        exact
-                        path="/dashboard/arsenal/tools/:toolId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses/*"
+                        element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={props.tool}
+                            stixDomainObjectOrStixCoreRelationship={tool}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/tools/:toolId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={toolId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.tool}
+                            entity={tool}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/tools/:toolId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={ (
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={toolId}
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }
@@ -257,7 +248,7 @@ class RootTool extends Component {
 
 RootTool.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootTool);

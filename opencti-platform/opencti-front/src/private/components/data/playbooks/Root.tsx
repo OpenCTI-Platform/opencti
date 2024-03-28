@@ -19,7 +19,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // @ts-nocheck
 
 import React from 'react';
-import { Route, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { RootPlaybookQuery$data } from './__generated__/RootPlaybookQuery.graphql';
@@ -59,19 +59,17 @@ const RootPlaybook = () => {
         if (props) {
           if (props.playbook && props.playbookComponents) {
             return (
-              <>
+              <Routes>
                 <Route
-                  exact
-                  path="/dashboard/data/processing/automation/:playbookId"
-                  render={(routeProps: any) => (
+                  path="/"
+                  element={
                     <Playbook
-                      {...routeProps}
                       playbook={props.playbook}
                       playbookComponents={props.playbookComponents}
                     />
-                  )}
+                  }
                 />
-              </>
+              </Routes>
             );
           }
           return <ErrorNotFound />;
