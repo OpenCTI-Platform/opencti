@@ -11,10 +11,12 @@ import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import InvestigationRollBackExpandDialog from './Dialog/InvestigationRollBackExpandDialog';
 import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
+import setStackDataInSessionStorage from '../../../../utils/sessionStorage/setStackDataInSessionStorage/setStackDataInSessionStorage';
 import {
   applyFilters,
   buildGraphData,
@@ -965,6 +967,7 @@ class InvestigationGraphComponent extends Component {
       prevClick: null,
       navOpen: localStorage.getItem('navOpen') === 'true',
       openCreatedRelation: false,
+      isRollBackPreExpandStateDialogOpen: false,
     };
     this.canvas = null;
   }
@@ -1538,7 +1541,6 @@ class InvestigationGraphComponent extends Component {
 
   async handleDeleteSelected() {
     let idsToRemove = [];
-
     // Retrieve selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.filter(
@@ -1835,6 +1837,15 @@ class InvestigationGraphComponent extends Component {
       this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
+      setStackDataInSessionStorage(
+        'preExpansionStateList',
+        {
+          dateTime: new Date().getTime(),
+          investigatedEntitiesIdsList: newElementsIds,
+        },
+        10,
+      );
+
       this.graphData = buildGraphData(
         this.graphObjects,
         decodeGraphData(this.props.workspace.graph_data),
@@ -1877,6 +1888,63 @@ class InvestigationGraphComponent extends Component {
       );
     }
     this.handleToggleDisplayProgress();
+  }
+
+  handleRollBackToPreExpansionState() {
+    const storedPreExpansion = sessionStorage.getItem('preExpansionStateList');
+    if (storedPreExpansion) {
+      const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
+      const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
+      commitMutation({
+        mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+        variables: {
+          id: this.props.workspace.id,
+          input: {
+            key: 'investigated_entities_ids',
+            value: investigatedEntitiesIdsList,
+            operation: 'remove',
+          },
+        },
+        onCompleted: () => {
+          const currentGraphObjects = this.graphObjects;
+          const newGraphObjects = currentGraphObjects.filter((graphObjects) => !investigatedEntitiesIdsList.includes(graphObjects.id));
+
+          this.graphObjects = newGraphObjects;
+
+          this.graphData = buildGraphData(
+            newGraphObjects,
+            decodeGraphData(this.props.workspace.graph_data),
+            this.props.t,
+          );
+
+          this.setState({
+            graphData: applyFilters(
+              this.graphData,
+              this.state.stixCoreObjectsTypes,
+              this.state.markedBy,
+              this.state.createdBy,
+              [],
+              this.state.selectedTimeRangeInterval,
+            ),
+          });
+
+          currentStoredPreExpansion.shift();
+          if (currentStoredPreExpansion.length === 0) {
+            sessionStorage.removeItem('preExpansionStateList');
+          } else {
+            sessionStorage.setItem('preExpansionStateList', JSON.stringify(currentStoredPreExpansion));
+          }
+        },
+      });
+    }
+  }
+
+  handleOpenRollBackToPreExpansionStateDialog() {
+    this.setState({ isRollBackPreExpandStateDialogOpen: true });
+  }
+
+  handleCloseRollBackToPreExpansionStateDialog() {
+    this.setState({ isRollBackPreExpandStateDialogOpen: false });
   }
 
   handleResetLayout() {
@@ -1977,6 +2045,7 @@ class InvestigationGraphComponent extends Component {
       height,
       openExpandElements,
       navOpen,
+      isRollBackPreExpandStateDialogOpen,
     } = this.state;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
@@ -2012,9 +2081,17 @@ class InvestigationGraphComponent extends Component {
                   onReset={this.onResetExpandElements.bind(this)}
                 />
               </Dialog>
+
+              <InvestigationRollBackExpandDialog
+                isOpen={isRollBackPreExpandStateDialogOpen}
+                closeDialog={this.handleCloseRollBackToPreExpansionStateDialog.bind(this)}
+                handleRollBackToPreExpansionState={this.handleRollBackToPreExpansionState.bind(this)}
+              />
+
               <InvestigationGraphBar
                 displayProgress={displayProgress}
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
+                handleOpenRollBackToPreExpansionStateDialog={this.handleOpenRollBackToPreExpansionStateDialog.bind(this)}
                 currentMode3D={mode3D}
                 handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
                 currentModeTree={modeTree}

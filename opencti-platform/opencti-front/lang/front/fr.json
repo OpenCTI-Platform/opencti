@@ -2673,5 +2673,14 @@
   "Strategic": "Stratégique",
   "Link created": "Lien créé",
   "Public dashboard": "Tableau de bord public",
-  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement."
+  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement.",
+  "Most used filters": "Filtres les plus utilisés",
+  "All other filters": "Tous les autres filtres",
+  "Testing csv mapper": "Test du mappeur csv",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Ces opérations ne s'appliqueront qu'aux étiquettes ou marquages ajoutés dans le contexte de ce playbook, comme l'enrichissement ou d'autres manipulations de connaissances, mais pas si les étiquettes ou marquages sont déjà écrits dans la plateforme.",
+  "Restore the state of the graphic before the last expansion": "Rétablir l'état du graphique avant la dernière expansion",
+  "Revert to Pre-Expansion State": "Retour à l'état antérieur à l'expansion",
+  "All actions after the last expansion will be lost": "Toutes les actions postérieures à la dernière expansion seront perdues",
+  "Last expansion": "Dernière extension",
+  "All actions after the last expansion will be lost.": "Toutes les actions effectuées après la dernière expansion seront perdues."
 }
