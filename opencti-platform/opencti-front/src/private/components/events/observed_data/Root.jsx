@@ -18,6 +18,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -195,6 +196,15 @@ class RootObservedData extends Component {
                       path="/history"
                       element={
                         <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
+                      }
+                    />
+                    <Route
+                      path="/knowledge/relations/:relationId/"
+                      element={
+                        <StixCoreRelationship
+                          entityId={observedData.id}
+                          paddingRight={true}
+                        />
                       }
                     />
                   </Routes>
