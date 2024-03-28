@@ -626,5 +626,9 @@
   "X_Aliases": "X_エイリアス",
   "Samples": "サンプル",
   "Contains observable": "観測値を含む",
-  "Artifact content": "人工物の内容"
+  "Artifact content": "人工物の内容",
+  "Deleted entity type": "削除されたエンティティタイプ",
+  "Deleted entity id": "削除されたエンティティID",
+  "Deleted entity name": "削除されたエンティティ名",
+  "Deleted elements": "削除された要素"
 }
