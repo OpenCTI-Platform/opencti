@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
@@ -109,7 +109,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
-              {defaultValue(node)}
+              {getMainRepresentative(node)}
             </div>
             <div
               className={classes.bodyItem}

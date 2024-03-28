@@ -9,7 +9,7 @@ import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import { defaultValue } from '../defaultRepresentatives';
+import { getMainRepresentative } from '../defaultRepresentatives';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreators from '../../components/ItemCreators';
@@ -97,15 +97,15 @@ StixMetaObjectDetailsComponentProps
         {t_i18n('Value')}
       </Typography>
       {stixMetaObject.entity_type === 'Marking-Definition' ? (
-        <Tooltip title={defaultValue(stixMetaObject)}>
+        <Tooltip title={getMainRepresentative(stixMetaObject)}>
           <ItemMarkings
             markingDefinitions={[stixMetaObject]}
             limit={2}
           />
         </Tooltip>
       ) : (
-        <Tooltip title={defaultValue(stixMetaObject)}>
-          <span>{truncate(defaultValue(stixMetaObject), 40)}</span>
+        <Tooltip title={getMainRepresentative(stixMetaObject)}>
+          <span>{truncate(getMainRepresentative(stixMetaObject), 40)}</span>
         </Tooltip>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>

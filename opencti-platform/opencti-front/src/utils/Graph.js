@@ -51,6 +51,7 @@ import { dateFormat, dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minu
 import { isDateStringNone, isNone } from '../components/i18n';
 import { fileUri } from '../relay/environment';
 import { isNotEmptyField } from './utils';
+import { defaultDate, getMainRepresentative } from './defaultRepresentatives';
 
 const genImage = (src) => {
   const img = new Image();
@@ -547,10 +548,10 @@ export const buildCorrelationData = (
       id: n.id,
       disabled: n.disabled,
       val: graphLevel[n.entity_type] || graphLevel.Unknown,
-      name: defaultValue(n),
+      name: getMainRepresentative(n),
       defaultDate: jsDate(defaultDate(n)),
       label: truncate(
-        defaultValue(n),
+        getMainRepresentative(n),
         n.entity_type === 'Attack-Pattern' ? 30 : 20,
       ),
       img: graphImages[n.entity_type] || graphImages.Unknown,
@@ -774,13 +775,13 @@ export const buildGraphData = (objects, graphData, t) => {
                 ? '-'
                 : dateFormat(n.stop_time || n.last_seen)
             }`
-            : defaultValue(n)
+            : getMainRepresentative(n)
         }\n${dateFormat(defaultDate(n))}`,
         defaultDate: jsDate(defaultDate(n)),
         label: n.parent_types.includes('basic-relationship')
           ? t(`relationship_${n.relationship_type}`)
           : truncate(
-            defaultValue(n),
+            getMainRepresentative(n),
             n.entity_type === 'Attack-Pattern' ? 30 : 20,
           ),
         img:

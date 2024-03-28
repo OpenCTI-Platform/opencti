@@ -21,7 +21,7 @@ import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const useStyles = makeStyles((theme) => ({
   containerRelation: {
@@ -193,7 +193,7 @@ const StixCoreRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleFrom
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultValue(fromEntity))}
+                      : (getMainRepresentative(fromEntity))}
                   </span>
                 </div>
               </div>
@@ -242,7 +242,7 @@ const StixCoreRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleTo
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultValue(toEntity))}
+                      : (getMainRepresentative(toEntity))}
                   </span>
                 </div>
               </div>

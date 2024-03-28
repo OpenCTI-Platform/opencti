@@ -4,7 +4,10 @@ import { isDateStringNone } from '../components/i18n';
 import { truncate } from './String';
 import { dateFormat } from './Time';
 
-export const isFieldForIdentifier = (fieldName: string) => {
+export const isFieldForIdentifier = (fieldName?: string) => {
+  if (!fieldName) {
+    return false;
+  }
   return fieldName === 'id'
     || fieldName.endsWith('.id')
     || fieldName.endsWith('_id')
@@ -86,7 +89,8 @@ export const defaultKey = (n: any) => {
   return null;
 };
 
-export const defaultValue = (n: any, fallback = 'Unknown') => {
+// equivalent to querying representative.main
+export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
   if (!n) return '';
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);
@@ -119,21 +123,23 @@ export const defaultValue = (n: any, fallback = 'Unknown') => {
         n.target_ref_name,
         20,
       )}`)
-    || defaultValue((R.head(R.pathOr([], ['objects', 'edges'], n)) as any)?.node)
+    || getMainRepresentative((R.head(R.pathOr([], ['objects', 'edges'], n)) as any)?.node)
     || (n.from
       && n.to
-      && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
-        defaultValue(n.to),
+      && `${truncate(getMainRepresentative(n.from), 20)} ➡️ ${truncate(
+        getMainRepresentative(n.to),
         20,
       )}`)
     || fallback;
   return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };
 
-export const defaultSecondaryValue = (n: any) => {
+// equivalent to querying representative.secondary
+export const getSecondaryRepresentative = (n: any) => {
   if (!n) return '';
   return (
-    n.description
+    n.representative?.secondary
+    || n.description
     || n.x_opencti_description
     || n.content
     || n.entity_type

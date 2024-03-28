@@ -12,7 +12,7 @@ import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const styles = () => ({
   paper: {
@@ -222,7 +222,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
                   `${
                     toTypes.length > 1 && n.entity
                       ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
-                      : `${defaultValue(n.entity, t_i18n('Restricted'))}`
+                      : `${getMainRepresentative(n.entity) || n.label}`
                   }`,
                   n,
                 ),

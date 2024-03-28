@@ -23,7 +23,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
@@ -346,7 +346,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                           <span>
                             {truncate(
                               Object.values(selectedElements || {})
-                                .map((o) => defaultValue(o))
+                                .map((o) => getMainRepresentative(o))
                                 .join(', '),
                               80,
                             )}
@@ -371,7 +371,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                           <TableCell>
                             {truncate(
                               (o.context?.values ?? [])
-                                .map((p) => (typeof p === 'string' ? p : defaultValue(p)))
+                                .map((p) => (typeof p === 'string' ? p : getMainRepresentative(p)))
                                 .join(', '),
                               80,
                             )}

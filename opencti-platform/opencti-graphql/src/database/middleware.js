@@ -450,18 +450,22 @@ export const stixLoadByFilters = async (context, user, types, args) => {
 // region Graphics
 const convertAggregateDistributions = async (context, user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
-  // resolve all of them, limited to ids for comparison in next step
+  // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
   // entities not granted shall be sent as "restricted" with limited information
   return data
+    // filter out unresolved data (like the SYSTEM user for instance)
     .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
     .map((n) => {
       const element = allResolveLabels[n.label.toLowerCase()];
       if (isUserCanAccessStoreElement(context, user, element)) {
         return R.assoc('entity', element, n);
       }
-      // return R.assoc('entity', { id: n.label, entity_type: n.entity_type, name: 'Restricted' }, n);
-      return n; // no entity details
+      return R.assoc('entity', {
+        id: n.label,
+        entity_type: n.entity_type,
+        representative: { main: 'Restricted', secondary: 'Restricted' }
+      }, n);
     });
 };
 export const timeSeriesHistory = async (context, user, types, args) => {

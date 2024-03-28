@@ -31,7 +31,7 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import { defaultSecondaryValue, defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
@@ -954,9 +954,9 @@ class GroupingKnowledgeGraphComponent extends Component {
     this.selectedNodes.clear();
     if (isNotEmptyField(keyword)) {
       const filterByKeyword = (n) => keyword === ''
-        || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+        || (getMainRepresentative(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
           !== -1
-        || (defaultSecondaryValue(n) || '')
+        || (getSecondaryRepresentative(n) || '')
           .toLowerCase()
           .indexOf(keyword.toLowerCase()) !== -1
         || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase())

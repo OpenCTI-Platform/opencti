@@ -59,142 +59,42 @@ const stixRelationshipsRadarsDistributionQuery = graphql`
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
         }
-        ... on AttackPattern {
-          name
-          description
-          x_mitre_id
+        ... on StixObject {
+          representative {
+            main
+          }
         }
-        ... on Campaign {
-          name
-          description
+        ... on StixRelationship {
+          representative {
+            main
+          }
         }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on KillChainPhase {
-          kill_chain_name
-          phase_name
-        }
+        # internal objects
         ... on Creator {
           name
         }
-        ... on Report {
+        ... on Group {
           name
         }
-        ... on Grouping {
-          name
+        # need colors when available
+        ... on Label {
+          color
         }
-        ... on Note {
-          attribute_abstract
-          content
+        ... on MarkingDefinition {
+          x_opencti_color
         }
-        ... on Opinion {
-          opinion
+        ... on Status {
+          template {
+            name
+            color
+          }
         }
       }
     }

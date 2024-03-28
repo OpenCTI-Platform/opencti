@@ -43,134 +43,21 @@ const stixCoreObjectsTreeMapDistributionQuery = graphql`
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
         }
-        ... on AttackPattern {
-          name
-          description
+        ... on StixObject {
+          representative {
+            main
+          }
         }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on MalwareAnalysis {
-          result_name
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on KillChainPhase {
-          kill_chain_name
-          phase_name
-        }
+        # objects without representative
         ... on Creator {
           name
-        }
-        ... on Label {
-          value
         }
         ... on Status {
           template {

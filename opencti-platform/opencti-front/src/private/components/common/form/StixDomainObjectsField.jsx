@@ -8,7 +8,7 @@ import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
@@ -207,7 +207,7 @@ class StixDomainObjectsField extends Component {
         const labels = pipe(
           pathOr([], ['stixDomainObjects', 'edges']),
           map((n) => ({
-            label: defaultValue(n.node),
+            label: getMainRepresentative(n.node),
             value: n.node.id,
             type: n.node.entity_type,
           })),

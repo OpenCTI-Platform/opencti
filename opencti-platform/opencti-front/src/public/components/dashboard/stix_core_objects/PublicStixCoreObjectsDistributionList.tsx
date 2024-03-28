@@ -8,6 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { PublicStixCoreObjectsDistributionListQuery } from './__generated__/PublicStixCoreObjectsDistributionListQuery.graphql';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const publicStixCoreObjectsDistributionListQuery = graphql`
   query PublicStixCoreObjectsDistributionListQuery(
@@ -25,39 +26,34 @@ const publicStixCoreObjectsDistributionListQuery = graphql`
       label
       value
       entity {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
         ... on StixObject {
-          id
-          entity_type
           representative {
             main
           }
         }
-        ... on StixRelationship {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-        ... on Creator {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
+        
+        # need colors when available
         ... on Label {
-          value
           color
         }
         ... on MarkingDefinition {
           x_opencti_color
         }
-        ... on Status {
-          template {
-            name
-            color
-          }
+
+        # internal objects
+        ... on Creator {
+          name
+        }
+        ... on Group {
+          name
         }
       }
     }
@@ -78,20 +74,21 @@ const PublicStixCoreObjectsDistributionListComponent = ({
   );
 
   if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
-    const data = publicStixCoreObjectsDistribution.flatMap((o) => {
-      if (!o) return [];
+    const data = publicStixCoreObjectsDistribution.flatMap((n) => {
+      if (!n) return [];
+      let { label } = n;
+      if (t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+        label = t_i18n(`entity_${n.label}`);
+      }
+      if (n.entity) {
+        label = getMainRepresentative(n.entity);
+      }
       return {
-        label:
-        // eslint-disable-next-line no-nested-ternary
-          o.entity?.representative?.main
-            ? o.entity?.representative?.main
-            : t_i18n(`entity_${o.label}`) !== `entity_${o.label}`
-              ? t_i18n(`entity_${o.label}`)
-              : o.label,
-        value: o.value,
-        color: o.entity?.color ?? o.entity?.x_opencti_color,
-        id: o.entity?.id ?? null,
-        type: o.entity?.entity_type ?? o.label,
+        label,
+        value: n.value,
+        color: n.entity?.color ?? n.entity?.x_opencti_color,
+        id: n.entity?.id ?? null,
+        type: n.entity?.entity_type ?? n.label,
       };
     });
     return <WidgetDistributionList data={data} />;

@@ -68,6 +68,16 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             last_seen
           }
           from {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on StixObject {
+              representative {
+                main
+                secondary
+              }
+            }
             ... on StixDomainObject {
               id
               entity_type
@@ -80,10 +90,13 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 color
               }
             }
-            ... on AttackPattern {
-              name
+            # additional info used by the timeline display
+            ... on Report {
               description
-              x_mitre_id
+              published
+            }
+            ... on AttackPattern {
+              description
               killChainPhases {
                 id
                 phase_name
@@ -102,111 +115,70 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               }
             }
             ... on Campaign {
-              name
               description
             }
             ... on CourseOfAction {
-              name
               description
             }
             ... on Individual {
-              name
               description
             }
             ... on Organization {
-              name
               description
             }
             ... on Sector {
-              name
               description
             }
             ... on System {
-              name
               description
             }
             ... on Indicator {
-              name
               description
             }
             ... on Infrastructure {
-              name
               description
             }
             ... on IntrusionSet {
-              name
               description
             }
             ... on Position {
-              name
               description
             }
             ... on City {
-              name
               description
             }
             ... on AdministrativeArea {
-              name
               description
             }
             ... on Country {
-              name
               description
             }
             ... on Region {
-              name
               description
             }
             ... on Malware {
-              name
               description
             }
             ... on ThreatActor {
-              name
               description
             }
             ... on Tool {
-              name
               description
             }
             ... on Vulnerability {
-              name
               description
             }
             ... on Incident {
-              name
               description
             }
             ... on Event {
-              name
               description
             }
             ... on Channel {
-              name
               description
             }
             ... on Narrative {
-              name
               description
-            }
-            ... on Language {
-              name
-            }
-            ... on DataComponent {
-              name
-            }
-            ... on DataSource {
-              name
-            }
-            ... on Case {
-              name
-            }
-            ... on Note {
-              attribute_abstract
-              content
-            }
-            ... on Opinion {
-              opinion
             }
             ... on StixCyberObservable {
               id
@@ -227,7 +199,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             }
             ... on Indicator {
               id
-              name
               pattern_type
               pattern_version
               description
@@ -255,6 +226,18 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               created
               created_at
               from {
+                ... on StixObject {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
+                ... on StixRelationship {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
                 ... on StixDomainObject {
                   id
                   entity_type
@@ -268,7 +251,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on AttackPattern {
-                  name
                   description
                   x_mitre_id
                   killChainPhases {
@@ -289,75 +271,57 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on Campaign {
-                  name
                   description
                 }
                 ... on CourseOfAction {
-                  name
                   description
                 }
                 ... on Individual {
-                  name
                   description
                 }
                 ... on Organization {
-                  name
                   description
                 }
                 ... on Sector {
-                  name
                   description
                 }
                 ... on System {
-                  name
                   description
                 }
                 ... on Indicator {
-                  name
                   description
                 }
                 ... on Infrastructure {
-                  name
                   description
                 }
                 ... on IntrusionSet {
-                  name
                   description
                 }
                 ... on Position {
-                  name
                   description
                 }
                 ... on City {
-                  name
                   description
                 }
                 ... on Country {
-                  name
                   description
                 }
                 ... on Region {
-                  name
                   description
                 }
                 ... on Malware {
-                  name
                   description
                 }
                 ... on ThreatActor {
-                  name
                   description
                 }
                 ... on Tool {
-                  name
                   description
                 }
                 ... on Vulnerability {
-                  name
                   description
                 }
                 ... on Incident {
-                  name
                   description
                 }
                 ... on StixCyberObservable {
@@ -379,7 +343,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
                 ... on Indicator {
                   id
-                  name
                   pattern_type
                   pattern_version
                   description
@@ -409,6 +372,18 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
               }
               to {
+                ... on StixObject {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
+                ... on StixRelationship {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
                 ... on StixDomainObject {
                   id
                   entity_type
@@ -443,75 +418,57 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on Campaign {
-                  name
                   description
                 }
                 ... on CourseOfAction {
-                  name
                   description
                 }
                 ... on Individual {
-                  name
                   description
                 }
                 ... on Organization {
-                  name
                   description
                 }
                 ... on Sector {
-                  name
                   description
                 }
                 ... on System {
-                  name
                   description
                 }
                 ... on Indicator {
-                  name
                   description
                 }
                 ... on Infrastructure {
-                  name
                   description
                 }
                 ... on IntrusionSet {
-                  name
                   description
                 }
                 ... on Position {
-                  name
                   description
                 }
                 ... on City {
-                  name
                   description
                 }
                 ... on Country {
-                  name
                   description
                 }
                 ... on Region {
-                  name
                   description
                 }
                 ... on Malware {
-                  name
                   description
                 }
                 ... on ThreatActor {
-                  name
                   description
                 }
                 ... on Tool {
-                  name
                   description
                 }
                 ... on Vulnerability {
-                  name
                   description
                 }
                 ... on Incident {
-                  name
                   description
                 }
                 ... on StixCyberObservable {
@@ -533,7 +490,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
                 ... on Indicator {
                   id
-                  name
                   pattern_type
                   pattern_version
                   description
@@ -565,6 +521,18 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             }
           }
           to {
+            ... on StixObject {
+              representative {
+                main
+                secondary
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+                secondary
+              }
+            }  
             ... on StixDomainObject {
               id
               entity_type
@@ -578,7 +546,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               }
             }
             ... on AttackPattern {
-              name
               description
               x_mitre_id
               killChainPhases {
@@ -599,75 +566,57 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               }
             }
             ... on Campaign {
-              name
               description
             }
             ... on CourseOfAction {
-              name
               description
             }
             ... on Individual {
-              name
               description
             }
             ... on Organization {
-              name
               description
             }
             ... on Sector {
-              name
               description
             }
             ... on System {
-              name
               description
             }
             ... on Indicator {
-              name
               description
             }
             ... on Infrastructure {
-              name
               description
             }
             ... on IntrusionSet {
-              name
               description
             }
             ... on Position {
-              name
               description
             }
             ... on City {
-              name
               description
             }
             ... on Country {
-              name
               description
             }
             ... on Region {
-              name
               description
             }
             ... on Malware {
-              name
               description
             }
             ... on ThreatActor {
-              name
               description
             }
             ... on Tool {
-              name
               description
             }
             ... on Vulnerability {
-              name
               description
             }
             ... on Incident {
-              name
               description
             }
             ... on StixCyberObservable {
@@ -689,7 +638,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
             }
             ... on Indicator {
               id
-              name
               pattern_type
               pattern_version
               description
@@ -717,6 +665,18 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
               created_at
               parent_types
               from {
+                ... on StixObject {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
+                ... on StixRelationship {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
                 ... on StixDomainObject {
                   id
                   entity_type
@@ -730,7 +690,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on AttackPattern {
-                  name
                   description
                   x_mitre_id
                   killChainPhases {
@@ -751,75 +710,57 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on Campaign {
-                  name
                   description
                 }
                 ... on CourseOfAction {
-                  name
                   description
                 }
                 ... on Individual {
-                  name
                   description
                 }
                 ... on Organization {
-                  name
                   description
                 }
                 ... on Sector {
-                  name
                   description
                 }
                 ... on System {
-                  name
                   description
                 }
                 ... on Indicator {
-                  name
                   description
                 }
                 ... on Infrastructure {
-                  name
                   description
                 }
                 ... on IntrusionSet {
-                  name
                   description
                 }
                 ... on Position {
-                  name
                   description
                 }
                 ... on City {
-                  name
                   description
                 }
                 ... on Country {
-                  name
                   description
                 }
                 ... on Region {
-                  name
                   description
                 }
                 ... on Malware {
-                  name
                   description
                 }
                 ... on ThreatActor {
-                  name
                   description
                 }
                 ... on Tool {
-                  name
                   description
                 }
                 ... on Vulnerability {
-                  name
                   description
                 }
                 ... on Incident {
-                  name
                   description
                 }
                 ... on StixCyberObservable {
@@ -841,7 +782,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
                 ... on Indicator {
                   id
-                  name
                   pattern_type
                   pattern_version
                   description
@@ -871,6 +811,18 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
               }
               to {
+                ... on StixObject {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
+                ... on StixRelationship {
+                  representative {
+                    main
+                    secondary
+                  }
+                }
                 ... on StixDomainObject {
                   id
                   entity_type
@@ -884,7 +836,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on AttackPattern {
-                  name
                   description
                   x_mitre_id
                   killChainPhases {
@@ -905,75 +856,57 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                   }
                 }
                 ... on Campaign {
-                  name
                   description
                 }
                 ... on CourseOfAction {
-                  name
                   description
                 }
                 ... on Individual {
-                  name
                   description
                 }
                 ... on Organization {
-                  name
                   description
                 }
                 ... on Sector {
-                  name
                   description
                 }
                 ... on System {
-                  name
                   description
                 }
                 ... on Indicator {
-                  name
                   description
                 }
                 ... on Infrastructure {
-                  name
                   description
                 }
                 ... on IntrusionSet {
-                  name
                   description
                 }
                 ... on Position {
-                  name
                   description
                 }
                 ... on City {
-                  name
                   description
                 }
                 ... on Country {
-                  name
                   description
                 }
                 ... on Region {
-                  name
                   description
                 }
                 ... on Malware {
-                  name
                   description
                 }
                 ... on ThreatActor {
-                  name
                   description
                 }
                 ... on Tool {
-                  name
                   description
                 }
                 ... on Vulnerability {
-                  name
                   description
                 }
                 ... on Incident {
-                  name
                   description
                 }
                 ... on StixCyberObservable {
@@ -995,7 +928,6 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 }
                 ... on Indicator {
                   id
-                  name
                   pattern_type
                   pattern_version
                   description
@@ -1053,7 +985,7 @@ const StixRelationshipsTimeline = ({
       <QueryRenderer
         query={stixRelationshipsTimelineStixRelationshipQuery}
         variables={{
-          first: 50,
+          first: dataSelection.number ?? 50,
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters,

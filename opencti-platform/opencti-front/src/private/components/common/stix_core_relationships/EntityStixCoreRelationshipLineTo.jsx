@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
@@ -162,7 +162,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     : dataColumns.observable_value.width,
                 }}
               >
-                {!restricted ? defaultValue(node.from) : t('Restricted')}
+                {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}

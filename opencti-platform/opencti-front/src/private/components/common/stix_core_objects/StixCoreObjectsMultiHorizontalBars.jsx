@@ -11,7 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
@@ -443,7 +443,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
             && props.stixCoreObjectsDistribution.length > 0
           ) {
             const data = props.stixCoreObjectsDistribution.map((n) => {
-              let color = selection.attribute.endsWith('_id')
+              let color = isFieldForIdentifier(selection.attribute)
                 ? itemColor(n.entity?.entity_type)
                 : itemColor(n.label);
               if (n.entity?.color) {
@@ -467,7 +467,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 x:
                   // eslint-disable-next-line no-nested-ternary
                   selection.attribute.endsWith('_id')
-                    ? defaultValue(n.entity, t_i18n('Restricted'))
+                    ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                     : selection.attribute === 'entity_type'
                       ? t_i18n(`entity_${n.label}`)
                       : n.label,

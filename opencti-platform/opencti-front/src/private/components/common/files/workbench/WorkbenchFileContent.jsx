@@ -40,7 +40,7 @@ import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
-import { defaultKey, defaultValue } from '../../../../../utils/defaultRepresentatives';
+import { defaultKey, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
 import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
@@ -2819,14 +2819,14 @@ const WorkbenchFileContentComponent = ({
         n.type === 'relationship'
           ? t_i18n(`relationship_${n.relationship_type}`)
           : t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue({
+      default_value: getMainRepresentative({
         ...n,
-        source_ref_name: defaultValue(
+        source_ref_name: getMainRepresentative(
           indexedStixObjects[n.source_ref]
             || indexedStixObjects[n.sighting_of_ref]
             || {},
         ),
-        target_ref_name: defaultValue(
+        target_ref_name: getMainRepresentative(
           indexedStixObjects[n.target_ref]
             || indexedStixObjects[n.where_sighted_refs?.at(0)]
             || {},
@@ -2998,7 +2998,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n, null),
+      default_value: getMainRepresentative(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3241,7 +3241,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n, null),
+      default_value: getMainRepresentative(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3481,13 +3481,13 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCoreRelationships = stixCoreRelationships.map((n) => ({
       ...n,
       ttype: t_i18n(`relationship_${n.relationship_type}`),
-      default_value: defaultValue({
+      default_value: getMainRepresentative({
         ...n,
-        source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
-        target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
+        source_ref_name: getMainRepresentative(indexedStixObjects[n.source_ref] || {}),
+        target_ref_name: getMainRepresentative(indexedStixObjects[n.target_ref] || {}),
       }, null),
-      source_ref_name: defaultValue(indexedStixObjects[n.source_ref] || {}),
-      target_ref_name: defaultValue(indexedStixObjects[n.target_ref] || {}),
+      source_ref_name: getMainRepresentative(indexedStixObjects[n.source_ref] || {}),
+      target_ref_name: getMainRepresentative(indexedStixObjects[n.target_ref] || {}),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -3625,19 +3625,19 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixSightings = stixSightings.map((n) => ({
       ...n,
       ttype: t_i18n('Sighting'),
-      default_value: defaultValue({
+      default_value: getMainRepresentative({
         ...n,
-        source_ref_name: defaultValue(
+        source_ref_name: getMainRepresentative(
           indexedStixObjects[n.sighting_of_ref] || {},
         ),
-        target_ref_name: defaultValue(
+        target_ref_name: getMainRepresentative(
           indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
         ),
       }, null),
-      source_ref_name: defaultValue(
+      source_ref_name: getMainRepresentative(
         indexedStixObjects[n.sighting_of_ref] || {},
       ),
-      target_ref_name: defaultValue(
+      target_ref_name: getMainRepresentative(
         indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
       ),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
@@ -3805,7 +3805,7 @@ const WorkbenchFileContentComponent = ({
     const resolvedContainers = containers.map((n) => ({
       ...n,
       ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: defaultValue(n, null),
+      default_value: getMainRepresentative(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(

@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { defaultValue } from '../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -238,7 +238,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
               x:
               // eslint-disable-next-line no-nested-ternary
                 field === 'internal_id'
-                  ? defaultValue(n.entity, t_i18n('Restricted'))
+                  ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,

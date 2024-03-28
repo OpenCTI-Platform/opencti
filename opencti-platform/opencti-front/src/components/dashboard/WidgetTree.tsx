@@ -4,7 +4,7 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
 import { treeMapOptions } from '../../utils/Charts';
-import { defaultValue } from '../../utils/defaultRepresentatives';
+import { getMainRepresentative, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,15 +25,16 @@ const WidgetTree = ({
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
-  const chartData = data.map((n) => ({
-    // eslint-disable-next-line no-nested-ternary
-    x: groupBy.endsWith('_id')
-      ? defaultValue(n.entity, t_i18n('Restricted'))
-      : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
-        ? t_i18n(`entity_${n.label}`)
-        : n.label,
-    y: n.value,
-  }));
+  const chartData = data.map((n) => {
+    const item = { x: n.label, y: n.value };
+    if (isFieldForIdentifier(groupBy)) {
+      item.x = getMainRepresentative(n.entity);
+    } else if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+      item.x = t_i18n(`entity_${n.label}`);
+    }
+    return item;
+  });
+
   const series = [{ data: chartData }];
 
   return (

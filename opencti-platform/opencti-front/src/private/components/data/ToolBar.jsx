@@ -64,7 +64,7 @@ import { truncate } from '../../../utils/String';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
-import { defaultValue } from '../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
@@ -1653,7 +1653,7 @@ class ToolBar extends Component {
                                 {mergingElement
                                   ? truncate(
                                     R.join(', ', [
-                                      defaultValue(mergingElement),
+                                      getMainRepresentative(mergingElement),
                                     ]),
                                     80,
                                   )
@@ -1661,7 +1661,7 @@ class ToolBar extends Component {
                                     R.join(
                                       ', ',
                                       R.map(
-                                        (o) => defaultValue(o),
+                                        (o) => getMainRepresentative(o),
                                         R.values(selectedElements || {}),
                                       ),
                                     ),
@@ -1704,7 +1704,7 @@ class ToolBar extends Component {
                                     R.map(
                                       (p) => (typeof p === 'string'
                                         ? p
-                                        : defaultValue(p)),
+                                        : getMainRepresentative(p)),
                                       R.pathOr([], ['context', 'values'], o),
                                     ),
                                   ),
@@ -1867,7 +1867,7 @@ class ToolBar extends Component {
                               textOverflow: 'ellipsis',
                             },
                           }}
-                          primary={defaultValue(element)}
+                          primary={getMainRepresentative(element)}
                           secondary={truncate(
                             element.description
                             || element.x_opencti_description
@@ -1920,7 +1920,7 @@ class ToolBar extends Component {
                     {t('Name')}
                   </Typography>
                   <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
-                    {defaultValue(keptElement)}
+                    {getMainRepresentative(keptElement)}
                   </div>
                   <Typography
                     variant="h3"

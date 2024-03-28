@@ -11,7 +11,7 @@ import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsContextualViewLines from './EntityStixCoreRelationshipsContextualViewLines';
 import { hexToRGB, itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
-import { defaultValue } from '../../../../../utils/defaultRepresentatives';
+import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
@@ -153,7 +153,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         : isObservables
           ? isRuntimeSort
           : true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => defaultValue(stixCoreObject),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => getMainRepresentative(stixCoreObject),
     },
     createdBy: {
       label: 'Author',
