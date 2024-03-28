@@ -6,7 +6,11 @@ enum VocabularyCategory {
   case_priority_ov
   channel_types_ov
   collection_layers_ov
+  currency_code_ov
   event_type_ov
+  financial_account_status_ov
+  financial_account_type_ov
+  financial_asset_type_ov
   grouping_context_ov
   implementation_language_ov
   incident_response_types_ov

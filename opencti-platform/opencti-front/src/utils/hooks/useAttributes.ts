@@ -94,6 +94,7 @@ const dateAttributes = [
   'published',
   'start_time',
   'stop_time',
+  'transaction_date',
 ];
 
 const numberAttributes = [
@@ -111,6 +112,8 @@ const numberAttributes = [
   'number_of_subkeys',
   'subject_public_key_exponent',
   'cvv',
+  'asset_value',
+  'transaction_value',
 ];
 
 const booleanAttributes = [
