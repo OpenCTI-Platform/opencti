@@ -638,13 +638,11 @@ class GroupingKnowledgeGraphComponent extends Component {
       })
         .toPromise()
         .then(async (data) => {
-          console.log('deleteObject', deleteObject);
           if (
             deleteObject
             && !data.stixObjectOrStixRelationship.is_inferred
             && data.stixObjectOrStixRelationship.containers.edges.length === 1
           ) {
-            console.log('IF 1');
             commitMutation({
               mutation:
                 knowledgeGraphQueryStixRelationshipDeleteMutation,
@@ -653,7 +651,6 @@ class GroupingKnowledgeGraphComponent extends Component {
               },
             });
           } else {
-            console.log('IF 2');
             commitMutation({
               mutation: groupingKnowledgeGraphMutationRelationDeleteMutation,
               variables: {
