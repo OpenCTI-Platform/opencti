@@ -356,7 +356,7 @@ class InvestigationGraphBar extends Component {
     }
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
 
-    const isRollBackToLastPreExpansionStateEnabled = !getPreExpansionStateList();
+    const isRollBackToLastPreExpansionStateDisabled = !getPreExpansionStateList();
 
     return (
       <UserContext.Consumer>
@@ -875,7 +875,7 @@ class InvestigationGraphBar extends Component {
                         <span>
                           <IconButton
                             color="primary"
-                            disabled={isRollBackToLastPreExpansionStateEnabled}
+                            disabled={isRollBackToLastPreExpansionStateDisabled }
                             onClick={handleOpenRollBackToPreExpansionStateDialog}
                             size="large"
                           >
