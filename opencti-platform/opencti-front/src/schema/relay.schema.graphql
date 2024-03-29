@@ -1416,6 +1416,7 @@ type ConfidenceLevelOverride {
 
 type EffectiveConfidenceLevel {
   max_confidence: Int!
+  overrides: [ConfidenceLevelOverride!]!
   source: EffectiveConfidenceLevelSource
 }
 

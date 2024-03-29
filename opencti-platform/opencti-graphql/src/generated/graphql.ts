@@ -6001,6 +6001,7 @@ export type EditUserContext = {
 export type EffectiveConfidenceLevel = {
   __typename?: 'EffectiveConfidenceLevel';
   max_confidence: Scalars['Int']['output'];
+  overrides: Array<ConfidenceLevelOverride>;
   source?: Maybe<EffectiveConfidenceLevelSource>;
 };
 
@@ -31833,6 +31834,7 @@ export type EditUserContextResolvers<ContextType = any, ParentType extends Resol
 
 export type EffectiveConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevel'] = ResolversParentTypes['EffectiveConfidenceLevel']> = ResolversObject<{
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
