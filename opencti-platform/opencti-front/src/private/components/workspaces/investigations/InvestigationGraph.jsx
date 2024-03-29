@@ -1806,6 +1806,16 @@ class InvestigationGraphComponent extends Component {
       return;
     }
 
+    const investigatedEntitiesIdsList = this.graphObjects.map(({ id }) => id);
+    setStackDataInSessionStorage(
+      investigationPreExpansionStateListStorageKey,
+      {
+        dateTime: new Date().getTime(),
+        investigatedEntitiesIdsList,
+      },
+      10,
+    );
+
     this.handleToggleDisplayProgress();
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const selectedEntitiesIds = R.map((n) => n.id, selectedEntities);
@@ -1838,15 +1848,6 @@ class InvestigationGraphComponent extends Component {
       this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
-      setStackDataInSessionStorage(
-        investigationPreExpansionStateListStorageKey,
-        {
-          dateTime: new Date().getTime(),
-          investigatedEntitiesIdsList: newElementsIds,
-        },
-        10,
-      );
-
       this.graphData = buildGraphData(
         this.graphObjects,
         decodeGraphData(this.props.workspace.graph_data),
@@ -1896,24 +1897,30 @@ class InvestigationGraphComponent extends Component {
     if (storedPreExpansion) {
       const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
       const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
+
+      const { graphObjectToRestore, graphObjectIdsToRemove } = this.graphObjects.reduce((acc, graphObject) => {
+        if (investigatedEntitiesIdsList.includes(graphObject.id)) {
+          acc.graphObjectToRestore = [...acc.graphObjectToRestore, graphObject];
+        } else {
+          acc.graphObjectIdsToRemove = [...acc.graphObjectIdsToRemove, graphObject.id];
+        }
+        return acc;
+      }, { graphObjectToRestore: [], graphObjectIdsToRemove: [] });
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
         variables: {
           id: this.props.workspace.id,
           input: {
             key: 'investigated_entities_ids',
-            value: investigatedEntitiesIdsList,
+            value: graphObjectIdsToRemove,
             operation: 'remove',
           },
         },
         onCompleted: () => {
-          const currentGraphObjects = this.graphObjects;
-          const newGraphObjects = currentGraphObjects.filter((graphObjects) => !investigatedEntitiesIdsList.includes(graphObjects.id));
-
-          this.graphObjects = newGraphObjects;
+          this.graphObjects = graphObjectToRestore;
 
           this.graphData = buildGraphData(
-            newGraphObjects,
+            graphObjectToRestore,
             decodeGraphData(this.props.workspace.graph_data),
             this.props.t,
           );
