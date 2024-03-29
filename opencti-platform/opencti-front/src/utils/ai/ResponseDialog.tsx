@@ -141,6 +141,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             {format === 'html' && (
               <CKEditor
                 id="response-dialog-editor"
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 editor={Editor}
                 config={{ language: 'en', toolbar: { shouldNotGroupWhenFull: true } }}
                 data={content}
