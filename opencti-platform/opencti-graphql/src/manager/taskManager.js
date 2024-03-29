@@ -199,6 +199,12 @@ const executeDelete = async (context, user, element) => {
 };
 const executeAdd = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
+  // The tasks are executed through filters, but since we don't know what type of entity will be targeted,
+  // we don't throw an error to avoid crashing due to uncertainty.
+  const check = controlUserConfidenceAgainstElement(user, element, true);
+  if (!check) {
+    return;
+  }
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
@@ -219,6 +225,10 @@ const executeAdd = async (context, user, actionContext, element) => {
 };
 const executeRemove = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
+  const check = controlUserConfidenceAgainstElement(user, element, true);
+  if (!check) {
+    return;
+  }
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
@@ -239,6 +249,10 @@ const executeRemove = async (context, user, actionContext, element) => {
 };
 export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
+  const check = controlUserConfidenceAgainstElement(user, element, true);
+  if (!check) {
+    return;
+  }
   let input = field;
   if (contextType === ACTION_TYPE_RELATION) {
     input = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, field);
