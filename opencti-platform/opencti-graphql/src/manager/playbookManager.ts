@@ -106,8 +106,8 @@ type ExecutorFn = {
   playbookId: string,
   dataInstanceId: string,
   definition: ComponentDefinition,
-  previousStep: PlaybookExecutionStep<any> | null
-  nextStep: PlaybookExecutionStep<any>,
+  previousStep: PlaybookExecutionStep<object> | null
+  nextStep: PlaybookExecutionStep<object>,
   previousStepBundle: StixBundle | null
   bundle: StixBundle
   externalCallback?: {
@@ -136,7 +136,7 @@ export const playbookExecutor = async ({
         executionId,
         dataInstanceId,
         playbookId,
-        previousPlaybookNode: previousStep?.instance,
+        previousPlaybookNodeId: previousStep?.instance.id,
         previousStepBundle,
         playbookNode: instanceWithConfig,
         bundle
@@ -222,7 +222,7 @@ export const playbookExecutor = async ({
         executionId,
         dataInstanceId,
         playbookId,
-        previousPlaybookNode: previousStep?.instance,
+        previousPlaybookNodeId: previousStep?.instance.id,
         playbookNode: instanceWithConfig,
         previousStepBundle,
         bundle
@@ -263,7 +263,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
           // 02. Execute the component
           if (validEventType && isMatch) {
-            const nextStep: PlaybookExecutionStep<any> = { component: connector, instance };
+            const nextStep = { component: connector, instance };
             const bundle: StixBundle = { id: uuidv4(), spec_version: STIX_SPEC_VERSION, type: 'bundle', objects: [data] };
             await playbookExecutor({
               // Basic
@@ -358,8 +358,8 @@ export const playbookStepExecution = async (context: AuthContext, user: AuthUser
   }
   const connector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
   // 02. Execute the component
-  const nextStep: PlaybookExecutionStep<any> = { component: connector, instance: nextInstance };
-  const previousStep: PlaybookExecutionStep<any> = { component: connector, instance: previousInstance };
+  const nextStep = { component: connector, instance: nextInstance };
+  const previousStep = { component: connector, instance: previousInstance };
   // const previousData = JSON.parse(args.previous_data);
   const bundle = JSON.parse(args.bundle) as StixBundle;
   return playbookExecutor({
