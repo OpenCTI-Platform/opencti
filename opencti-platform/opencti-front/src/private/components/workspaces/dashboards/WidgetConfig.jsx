@@ -1076,6 +1076,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     </FormControl>
                     )}
                     {dataSelection[i].perspective === 'entities'
+                      && getCurrentSelectedEntityTypes(i).length > 0
                       && (
                       <FormControl
                         className={classes.formControl}
@@ -1088,7 +1089,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         <QueryRenderer
                           query={stixCyberObservablesLinesAttributesQuery}
                           variables={{
-                            elementType: getCurrentSelectedEntityTypes(i).length > 0 ? getCurrentSelectedEntityTypes(i) : ['Stix-Core-Object'],
+                            elementType: getCurrentSelectedEntityTypes(i),
                           }}
                           render={({ props: resultProps }) => {
                             if (resultProps
@@ -1164,6 +1165,40 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         />
                       </FormControl>
                       )}
+                    {dataSelection[i].perspective === 'entities'
+                      && getCurrentSelectedEntityTypes(i).length === 0 && (
+                        <Select
+                          fullWidth={true}
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            event.target.value,
+                          )
+                          }
+                        >
+                          {[
+                            { value: 'entity_type' },
+                            { value: 'created-by.internal_id' },
+                            { value: 'object-label.internal_id' },
+                            { value: 'object-assignee.internal_id' },
+                            { value: 'object-marking.internal_id' },
+                            { value: 'kill-chain-phase.internal_id' },
+                            { value: 'x_opencti_workflow_id' },
+                          ].map((attribute) => (
+                            <MenuItem
+                              key={attribute.value}
+                              value={attribute.value}
+                            >
+                              {t_i18n(
+                                capitalizeFirstLetter(
+                                  attribute.value,
+                                ),
+                              )}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                    )}
                     {dataSelection[i].perspective === 'audits' && (
                     <FormControl
                       className={classes.formControl}
