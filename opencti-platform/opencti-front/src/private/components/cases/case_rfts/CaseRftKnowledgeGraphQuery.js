@@ -43,19 +43,3 @@ export const caseRftKnowledgeGraphMutationRelationDeleteMutation = graphql`
     } 
   }
 `;
-
-export const caseRftKnowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
-  mutation CaseRftKnowledgeGraphQueryCaseStixRelationshipDeleteMutation($id: ID!) {
-    stixRelationshipEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-export const caseRftKnowledgeGraphQueryStixObjectDeleteMutation = graphql`
-  mutation CaseRftKnowledgeGraphQueryCaseStixCoreObjectDeleteMutation($id: ID!) {
-    stixCoreObjectEdit(id: $id) {
-      delete
-    }
-  }
-`;

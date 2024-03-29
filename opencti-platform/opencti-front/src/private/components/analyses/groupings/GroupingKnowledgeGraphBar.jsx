@@ -34,10 +34,14 @@ import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'rechar
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -99,6 +103,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditDomainObject: false,
       openEditObservable: false,
       displayRemove: false,
+      deleteObject: false,
     };
   }
 
@@ -113,7 +118,11 @@ class GroupingKnowledgeGraphBar extends Component {
   }
 
   handleCloseRemove() {
-    this.setState({ displayRemove: false });
+    this.setState({ displayRemove: false, deleteObject: false });
+  }
+
+  handleToggleDeleteObject() {
+    this.setState({ deleteObject: !this.state.deleteObject });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -357,6 +366,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditDomainObject,
       openEditObservable,
       openEditNested,
+      deleteObject,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred).length > 0
       || selectedLinks.filter((n) => n.inferred).length > 0;
@@ -1053,11 +1063,33 @@ class GroupingKnowledgeGraphBar extends Component {
                       onClose={this.handleCloseRemove.bind(this)}
                     >
                       <DialogContent>
-                        <DialogContentText>
+                        <Typography variant="body">
                           {t(
                             'Do you want to remove these elements from this grouping?',
                           )}
-                        </DialogContentText>
+                        </Typography>
+                        <Alert
+                          severity="warning"
+                          variant="outlined"
+                          style={{ marginTop: 20 }}
+                        >
+                          <AlertTitle>{t('Cascade delete')}</AlertTitle>
+                          <FormGroup>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={deleteObject}
+                                  onChange={this.handleToggleDeleteObject.bind(
+                                    this,
+                                  )}
+                                />
+                                      }
+                              label={t(
+                                'Delete the element if no other containers contain it',
+                              )}
+                            />
+                          </FormGroup>
+                        </Alert>
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={this.handleCloseRemove.bind(this)}>
@@ -1066,7 +1098,7 @@ class GroupingKnowledgeGraphBar extends Component {
                         <Button
                           onClick={() => {
                             this.handleCloseRemove();
-                            handleDeleteSelected();
+                            handleDeleteSelected(deleteObject);
                           }}
                           color="secondary"
                         >
