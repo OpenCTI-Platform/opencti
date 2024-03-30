@@ -175,9 +175,6 @@ const useStyles = makeStyles((theme) => createStyles({
   menuItemSmallText: {
     padding: '1px 0 0 20px',
   },
-  menuToggleSubmenuIcons: {
-    marginRight: 15,
-  },
 }));
 
 const StyledTooltip = styled(({ className, ...props }) => (
@@ -226,7 +223,6 @@ const LeftBar = () => {
     data: useRef(null),
     settings: useRef(null),
   };
-  // console.log(localStorage.getItem('selectedMenu'));
   const [selectedMenu, setSelectedMenu] = useState(
     JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
   );
@@ -249,7 +245,7 @@ const LeftBar = () => {
     MESSAGING$.toggleNav.next('toggle');
   };
   const handleSelectedMenuOpen = (menu) => {
-    const updatedMenu = submenu_auto_collapse ? addMenuUnique(menu) : [menu];
+    const updatedMenu = (navOpen && submenu_auto_collapse) ? addMenuUnique(menu) : [menu];
     setSelectedMenu(updatedMenu);
   };
   const handleSelectedMenuClose = () => {
@@ -354,13 +350,6 @@ const LeftBar = () => {
                   <ListItemText
                     classes={{ primary: classes.menuSubItemText }}
                     primary={t_i18n(entry.label)}
-                    primaryTypographyProps={{
-                      style: {
-                        whiteSpace: 'wrap',
-                        lineHeight: 1.2,
-                        padding: '4px 0 4px 10px',
-                      },
-                    }}
                   />
                 </MenuItem>
               </StyledTooltip>
@@ -405,7 +394,7 @@ const LeftBar = () => {
                 classes={{ root: classes.menuHoverItem }}
                 onClick={handleSelectedMenuClose}
               >
-                {entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   {entry.icon}
                 </ListItemIcon>}
                 <ListItemText

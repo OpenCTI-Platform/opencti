@@ -97,8 +97,8 @@ const userResolvers = {
   MeUser: {
     language: (current) => current.language ?? 'auto',
     unit_system: (current) => current.unit_system ?? 'auto',
-    submenu_show_icons: (current) => current.submenu_show_icons ?? false,
-    submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? false,
+    submenu_show_icons: (current) => current.submenu_show_icons ?? true,
+    submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),

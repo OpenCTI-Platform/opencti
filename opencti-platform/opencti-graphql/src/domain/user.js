@@ -516,8 +516,6 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
-    R.assoc('submenu_show_icons', newUser.submenu_show_icons),
-    R.assoc('submenu_auto_collapse', newUser.submenu_auto_collapse),
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.dissoc('roles'),
     R.dissoc('groups')
