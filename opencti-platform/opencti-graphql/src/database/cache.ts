@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
@@ -90,8 +90,8 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
   };
   return telemetry(context, user, `CACHE ${type}`, {
-    [SemanticAttributes.DB_NAME]: 'cache_engine',
-    [SemanticAttributes.DB_OPERATION]: 'select',
+    [SEMATTRS_DB_NAME]: 'cache_engine',
+    [SEMATTRS_DB_OPERATION]: 'select',
   }, getEntitiesFromCacheFn);
 };
 

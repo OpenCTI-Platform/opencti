@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
@@ -35,8 +35,8 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
     });
   };
   return telemetry(context, user, 'QUERY entitySetting', {
-    [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'entitySetting_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 
@@ -53,8 +53,8 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));
   };
   return telemetry(context, user, 'BATCH entitySettings', {
-    [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'entitySetting_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 

@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { type ObservableResult, ValueType } from '@opentelemetry/api-metrics';
 import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
@@ -68,7 +68,7 @@ export const telemetry = (context: AuthContext, user: AuthUser, spanName: string
   const tracingSpan = tracer.startSpan(spanName, {
     attributes: {
       'enduser.type': context.source,
-      [SemanticAttributes.ENDUSER_ID]: user.id,
+      [SEMATTRS_ENDUSER_ID]: user.id,
       ...attrs
     },
     kind: 2 }, ctx);

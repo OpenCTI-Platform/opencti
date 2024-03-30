@@ -4,7 +4,7 @@ import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
   buildPagination,
@@ -306,9 +306,9 @@ export const elRawSearch = (context, user, types, query) => {
     return parsedSearch;
   });
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
-    [SemanticAttributes.DB_NAME]: 'search_engine',
-    [SemanticAttributes.DB_OPERATION]: 'read',
-    [SemanticAttributes.DB_STATEMENT]: JSON.stringify(query),
+    [SEMATTRS_DB_NAME]: 'search_engine',
+    [SEMATTRS_DB_OPERATION]: 'read',
+    [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
   }, elRawSearchFn);
 };
 export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
@@ -3371,8 +3371,8 @@ export const elIndexElements = async (context, user, message, elements) => {
     return transformedElements.length;
   };
   return telemetry(context, user, `INSERT ${message}`, {
-    [SemanticAttributes.DB_NAME]: 'search_engine',
-    [SemanticAttributes.DB_OPERATION]: 'insert',
+    [SEMATTRS_DB_NAME]: 'search_engine',
+    [SEMATTRS_DB_OPERATION]: 'insert',
   }, elIndexElementsFn);
 };
 

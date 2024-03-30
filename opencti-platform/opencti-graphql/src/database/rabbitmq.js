@@ -1,6 +1,6 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
@@ -122,8 +122,8 @@ export const metrics = async (context, user) => {
     return { overview, consumers, queues: platformQueues };
   };
   return telemetry(context, user, 'QUEUE metrics', {
-    [SemanticAttributes.DB_NAME]: 'messaging_engine',
-    [SemanticAttributes.DB_OPERATION]: 'metrics',
+    [SEMATTRS_DB_NAME]: 'messaging_engine',
+    [SEMATTRS_DB_OPERATION]: 'metrics',
   }, metricApi);
 };
 

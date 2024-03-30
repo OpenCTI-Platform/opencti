@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -332,8 +332,8 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
-    [SemanticAttributes.DB_NAME]: 'search_engine',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'search_engine',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, userFilterStoreElementsFn);
 };
 

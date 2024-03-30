@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
@@ -60,8 +60,8 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     return findAll(context, user, args);
   };
   return telemetry(context, user, 'QUERY type statuses', {
-    [SemanticAttributes.DB_NAME]: 'statuses_domain',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
 export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
@@ -81,8 +81,8 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
-    [SemanticAttributes.DB_NAME]: 'statuses_domain',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {

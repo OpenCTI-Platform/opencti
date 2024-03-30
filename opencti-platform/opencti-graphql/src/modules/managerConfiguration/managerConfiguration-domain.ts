@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, storeLoadById } from '../../database/middleware-loader';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../../database/middleware';
@@ -28,8 +28,8 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
     });
   };
   return telemetry(context, user, 'QUERY managerConfiguration', {
-    [SemanticAttributes.DB_NAME]: 'managerConfiguration_domain',
-    [SemanticAttributes.DB_OPERATION]: 'read',
+    [SEMATTRS_DB_NAME]: 'managerConfiguration_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
   }, findByTypeFn);
 };
 

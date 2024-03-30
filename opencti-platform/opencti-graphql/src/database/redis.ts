@@ -1,4 +1,4 @@
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, type RedisOptions } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
@@ -418,7 +418,7 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
       }
     };
     telemetry(context, user, 'INSERT STREAM', {
-      [SemanticAttributes.DB_NAME]: 'stream_engine',
+      [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
   }
 };
