@@ -42,9 +42,7 @@ export interface StixPlaybook extends StixObject {
   }
 }
 
-export interface PlaybookComponentConfiguration {}
-
-export interface NodeInstance<T extends PlaybookComponentConfiguration> {
+export interface NodeInstance<T extends object> {
   id: string
   name: string,
   component_id: string
@@ -53,22 +51,22 @@ export interface NodeInstance<T extends PlaybookComponentConfiguration> {
 
 export interface PlaybookExecution { output_port: string | undefined, forceBundleTracking?: boolean, bundle: StixBundle }
 
-export interface PlaybookExecutionStep<T extends PlaybookComponentConfiguration> {
-  component: PlaybookComponent<PlaybookComponentConfiguration>,
-  instance: NodeInstance<T>,
+export interface PlaybookExecutionStep<T extends object> {
+  component: PlaybookComponent<T>,
+  instance: NodeDefinition,
 }
 
-export interface ExecutorParameters<T extends PlaybookComponentConfiguration> {
+export interface ExecutorParameters<T extends object> {
   executionId: string
   playbookId: string
   dataInstanceId: string
-  previousPlaybookNode: NodeInstance<T> | undefined
+  previousPlaybookNodeId: string | undefined
   playbookNode: NodeInstance<T>
   previousStepBundle: StixBundle | null
   bundle: StixBundle
 }
 
-export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
+export interface PlaybookComponent<T extends object> {
   id: string
   name: string
   description: string

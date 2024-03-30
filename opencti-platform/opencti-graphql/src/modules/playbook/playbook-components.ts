@@ -16,7 +16,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent, type PlaybookComponentConfiguration } from './playbook-types';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToPlaybook } from '../../database/rabbitmq';
 import {
@@ -81,7 +81,7 @@ const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixO
 };
 
 // region built in playbook components
-interface LoggerConfiguration extends PlaybookComponentConfiguration {
+interface LoggerConfiguration {
   level: string
 }
 const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
@@ -119,7 +119,7 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   }
 };
 
-export interface StreamConfiguration extends PlaybookComponentConfiguration {
+export interface StreamConfiguration {
   create: boolean,
   update: boolean,
   delete: boolean,
@@ -150,7 +150,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   }
 };
 
-interface IngestionConfiguration extends PlaybookComponentConfiguration {}
+interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
   name: 'Send for ingestion',
@@ -168,7 +168,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   }
 };
 
-interface FilterConfiguration extends PlaybookComponentConfiguration {
+interface FilterConfiguration {
   all: boolean
   filters: string
 }
@@ -211,7 +211,7 @@ const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   }
 };
 
-interface ReduceConfiguration extends PlaybookComponentConfiguration {
+interface ReduceConfiguration {
   filters: string
 }
 const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = {
@@ -247,7 +247,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   }
 };
 
-interface ConnectorConfiguration extends PlaybookComponentConfiguration {
+interface ConnectorConfiguration {
   connector: string
 }
 const PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA: JSONSchemaType<ConnectorConfiguration> = {
@@ -274,7 +274,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     const schemaElement = { properties: { connector: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
-  notify: async ({ executionId, playbookId, playbookNode, previousPlaybookNode, dataInstanceId, bundle }) => {
+  notify: async ({ executionId, playbookId, playbookNode, previousPlaybookNodeId, dataInstanceId, bundle }) => {
     if (playbookNode.configuration.connector) {
       const message = {
         internal: {
@@ -284,7 +284,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
             playbook_id: playbookId,
             data_instance_id: dataInstanceId,
             step_id: playbookNode.id,
-            previous_step_id: previousPlaybookNode?.id,
+            previous_step_id: previousPlaybookNodeId,
           },
           applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
         },
@@ -308,7 +308,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   }
 };
 
-interface ContainerWrapperConfiguration extends PlaybookComponentConfiguration {
+interface ContainerWrapperConfiguration {
   container_type: string
   all: boolean
 }
@@ -384,7 +384,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   }
 };
 
-interface SharingConfiguration extends PlaybookComponentConfiguration {
+interface SharingConfiguration {
   organizations: string[]
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
@@ -470,7 +470,7 @@ interface UpdateValueConfiguration {
   value: string
   patch_value: string
 }
-interface UpdateConfiguration extends PlaybookComponentConfiguration {
+interface UpdateConfiguration {
   actions: { op: 'add' | 'replace' | 'remove', attribute: string, value: UpdateValueConfiguration[] }[]
   all: boolean
 }
@@ -585,7 +585,7 @@ const RESOLVE_OBSERVABLES = 'resolve_observables';
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
 const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
 type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
-interface RuleConfiguration extends PlaybookComponentConfiguration {
+interface RuleConfiguration {
   rule: string
   inferences: boolean
 }
@@ -746,7 +746,7 @@ const convertAuthorizedMemberToUsers = async (authorized_members: { value: strin
     .filter((u) => INTERNAL_USERS[u.id] === undefined);
   return R.uniqBy(R.prop('id'), withoutInternalUsers);
 };
-export interface NotifierConfiguration extends PlaybookComponentConfiguration {
+export interface NotifierConfiguration {
   notifiers: string[]
   authorized_members: object
 }
@@ -810,7 +810,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     return { output_port: undefined, bundle };
   }
 };
-interface CreateIndicatorConfiguration extends PlaybookComponentConfiguration {
+interface CreateIndicatorConfiguration {
   all: boolean
   wrap_in_container: boolean
 }
@@ -927,7 +927,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
     return { output_port: 'unmodified', bundle };
   }
 };
-interface CreateObservableConfiguration extends PlaybookComponentConfiguration {
+interface CreateObservableConfiguration {
   all: boolean
   wrap_in_container: boolean
 }
@@ -1039,7 +1039,8 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
 };
 // endregion
 
-export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<any> } = {
+// @ts-expect-error TODO improve playbook types to avoid this
+export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,
