@@ -294,6 +294,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'account_lock_after_date', label: 'Account expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'administrated_organizations', label: 'Organizations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'unit_system', label: 'Unit system', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'submenu_show_icons', label: 'Show submenu icons', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'submenu_auto_collapse', label: 'Auto collapse submenus', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'user_confidence_level',
       label: 'User Confidence Level',
       type: 'object',

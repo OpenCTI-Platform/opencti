@@ -193,7 +193,10 @@ const LeftBar = () => {
   const location = useLocation();
   const ref = useRef();
   const { t_i18n } = useFormatter();
-  const { settings: { platform_whitemark } } = useAuth();
+  const {
+    me: { submenu_auto_collapse, submenu_show_icons },
+    settings: { platform_whitemark },
+  } = useAuth();
   const history = useHistory();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -220,25 +223,46 @@ const LeftBar = () => {
     data: useRef(null),
     settings: useRef(null),
   };
-  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [selectedMenu, setSelectedMenu] = useState(
+    JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
+  );
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
   const classes = useStyles({ navOpen });
+  const addMenuUnique = (menu) => {
+    const joined = selectedMenu.concat(menu);
+    return joined.filter((value, index, array) => array.indexOf(value) === index);
+  };
+  const removeMenuUnique = (menu) => {
+    return selectedMenu.filter((value) => value !== menu);
+  };
   const handleToggle = () => {
-    setSelectedMenu(null);
+    setSelectedMenu([]);
     localStorage.setItem('navOpen', String(!navOpen));
+    localStorage.setItem('selectedMenu', JSON.stringify([]));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
   };
   const handleSelectedMenuOpen = (menu) => {
-    setSelectedMenu(menu);
+    const updatedMenu = (navOpen && submenu_auto_collapse) ? addMenuUnique(menu) : [menu];
+    setSelectedMenu(updatedMenu);
   };
   const handleSelectedMenuClose = () => {
-    setSelectedMenu(null);
+    setSelectedMenu([]);
   };
   const handleSelectedMenuToggle = (menu) => {
-    setSelectedMenu(selectedMenu === menu ? null : menu);
+    let updatedMenu;
+    if (submenu_auto_collapse) {
+      updatedMenu = selectedMenu.includes(menu) ? [] : [menu];
+      setSelectedMenu(updatedMenu);
+    } else {
+      updatedMenu = selectedMenu.includes(menu)
+        ? removeMenuUnique(menu)
+        : addMenuUnique(menu);
+      setSelectedMenu(updatedMenu);
+    }
+    localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (link) => {
     history.push(link);
@@ -308,7 +332,7 @@ const LeftBar = () => {
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
-      <Collapse in={selectedMenu === menu} timeout="auto" unmountOnExit={true}>
+      <Collapse in={selectedMenu.includes(menu)} timeout="auto" unmountOnExit={true}>
         <MenuList component="nav" disablePadding={true}>
           {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
             return (
@@ -320,7 +344,7 @@ const LeftBar = () => {
                   dense={true}
                   classes={{ root: classes.menuSubItem }}
                 >
-                  {entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                     {entry.icon}
                   </ListItemIcon>}
                   <ListItemText
@@ -336,7 +360,7 @@ const LeftBar = () => {
     ) : (
       <Popover
         sx={{ pointerEvents: 'none' }}
-        open={selectedMenu === menu}
+        open={selectedMenu.includes(menu)}
         anchorEl={anchors[menu]?.current}
         anchorOrigin={{
           vertical: 'top',
@@ -370,7 +394,7 @@ const LeftBar = () => {
                 classes={{ root: classes.menuHoverItem }}
                 onClick={handleSelectedMenuClose}
               >
-                {entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                {submenu_show_icons && entry.icon && <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
                   {entry.icon}
                 </ListItemIcon>}
                 <ListItemText
@@ -446,7 +470,7 @@ const LeftBar = () => {
                   primary={t_i18n('Analyses')}
                 />
               )}
-              {navOpen && (selectedMenu === 'analyses' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('analyses') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideAnalyses && generateSubMenu(
@@ -478,7 +502,7 @@ const LeftBar = () => {
                   primary={t_i18n('Cases')}
                 />
               )}
-              {navOpen && (selectedMenu === 'cases' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('cases') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideCases && generateSubMenu(
@@ -510,7 +534,7 @@ const LeftBar = () => {
                 primary={t_i18n('Events')}
               />
               )}
-              {navOpen && (selectedMenu === 'events' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('events') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideEvents && generateSubMenu(
@@ -540,7 +564,7 @@ const LeftBar = () => {
                   primary={t_i18n('Observations')}
                 />
               )}
-              {navOpen && (selectedMenu === 'observations' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('observations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideObservations && generateSubMenu(
@@ -574,7 +598,7 @@ const LeftBar = () => {
                   primary={t_i18n('Threats')}
                 />
               )}
-              {navOpen && (selectedMenu === 'threats' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('threats') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideThreats && generateSubMenu(
@@ -605,7 +629,7 @@ const LeftBar = () => {
                   primary={t_i18n('Arsenal')}
                 />
               )}
-              {navOpen && (selectedMenu === 'arsenal' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('arsenal') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideArsenal && generateSubMenu(
@@ -636,7 +660,7 @@ const LeftBar = () => {
                   primary={t_i18n('Techniques')}
                 />
               )}
-              {navOpen && (selectedMenu === 'techniques' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('techniques') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideTechniques && generateSubMenu(
@@ -668,7 +692,7 @@ const LeftBar = () => {
                   primary={t_i18n('Entities')}
                 />
               )}
-              {navOpen && (selectedMenu === 'entities' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('entities') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideEntities && generateSubMenu(
@@ -700,7 +724,7 @@ const LeftBar = () => {
                   primary={t_i18n('Locations')}
                 />
               )}
-              {navOpen && (selectedMenu === 'locations' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              {navOpen && (selectedMenu.includes('locations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
             </MenuItem>
             )}
             {!hideLocations && generateSubMenu(
@@ -777,7 +801,7 @@ const LeftBar = () => {
                   primary={t_i18n('Data')}
                 />
                 )}
-                {navOpen && (selectedMenu === 'data' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {navOpen && (selectedMenu.includes('data') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
               </MenuItem>
               {generateSubMenu(
                 'data',
@@ -839,7 +863,7 @@ const LeftBar = () => {
                     primary={t_i18n('Settings')}
                   />
                   )}
-                  {navOpen && (selectedMenu === 'settings' ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                  {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                 </MenuItem>
               )}
               {isGrantedToSettings && generateSubMenu(
@@ -889,7 +913,7 @@ const LeftBar = () => {
           )}
           <MenuItem
             dense={true}
-            style={{ marginBottom: bannerHeightNumber ? 6 : undefined }}
+            style={{ marginBottom: bannerHeightNumber }}
             classes={{
               root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
             }}

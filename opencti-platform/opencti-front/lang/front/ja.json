@@ -2673,5 +2673,7 @@
   "Strategic": "戦略的",
   "Link created": "リンク作成",
   "Public dashboard": "公開ダッシュボード",
+  "Show left navigation submenu icons": "左側のナビゲーション サブメニュー アイコンを表示する",
+  "Auto collapse submenus in left navigation": "左側のナビゲーションのサブメニューを自動的に折りたたむ",
   "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
 }

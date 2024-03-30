@@ -1147,6 +1147,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
     unit_system: user.unit_system,
+    submenu_show_icons: user.submenu_show_icons,
+    submenu_auto_collapse: user.submenu_auto_collapse,
     groups: user.groups,
     roles: user.roles,
     impersonate: impersonate !== undefined,

@@ -5,14 +5,14 @@ export default class LeftBarPage {
   constructor(private page:Page) {}
 
   async clickOnMenu(menuName: string, subMenuItem?: string) {
-    await this.page.getByRole('menuitem', { name: menuName }).click();
+    await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {
       await this.page.getByRole('menuitem', { name: subMenuItem }).click();
     }
   }
 
   async expectPage(menuName: string, pageName: string) {
-    await this.page.getByRole('menuitem', { name: pageName }).click();
+    await this.page.getByRole('menuitem', { name: pageName, exact: true }).click();
     await expect(this.page.getByText(`${menuName}/${pageName}`)).toBeVisible();
   }
 }
