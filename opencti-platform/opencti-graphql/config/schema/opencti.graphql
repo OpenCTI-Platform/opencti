@@ -276,7 +276,6 @@ type ObjectTotals {
   queues: String
 }
 type OverviewMetrics {
-  node: String
   object_totals: ObjectTotals
   queue_totals: QueueTotals
   message_stats: MessagesStats
@@ -10738,7 +10737,7 @@ type Query {
 
   about: AppInfo
   aiEndpoints: [String]
-  logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
+  logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(
@@ -12360,10 +12359,9 @@ type Mutation {
   synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
 
   ### WORK
-  workAdd(connectorId: String!, friendlyName: String): Work!
-  @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  workDelete(connectorId: String!): Boolean
+  workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [CONNECTORAPI, MODULES_MODMANAGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  workEdit(id: ID!): WorkEditMutations @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
+  workDelete(connectorId: String!): Boolean @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
 
   ### TASK
   deleteBackgroundTask(id: ID!): ID!
