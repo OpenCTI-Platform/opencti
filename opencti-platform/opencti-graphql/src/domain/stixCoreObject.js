@@ -1,10 +1,18 @@
 import * as R from 'ramda';
 import { createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import {
+  doesUserHaveAccess,
+  internalFindByIds,
+  internalLoadById,
+  listEntitiesPaginated,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById,
+  storeLoadByIds
+} from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { findById as findStatusById } from './status';
 import {
@@ -52,9 +60,13 @@ import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 export const findAll = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
-    types = args.types.filter((type) => isStixCoreObject(type));
+    types = args.types.filter((type) => isStixCoreObject(type)
+      && doesUserHaveAccess(user, 'KNOWLEDGE', type));
   }
   if (types.length === 0) {
+    if (!doesUserHaveAccess(user, 'KNOWLEDGE', ABSTRACT_STIX_CORE_OBJECT)) {
+      throw ForbiddenAccess();
+    }
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
   if (args.globalSearch) {
@@ -76,7 +88,12 @@ export const findAll = async (context, user, args) => {
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
-  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE', stixCoreObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
+  return stixCoreObject;
 };
 
 export const batchInternalRels = async (context, user, elements, opts = {}) => {
@@ -192,6 +209,10 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', stixCoreObject.entity_type)) {
+    throw ForbiddenAccess();
   }
   await deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   return stixCoreObjectId;
@@ -529,6 +550,14 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
 
 // region context
 export const stixCoreObjectCleanContext = async (context, user, stixCoreObjectId) => {
+  const sco = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  if (!sco) {
+    throw FunctionalError('Cannot clean the context, Stix-Core-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', sco.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await delEditContext(user, stixCoreObjectId);
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
@@ -536,6 +565,14 @@ export const stixCoreObjectCleanContext = async (context, user, stixCoreObjectId
 };
 
 export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId, input) => {
+  const sco = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  if (!sco) {
+    throw FunctionalError('Cannot edit the context, Stix-Core-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', sco.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await setEditContext(user, stixCoreObjectId, input);
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((stixCoreObject) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);

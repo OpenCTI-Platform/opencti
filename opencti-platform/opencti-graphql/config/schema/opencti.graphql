@@ -12082,7 +12082,7 @@ type KillChainPhaseEditMutations {
 ######## STIX CORE OBJECT ENTITIES
 
 type StixCoreObjectEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
@@ -12105,20 +12105,19 @@ input StixDomainObjectFileEditInput {
 }
 
 type StixDomainObjectEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  delete: ID
   changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixDomainObject
-  @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): StixDomainObject
+  contextClean: StixDomainObject
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
+  relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
-  stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE], type: AttackPattern)
@@ -12485,7 +12484,7 @@ type Mutation {
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETLABELS])
 
   ######## STIX CORE OBJECT ENTITIES
-  stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations
   stixCoreObjectsExportAsk(
     format: String!
     exportType: String!
@@ -12500,7 +12499,7 @@ type Mutation {
   stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
-  stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(
     format: String!
@@ -12539,32 +12538,32 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations
   individualAdd(input: IndividualAddInput!): Individual @auth(for: [KNOWLEDGE_KNUPDATE], type: Individual)
   individualEdit(id: ID!): IndividualEditMutations @auth(for: [KNOWLEDGE_KNUPDATE], type: Individual)
-  sectorAdd(input: SectorAddInput!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorAdd(input: SectorAddInput!): Sector @auth(for: [KNOWLEDGE_KNUPDATE], type: Sector)
   sectorEdit(id: ID!): SectorEditMutations
-  systemAdd(input: SystemAddInput!): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  systemAdd(input: SystemAddInput!): System @auth(for: [KNOWLEDGE_KNUPDATE], type: System)
   systemEdit(id: ID!): SystemEditMutations
   infrastructureAdd(input: InfrastructureAddInput!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE], type: Infrastructure)
   infrastructureEdit(id: ID!): InfrastructureEditMutations @auth(for: [KNOWLEDGE_KNUPDATE], type: Infrastructure)
-  intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE], type: IntrusionSet)
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   ############### Locations
   locationAdd(input: LocationAddInput!): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   locationEdit(id: ID!): LocationEditMutations
-  cityAdd(input: CityAddInput!): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityAdd(input: CityAddInput!): City @auth(for: [KNOWLEDGE_KNUPDATE], type: City)
   cityEdit(id: ID!): CityEditMutations
-  countryAdd(input: CountryAddInput!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryAdd(input: CountryAddInput!): Country @auth(for: [KNOWLEDGE_KNUPDATE], type: Country)
   countryEdit(id: ID!): CountryEditMutations
-  regionAdd(input: RegionAddInput!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionAdd(input: RegionAddInput!): Region @auth(for: [KNOWLEDGE_KNUPDATE], type: Region)
   regionEdit(id: ID!): RegionEditMutations
-  positionAdd(input: PositionAddInput!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  positionAdd(input: PositionAddInput!): Position @auth(for: [KNOWLEDGE_KNUPDATE], type: Position)
   positionEdit(id: ID!): PositionEditMutations
   malwareAdd(input: MalwareAddInput!): Malware @auth(for: [KNOWLEDGE_KNUPDATE], type: Malware)
   malwareEdit(id: ID!): MalwareEditMutations @auth(for: [KNOWLEDGE_KNUPDATE], type: Malware)
   threatActorGroupAdd(input: ThreatActorGroupAddInput!): ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorGroup)
   threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations @auth(for: [KNOWLEDGE_KNUPDATE], type: ThreatActorGroup)
-  toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE], type: Tool)
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE], type: Vulnerability)
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident @auth(for: [KNOWLEDGE_KNUPDATE], type: Incident)
   incidentEdit(id: ID!): IncidentEditMutations @auth(for: [KNOWLEDGE_KNUPDATE], type: Incident)

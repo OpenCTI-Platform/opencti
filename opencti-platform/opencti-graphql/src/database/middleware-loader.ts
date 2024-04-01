@@ -11,7 +11,14 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elList, elLoadById, elPaginate, ES_MINIMUM_FIXED_PAGINATION, UNIMPACTED_ENTITIES_ROLE } from './engine';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey,
+  OPENCTI_ADMIN_UUID
+} from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreBase,
@@ -25,12 +32,13 @@ import type {
   StoreProxyRelation,
   StoreRelationConnection
 } from '../types/store';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { BYPASS } from '../utils/access';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -120,6 +128,57 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
   baseData?: boolean;
   withInferences?: boolean;
 }
+
+/**
+ * Finds the strictest capability settings of two capability arrays.
+ *
+ * e.g. [read, write, delete] + [read, link] => [read]
+ * @returns the intersection of two capability arrays
+ */
+const _mergeStrictCapabilityOverrides = (cs1: string[], cs2: string[]) => {
+  return cs1.filter((c) => cs2.includes(c));
+};
+
+/**
+ * Determines if a given user has the provided capability on a specific entity.
+ * Takes into account a user's overridden capabilities from their roles.
+ *
+ * @returns true if user has capability on the given entity, false otherwise
+ */
+export const doesUserHaveAccess = (user: AuthUser, capability: string, entity: string) => {
+  const userCapabilities = user.capabilities.map((c) => c.name);
+  // const userCapabilities = user.roles.flatMap((role) => role?.capabilities);
+
+  // Handle bypass
+  if (userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID) {
+    return true;
+  }
+
+  // Get capability overrides from across all roles
+  const capabilityOverrides = user.roles.flatMap((role) => role.capabilities_overrides ?? []);
+  const overrides: Record<string, string[]> = {};
+  // for (const { entity: e, capabilities } of capabilityOverrides) {
+  for (let i = 0; i < capabilityOverrides.length; i += 1) {
+    const { entity: e, capabilities } = capabilityOverrides[i];
+    const capabilityNames = capabilities.map((c) => c.name);
+    if (overrides[e]) {
+      // Use only strictest capability overrides
+      overrides[e] = _mergeStrictCapabilityOverrides(
+        overrides[e],
+        capabilityNames
+      );
+    } else {
+      overrides[e] = capabilityNames;
+    }
+  }
+
+  // Prioritize overridden capabilities
+  if (overrides[entity]) {
+    return overrides[entity].includes(capability);
+  }
+  // Default to user's overall capabilities
+  return userCapabilities.includes(capability);
+};
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {
   const { fromOrToId = [], isTo = null } = args;
@@ -447,6 +506,11 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
+  for (let i = 0; i < entityTypes.length; i += 1) {
+    if (!doesUserHaveAccess(user, 'KNOWLEDGE', entityType[i])) {
+      throw ForbiddenAccess();
+    }
+  }
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connected entities paginated require connectionFormat option to true');

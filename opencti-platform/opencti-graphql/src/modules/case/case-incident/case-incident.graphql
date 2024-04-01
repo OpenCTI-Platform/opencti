@@ -178,7 +178,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): CaseIncidentConnection @auth(for: [KNOWLEDGE])
+  ): CaseIncidentConnection @auth(for: [KNOWLEDGE], type: CaseIncident)
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE], type: CaseIncident)
 }
 

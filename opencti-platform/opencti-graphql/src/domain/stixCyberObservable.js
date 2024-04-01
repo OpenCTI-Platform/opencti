@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
+  doesUserHaveAccess,
   listAllFromEntitiesThroughRelations,
   listEntities,
   listEntitiesThroughRelationsPaginated,
@@ -20,7 +21,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import { upload } from '../database/file-storage';
@@ -43,15 +44,24 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 
 export const findById = (context, user, stixCyberObservableId) => {
-  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE', stixCyberObservable.entity_type)) {
+    throw ForbiddenAccess();
+  }
+  return stixCyberObservable;
 };
 
 export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
-    types = args.types.filter((type) => isStixCyberObservable(type));
+    types = args.types.filter((type) => isStixCyberObservable(type)
+      && doesUserHaveAccess(user, 'KNOWLEDGE', type), args.types);
   }
   if (types.length === 0) {
+    if (!doesUserHaveAccess(user, 'KNOWLEDGE', ABSTRACT_STIX_CYBER_OBSERVABLE)) {
+      throw ForbiddenAccess();
+    }
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
   return listEntities(context, user, types, args);
@@ -166,6 +176,10 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!isStixCyberObservable(input.type)) {
     throw FunctionalError(`Observable type ${input.type} is not supported.`);
   }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', input.type)) {
+    throw ForbiddenAccess();
+  }
   // If type is ok, get the correct data that represent the observable
   const {
     stix_id,
@@ -223,21 +237,36 @@ export const addStixCyberObservable = async (context, user, input) => {
 };
 
 export const stixCyberObservableDelete = async (context, user, stixCyberObservableId) => {
+  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', stixCyberObservable.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await deleteElementById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   return stixCyberObservableId;
 };
 
 // region relation ref
 export const stixCyberObservableAddRelation = async (context, user, stixCyberObservableId, input) => {
+  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', stixCyberObservable.entity_type)) {
+    throw ForbiddenAccess();
+  }
   return stixObjectOrRelationshipAddRefRelation(context, user, stixCyberObservableId, input, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 export const stixCyberObservableDeleteRelation = async (context, user, stixCyberObservableId, toId, relationshipType) => {
+  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', stixCyberObservable.entity_type)) {
+    throw ForbiddenAccess();
+  }
   return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 // endregion
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', originalStixCyberObservable.entity_type)) {
+    throw ForbiddenAccess();
+  }
   if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
       await updateAttribute(

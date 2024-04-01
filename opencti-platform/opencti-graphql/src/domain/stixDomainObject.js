@@ -11,10 +11,10 @@ import {
   updateAttributeFromLoadedWithRefs,
   validateCreatedBy
 } from '../database/middleware';
-import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { doesUserHaveAccess, listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -43,15 +43,26 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 export const findAll = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
-    types = R.filter((type) => isStixDomainObject(type), args.types);
+    types = R.filter((type) => isStixDomainObject(type)
+      && doesUserHaveAccess(user, 'KNOWLEDGE', type), args.types);
   }
   if (types.length === 0) {
+    if (!doesUserHaveAccess(user, 'KNOWLEDGE', ABSTRACT_STIX_DOMAIN_OBJECT)) {
+      throw ForbiddenAccess();
+    }
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
   return listEntities(context, user, types, args);
 };
 
-export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const findById = async (context, user, stixDomainObjectId) => {
+  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
+  return stixDomainObject;
+};
 
 export const batchStixDomainObjects = async (context, user, objectsIds) => {
   const objectsToFinds = R.uniq(objectsIds.filter((u) => isNotEmptyField(u)));
@@ -145,6 +156,10 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   if (!isStixDomainObject(innerType)) {
     throw UnsupportedError('This method can only create Stix domain');
   }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', innerType)) {
+    throw ForbiddenAccess();
+  }
   let data = stixDomainObject;
   data = handleInnerType(data, innerType);
 
@@ -174,6 +189,10 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) 
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE_KNDELETE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await deleteElementById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
   return stixDomainObjectId;
@@ -189,9 +208,25 @@ export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsId
 
 // region relation ref
 export const stixDomainObjectAddRelation = async (context, user, stixDomainObjectId, input, opts = {}) => {
+  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  if (!stixDomainObject) {
+    throw FunctionalError('Cannot add a relation, Stix-Domain-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
   return stixObjectOrRelationshipAddRefRelation(context, user, stixDomainObjectId, input, ABSTRACT_STIX_DOMAIN_OBJECT, opts);
 };
 export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType, opts = {}) => {
+  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  if (!stixDomainObject) {
+    throw FunctionalError('Cannot remove a relation, Stix-Domain-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
   return stixObjectOrRelationshipDeleteRefRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT, opts);
 };
 // endregion
@@ -200,6 +235,10 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
   }
 
   const createdByKey = input.find((inputData) => inputData.key === 'createdBy');
@@ -233,6 +272,10 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
 
 export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {
   const stixDomainObject = await storeLoadByIdWithRefs(context, user, sdoId);
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', stixDomainObject.entity_type)) {
+    throw ForbiddenAccess();
+  }
   const files = stixDomainObject.x_opencti_files.map((file) => {
     if (file.id === id) {
       return { ...file, order, description, inCarousel };
@@ -246,6 +289,14 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
 
 // region context
 export const stixDomainObjectCleanContext = async (context, user, stixDomainObjectId) => {
+  const sdo = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  if (!sdo) {
+    throw FunctionalError('Cannot clean the context, Stix-Domain-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', sdo.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await delEditContext(user, stixDomainObjectId);
   return storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].CONTEXT_TOPIC, stixDomainObject, user);
@@ -253,6 +304,14 @@ export const stixDomainObjectCleanContext = async (context, user, stixDomainObje
 };
 
 export const stixDomainObjectEditContext = async (context, user, stixDomainObjectId, input) => {
+  const sdo = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  if (!sdo) {
+    throw FunctionalError('Cannot edit the context, Stix-Domain-Object cannot be found.');
+  }
+  // Check permissions
+  if (!doesUserHaveAccess(user, 'KNOWLEDGE_KNUPDATE', sdo.entity_type)) {
+    throw ForbiddenAccess();
+  }
   await setEditContext(user, stixDomainObjectId, input);
   return storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].CONTEXT_TOPIC, stixDomainObject, user);

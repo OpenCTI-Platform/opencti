@@ -2,8 +2,14 @@ import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } f
 import type { Group } from './group';
 import type { ConfidenceLevel } from '../generated/graphql';
 
+interface UserRoleEntityOverride {
+  entity: string;
+  capabilities: Array<UserCapability>;
+}
+
 interface UserRole extends BasicStoreIdentifier {
   name: string;
+  capabilities_overrides?: Array<UserRoleEntityOverride>;
 }
 
 interface UserCapability {
