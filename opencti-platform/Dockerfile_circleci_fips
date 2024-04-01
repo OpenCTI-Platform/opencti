@@ -41,9 +41,30 @@ COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/public ./public
 COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
 COPY opencti-graphql/script ./script
+
+ARG UID=10000
+ARG GID=10001
+ARG USERNAME="_opencti"
+
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS="--force-fips --max_old_space_size=12288"
 ENV NODE_ENV=production
+
+RUN set -ex \
+    ; addgroup -g "${GID}" -S "${USERNAME}" \
+    && adduser \
+        -h /opt/opencti \
+        -g "OpenCTI privsep user" \
+        -s "/sbin/nologin" \
+        -G "${USERNAME}" \
+        -S \
+        -u "${UID}" \
+        "${USERNAME}" \
+    && install -o "${UID}" -g "${GID}" -m 0752 -d '/opt/opencti/logs'
+
+VOLUME ["/opt/opencti/logs"]
+
+USER "${USERNAME}"
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/back.js"]

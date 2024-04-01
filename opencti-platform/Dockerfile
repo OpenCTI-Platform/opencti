@@ -95,7 +95,7 @@ RUN set -ex \
         -S \
         -u "${UID}" \
         "${USERNAME}" \
-    && install -o "${UID}" -g "${GID}" -m 0750 -d '/opt/opencti/logs'
+    && install -o "${UID}" -g "${GID}" -m 0752 -d '/opt/opencti/logs'
 
 VOLUME ["/opt/opencti/logs"]
 
