@@ -171,7 +171,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
-            color="secondary"
+            color="primary"
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}

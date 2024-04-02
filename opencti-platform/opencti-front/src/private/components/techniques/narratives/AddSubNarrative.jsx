@@ -48,7 +48,7 @@ class AddSubNarrative extends Component {
     return (
       <div>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}

@@ -565,7 +565,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       <div>
         {variant === 'inLine' ? (
           <IconButton
-            color="secondary"
+            color="primary"
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -576,7 +576,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         ) : (
           <Fab
             onClick={this.handleOpen.bind(this)}
-            color="secondary"
+            color="primary"
             aria-label="Add"
             className={
               paddingRight
