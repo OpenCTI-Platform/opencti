@@ -174,10 +174,18 @@ export const doesUserHaveAccess = (user: AuthUser, capability: string, entity: s
 
   // Prioritize overridden capabilities
   if (overrides[entity]) {
-    return overrides[entity].includes(capability);
+    for (let i = 0; i < overrides[entity].length; i += 1) {
+      const capabilityName = overrides[entity][i];
+      if (capabilityName.startsWith(capability)) return true;
+    }
+    return false;
   }
   // Default to user's overall capabilities
-  return userCapabilities.includes(capability);
+  for (let i = 0; i < userCapabilities.length; i += 1) {
+    const capabilityName = userCapabilities[i];
+    if (capabilityName.startsWith(capability)) return true;
+  }
+  return false;
 };
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {

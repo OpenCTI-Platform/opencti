@@ -440,7 +440,7 @@ describe('Opinion resolver standard behavior', () => {
 describe('Opinion resolver behavior with Participant and Editor users', () => {
   const participantOpinionStixId = 'opinion--4f5dec39-9b56-4175-8ad8-b5588672915f';
   const editorOpinionStixId = 'opinion--ac3aeb26-47c1-43b7-b12d-b8be102aaff1';
-  let participantId;
+  let participantId, opinionId;
 
   it('Participant should create opinion', async () => {
     const CREATE_QUERY = gql`
@@ -473,6 +473,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
     });
 
     expect(queryResult.data.userOpinionAdd.opinion).toEqual('agree');
+    opinionId = queryResult.data.userOpinionAdd.id;
   });
 
   it('Participant should update his own opinion', async () => {
@@ -493,7 +494,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
 
     const queryResult = await participantQuery({
       query: UPDATE_QUERY,
-      variables: { id: participantOpinionStixId, input: { key: 'opinion', value: ['disagree'] } },
+      variables: { id: opinionId, input: { key: 'opinion', value: ['disagree'] } },
     });
 
     expect(queryResult.data.opinionEdit.fieldPatch.opinion).toEqual('disagree');
@@ -511,10 +512,10 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
     // Delete the opinion
     await participantQuery({
       query: DELETE_QUERY,
-      variables: { id: participantOpinionStixId },
+      variables: { id: opinionId },
     });
     // Verify is no longer found
-    const queryResult = await participantQuery({ query: READ_QUERY, variables: { id: participantOpinionStixId } });
+    const queryResult = await participantQuery({ query: READ_QUERY, variables: { id: opinionId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).toBeNull();
   });
@@ -550,6 +551,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
       variables: OPINION_TO_CREATE,
     });
     expect(queryResult.data.opinionAdd.opinion).toEqual('agree');
+    opinionId = queryResult.data.opinionAdd.id;
   });
 
   it('Participant should not update Editor opinion', async () => {
@@ -568,7 +570,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
 
     const queryResult = await participantQuery({
       query: UPDATE_QUERY,
-      variables: { id: editorOpinionStixId, input: { key: 'opinion', value: 'agree' } },
+      variables: { id: opinionId, input: { key: 'opinion', value: 'agree' } },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
@@ -594,7 +596,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
 
     const queryResult = await editorQuery({
       query: UPDATE_QUERY,
-      variables: { id: editorOpinionStixId, input: [{ key: 'authors', value: [participantId] }] },
+      variables: { id: opinionId, input: [{ key: 'authors', value: [participantId] }] },
     });
     expect(queryResult.data.opinionEdit.fieldPatch.authors[0]).toEqual(participantId);
   });
@@ -618,7 +620,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
 
     const queryResult = await editorQuery({
       query: UPDATE_QUERY,
-      variables: { id: editorOpinionStixId, input: { key: 'opinion', value: 'neutral' } },
+      variables: { id: opinionId, input: { key: 'opinion', value: 'neutral' } },
     });
     expect(queryResult.data.opinionEdit.fieldPatch.opinion).toEqual('neutral');
   });
@@ -634,10 +636,10 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
     // Delete the opinion
     await editorQuery({
       query: DELETE_QUERY,
-      variables: { id: editorOpinionStixId },
+      variables: { id: opinionId },
     });
     // Verify is no longer found
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: editorOpinionStixId } });
+    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: opinionId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).toBeNull();
   });

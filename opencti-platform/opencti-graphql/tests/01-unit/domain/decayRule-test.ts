@@ -397,16 +397,16 @@ describe('Decay chart data generation', () => {
     const result = computeChartDecayAlgoSerie(computeChartInput);
 
     expect(result[0].score).toBe(100);
-    expect(moment(result[0].updated_at).format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
+    expect(moment(result[0].updated_at).utc().format('DD/MM/YYYY'), 'Base core 100 should be at start date').toBe('15/12/2023');
 
     expect(result[25].score).toBe(75);
-    expect(moment(result[25].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
+    expect(moment(result[25].updated_at).utc().format('DD/MM/YYYY'), 'expect 1').toBe('20/12/2023');
 
     expect(result[50].score).toBe(50);
-    expect(moment(result[50].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
+    expect(moment(result[50].updated_at).utc().format('DD/MM/YYYY'), 'expect 1').toBe('29/01/2024');
 
     expect(result[100].score).toBe(0);
-    expect(moment(result[100].updated_at).format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
+    expect(moment(result[100].updated_at).utc().format('DD/MM/YYYY'), 'expect 1').toBe('14/12/2024');
   });
 
   it('should compute live score serie with Decay reset', () => {
