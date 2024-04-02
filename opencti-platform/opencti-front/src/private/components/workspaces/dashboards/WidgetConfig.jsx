@@ -1106,14 +1106,13 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                               if (
                                 attributesValues.filter((n) => n === 'hashes').length > 0
                               ) {
-                                attributesValues = R.sort([
+                                attributesValues = [
                                   ...attributesValues,
                                   'hashes.MD5',
                                   'hashes.SHA-1',
                                   'hashes.SHA-256',
                                   'hashes.SHA-512',
-                                ]
-                                  .filter((n) => n !== 'hashes'));
+                                ].filter((n) => n !== 'hashes').sort();
                               }
                               return (
                                 <Select
