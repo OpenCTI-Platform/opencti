@@ -1095,30 +1095,25 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                             if (resultProps
                               && resultProps.schemaAttributeNames
                             ) {
-                              let attributes = R.pipe(
-                                R.map((n) => n.node),
-                                R.filter(
+                              let attributesValues = (resultProps.schemaAttributeNames.edges)
+                                .map((n) => n.node.value)
+                                .filter(
                                   (n) => !R.includes(
-                                    n.value,
+                                    n,
                                     ignoredAttributesInDashboards,
-                                  ) && !n.value.startsWith('i_'),
-                                ),
-                              )(resultProps.schemaAttributeNames.edges);
-                              if (
-                                attributes.filter(
-                                  (n) => n.value === 'hashes',
-                                ).length > 0
-                              ) {
-                                attributes = R.sortBy(
-                                  R.prop('value'),
-                                  [
-                                    ...attributes,
-                                    { value: 'hashes.MD5' },
-                                    { value: 'hashes.SHA-1' },
-                                    { value: 'hashes.SHA-256' },
-                                    { value: 'hashes.SHA-512' },
-                                  ].filter((n) => n.value !== 'hashes'),
+                                  ) && !n.startsWith('i_'),
                                 );
+                              if (
+                                attributesValues.filter((n) => n === 'hashes').length > 0
+                              ) {
+                                attributesValues = R.sort([
+                                  ...attributesValues,
+                                  'hashes.MD5',
+                                  'hashes.SHA-1',
+                                  'hashes.SHA-256',
+                                  'hashes.SHA-512',
+                                ]
+                                  .filter((n) => n !== 'hashes'));
                               }
                               return (
                                 <Select
@@ -1132,27 +1127,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                                                   }
                                 >
                                   {[
-                                    ...attributes,
-                                    { value: 'created-by.internal_id' },
-                                    { value: 'object-label.internal_id' },
-                                    {
-                                      value: 'object-assignee.internal_id',
-                                    },
-                                    { value: 'object-marking.internal_id' },
-                                    {
-                                      value: 'kill-chain-phase.internal_id',
-                                    },
-                                    {
-                                      value: 'x_opencti_workflow_id',
-                                    },
-                                  ].map((attribute) => (
+                                    ...attributesValues,
+                                    'created-by.internal_id',
+                                    'object-label.internal_id',
+                                    'object-assignee.internal_id',
+                                    'object-marking.internal_id',
+                                    'kill-chain-phase.internal_id',
+                                    'x_opencti_workflow_id',
+                                  ].map((value) => (
                                     <MenuItem
-                                      key={attribute.value}
-                                      value={attribute.value}
+                                      key={value}
+                                      value={value}
                                     >
                                       {t_i18n(
                                         capitalizeFirstLetter(
-                                          attribute.value,
+                                          value,
                                         ),
                                       )}
                                     </MenuItem>
@@ -1167,37 +1156,36 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       )}
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
-                        <Select
-                          fullWidth={true}
-                          value={dataSelection[i].attribute ?? 'entity_type'}
-                          onChange={(event) => handleChangeDataValidationParameter(
-                            i,
-                            'attribute',
-                            event.target.value,
-                          )
+                        <>
+                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                          <Select
+                            fullWidth={true}
+                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            onChange={(event) => handleChangeDataValidationParameter(
+                              i,
+                              'attribute',
+                              event.target.value,
+                            )
                           }
-                        >
-                          {[
-                            { value: 'entity_type' },
-                            { value: 'created-by.internal_id' },
-                            { value: 'object-label.internal_id' },
-                            { value: 'object-assignee.internal_id' },
-                            { value: 'object-marking.internal_id' },
-                            { value: 'kill-chain-phase.internal_id' },
-                            { value: 'x_opencti_workflow_id' },
-                          ].map((attribute) => (
-                            <MenuItem
-                              key={attribute.value}
-                              value={attribute.value}
-                            >
-                              {t_i18n(
-                                capitalizeFirstLetter(
-                                  attribute.value,
-                                ),
-                              )}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                          >
+                            {[
+                              'entity_type',
+                              'created-by.internal_id',
+                              'object-label.internal_id',
+                              'object-assignee.internal_id',
+                              'object-marking.internal_id',
+                              'kill-chain-phase.internal_id',
+                              'x_opencti_workflow_id',
+                            ].map((value) => (
+                              <MenuItem
+                                key={value}
+                                value={value}
+                              >
+                                {t_i18n(capitalizeFirstLetter(value))}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </>
                     )}
                     {dataSelection[i].perspective === 'audits' && (
                     <FormControl
@@ -1218,33 +1206,24 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                         )
                         }
                       >
-                        {[
-                          { value: 'entity_type' },
-                          { value: 'context_data.id' },
-                          { value: 'context_data.created_by_ref_id' },
-                          { value: 'context_data.labels_ids' },
-                          { value: 'context_data.object_marking_refs_ids' },
-                          { value: 'context_data.creator_ids' },
-                          { value: 'context_data.search' },
-                          { value: 'event_type' },
-                          {
-                            value: 'event_scope',
-                          },
-                          {
-                            value: 'user_id',
-                          },
-                          {
-                            value: 'group_ids',
-                          },
-                          {
-                            value: 'organization_ids',
-                          },
-                        ].map((attribute) => (
+                        {['entity_type',
+                          'context_data.id',
+                          'context_data.created_by_ref_id',
+                          'context_data.labels_ids',
+                          'context_data.object_marking_refs_ids',
+                          'context_data.creator_ids',
+                          'context_data.search',
+                          'event_type',
+                          'event_scope',
+                          'user_id',
+                          'group_ids',
+                          'organization_ids',
+                        ].map((value) => (
                           <MenuItem
-                            key={attribute.value}
-                            value={attribute.value}
+                            key={value}
+                            value={value}
                           >
-                            {t_i18n(capitalizeFirstLetter(attribute.value))}
+                            {t_i18n(capitalizeFirstLetter(value))}
                           </MenuItem>
                         ))}
                       </Select>
