@@ -1156,7 +1156,14 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                       )}
                     {dataSelection[i].perspective === 'entities'
                       && getCurrentSelectedEntityTypes(i).length === 0 && (
-                        <>
+                        <FormControl
+                          className={classes.formControl}
+                          fullWidth={true}
+                          style={{
+                            flex: 1,
+                            marginRight: 20,
+                          }}
+                        >
                           <InputLabel>{t_i18n('Attribute')}</InputLabel>
                           <Select
                             fullWidth={true}
@@ -1185,7 +1192,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                               </MenuItem>
                             ))}
                           </Select>
-                        </>
+                        </FormControl>
                     )}
                     {dataSelection[i].perspective === 'audits' && (
                     <FormControl
