@@ -18,7 +18,7 @@ import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, CloudUploadOutlined, FormatShapesOutlined, LibraryBooksOutlined, MapOutlined, WidgetsOutlined, PieChartOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -574,7 +574,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       case 'radar':
         return <Radar fontSize="large" color="primary"/>;
       case 'polar-area':
-        return <Radar fontSize="large" color="primary"/>;
+        return <PieChartOutlined fontSize="large" color="primary"/>;
       case 'tree':
         return <ChartTree fontSize="large" color="primary"/>;
       case 'bookmark':
