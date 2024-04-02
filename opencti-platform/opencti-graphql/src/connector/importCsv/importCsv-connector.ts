@@ -13,7 +13,7 @@ import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { internalLoadById } from '../../database/middleware-loader';
-import {DatabaseError, UnknownError} from '../../config/errors';
+import { DatabaseError } from '../../config/errors';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 
