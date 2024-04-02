@@ -13,6 +13,7 @@ import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { internalLoadById } from '../../database/middleware-loader';
+import {DatabaseError, UnknownError} from '../../config/errors';
 
 const RETRY_CONNECTION_PERIOD = 10000;
 
@@ -102,7 +103,13 @@ const initImportCsvConnector = () => {
 
   const handleCsvImport = async (context: AuthContext) => {
     consumeQueue(context, connector.id, connectionSetterCallback, consumeQueueCallback).catch(() => {
-      if (rabbitMqConnection) rabbitMqConnection.close();
+      if (rabbitMqConnection) {
+        try {
+          rabbitMqConnection.close();
+        } catch (e) {
+          logApp.error(DatabaseError('Closing RabbitMQ connection failed', { cause: e }));
+        }
+      }
       setTimeout(handleCsvImport, RETRY_CONNECTION_PERIOD);
     });
   };
