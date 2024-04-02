@@ -20,7 +20,7 @@ const statusResolvers: Resolvers = {
     statuses: (_, args, context) => findAll(context, context.user, args),
   },
   Status: {
-    template: (current, _, context) => findTemplateById(context, context.user, current.template_id),
+    template: (current, _, context) => current.template ?? findTemplateById(context, context.user, current.template_id),
   },
   StatusTemplate: {
     usages: (current, _, context) => statusTemplateUsagesNumber(context, context.user, current.id),

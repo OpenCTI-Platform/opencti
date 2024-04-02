@@ -50,7 +50,7 @@ const workflowStatuses = (context: AuthContext) => {
     const statuses = await listAllEntities<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
     return statuses.map((status) => {
       const template = templates.find((t) => t.internal_id === status.template_id);
-      return { ...status, name: template?.name ?? 'Error with template association' };
+      return { ...status, name: template?.name ?? 'Error with template association', template };
     });
   };
   return { values: null, fn: reloadStatuses };
