@@ -97,11 +97,13 @@ const PublicStixRelationshipsPolarAreaComponent = ({
           if (!item) {
             return [];
           }
+          console.log(item);
           return {
             label: isFieldForIdentifier(attributeField)
               ? getMainRepresentative(item.entity)
               : item.label,
             value: item.value ?? 0,
+            color: '',
           };
         })}
         withExport={false}

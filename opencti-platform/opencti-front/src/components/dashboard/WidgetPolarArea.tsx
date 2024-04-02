@@ -8,7 +8,8 @@ import type { Theme } from '../Theme';
 interface WidgetPolarAreaProps {
   data: {
     label: string,
-    value: number
+    value: number,
+    color: string
   }[]
   withExport?: boolean
   readonly?: boolean
@@ -23,6 +24,8 @@ const WidgetPolarArea = ({
 
   const chartData = data.map((n) => n.value);
   const labels = data.map((n) => n.label);
+
+  console.log(data);
 
   return (
     <Chart
