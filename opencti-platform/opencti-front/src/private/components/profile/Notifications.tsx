@@ -112,6 +112,8 @@ const Notifications: FunctionComponent = () => {
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
+        exportContext={{ entity_type: 'Notification' }}
         keyword={searchTerm}
         filters={filters}
         iconExtension={true}
