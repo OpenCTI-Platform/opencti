@@ -83,7 +83,11 @@ RUN set -ex \
         -S \
         -u "${UID}" \
         "${USERNAME}" \
-    && install -o "${UID}" -g "${GID}" -m 0752 -d '/opt/opencti/logs'
+    && install -o "${UID}" -g "${GID}" -m 0755 -d '/opt/opencti/logs'
+
+RUN mkdir -p /opt/opencti/logs
+
+RUN chmod -R 0733 /opt/opencti/logs
 
 VOLUME ["/opt/opencti/logs"]
 
