@@ -175,6 +175,7 @@ describe('Complex filters combinations for elastic queries', () => {
     const REPORT4 = {
       input: {
         name: 'Report4',
+        description: '', // empty string
         stix_id: report4StixId,
         published: '2023-09-15T00:51:35.000Z',
         objectMarking: [marking2StixId],
@@ -659,7 +660,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
-  it('should list entities according to filters: filter with \'nil\' operator', async () => {
+  it('should list entities according to filters: filter with \'nil\' and \'not_nil\' operators', async () => {
     // test for 'nil': objectMarking is empty
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -702,6 +703,52 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+  });
+  it('should list entities according to filters: \'nil\' / \'not_nil\' operators should take empty string into account', async () => {
+    // description is empty
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'description',
+              operator: 'nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is empty string
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy(); // description is null
+    // description is not empty
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'description',
+              operator: 'not_nil',
+              values: [],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // 'Report1', 'Report2', 'A demo for testing purpose'
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
   });
   it('should list entities according to filters: aggregation with filters', async () => {
     // count the number of entities with each marking
