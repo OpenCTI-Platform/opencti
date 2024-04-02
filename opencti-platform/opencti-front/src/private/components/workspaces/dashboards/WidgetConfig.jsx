@@ -897,21 +897,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               return (
                 <div key={i}>
                   {(getCurrentCategory() === 'distribution'
-                                        || getCurrentCategory() === 'list') && (
-                                        <TextField
-                                          label={t_i18n('Number of results')}
-                                          fullWidth={true}
-                                          type="number"
-                                          value={dataSelection[i].number ?? 10}
-                                          onChange={(event) => handleChangeDataValidationParameter(
-                                            i,
-                                            'number',
-                                            event.target.value,
-                                            true,
-                                          )
-                                            }
-                                          style={{ marginTop: 20 }}
-                                        />
+                    || getCurrentCategory() === 'list') && (
+                    <TextField
+                      label={t_i18n('Number of results')}
+                      fullWidth={true}
+                      type="number"
+                      value={dataSelection[i].number ?? 10}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'number',
+                        event.target.value,
+                        true,
+                      )
+                        }
+                      style={{ marginTop: 20 }}
+                    />
                   )}
                   {dataSelection[i].perspective !== 'audits' && (
                   <div
@@ -971,52 +971,52 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                   </div>
                   )}
                   {dataSelection[i].perspective === 'relationships'
-                                        && type === 'map' && (
-                                        <TextField
-                                          label={t_i18n('Zoom')}
-                                          fullWidth={true}
-                                          value={dataSelection[i].zoom ?? 2}
-                                          placeholder={t_i18n('Zoom')}
-                                          onChange={(event) => handleChangeDataValidationParameter(
-                                            i,
-                                            'zoom',
-                                            event.target.value,
-                                          )
-                                                }
-                                          style={{ marginTop: 20 }}
-                                        />
+                    && type === 'map' && (
+                    <TextField
+                      label={t_i18n('Zoom')}
+                      fullWidth={true}
+                      value={dataSelection[i].zoom ?? 2}
+                      placeholder={t_i18n('Zoom')}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'zoom',
+                        event.target.value,
+                      )
+                            }
+                      style={{ marginTop: 20 }}
+                    />
                   )}
                   {dataSelection[i].perspective === 'relationships'
-                                        && type === 'map' && (
-                                        <TextField
-                                          label={t_i18n('Center latitude')}
-                                          fullWidth={true}
-                                          value={dataSelection[i].centerLat ?? 48.8566969}
-                                          placeholder={t_i18n('Center latitude')}
-                                          onChange={(event) => handleChangeDataValidationParameter(
-                                            i,
-                                            'centerLat',
-                                            event.target.value,
-                                          )
-                                                }
-                                          style={{ marginTop: 20 }}
-                                        />
+                    && type === 'map' && (
+                    <TextField
+                      label={t_i18n('Center latitude')}
+                      fullWidth={true}
+                      value={dataSelection[i].centerLat ?? 48.8566969}
+                      placeholder={t_i18n('Center latitude')}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'centerLat',
+                        event.target.value,
+                      )
+                            }
+                      style={{ marginTop: 20 }}
+                    />
                   )}
                   {dataSelection[i].perspective === 'relationships'
-                                        && type === 'map' && (
-                                        <TextField
-                                          label={t_i18n('Center longitude')}
-                                          fullWidth={true}
-                                          value={dataSelection[i].centerLng ?? 2.3514616}
-                                          placeholder={t_i18n('Center longitude')}
-                                          onChange={(event) => handleChangeDataValidationParameter(
-                                            i,
-                                            'centerLng',
-                                            event.target.value,
-                                          )
-                                                }
-                                          style={{ marginTop: 20 }}
-                                        />
+                    && type === 'map' && (
+                    <TextField
+                      label={t_i18n('Center longitude')}
+                      fullWidth={true}
+                      value={dataSelection[i].centerLng ?? 2.3514616}
+                      placeholder={t_i18n('Center longitude')}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'centerLng',
+                        event.target.value,
+                      )
+                            }
+                      style={{ marginTop: 20 }}
+                    />
                   )}
                   {getCurrentAvailableParameters().includes('attribute') && (
                   <div
@@ -1076,116 +1076,122 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     </FormControl>
                     )}
                     {dataSelection[i].perspective === 'entities'
-                                                && getCurrentSelectedEntityTypes(i).length > 0 && (
-                                                <FormControl
-                                                  className={classes.formControl}
-                                                  fullWidth={true}
-                                                  style={{
-                                                    flex: 1,
-                                                  }}
-                                                >
-                                                  <InputLabel>{t_i18n('Attribute')}</InputLabel>
-                                                  <QueryRenderer
-                                                    query={stixCyberObservablesLinesAttributesQuery}
-                                                    variables={{
-                                                      elementType: getCurrentSelectedEntityTypes(i),
-                                                    }}
-                                                    render={({ props: resultProps }) => {
-                                                      if (
-                                                        resultProps
-                                                                    && resultProps.schemaAttributeNames
-                                                      ) {
-                                                        let attributes = R.pipe(
-                                                          R.map((n) => n.node),
-                                                          R.filter(
-                                                            (n) => !R.includes(
-                                                              n.value,
-                                                              ignoredAttributesInDashboards,
-                                                            ) && !n.value.startsWith('i_'),
-                                                          ),
-                                                        )(resultProps.schemaAttributeNames.edges);
-                                                        if (
-                                                          attributes.filter(
-                                                            (n) => n.value === 'hashes',
-                                                          ).length > 0
-                                                        ) {
-                                                          attributes = R.sortBy(
-                                                            R.prop('value'),
-                                                            [
-                                                              ...attributes,
-                                                              { value: 'hashes.MD5' },
-                                                              { value: 'hashes.SHA-1' },
-                                                              { value: 'hashes.SHA-256' },
-                                                              { value: 'hashes.SHA-512' },
-                                                            ].filter((n) => n.value !== 'hashes'),
-                                                          );
-                                                        }
-                                                        return (
-                                                          <Select
-                                                            fullWidth={true}
-                                                            value={dataSelection[i].attribute}
-                                                            onChange={(event) => handleChangeDataValidationParameter(
-                                                              i,
-                                                              'attribute',
-                                                              event.target.value,
-                                                            )
-                                                                            }
-                                                          >
-                                                            {[
-                                                              ...attributes,
-                                                              { value: 'created-by.internal_id' },
-                                                              { value: 'object-label.internal_id' },
-                                                              {
-                                                                value: 'object-assignee.internal_id',
-                                                              },
-                                                              { value: 'object-marking.internal_id' },
-                                                              {
-                                                                value: 'kill-chain-phase.internal_id',
-                                                              },
-                                                              {
-                                                                value: 'x_opencti_workflow_id',
-                                                              },
-                                                            ].map((attribute) => (
-                                                              <MenuItem
-                                                                key={attribute.value}
-                                                                value={attribute.value}
-                                                              >
-                                                                {t_i18n(
-                                                                  capitalizeFirstLetter(
-                                                                    attribute.value,
-                                                                  ),
-                                                                )}
-                                                              </MenuItem>
-                                                            ))}
-                                                          </Select>
-                                                        );
-                                                      }
-                                                      return <div/>;
-                                                    }}
-                                                  />
-                                                </FormControl>
-                    )}
+                      && getCurrentSelectedEntityTypes(i).length > 0
+                      && (
+                      <FormControl
+                        className={classes.formControl}
+                        fullWidth={true}
+                        style={{
+                          flex: 1,
+                        }}
+                      >
+                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <QueryRenderer
+                          query={stixCyberObservablesLinesAttributesQuery}
+                          variables={{
+                            elementType: getCurrentSelectedEntityTypes(i),
+                          }}
+                          render={({ props: resultProps }) => {
+                            if (resultProps
+                              && resultProps.schemaAttributeNames
+                            ) {
+                              let attributesValues = (resultProps.schemaAttributeNames.edges)
+                                .map((n) => n.node.value)
+                                .filter(
+                                  (n) => !R.includes(
+                                    n,
+                                    ignoredAttributesInDashboards,
+                                  ) && !n.startsWith('i_'),
+                                );
+                              if (
+                                attributesValues.filter((n) => n === 'hashes').length > 0
+                              ) {
+                                attributesValues = [
+                                  ...attributesValues,
+                                  'hashes.MD5',
+                                  'hashes.SHA-1',
+                                  'hashes.SHA-256',
+                                  'hashes.SHA-512',
+                                ].filter((n) => n !== 'hashes').sort();
+                              }
+                              return (
+                                <Select
+                                  fullWidth={true}
+                                  value={dataSelection[i].attribute}
+                                  onChange={(event) => handleChangeDataValidationParameter(
+                                    i,
+                                    'attribute',
+                                    event.target.value,
+                                  )
+                                                  }
+                                >
+                                  {[
+                                    ...attributesValues,
+                                    'created-by.internal_id',
+                                    'object-label.internal_id',
+                                    'object-assignee.internal_id',
+                                    'object-marking.internal_id',
+                                    'kill-chain-phase.internal_id',
+                                    'x_opencti_workflow_id',
+                                  ].map((value) => (
+                                    <MenuItem
+                                      key={value}
+                                      value={value}
+                                    >
+                                      {t_i18n(
+                                        capitalizeFirstLetter(
+                                          value,
+                                        ),
+                                      )}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              );
+                            }
+                            return <div/>;
+                          }}
+                        />
+                      </FormControl>
+                      )}
                     {dataSelection[i].perspective === 'entities'
-                                                && getCurrentSelectedEntityTypes(i).length === 0 && (
-                                                <TextField
-                                                  style={{
-                                                    flex: 1,
-                                                    marginRight:
-                                                                dataSelection[i].perspective === 'relationships'
-                                                                  ? 20
-                                                                  : 0,
-                                                  }}
-                                                  label={t_i18n('Field')}
-                                                  fullWidth={true}
-                                                  value={dataSelection[i].attribute}
-                                                  placeholder={t_i18n('Series attribute')}
-                                                  onChange={(event) => handleChangeDataValidationParameter(
-                                                    i,
-                                                    'attribute',
-                                                    event.target.value,
-                                                  )
-                                                        }
-                                                />
+                      && getCurrentSelectedEntityTypes(i).length === 0 && (
+                        <FormControl
+                          className={classes.formControl}
+                          fullWidth={true}
+                          style={{
+                            flex: 1,
+                            marginRight: 20,
+                          }}
+                        >
+                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                          <Select
+                            fullWidth={true}
+                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            onChange={(event) => handleChangeDataValidationParameter(
+                              i,
+                              'attribute',
+                              event.target.value,
+                            )
+                          }
+                          >
+                            {[
+                              'entity_type',
+                              'created-by.internal_id',
+                              'object-label.internal_id',
+                              'object-assignee.internal_id',
+                              'object-marking.internal_id',
+                              'kill-chain-phase.internal_id',
+                              'x_opencti_workflow_id',
+                            ].map((value) => (
+                              <MenuItem
+                                key={value}
+                                value={value}
+                              >
+                                {t_i18n(capitalizeFirstLetter(value))}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                     )}
                     {dataSelection[i].perspective === 'audits' && (
                     <FormControl
@@ -1204,35 +1210,26 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           'attribute',
                           event.target.value,
                         )
-                                                        }
+                        }
                       >
-                        {[
-                          { value: 'entity_type' },
-                          { value: 'context_data.id' },
-                          { value: 'context_data.created_by_ref_id' },
-                          { value: 'context_data.labels_ids' },
-                          { value: 'context_data.object_marking_refs_ids' },
-                          { value: 'context_data.creator_ids' },
-                          { value: 'context_data.search' },
-                          { value: 'event_type' },
-                          {
-                            value: 'event_scope',
-                          },
-                          {
-                            value: 'user_id',
-                          },
-                          {
-                            value: 'group_ids',
-                          },
-                          {
-                            value: 'organization_ids',
-                          },
-                        ].map((attribute) => (
+                        {['entity_type',
+                          'context_data.id',
+                          'context_data.created_by_ref_id',
+                          'context_data.labels_ids',
+                          'context_data.object_marking_refs_ids',
+                          'context_data.creator_ids',
+                          'context_data.search',
+                          'event_type',
+                          'event_scope',
+                          'user_id',
+                          'group_ids',
+                          'organization_ids',
+                        ].map((value) => (
                           <MenuItem
-                            key={attribute.value}
-                            value={attribute.value}
+                            key={value}
+                            value={value}
                           >
-                            {t_i18n(capitalizeFirstLetter(attribute.value))}
+                            {t_i18n(capitalizeFirstLetter(value))}
                           </MenuItem>
                         ))}
                       </Select>
@@ -1245,7 +1242,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                           onChange={() => handleToggleDataValidationIsTo(i)}
                           checked={!dataSelection[i].isTo}
                         />
-                                                    }
+                      }
                       label={t_i18n('Display the source')}
                     />
                     )}
@@ -1276,7 +1273,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('stacked')}
                 checked={parameters.stacked}
               />
-                            }
+            }
             label={t_i18n('Stacked')}
           />
           )}
@@ -1287,7 +1284,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('distributed')}
                 checked={parameters.distributed}
               />
-                            }
+            }
             label={t_i18n('Distributed')}
           />
           )}
@@ -1298,7 +1295,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 onChange={() => handleToggleParameter('legend')}
                 checked={parameters.legend}
               />
-                            }
+            }
             label={t_i18n('Display legend')}
           />
           )}
