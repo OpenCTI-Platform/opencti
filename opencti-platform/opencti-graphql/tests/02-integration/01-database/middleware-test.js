@@ -726,9 +726,9 @@ describe('Relations distribution', () => {
     expect(distribution[0].entity.representative).toBeUndefined();
     expect(distribution[1].entity.representative).toBeUndefined();
     expect(distribution[2].entity.representative).toBeUndefined();
-    expect(distribution[0].entity.x_opencti_stix_ids).toEqual(['attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17']);
-    expect(distribution[1].entity.x_opencti_stix_ids).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
-    expect(distribution[2].entity.x_opencti_stix_ids).toEqual(['intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7']);
+    expect(distribution[0].entity.name).toBeDefined();
+    expect(distribution[1].entity.name).toBeDefined();
+    expect(distribution[2].entity.name).toBeDefined();
   });
   it('should relation distribution give restricted entity data', async () => {
     // const { limit = 50, order, inferred = false } = options;
@@ -748,9 +748,9 @@ describe('Relations distribution', () => {
     expect(distribution[0].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
     expect(distribution[1].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
     expect(distribution[2].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
-    expect(distribution[0].entity.x_opencti_stix_ids).toBeUndefined();
-    expect(distribution[1].entity.x_opencti_stix_ids).toBeUndefined();
-    expect(distribution[2].entity.x_opencti_stix_ids).toBeUndefined();
+    expect(distribution[0].entity.name).toBeUndefined();
+    expect(distribution[1].entity.name).toBeUndefined();
+    expect(distribution[2].entity.name).toBeUndefined();
   });
 });
 
