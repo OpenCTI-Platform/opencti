@@ -14,7 +14,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
-  INPUT_PARTICIPANT
+  INPUT_PARTICIPANT, INPUT_WORKS
 } from './general';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -27,7 +27,7 @@ import {
 } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
-import { ENTITY_TYPE_USER } from './internalObject';
+import {ENTITY_TYPE_USER, ENTITY_TYPE_WORK} from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
@@ -652,6 +652,7 @@ export const RELATION_OBJECT_LABEL = 'object-label';
 export const RELATION_OBJECT = 'object'; // object_refs
 export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_references
 export const RELATION_INTERNAL_FILE = 'internal-file'; // internal-file
+export const RELATION_WORK = 'work'; // work
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
 export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
@@ -827,6 +828,23 @@ export const objectLabel: RefAttribute = {
   toTypes: [ENTITY_TYPE_LABEL],
 };
 
+export const work: RefAttribute = {
+  name: INPUT_WORKS,
+  type: 'ref',
+  databaseName: RELATION_WORK,
+  stixName: 'work',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isRefExistingForTypes(this, _, toType) {
+    return this.toTypes.includes(toType);
+  },
+  label: 'Work',
+  datable: false,
+  isFilterable: true,
+  toTypes: [ENTITY_TYPE_WORK]
+};
 export const internalFiles: RefAttribute = {
   name: INPUT_INTERNAL_FILES,
   type: 'ref',

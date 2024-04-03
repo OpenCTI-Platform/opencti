@@ -153,7 +153,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     map(async (connector) => { // can be refactored to native map
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
