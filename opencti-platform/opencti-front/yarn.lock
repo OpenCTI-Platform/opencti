@@ -2285,7 +2285,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/is-prop-valid@npm:^1.2.1":
+"@emotion/is-prop-valid@npm:^1.2.1, @emotion/is-prop-valid@npm:^1.2.2":
   version: 1.2.2
   resolution: "@emotion/is-prop-valid@npm:1.2.2"
   dependencies:
@@ -2342,6 +2342,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emotion/serialize@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "@emotion/serialize@npm:1.1.4"
+  dependencies:
+    "@emotion/hash": "npm:^0.9.1"
+    "@emotion/memoize": "npm:^0.8.1"
+    "@emotion/unitless": "npm:^0.8.1"
+    "@emotion/utils": "npm:^1.2.1"
+    csstype: "npm:^3.0.2"
+  checksum: 10/11fc4f960226778e9a5f86310b739703986d13b2de3e89a16d788126ce312b2c8c174a2947c9bfc80cb124b331c36feeac44193f81150616d94b1ba19a92d70a
+  languageName: node
+  linkType: hard
+
 "@emotion/sheet@npm:^1.2.2":
   version: 1.2.2
   resolution: "@emotion/sheet@npm:1.2.2"
@@ -2349,7 +2362,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@emotion/styled@npm:11.11.0, @emotion/styled@npm:^11.6.0":
+"@emotion/styled@npm:11.11.5":
+  version: 11.11.5
+  resolution: "@emotion/styled@npm:11.11.5"
+  dependencies:
+    "@babel/runtime": "npm:^7.18.3"
+    "@emotion/babel-plugin": "npm:^11.11.0"
+    "@emotion/is-prop-valid": "npm:^1.2.2"
+    "@emotion/serialize": "npm:^1.1.4"
+    "@emotion/use-insertion-effect-with-fallbacks": "npm:^1.0.1"
+    "@emotion/utils": "npm:^1.2.1"
+  peerDependencies:
+    "@emotion/react": ^11.0.0-rc.0
+    react: ">=16.8.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/a936787ef80d73066840391522d88280424de0abb56bec83d17e14bdc5a515e77e343dd171f7caae1405462e3f71815b5480dcc4e1eff5e8ff4a020f5c39341e
+  languageName: node
+  linkType: hard
+
+"@emotion/styled@npm:^11.6.0":
   version: 11.11.0
   resolution: "@emotion/styled@npm:11.11.0"
   dependencies:
@@ -5162,12 +5195,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.11.30, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 20.11.30
   resolution: "@types/node@npm:20.11.30"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10/78515bc768d2b878e2e06a1c20eb4f5840072b79b8d28ff3dd0a7feaaf48fd3a2ac03cfa5bc7564da82db5906b43e9ba0e5df9f43d870b7aae2942306e208815
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:20.12.3":
+  version: 20.12.3
+  resolution: "@types/node@npm:20.12.3"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/3f3c5c6ba118a18aa997c51cdc3c66259d69021f87475a99ed6c913a6956e22de49748e09843bf6447a7a63ae474e61945a6dbcca93e23b2359fc0b6f9914f7a
   languageName: node
   linkType: hard
 
@@ -14929,7 +14971,7 @@ __metadata:
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.0.0"
     "@emotion/react": "npm:11.11.4"
-    "@emotion/styled": "npm:11.11.0"
+    "@emotion/styled": "npm:11.11.5"
     "@fontsource/geologica": "npm:5.0.4"
     "@fontsource/ibm-plex-sans": "npm:5.0.19"
     "@mui/icons-material": "npm:5.15.14"
@@ -14946,7 +14988,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.4.2"
     "@testing-library/react": "npm:14.2.2"
     "@testing-library/user-event": "npm:^14.5.2"
-    "@types/node": "npm:20.11.30"
+    "@types/node": "npm:20.12.3"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.29.11"
     "@types/react": "npm:18.2.69"
