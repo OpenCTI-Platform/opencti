@@ -2675,5 +2675,13 @@
   "Link created": "Link created",
   "Show left navigation submenu icons": "Show left navigation submenu icons",
   "Auto collapse submenus in left navigation": "Auto collapse submenus in left navigation",
-  "Public dashboard": "Public dashboard"
+  "Public dashboard": "Public dashboard",
+  "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:",
+  "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.",
+  "OpenCTI EE is included for all Filigran SaaS customers without additional fee.": "OpenCTI EE is included for all Filigran SaaS customers without additional fee.",
+  "For all other usages, you (and your organization) should have entered in a": "For all other usages, you (and your organization) should have entered in a",
+  "Most used filters": "Most used filters",
+  "All other filters": "All other filters",
+  "Testing csv mapper": "Testing csv mapper",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform."
 }

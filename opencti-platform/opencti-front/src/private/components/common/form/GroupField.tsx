@@ -21,11 +21,6 @@ const useStyles = makeStyles({
   autoCompleteIndicator: {
     display: 'none',
   },
-  labelRoot: {
-    '& .MuiFormLabel-root': {
-      zIndex: 1,
-    },
-  },
 });
 
 export const searchGroupFieldQuery = graphql`
@@ -75,7 +70,6 @@ interface GroupFieldProps {
   disabled?: boolean,
   predefinedGroups?: GroupFieldOption[],
   showConfidence?: boolean,
-  clickableEEChip?: boolean,
 }
 
 const GroupField: React.FC<GroupFieldProps> = (props) => {
@@ -132,7 +126,6 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
         label: label ?? t_i18n('Groups'),
         helperText: helpertext,
         onFocus: searchGroups,
-        className: classes.labelRoot,
       }}
       noOptionsText={t_i18n('No available options')}
       options={groups}
