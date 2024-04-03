@@ -193,7 +193,6 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           },
         },
         onCompleted: () => {
-          handleClearSelectedElements();
           onSubmitCompleted();
         },
       });
