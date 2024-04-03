@@ -108,7 +108,7 @@ class AddNotesLinesContainer extends Component {
             'noteEdit',
             null,
             'relationAdd',
-            input,
+            { input },
             'from',
           );
         },

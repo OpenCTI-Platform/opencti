@@ -25,6 +25,8 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -79,6 +81,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
@@ -187,6 +190,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
                 <ContainerStixDomainObjects
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -197,6 +201,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
                 <ContainerStixCyberObservables
                   {...routeProps}
                   container={caseData}
+                  enableReferences={enableReferences}
                 />
               )}
             />
@@ -223,7 +228,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               exact
               path="/dashboard/cases/rfts/:caseId/knowledge/:mode"
               render={(routeProps) => (
-                <CaseRftKnowledge {...routeProps} caseData={caseData} />
+                <CaseRftKnowledge {...routeProps} caseData={caseData} enableReferences={enableReferences}/>
               )}
             />
             <Route

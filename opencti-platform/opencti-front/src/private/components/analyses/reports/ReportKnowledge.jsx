@@ -221,6 +221,7 @@ class ReportKnowledgeComponent extends Component {
       match: {
         params: { mode },
       },
+      enableReferences,
     } = this.props;
     const {
       currentModeOnlyActive,
@@ -278,7 +279,7 @@ class ReportKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.report) {
                   return (
-                    <ReportKnowledgeGraph report={props.report} mode={mode} />
+                    <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
                   );
                 }
                 return (
@@ -371,7 +372,7 @@ class ReportKnowledgeComponent extends Component {
               variables={{ id: report.id }}
               render={({ props }) => {
                 if (props && props.report) {
-                  return <ReportKnowledgeCorrelation report={props.report} />;
+                  return <ReportKnowledgeCorrelation report={props.report} enableReferences={enableReferences}/>;
                 }
                 return (
                   <Loader
@@ -437,6 +438,7 @@ ReportKnowledgeComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  enableReferences: PropTypes.bool,
 };
 
 const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {

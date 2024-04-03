@@ -71,6 +71,7 @@ const ContainerAddStixCoreObjects = (props) => {
     selectedText,
     openDrawer,
     handleClose,
+    enableReferences,
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -365,6 +366,7 @@ const ContainerAddStixCoreObjects = (props) => {
               setNumberOfElements={helpers.handleSetNumberOfElements}
               mapping={mapping}
               containerRef={containerRef}
+              enableReferences={enableReferences}
             />
           )}
         />

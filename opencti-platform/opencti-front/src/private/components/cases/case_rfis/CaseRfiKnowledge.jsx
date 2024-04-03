@@ -222,6 +222,7 @@ class CaseRfiKnowledgeComponent extends Component {
       match: {
         params: { mode },
       },
+      enableReferences,
     } = this.props;
     const {
       currentModeOnlyActive,
@@ -282,6 +283,7 @@ class CaseRfiKnowledgeComponent extends Component {
                     <CaseRfiKnowledgeGraph
                       caseData={props.caseRfi}
                       mode={mode}
+                      enableReferences={enableReferences}
                     />
                   );
                 }
@@ -376,7 +378,7 @@ class CaseRfiKnowledgeComponent extends Component {
               render={({ props }) => {
                 if (props && props.caseRfi) {
                   return (
-                    <CaseRfiKnowledgeCorrelation caseData={props.caseRfi}/>
+                    <CaseRfiKnowledgeCorrelation caseData={props.caseRfi} enableReferences={enableReferences} />
                   );
                 }
                 return (
@@ -443,6 +445,7 @@ CaseRfiKnowledgeComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  enableReferences: PropTypes.bool,
 };
 
 const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {

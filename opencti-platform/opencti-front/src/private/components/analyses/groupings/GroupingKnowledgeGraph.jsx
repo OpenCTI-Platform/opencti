@@ -971,7 +971,7 @@ class GroupingKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { grouping, theme, mode } = this.props;
+    const { grouping, theme, mode, enableReferences } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -1082,6 +1082,7 @@ class GroupingKnowledgeGraphComponent extends Component {
                 resetAllFilters={this.resetAllFilters.bind(this)}
                 openCreatedRelation={this.state.openCreatedRelation}
                 handleCloseRelationCreation={() => this.setState({ openCreatedRelation: false })}
+                enableReferences={enableReferences}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar

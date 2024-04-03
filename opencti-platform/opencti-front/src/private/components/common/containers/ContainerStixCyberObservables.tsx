@@ -55,11 +55,12 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
 
 interface ContainerStixCyberObservablesComponentProps {
   container: ContainerStixCyberObservables_container$data;
+  enableReferences?: boolean;
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
-> = ({ container }) => {
+> = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
@@ -214,86 +215,89 @@ ContainerStixCyberObservablesComponentProps
     queryPaginationOptions,
   );
   return (
-    <UserContext.Consumer>
-      {({ platformModuleHelpers }) => (
-        <ExportContextProvider>
-          <ListLines
-            helpers={helpers}
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={buildColumns(platformModuleHelpers)}
-            handleSort={handleSort}
-            handleSearch={handleSearch}
-            secondaryAction={true}
-            numberOfElements={numberOfElements}
-            handleAddFilter={handleAddFilter}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            handleToggleSelectAll={handleToggleSelectAll}
-            selectAll={selectAll}
-            iconExtension={true}
-            handleToggleExports={handleToggleExports}
-            exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
-            keyword={searchTerm}
-            openExports={openExports}
-            filters={filters}
-            paginationOptions={queryPaginationOptions}
-            availableEntityTypes={['Stix-Cyber-Observable']}
-          >
-            {queryRef && (
-              <React.Suspense
-                fallback={
-                  <>
-                    {Array(20)
-                      .fill(0)
-                      .map((_, idx) => (
-                        <ContainerStixCyberObservableLineDummy
-                          key={idx}
-                          dataColumns={buildColumns(platformModuleHelpers)}
-                        />
-                      ))}
-                  </>
-                }
-              >
-                <ContainerStixCyberObservablesLines
-                  queryRef={queryRef}
-                  paginationOptions={queryPaginationOptions}
-                  dataColumns={buildColumns(platformModuleHelpers)}
-                  onTypesChange={handleToggle}
-                  openExports={openExports}
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  onToggleEntity={onToggleEntity}
-                  selectAll={selectAll}
-                  setNumberOfElements={handleSetNumberOfElements}
-                  setSelectedElements={setSelectedElements}
-                />
-              </React.Suspense>
-            )}
-          </ListLines>
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            search={searchTerm}
-            filters={contextFilters}
-            handleClearSelectedElements={handleClearSelectedElements}
-            variant="large"
-            container={container}
-            handleCopy={handleCopy}
-            warning={true}
-          />
-          <StixCyberObservablesRightBar
-            types={types}
-            handleToggle={handleToggle}
-            handleClear={handleClear}
-            openExports={openExports}
-          />
-        </ExportContextProvider>
-      )}
-    </UserContext.Consumer>
+    <div data-testid="container-observables-pages">
+      <UserContext.Consumer>
+        {({ platformModuleHelpers }) => (
+          <ExportContextProvider>
+            <ListLines
+              helpers={helpers}
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={buildColumns(platformModuleHelpers)}
+              handleSort={handleSort}
+              handleSearch={handleSearch}
+              secondaryAction={true}
+              numberOfElements={numberOfElements}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={handleRemoveFilter}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              handleToggleSelectAll={handleToggleSelectAll}
+              selectAll={selectAll}
+              iconExtension={true}
+              handleToggleExports={handleToggleExports}
+              exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
+              keyword={searchTerm}
+              openExports={openExports}
+              filters={filters}
+              paginationOptions={queryPaginationOptions}
+              availableEntityTypes={['Stix-Cyber-Observable']}
+            >
+              {queryRef && (
+                <React.Suspense
+                  fallback={
+                    <>
+                      {Array(20)
+                        .fill(0)
+                        .map((_, idx) => (
+                          <ContainerStixCyberObservableLineDummy
+                            key={idx}
+                            dataColumns={buildColumns(platformModuleHelpers)}
+                          />
+                        ))}
+                    </>
+                  }
+                >
+                  <ContainerStixCyberObservablesLines
+                    queryRef={queryRef}
+                    paginationOptions={queryPaginationOptions}
+                    dataColumns={buildColumns(platformModuleHelpers)}
+                    onTypesChange={handleToggle}
+                    openExports={openExports}
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    onToggleEntity={onToggleEntity}
+                    selectAll={selectAll}
+                    setNumberOfElements={handleSetNumberOfElements}
+                    setSelectedElements={setSelectedElements}
+                    enableReferences={enableReferences}
+                  />
+                </React.Suspense>
+              )}
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              search={searchTerm}
+              filters={contextFilters}
+              handleClearSelectedElements={handleClearSelectedElements}
+              variant="large"
+              container={container}
+              handleCopy={handleCopy}
+              warning={true}
+            />
+            <StixCyberObservablesRightBar
+              types={types}
+              handleToggle={handleToggle}
+              handleClear={handleClear}
+              openExports={openExports}
+            />
+          </ExportContextProvider>
+        )}
+      </UserContext.Consumer>
+    </div>
   );
 };
 
