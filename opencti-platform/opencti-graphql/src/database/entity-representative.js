@@ -100,6 +100,11 @@ const extractEntityRepresentative = (entityData) => {
 // -- ENTITY | RELATIONSHIP
 
 export const extractRepresentative = (entityData) => {
+  // the representative can already be given (happens when the internals set it to "Restricted")
+  if (entityData.representative) {
+    return entityData.representative;
+  }
+  // otherwise we find extract it depending on the entity type
   if (isStixRelationship(entityData.entity_type)) {
     return extractRelationshipRepresentative(entityData);
   }

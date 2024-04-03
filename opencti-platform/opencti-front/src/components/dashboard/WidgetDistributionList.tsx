@@ -52,7 +52,7 @@ const WidgetDistributionList = ({
               id: entry.id,
               entity_type: entry.type,
             };
-            link = entry.id ? computeLink(node) : null;
+            link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : null;
           }
           let linkProps = {};
           if (link) {
@@ -64,7 +64,7 @@ const WidgetDistributionList = ({
 
           return (
             <ListItemButton
-              key={entry.label}
+              key={entry.id ?? entry.label}
               dense={true}
               divider={true}
               {...linkProps}

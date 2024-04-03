@@ -453,19 +453,34 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
   // entities not granted shall be sent as "restricted" with limited information
+  const grantedIds = [];
+  for (let i = 0; i < data.length; i += 1) {
+    const resolved = allResolveLabels[data[i].label.toLowerCase()];
+    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
+    if (canAccess) {
+      grantedIds.push(data[i].label.toLowerCase());
+    }
+  }
   return data
     // filter out unresolved data (like the SYSTEM user for instance)
     .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
     .map((n) => {
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (isUserCanAccessStoreElement(context, user, element)) {
-        return R.assoc('entity', element, n);
+      if (grantedIds.includes(n.label.toLowerCase())) {
+        return {
+          ...n,
+          entity: element
+        };
       }
-      return R.assoc('entity', {
-        id: n.label,
-        entity_type: n.entity_type,
-        representative: { main: 'Restricted', secondary: 'Restricted' }
-      }, n);
+      return {
+        ...n,
+        entity: {
+          id: element.id,
+          entity_type: element.entity_type,
+          parent_types: element.parent_types,
+          representative: { main: 'Restricted', secondary: 'Restricted' }
+        }
+      };
     });
 };
 export const timeSeriesHistory = async (context, user, types, args) => {
