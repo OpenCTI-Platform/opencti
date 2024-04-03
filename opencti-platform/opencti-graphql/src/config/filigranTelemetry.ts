@@ -1,7 +1,7 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { type ObservableResult } from '@opentelemetry/api-metrics';
 
-class DynamicTelemetryManager {
+class FiligranTelemetryManager {
   meterProvider: MeterProvider;
 
   private version = 0;
@@ -28,5 +28,5 @@ class DynamicTelemetryManager {
     // nodeMetrics(this.meterProvider, { prefix: '' }); // TODO: keep or uncomment
   }
 }
-export const dynamicTelemetryProvider = new MeterProvider({});
-export const dynamicTelemetryManager = new DynamicTelemetryManager(dynamicTelemetryProvider);
+export const filigranTelemetryProvider = new MeterProvider({});
+export const filigranTelemetryManager = new FiligranTelemetryManager(filigranTelemetryProvider);

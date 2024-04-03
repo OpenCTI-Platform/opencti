@@ -4,11 +4,11 @@ import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
-import { dynamicTelemetryManager } from './config/dynamicTelemetry';
+import { filigranTelemetryManager } from './config/filigranTelemetry';
 
-const initDynamicTelemetry = () => {
+const initFiligranTelemetry = () => {
   const version = PLATFORM_VERSION;
-  dynamicTelemetryManager.setVersion(version);
+  filigranTelemetryManager.setVersion(version);
 };
 
 // region platform start and stop
@@ -43,7 +43,7 @@ export const platformStart = async () => {
       throw platformError;
     }
     // Get telemetry at init
-    if (ENABLED_TELEMETRY) initDynamicTelemetry();
+    if (ENABLED_TELEMETRY) initFiligranTelemetry();
     // Init the modules
     try {
       await startModules();
