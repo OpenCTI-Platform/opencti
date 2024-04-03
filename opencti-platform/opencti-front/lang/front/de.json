@@ -2678,7 +2678,6 @@
   "Last expansion": "Letzte Erweiterung",
   "All actions after the last expansion will be lost.": "Alle Aktionen nach der letzten Erweiterung gehen verloren.",
   "Show left navigation submenu icons": "Symbole des linken Navigations-Untermenüs anzeigen",
-  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen",
   "Unless specific groups are selected, user will be created with default groups only.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer nur mit den Standardgruppen erstellt.",
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "Mit der Aktivierung der OpenCTI Enterprise Edition erklären Sie (und Ihre Organisation) sich mit den zusätzlichen Lizenz- und Nutzungsbedingungen der OpenCTI Enterprise Edition (EE) einverstanden:",
   "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE ist für Entwicklungs-, Test- und Forschungszwecke sowie für gemeinnützige Organisationen frei nutzbar.",
@@ -2692,5 +2691,6 @@
   "Credential": "Berechtigung",
   "Credentials": "Berechtigungsnachweis",
   "entity_Tracking-Number": "Tracking-Nummer",
-  "entity_Credential": "Berechtigung"
+  "entity_Credential": "Berechtigung",
+  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen"
 }
