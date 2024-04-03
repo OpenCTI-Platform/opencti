@@ -15,7 +15,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
