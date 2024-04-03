@@ -81,7 +81,7 @@ steps:
 
 
   - name: frontend-e2e-tests
-    image: node:20.11.1
+    image: node:20.12.0
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
