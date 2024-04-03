@@ -169,7 +169,7 @@ class ExportButtons extends Component {
       handleDownloadAsStixReport,
       handleExportDashboard,
       investigationAddFromContainer,
-      history,
+      navigate,
       handleDashboardDuplication,
       variant,
     } = this.props;
@@ -220,7 +220,7 @@ class ExportButtons extends Component {
                 onClick={investigationAddFromContainer.bind(
                   this,
                   containerId,
-                  history,
+                  navigate,
                 )}
               >
                 <ExploreOutlined fontSize="small" color="primary" />
