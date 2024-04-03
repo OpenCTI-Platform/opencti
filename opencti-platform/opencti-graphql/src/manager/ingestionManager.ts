@@ -22,7 +22,7 @@ import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/in
 import type { AuthContext } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
-import { TaxiiVersion } from '../generated/graphql';
+import { TaxiiAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
@@ -211,16 +211,16 @@ interface TaxiiResponseData {
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/taxii+json;version=2.1';
-  if (ingestion.authentication_type === 'basic') {
+  if (ingestion.authentication_type === TaxiiAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
   }
-  if (ingestion.authentication_type === 'bearer') {
+  if (ingestion.authentication_type === TaxiiAuthType.Bearer) {
     headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   let certificates;
-  if (ingestion.authentication_type === 'certificate') {
-    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[0] };
+  if (ingestion.authentication_type === TaxiiAuthType.Certificate) {
+    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);

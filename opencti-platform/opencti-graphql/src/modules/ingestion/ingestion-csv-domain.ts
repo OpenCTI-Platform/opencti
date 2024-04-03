@@ -12,6 +12,7 @@ import { bundleProcess } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
+import { CsvAuthType } from '../../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -86,15 +87,15 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const { limit = undefined } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
-  if (ingestion.authentication_type === 'basic') {
+  if (ingestion.authentication_type === CsvAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value || '', 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
   }
-  if (ingestion.authentication_type === 'bearer') {
+  if (ingestion.authentication_type === CsvAuthType.Bearer) {
     headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   let certificates;
-  if (ingestion.authentication_type === 'certificate') {
+  if (ingestion.authentication_type === CsvAuthType.Certificate) {
     const [cert, key, ca] = (ingestion.authentication_value || '').split(':');
     certificates = { cert, key, ca };
   }
