@@ -1646,41 +1646,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.12.2":
-  version: 8.12.2
-  resolution: "@elastic/elasticsearch@npm:8.12.2"
+"@elastic/elasticsearch@npm:8.13.0":
+  version: 8.13.0
+  resolution: "@elastic/elasticsearch@npm:8.13.0"
   dependencies:
-    "@elastic/transport": "npm:^8.4.1"
+    "@elastic/transport": "npm:^8.4.0"
     tslib: "npm:^2.4.0"
-  checksum: 10/f4ffe76e7bb2b1b60bc1ee86a89cfc1671a41e7319742da342ca6bf672fa84a9d711a05a3d29246ac014f7536636f7f02a8c4da4944b11cd59f7899d7d13d971
+  checksum: 10/b831aa7653d2bb22e198022af8878bd741b811b558f55559403eeec9a6442d87be748e7e0f02598a0aedcd7bad0b6c01e3a0f9144c76e2045ea3aea73fa2db17
   languageName: node
   linkType: hard
 
-"@elastic/transport@npm:8.4.1":
-  version: 8.4.1
-  resolution: "@elastic/transport@npm:8.4.1"
+"@elastic/transport@npm:8.5.0, @elastic/transport@npm:^8.4.0":
+  version: 8.5.0
+  resolution: "@elastic/transport@npm:8.5.0"
   dependencies:
     debug: "npm:^4.3.4"
     hpagent: "npm:^1.0.0"
     ms: "npm:^2.1.3"
     secure-json-parse: "npm:^2.4.0"
     tslib: "npm:^2.4.0"
-    undici: "npm:^5.22.1"
-  checksum: 10/4c4cbe9c0e38ee8864b8951c8bd65938c9871cbe3295e8dd6398f1cdb02badc195486c0723562ba02089fd2f697fe0f51eed5d5ebef92c869ebc502041688ea7
-  languageName: node
-  linkType: hard
-
-"@elastic/transport@patch:@elastic/transport@8.4.1#./patch/elasticsearch-transport-8.10.0.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 8.4.1
-  resolution: "@elastic/transport@patch:@elastic/transport@npm%3A8.4.1#./patch/elasticsearch-transport-8.10.0.patch::version=8.4.1&hash=66a125&locator=opencti-graphql%40workspace%3A."
-  dependencies:
-    debug: "npm:^4.3.4"
-    hpagent: "npm:^1.0.0"
-    ms: "npm:^2.1.3"
-    secure-json-parse: "npm:^2.4.0"
-    tslib: "npm:^2.4.0"
-    undici: "npm:^5.22.1"
-  checksum: 10/9392a371483efc169f475e8e3de0f3f98bd319c679b33f11199c28a1ff49b4c698cad889335af98b0ebb0f987336d1fcf36802b87f03727a29b9560468b30709
+    undici: "npm:^6.7.0"
+  checksum: 10/ea6f5d5298cace6f7e462f1c56d9274613bde375b74c0ff9161e2bdf808bcc02c0928ef974e125b380d8c4223ec602f44c45bb3bb16b10588161e53566193b9b
   languageName: node
   linkType: hard
 
@@ -2050,13 +2036,6 @@ __metadata:
   version: 8.57.0
   resolution: "@eslint/js@npm:8.57.0"
   checksum: 10/3c501ce8a997cf6cbbaf4ed358af5492875e3550c19b9621413b82caa9ae5382c584b0efa79835639e6e0ddaa568caf3499318e5bdab68643ef4199dce5eb0a0
-  languageName: node
-  linkType: hard
-
-"@fastify/busboy@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "@fastify/busboy@npm:2.1.1"
-  checksum: 10/2bb8a7eca8289ed14c9eb15239bc1019797454624e769b39a0b90ed204d032403adc0f8ed0d2aef8a18c772205fa7808cf5a1b91f21c7bfc7b6032150b1062c5
   languageName: node
   linkType: hard
 
@@ -11028,8 +11007,8 @@ __metadata:
     "@aws-sdk/credential-provider-node": "npm:3.540.0"
     "@aws-sdk/lib-storage": "npm:3.540.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
-    "@elastic/elasticsearch": "npm:8.12.2"
-    "@elastic/transport": "npm:8.4.1"
+    "@elastic/elasticsearch": "npm:8.13.0"
+    "@elastic/transport": "npm:8.5.0"
     "@escape.tech/graphql-armor": "npm:2.4.0"
     "@graphql-codegen/cli": "npm:5.0.2"
     "@graphql-codegen/client-preset": "npm:4.2.4"
@@ -13531,12 +13510,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.22.1":
-  version: 5.28.3
-  resolution: "undici@npm:5.28.3"
-  dependencies:
-    "@fastify/busboy": "npm:^2.0.0"
-  checksum: 10/779856ce14ba6907c0759df8e4babd61608b1f502569d44de7dd1d014afb7c67a0a2997b4f706e0daff8a55d87ee2f25b830b195fc0202cb6fbd25abe2d941eb
+"undici@npm:^6.7.0":
+  version: 6.11.1
+  resolution: "undici@npm:6.11.1"
+  checksum: 10/129480684630e5723b7f4a946c1d9f8120f9b5697cb2032d791d1e3d2898a90eed0ed63c6ef5641502569dca0112759948564354a932c8172fc96845aaf2dd28
   languageName: node
   linkType: hard
 
