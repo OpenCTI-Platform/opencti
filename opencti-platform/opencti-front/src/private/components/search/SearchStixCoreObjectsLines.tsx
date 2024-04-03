@@ -218,6 +218,12 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
           ... on StixFile {
             x_opencti_additional_names
           }
+          ... on HashedObservable {
+            hashes {
+              algorithm
+              hash
+            }
+          }
           ... on IPv4Addr {
             countries {
               edges {
