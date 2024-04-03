@@ -199,7 +199,7 @@ const GroupEditionMarkingsComponent = ({
                     );
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
-                        <ListItemIcon color="primary">
+                        <ListItemIcon>
                           <ItemIcon
                             type="Marking-Definition"
                             color={markingDefinition.x_opencti_color ?? undefined}
