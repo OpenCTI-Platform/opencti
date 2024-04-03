@@ -333,7 +333,8 @@ const SearchBulk = () => {
                         || o.observable_value?.toLowerCase()
                           === value.toLowerCase()
                         || o.subject?.toLowerCase() === value.toLowerCase()
-                        || o.abstract?.toLowerCase() === value.toLowerCase(),
+                        || o.abstract?.toLowerCase() === value.toLowerCase()
+                        || o.hashes?.map((hash) => hash.hash.toLowerCase() === value.toLowerCase()),
                     );
                     if (resolvedStixCoreObjects.length > 0) {
                       return resolvedStixCoreObjects.map(
