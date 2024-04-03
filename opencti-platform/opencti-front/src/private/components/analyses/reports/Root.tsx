@@ -155,7 +155,7 @@ const RootReport = () => {
                       />
                       <Tab
                         component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/knowledge`}
+                        to={`/dashboard/analyses/reports/${report.id}/knowledge/graph`}
                         value={`/dashboard/analyses/reports/${report.id}/knowledge`}
                         label={t_i18n('Knowledge')}
                       />

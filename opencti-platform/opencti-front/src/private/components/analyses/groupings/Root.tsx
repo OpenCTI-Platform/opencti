@@ -150,7 +150,7 @@ const RootGrouping = () => {
                       />
                       <Tab
                         component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+                        to={`/dashboard/analyses/groupings/${grouping.id}/knowledge/graph`}
                         value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
                         label={t_i18n('Knowledge')}
                       />
