@@ -2675,5 +2675,13 @@
   "Public dashboard": "公共仪表板",
   "Show left navigation submenu icons": "显示左侧导航子菜单图标",
   "Auto collapse submenus in left navigation": "自动折叠左侧导航中的子菜单",
-  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。"
+  "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
+  "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "启用 OpenCTI 企业版，即表示您（和您的组织）同意 OpenCTI 企业版 (EE) 补充许可条款和使用条件：",
+  "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE 可免费用于开发、测试和研究目的，也可用于非营利组织。",
+  "OpenCTI EE is included for all Filigran SaaS customers without additional fee.": "所有 Filigran SaaS 客户均可免费使用 OpenCTI EE。",
+  "For all other usages, you (and your organization) should have entered in a": "对于所有其他用途，您（和您的组织）应在 \"OpenCTI EE \"网站上注册。",
+  "Most used filters": "最常用的过滤器",
+  "All other filters": "所有其他筛选器",
+  "Testing csv mapper": "测试 csv 映射器",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。"
 }

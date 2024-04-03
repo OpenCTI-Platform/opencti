@@ -2675,5 +2675,13 @@
   "Public dashboard": "Cuadro de mandos público",
   "Show left navigation submenu icons": "Mostrar iconos del submenú de navegación izquierdo",
   "Auto collapse submenus in left navigation": "Submenús contraídos automáticamente en la navegación izquierda",
-  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto."
+  "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto.",
+  "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "Al activar OpenCTI Enterprise Edition, usted (y su organización) acepta los términos y condiciones de uso de la licencia complementaria de OpenCTI Enterprise Edition (EE):",
+  "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE es de uso gratuito para fines de desarrollo, pruebas e investigación, así como para organizaciones sin ánimo de lucro.",
+  "OpenCTI EE is included for all Filigran SaaS customers without additional fee.": "OpenCTI EE está incluido para todos los clientes de Filigran SaaS sin cargo adicional.",
+  "For all other usages, you (and your organization) should have entered in a": "Para todos los demás usos, usted (y su organización) deben haber introducido un",
+  "Most used filters": "Filtros más utilizados",
+  "All other filters": "Todos los demás filtros",
+  "Testing csv mapper": "Probando el mapeador csv",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Estas operaciones sólo se aplicarán a las etiquetas o marcas añadidas en el contexto de este libro de jugadas, como el enriquecimiento u otras manipulaciones del conocimiento, pero no si las etiquetas o marcas ya están escritas en la plataforma."
 }

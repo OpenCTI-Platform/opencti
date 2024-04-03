@@ -5,9 +5,9 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
+import EEField from '@components/common/entreprise_edition/EEField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -273,14 +273,16 @@ const SettingsOrganizationEdition = ({
                 context={context}
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
-              <GroupField
-                name="grantable_groups"
-                label={<>{t_i18n('Grantable groups by Organization administrators')}<EEChip feature={t_i18n('Organization sharing')} /></>}
-                multiple={true}
-                onChange={editor.changeGrantableGroups}
-                style={{ marginTop: 20 }}
-                disabled={!isEnterpriseEdition}
-              />
+              <EEField featureLabel={'Organization sharing'}>
+                <GroupField
+                  name="grantable_groups"
+                  label={'Grantable groups by Organization administrators'}
+                  multiple={true}
+                  onChange={editor.changeGrantableGroups}
+                  style={{ marginTop: 20 }}
+                  disabled={!isEnterpriseEdition}
+                />
+              </EEField>
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}

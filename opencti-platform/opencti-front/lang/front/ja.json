@@ -2675,5 +2675,13 @@
   "Public dashboard": "公開ダッシュボード",
   "Show left navigation submenu icons": "左側のナビゲーション サブメニュー アイコンを表示する",
   "Auto collapse submenus in left navigation": "左側のナビゲーションのサブメニューを自動的に折りたたむ",
-  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。"
+  "Unless specific groups are selected, user will be created with default groups only.": "特定のグループを選択しない限り、ユーザーはデフォルトのグループのみで作成されます。",
+  "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "OpenCTI Enterprise Editionを有効にすることで、あなた（およびあなたの組織）はOpenCTI Enterprise Edition (EE)の補足ライセンス条項と使用条件に同意することになります：",
+  "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EEは、開発、テスト、研究目的、および非営利組織のために無料で使用できます。",
+  "OpenCTI EE is included for all Filigran SaaS customers without additional fee.": "OpenCTI EEは、Filigran SaaSのすべてのお客様に追加料金なしで含まれています。",
+  "For all other usages, you (and your organization) should have entered in a": "その他のすべての使用については、お客様（およびお客様の組織）が",
+  "Most used filters": "最も使用されるフィルター",
+  "All other filters": "その他のフィルター",
+  "Testing csv mapper": "csvマッパーのテスト",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。"
 }

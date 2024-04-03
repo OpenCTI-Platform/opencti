@@ -2675,5 +2675,13 @@
   "Public dashboard": "Tableau de bord public",
   "Show left navigation submenu icons": "Afficher les icônes des sous-menus de la navigation de gauche",
   "Auto collapse submenus in left navigation": "Fermer automatiquement les sous-menus de la navigation de gauche",
-  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement."
+  "Unless specific groups are selected, user will be created with default groups only.": "À moins que des groupes spécifiques ne soient sélectionnés, l'utilisateur sera créé avec les groupes par défaut uniquement.",
+  "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "En activant l'OpenCTI Enterprise Edition, vous (et votre organisation) acceptez les termes de la licence supplémentaire de l'OpenCTI Enterprise Edition (EE) et les conditions d'utilisation :",
+  "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE est libre d'utilisation à des fins de développement, de test et de recherche ainsi que pour les organisations à but non lucratif.",
+  "OpenCTI EE is included for all Filigran SaaS customers without additional fee.": "OpenCTI EE est inclus pour tous les clients SaaS de Filigran sans frais supplémentaires.",
+  "For all other usages, you (and your organization) should have entered in a": "Pour toutes les autres utilisations, vous (et votre organisation) devez avoir conclu un accord de licence avec Filigran",
+  "Most used filters": "Filtres les plus utilisés",
+  "All other filters": "Tous les autres filtres",
+  "Testing csv mapper": "Test du mappeur csv",
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Ces opérations ne s'appliqueront qu'aux étiquettes ou marquages ajoutés dans le contexte de ce playbook, comme l'enrichissement ou d'autres manipulations de connaissances, mais pas si les étiquettes ou marquages sont déjà écrits dans la plateforme."
 }
