@@ -16,6 +16,7 @@ import GroupFormPage from '../model/groupForm.pageModel';
 import UsersSettingsPage from '../model/usersSettings.pageModel';
 import UserPage from '../model/user.pageModel';
 import UserFormPage from '../model/userForm.pageModel';
+import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
 const noBypassUserLogin = 'noBypassReferences@user.test';
@@ -110,9 +111,11 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   const reportForm = new ReportFormPage(page);
   const containerObservablesPage = new ContainerObservablesPage(page);
   const containerAddObservablesPage = new ContainerAddObservablesPage(page);
+  const leftBarPage = new LeftBarPage(page);
 
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
+  await page.getByTestId('ChevronRightIcon').click();
   await reportPage.addNewReport();
   await reportForm.fillNameInput('Test add observable e2e');
   await reportPage.getCreateReportButton().click();
@@ -128,11 +131,14 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeVisible();
 
   // Enable report references and check that removing observable is still possible as admin user
-  await page.goto('/dashboard/settings/customization/entity_types');
+  await leftBarPage.clickOnMenu('Settings', 'Customization');
+  await page.getByPlaceholder('Search these results...').click();
+  await page.getByPlaceholder('Search these results...').fill('report');
+  await page.getByPlaceholder('Search these results...').press('Enter');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
-  await page.goto('/dashboard/analyses/reports');
+  await leftBarPage.clickOnMenu('Analyses', 'Reports');
   await reportPage.getItemFromList('Test add observable e2e').click();
   await reportDetailsPage.getObservablesTab().click();
   await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
@@ -143,7 +149,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeHidden();
 
   // Clean up report "enable references" configuration
-  await page.goto('/dashboard/settings/customization/entity_types');
+  await leftBarPage.clickOnMenu('Settings', 'Customization');
   await page.getByRole('link', { name: 'Report' }).click();
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 });
@@ -157,9 +163,11 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     const containerObservablesPage = new ContainerObservablesPage(page);
     const containerAddObservablesPage = new ContainerAddObservablesPage(page);
     const commitMessagePage = new CommitMessagePage(page);
+    const leftBarPage = new LeftBarPage(page);
 
     // Create a report and check that adding an observable is possible
     await page.goto('/dashboard/analyses/reports');
+    await page.getByTestId('ChevronRightIcon').click();
     await reportPage.addNewReport();
     await reportForm.fillNameInput('Test add observable e2e 2');
     await reportPage.getCreateReportButton().click();
@@ -175,11 +183,14 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeVisible();
 
     // Enable report references and check that removing observable asks for an external reference
-    await page.goto('/dashboard/settings/customization/entity_types');
+    await leftBarPage.clickOnMenu('Settings', 'Customization');
+    await page.getByPlaceholder('Search these results...').click();
+    await page.getByPlaceholder('Search these results...').fill('report');
+    await page.getByPlaceholder('Search these results...').press('Enter');
     await page.getByRole('link', { name: 'Report' }).click();
     await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 
-    await page.goto('/dashboard/analyses/reports');
+    await leftBarPage.clickOnMenu('Analyses', 'Reports');
     await reportPage.getItemFromList('Test add observable e2e 2').click();
     await reportDetailsPage.getObservablesTab().click();
     await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
@@ -196,7 +207,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeHidden();
 
     // Clean up report "enable references" configuration
-    await page.goto('/dashboard/settings/customization/entity_types');
+    await leftBarPage.clickOnMenu('Settings', 'Customization');
     await page.getByRole('link', { name: 'Report' }).click();
     await page.locator('span').filter({ hasText: 'Enforce references' }).click();
   });
