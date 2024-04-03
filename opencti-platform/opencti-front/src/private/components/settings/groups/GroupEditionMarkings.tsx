@@ -7,7 +7,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/lab/Alert';
-import { CenterFocusStrongOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
@@ -201,7 +200,10 @@ const GroupEditionMarkingsComponent = ({
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
                         <ListItemIcon color="primary">
-                          <CenterFocusStrongOutlined />
+                          <ItemIcon
+                            type="Marking-Definition"
+                            color={markingDefinition.x_opencti_color ?? undefined}
+                          />
                         </ListItemIcon>
                         <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
