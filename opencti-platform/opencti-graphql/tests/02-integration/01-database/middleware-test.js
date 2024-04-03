@@ -15,7 +15,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -710,6 +710,47 @@ describe('Relations distribution', () => {
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
+  });
+  it('should relation distribution give entity details', async () => {
+    // const { limit = 50, order, inferred = false } = options;
+    // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const options = {
+      fromOrToId: [malware.internal_id],
+      relationship_type: ['uses'],
+      field: 'internal_id',
+      operation: 'count',
+    };
+    const distribution = await distributionRelations(testContext, ADMIN_USER, options);
+    expect(distribution.length).toEqual(3);
+    expect(distribution[0].entity.representative).toBeUndefined();
+    expect(distribution[1].entity.representative).toBeUndefined();
+    expect(distribution[2].entity.representative).toBeUndefined();
+    expect(distribution[0].entity.x_opencti_stix_ids).toEqual(['attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17']);
+    expect(distribution[1].entity.x_opencti_stix_ids).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
+    expect(distribution[2].entity.x_opencti_stix_ids).toEqual(['intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7']);
+  });
+  it('should relation distribution give restricted entity data', async () => {
+    // const { limit = 50, order, inferred = false } = options;
+    // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const options = {
+      fromOrToId: [malware.internal_id],
+      relationship_type: ['uses'],
+      field: 'internal_id',
+      operation: 'count',
+    };
+    const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
+    const WHITE_USER = buildStandardUser([WHITE_TLP]);
+    const distribution = await distributionRelations(testContext, WHITE_USER, options);
+    expect(distribution.length).toEqual(3);
+
+    expect(distribution[0].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
+    expect(distribution[1].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
+    expect(distribution[2].entity.representative).toEqual({ main: 'Restricted', secondary: 'Restricted' });
+    expect(distribution[0].entity.x_opencti_stix_ids).toBeUndefined();
+    expect(distribution[1].entity.x_opencti_stix_ids).toBeUndefined();
+    expect(distribution[2].entity.x_opencti_stix_ids).toBeUndefined();
   });
 });
 
