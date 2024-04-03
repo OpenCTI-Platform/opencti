@@ -1,31 +1,21 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { type ObservableResult } from '@opentelemetry/api-metrics';
 
 class FiligranTelemetryManager {
   meterProvider: MeterProvider;
 
-  private version = 0;
+  private version = '0';
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
 
-  setVersion(val: number) {
+  setVersion(val: string) {
     this.version = val;
   }
 
   registerMetrics() {
     const meter = this.meterProvider.getMeter('opencti-api');
     // Register manual metrics
-    // - Basic counters
-    // TODO
-    // - Manual metrics
-    const versionGauge = meter.createObservableGauge('opencti-api_version');
-    versionGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.version);
-    });
-    // - Library metrics
-    // nodeMetrics(this.meterProvider, { prefix: '' }); // TODO: keep or uncomment
   }
 }
 export const filigranTelemetryProvider = new MeterProvider({});
