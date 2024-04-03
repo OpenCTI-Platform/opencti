@@ -17,7 +17,7 @@ const SubTypeStatusPopover = ({ subTypeId }: { subTypeId: string }) => {
   return (
     <>
       <IconButton
-        color="secondary"
+        color="primary"
         aria-label="Workflow"
         onClick={handleOpenUpdate}
         aria-haspopup="true"

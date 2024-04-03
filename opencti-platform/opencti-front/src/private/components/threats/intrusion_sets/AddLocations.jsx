@@ -55,7 +55,7 @@ class AddLocations extends Component {
     return (
       <>
         <IconButton
-          color="secondary"
+          color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}

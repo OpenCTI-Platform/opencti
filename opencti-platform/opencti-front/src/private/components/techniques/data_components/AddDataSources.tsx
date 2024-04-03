@@ -51,7 +51,7 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
   return (
     <div>
       <IconButton
-        color="secondary"
+        color="primary"
         aria-label="Add"
         onClick={handleOpen}
         classes={{ root: classes.createButton }}
