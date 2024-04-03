@@ -3,14 +3,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Switch, Redirect, Route, useParams } from 'react-router-dom';
+import { Link, Route, Routes, Navigate, useParams, useLocation } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
-import { useLocation } from 'react-router-dom-v5-compat';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
@@ -181,72 +180,59 @@ const RootGrouping = () => {
                       />
                     </Tabs>
                   </Box>
-                  <Switch>
+                  <Routes>
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId"
-                      render={(routeProps) => (
-                        <Grouping {...routeProps} grouping={grouping} />
-                      )}
+                      path="/"
+                      element={
+                        <Grouping grouping={grouping} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/entities"
-                      render={(routeProps) => (
+                      path="/entities"
+                      element={
                         <ContainerStixDomainObjects
-                          {...routeProps}
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/observables"
-                      render={(routeProps) => (
+                      path="/observables"
+                      element={
                         <ContainerStixCyberObservables
-                          {...routeProps}
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/content"
-                      render={(routeProps) => (
+                      path="/content"
+                      element={
                         <StixDomainObjectContent
-                          {...routeProps}
                           stixDomainObject={grouping}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/knowledge/:mode"
-                      render={(routeProps) => (
+                      path="/knowledge"
+                      element={
+                        <Navigate
+                          to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
+                        />}
+                    />
+                    <Route
+                      path="/knowledge/*"
+                      element={
                         <GroupingKnowledge
-                          {...routeProps}
                           grouping={grouping}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/groupings/:groupingId/files"
-                      render={(routeProps) => (
+                      path="/files"
+                      element={
                         <StixCoreObjectFilesAndHistory
-                          {...routeProps}
                           id={groupingId}
                           connectorsExport={props.connectorsForExport}
                           connectorsImport={props.connectorsForImport}
@@ -254,9 +240,9 @@ const RootGrouping = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      )}
+                      }
                     />
-                  </Switch>
+                  </Routes>
                 </div>
               );
             }
