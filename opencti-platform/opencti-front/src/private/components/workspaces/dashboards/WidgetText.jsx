@@ -5,18 +5,20 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 const WidgetText = ({ variant, height = undefined, parameters = {} }) => {
   const renderContent = () => {
     return (
-      <MarkdownDisplay
-        content={parameters.content}
-        remarkGfmPlugin={true}
-        commonmark={true}
-      />
+      <div style={{ marginTop: -20 }}>
+        <MarkdownDisplay
+          content={parameters.content}
+          remarkGfmPlugin={true}
+          commonmark={true}
+        />
+      </div>
     );
   };
   return (
     <WidgetContainer
       height={height}
       variant={variant}
-      withoutTitle
+      withoutTitle={true}
     >
       {renderContent()}
     </WidgetContainer>

@@ -2439,6 +2439,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.valid_until = element.valid_until;
       // don't reset decay attributes
       updatePatch.decay_base_score = element.decay_base_score;
+      updatePatch.revoked = element.revoked;
       updatePatch.decay_base_score_date = element.decay_base_score_date;
       updatePatch.decay_applied_rule = element.decay_applied_rule;
       updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
