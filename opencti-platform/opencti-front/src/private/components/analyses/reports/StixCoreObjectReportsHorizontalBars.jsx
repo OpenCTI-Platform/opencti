@@ -12,6 +12,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const styles = () => ({
   paper: {
@@ -40,8 +41,10 @@ const stixCoreObjectReportsHorizontalBarsDistributionQuery = graphql`
       label
       value
       entity {
-        ... on Identity {
-          name
+        ... on StixObject {
+          representative {
+            main
+          }
         }
       }
     }
@@ -68,7 +71,7 @@ class StixCoreObjectReportsHorizontalBars extends Component {
             && props.reportsDistribution.length > 0
           ) {
             const data = props.reportsDistribution.map((n) => ({
-              x: n.entity?.name ?? 'Restricted',
+              x: getMainRepresentative(n.entity) || n.label,
               y: n.value,
             }));
             const chartData = [{ name: t('Number of reports'), data }];
