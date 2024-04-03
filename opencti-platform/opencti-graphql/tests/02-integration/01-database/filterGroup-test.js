@@ -660,7 +660,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
-  it('should list entities according to filters: filter with \'nil\' and \'not_nil\' operators', async () => {
+  it('should list entities according to filters: filter with \'nil\' and \'not_nil\' operators on arrays', async () => {
     // test for 'nil': objectMarking is empty
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -704,7 +704,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
   });
-  it('should list entities according to filters: \'nil\' / \'not_nil\' operators should take empty string into account', async () => {
+  it('should list entities according to filters: \'nil\' / \'not_nil\' operators on strings', async () => {
     // description is empty
     let queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,

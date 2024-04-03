@@ -71,6 +71,8 @@ describe('Database sync raw', () => {
       expect(vocabRemoved.map((v) => v.name)).toEqual([]);
       expect(vocabAdded.map((v) => v.name)).toEqual([]);
 
+      expect(vocabBefore.length).toEqual(335);
+
       const counters = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
       const countersMap = new Map(counters.map((i) => [i.label, i.value]));
       expect(countersMap.get('Indicator')).toEqual(28);

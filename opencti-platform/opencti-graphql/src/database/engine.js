@@ -1682,15 +1682,20 @@ const buildLocalMustFilter = async (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
+  if (isEmptyField(key)) {
+    throw FunctionalError('A filter key must be defined', { key });
+  }
   const arrayKeys = Array.isArray(key) ? key : [key];
+  const headKey = R.head(arrayKeys);
+  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil';
+  if (dontHandleMultipleKeys && arrayKeys.length > 1) {
+    throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+  }
   // 01. Handle nested filters
   // TODO IF KEY is PART OF Rule we need to add extra fields search
   // TODO Add connections like filters to have native fromId, toId filters handling.
   // See opencti-front\src\private\components\events\StixSightingRelationships.tsx
   if (nested) {
-    if (arrayKeys.length > 1) {
-      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
-    }
     const nestedMust = [];
     const nestedMustNot = [];
     for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
@@ -1765,7 +1770,7 @@ const buildLocalMustFilter = async (validFilter) => {
       nestedMust.push(should);
     }
     const nestedQuery = {
-      path: R.head(arrayKeys),
+      path: headKey,
       query: {
         bool: {
           must: nestedMust,
@@ -1777,75 +1782,127 @@ const buildLocalMustFilter = async (validFilter) => {
   }
   // 02. Handle nil and not_nil operators
   if (operator === 'nil') {
-    if (arrayKeys.length > 1) {
-      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
-    } else {
-      const schemaKey = schemaAttributesDefinition.getAttributeByName(R.head(arrayKeys));
-      valuesFiltering.push(schemaKey?.type === 'string' && schemaKey?.format === 'text'
-        ? { // text filters: use wildcard
+    const filterDefinition = schemaAttributesDefinition.getAttributeByName(headKey);
+    let valueFiltering = { // classic filters: field doesn't exist
+      bool: {
+        must_not: {
+          exists: {
+            field: headKey
+          }
+        }
+      }
+    };
+    if (filterDefinition?.type === 'string') {
+      if (filterDefinition?.format === 'text') { // text filters: use wildcard
+        valueFiltering = {
           bool: {
             must_not: {
               wildcard: {
-                [R.head(arrayKeys)]: '*'
+                [headKey]: '*'
               }
             },
           }
-        } : { // other filters: nil <-> (field doesn't exist) OR (field = empty string)
+        };
+      } else { // string filters: nil <-> (field doesn't exist) OR (field = empty string)
+        valueFiltering = {
           bool: {
-            should: [{
+            should: [
+              {
+                bool: {
+                  must_not: {
+                    exists: {
+                      field: headKey
+                    }
+                  }
+                }
+              },
+              {
+                term: {
+                  [headKey === '_id' ? headKey : `${headKey}.keyword`]: { value: '' },
+                },
+              },
+            ],
+            minimum_should_match: 1,
+          }
+        };
+      }
+    } else if (filterDefinition?.type === 'date') { // date filters: nil <-> (field doesn't exist) OR (date <= epoch) OR (date >= 5138)
+      valueFiltering = {
+        bool: {
+          should: [
+            {
               bool: {
                 must_not: {
                   exists: {
-                    field: R.head(arrayKeys)
+                    field: headKey
                   }
                 }
               }
-            }, {
-              multi_match: {
-                fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) || k === '_id' || isObjectFlatAttribute(k) ? k : `${k}.keyword`}`),
-                query: '',
-              },
-            }],
-            minimum_should_match: 1,
-          }
-        });
+            },
+            { range: { [headKey]: { lte: '1970-01-01T01:00:00.000Z' } } },
+            { range: { [headKey]: { gte: '5138-11-16T09:46:40.000Z' } } }
+          ],
+          minimum_should_match: 1,
+        }
+      };
     }
+    valuesFiltering.push(valueFiltering);
   } else if (operator === 'not_nil') {
-    if (arrayKeys.length > 1) {
-      throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
-    } else {
-      const schemaKey = schemaAttributesDefinition.getAttributeByName(R.head(arrayKeys));
-      valuesFiltering.push(
-        schemaKey?.type === 'string' && schemaKey?.format === 'text'
-          ? { // text filters: use wildcard
-            bool: {
-              must: {
-                wildcard: {
-                  [R.head(arrayKeys)]: '*'
+    const filterDefinition = schemaAttributesDefinition.getAttributeByName(headKey);
+    let valueFiltering = { // classic filters: field exists
+      exists: {
+        field: headKey
+      }
+    };
+    if (filterDefinition?.type === 'string') {
+      if (filterDefinition?.format === 'text') { // text filters: use wildcard
+        valueFiltering = {
+          bool: {
+            must: {
+              wildcard: {
+                [headKey]: '*'
+              }
+            },
+          }
+        };
+      } else { // other filters: not_nil <-> (field exists) AND (field != empty string)
+        valueFiltering = {
+          bool: {
+            must: [
+              {
+                exists: {
+                  field: headKey
                 }
               },
-            }
-          } : { // other filters: not_nil <-> (field exists) AND (field != empty string)
-            bool: {
-              should: [{
-                exists: {
-                  field: R.head(arrayKeys)
-                }
-              }, {
+              {
                 bool: {
                   must_not: {
-                    multi_match: {
-                      fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) || k === '_id' || isObjectFlatAttribute(k) ? k : `${k}.keyword`}`),
-                      query: '',
+                    term: {
+                      [headKey === '_id' ? headKey : `${headKey}.keyword`]: { value: '' },
                     },
-                  }
+                  },
                 }
-              }],
-              minimum_should_match: 2,
-            }
+              }
+            ],
           }
-      );
+        };
+      }
+    } else if (filterDefinition?.type === 'date') { // date filters: not_nil <-> (field exists) AND (date > epoch) AND (date < 5138)
+      valueFiltering = {
+        bool: {
+          must: [
+            {
+              exists: {
+                field: headKey
+              }
+            },
+            { range: { [headKey]: { gt: '1970-01-01T01:00:00.000Z' } } },
+            { range: { [headKey]: { lt: '5138-11-16T09:46:40.000Z' } } }
+          ],
+        }
+      };
     }
+    valuesFiltering.push(valueFiltering);
   }
   // 03. Handle values according to the operator
   if (operator !== 'nil' && operator !== 'not_nil') {
@@ -1854,7 +1911,7 @@ const buildLocalMustFilter = async (validFilter) => {
         if (arrayKeys.length > 1) {
           throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
         }
-        valuesFiltering.push({ exists: { field: R.head(arrayKeys) } });
+        valuesFiltering.push({ exists: { field: headKey } });
       } else if (operator === 'eq' || operator === 'not_eq') {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
         targets.push({
@@ -1926,7 +1983,7 @@ const buildLocalMustFilter = async (validFilter) => {
         if (arrayKeys.length > 1) {
           throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
         }
-        valuesFiltering.push({ range: { [R.head(arrayKeys)]: { [operator]: values[i] } } });
+        valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } }); // range operators
       }
     }
   }
