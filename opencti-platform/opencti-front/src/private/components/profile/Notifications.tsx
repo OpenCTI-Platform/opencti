@@ -112,6 +112,7 @@ const Notifications: FunctionComponent = () => {
         handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleSelectAll={handleToggleSelectAll}
+        selectAll={selectAll}
         keyword={searchTerm}
         filters={filters}
         iconExtension={true}
