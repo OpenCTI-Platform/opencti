@@ -22162,10 +22162,7 @@ export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
 
 
 export type StixCoreObjectEditMutationsExportAskArgs = {
-  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  exportType: Scalars['String']['input'];
-  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  format: Scalars['String']['input'];
+  input: ExportAskInput;
 };
 
 
@@ -36429,7 +36426,7 @@ export type StixCoreObjectEdgeResolvers<ContextType = any, ParentType extends Re
 export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEditMutations'] = ResolversParentTypes['StixCoreObjectEditMutations']> = ResolversObject<{
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
+  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationAddArgs, 'input'>>;

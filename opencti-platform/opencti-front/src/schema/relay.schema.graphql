@@ -7683,7 +7683,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
-  exportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String]): [File!]
+  exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
 }
 

@@ -20,7 +20,7 @@ import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
@@ -65,17 +65,11 @@ export const fileManagerAskJobImportMutation = graphql`
 export const fileManagerExportMutation = graphql`
   mutation FileManagerExportMutation(
     $id: ID!
-    $format: String!
-    $exportType: String!
-    $contentMaxMarkings: [String]
-    $fileMarkings: [String]
+    $input: ExportAskInput!
   ) {
     stixCoreObjectEdit(id: $id) {
       exportAsk(
-        format: $format
-        exportType: $exportType
-        contentMaxMarkings: $contentMaxMarkings
-        fileMarkings: $fileMarkings
+        input: $input
       ) {
         id
         name
@@ -112,19 +106,21 @@ export const scopesConn = (exportConnectors) => {
   return fromPairs(zipped);
 };
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().trim().required(t('This field is required')),
-  type: Yup.string().trim().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+  format: Yup.string().trim().required(t_i18n('This field is required')),
+  type: Yup.string().trim().required(t_i18n('This field is required')),
+  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
-const importValidation = (t, configurations) => {
+const importValidation = (t_i18n, configurations) => {
   const shape = {
-    connector_id: Yup.string().trim().required(t('This field is required')),
+    connector_id: Yup.string().trim().required(t_i18n('This field is required')),
   };
   if (configurations) {
     return Yup.object().shape({
       ...shape,
-      configuration: Yup.string().trim().required(t('This field is required')),
+      configuration: Yup.string().trim().required(t_i18n('This field is required')),
     });
   }
   return Yup.object().shape(shape);
@@ -140,6 +136,7 @@ const FileManager = ({
   isArtifact,
   directDownload = false,
 }) => {
+  const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
@@ -184,23 +181,24 @@ const FileManager = ({
   };
 
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value);
+    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value);
     commitMutation({
       mutation: fileManagerExportMutation,
       variables: {
         id,
         format: values.format,
         exportType: values.type,
-        maxMarkingDefinition,
+        contentMaxMarkings: contentMaxMarkingDefinitions,
+        fileMarkings: fileMarkingDefinitions,
       },
       updater: (store) => {
         const root = store.getRootField('stixCoreObjectEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
           format: values.format,
           exportType: values.type,
-          maxMarkingDefinition,
+          contentMaxMarkings: contentMaxMarkingDefinitions,
+          fileMarkings: fileMarkingDefinitions,
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
@@ -379,7 +377,7 @@ const FileManager = ({
             type: 'full',
             maxMarkingDefinition: 'none',
           }}
-          validationSchema={exportValidation(t)}
+          validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
@@ -433,27 +431,16 @@ const FileManager = ({
                               {t('Full export (entity and first neighbours)')}
                             </MenuItem>
                           </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="maxMarkingDefinition"
-                            label={t('Max marking definition level')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
-                              (markingDefinition) => (
-                                <MenuItem
-                                  key={markingDefinition.node.id}
-                                  value={markingDefinition.node.id}
-                                >
-                                  {markingDefinition.node.definition}
-                                </MenuItem>
-                              ),
-                              props.markingDefinitions.edges,
-                            )}
-                          </Field>
+                          <ObjectMarkingField
+                            name="contentMaxMarkingDefinitions"
+                            label={t_i18n('Content max marking definition levels')}
+                            style={fieldSpacingContainerStyle}
+                          />
+                          <ObjectMarkingField
+                            name="fileMarkingDefinitions"
+                            label={t_i18n('File marking definition levels')}
+                            style={fieldSpacingContainerStyle}
+                          />
                         </DialogContent>
                       );
                     }
