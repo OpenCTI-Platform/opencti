@@ -193,7 +193,7 @@ class GroupingKnowledgeComponent extends Component {
           />
           <Route
             path="/content"
-            render={
+            element={
               <QueryRenderer
                 query={containerContentQuery}
                 variables={{ id: grouping.id }}
@@ -213,7 +213,7 @@ class GroupingKnowledgeComponent extends Component {
           />
           <Route
             path="/correlation"
-            render={
+            element={
               <QueryRenderer
                 query={groupingKnowledgeCorrelationQuery}
                 variables={{ id: grouping.id }}
@@ -235,7 +235,7 @@ class GroupingKnowledgeComponent extends Component {
           />
           <Route
             path="/matrix"
-            render={
+            element={
               <QueryRenderer
                 query={groupingKnowledgeAttackPatternsGraphQuery}
                 variables={{ id: grouping.id }}
