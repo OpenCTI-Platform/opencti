@@ -58,7 +58,7 @@ const buildQueryFilters = async (filters, search, taskPosition) => {
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
-  const options = await buildQueryFilters(user, filters, search, start);
+  const options = await buildQueryFilters(filters, search, start);
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 
