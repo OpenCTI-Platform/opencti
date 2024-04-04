@@ -57,7 +57,6 @@ import { promoteIndicatorToObservable } from '../modules/indicator/indicator-dom
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
-import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
@@ -163,11 +162,7 @@ const computeListTaskElements = async (context, user, task) => {
     const elementToResolve = ids[indexId];
     const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
     if (element) {
-      // only process elements allowed by confidence control (no throw)
-      const isConfidenceMatch = controlUserConfidenceAgainstElement(user, element, true);
-      if (isConfidenceMatch) {
-        processingElements.push({ element, next: element.id });
-      }
+      processingElements.push({ element, next: element.id });
     }
   }
   return { actions, elements: processingElements };

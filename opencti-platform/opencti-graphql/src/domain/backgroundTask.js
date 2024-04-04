@@ -13,7 +13,6 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
-import { adaptFiltersWithUserConfidence } from '../utils/confidence-level';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -45,9 +44,8 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (user, filters, search, taskPosition) => {
+const buildQueryFilters = async (filters, search, taskPosition) => {
   const inputFilters = filters ? JSON.parse(filters) : undefined;
-  const finalFilters = adaptFiltersWithUserConfidence(user, inputFilters);
   // Construct filters
   return {
     types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
@@ -55,7 +53,7 @@ const buildQueryFilters = async (user, filters, search, taskPosition) => {
     orderMode: 'asc',
     orderBy: 'created_at',
     after: taskPosition,
-    filters: finalFilters,
+    filters: inputFilters,
     search: search && search.length > 0 ? search : null,
   };
 };
