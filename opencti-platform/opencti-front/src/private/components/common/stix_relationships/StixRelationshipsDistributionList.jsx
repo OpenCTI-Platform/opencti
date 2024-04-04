@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -68,139 +68,26 @@ const stixRelationshipsDistributionListDistributionQuery = graphql`
           id
           entity_type
         }
-        ... on AttackPattern {
-          name
-          description
+        ... on StixObject {
+          representative {
+            main
+          }
         }
-        ... on Campaign {
-          name
-          description
+        ... on StixRelationship {
+          representative {
+            main
+          }
         }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on Report {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on KillChainPhase {
-          kill_chain_name
-          phase_name
-        }
+        # objects without representative
         ... on Creator {
           name
         }
-        ... on Report {
+        ... on Group {
           name
         }
-        ... on Grouping {
+        ... on Workspace {
           name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
+          type
         }
       }
     }
@@ -242,6 +129,7 @@ const StixRelationshipsDistributionList = ({
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
     };
+
     return (
       <QueryRenderer
         query={stixRelationshipsDistributionListDistributionQuery}
@@ -252,14 +140,22 @@ const StixRelationshipsDistributionList = ({
             && props.stixRelationshipsDistribution
             && props.stixRelationshipsDistribution.length > 0
           ) {
-            const data = props.stixRelationshipsDistribution.map((o) => ({
-              label: finalField.endsWith('_id')
-                ? defaultValue(o.entity)
-                : o.label,
-              value: o.value,
-              id: finalField.endsWith('_id') ? o.entity.id : null,
-              type: finalField.endsWith('_id') ? o.entity.entity_type : o.label,
-            }));
+            const data = props.stixRelationshipsDistribution.map((n) => {
+              let { label } = n;
+              let id = null;
+              let type = n.label;
+              if (isFieldForIdentifier(finalField)) {
+                label = getMainRepresentative(n.entity);
+                id = n.entity?.id;
+                type = n.entity?.entity_type;
+              }
+              return {
+                label,
+                value: n.value,
+                id,
+                type,
+              };
+            });
             return (
               <WidgetDistributionList
                 data={data}

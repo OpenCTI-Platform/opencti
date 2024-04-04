@@ -3,9 +3,9 @@ import React from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { radarChartOptions } from '../../utils/Charts';
-import { defaultValue } from '../../utils/Graph';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetRadarProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,19 +25,14 @@ const WidgetRadar = ({
 }: WidgetRadarProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { buildWidgetLabelsOption } = useDistributionGraphData();
 
   const chartData = [{
     name: label || t_i18n('Number of relationships'),
     data: data.map((n) => n.value),
   }];
 
-  // eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak
-  const labels = data.map((n) => (groupBy.endsWith('_id')
-    ? defaultValue(n.entity)
-    : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
-      ? t_i18n(`entity_${n.label}`)
-      : n.label));
-
+  const labels = buildWidgetLabelsOption(data, groupBy);
   return (
     <Chart
       options={radarChartOptions(theme, labels, [], true, false) as ApexOptions}

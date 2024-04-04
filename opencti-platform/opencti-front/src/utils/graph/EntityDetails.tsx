@@ -21,7 +21,7 @@ import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import ItemIcon from '../../components/ItemIcon';
 import type { Theme } from '../../components/Theme';
-import { defaultValue } from '../Graph';
+import { getMainRepresentative } from '../defaultRepresentatives';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreators from '../../components/ItemCreators';
@@ -322,8 +322,8 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Value')}
       </Typography>
-      <Tooltip title={defaultValue(stixCoreObject)}>
-        <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
+      <Tooltip title={getMainRepresentative(stixCoreObject)}>
+        <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
       </Tooltip>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}

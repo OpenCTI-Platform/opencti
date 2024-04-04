@@ -2,10 +2,9 @@ import Chart from '@components/common/charts/Chart';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import type { ApexOptions } from 'apexcharts';
-import { defaultValue } from '../../utils/Graph';
 import { donutChartOptions } from '../../utils/Charts';
-import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetDonutProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,32 +21,25 @@ const WidgetDonut = ({
   readonly = false,
 }: WidgetDonutProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { buildWidgetLabelsOption } = useDistributionGraphData();
 
   const chartData = data.map((n) => n.value);
-  // eslint-disable-next-line no-nested-ternary
-  const labels = data.map((n) => (groupBy.endsWith('_id')
-    ? defaultValue(n.entity)
-    : groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`
-      ? t_i18n(`entity_${n.label}`)
-      : n.label));
-
+  const labels = buildWidgetLabelsOption(data, groupBy);
   let chartColors = [];
   if (data.at(0)?.entity?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
       ? '#000000'
-      : n.entity.color));
+      : n.entity?.color));
   }
   if (data.at(0)?.entity?.x_opencti_color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light'
-    && n.entity.x_opencti_color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
       ? '#000000'
-      : n.entity.x_opencti_color));
+      : n.entity?.x_opencti_color));
   }
   if (data.at(0)?.entity?.template?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity.template.color === '#ffffff'
+    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
       ? '#000000'
-      : n.entity.template.color));
+      : n.entity?.template.color));
   }
 
   return (

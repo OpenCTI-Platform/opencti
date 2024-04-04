@@ -14,7 +14,7 @@ import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -229,8 +229,8 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                             || targetEntity.entity_type === 'stix-relation'
                             ? `${targetEntity.from.name} ${String.fromCharCode(
                               8594,
-                            )} ${defaultValue(targetEntity.to)}`
-                            : defaultValue(targetEntity)
+                            )} ${getMainRepresentative(targetEntity.to)}`
+                            : getMainRepresentative(targetEntity)
                           : t('Restricted')}
                       </div>
                       <div

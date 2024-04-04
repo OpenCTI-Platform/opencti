@@ -9,7 +9,7 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { defaultValue } from '../../utils/Graph';
+import { getSecondaryRepresentative, getMainRepresentative } from '../../utils/defaultRepresentatives';
 import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
@@ -33,9 +33,9 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
       }}
     >
       <Timeline position="alternate">
-        {data.map(({ value, link }) => {
+        {data.map(({ value, link }, index) => {
           return (
-            <TimelineItem key={value.id}>
+            <TimelineItem key={`${value.id}-${index}`}>
               <TimelineOppositeContent
                 sx={{ paddingTop: '18px' }}
                 color="text.secondary"
@@ -67,11 +67,11 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
               <TimelineContent>
                 <Paper variant="outlined" sx={{ padding: '15px' }} className="noDrag">
                   <Typography variant="h2">
-                    {defaultValue(value)}
+                    {getMainRepresentative(value)}
                   </Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay
-                      content={value.description}
+                      content={getSecondaryRepresentative(value)}
                       limit={150}
                     />
                   </div>

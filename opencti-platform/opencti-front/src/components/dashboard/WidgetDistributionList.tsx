@@ -9,6 +9,7 @@ import ItemIcon from '../ItemIcon';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
+import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 
 interface WidgetDistributionListProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,6 +39,8 @@ const WidgetDistributionList = ({
     >
       <List style={{ marginTop: -10 }}>
         {data.map((entry, key) => {
+          const label = getMainRepresentative(entry.entity) || entry.label;
+
           let link: string | null = null;
           if (entry.type !== 'User' || hasSettingAccess) {
             const node: {
@@ -49,7 +52,7 @@ const WidgetDistributionList = ({
               id: entry.id,
               entity_type: entry.type,
             };
-            link = entry.id ? computeLink(node) : null;
+            link = entry.id && entry.label !== 'Restricted' ? computeLink(node) : null;
           }
           let linkProps = {};
           if (link) {
@@ -61,7 +64,7 @@ const WidgetDistributionList = ({
 
           return (
             <ListItemButton
-              key={entry.label}
+              key={entry.id ?? entry.label}
               dense={true}
               divider={true}
               {...linkProps}
@@ -94,7 +97,7 @@ const WidgetDistributionList = ({
                       paddingRight: 10,
                     }}
                   >
-                    {entry.label}
+                    {label}
                   </div>
                 }
               />

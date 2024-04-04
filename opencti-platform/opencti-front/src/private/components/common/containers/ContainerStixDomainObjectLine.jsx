@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
@@ -147,7 +147,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
             >
               {node.x_mitre_id
                 ? `[${node.x_mitre_id}] ${node.name}`
-                : defaultValue(node)}
+                : getMainRepresentative(node)}
             </div>
             <div
               className={classes.bodyItem}

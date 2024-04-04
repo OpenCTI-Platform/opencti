@@ -51,6 +51,7 @@ import { dateFormat, dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minu
 import { isDateStringNone, isNone } from '../components/i18n';
 import { fileUri } from '../relay/environment';
 import { isNotEmptyField } from './utils';
+import { defaultDate, getMainRepresentative } from './defaultRepresentatives';
 
 const genImage = (src) => {
   const img = new Image();
@@ -306,135 +307,6 @@ export const decodeMappingData = (encodedMappingData) => {
   return {};
 };
 
-export const defaultDate = (n) => {
-  if (!n) return '';
-  if (!isDateStringNone(n.start_time)) {
-    return n.start_time;
-  }
-  if (!isDateStringNone(n.first_seen)) {
-    return n.first_seen;
-  }
-  if (!isDateStringNone(n.first_observed)) {
-    return n.first_observed;
-  }
-  if (!isDateStringNone(n.valid_from)) {
-    return n.valid_from;
-  }
-  if (!isDateStringNone(n.published)) {
-    return n.published;
-  }
-  if (!isDateStringNone(n.created)) {
-    return n.created;
-  }
-  if (!isDateStringNone(n.created_at)) {
-    return n.created_at;
-  }
-  return null;
-};
-
-export const defaultType = (n, t) => {
-  if (n.parent_types.includes('basic-relationship')) {
-    return t(`relationship_${n.entity_type}`);
-  }
-  return t(`entity_${n.entity_type}`);
-};
-
-export const defaultValueMarking = (n) => {
-  let def = 'Unknown';
-  if (n.definition) {
-    const definition = R.toPairs(n.definition);
-    if (definition[0]) {
-      if (definition[0][1].includes(':')) {
-        // eslint-disable-next-line prefer-destructuring
-        def = definition[0][1];
-      } else {
-        def = `${definition[0][0]}:${definition[0][1]}`;
-      }
-    }
-  }
-  return def;
-};
-
-export const defaultKey = (n) => {
-  if (!n) return null;
-  if (n.hashes) {
-    return 'hashes';
-  }
-  if (n.name) {
-    return 'name';
-  }
-  if (n.value) {
-    return 'value';
-  }
-  if (n.observable_value) {
-    return 'observable_value';
-  }
-  if (n.attribute_abstract) {
-    return 'attribute_abstract';
-  }
-  if (n.opinion) {
-    return null;
-  }
-  if (n.abstract) {
-    return 'abstract';
-  }
-  return null;
-};
-
-export const defaultValue = (n, fallback = 'Unknown') => {
-  if (!n) return '';
-  if (typeof n.definition === 'object') {
-    return defaultValueMarking(n);
-  }
-  const mainValue = n.name
-      || n.label
-      || n.observableName
-      || n.observable_value
-      || n.pattern
-      || n.attribute_abstract
-      || n.opinion
-      || n.value
-      || n.definition
-      || n.source_name
-      || n.phase_name
-      || n.result_name
-      || n.country
-      || n.key
-      || (n.template && n.template.name)
-      || (n.content && truncate(n.content, 30))
-      || (n.hashes
-          && (n.hashes.MD5
-              || n.hashes['SHA-1']
-              || n.hashes['SHA-256']
-              || n.hashes['SHA-512']))
-      || (n.source_ref_name
-          && n.target_ref_name
-          && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
-            n.target_ref_name,
-            20,
-          )}`)
-      || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
-      || (n.from
-          && n.to
-          && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
-            defaultValue(n.to),
-            20,
-          )}`)
-      || fallback;
-  return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
-};
-
-export const defaultSecondaryValue = (n) => {
-  if (!n) return '';
-  return (
-    n.description
-    || n.x_opencti_description
-    || n.content
-    || n.entity_type
-    || dateFormat(n.created_at)
-  );
-};
-
 export const computeTimeRangeInterval = (objects) => {
   const filteredDates = objects
     .filter(
@@ -676,10 +548,10 @@ export const buildCorrelationData = (
       id: n.id,
       disabled: n.disabled,
       val: graphLevel[n.entity_type] || graphLevel.Unknown,
-      name: defaultValue(n),
+      name: getMainRepresentative(n),
       defaultDate: jsDate(defaultDate(n)),
       label: truncate(
-        defaultValue(n),
+        getMainRepresentative(n),
         n.entity_type === 'Attack-Pattern' ? 30 : 20,
       ),
       img: graphImages[n.entity_type] || graphImages.Unknown,
@@ -903,13 +775,13 @@ export const buildGraphData = (objects, graphData, t) => {
                 ? '-'
                 : dateFormat(n.stop_time || n.last_seen)
             }`
-            : defaultValue(n)
+            : getMainRepresentative(n)
         }\n${dateFormat(defaultDate(n))}`,
         defaultDate: jsDate(defaultDate(n)),
         label: n.parent_types.includes('basic-relationship')
           ? t(`relationship_${n.relationship_type}`)
           : truncate(
-            defaultValue(n),
+            getMainRepresentative(n),
             n.entity_type === 'Attack-Pattern' ? 30 : 20,
           ),
         img:

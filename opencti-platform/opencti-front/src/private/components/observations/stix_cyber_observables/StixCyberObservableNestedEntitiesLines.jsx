@@ -14,7 +14,7 @@ import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixNestedRefRelationshipPopover from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
@@ -141,7 +141,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '22%' }}
                         >
-                          {defaultValue(stixCoreObject)}
+                          {getMainRepresentative(stixCoreObject)}
                         </div>
                         <div
                           className={classes.bodyItem}

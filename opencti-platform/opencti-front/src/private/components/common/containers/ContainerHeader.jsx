@@ -33,7 +33,7 @@ import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -995,7 +995,7 @@ const ContainerHeader = (props) => {
                                           key={object.id}
                                           value={object.id}
                                         >
-                                          {defaultValue(object)}
+                                          {getMainRepresentative(object)}
                                         </MenuItem>
                                       ))}
                                     </Select>
@@ -1061,7 +1061,7 @@ const ContainerHeader = (props) => {
             {enableQuickSubscription && (
               <StixCoreObjectQuickSubscription
                 instanceId={container.id}
-                instanceName={defaultValue(container)}
+                instanceName={getMainRepresentative(container)}
                 paginationOptions={triggersPaginationOptions}
                 triggerData={triggerData}
               />
@@ -1070,7 +1070,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectAskAI
                 instanceId={container.id}
                 instanceType={container.entity_type}
-                instanceName={defaultValue(container)}
+                instanceName={getMainRepresentative(container)}
                 type="container"
               />
             )}

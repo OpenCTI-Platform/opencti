@@ -39,7 +39,7 @@ import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -341,13 +341,13 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <Tooltip title={defaultValue(stixDomainObject)}>
+      <Tooltip title={getMainRepresentative(stixDomainObject)}>
         <Typography
           variant="h1"
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(defaultValue(stixDomainObject), 80)}
+          {truncate(getMainRepresentative(stixDomainObject), 80)}
         </Typography>
       </Tooltip>
       {typeof onViewAs === 'function' && (
@@ -515,7 +515,7 @@ const StixDomainObjectHeader = (props) => {
           {enableQuickSubscription && (
             <StixCoreObjectQuickSubscription
               instanceId={stixDomainObject.id}
-              instanceName={defaultValue(stixDomainObject)}
+              instanceName={getMainRepresentative(stixDomainObject)}
               paginationOptions={triggersPaginationOptions}
               triggerData={triggerData}
             />
@@ -524,7 +524,7 @@ const StixDomainObjectHeader = (props) => {
           <StixCoreObjectAskAI
             instanceId={stixDomainObject.id}
             instanceType={stixDomainObject.entity_type}
-            instanceName={defaultValue(stixDomainObject)}
+            instanceName={getMainRepresentative(stixDomainObject)}
             type={type}
           />
           )}

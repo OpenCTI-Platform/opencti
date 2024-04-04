@@ -17,7 +17,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -54,146 +54,26 @@ const auditsDistributionListDistributionQuery = graphql`
       value
       entity {
         ... on BasicObject {
-          entity_type
           id
+          entity_type
         }
         ... on BasicRelationship {
-          entity_type
           id
-        }
-        ... on AttackPattern {
-          name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on MalwareAnalysis {
-          result_name
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on Task {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on Creator {
           entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
+        # objects without representative
+        ... on Creator {
           name
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
         }
         ... on Group {
           name
@@ -258,30 +138,24 @@ const AuditsDistributionList = ({
             && props.auditsDistribution
             && props.auditsDistribution.length > 0
           ) {
-            const data = props.auditsDistribution.map((o) => ({
-              label:
-                // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('.id')
-                || selection.attribute.endsWith('_id')
-                || selection.attribute.endsWith('_ids')
-                  ? defaultValue(o.entity)
-                  : selection.attribute === 'entity_type'
-                    ? t_i18n(`entity_${o.label}`)
-                    : o.label,
-              value: o.value,
-              id:
-                selection.attribute.endsWith('.id')
-                || selection.attribute.endsWith('_id')
-                || selection.attribute.endsWith('_ids')
-                  ? o.entity.id
-                  : null,
-              type:
-                selection.attribute.endsWith('.id')
-                || selection.attribute.endsWith('_id')
-                || selection.attribute.endsWith('_ids')
-                  ? o.entity.entity_type
-                  : o.label,
-            }));
+            const data = props.auditsDistribution.map((n) => {
+              let { label } = n;
+              let id = null;
+              let type = n.label;
+              if (isFieldForIdentifier(selection.attribute)) {
+                label = getMainRepresentative(n.entity) || n.label;
+                id = n.entity?.id;
+                type = n.entity?.entity_type;
+              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+                label = t_i18n(`entity_${n.label}`);
+              }
+              return {
+                label,
+                value: n.value,
+                id,
+                type,
+              };
+            });
             return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;
           }
           if (props) {

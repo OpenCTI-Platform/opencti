@@ -34,7 +34,7 @@ import StixCoreRelationshipExternalReferences from '../../analyses/external_refe
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreators from '../../../../components/ItemCreators';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
@@ -297,8 +297,8 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!fromRestricted
                         ? truncate(
-                          defaultValue(from) !== 'Unknown'
-                            ? defaultValue(from)
+                          getMainRepresentative(from) !== 'Unknown'
+                            ? getMainRepresentative(from)
                             : t(`relationship_${from.entity_type}`),
                           50,
                         )
@@ -362,8 +362,8 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!toRestricted
                         ? truncate(
-                          defaultValue(to) !== 'Unknown'
-                            ? defaultValue(to)
+                          getMainRepresentative(to) !== 'Unknown'
+                            ? getMainRepresentative(to)
                             : t(`relationship_${to.entity_type}`),
                           50,
                         )

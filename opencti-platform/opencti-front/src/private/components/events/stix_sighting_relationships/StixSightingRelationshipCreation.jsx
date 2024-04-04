@@ -16,7 +16,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 
 const styles = (theme) => ({
@@ -498,7 +498,7 @@ class StixSightingRelationshipCreation extends Component {
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
-                    {truncate(defaultValue(toObjects[0]), 20)}
+                    {truncate(getMainRepresentative(toObjects[0]), 20)}
                   </span>
                 </div>
               </div>
@@ -539,7 +539,7 @@ class StixSightingRelationshipCreation extends Component {
                   {fromObjects.length > 1 ? (
                     <em>{t('Multiple entities selected')}</em>
                   ) : (
-                    truncate(defaultValue(fromObjects[0]))
+                    truncate(getMainRepresentative(fromObjects[0]))
                   )}
                 </span>
               </div>

@@ -11,7 +11,7 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
+import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
@@ -99,10 +99,10 @@ const CaseRfiKnowledgeTimeLineComponent = ({
               </TimelineSeparator>
               <TimelineContent>
                 <Paper variant="outlined" className={classes.paper}>
-                  <Typography variant="h2">{defaultValue(node)}</Typography>
+                  <Typography variant="h2">{getMainRepresentative(node)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
                     <MarkdownDisplay
-                      content={defaultSecondaryValue(node)}
+                      content={getSecondaryRepresentative(node)}
                       limit={150}
                     />
                   </div>

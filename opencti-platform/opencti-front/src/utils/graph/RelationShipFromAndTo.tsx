@@ -7,7 +7,7 @@ import { useFormatter } from '../../components/i18n';
 import useQueryLoading from '../hooks/useQueryLoading';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../String';
-import { defaultValue } from '../Graph';
+import { getMainRepresentative } from '../defaultRepresentatives';
 
 const useStyles = makeStyles(() => ({
   label: {
@@ -20,6 +20,11 @@ const relationShipFromAndToQuery = graphql`
     stixCoreObject(id: $id) {
       id
       entity_type
+      ... on StixObject {
+        representative {
+          main
+        }
+      }
       ... on StixDomainObject {
         created
       }
@@ -152,8 +157,8 @@ RelationShipFromAndToComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n(direction === 'From' ? 'Source' : 'Target')}
       </Typography>
-      <Tooltip title={defaultValue(stixCoreObject)}>
-        <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
+      <Tooltip title={getMainRepresentative(stixCoreObject)}>
+        <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
       </Tooltip>
     </React.Fragment>
   );

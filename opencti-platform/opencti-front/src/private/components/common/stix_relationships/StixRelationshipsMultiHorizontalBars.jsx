@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -79,10 +79,42 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
+        # use colors when available
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
+        # objects without representative
+        ... on Creator {
+          name
+        }
+        ... on Group {
+          name
+        }
+        ... on Status {
+          template {
+            name
+            color
+          }
         }
         ... on StixCoreObject {
           stixCoreRelationshipsDistribution(
@@ -109,267 +141,43 @@ const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = g
             value
             entity {
               ... on BasicObject {
+                id
                 entity_type
               }
               ... on BasicRelationship {
+                id
                 entity_type
               }
-              ... on AttackPattern {
-                name
-                description
+              ... on StixObject {
+                representative {
+                  main
+                }
               }
-              ... on Campaign {
-                name
-                description
+              ... on StixRelationship {
+                representative {
+                  main
+                }
               }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on AdministrativeArea {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on Event {
-                name
-                description
-              }
-              ... on Channel {
-                name
-                description
-              }
-              ... on Narrative {
-                name
-                description
-              }
-              ... on Language {
-                name
-              }
-              ... on DataComponent {
-                name
-                description
-              }
-              ... on DataSource {
-                name
-                description
-              }
-              ... on Case {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
+              ... on Label {
+                color
               }
               ... on MarkingDefinition {
-                definition_type
-                definition
+                x_opencti_color
               }
-              ... on Report {
+              ... on Creator {
                 name
               }
-              ... on Grouping {
+              ... on Group {
                 name
               }
-              ... on Note {
-                attribute_abstract
-                content
-              }
-              ... on Opinion {
-                opinion
+              ... on Status {
+                template {
+                  name
+                  color
+                }
               }
             }
           }
-        }
-        ... on AttackPattern {
-          name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on Creator {
-          name
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
         }
       }
     }
@@ -439,10 +247,42 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
+        }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
+        # use colors when available
+        ... on Label {
+          color
+        }
+        ... on MarkingDefinition {
+          x_opencti_color
+        }
+        # objects without representative
+        ... on Creator {
+          name
+        }
+        ... on Group {
+          name
+        }
+        ... on Status {
+          template {
+            name
+            color
+          }
         }
         ... on StixCoreObject {
           stixCoreObjectsDistribution(
@@ -463,264 +303,43 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
             value
             entity {
               ... on BasicObject {
+                id
                 entity_type
               }
               ... on BasicRelationship {
+                id
                 entity_type
               }
-              ... on AttackPattern {
-                name
-                description
+              ... on StixObject {
+                representative {
+                  main
+                }
               }
-              ... on Campaign {
-                name
-                description
+              ... on StixRelationship {
+                representative {
+                  main
+                }
               }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on AdministrativeArea {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on Event {
-                name
-                description
-              }
-              ... on Channel {
-                name
-                description
-              }
-              ... on Narrative {
-                name
-                description
-              }
-              ... on Language {
-                name
-              }
-              ... on DataComponent {
-                name
-                description
-              }
-              ... on DataSource {
-                name
-                description
-              }
-              ... on Case {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
+              ... on Label {
+                color
               }
               ... on MarkingDefinition {
-                definition_type
-                definition
+                x_opencti_color
               }
-              ... on Report {
+              ... on Creator {
                 name
               }
-              ... on Grouping {
+              ... on Group {
                 name
               }
-              ... on Note {
-                attribute_abstract
-                content
-              }
-              ... on Opinion {
-                opinion
+              ... on Status {
+                template {
+                  name
+                  color
+                }
               }
             }
           }
-        }
-        ... on AttackPattern {
-          name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
         }
       }
     }
@@ -826,17 +445,17 @@ const StixRelationshipsMultiHorizontalBars = ({
             && props.stixRelationshipsDistribution
             && props.stixRelationshipsDistribution.length > 0
           ) {
-            const categories = props.stixRelationshipsDistribution.map((n) => defaultValue(n.entity));
+            const categories = props.stixRelationshipsDistribution.map((n) => getMainRepresentative(n.entity, t_i18n('Restricted')));
             const entitiesMapping = {};
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
                 entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity)
+                    ? getMainRepresentative(subDistrib.entity, t_i18n('Restricted'))
                     : subDistrib.label
                 ] = (entitiesMapping[
                   finalSubDistributionField === 'internal_id'
-                    ? defaultValue(subDistrib.entity)
+                    ? getMainRepresentative(subDistrib.entity, t_i18n('Restricted'))
                     : subDistrib.label
                 ] || 0) + subDistrib.value;
               }
@@ -849,9 +468,9 @@ const StixRelationshipsMultiHorizontalBars = ({
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const sortedEntity of sortedEntityMapping) {
                 const entityData = R.head(
-                  distrib.entity[key].filter(
+                  distrib.entity?.[key].filter(
                     (n) => (finalSubDistributionField === 'internal_id'
-                      ? defaultValue(n.entity)
+                      ? getMainRepresentative(n.entity)
                       : n.label) === sortedEntity[0],
                   ),
                 );
@@ -859,21 +478,21 @@ const StixRelationshipsMultiHorizontalBars = ({
                 if (entityData) {
                   value = entityData.value;
                 }
-                if (categoriesValues[defaultValue(distrib.entity)]) {
-                  categoriesValues[defaultValue(distrib.entity)].push(value);
+                if (categoriesValues[getMainRepresentative(distrib.entity)]) {
+                  categoriesValues[getMainRepresentative(distrib.entity)].push(value);
                 } else {
-                  categoriesValues[defaultValue(distrib.entity)] = [value];
+                  categoriesValues[getMainRepresentative(distrib.entity)] = [value];
                 }
               }
               const sum = (
-                categoriesValues[defaultValue(distrib.entity)] || []
+                categoriesValues[getMainRepresentative(distrib.entity)] || []
               ).reduce((partialSum, a) => partialSum + a, 0);
-              if (categoriesValues[defaultValue(distrib.entity)]) {
-                categoriesValues[defaultValue(distrib.entity)].push(
+              if (categoriesValues[getMainRepresentative(distrib.entity)]) {
+                categoriesValues[getMainRepresentative(distrib.entity)].push(
                   distrib.value - sum,
                 );
               } else {
-                categoriesValues[defaultValue(distrib.entity)] = [
+                categoriesValues[getMainRepresentative(distrib.entity)] = [
                   distrib.value - sum,
                 ];
               }
@@ -907,14 +526,14 @@ const StixRelationshipsMultiHorizontalBars = ({
             const redirectionUtils = finalField === 'internal_id'
               ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
-                entity_type: n.entity.entity_type,
+                entity_type: n.entity?.entity_type,
                 series: subSectionIdsOrder.map((subSectionId) => {
-                  const [entity] = n.entity[key].filter(
+                  const [entity] = n.entity[key]?.filter(
                     (e) => e.label === subSectionId,
-                  );
+                  ) ?? [];
                   return {
                     id: subSectionId,
-                    entity_type: entity ? entity.entity.entity_type : null,
+                    entity_type: entity ? entity.entity?.entity_type : null,
                   };
                 }),
               }))

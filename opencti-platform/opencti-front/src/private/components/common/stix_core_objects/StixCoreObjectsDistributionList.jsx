@@ -8,6 +8,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
+import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 
 const stixCoreObjectsDistributionListDistributionQuery = graphql`
   query StixCoreObjectsDistributionListDistributionQuery(
@@ -43,33 +44,32 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
       label
       value
       entity {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
         ... on StixObject {
-          id
-          entity_type
           representative {
             main
           }
         }
-        ... on StixRelationship {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-        ... on Creator {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
+        # use colors when available
         ... on Label {
-          value
           color
         }
         ... on MarkingDefinition {
           x_opencti_color
+        }
+        # objects without representative
+        ... on Creator {
+          name
+        }
+        ... on Group {
+          name
         }
         ... on Status {
           template {
@@ -121,19 +121,21 @@ const StixCoreObjectsDistributionList = ({
             && props.stixCoreObjectsDistribution
             && props.stixCoreObjectsDistribution.length > 0
           ) {
-            const data = props.stixCoreObjectsDistribution.map((o) => ({
-              label:
-                // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('_id')
-                  ? o.entity?.representative?.main
-                  : selection.attribute === 'entity_type'
-                    ? t_i18n(`entity_${o.label}`)
-                    : o.label,
-              value: o.value,
-              color: o.entity?.color ?? o.entity?.x_opencti_color,
-              id: selection.attribute.endsWith('_id') ? o.entity.id : null,
-              type: o.entity?.entity_type ?? o.label,
-            }));
+            const data = props.stixCoreObjectsDistribution.map((n) => {
+              let { label } = n;
+              if (isFieldForIdentifier(selection.attribute)) {
+                label = getMainRepresentative(n.entity);
+              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+                label = t_i18n(`entity_${n.label}`);
+              }
+              return {
+                label,
+                value: n.value,
+                color: n.entity?.color ?? n.entity?.x_opencti_color,
+                id: selection.attribute.endsWith('_id') ? n.entity?.id : null,
+                type: n.entity?.entity_type ?? n.label,
+              };
+            });
             return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;
           }
           if (props) {

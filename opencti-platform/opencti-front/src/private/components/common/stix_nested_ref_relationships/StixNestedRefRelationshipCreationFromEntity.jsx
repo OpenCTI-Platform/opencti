@@ -27,7 +27,7 @@ import SelectField from '../../../../components/SelectField';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { onlyLinkedTo } from '../../../../utils/Relation';
@@ -737,7 +737,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(defaultValue(fromEntity), 20)}
+                      {truncate(getMainRepresentative(fromEntity), 20)}
                     </span>
                   </div>
                 </div>
@@ -773,7 +773,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(defaultValue(toEntity[0]), 20)}
+                      {truncate(getMainRepresentative(toEntity[0]), 20)}
                     </span>
                   </div>
                 </div>

@@ -16,7 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -115,7 +115,7 @@ const EntitiesStixDomainObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
-              {defaultValue(node)}
+              {getMainRepresentative(node)}
             </div>
             <div
               className={classes.bodyItem}

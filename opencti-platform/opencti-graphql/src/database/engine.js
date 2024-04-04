@@ -2698,7 +2698,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
-    throw FunctionalError('Aggregation computing use and unsupported field', { field });
+    throw FunctionalError('Aggregation computing use an unsupported field', { field });
   }
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);

@@ -16,7 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { computeLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
@@ -150,7 +150,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.fromName.width }}
             >
-              {node.from ? defaultValue(node.from) : t_i18n('Restricted')}
+              {getMainRepresentative(node.from)}
             </div>
             <div
               className={classes.bodyItem}
@@ -204,7 +204,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.toName.width }}
             >
-              {node.to ? defaultValue(node.to) : t_i18n('Restricted')}
+              {getMainRepresentative(node.to)}
             </div>
             <div
               className={classes.bodyItem}

@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 
@@ -128,7 +128,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
             >
-              {defaultValue(node)}
+              {getMainRepresentative(node)}
             </div>
             <div
               className={classes.bodyItem}

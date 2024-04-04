@@ -20,7 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
-import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
+import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -95,7 +95,7 @@ class StixDomainObjectTimelineComponent extends Component {
                         <Tooltip
                           title={
                             !restricted
-                              ? defaultValue(stixRelationship.targetEntity)
+                              ? getMainRepresentative(stixRelationship.targetEntity)
                               : t('Restricted')
                           }
                         >
@@ -123,7 +123,7 @@ class StixDomainObjectTimelineComponent extends Component {
                       <Tooltip
                         title={
                           !restricted
-                            ? defaultValue(stixRelationship.targetEntity)
+                            ? getMainRepresentative(stixRelationship.targetEntity)
                             : t('Restricted')
                         }
                       >
@@ -154,7 +154,7 @@ class StixDomainObjectTimelineComponent extends Component {
                       <Typography variant="h2">
                         {!restricted
                           ? truncate(
-                            defaultValue(stixRelationship.targetEntity),
+                            getMainRepresentative(stixRelationship.targetEntity),
                             50,
                           )
                           : t('Restricted')}
@@ -166,7 +166,7 @@ class StixDomainObjectTimelineComponent extends Component {
                             && stixRelationship.description.length > 0
                             ? stixRelationship.description
                             : !restricted
-                              ? defaultSecondaryValue(
+                              ? getSecondaryRepresentative(
                                 stixRelationship.targetEntity,
                               )
                               : t('Restricted'),

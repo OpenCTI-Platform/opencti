@@ -7,7 +7,7 @@ import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
-import { defaultValue } from '../../utils/Graph';
+import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemMarkings from '../ItemMarkings';
 import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
@@ -116,7 +116,7 @@ const WidgetListRelationships = ({
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.from
-                          ? defaultValue(stixRelationship.from)
+                          ? getMainRepresentative(stixRelationship.from)
                           : t_i18n('Restricted')}
                       </code>
                     </div>
@@ -149,7 +149,7 @@ const WidgetListRelationships = ({
                     <div style={bodyItemStyle('18%')}>
                       <code>
                         {stixRelationship.to
-                          ? defaultValue(stixRelationship.to)
+                          ? getMainRepresentative(stixRelationship.to)
                           : t_i18n('Restricted')}
                       </code>
                     </div>

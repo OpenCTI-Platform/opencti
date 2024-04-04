@@ -11,7 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { defaultValue } from '../../../../utils/Graph';
+import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { itemColor } from '../../../../utils/Colors';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 
@@ -443,8 +443,8 @@ const stixCoreObjectsMultiHorizontalBars = ({
             && props.stixCoreObjectsDistribution.length > 0
           ) {
             const data = props.stixCoreObjectsDistribution.map((n) => {
-              let color = selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
+              let color = isFieldForIdentifier(selection.attribute)
+                ? itemColor(n.entity?.entity_type)
                 : itemColor(n.label);
               if (n.entity?.color) {
                 color = theme.palette.mode === 'light' && n.entity.color === '#ffffff'
@@ -467,7 +467,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 x:
                   // eslint-disable-next-line no-nested-ternary
                   selection.attribute.endsWith('_id')
-                    ? defaultValue(n.entity)
+                    ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                     : selection.attribute === 'entity_type'
                       ? t_i18n(`entity_${n.label}`)
                       : n.label,
@@ -483,8 +483,8 @@ const stixCoreObjectsMultiHorizontalBars = ({
             ];
             const redirectionUtils = selection.attribute === 'name'
               ? props.stixCoreObjectsDistribution.map((n) => ({
-                id: n.entity.id,
-                entity_type: n.entity.entity_type,
+                id: n.entity?.id,
+                entity_type: n.entity?.entity_type,
               }))
               : null;
             return (
