@@ -11,7 +11,7 @@ Thus already a BIG THANK YOU upfront to you for choosing to help with your PR.
 *
 
 ### Related issues
-
+<!-- Please attach your PR to related issues in the Development widget on the right -->
 *
 *
 
@@ -25,11 +25,11 @@ By doing this, you are actively helping us to improve the quality of the entire 
 
 - [ ] I consider the submitted work as finished
 - [ ] I tested the code for its functionality
-- [ ] I wrote test cases for the relevant uses case
+- [ ] I wrote test cases for the relevant uses case (coverage and e2e)
 - [ ] I added/update the relevant documentation (either on github or on notion)
 - [ ] Where necessary I refactored code to improve the overall quality
 
-<!-- _NOTE: these things are not required to open a PR and can be done afterwards / while the PR draft is open._ -->
+<!-- _NOTE: Test coverage are, by default, mandatory. It will help us to improve stability of the platform. If you consider test are not relevant for this PR, reach out and explain why_ -->
 <!-- For completed items, change [ ] to [x]. -->
 
 ### Further comments
