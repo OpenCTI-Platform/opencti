@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  adaptFiltersWithUserConfidence,
   adaptUpdateInputsConfidence,
   computeUserEffectiveConfidenceLevel,
   controlCreateInputWithUserConfidence,
@@ -8,7 +7,6 @@ import {
   controlUserConfidenceAgainstElement
 } from '../../../src/utils/confidence-level';
 import type { AuthUser } from '../../../src/types/user';
-import { type FilterGroup, FilterMode, FilterOperator } from '../../../src/generated/graphql';
 import { BYPASS } from '../../../src/utils/access';
 
 const makeUser = (confidence: number | null) => ({
@@ -252,55 +250,5 @@ describe('Confidence level utilities', () => {
       .toEqual([otherInput, { key: 'confidence', value: ['10'] }]); // inject user's confidence
     expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(null)))
       .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / no need to inject user's confidence
-  });
-
-  it('getConfidenceFilterForUser shall produce correct filters', () => {
-    const emptyFilterGroup: FilterGroup = {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [],
-    };
-    const exampleFilterGroup: FilterGroup = {
-      mode: FilterMode.Or,
-      filterGroups: [],
-      filters: [
-        { key: ['name'], operator: FilterOperator.Contains, mode: FilterMode.Or, values: ['aa', 'bb', 'cc'] },
-        { key: ['score'], operator: FilterOperator.Gte, mode: FilterMode.And, values: [70] }
-      ],
-    };
-    const injectedFilters: FilterGroup = {
-      mode: FilterMode.Or,
-      filterGroups: [],
-      filters: [
-        {
-          key: ['entity_type'],
-          operator: FilterOperator.NotEq,
-          values: ['Stix-Domain-Object', 'Stix-Relationship'],
-        },
-        {
-          key: ['confidence'],
-          operator: FilterOperator.Lte,
-          values: [50],
-        },
-        {
-          key: ['confidence'],
-          operator: FilterOperator.Nil,
-          values: [],
-        },
-      ],
-    };
-
-    expect(adaptFiltersWithUserConfidence(makeUser(50), emptyFilterGroup))
-      .toEqual({
-        mode: FilterMode.And,
-        filters: [],
-        filterGroups: [injectedFilters]
-      });
-    expect(adaptFiltersWithUserConfidence(makeUser(50), exampleFilterGroup))
-      .toEqual({
-        mode: FilterMode.And,
-        filters: [],
-        filterGroups: [injectedFilters, exampleFilterGroup]
-      });
   });
 });
