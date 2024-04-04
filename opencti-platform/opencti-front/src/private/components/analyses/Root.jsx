@@ -13,7 +13,6 @@ const MalwareAnalyses = lazy(() => import('./MalwareAnalyses'));
 const RootMalwareAnalysis = lazy(() => import('./malware_analyses/Root'));
 const Notes = lazy(() => import('./Notes'));
 const RootNote = lazy(() => import('./notes/Root'));
-const Opinions = lazy(() => import('./Opinions'));
 const RootOpinion = lazy(() => import('./opinions/Root'));
 const ExternalReferences = lazy(() => import('./ExternalReferences'));
 const RootExternalReference = lazy(() => import('./external_references/Root'));
@@ -69,10 +68,6 @@ const Root = () => {
         <Route
           path="/notes/:noteId/*"
           Component={boundaryWrapper(RootNote)}
-        />
-        <Route
-          path="/opinions"
-          Component={boundaryWrapper(Opinions)}
         />
         <Route
           path="/opinions/:opinionId"
