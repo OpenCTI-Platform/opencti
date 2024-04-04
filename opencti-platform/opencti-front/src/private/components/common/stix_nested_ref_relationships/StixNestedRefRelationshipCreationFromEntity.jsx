@@ -35,6 +35,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -333,7 +334,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(0);
   const [targetEntity, setTargetEntity] = useState([]);
-  const [selectedElements, setSelectedElements] = useState({});
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
   const [numberOfElements, setNumberOfElements] = useState({
@@ -466,10 +466,16 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     setTargetEntity(stixDomainObject);
   };
 
-  const onToggleEntity = (entity) => {
+  const {
+    onToggleEntity,
+    selectedElements,
+    deSelectedElements,
+  } = useEntityToggle(`${entityId}_stixNestedRefRelationshipCreationFromEntity`);
+
+  const onInstanceToggleEntity = (entity) => {
+    onToggleEntity(entity);
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
-      setSelectedElements(newSelectedElements);
       setTargetEntity(R.values(newSelectedElements));
     } else {
       const newSelectedElements = R.assoc(
@@ -477,7 +483,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         entity,
         selectedElements || {},
       );
-      setSelectedElements(newSelectedElements);
       setTargetEntity(R.values(newSelectedElements));
     }
   };
@@ -576,10 +581,10 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                         dataColumns={dataColumns}
                         initialLoading={false}
                         setNumberOfElements={setNumberOfElements}
-                        onToggleEntity={onToggleEntity}
+                        onToggleEntity={onInstanceToggleEntity}
                         containerRef={containerRef}
                         selectedElements={selectedElements}
-                        deSelectedElements={{}}
+                        deSelectedElements={deSelectedElements}
                         selectAll={false}
                       />
                     );
