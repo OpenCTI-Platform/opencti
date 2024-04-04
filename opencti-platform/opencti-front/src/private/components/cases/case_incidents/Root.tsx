@@ -217,7 +217,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               path="/knowledge/*"
               element={
                 <IncidentKnowledge caseData={caseData}
-                                   enableReferences={enableReferences}/>}
+                  enableReferences={enableReferences}
+                />}
             />
             <Route
               path="/files"

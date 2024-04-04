@@ -144,7 +144,7 @@ class GroupingKnowledgeComponent extends Component {
       grouping,
       location,
       params: { '*': mode },
-      enableReferences
+      enableReferences,
     } = this.props;
     const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
     return (

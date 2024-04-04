@@ -219,7 +219,8 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               path="/knowledge/*"
               element={(
                 <CaseRftKnowledge caseData={caseData}
-                                  enableReferences={enableReferences}/>
+                  enableReferences={enableReferences}
+                />
               )}
             />
             <Route

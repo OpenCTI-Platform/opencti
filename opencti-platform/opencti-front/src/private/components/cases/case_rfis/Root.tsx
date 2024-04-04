@@ -218,7 +218,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               path="/knowledge/*"
               element={
                 <CaseRfiKnowledge caseData={caseData}
-                                  enableReferences={enableReferences}/>
+                  enableReferences={enableReferences}
+                />
               }
             />
             <Route
