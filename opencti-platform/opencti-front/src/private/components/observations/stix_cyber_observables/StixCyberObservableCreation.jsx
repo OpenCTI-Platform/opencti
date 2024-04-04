@@ -773,6 +773,7 @@ const StixCyberObservableCreation = ({
                                 variant="standard"
                                 key={attribute.value}
                                 name={attribute.value}
+                                label="generic_value_field"
                                 fullWidth={true}
                                 multiline={true}
                                 rows="1"

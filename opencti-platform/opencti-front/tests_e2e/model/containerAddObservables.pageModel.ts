@@ -14,7 +14,7 @@ export default class ContainerAddObservablesPage {
   }
 
   getNewIPV4ValueInput() {
-    return this.page.getByLabel('value');
+    return this.page.getByLabel('generic_value_field');
   }
 
   async fillNewIPV4ValueInput(ipv4Value: string) {
