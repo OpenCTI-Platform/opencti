@@ -6,7 +6,7 @@ import { UnknownError } from './config/errors';
 import { shutdownModules, startModules } from './managers';
 import { filigranTelemetryManager } from './config/filigranTelemetry';
 
-const initFiligranTelemetry = () => {
+const initFiligranTelemetry = async () => {
   const version = PLATFORM_VERSION;
   filigranTelemetryManager.setVersion(version);
 };

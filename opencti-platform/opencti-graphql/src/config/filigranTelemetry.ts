@@ -1,12 +1,18 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { LoggerProvider } from '@opentelemetry/sdk-logs';
+import type { ObservableResult } from '@opentelemetry/api-metrics';
+import { UnknownError } from './errors';
 
 class FiligranTelemetryManager {
   meterProvider: MeterProvider;
 
+  loggerProvider: LoggerProvider;
+
   private version = '0';
 
-  constructor(meterProvider: MeterProvider) {
+  constructor(meterProvider: MeterProvider, loggerProvider: LoggerProvider) {
     this.meterProvider = meterProvider;
+    this.loggerProvider = loggerProvider;
   }
 
   setVersion(val: string) {
@@ -15,8 +21,18 @@ class FiligranTelemetryManager {
 
   registerMetrics() {
     const meter = this.meterProvider.getMeter('opencti-api');
-    // Register manual metrics
+  }
+
+  registerLogs() {
+    const logger = this.loggerProvider.getLogger('opencti-api');
+    logger.emit({ body: this.version });
+  }
+
+  registerFiligranTelemetry() {
+    this.registerMetrics(); // for metrics
+    this.registerLogs(); // for string
   }
 }
-export const filigranTelemetryProvider = new MeterProvider({});
-export const filigranTelemetryManager = new FiligranTelemetryManager(filigranTelemetryProvider);
+export const filigranTelemetryMeterProvider = new MeterProvider({});
+export const filigranTelemetryLoggerProvider = new LoggerProvider();
+export const filigranTelemetryManager = new FiligranTelemetryManager(filigranTelemetryMeterProvider, filigranTelemetryLoggerProvider);

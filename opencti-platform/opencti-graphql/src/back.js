@@ -18,7 +18,7 @@ import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_METRICS, ENABLED_TELEMETRY, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 import { meterManager, meterProvider } from './config/tracing';
-import { filigranTelemetryManager, filigranTelemetryProvider } from './config/filigranTelemetry';
+import { filigranTelemetryManager, filigranTelemetryMeterProvider } from './config/filigranTelemetry';
 
 // -- Apply telemetry
 // ------- Tracing
@@ -66,10 +66,11 @@ if (ENABLED_TELEMETRY) {
   const exporterOtlp = nconf.get('app:telemetry:filigran:exporter_otlp');
   if (isNotEmptyField(exporterOtlp)) {
     const telemetryExporter = new OTLPMetricExporter({ url: exporterOtlp, header: {}, concurrencyLimit: 1 });
-    filigranTelemetryProvider.addMetricReader(new PeriodicExportingMetricReader({ exporter: telemetryExporter, exportIntervalMillis: 1000 }));
+    filigranTelemetryMeterProvider.addMetricReader(new PeriodicExportingMetricReader({ exporter: telemetryExporter, exportIntervalMillis: 1000 }));
   }
+  // File exporter // TODO
   // Register metrics
-  filigranTelemetryManager.registerMetrics();
+  filigranTelemetryManager.registerFiligranTelemetry();
 }
 // ------- Event loop monitoring
 if (ENABLED_EVENT_LOOP_MONITORING) {
