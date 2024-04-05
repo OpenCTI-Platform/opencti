@@ -7,6 +7,7 @@ import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {
@@ -84,6 +85,14 @@ class RootOpinion extends Component {
                       element={(
                         <Opinion opinion={props.opinion} />
                       )}
+                    />
+                    <Route
+                      path="/knowledge/relations/:relationId"
+                      element={
+                        <StixCoreRelationship
+                          entityId={props.opinion.id}
+                        />
+                      }
                     />
                   </Routes>
                 );

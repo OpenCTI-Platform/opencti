@@ -70,7 +70,7 @@ const Root = () => {
           Component={boundaryWrapper(RootNote)}
         />
         <Route
-          path="/opinions/:opinionId"
+          path="/opinions/:opinionId/*"
           Component={boundaryWrapper(RootOpinion)}
         />
         <Route

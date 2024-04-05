@@ -16,6 +16,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const styles = () => ({
   container: {
@@ -272,6 +273,14 @@ class GroupingKnowledgeComponent extends Component {
                     />
                   );
                 }}
+              />
+            }
+          />
+          <Route
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship
+                entityId={grouping.id}
               />
             }
           />

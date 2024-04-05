@@ -19,6 +19,7 @@ import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowl
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const styles = () => ({
   container: {
@@ -424,7 +425,16 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }}
-              />}
+              />
+            }
+          />
+          <Route
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship
+                entityId={caseData.id}
+              />
+            }
           />
         </Routes>
       </div>

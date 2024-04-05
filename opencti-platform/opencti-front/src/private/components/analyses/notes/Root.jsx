@@ -18,6 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -91,15 +92,7 @@ class RootNote extends Component {
               if (props.note) {
                 const { note } = props;
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/analyses/notes/${note.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div>
                     <CollaborativeSecurity
                       data={note}
                       needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
@@ -175,6 +168,14 @@ class RootNote extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={noteId}
                             withoutRelations={true}
+                          />
+                        }
+                      />
+                      <Route
+                        path="/knowledge/relations/:relationId"
+                        element={
+                          <StixCoreRelationship
+                            entityId={props.note.id}
                           />
                         }
                       />

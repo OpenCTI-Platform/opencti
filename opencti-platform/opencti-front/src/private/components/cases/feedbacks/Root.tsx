@@ -22,6 +22,7 @@ import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomain
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -210,6 +211,14 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
               element={
                 <StixCoreObjectHistory
                   stixCoreObjectId={caseId}
+                />
+              }
+            />
+            <Route
+              path="/knowledge/relations/:relationId"
+              element={
+                <StixCoreRelationship
+                  entityId={feedbackData.id}
                 />
               }
             />

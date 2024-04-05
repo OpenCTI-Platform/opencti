@@ -18,6 +18,7 @@ import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from '.
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const styles = () => ({
   container: {
@@ -406,7 +407,15 @@ class CaseRftKnowledgeComponent extends Component {
                   );
                 }}
               />
-          )}
+            )}
+          />
+          <Route
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship
+                entityId={caseData.id}
+              />
+            }
           />
         </Routes>
       </div>
