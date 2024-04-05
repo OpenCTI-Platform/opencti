@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Opinion from './Opinion';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import withRouter from '../../../../utils/compat-router/withRouter';
-import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootOpinionSubscription($id: ID!) {

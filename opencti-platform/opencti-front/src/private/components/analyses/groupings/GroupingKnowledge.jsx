@@ -5,6 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, Routes } from 'react-router-dom';
 import { propOr } from 'ramda';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
@@ -16,7 +17,6 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
-import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const styles = () => ({
   container: {

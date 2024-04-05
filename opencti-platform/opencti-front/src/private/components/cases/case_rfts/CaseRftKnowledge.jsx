@@ -5,6 +5,7 @@ import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, Routes } from 'react-router-dom';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -18,7 +19,6 @@ import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from '.
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
-import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 
 const styles = () => ({
   container: {
