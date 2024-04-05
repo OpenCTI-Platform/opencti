@@ -768,6 +768,12 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           bic
           account_number
         }
+        ... on Credential {
+          value
+        }
+        ... on TrackingNumber {
+          value
+        }
         ... on PhoneNumber {
           value
         }

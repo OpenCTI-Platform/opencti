@@ -2683,5 +2683,9 @@
   "All other filters": "All other filters",
   "Testing csv mapper": "Testing csv mapper",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.",
-  "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions."
+  "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.",
+  "Credential": "Credential",
+  "Credentials": "Credentials",
+  "entity_Tracking-Number": "Tracking number",
+  "entity_Credential": "Credential"
 }

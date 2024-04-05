@@ -42,6 +42,8 @@ PATTERN_MAPPING = {
     "Windows-Registry-Value-Type": ["name"],
     "Bank-Account": ["iban"],
     "Phone-Number": ["value"],
+    "Tracking-Number": ["value"],
+    "Credential": ["value"],
     "Payment-Card": ["card_number"],
     "Media-Content": ["url"],
 }

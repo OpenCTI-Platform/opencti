@@ -262,7 +262,39 @@ export interface StixBankAccount extends StixCyberObject {
   external_references: Array<StixInternalExternalReference>;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+  }
+}
+
+// Custom object extension - Credential
+// value
+export interface StixCredential extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+  }
+}
+
+// Custom object extension - Tracking number
+// value
+export interface StixTrackingNumber extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
   }
 }
 

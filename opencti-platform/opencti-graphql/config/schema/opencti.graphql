@@ -9705,6 +9705,226 @@ input BankAccountAddInput {
   account_number: String
   file: Upload
 }
+type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+    # StixCoreObject
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixCyberObservable
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  # TrackingNumber
+  value: String
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input TrackingNumberAddInput {
+  value: String
+  file: Upload
+}
+type Credential implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+    # StixCoreObject
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixCyberObservable
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  # Credential
+  value: String
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input CredentialAddInput {
+  value: String
+  file: Upload
+}
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -10175,6 +10395,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | Text
   | UserAgent
   | BankAccount
+  | Credential
+  | TrackingNumber
   | PhoneNumber
   | PaymentCard
   | MediaContent
@@ -10259,6 +10481,8 @@ union StixObjectOrStixRelationship =
   | Text
   | UserAgent
   | BankAccount
+  | Credential
+  | TrackingNumber
   | PhoneNumber
   | PaymentCard
   | MediaContent
@@ -10337,6 +10561,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | Text
   | UserAgent
   | BankAccount
+  | Credential
+  | TrackingNumber
   | PhoneNumber
   | PaymentCard
   | MediaContent
@@ -12578,6 +12804,8 @@ type Mutation {
     Text: TextAddInput
     UserAgent: UserAgentAddInput
     BankAccount: BankAccountAddInput
+Credential: CredentialAddInput
+    TrackingNumber: TrackingNumberAddInput
     PhoneNumber: PhoneNumberAddInput
     PaymentCard: PaymentCardAddInput
     MediaContent: MediaContentAddInput
