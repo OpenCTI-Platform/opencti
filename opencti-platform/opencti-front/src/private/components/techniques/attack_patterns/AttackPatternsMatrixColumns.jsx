@@ -294,7 +294,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
     const sortByName = R.sortBy(R.prop('name'));
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.description?.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || R.propOr('', 'x_mitre_id', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1
