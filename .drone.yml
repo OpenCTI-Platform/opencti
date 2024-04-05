@@ -100,7 +100,13 @@ steps:
       - yarn build
       - yarn test:e2e
     depends_on:
-      - frontend-tests      
+      - frontend-tests
+
+  - name: frontend-verify-translation
+    commands:
+      - cd opencti-platform/opencti-front
+      - yarn verified-translation
+
 
   - name: build-circleci
     image: curlimages/curl
@@ -355,7 +361,7 @@ volumes:
       path: /tmp/cache-node-restore-start-backend
   - name: cache-node-e2e-start-backend
     host:
-      path: /tmp/cache-node-e2e-start-backend      
+      path: /tmp/cache-node-e2e-start-backend
   - name: cache-node-frontend
     host:
       path: /tmp/cache-node-frontend
