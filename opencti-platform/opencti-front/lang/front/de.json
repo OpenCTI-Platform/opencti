@@ -143,7 +143,6 @@
   "Update a opinions": "Aktualisieren einer Meinung",
   "Do you want to delete this opinions?": "Möchten Sie diese Meinung löschen?",
   "Distribution of opinions": "Verteilung der Meinungen",
-  "There are no opinions. You should create some before.": "Es gibt keine Meinungen. Sie sollten vorher welche erstellen.",
   "Report types": "Berichtstypen",
   "Reliability": "Verlässlichkeit",
   "Create a report": "Einen Bericht erstellen",
@@ -2683,5 +2682,6 @@
   "Most used filters": "Meist genutzte Filter",
   "All other filters": "Alle anderen Filter",
   "Testing csv mapper": "Testen des csv-Mappers",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Diese Operationen gelten nur für Labels oder Markierungen, die im Kontext dieses Playbooks hinzugefügt werden, wie z. B. Anreicherung oder andere Wissensmanipulationen, nicht aber, wenn die Labels oder Markierungen bereits in der Plattform geschrieben sind."
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "Diese Operationen gelten nur für Labels oder Markierungen, die im Kontext dieses Playbooks hinzugefügt werden, wie z. B. Anreicherung oder andere Wissensmanipulationen, nicht aber, wenn die Labels oder Markierungen bereits in der Plattform geschrieben sind.",
+  "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "Die Meinungen haben keinen in Ihrem Wortschatz definierten Wert. Bitte fügen Sie sie erst hinzu, um Meinungen hinzufügen zu können."
 }
