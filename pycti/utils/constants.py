@@ -42,6 +42,8 @@ class StixCyberObservableTypes(Enum):
     USER_AGENT = "User-Agent"
     BANK_ACCOUNT = "Bank-Account"
     PHONE_NUMBER = "Phone-Number"
+    CREDENTIAL = "Credential"
+    TRACKING_NUMBER = "Tracking-Number"
     PAYMENT_CARD = "Payment-Card"
     MEDIA_CONTENT = "Media-Content"
     SIMPLE_OBSERVABLE = "Simple-Observable"
@@ -66,6 +68,7 @@ class IdentityTypes(Enum):
 
 class ThreatActorTypes(Enum):
     THREAT_ACTOR_GROUP = "Threat-Actor-Group"
+    THREAT_ACTOR_INDIVIDUAL = "Threat-Actor-Individual"
 
     @classmethod
     def has_value(cls, value):
@@ -264,6 +267,73 @@ class CustomObservableText:
 
 
 @CustomObservable(
+    "payment-card",
+    [
+        ("value", StringProperty(required=True)),
+        ("card_number", StringProperty(required=True)),
+        ("expiration_date", StringProperty(required=False)),
+        ("cvv", StringProperty(required=False)),
+        ("holder_name", StringProperty(required=False)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["card_number"],
+)
+class CustomObservablePaymentCard:
+    """Payment card observable."""
+
+    pass
+
+
+@CustomObservable(
+    "bank-account",
+    [
+        ("value", StringProperty(required=True)),
+        ("iban", StringProperty(required=True)),
+        ("bic", StringProperty(required=False)),
+        ("account_number", StringProperty(required=False)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["iban"],
+)
+class CustomObservableBankAccount:
+    """Bank Account observable."""
+
+    pass
+
+
+@CustomObservable(
+    "credential",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableCredential:
+    """Credential observable."""
+
+    pass
+
+
+@CustomObservable(
     "cryptocurrency-wallet",
     [
         ("value", StringProperty(required=True)),
@@ -279,6 +349,46 @@ class CustomObservableText:
 )
 class CustomObservableCryptocurrencyWallet:
     """Cryptocurrency wallet observable."""
+
+    pass
+
+
+@CustomObservable(
+    "phone-number",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservablePhoneNumber:
+    """Phone number observable."""
+
+    pass
+
+
+@CustomObservable(
+    "tracking-number",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableTrackingNumber:
+    """Tracking number observable."""
 
     pass
 
