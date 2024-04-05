@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
@@ -142,18 +141,15 @@ const StixRelationshipsPolarArea = ({
         query={stixRelationshipsPolarAreasDistributionQuery}
         variables={variables}
         render={({ props }) => {
-          if (props && props.stixRelationshipsDistribution && props.stixRelationshipsDistribution.length > 0) {
-            let data = props.stixRelationshipsDistribution;
-            if (isFieldForIdentifier(finalField)) {
-              data = data.map((n) => ({
-                ...n,
-                label: getMainRepresentative(n.entity),
-              }));
-            }
-            // TODO: take into account the entity color to send it to the widget (that shall handle it)
+          if (
+            props
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
+          ) {
             return (
               <WidgetPolarArea
-                data={data}
+                data={props.stixRelationshipsDistribution}
+                groupBy={finalField}
                 withExport={withExportPopover}
                 readonly={isReadOnly}
               />

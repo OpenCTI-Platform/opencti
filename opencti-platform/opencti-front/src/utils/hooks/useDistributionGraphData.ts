@@ -124,9 +124,17 @@ const useDistributionGraphData = () => {
     });
   };
 
+  const buildWidgetColorsOptions = (distributionData: DistributionQueryData, groupBy: string) => {
+    return distributionData.map((n) => {
+      if (!n) return '#000000';
+      return getColorFromDistributionNode(n, { attribute: groupBy });
+    });
+  };
+
   return {
     buildWidgetProps,
     buildWidgetLabelsOption,
+    buildWidgetColorsOptions,
   };
 };
 

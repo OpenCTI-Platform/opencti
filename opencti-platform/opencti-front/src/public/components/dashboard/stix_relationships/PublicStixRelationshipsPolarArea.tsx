@@ -9,7 +9,6 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixRelationshipsPolarAreaQuery } from './__generated__/PublicStixRelationshipsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
-import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 
 const publicStixRelationshipsPolarAreaQuery = graphql`
   query PublicStixRelationshipsPolarAreaQuery(
@@ -89,23 +88,10 @@ const PublicStixRelationshipsPolarAreaComponent = ({
     && publicStixRelationshipsDistribution.length > 0
   ) {
     const attributeField = dataSelection[0].attribute || 'entity_type';
-
-    // TODO: take into account the entity color to send it to the widget (that shall handle it)
     return (
       <WidgetPolarArea
-        data={publicStixRelationshipsDistribution.flatMap((item) => {
-          if (!item) {
-            return [];
-          }
-          console.log(item);
-          return {
-            label: isFieldForIdentifier(attributeField)
-              ? getMainRepresentative(item.entity)
-              : item.label,
-            value: item.value ?? 0,
-            color: '',
-          };
-        })}
+        data={[...publicStixRelationshipsDistribution]}
+        groupBy={attributeField}
         withExport={false}
         readonly={true}
       />
