@@ -9,6 +9,7 @@ import { filigranTelemetryManager } from './config/filigranTelemetry';
 const initFiligranTelemetry = async () => {
   const version = PLATFORM_VERSION;
   filigranTelemetryManager.setVersion(version);
+  filigranTelemetryManager.registerFiligranTelemetry();
 };
 
 // region platform start and stop
