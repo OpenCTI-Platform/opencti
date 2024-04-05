@@ -782,6 +782,7 @@ export type AttackPatternAddInput = {
   x_mitre_permissions_required?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AttackPatternConnection = {
@@ -3299,6 +3300,7 @@ export type CityAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CityConnection = {
@@ -3907,6 +3909,7 @@ export type CountryAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CountryConnection = {
@@ -4161,6 +4164,7 @@ export type CourseOfActionAddInput = {
   x_mitre_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CourseOfActionConnection = {
@@ -9743,6 +9747,7 @@ export type InfrastructureAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InfrastructureConnection = {
@@ -10206,6 +10211,7 @@ export type IntrusionSetAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IntrusionSetConnection = {
@@ -10876,6 +10882,7 @@ export type LocationAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type LocationConnection = {
@@ -15248,6 +15255,7 @@ export type NoteAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type NoteConnection = {
@@ -15688,6 +15696,7 @@ export type ObservedDataAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ObservedDataConnection = {
@@ -15993,6 +16002,7 @@ export type OpinionAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type OpinionConnection = {
@@ -17071,6 +17081,7 @@ export type PositionAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type PositionConnection = {
@@ -20419,6 +20430,7 @@ export type RegionAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type RegionConnection = {
@@ -25122,6 +25134,7 @@ export type ThreatActorGroupAddInput = {
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ThreatActorGroupConnection = {
@@ -25669,6 +25682,7 @@ export type ToolAddInput = {
   tool_version?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ToolConnection = {
@@ -26949,6 +26963,7 @@ export type VulnerabilityAddInput = {
   x_opencti_cvss_confidentiality_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_cvss_integrity_impact?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type VulnerabilityConnection = {

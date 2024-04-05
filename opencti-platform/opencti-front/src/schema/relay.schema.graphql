@@ -2341,6 +2341,7 @@ input AttackPatternAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -2616,6 +2617,7 @@ input NoteAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -2740,6 +2742,7 @@ input ObservedDataAddInput {
   objects: [String]!
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -2840,6 +2843,7 @@ input OpinionAddInput {
   created: DateTime
   modified: DateTime
   update: Boolean
+  x_opencti_workflow_id: String
   clientMutationId: String
   file: Upload
 }
@@ -3071,6 +3075,7 @@ input CourseOfActionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -3599,6 +3604,7 @@ input InfrastructureAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -3704,6 +3710,7 @@ input IntrusionSetAddInput {
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
+  x_opencti_workflow_id: String
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3807,6 +3814,7 @@ input LocationAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   update: Boolean
 }
 
@@ -3909,6 +3917,7 @@ input PositionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4012,6 +4021,7 @@ input CityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4111,6 +4121,7 @@ input CountryAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4212,6 +4223,7 @@ input RegionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4520,6 +4532,7 @@ input ThreatActorGroupAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4619,6 +4632,7 @@ input ToolAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4729,6 +4743,7 @@ input VulnerabilityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
   file: Upload
