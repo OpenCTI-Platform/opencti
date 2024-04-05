@@ -615,6 +615,12 @@ class StixCoreObject:
             ... on PhoneNumber {
                 value
             }
+            ... on TrackingNumber {
+                value
+            }
+            ... on Credential {
+                value
+            }
             ... on PaymentCard {
                 card_number
                 expiration_date
