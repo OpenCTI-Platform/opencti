@@ -10395,7 +10395,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Text
   | UserAgent
   | BankAccount
-| Credential
+  | Credential
   | TrackingNumber
   | PhoneNumber
   | PaymentCard
@@ -10481,7 +10481,7 @@ union StixObjectOrStixRelationship =
   | Text
   | UserAgent
   | BankAccount
-| Credential
+  | Credential
   | TrackingNumber
   | PhoneNumber
   | PaymentCard
@@ -10561,7 +10561,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Text
   | UserAgent
   | BankAccount
-| Credential
+  | Credential
   | TrackingNumber
   | PhoneNumber
   | PaymentCard
