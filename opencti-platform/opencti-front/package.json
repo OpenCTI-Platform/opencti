@@ -136,7 +136,7 @@
     "typescript": "5.4.3",
     "vite": "5.2.6",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "1.0.1",
+    "vite-plugin-static-copy": "1.0.2",
     "vitest": "1.4.0"
   },
   "engines": {
