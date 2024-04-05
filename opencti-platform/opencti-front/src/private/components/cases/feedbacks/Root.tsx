@@ -4,12 +4,12 @@
 // @ts-nocheck
 import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
-import { Link, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -179,46 +179,50 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId"
-              render={() => <Feedback data={feedbackData} />}
+              path="/"
+              element={
+                <Feedback
+                  data={feedbackData}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={feedbackData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
                   entity={feedbackData}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/history"
-              render={(routeProps) => (
+              path="/history"
+              element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={caseId}
                 />
-              )}
+              }
             />
-          </Switch>
+            <Route
+              path="/knowledge/relations/:relationId"
+              element={
+                <StixCoreRelationship
+                  entityId={feedbackData.id}
+                />
+              }
+            />
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

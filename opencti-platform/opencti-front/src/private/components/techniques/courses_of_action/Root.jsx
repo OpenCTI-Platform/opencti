@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Switch, withRouter } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -60,9 +61,7 @@ class RootCourseOfAction extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { courseOfActionId },
-      },
+      params: { courseOfActionId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -78,9 +77,7 @@ class RootCourseOfAction extends Component {
     const {
       t,
       location,
-      match: {
-        params: { courseOfActionId },
-      },
+      params: { courseOfActionId },
     } = this.props;
     return (
       <div>
@@ -142,50 +139,37 @@ class RootCourseOfAction extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId"
-                        render={(routeProps) => (
-                          <CourseOfAction
-                            {...routeProps}
-                            courseOfAction={props.courseOfAction}
-                          />
-                        )}
+                        path="/"
+                        element={
+                          <CourseOfAction courseOfAction={props.courseOfAction} />
+                        }
                       />
                       <Route
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge"
-                        render={(routeProps) => (
-                          <CourseOfActionKnowledge
-                            {...routeProps}
-                            courseOfAction={props.courseOfAction}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={courseOfActionId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.courseOfAction}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={courseOfActionId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -17,6 +17,7 @@ import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -195,7 +196,7 @@ class StixSightingRelationshipContainer extends Component {
       },
       onCompleted: () => {
         this.handleCloseEdition();
-        this.props.history.push(
+        this.props.navigate(
           location.pathname.replace(
             `/sightings/${stixSightingRelationship.id}`,
             '',
@@ -654,7 +655,7 @@ StixSightingRelationshipContainer.propTypes = {
   t: PropTypes.func,
   nsdt: PropTypes.func,
   match: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Event from './Event';
 import EventKnowledge from './EventKnowledge';
@@ -63,9 +64,7 @@ class RootEvent extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { eventId },
-      },
+      params: { eventId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -81,15 +80,13 @@ class RootEvent extends Component {
     const {
       t,
       location,
-      match: {
-        params: { eventId },
-      },
+      params: { eventId },
     } = this.props;
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/entities/events/:eventId/knowledge">
-          <StixCoreObjectKnowledgeBar
+        <Routes>
+          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
               'locations',
@@ -103,8 +100,11 @@ class RootEvent extends Component {
               'tools',
               'observables',
             ]}
-          />
-        </Route>
+                                              />}
+          >
+
+          </Route>
+        </Routes>
         <QueryRenderer
           query={eventQuery}
           variables={{ id: eventId }}
@@ -158,7 +158,7 @@ class RootEvent extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/events/${event.id}/knowledge`}
+                          to={`/dashboard/entities/events/${event.id}/knowledge/overview`}
                           value={`/dashboard/entities/events/${event.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -188,58 +188,50 @@ class RootEvent extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId"
-                        render={(routeProps) => (
-                          <Event {...routeProps} event={props.event} />
-                        )}
+                        path="/"
+                        element={
+                          <Event event={props.event} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={
+                          <Navigate
                             to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        path="/dashboard/entities/events/:eventId/knowledge"
-                        render={(routeProps) => (
-                          <EventKnowledge {...routeProps} event={event} />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <EventKnowledge event={event} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={event}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={(
                           <EntityStixSightingRelationships
                             entityId={event.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={ (
                           <FileManager
-                            {...routeProps}
                             id={eventId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -248,16 +240,14 @@ class RootEvent extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/events/:eventId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={ (
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={eventId}
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }
@@ -273,7 +263,7 @@ class RootEvent extends Component {
 
 RootEvent.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootEvent);

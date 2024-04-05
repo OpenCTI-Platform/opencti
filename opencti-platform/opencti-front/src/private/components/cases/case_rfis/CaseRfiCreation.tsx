@@ -6,7 +6,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
@@ -98,7 +98,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -147,7 +147,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          history.push(
+          navigate(
             `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/knowledge/content`,
           );
         }

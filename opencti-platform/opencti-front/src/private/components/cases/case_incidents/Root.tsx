@@ -4,12 +4,11 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useLocation } from 'react-router-dom-v5-compat';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -149,7 +148,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
+                to={`/dashboard/cases/incidents/${caseData.id}/knowledge/graph`}
                 value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
@@ -179,76 +178,61 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId"
-              render={() => <CaseIncident data={caseData} />}
+              path="/"
+              element={<CaseIncident data={caseData} />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/entities"
-              render={(routeProps) => (
+              path="/entities"
+              element={
                 <ContainerStixDomainObjects
-                  {...routeProps}
                   container={caseData}
                   enableReferences={enableReferences}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/observables"
-              render={(routeProps) => (
+              path="/observables"
+              element={
                 <ContainerStixCyberObservables
-                  {...routeProps}
                   container={caseData}
                   enableReferences={enableReferences}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge"
-              render={() => (
-                <Redirect
+              path="/knowledge"
+              element={
+                <Navigate
                   to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/content"
-              render={(routeProps) => (
+              path="/content"
+              element={
                 <StixDomainObjectContent
-                  {...routeProps}
                   stixDomainObject={caseData}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <IncidentKnowledge {...routeProps} caseData={caseData} enableReferences={enableReferences} />
-              )}
+              path="/knowledge/*"
+              element={
+                <IncidentKnowledge caseData={caseData}
+                  enableReferences={enableReferences}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <StixCoreObjectFilesAndHistory
-                  {...routeProps}
                   id={caseId}
                   connectorsExport={connectorsForExport}
                   connectorsImport={connectorsForImport}
                   entity={caseData}
                   withoutRelations={true}
                   bypassEntityId={true}
-                />
-              )}
+                />}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

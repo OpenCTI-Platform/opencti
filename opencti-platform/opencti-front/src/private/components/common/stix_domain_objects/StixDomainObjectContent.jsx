@@ -27,6 +27,7 @@ import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -196,7 +197,7 @@ class StixDomainObjectContentComponent extends Component {
     const LOCAL_STORAGE_KEY = `stix-domain-object-content-${props.stixDomainObject.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -236,7 +237,7 @@ class StixDomainObjectContentComponent extends Component {
   saveView() {
     const LOCAL_STORAGE_KEY = `stix-domain-object-content-${this.props.stixDomainObject.id}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -889,5 +890,6 @@ const StixDomainObjectContent = createRefetchContainer(
 export default R.compose(
   inject18n,
   withTheme,
+  withRouter,
   withStyles(styles),
 )(StixDomainObjectContent);

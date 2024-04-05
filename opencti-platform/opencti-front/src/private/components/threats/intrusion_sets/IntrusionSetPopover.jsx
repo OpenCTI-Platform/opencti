@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -13,6 +12,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { intrusionSetEditionQuery } from './IntrusionSetEdition';
@@ -68,7 +68,7 @@ class IntrusionSetPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/threats/intrusion_sets');
+        this.props.navigate('/dashboard/threats/intrusion_sets');
       },
     });
   }
@@ -177,7 +177,7 @@ class IntrusionSetPopover extends Component {
 IntrusionSetPopover.propTypes = {
   id: PropTypes.string,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 export default compose(inject18n, withRouter)(IntrusionSetPopover);

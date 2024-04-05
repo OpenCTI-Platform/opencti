@@ -3,8 +3,9 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { propOr } from 'ramda';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
@@ -15,6 +16,7 @@ import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPattern
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -98,7 +100,7 @@ class GroupingKnowledgeComponent extends Component {
     const LOCAL_STORAGE_KEY = `grouping-knowledge-${props.grouping.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -111,7 +113,7 @@ class GroupingKnowledgeComponent extends Component {
 
   saveView() {
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       `grouping-knowledge-${this.props.grouping.id}`,
       this.state,
@@ -142,9 +144,7 @@ class GroupingKnowledgeComponent extends Component {
       classes,
       grouping,
       location,
-      match: {
-        params: { mode },
-      },
+      params: { '*': mode },
       enableReferences,
     } = this.props;
     const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
@@ -165,120 +165,126 @@ class GroupingKnowledgeComponent extends Component {
             investigationAddFromContainer={investigationAddFromContainer}
           />
         )}
-        <Route
-          exact
-          path="/dashboard/analyses/groupings/:groupingId/knowledge/graph"
-          render={() => (
-            <QueryRenderer
-              query={groupingKnowledgeGraphQuery}
-              variables={{ id: grouping.id }}
-              render={({ props }) => {
-                if (props && props.grouping) {
+        <Routes>
+          <Route
+            path="/graph"
+            element={
+              <QueryRenderer
+                query={groupingKnowledgeGraphQuery}
+                variables={{ id: grouping.id }}
+                render={({ props }) => {
+                  if (props && props.grouping) {
+                    return (
+                      <GroupingKnowledgeGraph
+                        grouping={props.grouping}
+                        mode={mode}
+                        enableReferences={enableReferences}
+                      />
+                    );
+                  }
                   return (
-                    <GroupingKnowledgeGraph
-                      grouping={props.grouping}
-                      mode={mode}
-                      enableReferences={enableReferences}
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
                     />
                   );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/groupings/:groupingId/knowledge/content"
-          render={() => (
-            <QueryRenderer
-              query={containerContentQuery}
-              variables={{ id: grouping.id }}
-              render={({ props }) => {
-                if (props && props.container) {
-                  return <ContainerContent containerData={props.container} />;
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/groupings/:groupingId/knowledge/correlation"
-          render={() => (
-            <QueryRenderer
-              query={groupingKnowledgeCorrelationQuery}
-              variables={{ id: grouping.id }}
-              render={({ props }) => {
-                if (props && props.grouping) {
+                }}
+              />
+            }
+          />
+          <Route
+            path="/content"
+            element={
+              <QueryRenderer
+                query={containerContentQuery}
+                variables={{ id: grouping.id }}
+                render={({ props }) => {
+                  if (props && props.container) {
+                    return <ContainerContent containerData={props.container} />;
+                  }
                   return (
-                    <GroupingKnowledgeCorrelation grouping={props.grouping} enableReferences={enableReferences}/>
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/groupings/:groupingId/knowledge/matrix"
-          render={() => (
-            <QueryRenderer
-              query={groupingKnowledgeAttackPatternsGraphQuery}
-              variables={{ id: grouping.id }}
-              render={({ props }) => {
-                if (props && props.grouping) {
-                  const attackPatterns = R.pipe(
-                    R.map((n) => n.node),
-                    R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                  )(props.grouping.objects.edges);
-                  return (
-                    <AttackPatternsMatrix
-                      entity={grouping}
-                      attackPatterns={attackPatterns}
-                      searchTerm=""
-                      currentKillChain={currentKillChain}
-                      currentModeOnlyActive={currentModeOnlyActive}
-                      currentColorsReversed={currentColorsReversed}
-                      handleChangeKillChain={this.handleChangeKillChain.bind(
-                        this,
-                      )}
-                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                        this,
-                      )}
-                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                        this,
-                      )}
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
                     />
                   );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
+                }}
+              />
+            }
+          />
+          <Route
+            path="/correlation"
+            element={
+              <QueryRenderer
+                query={groupingKnowledgeCorrelationQuery}
+                variables={{ id: grouping.id }}
+                render={({ props }) => {
+                  if (props && props.grouping) {
+                    return (
+                      <GroupingKnowledgeCorrelation grouping={props.grouping} />
+                    );
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+            }
+          />
+          <Route
+            path="/matrix"
+            element={
+              <QueryRenderer
+                query={groupingKnowledgeAttackPatternsGraphQuery}
+                variables={{ id: grouping.id }}
+                render={({ props }) => {
+                  if (props && props.grouping) {
+                    const attackPatterns = R.pipe(
+                      R.map((n) => n.node),
+                      R.filter((n) => n.entity_type === 'Attack-Pattern'),
+                    )(props.grouping.objects.edges);
+                    return (
+                      <AttackPatternsMatrix
+                        entity={grouping}
+                        attackPatterns={attackPatterns}
+                        searchTerm=""
+                        currentKillChain={currentKillChain}
+                        currentModeOnlyActive={currentModeOnlyActive}
+                        currentColorsReversed={currentColorsReversed}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(
+                          this,
+                        )}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                          this,
+                        )}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                          this,
+                        )}
+                      />
+                    );
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+            }
+          />
+          <Route
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship
+                entityId={grouping.id}
+              />
+            }
+          />
+        </Routes>
       </div>
     );
   }
@@ -289,7 +295,7 @@ GroupingKnowledgeComponent.propTypes = {
   mode: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };
 

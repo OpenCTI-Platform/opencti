@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
+import { Route, Routes } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import inject18n from '../../../../components/i18n';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 class RootConnector extends Component {
   render() {
     const {
       t,
-      match: {
-        params: { connectorId },
-      },
+      params: { connectorId },
     } = this.props;
     return (
       <QueryRenderer
@@ -27,16 +26,14 @@ class RootConnector extends Component {
               return (
                 <>
                   <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Connectors'), link: '/dashboard/data/ingestion/connectors' }, { label: props.connector.name, current: true }]} />
-                  <Route
-                    exact
-                    path="/dashboard/data/ingestion/connectors/:connectorId"
-                    render={(routeProps) => (
-                      <Connector
-                        {...routeProps}
-                        connector={props.connector}
-                      />
-                    )}
-                  />
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Connector connector={props.connector} />
+                      }
+                    />
+                  </Routes>
                 </>
               );
             }

@@ -13,7 +13,6 @@ const useStyles = makeStyles(() => ({
     paddingBottom: 70,
   },
 }));
-
 interface EntityStixCoreRelationshipsProps {
   entityId: string;
   entityLink: string;
@@ -25,8 +24,8 @@ interface EntityStixCoreRelationshipsProps {
   enableNestedView?: boolean;
   enableContextualView: boolean;
   isRelationReversed: boolean;
-  allDirections: boolean;
-  role: string;
+  allDirections?: boolean;
+  role?: string;
   paddingRightButtonAdd?: number;
   handleChangeView?: (viewMode: string) => void;
 }

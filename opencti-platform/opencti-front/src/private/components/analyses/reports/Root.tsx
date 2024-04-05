@@ -4,9 +4,8 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { Link, Route, Switch, Redirect, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { useLocation } from 'react-router-dom-v5-compat';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -156,7 +155,7 @@ const RootReport = () => {
                       />
                       <Tab
                         component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/knowledge`}
+                        to={`/dashboard/analyses/reports/${report.id}/knowledge/graph`}
                         value={`/dashboard/analyses/reports/${report.id}/knowledge`}
                         label={t_i18n('Knowledge')}
                       />
@@ -186,75 +185,58 @@ const RootReport = () => {
                       />
                     </Tabs>
                   </Box>
-                  <Switch>
+                  <Routes>
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId"
-                      render={(routeProps: any) => (
-                        <Report
-                          {...routeProps}
-                          report={report}
-                        />
-                      )}
+                      path="/"
+                      element={
+                        <Report report={report} />
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/entities"
-                      render={(routeProps) => (
+                      path="/entities"
+                      element={
                         <ContainerStixDomainObjects
-                          {...routeProps}
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/observables"
-                      render={(routeProps: any) => (
+                      path="/observables"
+                      element={
                         <ContainerStixCyberObservables
-                          {...routeProps}
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
-                        />
-                      )}
+                      path="/knowledge"
+                      element={<Navigate
+                        to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
+                               />}
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/content"
-                      render={(routeProps) => (
+                      path="/content"
+                      element={
                         <StixDomainObjectContent
-                          {...routeProps}
                           stixDomainObject={report}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/knowledge/:mode"
-                      render={(routeProps) => (
+                      path="/knowledge/*"
+                      element={
                         <ReportKnowledge
-                          {...routeProps}
                           report={report}
                           enableReferences={enableReferences}
                         />
-                      )}
+                      }
                     />
                     <Route
-                      exact
-                      path="/dashboard/analyses/reports/:reportId/files"
-                      render={(routeProps) => (
+                      path="/files"
+                      element={
                         <StixCoreObjectFilesAndHistory
-                          {...routeProps}
                           id={reportId}
                           connectorsExport={props.connectorsForExport}
                           connectorsImport={props.connectorsForImport}
@@ -262,9 +244,9 @@ const RootReport = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      )}
+                      }
                     />
-                  </Switch>
+                  </Routes>
                 </div>
               );
             }

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 
 class CourseOfActionKnowledgeComponent extends Component {
@@ -9,18 +10,14 @@ class CourseOfActionKnowledgeComponent extends Component {
     const { courseOfAction } = this.props;
     return (
       <>
-        <Switch>
+        <Routes>
           <Route
-            exact
-            path="/dashboard/techniques/courses_of_action/:courseOfActionId/knowledge/relations/:relationId"
-            render={(routeProps) => (
-              <StixCoreRelationship
-                entityId={courseOfAction.id}
-                {...routeProps}
-              />
-            )}
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship entityId={courseOfAction.id} />
+            }
           />
-        </Switch>
+        </Routes>
       </>
     );
   }

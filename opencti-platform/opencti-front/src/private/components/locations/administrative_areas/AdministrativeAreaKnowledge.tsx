@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -31,44 +31,37 @@ const AdministrativeAreaKnowledge = ({
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/relations/:relationId"
-          render={(routeProps: any) => (
+          path="/relations/:relationId"
+          element={
             <StixCoreRelationship
               entityId={administrativeArea.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/sightings/:sightingId"
-          render={(routeProps: any) => (
+          path="/sightings/:sightingId"
+          element={
             <StixSightingRelationship
               entityId={administrativeArea.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/overview"
-          render={(routeProps: any) => (
+          path="/overview"
+          element={
             <StixDomainObjectKnowledge
               stixDomainObjectId={administrativeArea.id}
               stixDomainObjectType="Administrative-Area"
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/threats"
-          render={(routeProps: any) => (
+          path="/threats"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
@@ -83,14 +76,12 @@ const AdministrativeAreaKnowledge = ({
                 'Malware',
                 'Tool',
               ]}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/related"
-          render={(routeProps: any) => (
+          path="/related"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['related-to']}
@@ -112,168 +103,144 @@ const AdministrativeAreaKnowledge = ({
               ]}
               entityLink={link}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/organizations"
-          render={(routeProps: any) => (
+          path="/organizations"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/regions"
-          render={(routeProps: any) => (
+          path="/regions"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Region']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/countries"
-          render={(routeProps: any) => (
+          path="/countries"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Country']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/cities"
-          render={(routeProps: any) => (
+          path="/cities"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/threat_actors"
-          render={(routeProps: any) => (
+          path="/threat_actors"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/intrusion_sets"
-          render={(routeProps: any) => (
+          path="/intrusion_sets"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets', 'originates-from']}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/campaigns"
-          render={(routeProps: any) => (
+          path="/campaigns"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/incidents"
-          render={(routeProps: any) => (
+          path="/incidents"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/malwares"
-          render={(routeProps: any) => (
+          path="/malwares"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/attack_patterns"
-          render={(routeProps: any) => (
+          path="/attack_patterns"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/tools"
-          render={(routeProps: any) => (
+          path="/tools"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/administrative_areas/:administrativeAreaId/knowledge/observables"
-          render={(routeProps: any) => (
+          path="/observables"
+          element={
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['related-to', 'located-at']}
@@ -281,11 +248,10 @@ const AdministrativeAreaKnowledge = ({
               entityLink={link}
               allDirections={true}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

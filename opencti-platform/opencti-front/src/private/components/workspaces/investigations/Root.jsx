@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';
@@ -30,9 +31,7 @@ class RootInvestigation extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -46,9 +45,7 @@ class RootInvestigation extends Component {
 
   render() {
     const {
-      match: {
-        params: { workspaceId },
-      },
+      params: { workspaceId },
     } = this.props;
     // Div is required below, if not set, graph is showing a scrollbar
     return (
@@ -60,16 +57,16 @@ class RootInvestigation extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <Route
-                    exact
-                    path="/dashboard/workspaces/investigations/:workspaceId"
-                    render={(routeProps) => (
-                      <Investigation
-                        {...routeProps}
-                        workspace={props.workspace}
-                      />
-                    )}
-                  />
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <Investigation
+                          workspace={props.workspace}
+                        />
+                    }
+                    />
+                  </Routes>
                 );
               }
               return <ErrorNotFound />;
@@ -84,7 +81,7 @@ class RootInvestigation extends Component {
 
 RootInvestigation.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default withRouter(RootInvestigation);

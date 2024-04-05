@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, Switch, useParams, Link, useLocation } from 'react-router-dom';
+import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -128,7 +128,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/locations/countries/${country.id}/knowledge`}
+                to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
                 value={`/dashboard/locations/countries/${country.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
@@ -158,72 +158,58 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId"
-              render={() => <Country countryData={country} />}
+              path="/"
+              element={<Country countryData={country} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/locations/countries/${countryId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={
+                <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} />
+              }
             />
             <Route
-              path="/dashboard/locations/countries/:countryId/knowledge"
-              render={() => <CountryKnowledge countryData={country} />}
+              path="/knowledge/*"
+              element={<CountryKnowledge countryData={country} />}
             />
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId/analyses"
-              render={(routeProps) => (
+              path="/analyses"
+              element={
                 <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={country}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId/sightings"
-              render={(routeProps) => (
+              path="/sightings"
+              element={
                 <EntityStixSightingRelationships
                   entityId={country.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={true}
-                  {...routeProps}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={countryId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={country}
                 />
-              )}
+              }
             />
             <Route
-              exact
-              path="/dashboard/locations/countries/:countryId/history"
-              render={(routeProps) => (
-                <StixCoreObjectHistory
-                  {...routeProps}
-                  stixCoreObjectId={countryId}
-                />
-              )}
+              path="/history"
+              element={
+                <StixCoreObjectHistory stixCoreObjectId={countryId} />
+              }
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />
@@ -241,26 +227,31 @@ const RootCountry = () => {
   const link = `/dashboard/locations/countries/${countryId}/knowledge`;
   return (
     <div>
-      <Route path="/dashboard/locations/countries/:countryId/knowledge">
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'regions',
-            'areas',
-            'cities',
-            'organizations',
-            'threats',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-          ]}
+      <Routes>
+        <Route
+          path="/knowledge/*"
+          element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'regions',
+                'areas',
+                'cities',
+                'organizations',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />
+          }
         />
-      </Route>
+      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCountryComponent

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import { TextFieldsOutlined } from '@mui/icons-material';
@@ -14,6 +13,7 @@ import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
 import * as Yup from 'yup';
 import Slide from '@mui/material/Slide';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';

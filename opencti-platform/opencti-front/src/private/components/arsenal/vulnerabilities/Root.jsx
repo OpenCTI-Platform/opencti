@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
@@ -64,9 +65,7 @@ class RootVulnerability extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { vulnerabilityId },
-      },
+      params: { vulnerabilityId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -82,15 +81,13 @@ class RootVulnerability extends Component {
     const {
       t,
       location,
-      match: {
-        params: { vulnerabilityId },
-      },
+      params: { vulnerabilityId },
     } = this.props;
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
       <div>
-        <Route path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge">
-          <StixCoreObjectKnowledgeBar
+        <Routes>
+          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
               'threats',
@@ -106,8 +103,10 @@ class RootVulnerability extends Component {
               'sightings',
               'infrastructures',
             ]}
-          />
-        </Route>
+                                              />}
+          >
+          </Route>
+        </Routes>
         <QueryRenderer
           query={vulnerabilityQuery}
           variables={{ id: vulnerabilityId }}
@@ -162,7 +161,7 @@ class RootVulnerability extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
+                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -186,71 +185,59 @@ class RootVulnerability extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={(
                           <Vulnerability
-                            {...routeProps}
-                            vulnerability={props.vulnerability}
+                            vulnerability={vulnerability}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={(
+                          <Navigate
                             to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
                           />
                         )}
                       />
                       <Route
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge/*"
+                        element={(
                           <VulnerabilityKnowledge
-                            {...routeProps}
-                            vulnerability={props.vulnerability}
+                            vulnerability={vulnerability}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.vulnerability
-                            }
+                            stixDomainObjectOrStixCoreRelationship={vulnerability}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={vulnerabilityId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
-                            entity={props.vulnerability}
+                            entity={vulnerability}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={vulnerabilityId}
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }
@@ -266,7 +253,7 @@ class RootVulnerability extends Component {
 
 RootVulnerability.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootVulnerability);

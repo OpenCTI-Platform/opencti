@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -31,44 +31,37 @@ const CountryKnowledgeComponent = ({
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/relations/:relationId"
-          render={(routeProps) => (
+          path="/relations/:relationId"
+          element={
             <StixCoreRelationship
               entityId={country.id}
               paddingRight={20}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/sightings/:sightingId"
-          render={(routeProps) => (
+          path="/sightings/:sightingId"
+          element={
             <StixSightingRelationship
               entityId={country.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/overview"
-          render={(routeProps) => (
+          path="/overview"
+          element={
             <StixDomainObjectKnowledge
               stixDomainObjectId={country.id}
               stixDomainObjectType="Country"
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/threats"
-          render={(routeProps) => (
+          path="/threats"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
@@ -83,14 +76,12 @@ const CountryKnowledgeComponent = ({
                 'Malware',
                 'Tool',
               ]}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/related"
-          render={(routeProps) => (
+          path="/related"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['related-to']}
@@ -112,168 +103,144 @@ const CountryKnowledgeComponent = ({
               ]}
               entityLink={link}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/regions"
-          render={(routeProps) => (
+          path="/regions"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Region']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/areas"
-          render={(routeProps) => (
+          path="/areas"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Administrative-Area']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/cities"
-          render={(routeProps) => (
+          path="/cities"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/organizations"
-          render={(routeProps) => (
+          path="/organizations"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/threat_actors"
-          render={(routeProps) => (
+          path="/threat_actors"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/intrusion_sets"
-          render={(routeProps) => (
+          path="/intrusion_sets"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets', 'originates-from']}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/campaigns"
-          render={(routeProps) => (
+          path="/campaigns"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/incidents"
-          render={(routeProps) => (
+          path="/incidents"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/malwares"
-          render={(routeProps) => (
+          path="/malwares"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/attack_patterns"
-          render={(routeProps) => (
+          path="/attack_patterns"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/tools"
-          render={(routeProps) => (
+          path="/tools"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/observables"
-          render={(routeProps) => (
+          path="/observables"
+          element={
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['related-to', 'located-at']}
@@ -281,24 +248,21 @@ const CountryKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/locations/countries/:countryId/knowledge/sightings"
-          render={(routeProps) => (
+          path="/sightings"
+          element={
             <EntityStixSightingRelationships
               entityId={country.id}
               entityLink={link}
               noRightBar={true}
               isTo={true}
-              {...routeProps}
             />
-          )}
+          }
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

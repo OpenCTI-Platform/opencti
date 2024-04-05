@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
@@ -63,9 +64,7 @@ class RootPosition extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { positionId },
-      },
+      params: { positionId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -81,33 +80,36 @@ class RootPosition extends Component {
     const {
       t,
       location,
-      match: {
-        params: { positionId },
-      },
+      params: { positionId },
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/locations/positions/:positionId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'organizations',
-              'regions',
-              'countries',
-              'areas',
-              'cities',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'observables',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'organizations',
+                  'regions',
+                  'countries',
+                  'areas',
+                  'cities',
+                  'threat_actors',
+                  'intrusion_sets',
+                  'campaigns',
+                  'incidents',
+                  'malwares',
+                  'attack_patterns',
+                  'tools',
+                  'observables',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={positionQuery}
           variables={{ id: positionId }}
@@ -163,7 +165,7 @@ class RootPosition extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/knowledge`}
+                          to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
                           value={`/dashboard/locations/positions/${position.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -193,81 +195,60 @@ class RootPosition extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId"
-                        render={(routeProps) => (
-                          <Position {...routeProps} position={props.position} />
-                        )}
+                        path="/"
+                        element={
+                          <Position position={props.position} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/locations/positions/${positionId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/locations/positions/:positionId/knowledge"
-                        render={(routeProps) => (
-                          <PositionKnowledge
-                            {...routeProps}
-                            position={props.position}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <PositionKnowledge position={props.position} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.position
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.position} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={
                           <EntityStixSightingRelationships
                             entityId={props.position.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={positionId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.position}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/locations/positions/:positionId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={positionId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={positionId} />
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

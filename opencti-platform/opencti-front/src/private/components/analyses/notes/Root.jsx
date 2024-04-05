@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Switch, withRouter } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Note from './Note';
 import FileManager from '../../common/files/FileManager';
@@ -17,6 +18,7 @@ import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -62,9 +64,7 @@ class RootNote extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { noteId },
-      },
+      params: { noteId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -80,9 +80,7 @@ class RootNote extends Component {
     const {
       t,
       location,
-      match: {
-        params: { noteId },
-      },
+      params: { noteId },
     } = this.props;
     return (
       <>
@@ -94,15 +92,7 @@ class RootNote extends Component {
               if (props.note) {
                 const { note } = props;
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/analyses/notes/${note.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div>
                     <CollaborativeSecurity
                       data={note}
                       needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
@@ -154,39 +144,42 @@ class RootNote extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId"
-                        render={(routeProps) => (
-                          <Note {...routeProps} note={props.note} />
-                        )}
+                        path="/"
+                        element={
+                          <Note note={props.note} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={noteId}
                             connectorsExport={props.connectorsForExport}
                             connectorsImport={props.connectorsForImport}
                             entity={props.note}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/analyses/notes/:noteId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={noteId}
                             withoutRelations={true}
                           />
-                        )}
+                        }
                       />
-                    </Switch>
+                      <Route
+                        path="/knowledge/relations/:relationId"
+                        element={
+                          <StixCoreRelationship
+                            entityId={props.note.id}
+                          />
+                        }
+                      />
+                    </Routes>
                   </div>
                 );
               }

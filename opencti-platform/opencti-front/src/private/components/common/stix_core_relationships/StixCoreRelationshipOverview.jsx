@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -44,6 +44,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCo
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = (theme) => ({
   container: {
@@ -208,7 +209,7 @@ class StixCoreRelationshipContainer extends Component {
       },
       onCompleted: () => {
         this.handleCloseEdition();
-        this.props.history.push(
+        this.props.navigate(
           location.pathname.replace(`/relations/${relationId}`, ''),
         );
       },
@@ -652,7 +653,7 @@ StixCoreRelationshipContainer.propTypes = {
   t: PropTypes.func,
   nsdt: PropTypes.func,
   match: PropTypes.object,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   location: PropTypes.object,
 };
 

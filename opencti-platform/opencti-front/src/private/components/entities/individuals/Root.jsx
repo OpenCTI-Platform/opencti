@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { propOr } from 'ramda';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
@@ -67,13 +68,11 @@ class RootIndividual extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { individualId },
-      },
+      params: { individualId },
     } = props;
     const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -92,13 +91,11 @@ class RootIndividual extends Component {
 
   saveView() {
     const {
-      match: {
-        params: { individualId },
-      },
+      params: { individualId },
     } = this.props;
     const LOCAL_STORAGE_KEY = `individual-${individualId}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -114,16 +111,16 @@ class RootIndividual extends Component {
     const {
       t,
       location,
-      match: {
-        params: { individualId },
-      },
+      params: { individualId },
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
       <>
-        <Route path="/dashboard/entities/individuals/:individualId/knowledge">
-          {viewAs === 'knowledge' && (
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar
               stixCoreObjectLink={link}
               availableSections={[
@@ -139,9 +136,10 @@ class RootIndividual extends Component {
                 'tools',
                 'observables',
               ]}
-            />
-          )}
-        </Route>
+            />)}
+          >
+          </Route>
+        </Routes>
         <QueryRenderer
           query={individualQuery}
           variables={{ id: individualId }}
@@ -199,7 +197,7 @@ class RootIndividual extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+                          to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
                           value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -229,85 +227,73 @@ class RootIndividual extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId"
-                        render={(routeProps) => (
+                        path="/"
+                        element={
                           <Individual
-                            {...routeProps}
                             individual={individual}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId/knowledge"
-                        render={() => (
-                          <Redirect
+                        path="/knowledge"
+                        element={
+                          <Navigate
                             to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        path="/dashboard/entities/individuals/:individualId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge/*"
+                        element={
                           <IndividualKnowledge
-                            {...routeProps}
                             individual={individual}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={
                           <IndividualAnalysis
-                            {...routeProps}
                             individual={individual}
                             viewAs={viewAs}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={
                           <EntityStixSightingRelationships
                             entityId={individual.id}
                             entityLink={link}
                             noPadding={true}
                             isTo={true}
-                            {...routeProps}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={individualId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={individual}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/entities/individuals/:individualId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={individualId}
                           />
-                        )}
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }
@@ -323,7 +309,7 @@ class RootIndividual extends Component {
 
 RootIndividual.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootIndividual);

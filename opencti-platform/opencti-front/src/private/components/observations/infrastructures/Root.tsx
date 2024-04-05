@@ -3,10 +3,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Redirect, useParams, Switch, Link } from 'react-router-dom';
+import { Route, useParams, Routes, Link, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { useLocation } from 'react-router-dom-v5-compat';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -123,7 +122,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               />
               <Tab
                 component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge/overview`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
                 label={t_i18n('Knowledge')}
               />
@@ -147,61 +146,47 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               />
             </Tabs>
           </Box>
-          <Switch>
+          <Routes>
+
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId"
-              render={() => <Infrastructure data={infrastructure} />}
+              path="/"
+              element={<Infrastructure data={infrastructure} />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                />
-              )}
+              path="/knowledge"
+              element={<Navigate
+                to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
+                       />}
             />
             <Route
-              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-              render={() => (
-                <InfrastructureKnowledge infrastructure={infrastructure} />
-              )}
+              path="/knowledge/*"
+              element={<InfrastructureKnowledge infrastructure={infrastructure} />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/analyses"
-              render={(routeProps) => (
+              path="/analyses/*"
+              element={
                 <StixCoreObjectOrStixCoreRelationshipContainers
-                  {...routeProps}
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/files"
-              render={(routeProps) => (
+              path="/files"
+              element={
                 <FileManager
-                  {...routeProps}
                   id={infrastructureId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
-                />
-              )}
+                />}
             />
             <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/history"
-              render={(routeProps) => (
+              path="/history"
+              element={
                 <StixCoreObjectHistory
-                  {...routeProps}
                   stixCoreObjectId={infrastructureId}
-                />
-              )}
+                />}
             />
-          </Switch>
+          </Routes>
         </div>
       ) : (
         <ErrorNotFound />

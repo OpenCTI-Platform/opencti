@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Redirect, withRouter } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
@@ -9,6 +9,7 @@ import { QueryRenderer } from '../../relay/environment';
 import { resolveLink } from '../../utils/Entity';
 import Loader from '../../components/Loader';
 import ErrorNotFound from '../../components/ErrorNotFound';
+import withRouter from '../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -99,9 +100,7 @@ class StixObjectOrStixRelationship extends Component {
   render() {
     const {
       classes,
-      match: {
-        params: { id },
-      },
+      params: { id },
     } = this.props;
     return (
       <div className={classes.container}>
@@ -164,7 +163,7 @@ class StixObjectOrStixRelationship extends Component {
                   )}/${stixObjectOrStixRelationship.id}`;
                 }
                 if (redirectLink) {
-                  return <Redirect exact from={`/id/${id}`} to={redirectLink}/>;
+                  return <Navigate exact from={`/id/${id}`} to={redirectLink}/>;
                 }
               }
               return <ErrorNotFound />;
@@ -178,8 +177,8 @@ class StixObjectOrStixRelationship extends Component {
 }
 
 StixObjectOrStixRelationship.propTypes = {
-  match: PropTypes.object,
-  history: PropTypes.object,
+  params: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 export default compose(

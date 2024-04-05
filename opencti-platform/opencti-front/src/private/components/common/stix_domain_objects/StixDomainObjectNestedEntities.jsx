@@ -196,7 +196,7 @@ StixDomainObjectNestedEntities.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.object,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
 };

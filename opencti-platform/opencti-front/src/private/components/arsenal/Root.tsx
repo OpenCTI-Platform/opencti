@@ -3,8 +3,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { Suspense, lazy } from 'react';
-import { Redirect, Switch } from 'react-router-dom';
-import { BoundaryRoute } from '../Error';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { boundaryWrapper } from '@components/Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
 
@@ -30,45 +30,44 @@ const Root = () => {
   }
   return (
     <Suspense fallback={<Loader />}>
-      <Switch>
-        <BoundaryRoute
-          exact
-          path="/dashboard/arsenal"
-          render={() => <Redirect to={`/dashboard/arsenal/${redirect}`} />}
+      <Routes>
+        <Route
+          path="/"
+          element={<Navigate to={`/dashboard/arsenal/${redirect}`} />}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/arsenal/malwares"
-          component={Malwares}
+        <Route
+          path="/malwares"
+          Component={boundaryWrapper(Malwares)}
         />
-        <BoundaryRoute
-          path="/dashboard/arsenal/malwares/:malwareId"
-          component={RootMalware}
+        <Route
+          path="/malwares/:malwareId/*"
+          Component={boundaryWrapper(RootMalware)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/arsenal/channels"
-          component={Channels}
+        <Route
+          path="/channels"
+          Component={boundaryWrapper(Channels)}
         />
-        <BoundaryRoute
-          path="/dashboard/arsenal/channels/:channelId"
-          component={RootChannel}
+        <Route
+          path="/channels/:channelId/*"
+          Component={boundaryWrapper(RootChannel)}
         />
-        <BoundaryRoute exact path="/dashboard/arsenal/tools" component={Tools} />
-        <BoundaryRoute
-          path="/dashboard/arsenal/tools/:toolId"
-          component={RootTool}
+        <Route
+          path="/tools"
+          Component={boundaryWrapper(Tools)}
         />
-        <BoundaryRoute
-          exact
-          path="/dashboard/arsenal/vulnerabilities"
-          component={Vulnerabilities}
+        <Route
+          path="/tools/:toolId/*"
+          Component={boundaryWrapper(RootTool)}
         />
-        <BoundaryRoute
-          path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
-          component={RootVulnerabilities}
+        <Route
+          path="/vulnerabilities"
+          Component={boundaryWrapper(Vulnerabilities)}
         />
-      </Switch>
+        <Route
+          path="/vulnerabilities/:vulnerabilityId/*"
+          Component={boundaryWrapper(RootVulnerabilities)}
+        />
+      </Routes>
     </Suspense>
   );
 };

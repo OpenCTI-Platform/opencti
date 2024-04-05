@@ -7,7 +7,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -98,7 +98,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t_i18n('This field is required')),
@@ -149,7 +149,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          history.push(
+          navigate(
             `/dashboard/cases/rfts/${response.caseRftAdd?.id}/knowledge/content`,
           );
         }

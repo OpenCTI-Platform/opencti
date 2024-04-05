@@ -1,7 +1,6 @@
 import React from 'react';
-import { dissoc, includes, map } from 'ramda';
+import { includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { Route } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import ErrorNotFound from '../../components/ErrorNotFound';
@@ -55,48 +54,13 @@ ErrorBoundaryComponent.propTypes = {
 };
 export const ErrorBoundary = ErrorBoundaryComponent;
 
-export const wrapBound = (WrappedComponent) => {
-  class Wrapper extends React.PureComponent {
-    render() {
-      return (
-        <ErrorBoundary display={<SimpleError />}>
-          <WrappedComponent {...this.props} />
-        </ErrorBoundary>
-      );
-    }
-  }
-  return Wrapper;
-};
-
-// eslint-disable-next-line max-len
-export const BoundaryRoute = (props) => {
-  if (props.component) {
-    const route = dissoc('component', props);
-    return <Route component={wrapBound(props.component)} {...route} />;
-  }
-  if (props.render) {
-    const route = dissoc('render', props);
-    return (
-      <Route
-        render={(routeProps) => {
-          const comp = props.render(routeProps);
-          return (
-            <ErrorBoundary display={<SimpleError />}>{comp}</ErrorBoundary>
-          );
-        }}
-        {...route}
-      />
-    );
-  }
-  return <Route {...props} />;
-};
-
-BoundaryRoute.propTypes = {
-  component: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
-  display: PropTypes.object,
-  exact: PropTypes.bool,
-  path: PropTypes.string,
-  render: PropTypes.func,
+export const boundaryWrapper = (Component) => {
+  // eslint-disable-next-line react/display-name
+  return (routeProps) => (
+    <ErrorBoundary display={<SimpleError />}>
+      <Component {...routeProps} />
+    </ErrorBoundary>
+  );
 };
 
 // 404

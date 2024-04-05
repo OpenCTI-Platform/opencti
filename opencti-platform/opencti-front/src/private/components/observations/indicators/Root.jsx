@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -21,6 +21,7 @@ import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -65,9 +66,7 @@ class RootIndicator extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { indicatorId },
-      },
+      params: { indicatorId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -83,9 +82,7 @@ class RootIndicator extends Component {
     const {
       t,
       location,
-      match: {
-        params: { indicatorId },
-      },
+      params: { indicatorId },
     } = this.props;
     return (
       <>
@@ -164,30 +161,23 @@ class RootIndicator extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId"
-                        render={(routeProps) => (
-                          <Indicator {...routeProps} indicator={indicator} />
-                        )}
+                        path="/"
+                        element={(<Indicator indicator={indicator} />)}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/analyses"
-                        render={(routeProps) => (
+                        path="/analyses"
+                        element={(
                           <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={indicator}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/sightings"
-                        render={(routeProps) => (
+                        path="/sightings"
+                        element={(
                           <EntityStixSightingRelationships
-                            {...routeProps}
                             entityId={indicatorId}
                             noPadding={true}
                             stixCoreObjectTypes={[
@@ -203,11 +193,9 @@ class RootIndicator extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={(
                           <FileManager
-                            {...routeProps}
                             id={indicatorId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
@@ -216,46 +204,38 @@ class RootIndicator extends Component {
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/history"
-                        render={(routeProps) => (
+                        path="/history"
+                        element={(
                           <StixCoreObjectHistory
-                            {...routeProps}
                             stixCoreObjectId={indicatorId}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/knowledge"
-                        render={(routeProps) => (
+                        path="/knowledge"
+                        element={(
                           <IndicatorEntities
-                            {...routeProps}
                             indicatorId={indicatorId}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
-                        render={(routeProps) => (
+                        path="/knowledge/relations/:relationId"
+                        element={(
                           <StixCoreRelationship
                             entityId={indicatorId}
-                            {...routeProps}
                           />
                         )}
                       />
                       <Route
-                        exact
-                        path="/dashboard/observations/indicators/:indicatorId/knowledge/sightings/:sightingId"
-                        render={(routeProps) => (
+                        path="/knowledge/sightings/:sightingId"
+                        element={ (
                           <StixSightingRelationship
                             entityId={indicatorId}
-                            {...routeProps}
                           />
                         )}
                       />
-                    </Switch>
+                    </Routes>
                   </>
                 );
               }
@@ -271,7 +251,7 @@ class RootIndicator extends Component {
 
 RootIndicator.propTypes = {
   children: PropTypes.node,
-  match: PropTypes.object,
+  params: PropTypes.object,
 };
 
 export default R.compose(inject18n, withRouter)(RootIndicator);

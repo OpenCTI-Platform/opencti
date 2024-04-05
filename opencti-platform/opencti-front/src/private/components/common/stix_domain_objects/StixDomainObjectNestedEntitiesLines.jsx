@@ -162,7 +162,7 @@ StixDomainObjectNestedEntitiesLinesComponent.propTypes = {
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
 };
 
 export const stixDomainObjectNestedEntitiesLinesQuery = graphql`

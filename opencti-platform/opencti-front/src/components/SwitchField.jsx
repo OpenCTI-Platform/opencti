@@ -3,9 +3,9 @@ import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
-import { fieldToSwitch } from 'formik-mui';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import { fieldToSwitch } from 'formik-mui';
 import { useFormatter } from './i18n';
 
 const SwitchField = (props) => {

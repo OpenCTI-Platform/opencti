@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { useLocation } from 'react-router-dom-v5-compat';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { TaxiiLinesPaginationQuery$data } from '@components/data/taxii/__generated__/TaxiiLinesPaginationQuery.graphql';
 import Box from '@mui/material/Box';
 import { QueryRenderer } from '../../../relay/environment';
@@ -16,10 +15,10 @@ import { useFormatter } from '../../../components/i18n';
 const Taxii = () => {
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = 'taxii';
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const params = buildViewParamsFromUrlAndStorage(
-    history,
+    navigate,
     location,
     LOCAL_STORAGE_KEY,
   );
@@ -32,7 +31,7 @@ const Taxii = () => {
 
   const saveView = () => {
     saveViewParameters(
-      history,
+      navigate,
       location,
       LOCAL_STORAGE_KEY,
       taxiiState,

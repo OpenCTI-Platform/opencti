@@ -5,7 +5,7 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import { Link, useHistory, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import ListLines from '../../components/list_lines/ListLines';
@@ -28,7 +28,7 @@ const Search = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
@@ -73,7 +73,7 @@ const Search = () => {
   );
 
   const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'knowledge', history);
+    handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
   };
 
   const resultsCount = numberOfElements?.original ?? 0;

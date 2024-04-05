@@ -4,7 +4,8 @@ import * as R from 'ramda';
 import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
@@ -18,6 +19,7 @@ import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
   container: {
@@ -101,7 +103,7 @@ class ReportKnowledgeComponent extends Component {
     const LOCAL_STORAGE_KEY = `report-knowledge-${props.report.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
-      props.history,
+      props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
@@ -123,7 +125,7 @@ class ReportKnowledgeComponent extends Component {
   saveView() {
     const LOCAL_STORAGE_KEY = `report-knowledge-${this.props.report.id}`;
     saveViewParameters(
-      this.props.history,
+      this.props.navigate,
       this.props.location,
       LOCAL_STORAGE_KEY,
       this.state,
@@ -218,9 +220,7 @@ class ReportKnowledgeComponent extends Component {
       classes,
       report,
       location,
-      match: {
-        params: { mode },
-      },
+      params: { '*': mode },
       enableReferences,
     } = this.props;
     const {
@@ -269,86 +269,147 @@ class ReportKnowledgeComponent extends Component {
           investigationAddFromContainer={investigationAddFromContainer}
         />
         )}
-        <Route
-          exact
-          path="/dashboard/analyses/reports/:reportId/knowledge/graph"
-          render={() => (
-            <QueryRenderer
-              query={reportKnowledgeGraphQuery}
-              variables={{ id: report.id }}
-              render={({ props }) => {
-                if (props && props.report) {
-                  return (
-                    <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/reports/:reportId/knowledge/content"
-          render={() => (
-            <QueryRenderer
-              query={containerContentQuery}
-              variables={{ id: report.id }}
-              render={({ props }) => {
-                if (props && props.container) {
-                  return <ContainerContent containerData={props.container} />;
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/reports/:reportId/knowledge/timeline"
-          render={() => (
-            <>
-              <ContentKnowledgeTimeLineBar
-                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
-                timeLineSearchTerm={timeLineSearchTerm}
-                timeLineDisplayRelationships={timeLineDisplayRelationships}
-                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
-                  this,
-                )}
-                timeLineFunctionalDate={timeLineFunctionalDate}
-                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
-                  this,
-                )}
-                timeLineFilters={timeLineFilters}
-                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
-                  this,
-                )}
-                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
-                  this,
-                )}
-                handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
-                handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
-              />
+        <Routes>
+          <Route
+            path="/graph"
+            element={(
               <QueryRenderer
-                query={reportKnowledgeTimeLineQuery}
-                variables={{ id: report.id, ...timeLinePaginationOptions }}
+                query={reportKnowledgeGraphQuery}
+                variables={{ id: report.id }}
                 render={({ props }) => {
                   if (props && props.report) {
                     return (
-                      <ReportKnowledgeTimeLine
-                        report={props.report}
-                        dateAttribute={orderBy}
-                        displayRelationships={timeLineDisplayRelationships}
+                      <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
+                    );
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+            )}
+          />
+          <Route
+            path="/content"
+            element={(
+              <QueryRenderer
+                query={containerContentQuery}
+                variables={{ id: report.id }}
+                render={({ props }) => {
+                  if (props && props.container) {
+                    return <ContainerContent containerData={props.container} />;
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+            )}
+          />
+          <Route
+            path="/timeline"
+            element={(
+              <>
+                <ContentKnowledgeTimeLineBar
+                  handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                  timeLineSearchTerm={timeLineSearchTerm}
+                  timeLineDisplayRelationships={timeLineDisplayRelationships}
+                  handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                    this,
+                  )}
+                  timeLineFunctionalDate={timeLineFunctionalDate}
+                  handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                    this,
+                  )}
+                  timeLineFilters={timeLineFilters}
+                  handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                    this,
+                  )}
+                  handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                    this,
+                  )}
+                  handleSwitchFilterLocalMode={this.handleSwitchFilterLocalMode.bind(this)}
+                  handleSwitchFilterGlobalMode={this.handleSwitchFilterGlobalMode.bind(this)}
+                />
+                <QueryRenderer
+                  query={reportKnowledgeTimeLineQuery}
+                  variables={{ id: report.id, ...timeLinePaginationOptions }}
+                  render={({ props }) => {
+                    if (props && props.report) {
+                      return (
+                        <ReportKnowledgeTimeLine
+                          report={props.report}
+                          dateAttribute={orderBy}
+                          displayRelationships={timeLineDisplayRelationships}
+                        />
+                      );
+                    }
+                    return (
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                        withTopMargin={true}
+                      />
+                    );
+                  }}
+                />
+              </>
+            )}
+          />
+          <Route
+            path="/correlation"
+            element={(
+              <QueryRenderer
+                query={reportKnowledgeCorrelationQuery}
+                variables={{ id: report.id }}
+                render={({ props }) => {
+                  if (props && props.report) {
+                    return <ReportKnowledgeCorrelation report={props.report} />;
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+            )}
+          />
+          <Route
+            path="/matrix"
+            element={(
+              <QueryRenderer
+                query={reportKnowledgeAttackPatternsGraphQuery}
+                variables={{ id: report.id }}
+                render={({ props }) => {
+                  if (props && props.report) {
+                    const attackPatterns = R.pipe(
+                      R.map((n) => n.node),
+                      R.filter((n) => n.entity_type === 'Attack-Pattern'),
+                    )(props.report.objects.edges);
+                    return (
+                      <AttackPatternsMatrix
+                        entity={report}
+                        attackPatterns={attackPatterns}
+                        searchTerm=""
+                        currentKillChain={currentKillChain}
+                        currentModeOnlyActive={currentModeOnlyActive}
+                        currentColorsReversed={currentColorsReversed}
+                        handleChangeKillChain={this.handleChangeKillChain.bind(
+                          this,
+                        )}
+                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
+                          this,
+                        )}
+                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
+                          this,
+                        )}
                       />
                     );
                   }
@@ -360,73 +421,17 @@ class ReportKnowledgeComponent extends Component {
                   );
                 }}
               />
-            </>
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/reports/:reportId/knowledge/correlation"
-          render={() => (
-            <QueryRenderer
-              query={reportKnowledgeCorrelationQuery}
-              variables={{ id: report.id }}
-              render={({ props }) => {
-                if (props && props.report) {
-                  return <ReportKnowledgeCorrelation report={props.report} enableReferences={enableReferences}/>;
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/analyses/reports/:reportId/knowledge/matrix"
-          render={() => (
-            <QueryRenderer
-              query={reportKnowledgeAttackPatternsGraphQuery}
-              variables={{ id: report.id }}
-              render={({ props }) => {
-                if (props && props.report) {
-                  const attackPatterns = R.pipe(
-                    R.map((n) => n.node),
-                    R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                  )(props.report.objects.edges);
-                  return (
-                    <AttackPatternsMatrix
-                      entity={report}
-                      attackPatterns={attackPatterns}
-                      searchTerm=""
-                      currentKillChain={currentKillChain}
-                      currentModeOnlyActive={currentModeOnlyActive}
-                      currentColorsReversed={currentColorsReversed}
-                      handleChangeKillChain={this.handleChangeKillChain.bind(
-                        this,
-                      )}
-                      handleToggleColorsReversed={this.handleToggleColorsReversed.bind(
-                        this,
-                      )}
-                      handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(
-                        this,
-                      )}
-                    />
-                  );
-                }
-                return (
-                  <Loader
-                    variant={LoaderVariant.inElement}
-                    withTopMargin={true}
-                  />
-                );
-              }}
-            />
-          )}
-        />
+            )}
+          />
+          <Route
+            path="/relations/:relationId"
+            element={
+              <StixCoreRelationship
+                entityId={report.id}
+              />
+            }
+          />
+        </Routes>
       </div>
     );
   }
@@ -437,7 +442,7 @@ ReportKnowledgeComponent.propTypes = {
   mode: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };
 

@@ -1,12 +1,25 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { Route, Routes } from 'react-router-dom';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableEntities';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 
 const StixCyberObservableKnowledgeComponent = (props) => {
   const { stixCyberObservable } = props;
   return (
     <>
+      <Routes>
+        <Route
+          path="/relations/:relationId/"
+          element={
+            <StixCoreRelationship
+              entityId={stixCyberObservable.id}
+              paddingRight={true}
+            />
+          }
+        />
+      </Routes>
       <div style={{ marginTop: 20 }}>
         <StixCyberObservableNestedEntities
           entityId={stixCyberObservable.id}

@@ -1,31 +1,28 @@
 import React from 'react';
-import { Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
-import { BoundaryRoute } from '../Error';
 
 const Root = () => (
-  <Switch>
-    <BoundaryRoute
-      exact
-      path="/dashboard/workspaces/dashboards"
-      render={() => <Workspaces type={'dashboard'} />}
+  <Routes>
+    <Route
+      path="/dashboards/*"
+      element={<Workspaces type={'dashboard'} />}
     />
-    <BoundaryRoute
-      path="/dashboard/workspaces/dashboards/:workspaceId"
-      render={(routeProps) => <RootDashboard {...routeProps} />}
+    <Route
+      path="/dashboards/:workspaceId/*"
+      element={<RootDashboard/>}
     />
-    <BoundaryRoute
-      exact
-      path="/dashboard/workspaces/investigations"
-      render={() => <Workspaces type={'investigation'} />}
+    <Route
+      path="/investigations/*"
+      element={<Workspaces type={'investigation'} />}
     />
-    <BoundaryRoute
-      path="/dashboard/workspaces/investigations/:workspaceId"
-      render={(routeProps) => <RootInvestigation {...routeProps} />}
+    <Route
+      path="/investigations/:workspaceId/*"
+      element={<RootInvestigation />}
     />
-  </Switch>
+  </Routes>
 );
 
 export default Root;

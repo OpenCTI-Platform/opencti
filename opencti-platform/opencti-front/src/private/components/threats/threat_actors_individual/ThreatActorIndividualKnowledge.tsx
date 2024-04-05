@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -38,44 +38,37 @@ const ThreatActorIndividualKnowledgeComponent = ({
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/relations/:relationId"
-          render={(routeProps: any) => (
+          path="/relations/:relationId"
+          element={
             <StixCoreRelationship
               entityId={threatActorIndividual.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/sightings/:sightingId"
-          render={(routeProps: any) => (
+          path="/sightings/:sightingId"
+          element={
             <StixSightingRelationship
               entityId={threatActorIndividual.id}
               paddingRight={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/overview"
-          render={(routeProps: any) => (
+          path="/overview"
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={threatActorIndividual.id}
               stixDomainObjectType="Threat-Actor-Individual"
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/related"
-          render={(routeProps: any) => (
+          path="/related"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['related-to', 'part-of']}
@@ -83,27 +76,23 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/victimology"
-          render={(routeProps: any) => (
+          path="/victimology"
+          element={
             <StixDomainObjectVictimology
               stixDomainObjectId={threatActorIndividual.id}
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/threat_actors"
-          render={(routeProps) => (
+          path="/threat_actors"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['part-of', 'cooperates-with', 'employed-by']}
@@ -112,14 +101,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/intrusion_sets"
-          render={(routeProps: any) => (
+          path="/intrusion_sets"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['attributed-to']}
@@ -128,14 +115,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               isRelationReversed={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/campaigns"
-          render={(routeProps: any) => (
+          path="/campaigns"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['attributed-to', 'participates-in']}
@@ -144,27 +129,23 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               allDirections={true}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/attack_patterns"
-          render={(routeProps: any) => (
+          path="/attack_patterns"
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={threatActorIndividual.id}
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/malwares"
-          render={(routeProps: any) => (
+          path="/malwares"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['uses']}
@@ -172,14 +153,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/channels"
-          render={(routeProps: any) => (
+          path="/channels"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['uses']}
@@ -187,14 +166,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/narratives"
-          render={(routeProps: any) => (
+          path="/narratives"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['uses']}
@@ -202,14 +179,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/tools"
-          render={(routeProps: any) => (
+          path="/tools"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['uses']}
@@ -217,14 +192,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/vulnerabilities"
-          render={(routeProps: any) => (
+          path="/vulnerabilities"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['targets']}
@@ -232,14 +205,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/countries"
-          render={(routeProps: any) => (
+          path="/countries"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['resides-in', 'citizen-of', 'national-of']}
@@ -247,14 +218,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/organizations"
-          render={(routeProps: any) => (
+          path="/organizations"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['employed-by']}
@@ -262,14 +231,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/incidents"
-          render={(routeProps: any) => (
+          path="/incidents"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['attributed-to']}
@@ -278,29 +245,24 @@ const ThreatActorIndividualKnowledgeComponent = ({
               isRelationReversed={true}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
-          render={(routeProps: any) => (
+          path="/indicators"
+          element={
             <EntityStixCoreRelationshipsIndicators
-              {...routeProps}
               entityId={threatActorIndividual.id}
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/observables"
-          render={(routeProps: any) => (
+          path="/observables"
+          element={
             <EntityStixCoreRelationshipsStixCyberObservable
-              {...routeProps}
               entityId={threatActorIndividual.id}
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
@@ -308,12 +270,11 @@ const ThreatActorIndividualKnowledgeComponent = ({
               isRelationReversed={true}
               relationshipTypes={['related-to']}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/infrastructures"
-          render={(routeProps: any) => (
+          path="/infrastructures"
+          element={
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
               relationshipTypes={['uses', 'compromises']}
@@ -322,14 +283,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
               isRelationReversed={false}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
-              {...routeProps}
             />
-          )}
+          }
         />
         <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/sightings"
-          render={(routeProps: any) => (
+          path="/sightings"
+          element={
             <EntityStixSightingRelationships
               entityId={threatActorIndividual.id}
               entityLink={link}
@@ -346,11 +305,10 @@ const ThreatActorIndividualKnowledgeComponent = ({
                 'Individual',
                 'System',
               ]}
-              {...routeProps}
             />
-          )}
+          }
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

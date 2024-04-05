@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter, Switch, Link } from 'react-router-dom';
+import { Route, Routes, Link, Navigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
@@ -64,9 +65,7 @@ class RootCampaign extends Component {
   constructor(props) {
     super(props);
     const {
-      match: {
-        params: { campaignId },
-      },
+      params: { campaignId },
     } = props;
     this.sub = requestSubscription({
       subscription,
@@ -82,33 +81,36 @@ class RootCampaign extends Component {
     const {
       t,
       location,
-      match: {
-        params: { campaignId },
-      },
+      params: { campaignId },
     } = this.props;
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
-        <Route path="/dashboard/threats/campaigns/:campaignId/knowledge">
-          <StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'attribution',
-              'victimology',
-              'incidents',
-              'malwares',
-              'tools',
-              'channels',
-              'narratives',
-              'attack_patterns',
-              'vulnerabilities',
-              'indicators',
-              'observables',
-              'infrastructures',
-              'sightings',
-            ]}
+        <Routes>
+          <Route
+            path="/knowledge/*"
+            element={
+              <StixCoreObjectKnowledgeBar
+                stixCoreObjectLink={link}
+                availableSections={[
+                  'attribution',
+                  'victimology',
+                  'incidents',
+                  'malwares',
+                  'tools',
+                  'channels',
+                  'narratives',
+                  'attack_patterns',
+                  'vulnerabilities',
+                  'indicators',
+                  'observables',
+                  'infrastructures',
+                  'sightings',
+                ]}
+              />
+            }
           />
-        </Route>
+        </Routes>
         <QueryRenderer
           query={campaignQuery}
           variables={{ id: campaignId }}
@@ -162,7 +164,7 @@ class RootCampaign extends Component {
                         />
                         <Tab
                           component={Link}
-                          to={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                          to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
                           value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
                           label={t('Knowledge')}
                         />
@@ -186,68 +188,49 @@ class RootCampaign extends Component {
                         />
                       </Tabs>
                     </Box>
-                    <Switch>
+                    <Routes>
                       <Route
-                        exact
-                        path="/dashboard/threats/campaigns/:campaignId"
-                        render={(routeProps) => (
-                          <Campaign {...routeProps} campaign={props.campaign} />
-                        )}
+                        path="/"
+                        element={
+                          <Campaign campaign={props.campaign} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/campaigns/:campaignId/knowledge"
-                        render={() => (
-                          <Redirect
-                            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`}
-                          />
-                        )}
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} />
+                        }
                       />
                       <Route
-                        path="/dashboard/threats/campaigns/:campaignId/knowledge"
-                        render={(routeProps) => (
-                          <CampaignKnowledge
-                            {...routeProps}
-                            campaign={props.campaign}
-                          />
-                        )}
+                        path="/knowledge/*"
+                        element={
+                          <CampaignKnowledge campaign={props.campaign} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/campaigns/:campaignId/analyses"
-                        render={(routeProps) => (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              props.campaign
-                            }
-                          />
-                        )}
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.campaign} />
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/campaigns/:campaignId/files"
-                        render={(routeProps) => (
+                        path="/files"
+                        element={
                           <FileManager
-                            {...routeProps}
                             id={campaignId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.campaign}
                           />
-                        )}
+                        }
                       />
                       <Route
-                        exact
-                        path="/dashboard/threats/campaigns/:campaignId/history"
-                        render={(routeProps) => (
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={campaignId}
-                          />
-                        )}
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={campaignId} />
+                        }
                       />
-                    </Switch>
+                    </Routes>
                   </div>
                 );
               }

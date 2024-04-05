@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
@@ -35,45 +35,38 @@ const IncidentKnowledge = ({
   const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
   return (
     <>
-      <Switch>
+      <Routes>
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/relations/:relationId"
-          render={(routeProps) => (
+          path="/relations/:relationId"
+          element={ (
             <StixCoreRelationship
               entityId={incident.id}
               paddingRight={true}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/sightings/:sightingId"
-          render={(routeProps) => (
+          path="/sightings/:sightingId"
+          element={ (
             <StixSightingRelationship
               entityId={incident.id}
               paddingRight={true}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/overview"
-          render={(routeProps) => (
+          path="/overview"
+          element={ (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={incident.id}
               stixDomainObjectType="Incident"
               displayObservablesStats={true}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/related"
-          render={(routeProps) => (
+          path="/related"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
@@ -81,14 +74,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               allDirections={true}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/attribution"
-          render={(routeProps) => (
+          path="/attribution"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
@@ -101,40 +92,35 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/victimology"
-          render={(routeProps) => (
+          path="/victimology"
+          element={ (
             <StixDomainObjectVictimology
               stixDomainObjectId={incident.id}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/attack_patterns"
-          render={(routeProps) => (
+          path="/attack_patterns"
+          element={ (
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={incident.id}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
-              {...routeProps}
+              disableExport={undefined}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/malwares"
-          render={(routeProps) => (
+          path="/malwares"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -143,14 +129,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/narratives"
-          render={(routeProps) => (
+          path="/narratives"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -159,14 +143,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/channels"
-          render={(routeProps) => (
+          path="/channels"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -175,14 +157,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/tools"
-          render={(routeProps) => (
+          path="/tools"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['uses']}
@@ -191,14 +171,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/vulnerabilities"
-          render={(routeProps) => (
+          path="/vulnerabilities"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['targets']}
@@ -207,14 +185,12 @@ const IncidentKnowledge = ({
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
               isRelationReversed={false}
-              {...routeProps}
             />
           )}
         />
         <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/observables"
-          render={(routeProps) => (
+          path="/observables"
+          element={ (
             <EntityStixCoreRelationships
               entityId={incident.id}
               relationshipTypes={['related-to']}
@@ -224,11 +200,10 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.last_seen}
               allDirections={true}
               isRelationReversed={true}
-              {...routeProps}
             />
           )}
         />
-      </Switch>
+      </Routes>
     </>
   );
 };

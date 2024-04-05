@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -16,13 +15,10 @@ import MarkdownField from '../../../../components/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
-import { OpinionsLinesPaginationQuery$variables } from './__generated__/OpinionsLinesPaginationQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -74,10 +70,6 @@ interface OpinionAddInput {
   objectLabel: Option[]
   externalReferences: { value: string }[]
   file: File | undefined
-}
-
-interface OpinionCreationProps {
-  paginationOptions: OpinionsLinesPaginationQuery$variables;
 }
 
 interface OpinionFormProps {
@@ -387,37 +379,3 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     </Formik>
   );
 };
-
-const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
-  paginationOptions,
-}) => {
-  const { t_i18n } = useFormatter();
-  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const updater = (store: RecordSourceSelectorProxy, key: string) => insertNode(store, 'Pagination_opinions', paginationOptions, key);
-
-  return (
-    <Drawer
-      title={t_i18n('Create a opinions')}
-      variant={DrawerVariant.create}
-    >
-      {({ onClose }) => (
-        <>
-          {userIsKnowledgeEditor
-            ? <OpinionCreationFormKnowledgeEditor
-                updater={updater}
-                onCompleted={onClose}
-                onReset={onClose}
-              />
-            : <OpinionCreationFormKnowledgeParticipant
-                updater={updater}
-                onCompleted={onClose}
-                onReset={onClose}
-              />
-          }
-        </>
-      )}
-    </Drawer>
-  );
-};
-
-export default OpinionCreation;
