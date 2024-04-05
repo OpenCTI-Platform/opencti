@@ -73,7 +73,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
       classes={{ root: classes.item }}
       divider={true}
       button={true}
-      component={Link}
+      component={link ? Link : null}
       to={link}
     >
       <ListItemIcon
