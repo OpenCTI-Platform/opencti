@@ -34,7 +34,7 @@ const WidgetContainer = ({
     <div style={{ height: height || '100%' }}>
       {!withoutTitle && (
         <Typography
-          variant="h4"
+          variant={variant === 'inEntity' ? 'h3' : 'h4'}
           gutterBottom={true}
           style={{
             margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
@@ -46,7 +46,7 @@ const WidgetContainer = ({
           {title}
         </Typography>
       )}
-      {variant !== 'inLine' ? (
+      {variant !== 'inLine' && variant !== 'inEntity' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {children}
         </Paper>
