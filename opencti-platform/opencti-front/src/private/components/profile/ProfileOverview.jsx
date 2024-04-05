@@ -339,6 +339,32 @@ const ProfileOverviewComponent = (props) => {
                 onSubmit={handleSubmitField}
               />
               <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows={4}
+                style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+            </Form>
+          )}
+        </Formik>
+      </Paper>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
+          {t('User experience')}
+        </Typography>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={userValidation(t)}
+        >
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
                 component={SelectField}
                 variant="standard"
                 name="theme"
@@ -387,7 +413,7 @@ const ProfileOverviewComponent = (props) => {
                 <MenuItem value={'Imperial'}>{t('Imperial')}</MenuItem>
                 <MenuItem value={'Metric'}>{t('Metric')}</MenuItem>
               </Field>
-              <ListItem classes={{ root: classes.switchField }}>
+              <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
                   primary={t('Show left navigation submenu icons')}
                 />
@@ -399,7 +425,7 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_show_icons', value)}
                 />
               </ListItem>
-              <ListItem classes={{ root: classes.switchField }}>
+              <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
                   primary={t('Auto collapse submenus in left navigation')}
                 />
@@ -411,17 +437,6 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows={4}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
             </Form>
           )}
         </Formik>
