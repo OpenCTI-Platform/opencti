@@ -144,7 +144,7 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
   }
 
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
-  const override = user?.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
+  const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
   const overrideMaxConfidence = override?.max_confidence ?? 0;
   const maxConfidenceForEntity = Math.max(userMaxConfidence, overrideMaxConfidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
