@@ -108,6 +108,7 @@ class OpenCTIApiClient:
         ssl_verify=False,
         proxies=None,
         json_logging=False,
+        bundle_send_to_queue=True,
         cert=None,
         auth=None,
         perform_health_check=True,
@@ -115,6 +116,7 @@ class OpenCTIApiClient:
         """Constructor method"""
 
         # Check configuration
+        self.bundle_send_to_queue = bundle_send_to_queue
         self.ssl_verify = ssl_verify
         self.cert = cert
         self.proxies = proxies

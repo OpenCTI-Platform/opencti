@@ -728,6 +728,32 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_auto = get_config_variable(
             "CONNECTOR_AUTO", ["connector", "auto"], config, False, False
         )
+        self.bundle_send_to_queue = get_config_variable(
+            "CONNECTOR_SEND_TO_QUEUE",
+            ["connector", "send_to_queue"],
+            config,
+            False,
+            True,
+        )
+        self.bundle_send_to_directory = get_config_variable(
+            "CONNECTOR_SEND_TO_DIRECTORY",
+            ["connector", "send_to_directory"],
+            config,
+            False,
+            False,
+        )
+        self.bundle_send_to_directory_path = get_config_variable(
+            "CONNECTOR_SEND_TO_DIRECTORY_PATH",
+            ["connector", "send_to_directory_path"],
+            config,
+        )
+        self.bundle_send_to_directory_retention = get_config_variable(
+            "CONNECTOR_SEND_TO_DIRECTORY_RETENTION",
+            ["connector", "send_to_directory_retention"],
+            config,
+            True,
+            7,
+        )
         self.connect_only_contextual = get_config_variable(
             "CONNECTOR_ONLY_CONTEXTUAL",
             ["connector", "only_contextual"],
@@ -749,6 +775,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "CONNECTOR_VALIDATE_BEFORE_IMPORT",
             ["connector", "validate_before_import"],
             config,
+            False,
+            False,
         )
         # Start up the server to expose the metrics.
         expose_metrics = get_config_variable(
@@ -769,6 +797,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.opencti_token,
             self.log_level,
             json_logging=self.opencti_json_logging,
+            bundle_send_to_queue=self.bundle_send_to_queue,
         )
         # - Impersonate API that will use applicant id
         # Behave like standard api if applicant not found
@@ -777,6 +806,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.opencti_token,
             self.log_level,
             json_logging=self.opencti_json_logging,
+            bundle_send_to_queue=self.bundle_send_to_queue,
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
         # For retro compatibility
@@ -1075,6 +1105,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         bypass_validation = kwargs.get("bypass_validation", False)
         entity_id = kwargs.get("entity_id", None)
         file_name = kwargs.get("file_name", None)
+        bundle_send_to_queue = kwargs.get("send_to_queue", self.bundle_send_to_queue)
+        bundle_send_to_directory = kwargs.get(
+            "send_to_directory", self.bundle_send_to_directory
+        )
+        bundle_send_to_directory_path = kwargs.get(
+            "send_to_directory_path", self.bundle_send_to_directory_path
+        )
+        bundle_send_to_directory_retention = kwargs.get(
+            "send_to_directory_retention", self.bundle_send_to_directory_retention
+        )
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -1114,13 +1154,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         )
             bundle = json.dumps(bundle_data)
 
+        # If execution in playbook, callback the api
         if self.playbook is not None:
             self.api.playbook.playbook_step_execution(self.playbook, bundle)
             return [bundle]
 
+        # Upload workbench in case of pending validation
         if not file_name and work_id:
             file_name = f"{work_id}.json"
-
         if self.connect_validate_before_import and not bypass_validation and file_name:
             self.api.upload_pending_file(
                 file_name=file_name,
@@ -1130,8 +1171,61 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             return []
 
-        if entities_types is None:
-            entities_types = []
+        # If directory setup, write the bundle to the target directory
+        if bundle_send_to_directory and bundle_send_to_directory_path is not None:
+            self.connector_logger.info(
+                "The connector sending bundle to directory",
+                {
+                    "connector": self.connect_name,
+                    "directory": bundle_send_to_directory_path,
+                    "also_queuing": bundle_send_to_queue,
+                },
+            )
+            bundle_file = (
+                self.connect_name.lower().replace(" ", "_")
+                + "-"
+                + time.strftime("%Y%m%d-%H%M%S-")
+                + str(time.time())
+                + ".json"
+            )
+            write_file = os.path.join(
+                bundle_send_to_directory_path, bundle_file + ".tmp"
+            )
+            message_bundle = {
+                "bundle_type": "DIRECTORY_BUNDLE",
+                "applicant_id": self.applicant_id,
+                "connector": {
+                    "id": self.connect_id,
+                    "name": self.connect_name,
+                    "type": self.connect_type,
+                    "scope": self.connect_scope,
+                    "auto": self.connect_auto,
+                    "validate_before_import": self.connect_validate_before_import,
+                },
+                "entities_types": entities_types,
+                "bundle": json.loads(bundle),
+                "update": update,
+            }
+            # Maintains the list of files under control
+            if bundle_send_to_directory_retention > 0:  # If 0, disable the auto remove
+                current_time = time.time()
+                for f in os.listdir(bundle_send_to_directory_path):
+                    if f.endswith(".json"):
+                        file_location = os.path.join(bundle_send_to_directory_path, f)
+                        file_time = os.stat(file_location).st_mtime
+                        is_expired_file = (
+                            file_time
+                            < current_time - 86400 * bundle_send_to_directory_retention
+                        )  # 86400 = 1 day
+                        if is_expired_file:
+                            os.remove(file_location)
+            # Write the bundle to target directory
+            with open(write_file, "w") as f:
+                str_bundle = json.dumps(message_bundle)
+                f.write(str_bundle)
+            # Rename the file after full write
+            final_write_file = os.path.join(bundle_send_to_directory_path, bundle_file)
+            os.rename(write_file, final_write_file)
 
         if bypass_split:
             bundles = [bundle]
@@ -1143,44 +1237,48 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.metric.inc("error_count")
             raise ValueError("Nothing to import")
 
-        if work_id:
-            self.api.work.add_expectations(work_id, len(bundles))
-
-        pika_credentials = pika.PlainCredentials(
-            self.connector_config["connection"]["user"],
-            self.connector_config["connection"]["pass"],
-        )
-        pika_parameters = pika.ConnectionParameters(
-            host=self.connector_config["connection"]["host"],
-            port=self.connector_config["connection"]["port"],
-            virtual_host=self.connector_config["connection"]["vhost"],
-            credentials=pika_credentials,
-            ssl_options=(
-                pika.SSLOptions(
-                    create_mq_ssl_context(self.config),
-                    self.connector_config["connection"]["host"],
-                )
-                if self.connector_config["connection"]["use_ssl"]
-                else None
-            ),
-        )
-        pika_connection = pika.BlockingConnection(pika_parameters)
-        channel = pika_connection.channel()
-        try:
-            channel.confirm_delivery()
-        except Exception as err:  # pylint: disable=broad-except
-            self.connector_logger.warning(str(err))
-        for sequence, bundle in enumerate(bundles, start=1):
-            self._send_bundle(
-                channel,
-                bundle,
-                work_id=work_id,
-                entities_types=entities_types,
-                sequence=sequence,
-                update=update,
+        if bundle_send_to_queue:
+            if work_id:
+                self.api.work.add_expectations(work_id, len(bundles))
+            if entities_types is None:
+                entities_types = []
+            pika_credentials = pika.PlainCredentials(
+                self.connector_config["connection"]["user"],
+                self.connector_config["connection"]["pass"],
             )
-        channel.close()
-        pika_connection.close()
+            pika_parameters = pika.ConnectionParameters(
+                host=self.connector_config["connection"]["host"],
+                port=self.connector_config["connection"]["port"],
+                virtual_host=self.connector_config["connection"]["vhost"],
+                credentials=pika_credentials,
+                ssl_options=(
+                    pika.SSLOptions(
+                        create_mq_ssl_context(self.config),
+                        self.connector_config["connection"]["host"],
+                    )
+                    if self.connector_config["connection"]["use_ssl"]
+                    else None
+                ),
+            )
+            pika_connection = pika.BlockingConnection(pika_parameters)
+            channel = pika_connection.channel()
+            try:
+                channel.confirm_delivery()
+            except Exception as err:  # pylint: disable=broad-except
+                self.connector_logger.warning(str(err))
+            self.connector_logger.info(self.connect_name + " sending bundle to queue")
+            for sequence, bundle in enumerate(bundles, start=1):
+                self._send_bundle(
+                    channel,
+                    bundle,
+                    work_id=work_id,
+                    entities_types=entities_types,
+                    sequence=sequence,
+                    update=update,
+                )
+            channel.close()
+            pika_connection.close()
+
         return bundles
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:
@@ -1212,6 +1310,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # if self.current_work_id is None:
         #    raise ValueError('The job id must be specified')
         message = {
+            "bundle_type": "QUEUE_BUNDLE",
             "applicant_id": self.applicant_id,
             "action_sequence": sequence,
             "entities_types": entities_types,
