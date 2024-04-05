@@ -354,15 +354,15 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, input) => {
-  const { format, exportType = null, contentMaxMarkings = null, fileMarkings = null } = input;
+  const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, listFilters) => {
+export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
   const meta = { list_filters: listFilters };
-  await upload(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta });
+  await upload(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta, file_markings });
   return true;
 };
 

@@ -28,7 +28,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -61,7 +61,7 @@ interface FormValues {
   format: string;
   type: string;
   contentMaxMarkingDefinitions: Option[];
-  fileMarkingsDefinitions: Option[];
+  fileMarkingDefinitions: Option[];
 }
 
 const StixCoreObjectFileExportComponent = ({
@@ -82,17 +82,23 @@ const StixCoreObjectFileExportComponent = ({
   const [open, setOpen] = useState(false);
   const onSubmitExport = (
     values: FormValues,
-    { setSubmitting, resetForm }: FormikHelpers<FormValues>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<FormValues>,
   ) => {
     const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value); // rename to contentMaxMarkings
-    const fileMarkingDefinitions = values.fileMarkingsDefinitions.map(({ value }) => value); // rename to fileMarkingDefinitions
+    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value); // rename to fileMarkingDefinitions
     commitExport({
       variables: {
         id,
-        format: values.format,
-        exportType: values.type,
-        contentMaxMarkings: contentMaxMarkingDefinitions,
-        fileMarkings: fileMarkingDefinitions,
+        input: {
+          format: values.format,
+          exportType: values.type,
+          contentMaxMarkings: contentMaxMarkingDefinitions,
+          fileMarkings: fileMarkingDefinitions,
+        },
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: (exportData) => {
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
@@ -160,7 +166,7 @@ const StixCoreObjectFileExportComponent = ({
           format: formatValue,
           type: 'full',
           contentMaxMarkingDefinitions: [], // rename to contentMaxMarkings
-          fileMarkingsDefinitions: [], // rename to fileMarkings
+          fileMarkingDefinitions: [], // rename to fileMarkings
         }}
         validationSchema={exportValidation(t_i18n)}
         onSubmit={onSubmitExport}

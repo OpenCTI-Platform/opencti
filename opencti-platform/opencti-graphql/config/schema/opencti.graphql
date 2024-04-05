@@ -12722,7 +12722,7 @@ type Mutation {
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])

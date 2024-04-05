@@ -8051,7 +8051,7 @@ type Mutation {
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
+  stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput!): Campaign

@@ -19,7 +19,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
@@ -180,25 +180,29 @@ const FileManager = ({
     });
   };
 
-  const onSubmitExport = (values, { setSubmitting, resetForm }) => {
+  const onSubmitExport = (values, { setSubmitting, setErrors, resetForm }) => {
     const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value);
     const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value);
     commitMutation({
       mutation: fileManagerExportMutation,
       variables: {
         id,
-        format: values.format,
-        exportType: values.type,
-        contentMaxMarkings: contentMaxMarkingDefinitions,
-        fileMarkings: fileMarkingDefinitions,
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixCoreObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
+        input: {
           format: values.format,
           exportType: values.type,
           contentMaxMarkings: contentMaxMarkingDefinitions,
           fileMarkings: fileMarkingDefinitions,
+        },
+      },
+      updater: (store) => {
+        const root = store.getRootField('stixCoreObjectEdit');
+        const payloads = root.getLinkedRecords('exportAsk', {
+          input: {
+            format: values.format,
+            exportType: values.type,
+            contentMaxMarkings: contentMaxMarkingDefinitions,
+            fileMarkings: fileMarkingDefinitions,
+          },
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
@@ -210,6 +214,10 @@ const FileManager = ({
           const newEdge = payload.setLinkedRecord(payload, 'node');
           ConnectionHandler.insertEdgeBefore(conn, newEdge);
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -375,7 +383,8 @@ const FileManager = ({
           initialValues={{
             format: '',
             type: 'full',
-            maxMarkingDefinition: 'none',
+            contentMaxMarkingDefinitions: [], // rename to contentMaxMarkings
+            fileMarkingDefinitions: [], // rename to fileMarkings
           }}
           validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}

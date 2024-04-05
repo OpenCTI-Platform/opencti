@@ -14,7 +14,8 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
-  INPUT_PARTICIPANT, INPUT_WORKS
+  INPUT_PARTICIPANT,
+  INPUT_WORKS
 } from './general';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -27,7 +28,7 @@ import {
 } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
-import {ENTITY_TYPE_USER, ENTITY_TYPE_WORK} from './internalObject';
+import { ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';

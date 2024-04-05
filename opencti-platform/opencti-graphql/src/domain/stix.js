@@ -47,7 +47,7 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type = 'simple', contentMaxMarkings = null, fileMarkings = null) => {
+export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const { entity_id, entity_type } = exportContext;
   const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
@@ -115,7 +115,7 @@ export const askListExport = async (context, user, exportContext, format, select
   return worksForExport;
 };
 
-export const askEntityExport = async (context, user, format, entity, type = 'simple', contentMaxMarkings = [], fileMarkings = []) => {
+export const askEntityExport = async (context, user, format, entity, type, contentMaxMarkings, fileMarkings) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);

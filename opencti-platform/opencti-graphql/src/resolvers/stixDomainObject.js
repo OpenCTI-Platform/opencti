@@ -84,8 +84,8 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
-      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
+    stixDomainObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, file_markings, listFilters);
     },
   },
   Subscription: {

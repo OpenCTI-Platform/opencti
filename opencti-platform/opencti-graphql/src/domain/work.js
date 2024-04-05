@@ -1,8 +1,8 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
+import { elDeleteInstances, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
-import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -11,7 +11,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
-import {createEntity} from "../database/middleware";
+import { createEntity } from '../database/middleware';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -196,7 +196,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     objectMarking: [...fileMarkings],
   };
 
-  await createEntity(context, user, work, ENTITY_TYPE_WORK)
+  await createEntity(context, user, work, ENTITY_TYPE_WORK);
   return loadWorkById(context, user, workId);
 };
 
