@@ -134,7 +134,7 @@
     "relay-test-utils": "16.2.0",
     "tap": "18.7.1",
     "typescript": "5.4.4",
-    "vite": "5.2.6",
+    "vite": "5.2.8",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "1.0.2",
     "vitest": "1.4.0"
