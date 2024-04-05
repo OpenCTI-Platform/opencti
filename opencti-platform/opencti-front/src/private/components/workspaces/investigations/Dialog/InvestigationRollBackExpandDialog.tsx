@@ -40,7 +40,7 @@ const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExp
       <DialogTitle>{t_i18n('Revert to Pre-Expansion State')}</DialogTitle>
       <DialogContent>
         <p>{t_i18n('Last expansion')}: {getLastRollBackExpandDate()}</p>
-        <p>{t_i18n('All actions after the last expansion will be lost.')}</p>
+        <p>{t_i18n('All add or remove actions done on the graph after the last expansion will be lost.')}</p>
       </DialogContent>
       <DialogActions>
         <Button onClick={closeDialog}>{t_i18n('Cancel')}</Button>

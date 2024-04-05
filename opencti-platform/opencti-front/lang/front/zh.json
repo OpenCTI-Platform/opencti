@@ -2674,9 +2674,7 @@
   "Public dashboard": "公共仪表板",
   "Restore the state of the graphic before the last expansion": "恢复上次扩展前的图形状态",
   "Revert to Pre-Expansion State": "恢复到扩展前状态",
-  "All actions after the last expansion will be lost": "上次扩展后的所有操作都将丢失",
   "Last expansion": "最后扩",
-  "All actions after the last expansion will be lost.": "最后一次扩展后的所有操作都将丢失。",
   "Show left navigation submenu icons": "显示左侧导航子菜单图标",
   "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "启用 OpenCTI 企业版，即表示您（和您的组织）同意 OpenCTI 企业版 (EE) 补充许可条款和使用条件：",
@@ -2692,5 +2690,6 @@
   "Credential": "证书",
   "Credentials": "证书",
   "entity_Tracking-Number": "追踪号码",
-  "entity_Credential": "凭据"
+  "entity_Credential": "凭据",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "上次扩展后在图形上进行的所有添加或删除操作都将丢失。"
 }

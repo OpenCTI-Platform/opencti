@@ -7,7 +7,6 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import RectangleSelection from 'react-rectangle-selection';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
@@ -18,7 +17,7 @@ import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
-import setStackDataInSessionStorage from '../../../../utils/sessionStorage/setStackDataInSessionStorage/setStackDataInSessionStorage';
+import setStackDataInSessionStorage from './utils/setStackDataInSessionStorage/setStackDataInSessionStorage';
 import {
   applyFilters,
   buildGraphData,
@@ -1806,12 +1805,11 @@ class InvestigationGraphComponent extends Component {
       return;
     }
 
-    const investigatedEntitiesIdsList = this.graphObjects.map(({ id }) => id);
     setStackDataInSessionStorage(
       investigationPreExpansionStateListStorageKey,
       {
         dateTime: new Date().getTime(),
-        investigatedEntitiesIdsList,
+        investigatedEntitiesList: this.graphObjects,
       },
       10,
     );
@@ -1896,49 +1894,45 @@ class InvestigationGraphComponent extends Component {
     const storedPreExpansion = getPreExpansionStateList();
     if (storedPreExpansion) {
       const currentStoredPreExpansion = JSON.parse(storedPreExpansion);
-      const { investigatedEntitiesIdsList } = currentStoredPreExpansion[0];
+      const { investigatedEntitiesList } = currentStoredPreExpansion[0];
 
-      const { graphObjectToRestore, graphObjectIdsToRemove } = this.graphObjects.reduce((acc, graphObject) => {
-        if (investigatedEntitiesIdsList.includes(graphObject.id)) {
-          acc.graphObjectToRestore = [...acc.graphObjectToRestore, graphObject];
-        } else {
-          acc.graphObjectIdsToRemove = [...acc.graphObjectIdsToRemove, graphObject.id];
-        }
-        return acc;
-      }, { graphObjectToRestore: [], graphObjectIdsToRemove: [] });
+      const graphObjectsToRestore = this.graphObjects.filter((graphObject) => investigatedEntitiesList.find((investigatedEntity) => investigatedEntity.id === graphObject.id));
+      const graphObjectsToAdd = investigatedEntitiesList.filter((investigatedEntities) => !this.graphObjects.find((graphObject) => graphObject.id === investigatedEntities.id));
+
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
         variables: {
           id: this.props.workspace.id,
           input: {
             key: 'investigated_entities_ids',
-            value: graphObjectIdsToRemove,
-            operation: 'remove',
+            value: [
+              ...graphObjectsToRestore.map((graphObjectToRestore) => graphObjectToRestore.id),
+              ...graphObjectsToAdd.map((graphObjectToAdd) => graphObjectToAdd.id),
+            ],
+            operation: 'replace',
           },
         },
-        onCompleted: () => {
-          this.graphObjects = graphObjectToRestore;
-
-          this.graphData = buildGraphData(
-            graphObjectToRestore,
-            decodeGraphData(this.props.workspace.graph_data),
-            this.props.t,
-          );
-
-          this.setState({
-            graphData: applyFilters(
-              this.graphData,
-              this.state.stixCoreObjectsTypes,
-              this.state.markedBy,
-              this.state.createdBy,
-              [],
-              this.state.selectedTimeRangeInterval,
-            ),
-          });
-
-          updatePreExpansionStateList(currentStoredPreExpansion);
-        },
       });
+
+      this.graphObjects = [...graphObjectsToRestore, ...graphObjectsToAdd];
+      this.graphData = buildGraphData(
+        [...graphObjectsToRestore, ...graphObjectsToAdd],
+        decodeGraphData(this.props.workspace.graph_data),
+        this.props.t,
+      );
+
+      this.setState({
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+          [],
+          this.state.selectedTimeRangeInterval,
+        ),
+      });
+
+      updatePreExpansionStateList(currentStoredPreExpansion);
     }
   }
 

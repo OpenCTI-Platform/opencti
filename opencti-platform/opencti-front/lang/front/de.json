@@ -2674,9 +2674,7 @@
   "Public dashboard": "Öffentliches Dashboard",
   "Restore the state of the graphic before the last expansion": "Wiederherstellung des Zustands der Grafik vor der letzten Erweiterung",
   "Revert to Pre-Expansion State": "Zurückkehren zum Zustand vor der Erweiterung",
-  "All actions after the last expansion will be lost": "Alle Aktionen nach der letzten Erweiterung gehen verloren",
   "Last expansion": "Letzte Erweiterung",
-  "All actions after the last expansion will be lost.": "Alle Aktionen nach der letzten Erweiterung gehen verloren.",
   "Show left navigation submenu icons": "Symbole des linken Navigations-Untermenüs anzeigen",
   "Unless specific groups are selected, user will be created with default groups only.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer nur mit den Standardgruppen erstellt.",
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "Mit der Aktivierung der OpenCTI Enterprise Edition erklären Sie (und Ihre Organisation) sich mit den zusätzlichen Lizenz- und Nutzungsbedingungen der OpenCTI Enterprise Edition (EE) einverstanden:",
@@ -2692,5 +2690,6 @@
   "Credentials": "Berechtigungsnachweis",
   "entity_Tracking-Number": "Tracking-Nummer",
   "entity_Credential": "Berechtigung",
-  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen"
+  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "Alle Hinzufügungs- oder Entfernungsaktionen, die nach der letzten Erweiterung am Diagramm vorgenommen wurden, gehen verloren."
 }
