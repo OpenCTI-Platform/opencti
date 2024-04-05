@@ -3,11 +3,31 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { createStreamProcessor, lockResource, type StreamProcessor } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
+import { isNotEmptyField } from '../database/utils';
+import type { Settings } from '../generated/graphql';
+import { getSettings } from '../domain/settings';
+import { filigranTelemetryManager } from '../config/filigranTelemetry';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
-const SCHEDULE_TIME = 1000;
+const SCHEDULE_TIME = 10000;
 
-const telemetryStreamHandler = async () => {};
+const telemetryStreamHandler = async () => {
+  try {
+    const context = executionContext('telemetry_manager');
+    const settings = await getSettings(context) as Settings;
+    const enabledModules = settings.platform_modules?.map((module) => (module.enable ? module.id : null))
+      .filter((n) => n) as string[];
+    const runningModules = settings.platform_modules?.map((module) => (module.running ? module.id : null))
+      .filter((n) => n) as string[];
+    filigranTelemetryManager.setLanguage(settings.platform_language ?? 'undefined');
+    filigranTelemetryManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition));
+    filigranTelemetryManager.setEEActivationDate(settings.enterprise_edition);
+    filigranTelemetryManager.setNumberOfInstances(settings.platform_cluster.instances_number);
+    filigranTelemetryManager.registerFiligranTelemetry();
+  } catch (e) {
+    logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
+  }
+};
 
 const initTelemetryManager = () => {
   const WAIT_TIME_ACTION = 1000;
@@ -50,8 +70,6 @@ const initTelemetryManager = () => {
 
   return {
     start: async () => {
-      const context = executionContext('telemetry_manager');
-      // TODO
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
         await telemetryHandler();
