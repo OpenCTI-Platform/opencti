@@ -327,6 +327,29 @@
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
     },
     {
+      "id": "tracking-number--93cb4798-56cf-5131-8373-8fe7d4a7c62c",
+      "spec_version": "2.1",
+      "x_opencti_description": "UPS Tracking number",
+      "x_opencti_score": 50,
+      "value": "5Z00551303811",
+      "x_opencti_type": "Tracking-Number",
+      "type": "tracking-number",
+      "x_opencti_created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "credential--8e0a834a-c233-5c50-8186-adde10a69f02",
+      "spec_version": "2.1",
+      "x_opencti_description": "Basic credential",
+      "x_opencti_score": 50,
+      "value": "azerty",
+      "x_opencti_type": "Credential",
+      "type": "credential",
+      "x_opencti_created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "x_opencti_labels": ["note"],
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
       "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
       "type": "incident",
       "spec_version": "2.1",

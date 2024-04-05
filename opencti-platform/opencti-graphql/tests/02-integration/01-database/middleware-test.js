@@ -27,7 +27,7 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
 import { RELATION_ATTRIBUTED_TO, RELATION_MITIGATES, RELATION_RELATED_TO, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
@@ -47,7 +47,6 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
-import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -253,7 +252,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
-    expect(stixRefRelationships.edges.length).toEqual(124);
+    expect(stixRefRelationships.edges.length).toEqual(129);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
