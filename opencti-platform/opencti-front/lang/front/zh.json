@@ -2426,7 +2426,6 @@
   "Task": "任务",
   "CREATE": "创建",
   "entity_Analyses": "实体_分析",
-  "There are no opinions. You should create some before.": "没有意见。你应该先提出一些意见。",
   "workflow_id": "状态",
   "Do you want to delete this CSV ingester?": "您要删除此CSV导入程序吗？",
   "Do you want to start this CSV ingester?": "您要启动此CSV导入程序吗？",
@@ -2683,5 +2682,6 @@
   "Most used filters": "最常用的过滤器",
   "All other filters": "所有其他筛选器",
   "Testing csv mapper": "测试 csv 映射器",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。"
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。",
+  "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意见在您的词汇中没有定义值。请先添加意见，才能添加观点。"
 }

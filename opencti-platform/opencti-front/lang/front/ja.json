@@ -2426,7 +2426,6 @@
   "Task": "タスク",
   "CREATE": "作成",
   "entity_Analyses": "エンティティ_分析",
-  "There are no opinions. You should create some before.": "意見がない。事前にいくつか作っておくべきだ。",
   "workflow_id": "ステータス",
   "Do you want to delete this CSV ingester?": "このCSVインガスターを削除しますか？",
   "Do you want to start this CSV ingester?": "このCSVインガスターを開始しますか？",
@@ -2683,5 +2682,6 @@
   "Most used filters": "最も使用されるフィルター",
   "All other filters": "その他のフィルター",
   "Testing csv mapper": "csvマッパーのテスト",
-  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。"
+  "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "この操作は、エンリッチメントやその他の知識操作など、このプレイブックのコンテキストで追加されたラベルやマーキングに対してのみ適用されます。",
+  "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。"
 }
