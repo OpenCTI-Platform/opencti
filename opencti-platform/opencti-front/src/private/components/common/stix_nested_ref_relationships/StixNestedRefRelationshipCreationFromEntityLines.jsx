@@ -153,6 +153,7 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
           ) @connection(key: "Pagination_stixCoreObjects") {
             edges {
               node {
+                id
                 ...StixNestedRefRelationshipCreationFromEntityLine_node
               }
             }

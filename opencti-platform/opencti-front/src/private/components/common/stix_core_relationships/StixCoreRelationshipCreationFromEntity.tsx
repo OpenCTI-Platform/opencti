@@ -37,7 +37,7 @@ import StixCoreRelationshipCreationFromEntityStixCoreObjectsLines, {
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import type { Theme } from '../../../../components/Theme';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node.graphql';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -311,7 +311,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [targetEntities, setTargetEntities] = useState(
     targetEntitiesProps,
   );
-  const [selectedElements, setSelectedElements] = useState<Record<string, StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node$data>>({});
   useEffect(() => {
     if (!R.equals(targetEntitiesProps, targetEntities) && targetEntitiesProps.length > targetEntities.length) {
       setTargetEntities(targetEntitiesProps);
@@ -461,10 +460,16 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setStep(1);
   };
 
-  const onToggleEntity = (entity: TargetEntity) => {
+  const {
+    onToggleEntity,
+    selectedElements,
+    deSelectedElements,
+  } = useEntityToggle(`${entityId}_stixCoreRelationshipCreationFromEntity`);
+
+  const onInstanceToggleEntity = (entity: TargetEntity) => {
+    onToggleEntity(entity);
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
-      setSelectedElements(newSelectedElements);
       setTargetEntities(R.values(newSelectedElements));
     } else {
       const newSelectedElements = R.assoc(
@@ -472,7 +477,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         entity,
         selectedElements || {},
       );
-      setSelectedElements(newSelectedElements);
       setTargetEntities(R.values(newSelectedElements));
     }
   };
@@ -567,9 +571,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                         setNumberOfElements={setNumberOfElements}
                         containerRef={containerRef}
                         selectedElements={selectedElements}
-                        deSelectedElements={{}}
+                        deSelectedElements={deSelectedElements}
                         selectAll={false}
-                        onToggleEntity={onToggleEntity}
+                        onToggleEntity={onInstanceToggleEntity}
                       />
                     )}
                   />
@@ -695,9 +699,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         {({ schema }) => {
           const relationshipTypes = R.uniq(R.filter(
             (n) => R.isNil(allowedRelationshipTypes)
-                            || allowedRelationshipTypes.length === 0
-                            || allowedRelationshipTypes.includes('stix-core-relationship')
-                            || allowedRelationshipTypes.includes(n),
+            || allowedRelationshipTypes.length === 0
+            || allowedRelationshipTypes.includes('stix-core-relationship')
+            || allowedRelationshipTypes.includes(n),
             resolveRelationsTypes(
               fromEntities[0].entity_type,
               toEntities[0].entity_type,
