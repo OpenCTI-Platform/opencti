@@ -103,6 +103,7 @@ steps:
       - frontend-tests
 
   - name: frontend-verify-translation
+    image: node:20.12.0
     commands:
       - cd opencti-platform/opencti-front
       - yarn verified-translation
