@@ -88,7 +88,7 @@ StixCoreObjectOpinionsRadarDialogProps
     } else {
       MESSAGING$.notifyError(
         <span>
-          {t_i18n('There are no opinions. You should create some before.')}
+          {t_i18n('The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.')}
         </span>,
       );
     }
