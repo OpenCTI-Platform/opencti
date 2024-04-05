@@ -106,9 +106,7 @@ steps:
     image: node:20.12.0
     commands:
       - cd opencti-platform/opencti-front
-      - yarn install
-      - yarn verified-translation
-
+      - node script/verify-translation.js
 
   - name: build-circleci
     image: curlimages/curl
