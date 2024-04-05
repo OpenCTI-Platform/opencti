@@ -97,8 +97,18 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
         ... on BasicRelationship {
           entity_type
         }
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
         ... on Country {
-          name
+          # nullable fields, so it will work even if the Country is Restricted
           x_opencti_aliases
           latitude
           longitude
