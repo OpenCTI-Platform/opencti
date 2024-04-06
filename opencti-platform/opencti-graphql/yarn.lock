@@ -3850,6 +3850,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sesamecare-oss/redlock@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@sesamecare-oss/redlock@npm:1.2.1"
+  peerDependencies:
+    ioredis: ">=5"
+  checksum: 10/b4dc20c4ac1ade779e84fdd429617986fea84199be98948f27b2b2cecdc3033e7397e077b59ee78958f0dc16340e51af913a25e41d0bfcb89be6911d721ee365
+  languageName: node
+  linkType: hard
+
 "@smithy/abort-controller@npm:^3.1.5, @smithy/abort-controller@npm:^3.1.6":
   version: 3.1.6
   resolution: "@smithy/abort-controller@npm:3.1.6"
@@ -11066,7 +11075,6 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.30.1"
     rate-limiter-flexible: "npm:4.0.1"
-    redlock: "npm:5.0.0-beta.2"
     sanitize-filename: "npm:1.6.3"
     semver: "npm:7.6.3"
     set-interval-async: "npm:3.0.3"
@@ -11881,15 +11889,6 @@ __metadata:
   dependencies:
     redis-errors: "npm:^1.0.0"
   checksum: 10/b10846844b4267f19ce1a6529465819c3d78c3e89db7eb0c3bb4eb19f83784797ec411274d15a77dbe08038b48f95f76014b83ca366dc955a016a3a0a0234650
-  languageName: node
-  linkType: hard
-
-"redlock@npm:5.0.0-beta.2":
-  version: 5.0.0-beta.2
-  resolution: "redlock@npm:5.0.0-beta.2"
-  dependencies:
-    node-abort-controller: "npm:^3.0.1"
-  checksum: 10/c1df94fb229182ccf59b744f600b45f2cda1d9c7e5b87b9bbf5c3ef92eb47339af7b33b80dc71e97c08c1f476443be68987dad6c49cfc1a89e9a647127884963
   languageName: node
   linkType: hard
 
