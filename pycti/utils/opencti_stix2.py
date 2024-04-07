@@ -835,6 +835,21 @@ class OpenCTIStix2:
             "Vulnerability": self.opencti.vulnerability.read,
         }
 
+    def get_reader(self, entity_type: str):
+        # Map types
+        if entity_type == "StixFile":
+            entity_type = "File"
+        if IdentityTypes.has_value(entity_type):
+            entity_type = "Identity"
+        if LocationTypes.has_value(entity_type):
+            entity_type = "Location"
+        if StixCyberObservableTypes.has_value(entity_type):
+            entity_type = "Stix-Cyber-Observable"
+        readers = self.get_readers()
+        return readers.get(
+            entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
+        )
+
     # endregion
 
     # region import
