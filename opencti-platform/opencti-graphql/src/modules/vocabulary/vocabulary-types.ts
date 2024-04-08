@@ -14,7 +14,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
-import { ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
+import { ENTITY_PERSONA, ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
@@ -281,6 +281,14 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       required: false,
       multiple: true,
     }]
+  },
+  persona_type_ov: {
+    entity_types: [ENTITY_PERSONA],
+    fields: [{
+      key: 'persona_type',
+      required: false,
+      multiple: false,
+    }],
   },
   // R
   reliability_ov: {

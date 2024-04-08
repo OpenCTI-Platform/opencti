@@ -21,6 +21,7 @@ import {
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
+import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,7 +49,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const ThreatActorIndividualDetailsFragment = graphql`
-  fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual {
+  fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
+  {
     id
     first_seen
     last_seen
@@ -61,6 +63,25 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
+    stixCoreRelationships {
+      edges {
+        node {
+          id
+          relationship_type
+          to {
+            ... on Individual {
+              id
+              name
+            }
+            ... on Persona {
+              id
+              persona_name
+              persona_type
+            }
+          }
+        }
+      }
+    }
     images: importFiles(prefixMimeType: "image/") {
       edges {
         node {
@@ -92,12 +113,14 @@ ThreatActorIndividualDetailsProps
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
+
   const imagesCarousel: { images: ImagesData } = {
     images: {
       edges: (data.images?.edges ?? []).filter((n) => n?.node?.metaData?.inCarousel),
     } as ImagesData,
   };
   const hasImages = imagesCarousel.images?.edges ? imagesCarousel.images.edges.length > 0 : false;
+
   return (
     <>
       <Typography variant="h4">
@@ -140,6 +163,14 @@ ThreatActorIndividualDetailsProps
             </Grid>
           </Grid>
           <Grid item xs={hasImages ? 5 : 6}>
+            <ThreatActorIndividualDetailsChips
+              data={data}
+              relType='known-as'
+            />
+            <ThreatActorIndividualDetailsChips
+              data={data}
+              relType='impersonates'
+            />
             <ThreatActorIndividualLocation threatActorIndividual={data} />
             <Typography
               variant="h3"

@@ -47,6 +47,7 @@ import {
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
+  ENTITY_PERSONA,
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
@@ -232,6 +233,10 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_MEDIA_CONTENT) {
     const media = stix as SCO.StixMediaContent;
     return media.content ?? media.title ?? media.url ?? 'Unknown';
+  }
+  if (entityType === ENTITY_PERSONA) {
+    const persona = stix as SCO.StixPersona;
+    return persona.persona_name ?? 'Unknown';
   }
   if (entityType === ENTITY_MUTEX) {
     return (stix as SCO.StixMutex).name ?? 'Unknown';

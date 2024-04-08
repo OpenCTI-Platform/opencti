@@ -225,7 +225,7 @@ describe('Filter keys schema generation testing', async () => {
 
     // Stix Core Relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(RELATION_FROM_FILTER);
-    expect(filterDefinition?.subEntityTypes.length).toEqual(49); // 48 stix core relationship types + abstract type 'stix-core-relationships'
+    expect(filterDefinition?.subEntityTypes.length).toEqual(50); // 49 stix core relationship types + abstract type 'stix-core-relationships'
     // Stix Cyber Observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('x_opencti_score'); // attribute existing for all the observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables

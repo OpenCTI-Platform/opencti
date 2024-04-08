@@ -135,6 +135,7 @@ const stixCyberObservableMutation = graphql`
     $MediaContent: MediaContentAddInput
     $TrackingNumber: TrackingNumberAddInput
     $Credential: CredentialAddInput
+    $Persona: PersonaAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -176,6 +177,7 @@ const stixCyberObservableMutation = graphql`
       MediaContent: $MediaContent
       TrackingNumber: $TrackingNumber
       Credential: $Credential
+      Persona: $Persona
     ) {
       id
       standard_id

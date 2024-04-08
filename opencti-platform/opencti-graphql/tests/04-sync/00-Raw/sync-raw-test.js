@@ -78,7 +78,7 @@ describe('Database sync raw', () => {
       expect(countersMap.get('Indicator')).toEqual(28);
       expect(countersMap.get('Malware')).toEqual(27);
       expect(countersMap.get('Label')).toEqual(13);
-      expect(countersMap.get('Vocabulary')).toEqual(335);
+      expect(countersMap.get('Vocabulary')).toEqual(342);
 
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
