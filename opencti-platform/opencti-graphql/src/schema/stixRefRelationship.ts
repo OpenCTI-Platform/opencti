@@ -81,7 +81,6 @@ export const INPUT_PARENT = 'processParent';
 export const INPUT_CHILD = 'processChild';
 export const INPUT_BODY_MULTIPART = 'bodyMultipart';
 export const INPUT_VALUES = 'winRegValues';
-export const INPUT_LINKED = 'xOpenctiLinkedTo';
 export const INPUT_SERVICE_DLL = 'serviceDlls';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
@@ -111,7 +110,6 @@ export const RELATION_PARENT = 'parent';
 export const RELATION_CHILD = 'child';
 export const RELATION_BODY_MULTIPART = 'body-multipart';
 export const RELATION_VALUES = 'values';
-export const RELATION_LINKED = 'x_opencti_linked-to';
 export const RELATION_SERVICE_DLL = 'service-dll';
 
 // -- RELATIONS REF ---
@@ -577,23 +575,6 @@ export const values: RefAttribute = {
   },
   toTypes: [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE],
 };
-export const xOpenctiLinkedTo: RefAttribute = {
-  name: INPUT_LINKED,
-  type: 'ref',
-  databaseName: RELATION_LINKED,
-  label: 'Linked to',
-  stixName: 'x_opencti_linked_to_refs',
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: true,
-  upsert: true,
-  isRefExistingForTypes(this, _, toType) {
-    return this.toTypes.includes(toType);
-  },
-  datable: true,
-  isFilterable: false,
-  toTypes: ['Stix-Core-Object'],
-};
 export const serviceDlls: RefAttribute = {
   name: INPUT_SERVICE_DLL,
   type: 'ref',
@@ -640,7 +621,6 @@ export const STIX_REF_RELATIONSHIPS: RefAttribute[] = [
   child,
   bodyMultipart,
   values,
-  xOpenctiLinkedTo,
   serviceDlls
 ];
 

@@ -22,7 +22,6 @@ import {
   xOpenctiStixIds,
   xOpenctiType
 } from '../schema/attribute-definition';
-import { xOpenctiLinkedTo } from '../schema/stixRefRelationship';
 
 export const INTERNAL_ATTRIBUTES = [
   // ID
@@ -88,6 +87,5 @@ export const INTERNAL_ATTRIBUTES = [
 ];
 
 export const INTERNAL_REFS = [
-  xOpenctiLinkedTo.name,
   'objectOrganization'
 ];

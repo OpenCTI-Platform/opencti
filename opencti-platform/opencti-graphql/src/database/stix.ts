@@ -76,7 +76,7 @@ import {
   RELATION_USES,
   RELATION_VARIANT_OF
 } from '../schema/stixCoreRelationship';
-import { isStixRefRelationship, RELATION_LINKED } from '../schema/stixRefRelationship';
+import { isStixRefRelationship } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
@@ -1168,10 +1168,6 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
 };
 
 export const checkRelationshipRef = (fromType: string, toType: string, relationshipType: string) => {
-  if (relationshipType === RELATION_LINKED) {
-    return;
-  }
-
   const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
   if (relationRefs.length === 0) {
     throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });

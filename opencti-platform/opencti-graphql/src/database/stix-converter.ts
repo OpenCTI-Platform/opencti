@@ -22,7 +22,6 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_IMAGE,
-  INPUT_LINKED,
   INPUT_OPENED_CONNECTION,
   INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
@@ -231,7 +230,6 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
     // Refs
     granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
-    linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
     // Internals
     creator_ids: builtCreatorIds,
     assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),

@@ -32,8 +32,7 @@ import {
   src,
   srcPayload,
   to,
-  values,
-  xOpenctiLinkedTo
+  values
 } from '../../schema/stixRefRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -60,7 +59,7 @@ import { getParentTypes } from '../../schema/schemaUtils';
 
 schemaRelationsRefDefinition.registerRelationsRef(
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  [createdBy, objectMarking, objectLabel, externalReferences, objectOrganization, xOpenctiLinkedTo]
+  [createdBy, objectMarking, objectLabel, externalReferences, objectOrganization]
 );
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, [

@@ -16,7 +16,6 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_IMAGE,
-  INPUT_LINKED,
   INPUT_OPENED_CONNECTION,
   INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
@@ -182,7 +181,6 @@ interface StoreCommon {
   entity_type: string
   parent_types: string[];
   // inputs
-  [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
   [INPUT_ASSIGNEE]?: Array<BasicStoreObject>;
   [INPUT_PARTICIPANT]?: Array<BasicStoreObject>;

@@ -30,7 +30,6 @@ import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { onlyLinkedTo } from '../../../../utils/Relation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -675,8 +674,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     let fromEntity = resolveEntityRef.entity;
     let toEntity = targetEntity;
     let relationshipTypes;
-    if ((resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0)
-      || (onlyLinkedTo(resolveEntityRef.from) && resolveEntityRef.to.length !== 0 && !onlyLinkedTo(resolveEntityRef.to))) {
+    if (resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0) {
       if (isRelationReversed) {
         fromEntity = targetEntity;
         toEntity = resolveEntityRef.entity;
