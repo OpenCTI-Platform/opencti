@@ -19,6 +19,16 @@ const makeGroup = (confidence: number | null) => ({
   group_confidence_level: confidence ? { max_confidence: confidence, overrides: [] } : null
 });
 
+const makeGroupWithOverrides = (confidence: number | null) => ({
+  id: `group_${confidence}`,
+  group_confidence_level: confidence ? { max_confidence: confidence, overrides: [{ entity_type: 'Report', max_confidence: 90 }] } : null
+});
+
+const makeUserWithOverrides = (confidence: number | null) => ({
+  id: `user_${confidence}`,
+  effective_confidence_level: confidence ? { max_confidence: confidence, overrides: [{ entity_type: 'Report', max_confidence: 90 }] } : null
+} as AuthUser);
+
 const makeElement = (confidence?: number | null) => ({
   id: `object_${confidence}`,
   entity_type: 'Report',
@@ -29,6 +39,7 @@ describe('Confidence level utilities', () => {
   it('computeUserEffectiveConfidenceLevel should correctly compute the effective level', async () => {
     const group70 = makeGroup(70);
     const group80 = makeGroup(80);
+    const group40 = makeGroupWithOverrides(40);
     const groupNull = makeGroup(null);
 
     // minimal subset of a real User
@@ -36,14 +47,14 @@ describe('Confidence level utilities', () => {
       id: 'userA',
       user_confidence_level: {
         max_confidence: 30,
-        overrides: [],
+        overrides: [{ entity_type: 'Malware', max_confidence: 70 }],
       },
       groups: [group70, group80],
       capabilities: [],
     };
     expect(computeUserEffectiveConfidenceLevel(userA as unknown as AuthUser)).toEqual({
       max_confidence: 30,
-      overrides: [],
+      overrides: [{ entity_type: 'Malware', max_confidence: 70 }],
       source: { type: 'User', object: userA },
     });
 
@@ -108,147 +119,161 @@ describe('Confidence level utilities', () => {
       overrides: [],
       source: { type: 'Bypass' },
     });
-  });
-
-  describe('Control confidence', () => {
-    it('on any element', () => {
-      expect(() => controlUserConfidenceAgainstElement(makeUser(50), makeElement(30)))
-        .not.toThrowError();
-      expect(() => controlUserConfidenceAgainstElement(makeUser(30), makeElement(50)))
-        .toThrowError('User effective max confidence level is insufficient to update this element');
-      expect(() => controlUserConfidenceAgainstElement(makeUser(50), makeElement(null)))
-        .not.toThrowError();
-      expect(() => controlUserConfidenceAgainstElement(makeUser(null), makeElement(30)))
-        .toThrowError('User has no effective max confidence level and cannot update this element');
-      expect(() => controlUserConfidenceAgainstElement(makeUser(50), {
-        id: 'object_no_confidence',
-        entity_type: 'Artifact',
-      })).not.toThrowError();
-      expect(() => controlUserConfidenceAgainstElement(makeUser(null), {
-        id: 'object_no_confidence',
-        entity_type: 'Artifact',
-      })).not.toThrowError(); // existence of user level is not even checked
-    });
-    it('on any element (noThrow)', () => {
-      expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(30), true)).toEqual(true);
-      expect(controlUserConfidenceAgainstElement(makeUser(30), makeElement(50), true)).toEqual(false);
-      expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(null), true)).toEqual(true);
-      expect(controlUserConfidenceAgainstElement(makeUser(null), makeElement(30), true)).toEqual(false);
-      expect(controlUserConfidenceAgainstElement(makeUser(50), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
-      expect(controlUserConfidenceAgainstElement(makeUser(null), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
-    });
-    it('on create input', () => {
-      expect(controlCreateInputWithUserConfidence(makeUser(50), makeElement(30))).toEqual({
-        confidenceLevelToApply: 30,
-      });
-      expect(controlCreateInputWithUserConfidence(makeUser(30), makeElement(50))).toEqual({
-        confidenceLevelToApply: 30,
-      });
-      expect(controlCreateInputWithUserConfidence(makeUser(30), makeElement(null))).toEqual({
-        confidenceLevelToApply: 30,
-      });
-      expect(() => controlCreateInputWithUserConfidence(makeUser(null), makeElement(50)))
-        .toThrowError('User has no effective max confidence level and cannot create this element');
-    });
-    it('on upsert input', () => {
-      expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(30), makeElement(10)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: true,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(10), makeElement(30)))
-        .toEqual({
-          isConfidenceMatch: false,
-          confidenceLevelToApply: 10,
-          isConfidenceUpper: false,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(10)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: true,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(10), makeElement(50)))
-        .toEqual({
-          isConfidenceMatch: false,
-          confidenceLevelToApply: 10,
-          isConfidenceUpper: false,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(50), makeElement(30)))
-        .toEqual({
-          isConfidenceMatch: false,
-          confidenceLevelToApply: 10,
-          isConfidenceUpper: false,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(30), makeElement(50)))
-        .toEqual({
-          isConfidenceMatch: false,
-          confidenceLevelToApply: 10,
-          isConfidenceUpper: false,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(null), makeElement(30)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 50,
-          isConfidenceUpper: true,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(50)))
-        .toEqual({
-          isConfidenceMatch: false,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: false,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(30), makeElement(null)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: true,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(null)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: true,
-        });
-      expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(null)))
-        .toEqual({
-          isConfidenceMatch: true,
-          confidenceLevelToApply: 30,
-          isConfidenceUpper: true,
-        });
-      expect(() => controlUpsertInputWithUserConfidence(makeUser(null), makeElement(30), makeElement(50)))
-        .toThrowError('User has no effective max confidence level and cannot upsert this element');
-    });
-  });
-
-  it('adaptUpdateInputsConfidence should adapt correctly input payload', () => {
-    const makeConfidenceInput = (confidence: number) => ({
-      key: 'confidence',
-      value: [confidence.toString()],
-    });
-    const otherInput = {
-      key: 'description',
-      value: ['some text'],
+    const userH = {
+      user_confidence_level: null,
+      groups: [group40],
+      capabilities: []
     };
-
-    expect(adaptUpdateInputsConfidence(makeUser(50), makeConfidenceInput(30), makeElement(10)))
-      .toEqual([{ key: 'confidence', value: ['30'] }]);
-    expect(adaptUpdateInputsConfidence(makeUser(50), makeConfidenceInput(10), makeElement(30)))
-      .toEqual([{ key: 'confidence', value: ['10'] }]);
-    expect(adaptUpdateInputsConfidence(makeUser(30), makeConfidenceInput(50), makeElement(10)))
-      .toEqual([{ key: 'confidence', value: ['30'] }]); // capped
-    expect(adaptUpdateInputsConfidence(makeUser(30), makeConfidenceInput(10), makeElement(50)))
-      .toEqual([{ key: 'confidence', value: ['10'] }]); // this function does not control against element!
-    expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(50), makeElement(30)))
-      .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / this function does not control against element!
-    expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(50)))
-      .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / this function does not control against element!
-    expect(adaptUpdateInputsConfidence(makeUser(10), otherInput, makeElement(50)))
-      .toEqual([otherInput]); // no need to inject confidence
-    expect(adaptUpdateInputsConfidence(makeUser(10), otherInput, makeElement(null)))
-      .toEqual([otherInput, { key: 'confidence', value: ['10'] }]); // inject user's confidence
-    expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(null)))
-      .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / no need to inject user's confidence
+    expect(computeUserEffectiveConfidenceLevel(userH as unknown as AuthUser)).toEqual({
+      max_confidence: 40,
+      overrides: [{ entity_type: 'Report', max_confidence: 90 }],
+      source: { type: 'Group', object: group40 },
+    });
   });
+});
+
+describe('Control confidence', () => {
+  it('on any element', () => {
+    expect(() => controlUserConfidenceAgainstElement(makeUser(50), makeElement(30)))
+      .not.toThrowError();
+    expect(() => controlUserConfidenceAgainstElement(makeUser(30), makeElement(50)))
+      .toThrowError('User effective max confidence level is insufficient to update this element');
+    expect(() => controlUserConfidenceAgainstElement(makeUser(50), makeElement(null)))
+      .not.toThrowError();
+    expect(() => controlUserConfidenceAgainstElement(makeUser(null), makeElement(30)))
+      .toThrowError('User has no effective max confidence level and cannot update this element');
+    expect(() => controlUserConfidenceAgainstElement(makeUser(50), {
+      id: 'object_no_confidence',
+      entity_type: 'Artifact',
+    })).not.toThrowError();
+    expect(() => controlUserConfidenceAgainstElement(makeUser(null), {
+      id: 'object_no_confidence',
+      entity_type: 'Artifact',
+    })).not.toThrowError(); // existence of user level is not even checked
+    expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(40), makeElement(80)))
+      .not.toThrowError();
+    expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(40), makeElement(100)))
+      .toThrowError('User effective max confidence level is insufficient to update this element');
+  });
+  it('on any element (noThrow)', () => {
+    expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(30), true)).toEqual(true);
+    expect(controlUserConfidenceAgainstElement(makeUser(30), makeElement(50), true)).toEqual(false);
+    expect(controlUserConfidenceAgainstElement(makeUser(50), makeElement(null), true)).toEqual(true);
+    expect(controlUserConfidenceAgainstElement(makeUser(null), makeElement(30), true)).toEqual(false);
+    expect(controlUserConfidenceAgainstElement(makeUser(50), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
+    expect(controlUserConfidenceAgainstElement(makeUser(null), { id: 'object_no_confidence', entity_type: 'Artifact' }, true)).toEqual(true);
+  });
+  it('on create input', () => {
+    expect(controlCreateInputWithUserConfidence(makeUser(50), makeElement(30))).toEqual({
+      confidenceLevelToApply: 30,
+    });
+    expect(controlCreateInputWithUserConfidence(makeUser(30), makeElement(50))).toEqual({
+      confidenceLevelToApply: 30,
+    });
+    expect(controlCreateInputWithUserConfidence(makeUser(30), makeElement(null))).toEqual({
+      confidenceLevelToApply: 30,
+    });
+    expect(() => controlCreateInputWithUserConfidence(makeUser(null), makeElement(50)))
+      .toThrowError('User has no effective max confidence level and cannot create this element');
+  });
+  it('on upsert input', () => {
+    expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(30), makeElement(10)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: true,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(10), makeElement(30)))
+      .toEqual({
+        isConfidenceMatch: false,
+        confidenceLevelToApply: 10,
+        isConfidenceUpper: false,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(10)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: true,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(10), makeElement(50)))
+      .toEqual({
+        isConfidenceMatch: false,
+        confidenceLevelToApply: 10,
+        isConfidenceUpper: false,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(50), makeElement(30)))
+      .toEqual({
+        isConfidenceMatch: false,
+        confidenceLevelToApply: 10,
+        isConfidenceUpper: false,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(10), makeElement(30), makeElement(50)))
+      .toEqual({
+        isConfidenceMatch: false,
+        confidenceLevelToApply: 10,
+        isConfidenceUpper: false,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(null), makeElement(30)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 50,
+        isConfidenceUpper: true,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(50)))
+      .toEqual({
+        isConfidenceMatch: false,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: false,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(50), makeElement(30), makeElement(null)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: true,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(50), makeElement(null)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: true,
+      });
+    expect(controlUpsertInputWithUserConfidence(makeUser(30), makeElement(null), makeElement(null)))
+      .toEqual({
+        isConfidenceMatch: true,
+        confidenceLevelToApply: 30,
+        isConfidenceUpper: true,
+      });
+    expect(() => controlUpsertInputWithUserConfidence(makeUser(null), makeElement(30), makeElement(50)))
+      .toThrowError('User has no effective max confidence level and cannot upsert this element');
+  });
+});
+
+it('adaptUpdateInputsConfidence should adapt correctly input payload', () => {
+  const makeConfidenceInput = (confidence: number) => ({
+    key: 'confidence',
+    value: [confidence.toString()],
+  });
+  const otherInput = {
+    key: 'description',
+    value: ['some text'],
+  };
+
+  expect(adaptUpdateInputsConfidence(makeUser(50), makeConfidenceInput(30), makeElement(10)))
+    .toEqual([{ key: 'confidence', value: ['30'] }]);
+  expect(adaptUpdateInputsConfidence(makeUser(50), makeConfidenceInput(10), makeElement(30)))
+    .toEqual([{ key: 'confidence', value: ['10'] }]);
+  expect(adaptUpdateInputsConfidence(makeUser(30), makeConfidenceInput(50), makeElement(10)))
+    .toEqual([{ key: 'confidence', value: ['30'] }]); // capped
+  expect(adaptUpdateInputsConfidence(makeUser(30), makeConfidenceInput(10), makeElement(50)))
+    .toEqual([{ key: 'confidence', value: ['10'] }]); // this function does not control against element!
+  expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(50), makeElement(30)))
+    .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / this function does not control against element!
+  expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(50)))
+    .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / this function does not control against element!
+  expect(adaptUpdateInputsConfidence(makeUser(10), otherInput, makeElement(50)))
+    .toEqual([otherInput]); // no need to inject confidence
+  expect(adaptUpdateInputsConfidence(makeUser(10), otherInput, makeElement(null)))
+    .toEqual([otherInput, { key: 'confidence', value: ['10'] }]); // inject user's confidence
+  expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeElement(null)))
+    .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / no need to inject user's confidence
 });

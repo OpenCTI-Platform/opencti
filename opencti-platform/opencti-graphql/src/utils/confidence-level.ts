@@ -79,24 +79,26 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   return null;
 };
 
-const capInputConfidenceWithUserMaxConfidence = (userMaxConfidence: number, inputConfidence?: number | null) => {
+const capInputConfidenceWithUserMaxConfidence = (overrideMaxConfidence: number, inputConfidence?: number | null) => {
   const input = cropNumber(inputConfidence ?? 100, 0, 100); // input always untrusted, crop in 0-100
-  return Math.min(userMaxConfidence, input); // will always equal userMaxConfidence if no inputConfidence
+  return Math.min(overrideMaxConfidence, input); // will always equal userMaxConfidence if no inputConfidence
 };
 
 /**
  * Assert the confidence control on an input object from create operations
  * Returns the confidence to apply on the resulting element.
  */
-export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T) => {
+export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T, type?: string) => {
   if (isEmptyField(user.effective_confidence_level?.max_confidence)) {
     // using LockTimeoutError allows us to leverage the worker infinite auto-retry, so that connectors and feeds won't lose messages
     // this is a configuration error that might appear when upgrading to 6.X, but shall disappear in future when everyone has confidence level set up.
     throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot create this element');
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
+  const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === type);
+  const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
   const inputConfidence = inputElement.confidence;
-  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(userMaxConfidence, inputConfidence);
+  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(overrideMaxConfidence, inputConfidence);
   return {
     confidenceLevelToApply,
   };
