@@ -113,8 +113,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
   const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
-  const maxConfidenceForEntity = Math.max(userMaxConfidence, overrideMaxConfidence);
-  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(maxConfidenceForEntity, inputElementOrPatch.confidence);
+  const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(overrideMaxConfidence, inputElementOrPatch.confidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
   const isConfidenceMatch = confidenceLevelToApply >= existing; // always true if no existingConfidence
   const isConfidenceUpper = confidenceLevelToApply > existing;
@@ -146,9 +145,8 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
   const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
-  const maxConfidenceForEntity = Math.max(userMaxConfidence, overrideMaxConfidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
-  const isConfidenceMatch = maxConfidenceForEntity >= existing; // always true if no existingConfidence
+  const isConfidenceMatch = overrideMaxConfidence >= existing; // always true if no existingConfidence
 
   // contrary to upsert (where we might still update fields that were empty even if confidence control is negative)
   // a user cannot update an object without the right confidence
@@ -180,7 +178,6 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === element.entity_type);
   const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidenceLevel;
-  const maxConfidenceForEntity = Math.max(userMaxConfidenceLevel, overrideMaxConfidence);
   let hasConfidenceInput = false;
 
   // cap confidence change with user's confidence
@@ -188,13 +185,13 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
     const keysArray = Array.isArray(input.key) ? input.key : [input.key];
     if (keysArray.includes('confidence')) {
       const newValue = parseInt(input.value[0], 10);
-      if (maxConfidenceForEntity < newValue) {
+      if (overrideMaxConfidence < newValue) {
         logApp.warn('Object confidence cannot be updated above user\'s max confidence level, the value has been capped.', { user_id: user.id, element_id: element.id });
       }
       hasConfidenceInput = true;
       return {
         ...input,
-        value: [Math.min(maxConfidenceForEntity, newValue).toString()]
+        value: [Math.min(overrideMaxConfidence, newValue).toString()]
       };
     }
     return input;
@@ -204,7 +201,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   // then we force the element confidence to the user's confidence
   const hasConfidenceAttribute = schemaAttributesDefinition.getAttribute(element.entity_type, 'confidence');
   if (hasConfidenceAttribute && isEmptyField(element.confidence) && inputsArray.length > 0 && !hasConfidenceInput) {
-    newInputs.push({ key: 'confidence', value: [maxConfidenceForEntity.toString()] });
+    newInputs.push({ key: 'confidence', value: [overrideMaxConfidence.toString()] });
   }
 
   return newInputs;
