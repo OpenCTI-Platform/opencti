@@ -112,7 +112,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
-  const overrideMaxConfidence = override?.max_confidence ?? 0;
+  const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
   const maxConfidenceForEntity = Math.max(userMaxConfidence, overrideMaxConfidence);
   const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(maxConfidenceForEntity, inputElementOrPatch.confidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
@@ -145,7 +145,7 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
 
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === existingElement.entity_type);
-  const overrideMaxConfidence = override?.max_confidence ?? 0;
+  const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
   const maxConfidenceForEntity = Math.max(userMaxConfidence, overrideMaxConfidence);
   const existing = cropNumber(existingElement.confidence ?? 0, 0, 100);
   const isConfidenceMatch = maxConfidenceForEntity >= existing; // always true if no existingConfidence
@@ -179,7 +179,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   const inputsArray = Array.isArray(inputs) ? inputs : [inputs];
   const userMaxConfidenceLevel = user.effective_confidence_level?.max_confidence as number;
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === element.entity_type);
-  const overrideMaxConfidence = override?.max_confidence ?? 0;
+  const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidenceLevel;
   const maxConfidenceForEntity = Math.max(userMaxConfidenceLevel, overrideMaxConfidence);
   let hasConfidenceInput = false;
 
