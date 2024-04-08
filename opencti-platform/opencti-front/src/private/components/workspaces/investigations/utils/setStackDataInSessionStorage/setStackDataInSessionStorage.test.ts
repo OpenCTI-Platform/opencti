@@ -18,11 +18,11 @@ describe('Session Storage', () => {
       describe('If I get datas with my key from session storage', () => {
         it('contains my value', () => {
           const storedData = sessionStorage.getItem('testKey');
-          expect(storedData).to.not.equal(null);
+          expect(storedData).not.toBeNull();
 
           if (storedData) {
             const parsedStoredData = JSON.parse(storedData);
-            expect(parsedStoredData[0].test).to.equal('value1');
+            expect(parsedStoredData[0].test).toEqual('value1');
           }
         });
       });
@@ -38,23 +38,23 @@ describe('Session Storage', () => {
       describe('If I get datas with my key from session storage', () => {
         it('does not contains my first value', () => {
           const storedData = sessionStorage.getItem('testKey');
-          expect(storedData).to.not.equal(null);
+          expect(storedData).not.toBeNull();
 
           if (storedData) {
             const parsedStoredData = JSON.parse(storedData);
-            expect(parsedStoredData[2]).to.equal(undefined);
+            expect(parsedStoredData[2]).toBeUndefined();
           }
         });
 
         it('contains my two last values', () => {
           const storedData = sessionStorage.getItem('testKey');
-          expect(storedData).to.not.equal(null);
+          expect(storedData).not.toBeNull();
 
           if (storedData) {
             const parsedStoredData = JSON.parse(storedData);
-            expect(parsedStoredData[0].test).to.equal('value2');
-            expect(parsedStoredData[1].test).to.equal('value1');
-            expect(parsedStoredData[2]).to.equal(undefined);
+            expect(parsedStoredData[0].test).toEqual('value2');
+            expect(parsedStoredData[1].test).toEqual('value1');
+            expect(parsedStoredData[2]).toBeUndefined();
           }
         });
       });

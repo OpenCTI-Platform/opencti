@@ -2691,5 +2691,9 @@
   "Credential": "Credential",
   "Credentials": "Credentials",
   "entity_Tracking-Number": "Tracking number",
-  "entity_Credential": "Credential"
+  "entity_Credential": "Credential",
+  "Disable vertical tree mode": "Disable vertical tree mode",
+  "Enable vertical tree mode": "Enable vertical tree mode",
+  "Disable horizontal tree mode": "Disable horizontal tree mode",
+  "Enable horizontal tree mode": "Enable horizontal tree mode"
 }

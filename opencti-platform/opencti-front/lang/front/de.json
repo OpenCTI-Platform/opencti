@@ -2691,5 +2691,9 @@
   "entity_Tracking-Number": "Tracking-Nummer",
   "entity_Credential": "Berechtigung",
   "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen",
-  "All add or remove actions done on the graph after the last expansion will be lost.": "Alle Hinzufügungs- oder Entfernungsaktionen, die nach der letzten Erweiterung am Diagramm vorgenommen wurden, gehen verloren."
+  "All add or remove actions done on the graph after the last expansion will be lost.": "Alle Hinzufügungs- oder Entfernungsaktionen, die nach der letzten Erweiterung am Diagramm vorgenommen wurden, gehen verloren.",
+  "Disable vertical tree mode": "Vertikalen Baummodus deaktivieren",
+  "Enable vertical tree mode": "Vertikalen Baummodus einschalten",
+  "Disable horizontal tree mode": "Deaktivieren des horizontalen Baummodus",
+  "Enable horizontal tree mode": "Horizontalen Baummodus einschalten"
 }

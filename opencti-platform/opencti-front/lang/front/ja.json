@@ -2691,5 +2691,9 @@
   "Credentials": "資格",
   "entity_Tracking-Number": "追跡番号",
   "entity_Credential": "資格情報",
-  "All add or remove actions done on the graph after the last expansion will be lost.": "最後の拡張以降にグラフ上で行われた追加や削除の操作はすべて失われる。"
+  "All add or remove actions done on the graph after the last expansion will be lost.": "最後の拡張以降にグラフ上で行われた追加や削除の操作はすべて失われる。",
+  "Disable vertical tree mode": "垂直ツリーモードを無効にする",
+  "Enable vertical tree mode": "垂直ツリーモードを有効にする",
+  "Disable horizontal tree mode": "水平ツリーモードを無効にする",
+  "Enable horizontal tree mode": "水平ツリーモードを有効にする"
 }

@@ -2691,5 +2691,9 @@
   "Credentials": "证书",
   "entity_Tracking-Number": "追踪号码",
   "entity_Credential": "凭据",
-  "All add or remove actions done on the graph after the last expansion will be lost.": "上次扩展后在图形上进行的所有添加或删除操作都将丢失。"
+  "All add or remove actions done on the graph after the last expansion will be lost.": "上次扩展后在图形上进行的所有添加或删除操作都将丢失。",
+  "Disable vertical tree mode": "禁用垂直树模式",
+  "Enable vertical tree mode": "启用垂直树模式",
+  "Disable horizontal tree mode": "禁用水平树模式",
+  "Enable horizontal tree mode": "启用水平树模式"
 }

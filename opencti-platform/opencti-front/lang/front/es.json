@@ -2690,5 +2690,10 @@
   "Credential": "Credencial",
   "Credentials": "Cartas_credenciales",
   "entity_Tracking-Number": "El número de rastreo",
-  "entity_Credential": "Credencial"
+  "entity_Credential": "Credencial",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "Todas las acciones de añadir o eliminar realizadas en el grafo después de la última expansión se perderán.",
+  "Disable vertical tree mode": "Desactivar el modo de árbol vertical",
+  "Enable vertical tree mode": "Activar el modo de árbol vertical",
+  "Disable horizontal tree mode": "Desactivar el modo de árbol horizontal",
+  "Enable horizontal tree mode": "Activar el modo de árbol horizontal"
 }
