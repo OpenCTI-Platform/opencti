@@ -171,11 +171,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   handleCloseEdition() {
-    const {
-      match: {
-        params: { relationId },
-      },
-    } = this.props;
+    const { params: { relationId } } = this.props;
     commitMutation({
       mutation: stixCoreRelationshipEditionFocus,
       variables: {
