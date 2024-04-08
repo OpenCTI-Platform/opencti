@@ -11,6 +11,7 @@ import {
   LinkOutlined,
   OpenWithOutlined,
   ScatterPlotOutlined,
+  Undo,
 } from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
@@ -38,6 +39,7 @@ import * as R from 'ramda';
 import React, { Component } from 'react';
 import TimeRange from 'react-timeline-range-slider';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -288,6 +290,7 @@ class InvestigationGraphBar extends Component {
       handleOpenExpandElements,
       navOpen,
       resetAllFilters,
+      handleOpenRollBackToPreExpansionStateDialog,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -352,6 +355,9 @@ class InvestigationGraphBar extends Component {
         : [selectedNodes[0]];
     }
     const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
+
+    const isRollBackToLastPreExpansionStateDisabled = !getPreExpansionStateList();
+
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => (
@@ -865,6 +871,18 @@ class InvestigationGraphBar extends Component {
                           />
                         </>
                       )}
+                      <Tooltip title={t('Restore the state of the graphic before the last expansion')}>
+                        <span>
+                          <IconButton
+                            color="primary"
+                            disabled={isRollBackToLastPreExpansionStateDisabled }
+                            onClick={handleOpenRollBackToPreExpansionStateDialog}
+                            size="large"
+                          >
+                            <Undo />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                       <Tooltip title={t('Expand')}>
                         <span>
                           <IconButton
@@ -1072,6 +1090,7 @@ InvestigationGraphBar.propTypes = {
   handleResetLayout: PropTypes.func,
   displayTimeRange: PropTypes.bool,
   handleToggleDisplayTimeRange: PropTypes.func,
+  handleOpenRollBackToPreExpansionStateDialog: PropTypes.func,
   handleTimeRangeChange: PropTypes.func,
   timeRangeInterval: PropTypes.array,
   selectedTimeRangeInterval: PropTypes.array,

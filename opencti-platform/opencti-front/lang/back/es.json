@@ -628,5 +628,9 @@
   "Samples": "Muestras",
   "Contains observable": "Contiene observable",
   "Artifact content": "Contenido del artefacto",
-  "Tracking number": "El número de rastreo"
+  "Tracking number": "El número de rastreo",
+  "Entity ID": "Entidad ID",
+  "Source connector": "Conector fuente",
+  "Malware analysis operating System": "Sistema operativo de análisis de malware",
+  "Allowed markings": "Marcas permitidas"
 }

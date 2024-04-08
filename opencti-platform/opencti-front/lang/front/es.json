@@ -2672,6 +2672,9 @@
   "Strategic": "Estratégico",
   "Link created": "Enlace creado",
   "Public dashboard": "Cuadro de mandos público",
+  "Restore the state of the graphic before the last expansion": "Restaurar el estado del gráfico antes de la última ampliación",
+  "Revert to Pre-Expansion State": "Volver al estado anterior a la expansión",
+  "Last expansion": "Última expansión",
   "Show left navigation submenu icons": "Mostrar iconos del submenú de navegación izquierdo",
   "Auto collapse submenus in left navigation": "Submenús contraídos automáticamente en la navegación izquierda",
   "Unless specific groups are selected, user will be created with default groups only.": "A menos que se seleccionen grupos específicos, el usuario se creará sólo con los grupos por defecto.",
@@ -2687,5 +2690,10 @@
   "Credential": "Credencial",
   "Credentials": "Cartas_credenciales",
   "entity_Tracking-Number": "El número de rastreo",
-  "entity_Credential": "Credencial"
+  "entity_Credential": "Credencial",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "Todas las acciones de añadir o eliminar realizadas en el grafo después de la última expansión se perderán.",
+  "Disable vertical tree mode": "Desactivar el modo de árbol vertical",
+  "Enable vertical tree mode": "Activar el modo de árbol vertical",
+  "Disable horizontal tree mode": "Desactivar el modo de árbol horizontal",
+  "Enable horizontal tree mode": "Activar el modo de árbol horizontal"
 }

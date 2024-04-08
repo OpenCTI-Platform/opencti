@@ -2672,8 +2672,10 @@
   "Strategic": "Strategisch",
   "Link created": "Link erstellt",
   "Public dashboard": "Öffentliches Dashboard",
+  "Restore the state of the graphic before the last expansion": "Wiederherstellung des Zustands der Grafik vor der letzten Erweiterung",
+  "Revert to Pre-Expansion State": "Zurückkehren zum Zustand vor der Erweiterung",
+  "Last expansion": "Letzte Erweiterung",
   "Show left navigation submenu icons": "Symbole des linken Navigations-Untermenüs anzeigen",
-  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen",
   "Unless specific groups are selected, user will be created with default groups only.": "Wenn keine spezifischen Gruppen ausgewählt werden, wird der Benutzer nur mit den Standardgruppen erstellt.",
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "Mit der Aktivierung der OpenCTI Enterprise Edition erklären Sie (und Ihre Organisation) sich mit den zusätzlichen Lizenz- und Nutzungsbedingungen der OpenCTI Enterprise Edition (EE) einverstanden:",
   "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE ist für Entwicklungs-, Test- und Forschungszwecke sowie für gemeinnützige Organisationen frei nutzbar.",
@@ -2687,5 +2689,11 @@
   "Credential": "Berechtigung",
   "Credentials": "Berechtigungsnachweis",
   "entity_Tracking-Number": "Tracking-Nummer",
-  "entity_Credential": "Berechtigung"
+  "entity_Credential": "Berechtigung",
+  "Auto collapse submenus in left navigation": "Untermenüs in der linken Navigation automatisch einklappen",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "Alle Hinzufügungs- oder Entfernungsaktionen, die nach der letzten Erweiterung am Diagramm vorgenommen wurden, gehen verloren.",
+  "Disable vertical tree mode": "Vertikalen Baummodus deaktivieren",
+  "Enable vertical tree mode": "Vertikalen Baummodus einschalten",
+  "Disable horizontal tree mode": "Deaktivieren des horizontalen Baummodus",
+  "Enable horizontal tree mode": "Horizontalen Baummodus einschalten"
 }

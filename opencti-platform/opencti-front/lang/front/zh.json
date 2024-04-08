@@ -2672,8 +2672,10 @@
   "Strategic": "战略",
   "Link created": "创建的链接",
   "Public dashboard": "公共仪表板",
+  "Restore the state of the graphic before the last expansion": "恢复上次扩展前的图形状态",
+  "Revert to Pre-Expansion State": "恢复到扩展前状态",
+  "Last expansion": "最后扩",
   "Show left navigation submenu icons": "显示左侧导航子菜单图标",
-  "Auto collapse submenus in left navigation": "自动折叠左侧导航中的子菜单",
   "Unless specific groups are selected, user will be created with default groups only.": "除非选择了特定组，否则创建的用户将只包含默认组。",
   "By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:": "启用 OpenCTI 企业版，即表示您（和您的组织）同意 OpenCTI 企业版 (EE) 补充许可条款和使用条件：",
   "OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.": "OpenCTI EE 可免费用于开发、测试和研究目的，也可用于非营利组织。",
@@ -2683,9 +2685,15 @@
   "All other filters": "所有其他筛选器",
   "Testing csv mapper": "测试 csv 映射器",
   "This operations will only apply on labels or markings added in the context of this playbook such as enrichment or other knowledge manipulations but not if the labels or markings are already written in the platform.": "此操作仅适用于在此播放列表中添加的标签或标记，如充实或其他知识操作，但不适用于平台中已写入的标签或标记。",
+  "Auto collapse submenus in left navigation": "自动折叠左侧导航中的子菜单",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意见在您的词汇中没有定义值。请先添加意见，才能添加观点。",
   "Credential": "证书",
   "Credentials": "证书",
   "entity_Tracking-Number": "追踪号码",
-  "entity_Credential": "凭据"
+  "entity_Credential": "凭据",
+  "All add or remove actions done on the graph after the last expansion will be lost.": "上次扩展后在图形上进行的所有添加或删除操作都将丢失。",
+  "Disable vertical tree mode": "禁用垂直树模式",
+  "Enable vertical tree mode": "启用垂直树模式",
+  "Disable horizontal tree mode": "禁用水平树模式",
+  "Enable horizontal tree mode": "启用水平树模式"
 }
