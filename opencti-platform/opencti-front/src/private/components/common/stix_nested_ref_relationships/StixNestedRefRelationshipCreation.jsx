@@ -133,7 +133,7 @@ const styles = (theme) => ({
   },
 });
 
-const stixNestedRefRelationshipCreationResolveQuery = graphql`
+export const stixNestedRefRelationshipCreationResolveQuery = graphql`
   query StixNestedRefRelationshipCreationResolveQuery($id: String!, $toType: String!) {
     stixSchemaRefRelationships(id: $id, toType: $toType) {
       from
