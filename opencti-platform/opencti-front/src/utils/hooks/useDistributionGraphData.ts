@@ -125,6 +125,13 @@ const useDistributionGraphData = () => {
   };
 
   const buildWidgetColorsOptions = (distributionData: DistributionQueryData, groupBy: string) => {
+    if (
+      !distributionData.at(0)?.entity?.color
+      && !distributionData.at(0)?.entity?.x_opencti_color
+      && !distributionData.at(0)?.entity?.template?.color
+    ) {
+      return [];
+    }
     return distributionData.map((n) => {
       if (!n) return '#000000';
       return getColorFromDistributionNode(n, { attribute: groupBy });

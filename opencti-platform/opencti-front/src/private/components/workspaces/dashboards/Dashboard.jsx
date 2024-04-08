@@ -5,6 +5,8 @@ import RGL, { WidthProvider } from 'react-grid-layout';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { v4 as uuid } from 'uuid';
+import AuditsPolarArea from '../../common/audits/AuditsPolarArea';
+import StixCoreObjectsPolarArea from '../../common/stix_core_objects/StixCoreObjectsPolarArea';
 import StixRelationshipsPolarArea from '../../common/stix_relationships/StixRelationshipsPolarArea';
 import { computerRelativeDate, dayStartDate, parse } from '../../../../utils/Time';
 import WorkspaceHeader from '../WorkspaceHeader';
@@ -308,6 +310,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'donut':
         return (
           <StixCoreObjectsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
+      case 'polar-area':
+        return (
+          <StixCoreObjectsPolarArea
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -646,6 +660,18 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'donut':
         return (
           <AuditsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={true}
+            isReadOnly={!isWrite}
+          />
+        );
+      case 'polar-area':
+        return (
+          <AuditsPolarArea
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

@@ -266,8 +266,8 @@ const visualizationTypes = [
     category: 'distribution',
     availableParameters: ['attribute'],
     isRelationships: true,
-    isEntities: false,
-    isAudits: false,
+    isEntities: true,
+    isAudits: true,
   },
   {
     key: 'heatmap',
