@@ -19,6 +19,16 @@ const makeGroup = (confidence: number | null) => ({
   group_confidence_level: confidence ? { max_confidence: confidence, overrides: [] } : null
 });
 
+const makeGroupWithOverrides = (confidence: number | null) => ({
+  id: `group_${confidence}`,
+  group_confidence_level: confidence ? { max_confidence: confidence, overrides: [{ entity_type: 'Report', max_confidence: 90 }] } : null
+});
+
+const makeUserWithOverrides = (confidence: number | null) => ({
+  id: `user_${confidence}`,
+  effective_confidence_level: confidence ? { max_confidence: confidence, overrides: [{ entity_type: 'Report', max_confidence: 90 }] } : null
+} as AuthUser);
+
 const makeGroupWithOverrides = (confidence: number | null, overrides: { entity_type: string, max_confidence: number }[] | null) => ({
   id: `group_${confidence}`,
   group_confidence_level: confidence ? { max_confidence: confidence, overrides } : null,
@@ -43,6 +53,7 @@ describe('Confidence level utilities', () => {
     const groupNull = makeGroup(null);
     const group70 = makeGroup(70);
     const group80 = makeGroup(80);
+    const group40 = makeGroupWithOverrides(40);
     const group40WithReport90 = makeGroupWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]);
     const group40WithOverrides = makeGroupWithOverrides(
       40,
