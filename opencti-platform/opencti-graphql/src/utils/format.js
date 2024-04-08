@@ -13,6 +13,7 @@ import {
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PAYMENT_CARD,
+  ENTITY_PERSONA,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
@@ -165,6 +166,8 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case ENTITY_MEDIA_CONTENT:
       return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
+    case ENTITY_PERSONA:
+      return stixCyberObservable.persona_name || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }

@@ -114,7 +114,7 @@ export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
   const up = await loadFile(context, user, id);
-  logApp.info(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
+  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -127,7 +127,7 @@ export const deleteFile = async (context, user, id) => {
   // delete in index if file has been indexed
   // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
-    logApp.info(`[FILE STORAGE] delete file ${id} in index`);
+    logApp.debug(`[FILE STORAGE] delete file ${id} in index`);
     await elDeleteFilesByIds([id])
       .catch((err) => {
         logApp.error(err);
@@ -137,7 +137,7 @@ export const deleteFile = async (context, user, id) => {
 };
 
 export const deleteFiles = async (context, user, ids) => {
-  logApp.info(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
+  logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(context, user, id);

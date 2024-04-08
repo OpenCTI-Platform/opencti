@@ -49,6 +49,7 @@ clone_for_pr_build() {
         then
             echo "[CLONE-DEPS][CLIENT-PYTHON] Found a PR in client-python with number ${CLI_PYTHON_PR_NUMBER}, using it."
             gh pr checkout ${CLI_PYTHON_PR_NUMBER}
+            pip install -e .
         else
             echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:master"
             # Repository already clone on master branch
