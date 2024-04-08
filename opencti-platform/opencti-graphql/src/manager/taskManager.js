@@ -194,13 +194,17 @@ const generatePatch = (field, values, type) => {
 };
 
 const executeDelete = async (context, user, element) => {
+  const check = controlUserConfidenceAgainstElement(user, element);
+  if (!check) {
+    return;
+  }
   await deleteElementById(context, user, element.internal_id, element.entity_type);
 };
 const executeAdd = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
   // The tasks are executed through filters, but since we don't know what type of entity will be targeted,
   // we don't throw an error to avoid crashing due to uncertainty.
-  const check = controlUserConfidenceAgainstElement(user, element, true);
+  const check = controlUserConfidenceAgainstElement(user, element);
   if (!check) {
     return;
   }
@@ -224,7 +228,7 @@ const executeAdd = async (context, user, actionContext, element) => {
 };
 const executeRemove = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
-  const check = controlUserConfidenceAgainstElement(user, element, true);
+  const check = controlUserConfidenceAgainstElement(user, element);
   if (!check) {
     return;
   }
@@ -248,7 +252,7 @@ const executeRemove = async (context, user, actionContext, element) => {
 };
 export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
-  const check = controlUserConfidenceAgainstElement(user, element, true);
+  const check = controlUserConfidenceAgainstElement(user, element);
   if (!check) {
     return;
   }
@@ -261,6 +265,10 @@ export const executeReplace = async (context, user, actionContext, element) => {
 };
 const executeMerge = async (context, user, actionContext, element) => {
   const { values } = actionContext;
+  const check = controlUserConfidenceAgainstElement(user, element);
+  if (!check) {
+    return;
+  }
   await mergeEntities(context, user, element.internal_id, values);
 };
 const executeEnrichment = async (context, user, actionContext, element) => {
