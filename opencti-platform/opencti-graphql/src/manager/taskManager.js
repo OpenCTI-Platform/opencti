@@ -59,6 +59,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelations
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
