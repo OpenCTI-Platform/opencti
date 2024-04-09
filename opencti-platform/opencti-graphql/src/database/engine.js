@@ -82,6 +82,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObject,
   isStixObjectAliased,
+  STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
@@ -419,10 +420,25 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     // If user have organization management role, he can bypass this restriction.
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    const excludedEntityMatches = [
-      { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
-      { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
-    ];
+    // We want to exlucde a set of entities from organization restrictions while forcing restrictions for an other set of entities
+    const excludedEntityMatches = {
+      bool: {
+        must: [
+          {
+            bool: { must_not: [{ terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_RESTRICTED } }] }
+          },
+          {
+            bool: {
+              should: [
+                { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
+                { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
+              ],
+              minimum_should_match: 1
+            }
+          }
+        ]
+      }
+    };
     if (settings.platform_organization) {
       if (user.inside_platform_organization) {
         // Data are visible independently of the organizations
@@ -430,7 +446,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       } else {
         // Data with Empty granted_refs are not visible
         // Data with granted_refs users that participate to at least one
-        const should = [...excludedEntityMatches];
+        const should = [excludedEntityMatches];
         const shouldOrgs = user.allowed_organizations
           .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
@@ -444,7 +460,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     } else {
       // Data with Empty granted_refs are granted to everyone
-      const should = [...excludedEntityMatches];
+      const should = [excludedEntityMatches];
       should.push({ bool: { must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }] } });
       // Data with granted_refs users that participate to at least one
       if (user.allowed_organizations.length > 0) {
