@@ -9,6 +9,7 @@ import { MoreVert } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ItemMarkings from '../../../../components/ItemMarkings';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import { DeleteOperationLine_node$data } from './__generated__/DeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
@@ -69,7 +70,7 @@ const DeleteOperationLineComponent: React.FC<DeleteOperationLineComponentProps> 
               className={classes.bodyItem}
               style={{ width: dataColumns.main_entity_type.width }}
             >
-              <ItemEntityType entityType={node.main_entity_type} />
+              <ItemEntityType entityType={node.main_entity_type}/>
             </div>
             <div
               className={classes.bodyItem}
@@ -88,6 +89,12 @@ const DeleteOperationLineComponent: React.FC<DeleteOperationLineComponentProps> 
               style={{ width: dataColumns.timestamp.width }}
             >
               {fldt(node.timestamp)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings variant="inList" markingDefinitions={node.objectMarking ?? []} limit={1}/>
             </div>
           </div>
         }
@@ -118,6 +125,13 @@ export const DeleteOperationLine = createFragmentContainer(
         timestamp
         deleted_elements {
           id
+        }
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
       }
     `,

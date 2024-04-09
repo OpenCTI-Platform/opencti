@@ -5,6 +5,7 @@ import { ENTITY_TYPE_DELETE_OPERATION, type StixDeleteOperation, type StoreEntit
 import convertDeleteOperationToStix from './deleteOperation-converter';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 
 const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
   type: {
@@ -31,6 +32,7 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
     { name: 'deleted_elements', label: 'Deleted elements', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
+  relationsRefs: [objectOrganization, objectMarking],
   representative: (stix: StixDeleteOperation) => {
     return stix.main_entity_name;
   },
