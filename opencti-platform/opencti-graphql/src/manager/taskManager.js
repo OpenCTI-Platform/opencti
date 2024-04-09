@@ -46,7 +46,7 @@ import {
 } from '../schema/general';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
-import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -56,9 +56,19 @@ import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
+import {
+  ACTION_TYPE_DELETE,
+  ACTION_TYPE_COMPLETE_DELETE,
+  ACTION_TYPE_RESTORE,
+  ACTION_TYPE_SHARE,
+  ACTION_TYPE_UNSHARE,
+  TASK_TYPE_LIST,
+  TASK_TYPE_QUERY,
+  TASK_TYPE_RULE
+} from '../domain/backgroundTask-common';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -155,18 +165,18 @@ const computeQueryTaskElements = async (context, user, task) => {
 };
 const computeListTaskElements = async (context, user, task) => {
   const { actions, task_position, task_ids } = task;
-  const processingElements = [];
-  // const expectedNumber = task_ids.length;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
-  for (let indexId = 0; indexId < ids.length; indexId += 1) {
-    const elementToResolve = ids[indexId];
-    const element = await internalLoadById(context, user, elementToResolve, { type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES });
-    if (element) {
-      processingElements.push({ element, next: element.id });
-    }
-  }
+
+  // processing elements in descending order makes possible restoring from trash elements with dependencies
+  const options = {
+    type: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
+    orderMode: 'desc',
+    orderBy: 'created_at',
+  };
+  const elements = await internalFindByIds(context, user, ids, options);
+  const processingElements = elements.map((element) => ({ element, next: element.id }));
   return { actions, elements: processingElements };
 };
 const appendTaskErrors = async (task, errors) => {
@@ -196,6 +206,12 @@ const generatePatch = (field, values, type) => {
 
 const executeDelete = async (context, user, element) => {
   await deleteElementById(context, user, element.internal_id, element.entity_type);
+};
+const executeCompleteDelete = async (context, user, element) => {
+  await processDeleteOperation(context, user, element.internal_id, { isRestoring: false });
+};
+const executeRestore = async (context, user, element) => {
+  await restoreDelete(context, user, element.internal_id);
 };
 const executeAdd = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
@@ -395,6 +411,12 @@ const executeProcessing = async (context, user, job) => {
         try {
           if (type === ACTION_TYPE_DELETE) {
             await executeDelete(context, user, element);
+          }
+          if (type === ACTION_TYPE_COMPLETE_DELETE) {
+            await executeCompleteDelete(context, user, element);
+          }
+          if (type === ACTION_TYPE_RESTORE) {
+            await executeRestore(context, user, element);
           }
           if (type === ACTION_TYPE_ADD) {
             await executeAdd(context, user, actionContext, element);

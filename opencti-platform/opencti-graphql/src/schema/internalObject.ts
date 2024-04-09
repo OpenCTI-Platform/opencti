@@ -2,6 +2,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from './general';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -35,6 +36,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORKSPACE,
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_PUBLIC_DASHBOARD,
+  ENTITY_TYPE_DELETE_OPERATION,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,

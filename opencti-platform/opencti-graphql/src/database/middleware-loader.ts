@@ -577,7 +577,7 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   id: string | undefined,
-  opts?: { type?: string | string[], baseData?: boolean },
+  opts?: { type?: string | string[], baseData?: boolean, indices?: string[] },
 ): Promise<T> => {
   // TODO Remove when all Typescript
   return await elLoadById(context, user, id, opts) as unknown as T;

@@ -918,6 +918,8 @@ enum BackgroundTaskScope {
 
 enum BackgroundTaskActionType {
   DELETE
+  COMPLETE_DELETE
+  RESTORE
   ADD
   REMOVE
   REPLACE

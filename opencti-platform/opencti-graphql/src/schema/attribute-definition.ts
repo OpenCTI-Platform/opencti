@@ -71,6 +71,14 @@ export type AttributeDefinition = NumericAttribute | DateAttribute | BooleanAttr
 export const shortStringFormats = ['id', 'short', 'enum', 'vocabulary'];
 export const longStringFormats = ['text', 'json'];
 
+// -- Type guards TS --
+export const isNumericAttribute = (attribute: AttributeDefinition): attribute is NumericAttribute => attribute.type === 'numeric';
+export const isDateAttribute = (attribute: AttributeDefinition): attribute is DateAttribute => attribute.type === 'date';
+export const isBooleanAttribute = (attribute: AttributeDefinition): attribute is BooleanAttribute => attribute.type === 'boolean';
+export const isStringAttribute = (attribute: AttributeDefinition): attribute is StringAttribute => attribute.type === 'string';
+export const isComplexAttribute = (attribute: AttributeDefinition): attribute is ComplexAttribute => attribute.type === 'object';
+export const isRefAttribute = (attribute: AttributeDefinition): attribute is RefAttribute => attribute.type === 'ref';
+
 // -- GLOBAL --
 export const id: AttributeDefinition = {
   name: 'id',

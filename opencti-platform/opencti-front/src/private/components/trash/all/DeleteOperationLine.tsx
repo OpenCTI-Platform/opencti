@@ -8,9 +8,10 @@ import { MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
-import { DeleteOperationLine_node$key } from './__generated__/DeleteOperationLine_node.graphql';
+import { DeleteOperationLine_node$data, DeleteOperationLine_node$key } from './__generated__/DeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -20,6 +21,7 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 const DeleteOperationFragment = graphql`
   fragment DeleteOperationLine_node on DeleteOperation {
     id
+    entity_type
     main_entity_name
     main_entity_type
     deletedBy {
@@ -43,6 +45,19 @@ interface DeleteOperationLineComponentProps {
   dataColumns: DataColumns;
   node: DeleteOperationLine_node$key;
   paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
+  selectedElements: Record<string, DeleteOperationLine_node$data>;
+  deSelectedElements: Record<string, DeleteOperationLine_node$data>;
+  onToggleEntity: (
+    entity: DeleteOperationLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: DeleteOperationLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
 }
 
 const cellSx = {
@@ -64,15 +79,36 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
   dataColumns,
   node,
   paginationOptions,
+  selectedElements,
+  deSelectedElements,
+  onToggleEntity,
+  selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const { fldt } = useFormatter();
   const data = useFragment(DeleteOperationFragment, node);
   return (
     <ListItem
-      // classes={{ root: classes.item }}
       sx={listItemSx}
       divider={true}
     >
+      <ListItemIcon
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+        }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+              (selectAll && !(data.id in (deSelectedElements || {})))
+              || data.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon>
         <ItemIcon type={data.main_entity_type} />
       </ListItemIcon>
