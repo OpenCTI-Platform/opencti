@@ -338,11 +338,6 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
           id
           name
         }
-        reports {
-          pageInfo {
-            globalCount
-          }
-        }
       }
     `,
   },
