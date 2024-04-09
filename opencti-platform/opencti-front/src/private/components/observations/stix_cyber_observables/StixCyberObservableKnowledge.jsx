@@ -15,7 +15,6 @@ const StixCyberObservableKnowledgeComponent = (props) => {
           element={
             <StixCoreRelationship
               entityId={stixCyberObservable.id}
-              paddingRight={true}
             />
           }
         />
