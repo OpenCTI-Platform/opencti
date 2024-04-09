@@ -7,6 +7,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ItemMarkings from '../../../../components/ItemMarkings';
 import Box from '@mui/material/Box';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import { DeleteOperationLine_node$key } from './__generated__/DeleteOperationLine_node.graphql';
@@ -83,6 +84,9 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
             </Box>
             <Box sx={{ ...cellSx, width: dataColumns.timestamp.width ?? 'inherit' }}>
               {fldt(data.timestamp)}
+            </Box>
+            <Box sx={{ ...cellSx, width: dataColumns.objectMarking.width ?? 'inherit' }}>
+                <ItemMarkings variant="inList" markingDefinitions={data.objectMarking ?? []} limit={1}/>
             </Box>
           </div>
         }

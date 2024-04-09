@@ -11395,6 +11395,8 @@ type DeleteOperation implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  objectMarking: [MarkingDefinition!]
+  confidence: Int
   timestamp: DateTime!
   user_id: String!
   deletedBy: Creator!

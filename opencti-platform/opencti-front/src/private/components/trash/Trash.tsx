@@ -62,13 +62,18 @@ const Trash: React.FC = () => {
       },
       deletedBy: {
         label: 'Deleted by',
-        width: '25%',
+        width: '21%',
         isSortable: isRuntimeSort,
       },
       timestamp: {
         label: 'Deletion date',
-        width: '25%',
+        width: '21%',
         isSortable: true,
+      },
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
     return (
