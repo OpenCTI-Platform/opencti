@@ -22,7 +22,7 @@ type DistributionNode = {
   } | null,
 };
 
-type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
+export type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
 
 type Selection = {
   attribute?: string,

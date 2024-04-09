@@ -25,6 +25,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -80,7 +81,7 @@ const auditsPolarAreaDistributionQuery = graphql`
 `;
 
 interface AuditsPolarAreaComponentProps {
-  dataSelection: any[]
+  dataSelection: DashboardWidgetDataSelection[]
   queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>
   withExportPopover: boolean
   isReadOnly: boolean
@@ -117,8 +118,8 @@ const AuditsPolarAreaComponent = ({
 interface AuditsPolarAreaProps {
   startDate: string
   endDate: string
-  dataSelection: any[]
-  parameters: any
+  dataSelection: DashboardWidgetDataSelection[]
+  parameters: DashboardWidgetParameters
   variant: string
   height?: CSSProperties['height']
   withExportPopover?: boolean
@@ -142,7 +143,7 @@ const AuditsPolarAreaQueyRef = ({
     auditsPolarAreaDistributionQuery,
     {
       types: ['History', 'Activity'],
-      field: selection.attribute,
+      field: selection.attribute || 'entity_type',
       operation: 'count',
       startDate,
       endDate,
@@ -150,6 +151,8 @@ const AuditsPolarAreaQueyRef = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'timestamp',
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Excepts readonly array as variables but have simple array.
       filters: selection.filters,
       limit: selection.number ?? 10,
     },

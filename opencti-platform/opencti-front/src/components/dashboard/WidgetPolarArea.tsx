@@ -4,11 +4,10 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { polarAreaChartOptions } from '../../utils/Charts';
 import type { Theme } from '../Theme';
-import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
+import useDistributionGraphData, { DistributionQueryData } from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetPolarAreaProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
+  data: DistributionQueryData
   groupBy: string
   withExport?: boolean
   readonly?: boolean
@@ -23,7 +22,7 @@ const WidgetPolarArea = ({
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption, buildWidgetColorsOptions } = useDistributionGraphData();
 
-  const chartData = data.map((n) => n.value);
+  const chartData = data.flatMap((n) => (n ? (n.value ?? 0) : []));
   const labels = buildWidgetLabelsOption(data, groupBy);
   const colors = buildWidgetColorsOptions(data, groupBy);
 

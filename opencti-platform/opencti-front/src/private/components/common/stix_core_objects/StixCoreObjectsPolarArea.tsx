@@ -7,6 +7,7 @@ import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -86,7 +87,7 @@ const stixCoreObjectsPolarAreaDistributionQuery = graphql`
 `;
 
 interface StixCoreObjectsPolarAreaComponentProps {
-  dataSelection: any[]
+  dataSelection: DashboardWidgetDataSelection[]
   queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>
   withExportPopover: boolean
   isReadOnly: boolean
@@ -123,8 +124,8 @@ const StixCoreObjectsPolarAreaComponent = ({
 interface StixCoreObjectsPolarAreaProps {
   startDate: string
   endDate: string
-  dataSelection: any[]
-  parameters: any
+  dataSelection: DashboardWidgetDataSelection[]
+  parameters: DashboardWidgetParameters
   variant?: string
   height?: CSSProperties['height']
   withExportPopover?: boolean
@@ -150,7 +151,7 @@ const StixCoreObjectsPolarArea = ({
     stixCoreObjectsPolarAreaDistributionQuery,
     {
       types: dataSelectionTypes,
-      field: selection.attribute,
+      field: selection.attribute || 'entity_type',
       operation: 'count',
       startDate,
       endDate,
@@ -158,6 +159,8 @@ const StixCoreObjectsPolarArea = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'created_at',
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore Excepts readonly array as variables but have simple array.
       filters: selection.filters,
       limit: selection.number ?? 10,
     },
