@@ -898,7 +898,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectFileExport
                 id={container.id}
                 type={container.entity_type}
-                redirectToContent={true}
+                redirectToContent={!!redirectToContent}
               />
             )}
             {enableSuggestions && (

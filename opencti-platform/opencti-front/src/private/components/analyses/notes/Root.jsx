@@ -106,6 +106,7 @@ class RootNote extends Component {
                       <ContainerHeader
                         container={props.note}
                         PopoverComponent={<NotePopover note={note} />}
+                        redirectToContent={false}
                       />
                     </CollaborativeSecurity>
                     <Box

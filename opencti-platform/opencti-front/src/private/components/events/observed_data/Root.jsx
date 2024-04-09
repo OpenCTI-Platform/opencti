@@ -113,6 +113,7 @@ class RootObservedData extends Component {
                   <ContainerHeader
                     container={observedData}
                     PopoverComponent={<ObservedDataPopover />}
+                    redirectToContent = {false}
                   />
                   <Box
                     sx={{
