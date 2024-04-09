@@ -562,6 +562,7 @@ const StixCyberObservableCreation = ({
   };
 
   const renderForm = () => {
+    console.log("renderForm");
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
@@ -754,6 +755,16 @@ const StixCyberObservableCreation = ({
                             />
                           );
                         }
+                        // if (status.type === 'StixFile') {
+                        //   console.log('inside file');
+                        //   return (
+                        //     <div key={attribute.value}>
+                        //       <p>THIS IS DIALOG!!!</p>
+                        //       <button id="opener">Open Dialog</button>
+                        //     </div>
+                        //   );
+                        // }
+                        // console.log('attribute.value ' + attribute.value);
                         if (attribute.value === 'value') {
                           return (
                             <div key={attribute.value}>
@@ -853,6 +864,9 @@ const StixCyberObservableCreation = ({
   };
 
   const renderClassic = () => {
+    if (status.type) {
+      console.log("status.type " + status.type);
+    }
     return (
       <>
         <Fab
