@@ -39,6 +39,21 @@ const toolbarOptions = {
 };
 
 /**
+ * A custom tooltip for ApexChart.
+ * This tooltip only display the label of the data it hovers.
+ *
+ * Why custom tooltip? To manage text color of the tooltip that cannot be done by
+ * the ApexChart API by default.
+ *
+ * @param {Theme} theme
+ */
+const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
+  <div style="background: ${theme.palette.background.nav}; color: ${theme.palette.text.primary}; padding: 2px 6px; font-size: 12px">
+    ${w.config.labels[seriesIndex]}
+  </div>
+`);
+
+/**
  * @param {Theme} theme
  * @param {boolean} isTimeSeries
  * @param {function} xFormatter
@@ -631,76 +646,91 @@ export const radarChartOptions = (
  * @param {string[]} labels
  * @param {function} formatter
  * @param {string} legendPosition
+ * @param {string[]} chartColors
  */
 export const polarAreaChartOptions = (
   theme,
   labels,
   formatter = null,
   legendPosition = 'bottom',
-) => ({
-  chart: {
-    type: 'polarArea',
-    background: 'transparent',
-    toolbar: toolbarOptions,
-    foreColor: theme.palette.text.secondary,
-    width: '100%',
-    height: '100%',
-  },
-  theme: {
-    mode: theme.palette.mode,
-  },
-  colors: colors(theme.palette.mode === 'dark' ? 400 : 600),
-  labels,
-  states: {
-    hover: {
-      filter: {
-        type: 'lighten',
-        value: 0.05,
+  chartColors = [],
+) => {
+  const temp = theme.palette.mode === 'dark' ? 400 : 600;
+  let chartFinalColors = chartColors;
+  if (chartFinalColors.length === 0) {
+    chartFinalColors = colors(temp);
+    if (labels.length === 2 && labels[0] === 'true') {
+      chartFinalColors = [C.green[temp], C.red[temp]];
+    } else if (labels.length === 2 && labels[0] === 'false') {
+      chartFinalColors = [C.red[temp], C.green[temp]];
+    }
+  }
+  return {
+    chart: {
+      type: 'polarArea',
+      background: 'transparent',
+      toolbar: toolbarOptions,
+      foreColor: theme.palette.text.secondary,
+      width: '100%',
+      height: '100%',
+    },
+    theme: {
+      mode: theme.palette.mode,
+    },
+    colors: chartFinalColors,
+    labels,
+    states: {
+      hover: {
+        filter: {
+          type: 'lighten',
+          value: 0.05,
+        },
       },
     },
-  },
-  legend: {
-    show: true,
-    position: legendPosition,
-    floating: legendPosition === 'bottom',
-    fontFamily: '"IBM Plex Sans", sans-serif',
-  },
-  tooltip: {
-    theme: theme.palette.mode,
-  },
-  fill: {
-    opacity: 0.5,
-  },
-  yaxis: {
-    labels: {
-      formatter: (value) => (formatter ? formatter(value) : value),
-      style: {
-        fontFamily: '"IBM Plex Sans", sans-serif',
+    legend: {
+      show: true,
+      position: legendPosition,
+      floating: legendPosition === 'bottom',
+      fontFamily: '"IBM Plex Sans", sans-serif',
+    },
+    tooltip: {
+      theme: theme.palette.mode,
+      custom: simpleLabelTooltip(theme),
+    },
+    fill: {
+      opacity: 0.5,
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => (formatter ? formatter(value) : value),
+        style: {
+          fontFamily: '"IBM Plex Sans", sans-serif',
+        },
+      },
+      axisBorder: {
+        show: false,
       },
     },
-    axisBorder: {
-      show: false,
-    },
-  },
-  plotOptions: {
-    polarArea: {
-      rings: {
-        strokeWidth: 1,
-        strokeColor:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, .1)'
-            : 'rgba(0, 0, 0, .1)',
-      },
-      spokes: {
-        strokeWidth: 1,
-        connectorColors:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, .1)'
-            : 'rgba(0, 0, 0, .1)',
+    plotOptions: {
+      polarArea: {
+        rings: {
+          strokeWidth: 1,
+          strokeColor:
+            theme.palette.mode === 'dark'
+              ? 'rgba(255, 255, 255, .1)'
+              : 'rgba(0, 0, 0, .1)',
+        },
+        spokes: {
+          strokeWidth: 1,
+          connectorColors:
+            theme.palette.mode === 'dark'
+              ? 'rgba(255, 255, 255, .1)'
+              : 'rgba(0, 0, 0, .1)',
+        },
       },
     },
-  },
-});
+  };
+};
 
 /**
  * @param {Theme} theme
@@ -767,6 +797,10 @@ export const donutChartOptions = (
       curve: 'smooth',
       width: 3,
       colors: [theme.palette.background.paper],
+    },
+    tooltip: {
+      theme: theme.palette.mode,
+      custom: simpleLabelTooltip(theme),
     },
     legend: {
       show: true,

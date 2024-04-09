@@ -30,6 +30,7 @@ import PublicStixRelationshipsHorizontalBars from './stix_relationships/PublicSt
 import PublicStixDomainObjectBookmarksList from './stix_domain_objects/PublicStixDomainObjectBookmarksList';
 import PublicStixRelationshipsMultiHorizontalBars from './stix_relationships/PublicStixRelationshipsMultiHorizontalBars';
 import PublicStixRelationshipsPolarArea from './stix_relationships/PublicStixRelationshipsPolarArea';
+import PublicStixCoreObjectsPolarArea from './stix_core_objects/PublicStixCoreObjectsPolarArea';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig) => {
   const startDate = config?.relativeDate ? computerRelativeDate(config.relativeDate) : config?.startDate;
@@ -132,6 +133,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'radar':
         return (
           <PublicStixCoreObjectsRadar
+            startDate={startDate}
+            endDate={endDate}
+            uriKey={uriKey}
+            widget={widget}
+          />
+        );
+      case 'polar-area':
+        return (
+          <PublicStixCoreObjectsPolarArea
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}
