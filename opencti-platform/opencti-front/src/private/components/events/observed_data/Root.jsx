@@ -203,7 +203,6 @@ class RootObservedData extends Component {
                       element={
                         <StixCoreRelationship
                           entityId={observedData.id}
-                          paddingRight={true}
                         />
                       }
                     />
