@@ -72,7 +72,7 @@ const Trash: React.FC = () => {
       },
     };
     return (
-      <>
+      <div data-testid="trash-page">
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
@@ -91,9 +91,6 @@ const Trash: React.FC = () => {
           numberOfElements={numberOfElements}
           secondaryAction={true}
           entityTypes={['DeleteOperation']}
-          // TODO: to have filters only on SCO or SCR
-          // availableEntityTypes={['Stix-Core-Object']}
-          // availableEntityTypes={['stix-core-relationship']} // TODO: does not work ?
         >
           {queryRef && (
             <React.Suspense
@@ -119,7 +116,7 @@ const Trash: React.FC = () => {
             </React.Suspense>
           )}
         </ListLines>
-      </>
+      </div>
     );
   };
   return (

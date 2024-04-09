@@ -3241,7 +3241,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
       reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
     });
 
-    const indexDeleteOperationPromise = createDeleteOpererationElement(context, user, elements[0], entitiesToDelete);
+    const indexDeleteOperationPromise = createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
     await Promise.all([...reindexPromises, indexDeleteOperationPromise]);
   }
   // 01. Start by clearing connections rel
@@ -3254,7 +3254,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   await elDeleteInstances(elements);
 };
 
-const createDeleteOpererationElement = async (context, user, mainElement, deletedElements) => {
+const createDeleteOperationElement = async (context, user, mainElement, deletedElements) => {
   // We currently only handle deleteOperations of 1 element
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
   const deleteOperationInput = {
@@ -3272,6 +3272,8 @@ const createDeleteOpererationElement = async (context, user, mainElement, delete
     _index: INDEX_INTERNAL_OBJECTS,
     [ID_INTERNAL]: internalID,
     [ID_STANDARD]: standardID,
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: mainElement[RELATION_OBJECT_MARKING] ?? [],
+    [buildRefRelationKey(RELATION_GRANTED_TO)]: mainElement[RELATION_GRANTED_TO] ?? [],
     entity_type: ENTITY_TYPE_DELETE_OPERATION,
     base_type: BASE_TYPE_ENTITY,
     parent_types: getParentTypes(ENTITY_TYPE_DELETE_OPERATION),

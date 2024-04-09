@@ -1,6 +1,5 @@
 # Type
-type DeletedElement
-{
+type DeletedElement {
   id: String!
   source_index: String!
 }
