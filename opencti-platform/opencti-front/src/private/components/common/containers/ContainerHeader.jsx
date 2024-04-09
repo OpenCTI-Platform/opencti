@@ -458,6 +458,7 @@ const ContainerHeader = (props) => {
     enableManageAuthorizedMembers,
     authorizedMembersMutation,
     enableAskAi,
+    redirectToContent,
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
