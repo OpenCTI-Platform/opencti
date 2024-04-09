@@ -8,6 +8,7 @@ import { INPUT_GRANTED_REFS } from '../schema/general';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 
 const creatorsLoader = batchLoader(batchCreators);
+const relBatchLoader = batchLoader(batchInternalRels);
 export const loadThroughDenormalized = (context, user, element, inputName, args = {}) => {
   if (inputName === INPUT_GRANTED_REFS) {
     if (!isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
@@ -18,7 +19,6 @@ export const loadThroughDenormalized = (context, user, element, inputName, args 
       return []; // Granted_refs are not part of all core entities
     }
   }
-  const relBatchLoader = batchLoader(batchInternalRels);
   if (element[inputName]) {
     // if element is already loaded, just send the data
     return element[inputName];
