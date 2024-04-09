@@ -14,6 +14,7 @@ const SCHEDULE_TIME = 10000;
 const telemetryStreamHandler = async () => {
   try {
     const context = executionContext('telemetry_manager');
+    const timestamp = new Date().getTime();
     const settings = await getSettings(context) as Settings;
     const enabledModules = settings.platform_modules?.map((module) => (module.enable ? module.id : null))
       .filter((n) => n) as string[];
@@ -23,7 +24,7 @@ const telemetryStreamHandler = async () => {
     filigranTelemetryManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition));
     filigranTelemetryManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryManager.setNumberOfInstances(settings.platform_cluster.instances_number);
-    filigranTelemetryManager.registerFiligranTelemetry();
+    filigranTelemetryManager.registerFiligranTelemetry(timestamp);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }

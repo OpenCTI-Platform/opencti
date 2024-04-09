@@ -7,9 +7,10 @@ import { shutdownModules, startModules } from './managers';
 import { filigranTelemetryManager } from './config/filigranTelemetry';
 
 const initFiligranTelemetry = async () => {
+  const timestamp = new Date().getTime();
   const version = PLATFORM_VERSION;
   filigranTelemetryManager.setVersion(version);
-  filigranTelemetryManager.registerFiligranTelemetry();
+  filigranTelemetryManager.registerFiligranTelemetry(timestamp);
 };
 
 // region platform start and stop

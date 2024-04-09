@@ -1,6 +1,5 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { LoggerProvider } from '@opentelemetry/sdk-logs';
-import type { ObservableResult } from '@opentelemetry/api-metrics';
 
 class FiligranTelemetryManager {
   meterProvider: MeterProvider;
@@ -43,28 +42,34 @@ class FiligranTelemetryManager {
   }
 
   registerMetrics() {
-    const meter = this.meterProvider.getMeter('opencti-api');
-    const gauge = meter.createObservableGauge('opencti_api_numberOfInstances');
-    gauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.numberOfInstances);
-    });
+    // TODO
   }
 
-  registerLogs() {
+  registerLogs(timestamp: number) {
     const logger = this.loggerProvider.getLogger('opencti-api');
-    logger.emit({
+    const logRecord = {
+      body: {
+        opencti: {
+          settings: {
+            language: this.language,
+            isEEActivated: this.isEEActivated,
+            EEActivationDate: this.EEActivationDate,
+            numberOfInstances: this.numberOfInstances,
+          },
+          version: this.version,
+        }
+      },
       attributes: {
-        version: this.version,
-        language: this.language,
-        isEEActivated: this.isEEActivated,
-        EEActivationDate: this.EEActivationDate,
-      }
-    });
+        timestamp,
+      },
+    };
+    logger.emit(logRecord);
+    console.log('logger', logger);
   }
 
-  registerFiligranTelemetry() {
+  registerFiligranTelemetry(timestamp: number) {
     this.registerMetrics(); // for metrics
-    this.registerLogs(); // for string
+    this.registerLogs(timestamp); // for string
   }
 }
 export const filigranTelemetryMeterProvider = new MeterProvider({});

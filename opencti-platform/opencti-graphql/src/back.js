@@ -14,11 +14,13 @@ import './modules/index';
 // import managers
 import './manager/index';
 // endregion
+import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_METRICS, ENABLED_TELEMETRY, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 import { meterManager, meterProvider } from './config/tracing';
-import { filigranTelemetryManager, filigranTelemetryMeterProvider } from './config/filigranTelemetry';
+import { filigranTelemetryLoggerProvider } from './config/filigranTelemetry';
+import { FILE_EXPORTER_PATH, FileExporter } from './config/FileExporter';
 
 // -- Apply telemetry
 // ------- Tracing
@@ -63,14 +65,14 @@ if (ENABLED_METRICS) {
 // ------- Telemetry
 if (ENABLED_TELEMETRY) {
   // OTLP Exporter
-  const exporterOtlp = nconf.get('app:telemetry:filigran:exporter_otlp');
-  if (isNotEmptyField(exporterOtlp)) {
-    const telemetryExporter = new OTLPMetricExporter({ url: exporterOtlp, header: {}, concurrencyLimit: 1 });
-    filigranTelemetryMeterProvider.addMetricReader(new PeriodicExportingMetricReader({ exporter: telemetryExporter, exportIntervalMillis: 1000 }));
-  }
-  // File exporter // TODO
-  // Register metrics
-  filigranTelemetryManager.registerFiligranTelemetry();
+  // const exporterOtlp = nconf.get('app:telemetry:filigran:exporter_otlp');
+  // if (isNotEmptyField(exporterOtlp)) {
+  //   const telemetryExporter = new OTLPMetricExporter({ url: exporterOtlp, header: {}, concurrencyLimit: 1 });
+  //   filigranTelemetryMeterProvider.addMetricReader(new PeriodicExportingMetricReader({ exporter: telemetryExporter, exportIntervalMillis: 1000 }));
+  // }
+  // File exporter
+  const fileExporter = new FileExporter(FILE_EXPORTER_PATH);
+  filigranTelemetryLoggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(fileExporter));
 }
 // ------- Event loop monitoring
 if (ENABLED_EVENT_LOOP_MONITORING) {
