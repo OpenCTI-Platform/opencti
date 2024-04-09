@@ -95,7 +95,7 @@ export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfide
     throw LockTimeoutError({ user_id: user.id }, 'User has no effective max confidence level and cannot create this element');
   }
   const userMaxConfidence = user.effective_confidence_level?.max_confidence as number;
-  const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === type);
+  const override = type ? user.effective_confidence_level?.overrides?.find((e) => e.entity_type === type) : null;
   const overrideMaxConfidence = override?.max_confidence ?? userMaxConfidence;
   const inputConfidence = inputElement.confidence;
   const confidenceLevelToApply = capInputConfidenceWithUserMaxConfidence(overrideMaxConfidence, inputConfidence);
