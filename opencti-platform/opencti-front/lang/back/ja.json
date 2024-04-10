@@ -632,5 +632,8 @@
   "Entity ID": "エンティティID",
   "Source connector": "ソースコネクター",
   "Malware analysis operating System": "マルウェア解析オペレーティングシステム",
-  "Allowed markings": "許可マーク"
+  "Allowed markings": "許可マーク",
+  "Auto collapse submenus": "サブメニューの自動折りたたみ",
+  "Related type": "関連タイプ",
+  "Show submenu icons": "サブメニューアイコンを表示する"
 }

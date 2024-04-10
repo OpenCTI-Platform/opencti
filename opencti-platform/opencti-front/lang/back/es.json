@@ -632,5 +632,8 @@
   "Entity ID": "Entidad ID",
   "Source connector": "Conector fuente",
   "Malware analysis operating System": "Sistema operativo de análisis de malware",
-  "Allowed markings": "Marcas permitidas"
+  "Allowed markings": "Marcas permitidas",
+  "Auto collapse submenus": "Submenús de colapso automático",
+  "Related type": "Tipo relacionado",
+  "Show submenu icons": "Mostrar iconos de submenú"
 }
