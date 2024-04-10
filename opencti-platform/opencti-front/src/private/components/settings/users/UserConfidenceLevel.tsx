@@ -1,10 +1,10 @@
 import React from 'react';
-import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import { Link } from 'react-router-dom';
 import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
+import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceLevelProps = {

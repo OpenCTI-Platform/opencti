@@ -5,7 +5,6 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
-import UserConfidenceLevelField from './UserConfidenceLevelField';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -17,7 +16,7 @@ import { UserEditionOverview_user$data } from './__generated__/UserEditionOvervi
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useGranted, { isOnlyOrganizationAdmin, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { isOnlyOrganizationAdmin } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const userMutationFieldPatch = graphql`
@@ -104,7 +103,6 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
-  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
@@ -372,17 +370,6 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          { hasSetAccess && (
-            <UserConfidenceLevelField
-              name="user_confidence_level"
-              label={t_i18n('Max Confidence Level')}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              user={user}
-            />
-          )}
         </Form>
       )}
     </Formik>
