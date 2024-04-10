@@ -89,14 +89,26 @@ const clusterOptions = (): ClusterOptions => ({
 
 export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
   let client: Cluster | Redis;
-  const isCluster = conf.get('redis:mode') === 'cluster';
-  if (isCluster) {
+  const redisMode = conf.get('redis:mode');
+
+  if (redisMode === 'cluster') {
     const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
     client = new Redis.Cluster(clusterNodes, clusterOptions());
+  } else if (redisMode === 'sentinel') {
+    const sentinelConfiguration: RedisOptions = {
+      sentinels: [
+        { host: conf.get('redis:sentinel_leader_host'), port: conf.get('redis:sentinel_leader_port') },
+        { host: conf.get('redis:sentinel_additional_host'), port: conf.get('redis:sentinel_additional_port') },
+      ],
+      name: conf.get('redis:sentinel_master_name'),
+    };
+
+    client = new Redis(sentinelConfiguration);
   } else {
     const singleOptions = redisOptions(autoReconnect);
     client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
+
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
   client.on('error', (err) => logApp.error(DatabaseError('Redis client connection fail', { cause: err, provider })));
