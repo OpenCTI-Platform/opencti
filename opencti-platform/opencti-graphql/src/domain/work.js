@@ -1,17 +1,17 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
+import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
-import { isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
-import { createEntity } from '../database/middleware';
+import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -193,10 +193,9 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     completed_number: 0,
     messages: [],
     errors: [],
-    objectMarking: [...fileMarkings],
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings]
   };
-
-  await createEntity(context, user, work, ENTITY_TYPE_WORK);
+  await elIndex(INDEX_HISTORY, work);
   return loadWorkById(context, user, workId);
 };
 
