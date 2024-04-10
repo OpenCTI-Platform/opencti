@@ -17,7 +17,7 @@ export class FileExporter extends InMemoryLogRecordExporter {
     console.log('logs', logs);
     const formattedLogs = logs.map((log) => ({
       body: log.body,
-      timestamp: log.attributes.timestamp,
+      date: new Date(log.attributes.timestamp as number),
     }));
     fs.appendFile(
       this.filePath,
