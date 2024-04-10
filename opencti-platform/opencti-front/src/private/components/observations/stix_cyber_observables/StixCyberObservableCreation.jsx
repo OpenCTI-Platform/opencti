@@ -473,7 +473,86 @@ const StixCyberObservableCreation = ({
     );
   };
 
+  function BulkAddDialog(props) {
+    console.log('inside BulkAddDialog function');
+    const [openBulkAddDialog, setOpenBulkAddDialog] = React.useState(false);
+    const handleOpenBulkAddDialog = () => {
+      const generic_value_field = document.getElementById('generic_value_field');
+      if (generic_value_field != null && generic_value_field.value != null
+        && generic_value_field.value.length > 0 && generic_value_field.value !== bulkAddMsg) {
+        props.setValue('bulk_value_field', generic_value_field.value.trim());
+      }
+      setOpenBulkAddDialog(true);
+    };
+    const handleCloseBulkAddDialog = () => {
+      setOpenBulkAddDialog(false);
+      const bulk_value_field = document.getElementById('bulk_value_field');
+      if (bulk_value_field != null && bulk_value_field.value != null && bulk_value_field.value.length > 0) {
+        props.setValue('value', bulkAddMsg);
+        setGenericValueFieldDisabled(true);
+      } else {
+        props.setValue('value', '');
+        setGenericValueFieldDisabled(false);
+      }
+    };
+    function getOption() {
+      const selectElement = document.querySelector('#attributes');
+      const output = selectElement.value;
+      document.querySelector('.output').textContent = output;
+    }
+    return (
+      <React.Fragment>
+        <IconButton
+          onClick={handleOpenBulkAddDialog}
+          size="large"
+          color="primary" style={{ float: 'right', marginRight: 25 }}
+        >
+          <TextFieldsOutlined />
+        </IconButton>
+        <Dialog
+          PaperProps={{ elevation: 3 }}
+          open={openBulkAddDialog}
+          onClose={handleCloseBulkAddDialog}
+          fullWidth={true}
+        >
+          <DialogContent style={{ marginTop: 0, paddingTop: 10 }}>
+            <form name="formSelectAttributes" id="formSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }} action="/action_page.php">
+              {t_i18n('Create Entities from multiple')}:
+              <select name="attributes" id="attributes" onSelect={getOption}>
+                <option selected disabled>Select attribute</option>
+                <option value="MD5">md5</option>
+                <option value="NAME">name</option>
+                <option value="SHA1">sha1</option>
+                <option value="SHA256">sha256</option>
+                <option value="SHA512">sha512</option>
+              </select>
+            </form>
+            <Typography style={{ float: 'left', marginTop: 10 }}>
+              <span className="output"></span>
+            </Typography>
+            <Field
+              component={TextField}
+              id="bulk_value_field"
+              variant="standard"
+              key="bulk_value_field"
+              name="bulk_value_field"
+              fullWidth={true}
+              multiline={true}
+              rows="5"
+            />
+            <DialogActions>
+              <Button color="secondary" onClick={handleCloseBulkAddDialog}>
+                {t_i18n('Validate')}
+              </Button>
+            </DialogActions>
+          </DialogContent>
+        </Dialog>
+      </React.Fragment>
+    );
+  }
+
   function BulkAddModal(props) {
+    console.log('inside bulkAddModal');
     const [openBulkModal, setOpenBulkModal] = React.useState(false);
     const handleOpenBulkModal = () => {
       const generic_value_field = document.getElementById('generic_value_field');
@@ -562,7 +641,8 @@ const StixCyberObservableCreation = ({
   };
 
   const renderForm = () => {
-    console.log("renderForm");
+    // console.log("renderForm");
+    // console.log("renderForm; status.type " + status.type);
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
@@ -755,15 +835,18 @@ const StixCyberObservableCreation = ({
                             />
                           );
                         }
-                        // if (status.type === 'StixFile') {
-                        //   console.log('inside file');
-                        //   return (
-                        //     <div key={attribute.value}>
-                        //       <p>THIS IS DIALOG!!!</p>
-                        //       <button id="opener">Open Dialog</button>
-                        //     </div>
-                        //   );
-                        // }
+                        if (status.type === 'StixFile') {
+                          // console.log('inside StixFile; attribute.value ' + attribute.value);
+                          return (
+                            <div key={attribute.value}>
+                              <Tooltip title="Copy/paste text content">
+                                <BulkAddDialog
+                                  setValue={(field_name, new_value) => setFieldValue(field_name, new_value)}
+                                />
+                              </Tooltip>
+                            </div>
+                          );
+                        }
                         // console.log('attribute.value ' + attribute.value);
                         if (attribute.value === 'value') {
                           return (
@@ -865,6 +948,7 @@ const StixCyberObservableCreation = ({
 
   const renderClassic = () => {
     if (status.type) {
+      console.log("inside renderClassic");
       console.log("status.type " + status.type);
     }
     return (
