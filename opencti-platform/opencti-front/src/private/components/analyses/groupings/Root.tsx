@@ -33,6 +33,7 @@ const subscription = graphql`
         ...Grouping_grouping
         ...GroupingKnowledgeGraph_grouping
         ...GroupingEditionContainer_grouping
+        ...StixDomainObjectContent_stixDomainObject
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -55,6 +56,7 @@ const groupingQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
+      ...StixDomainObjectContent_stixDomainObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
