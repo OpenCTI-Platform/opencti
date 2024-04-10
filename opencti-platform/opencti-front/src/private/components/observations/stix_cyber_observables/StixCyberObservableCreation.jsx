@@ -235,11 +235,15 @@ const StixCyberObservableCreation = ({
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
   const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
+  const [md5FieldDisabled, setMD5FieldDisabled] = useState(false);
+  const [sha1FieldDisabled, setSHA1FieldDisabled] = useState(false);
+  const [sha256FieldDisabled, setSHA256FieldDisabled] = useState(false);
+  const [sha512FieldDisabled, setSHA512FieldDisabled] = useState(false);
   const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = values;
-
+    console.log("adaptedValues " + adaptedValues);
     if (adaptedValues) { // Verify not null for DeepScan compliance
       // Bulk Add Modal was used
       if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
@@ -490,9 +494,17 @@ const StixCyberObservableCreation = ({
       if (bulk_value_field != null && bulk_value_field.value != null && bulk_value_field.value.length > 0) {
         props.setValue('value', bulkAddMsg);
         setGenericValueFieldDisabled(true);
+        setMD5FieldDisabled(true);
+        setSHA1FieldDisabled(true);
+        setSHA256FieldDisabled(true);
+        setSHA512FieldDisabled(true);
       } else {
         props.setValue('value', '');
         setGenericValueFieldDisabled(false);
+        setMD5FieldDisabled(false);
+        setSHA1FieldDisabled(false);
+        setSHA256FieldDisabled(false);
+        setSHA512FieldDisabled(false);
       }
     };
     function getOption() {
@@ -550,6 +562,10 @@ const StixCyberObservableCreation = ({
       </React.Fragment>
     );
   }
+
+  BulkAddDialog.propTypes = {
+    setValue: PropTypes.func,
+  };
 
   function BulkAddModal(props) {
     console.log('inside bulkAddModal');
@@ -731,7 +747,9 @@ const StixCyberObservableCreation = ({
                         if (attribute.value === 'hashes') {
                           return (
                             <div key={attribute.value}>
+                              {/* TODO: Disable these fields */}
                               <Field
+                                disabled={md5FieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_MD5"
@@ -740,6 +758,7 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
+                                disabled={sha1FieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-1"
@@ -748,6 +767,7 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
+                                disabled={sha256FieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-256"
@@ -756,6 +776,7 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
+                                disabled={sha512FieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-512"
