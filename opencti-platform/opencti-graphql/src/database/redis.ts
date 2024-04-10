@@ -89,7 +89,7 @@ const clusterOptions = (): ClusterOptions => ({
 
 export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
   let client: Cluster | Redis;
-  const redisMode = conf.get('redis:mode');
+  const redisMode: string = conf.get('redis:mode');
 
   if (redisMode === 'cluster') {
     const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
@@ -259,8 +259,8 @@ export const extendSession = async (sessionId: string, extension: number) => {
 export const redisIsAlive = async () => {
   try {
     await getClientBase().get('test-key');
-    const isCluster = conf.get('redis:mode') === 'cluster';
-    logApp.info(`[REDIS] Clients initialized in ${isCluster ? 'cluster' : 'Single'} mode`);
+    const redisMode: string = conf.get('redis:mode');
+    logApp.info(`[REDIS] Clients initialized in ${redisMode} mode`);
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
