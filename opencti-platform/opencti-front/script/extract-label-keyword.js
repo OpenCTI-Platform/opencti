@@ -66,7 +66,13 @@ async function mergeWithExistingData() {
     }
     console.log('--- End ---');
     // Write the merged values back to the file
-    await writeFile(englishTranslationFiles, JSON.stringify(updatedValues, null, 2));
+    const sortedKeys = Object.keys(updatedValues).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    const sortedValues = {};
+    sortedKeys.forEach(key => {
+      sortedValues[key] = updatedValues[key];
+    });
+    
+    await writeFile(englishTranslationFiles, JSON.stringify(sortedValues, null, 2));
     console.log('File written successfully');
   } catch (error) {
     console.error(`Error merging with existing data: ${error.message}`);
