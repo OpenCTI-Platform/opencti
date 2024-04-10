@@ -859,6 +859,10 @@ class StixNestedRefRelationshipCreation extends Component {
           }}
           render={({ props }) => {
             if (props && props.stixSchemaRefRelationships) {
+              if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
+                this.handleReverseRelation();
+                return this.renderLoader();
+              }
               return (
                 <div>
                   {this.renderForm(props.stixSchemaRefRelationships)}
