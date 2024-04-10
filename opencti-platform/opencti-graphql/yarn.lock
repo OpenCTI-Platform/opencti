@@ -4817,15 +4817,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/xml2js@npm:0.4.14":
-  version: 0.4.14
-  resolution: "@types/xml2js@npm:0.4.14"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10/d76338b8d6ce8540c7af6a32aacf96c38f6de48254568f58f6e5ac2af3f88e6bd1490e5346d3bb336990f91267d23c5cc09e8bf7e80840a63c7855dbf174ecbb
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/eslint-plugin@npm:7.3.1":
   version: 7.3.1
   resolution: "@typescript-eslint/eslint-plugin@npm:7.3.1"
@@ -11076,7 +11067,6 @@ __metadata:
     "@types/tough-cookie": "npm:4.0.5"
     "@types/turndown": "npm:5.0.4"
     "@types/uuid": "npm:9.0.8"
-    "@types/xml2js": "npm:0.4.14"
     "@typescript-eslint/eslint-plugin": "npm:7.3.1"
     "@typescript-eslint/parser": "npm:7.3.1"
     "@vitest/coverage-v8": "npm:1.4.0"
@@ -11185,7 +11175,6 @@ __metadata:
     vitest: "npm:1.4.0"
     winston: "npm:3.13.0"
     winston-daily-rotate-file: "npm:5.0.0"
-    xml2js: "npm:0.6.2"
   languageName: unknown
   linkType: soft
 
@@ -14215,16 +14204,6 @@ __metadata:
     escape-html: "npm:^1.0.3"
     xpath: "npm:0.0.32"
   checksum: 10/128cbabe06a8531b4df8b46b589d28e7d6532e90c131c04dded8f2782cdf11ca467a32e330b7675c172ff4f688b848b088102c8299e04014a6ef54a19891558d
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:0.6.2":
-  version: 0.6.2
-  resolution: "xml2js@npm:0.6.2"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10/df29de8eeedb762c367d87945c39bcf54db19a2c522607491c266ed6184b5a749e37ff29cfaed0ac149da9ba332ac3dcf8e5ff2bd0a206be3343eca95faa941d
   languageName: node
   linkType: hard
 
