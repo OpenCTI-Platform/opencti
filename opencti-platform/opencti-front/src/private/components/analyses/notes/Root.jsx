@@ -118,11 +118,7 @@ class RootNote extends Component {
                     >
                       <Tabs
                         value={
-                          location.pathname.includes(
-                            `/dashboard/analyses/notes/${note.id}/knowledge`,
-                          )
-                            ? `/dashboard/analyses/notes/${note.id}/knowledge`
-                            : location.pathname
+                          location.pathname
                         }
                       >
                         <Tab
