@@ -80,7 +80,7 @@ const AutocompleteField = (props) => {
             name={name}
             fullWidth={true}
             error={!isNil(meta.error) && meta.touched}
-            helperText={meta.error || textfieldprops.helperText}
+            helperText={(meta.touched && meta.error) || textfieldprops.helperText}
           />
         )}
         onChange={internalOnChange}
