@@ -59,7 +59,6 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelations
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST, TASK_TYPE_QUERY, TASK_TYPE_RULE } from '../domain/backgroundTask-common';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -196,20 +195,10 @@ const generatePatch = (field, values, type) => {
 };
 
 const executeDelete = async (context, user, element) => {
-  const check = controlUserConfidenceAgainstElement(user, element);
-  if (!check) {
-    return;
-  }
   await deleteElementById(context, user, element.internal_id, element.entity_type);
 };
 const executeAdd = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
-  // The tasks are executed through filters, but since we don't know what type of entity will be targeted,
-  // we don't throw an error to avoid crashing due to uncertainty.
-  const check = controlUserConfidenceAgainstElement(user, element);
-  if (!check) {
-    return;
-  }
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
@@ -230,10 +219,6 @@ const executeAdd = async (context, user, actionContext, element) => {
 };
 const executeRemove = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
-  const check = controlUserConfidenceAgainstElement(user, element);
-  if (!check) {
-    return;
-  }
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
@@ -254,10 +239,6 @@ const executeRemove = async (context, user, actionContext, element) => {
 };
 export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
-  const check = controlUserConfidenceAgainstElement(user, element);
-  if (!check) {
-    return;
-  }
   let input = field;
   if (contextType === ACTION_TYPE_RELATION) {
     input = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, field);
@@ -267,10 +248,6 @@ export const executeReplace = async (context, user, actionContext, element) => {
 };
 const executeMerge = async (context, user, actionContext, element) => {
   const { values } = actionContext;
-  const check = controlUserConfidenceAgainstElement(user, element);
-  if (!check) {
-    return;
-  }
   await mergeEntities(context, user, element.internal_id, values);
 };
 const executeEnrichment = async (context, user, actionContext, element) => {
