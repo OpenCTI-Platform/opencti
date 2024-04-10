@@ -1361,6 +1361,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   if (mergedIds.length !== mergedInstances.length) {
     throw FunctionalError('Cannot access all entities for merging');
   }
+  console.log('pouet', mergedInstances);
   mergedInstances.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   if (mergedInstances.some(({ entity_type, builtIn }) => entity_type === ENTITY_TYPE_VOCABULARY && Boolean(builtIn))) {
     throw FunctionalError('Cannot merge builtin vocabularies');
@@ -2493,7 +2494,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
     }
   }
-  const inputs = []; // All inputs impacted by modifications (+inner)
+  let inputs = []; // All inputs impacted by modifications (+inner)
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
@@ -2581,6 +2582,13 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
         }
       }
     }
+  }
+  // In the case of only creators has been changed:
+  // - either it's because data is identical with existing ones,
+  // - or this user has no sufficient confidence to replace fields data.
+  // In the 2nd case, we don't want to add this user as creator.
+  if (inputs.length === 1 && inputs[0].key === 'creator_id' && !isConfidenceMatch) {
+    inputs = [];
   }
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
