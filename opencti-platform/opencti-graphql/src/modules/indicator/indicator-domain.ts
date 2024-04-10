@@ -51,6 +51,7 @@ import {
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
+import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -158,6 +159,7 @@ export const createObservablesFromIndicator = async (
   input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
   indicator: StoreEntityIndicator,
 ) => {
+  controlUserConfidenceAgainstElement(user, indicator);
   const { pattern } = indicator;
   const observables = extractValidObservablesFromIndicatorPattern(pattern);
   const observablesToLink = [];
@@ -199,6 +201,7 @@ export const createObservablesFromIndicator = async (
 
 export const promoteIndicatorToObservable = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
   const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
+  controlUserConfidenceAgainstElement(user, indicator);
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const objectOrganization = (indicator[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
