@@ -7,6 +7,7 @@ import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { filigranTelemetryManager } from '../config/filigranTelemetry';
+import { usersWithActiveSession } from '../database/session';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -15,16 +16,22 @@ const telemetryStreamHandler = async () => {
   try {
     const context = executionContext('telemetry_manager');
     const timestamp = new Date().getTime();
+    // Fetch settings
     const settings = await getSettings(context) as Settings;
     const enabledModules = settings.platform_modules?.map((module) => (module.enable ? module.id : null))
       .filter((n) => n) as string[];
     const runningModules = settings.platform_modules?.map((module) => (module.running ? module.id : null))
       .filter((n) => n) as string[];
+    // Set filigranTelemetryManager settings telemetry data
     filigranTelemetryManager.setLanguage(settings.platform_language ?? 'undefined');
     filigranTelemetryManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition));
     filigranTelemetryManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryManager.setNumberOfInstances(settings.platform_cluster.instances_number);
+    // Register filigran telemetry data
     filigranTelemetryManager.registerFiligranTelemetry(timestamp);
+    // Get number of active users over time
+    const activUsers = await usersWithActiveSession();
+    filigranTelemetryManager.setActivUsers(activUsers, timestamp);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }

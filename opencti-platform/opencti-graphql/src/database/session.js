@@ -1,6 +1,7 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import * as R from 'ramda';
+import { uniq } from 'ramda';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
@@ -60,6 +61,18 @@ export const findSessions = () => {
         return { user_id: k, sessions: userSessions };
       });
       accept(sessions);
+    });
+  });
+};
+
+export const usersWithActiveSession = () => {
+  const { store } = applicationSession;
+  return new Promise((accept) => {
+    store.all((_, result) => {
+      const usersWithSession = uniq(result
+        .filter((n) => n.user)
+        .map((s) => s.user.id));
+      accept(usersWithSession);
     });
   });
 };
