@@ -156,7 +156,7 @@
     "check-ts": "tsc --noEmit",
     "i18n-checker": "node i18n-checker.js",
     "extract-translation": "node script/extract-i18n-keyword.js && node script/extract-label-keyword.js",
-    "verified-translation": "node script/verify-translation.js",
+    "verify-translation": "node script/verify-translation.js",
     "auto-translation:all": "npm run auto-translation:fr-front $SUBSCRIPTION_KEY && npm run auto-translation:cn-front $SUBSCRIPTION_KEY && npm run auto-translation:ja-front $SUBSCRIPTION_KEY && npm run auto-translation:es-front $SUBSCRIPTION_KEY && npm run auto-translation:de-front $SUBSCRIPTION_KEY && npm run auto-translation:fr-back $SUBSCRIPTION_KEY && npm run auto-translation:cn-back $SUBSCRIPTION_KEY && npm run auto-translation:ja-back $SUBSCRIPTION_KEY && npm run auto-translation:es-back $SUBSCRIPTION_KEY && npm run auto-translation:de-back $SUBSCRIPTION_KEY",
     "auto-translation:fr-front": "i18n-auto-translation -a deepl-free -p ./lang/front/en.json -t fr -k",
     "auto-translation:cn-front": "i18n-auto-translation -a deepl-free -p ./lang/front/en.json -t zh -k",
