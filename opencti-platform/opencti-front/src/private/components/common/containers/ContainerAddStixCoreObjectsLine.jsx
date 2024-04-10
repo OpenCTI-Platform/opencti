@@ -301,26 +301,6 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         ... on StixCyberObservable {
           observable_value
         }
-        ... on IPv4Addr {
-          countries {
-            edges {
-              node {
-                name
-                x_opencti_aliases
-              }
-            }
-          }
-        }
-        ... on IPv6Addr {
-          countries {
-            edges {
-              node {
-                name
-                x_opencti_aliases
-              }
-            }
-          }
-        }
         createdBy {
           id
           entity_type
@@ -343,11 +323,6 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         creators {
           id
           name
-        }
-        reports {
-          pageInfo {
-            globalCount
-          }
         }
       }
     `,
