@@ -15,6 +15,8 @@ import type { Theme } from '../../../../components/Theme';
 import { ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

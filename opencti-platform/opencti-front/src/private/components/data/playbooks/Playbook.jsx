@@ -26,6 +26,8 @@ import edgeTypes from './types/edges';
 import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
 import useManipulateComponents from './hooks/useManipulateComponents';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

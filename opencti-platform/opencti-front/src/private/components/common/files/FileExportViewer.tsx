@@ -16,6 +16,8 @@ import { FileExportViewer_entity$data } from './__generated__/FileExportViewer_e
 
 const interval$ = interval(FIVE_SECONDS);
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

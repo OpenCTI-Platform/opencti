@@ -16,6 +16,8 @@ import ItemCreators from '../../components/ItemCreators';
 import { StixMetaObjectDetailsQuery } from './__generated__/StixMetaObjectDetailsQuery.graphql';
 import ItemMarkings from '../../components/ItemMarkings';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   label: {
     marginTop: '20px',

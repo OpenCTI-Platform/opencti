@@ -29,6 +29,8 @@ import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../components/ItemConfidence';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
     marginTop: '20px',

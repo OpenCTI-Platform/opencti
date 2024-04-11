@@ -27,6 +27,8 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   label: {
     margin: '0 7px 7px 0',

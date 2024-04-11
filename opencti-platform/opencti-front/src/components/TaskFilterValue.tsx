@@ -12,6 +12,8 @@ import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   filter: {
     margin: '5px 10px 5px 0',

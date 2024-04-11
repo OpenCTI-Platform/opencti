@@ -20,6 +20,8 @@ import { CaseIncidentLineCase_node$data, CaseIncidentLineCase_node$key } from '.
 import ItemSeverity from '../../../../components/ItemSeverity';
 import ItemPriority from '../../../../components/ItemPriority';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

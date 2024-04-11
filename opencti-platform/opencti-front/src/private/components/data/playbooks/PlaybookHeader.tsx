@@ -41,6 +41,8 @@ import Transition from '../../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',

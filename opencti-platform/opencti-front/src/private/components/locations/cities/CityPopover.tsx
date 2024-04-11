@@ -21,6 +21,8 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

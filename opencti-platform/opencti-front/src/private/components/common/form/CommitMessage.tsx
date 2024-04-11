@@ -14,6 +14,8 @@ import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   buttons: {
     marginTop: 20,

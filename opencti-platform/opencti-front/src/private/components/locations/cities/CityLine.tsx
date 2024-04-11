@@ -13,6 +13,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import { CityLine_node$key } from './__generated__/CityLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

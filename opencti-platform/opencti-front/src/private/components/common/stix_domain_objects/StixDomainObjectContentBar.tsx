@@ -11,6 +11,8 @@ import { createStyles } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({
   bottomNav: {
     zIndex: 1000,

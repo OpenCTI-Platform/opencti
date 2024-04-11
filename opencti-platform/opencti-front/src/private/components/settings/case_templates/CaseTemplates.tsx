@@ -12,6 +12,8 @@ import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines'
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

@@ -16,6 +16,8 @@ import { FilterGroup, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGro
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     marginTop: 15,

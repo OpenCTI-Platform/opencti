@@ -3,6 +3,8 @@ import React from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import type { ScaleConfig } from './scale';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   railSpan: {
     height: '5px',

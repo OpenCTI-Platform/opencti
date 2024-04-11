@@ -10,6 +10,8 @@ import ColorPickerField from '../../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Tick, UndefinedTick } from './scale';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   button: {
     display: 'flex',

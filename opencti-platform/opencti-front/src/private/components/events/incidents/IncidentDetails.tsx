@@ -12,6 +12,8 @@ import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './_
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',

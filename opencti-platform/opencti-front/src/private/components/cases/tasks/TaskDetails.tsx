@@ -9,6 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { TaskDetails_task$data, TaskDetails_task$key } from './__generated__/TaskDetails_task.graphql';
 import ItemDueDate from '../../../../components/ItemDueDate';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

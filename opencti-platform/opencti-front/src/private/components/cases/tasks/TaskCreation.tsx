@@ -23,6 +23,8 @@ import { TaskCreationMutation, TaskCreationMutation$variables } from './__genera
 import { TasksLinesPaginationQuery$variables } from './__generated__/TasksLinesPaginationQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

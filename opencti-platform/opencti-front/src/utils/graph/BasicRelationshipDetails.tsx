@@ -8,6 +8,8 @@ import ItemMarkings from '../../components/ItemMarkings';
 import { useFormatter } from '../../components/i18n';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   label: {
     marginTop: 20,

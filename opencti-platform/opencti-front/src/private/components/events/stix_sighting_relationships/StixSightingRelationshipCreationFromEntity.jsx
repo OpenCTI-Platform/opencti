@@ -29,6 +29,8 @@ import StixSightingRelationshipCreationForm from './StixSightingRelationshipCrea
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

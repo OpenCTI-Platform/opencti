@@ -22,6 +22,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

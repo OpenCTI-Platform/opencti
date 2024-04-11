@@ -11,6 +11,8 @@ import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTempl
 import { Option } from './ReferenceField';
 import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

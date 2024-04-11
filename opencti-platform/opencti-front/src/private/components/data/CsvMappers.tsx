@@ -17,6 +17,8 @@ import { useFormatter } from '../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     paddingRight: '200px',

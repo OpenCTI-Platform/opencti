@@ -6,6 +6,8 @@ import { ForceGraphMethods } from 'react-force-graph-2d';
 import type { Theme } from '../../components/Theme';
 import { pointInPolygon } from '../Graph';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   canvas: {
     position: 'absolute',

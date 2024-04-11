@@ -23,6 +23,8 @@ import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTas
 import { CaseTemplateTasksLinesPaginationQuery$data } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksEdition from './CaseTemplateTasksEdition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

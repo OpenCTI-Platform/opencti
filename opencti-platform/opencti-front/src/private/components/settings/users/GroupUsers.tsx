@@ -14,6 +14,8 @@ import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__genera
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',

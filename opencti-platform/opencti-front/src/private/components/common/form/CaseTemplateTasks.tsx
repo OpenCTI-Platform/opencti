@@ -20,6 +20,8 @@ import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateT
 import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

@@ -19,6 +19,8 @@ import ExternalReferenceCreation from '../../analyses/external_references/Extern
 import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
 import { Option } from './ReferenceField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

@@ -32,6 +32,8 @@ import ItemNumberDifference from '../../../components/ItemNumberDifference';
 
 const interval$ = interval(FIVE_SECONDS);
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   card: {
     width: '100%',

@@ -52,6 +52,8 @@ import type { Theme } from '../../../../components/Theme';
 const startDate = yearsAgo(1);
 const endDate = now();
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   floatingButton: {
     float: 'left',

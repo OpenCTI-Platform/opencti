@@ -13,6 +13,8 @@ const systemUsers = [
   '31afac4e-6b99-44a0-b91b-e04738d31461', // REDACTED USER
 ];
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   button: {
     margin: '0 7px 7px 0',

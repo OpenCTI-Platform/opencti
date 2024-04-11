@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import GroupEdition from './GroupEdition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

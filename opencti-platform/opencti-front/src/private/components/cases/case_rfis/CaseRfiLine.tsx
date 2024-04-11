@@ -20,6 +20,8 @@ import { CaseRfiLineCase_node$data, CaseRfiLineCase_node$key } from './__generat
 import ItemPriority from '../../../../components/ItemPriority';
 import ItemSeverity from '../../../../components/ItemSeverity';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

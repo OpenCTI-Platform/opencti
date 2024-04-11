@@ -16,6 +16,8 @@ import { PictureManagementUtils_node$data } from './__generated__/PictureManagem
 import { PictureManagementUtilsMutation, StixDomainObjectFileEditInput } from './__generated__/PictureManagementUtilsMutation.graphql';
 import SwitchField from '../../../../components/SwitchField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

@@ -13,6 +13,8 @@ import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { GenericContext } from '../model/GenericContextModel';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

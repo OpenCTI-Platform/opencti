@@ -12,6 +12,8 @@ import { AddDataComponentsLinesQuery, AddDataComponentsLinesQuery$variables } fr
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   createButton: {
     float: 'left',

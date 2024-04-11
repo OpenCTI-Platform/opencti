@@ -13,6 +13,8 @@ import { TriggerEventType, TriggerLiveCreationKnowledgeMutation$data } from './_
 import { TriggerType } from './__generated__/TriggerLine_node.graphql';
 import { TriggersQueriesSearchKnowledgeQuery$data } from './__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

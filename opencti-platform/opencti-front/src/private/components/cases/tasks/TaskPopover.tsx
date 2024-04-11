@@ -25,6 +25,8 @@ import { TasksEditionContainerQuery } from './__generated__/TasksEditionContaine
 import { deleteNode } from '../../../../utils/store';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

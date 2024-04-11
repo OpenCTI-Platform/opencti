@@ -23,6 +23,8 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import SimpleMarkdownField from '../../../../components/SimpleMarkdownField';
 import Drawer from '../../common/drawer/Drawer';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
