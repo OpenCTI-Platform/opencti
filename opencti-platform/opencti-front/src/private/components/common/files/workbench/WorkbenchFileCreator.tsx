@@ -21,6 +21,8 @@ import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileVi
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,

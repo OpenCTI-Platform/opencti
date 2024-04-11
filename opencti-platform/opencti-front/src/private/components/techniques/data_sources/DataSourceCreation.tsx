@@ -32,6 +32,8 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
     position: 'fixed',

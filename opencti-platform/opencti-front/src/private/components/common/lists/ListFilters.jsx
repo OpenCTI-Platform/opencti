@@ -11,6 +11,8 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     width: 600,

@@ -25,6 +25,8 @@ import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,

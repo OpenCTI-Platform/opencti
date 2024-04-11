@@ -62,6 +62,8 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   createButton: {
     position: 'fixed',

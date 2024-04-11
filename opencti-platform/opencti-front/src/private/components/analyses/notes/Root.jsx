@@ -106,6 +106,7 @@ class RootNote extends Component {
                       <ContainerHeader
                         container={props.note}
                         PopoverComponent={<NotePopover note={note} />}
+                        redirectToContent={false}
                       />
                     </CollaborativeSecurity>
                     <Box
@@ -117,11 +118,7 @@ class RootNote extends Component {
                     >
                       <Tabs
                         value={
-                          location.pathname.includes(
-                            `/dashboard/analyses/notes/${note.id}/knowledge`,
-                          )
-                            ? `/dashboard/analyses/notes/${note.id}/knowledge`
-                            : location.pathname
+                          location.pathname
                         }
                       >
                         <Tab

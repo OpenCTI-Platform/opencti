@@ -29,6 +29,8 @@ import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 
 // region styles
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,

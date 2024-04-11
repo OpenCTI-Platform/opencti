@@ -23,6 +23,7 @@ import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
 import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage } from './generate-message';
+import { INPUT_OBJECTS } from '../schema/general';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -276,7 +277,10 @@ export const getRedisVersion = async () => {
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
   if (instance) {
-    await getClientPubSub().publish(topic, { instance, user });
+    // Resolved object_refs must be dissoc from original objects as not directly used for live update
+    // and can imply very large event message
+    const data = R.dissoc(INPUT_OBJECTS, instance);
+    await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
 };

@@ -90,6 +90,8 @@ const THREAT_ACTOR_ENTITIES = [
   'Threat-Actor',
 ];
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   createButton: {
     position: 'fixed',

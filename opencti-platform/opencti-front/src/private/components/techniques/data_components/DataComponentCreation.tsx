@@ -30,6 +30,8 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
     position: 'fixed',

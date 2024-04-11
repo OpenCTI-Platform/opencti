@@ -14,6 +14,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

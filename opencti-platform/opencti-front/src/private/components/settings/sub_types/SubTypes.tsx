@@ -14,6 +14,8 @@ import { useFormatter } from '../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

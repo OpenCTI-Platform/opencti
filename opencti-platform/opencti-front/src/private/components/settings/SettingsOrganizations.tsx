@@ -15,6 +15,8 @@ import { SettingsOrganizationLine_node$data as Organization } from './organizati
 import useAuth from '../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

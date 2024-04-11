@@ -14,6 +14,8 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,

@@ -14,6 +14,8 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { AdministrativeArea_administrativeArea$key } from './__generated__/AdministrativeArea_administrativeArea.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,

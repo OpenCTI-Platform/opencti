@@ -21,6 +21,8 @@ import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
 import { emptyFilled } from '../../../../utils/String';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

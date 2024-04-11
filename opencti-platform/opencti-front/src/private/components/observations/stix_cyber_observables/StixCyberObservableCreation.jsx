@@ -37,6 +37,8 @@ import { convertMarking } from '../../../../utils/edition';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

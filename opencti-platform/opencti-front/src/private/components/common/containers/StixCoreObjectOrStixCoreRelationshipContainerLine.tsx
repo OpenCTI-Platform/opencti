@@ -20,6 +20,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

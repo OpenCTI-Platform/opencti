@@ -8,6 +8,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from './i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   searchRoot: {
     borderRadius: 4,

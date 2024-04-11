@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
@@ -32,6 +32,8 @@ import { TriggersLinesPaginationQuery$variables } from '../../../profile/trigger
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

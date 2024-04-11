@@ -30,6 +30,8 @@ import useGranted, { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   container: {
     margin: 0,

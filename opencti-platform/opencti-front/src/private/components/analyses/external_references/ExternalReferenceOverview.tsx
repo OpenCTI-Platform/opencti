@@ -9,6 +9,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
 import { ExternalReferenceOverview_externalReference$data } from './__generated__/ExternalReferenceOverview_externalReference.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

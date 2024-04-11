@@ -19,6 +19,8 @@ import { RegionEditionContainerQuery } from './__generated__/RegionEditionContai
 import Transition from '../../../../components/Transition';
 import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

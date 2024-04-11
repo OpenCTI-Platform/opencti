@@ -10,6 +10,8 @@ import { DataComponentDetails_dataComponent$data, DataComponentDetails_dataCompo
 import DataComponentDataSource from './DataComponentDataSource';
 import DataComponentAttackPatterns from './DataComponentAttackPatterns';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

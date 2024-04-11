@@ -22,6 +22,8 @@ import type { Theme } from '../../../../../components/Theme';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,

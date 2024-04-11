@@ -19,6 +19,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',

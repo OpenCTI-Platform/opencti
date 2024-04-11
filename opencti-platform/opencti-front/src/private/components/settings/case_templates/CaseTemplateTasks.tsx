@@ -31,6 +31,8 @@ import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
 import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

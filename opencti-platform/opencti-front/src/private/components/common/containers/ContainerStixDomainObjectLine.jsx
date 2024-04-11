@@ -23,6 +23,8 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   item: {
     paddingLeft: 10,

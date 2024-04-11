@@ -19,6 +19,8 @@ import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_no
 import { copyToClipboard } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   bodyItem: {
     height: 20,

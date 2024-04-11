@@ -45,6 +45,8 @@ import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   containerDefault: {
     marginTop: 0,
@@ -458,6 +460,7 @@ const ContainerHeader = (props) => {
     enableManageAuthorizedMembers,
     authorizedMembersMutation,
     enableAskAi,
+    redirectToContent,
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
@@ -898,7 +901,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectFileExport
                 id={container.id}
                 type={container.entity_type}
-                redirectToContent={true}
+                redirectToContent={!!redirectToContent}
               />
             )}
             {enableSuggestions && (

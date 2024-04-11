@@ -8,6 +8,8 @@ import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsIndicatorsContextualView from './EntityStixCoreRelationshipsIndicatorsContextualView';
 import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     marginTop: 15,

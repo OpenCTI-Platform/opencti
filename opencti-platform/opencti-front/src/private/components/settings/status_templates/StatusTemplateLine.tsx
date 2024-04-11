@@ -9,6 +9,8 @@ import { graphql, useFragment } from 'react-relay';
 import StatusTemplatePopover from './StatusTemplatePopover';
 import { StatusTemplateLine_node$key } from './__generated__/StatusTemplateLine_node.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   item: {
     paddingLeft: 10,

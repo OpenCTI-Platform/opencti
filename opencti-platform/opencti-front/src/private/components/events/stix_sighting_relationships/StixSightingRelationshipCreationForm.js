@@ -20,6 +20,8 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   containerRelation: {
     padding: '10px 20px 20px 20px',

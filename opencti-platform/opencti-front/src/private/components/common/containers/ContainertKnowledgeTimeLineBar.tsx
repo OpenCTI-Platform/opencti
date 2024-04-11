@@ -13,6 +13,8 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   bottomNav: {
     zIndex: 1000,

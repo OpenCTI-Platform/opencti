@@ -3,6 +3,8 @@ import { EdgeLabelRenderer, EdgeProps, getBezierPath, useReactFlow } from 'react
 import { makeStyles } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   edgeButton: {
     cursor: 'pointer',

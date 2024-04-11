@@ -36,6 +36,8 @@ import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
@@ -201,7 +203,7 @@ const Audit = () => {
             checked={types?.length === 2}
           />
         }
-        label="Include knowledge"
+        label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
     </div>

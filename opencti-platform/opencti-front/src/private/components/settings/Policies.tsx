@@ -31,6 +31,8 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

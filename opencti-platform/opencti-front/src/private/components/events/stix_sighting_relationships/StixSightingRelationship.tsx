@@ -7,6 +7,8 @@ import Loader from '../../../../components/Loader';
 import { StixSightingRelationshipQuery$data } from './__generated__/StixSightingRelationshipQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     marginTop: 10,

@@ -29,16 +29,16 @@ const styles = () => ({
 const cityIcon = (dark = true) => new L.Icon({
   iconUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
   iconRetinaUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
-  iconAnchor: [5, 55],
-  popupAnchor: [10, -44],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
   iconSize: [25, 25],
 });
 
 const positionIcon = (dark = true) => new L.Icon({
   iconUrl: dark ? fileUri(MarkerDark) : fileUri(MarkerLight),
   iconRetinaUrl: dark ? fileUri(MarkerDark) : fileUri(MarkerLight),
-  iconAnchor: [5, 55],
-  popupAnchor: [10, -44],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
   iconSize: [25, 25],
 });
 

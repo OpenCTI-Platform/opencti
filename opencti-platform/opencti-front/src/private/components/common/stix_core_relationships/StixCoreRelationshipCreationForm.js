@@ -23,6 +23,8 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   containerRelation: {
     padding: '10px 20px 20px 20px',

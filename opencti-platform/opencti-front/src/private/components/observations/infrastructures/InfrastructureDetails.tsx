@@ -13,6 +13,8 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import type { Theme } from '../../../../components/Theme';
 import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',

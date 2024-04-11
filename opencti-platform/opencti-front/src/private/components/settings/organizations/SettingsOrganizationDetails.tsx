@@ -10,6 +10,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',

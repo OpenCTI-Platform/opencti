@@ -25,6 +25,8 @@ import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

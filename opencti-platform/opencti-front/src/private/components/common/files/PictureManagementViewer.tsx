@@ -10,6 +10,8 @@ import PictureLine from './PictureLine';
 import { PictureManagementViewer_entity$data, PictureManagementViewer_entity$key } from './__generated__/PictureManagementViewer_entity.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

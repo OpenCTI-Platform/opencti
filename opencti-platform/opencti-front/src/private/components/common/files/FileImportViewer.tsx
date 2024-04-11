@@ -16,6 +16,8 @@ import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 
 const interval$ = interval(TEN_SECONDS);
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

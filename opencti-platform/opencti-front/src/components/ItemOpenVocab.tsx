@@ -13,6 +13,8 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import ItemSeverity from './ItemSeverity';
 import ItemPriority from './ItemPriority';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,

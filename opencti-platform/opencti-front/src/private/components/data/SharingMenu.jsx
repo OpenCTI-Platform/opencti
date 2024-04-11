@@ -9,6 +9,8 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   drawer: {
     minHeight: '100vh',

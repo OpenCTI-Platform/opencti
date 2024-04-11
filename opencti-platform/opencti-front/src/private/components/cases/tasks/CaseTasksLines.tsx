@@ -28,6 +28,8 @@ import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',

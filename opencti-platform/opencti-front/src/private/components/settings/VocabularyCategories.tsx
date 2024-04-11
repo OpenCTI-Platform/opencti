@@ -9,6 +9,8 @@ import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { VocabularyCategoryLine, VocabularyCategoryLineDummy } from './attributes/VocabularyCategoryLine';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

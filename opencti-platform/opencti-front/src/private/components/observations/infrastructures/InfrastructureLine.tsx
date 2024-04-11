@@ -18,6 +18,8 @@ import { InfrastructureLine_node$data, InfrastructureLine_node$key } from './__g
 import type { Theme } from '../../../../components/Theme';
 import { emptyFilled } from '../../../../utils/String';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

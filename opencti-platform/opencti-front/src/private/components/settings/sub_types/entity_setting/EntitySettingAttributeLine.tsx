@@ -17,6 +17,8 @@ import { EntitySettingAttributes_entitySetting$data } from './__generated__/Enti
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

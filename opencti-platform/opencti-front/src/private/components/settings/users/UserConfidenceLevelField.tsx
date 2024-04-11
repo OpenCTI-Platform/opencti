@@ -12,6 +12,8 @@ import UserConfidenceLevel from './UserConfidenceLevel';
 import type { Theme } from '../../../../components/Theme';
 import SwitchField from '../../../../components/SwitchField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme: Theme) => ({
   alert: {
     width: '100%',

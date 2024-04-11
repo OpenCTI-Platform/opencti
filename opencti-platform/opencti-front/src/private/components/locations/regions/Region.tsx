@@ -14,6 +14,8 @@ import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { Region_region$key } from './__generated__/Region_region.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,

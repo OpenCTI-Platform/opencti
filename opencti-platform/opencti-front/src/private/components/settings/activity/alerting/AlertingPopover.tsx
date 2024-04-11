@@ -23,6 +23,8 @@ import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertDigestEdition from './AlertDigestEdition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

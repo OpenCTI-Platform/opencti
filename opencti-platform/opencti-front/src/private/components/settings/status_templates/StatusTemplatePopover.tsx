@@ -21,6 +21,8 @@ import { deleteNode } from '../../../../utils/store';
 import Transition from '../../../../components/Transition';
 import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

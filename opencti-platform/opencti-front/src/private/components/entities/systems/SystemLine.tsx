@@ -14,6 +14,8 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

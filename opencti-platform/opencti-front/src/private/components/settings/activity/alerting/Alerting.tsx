@@ -20,6 +20,8 @@ import { useFormatter } from '../../../../../components/i18n';
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,

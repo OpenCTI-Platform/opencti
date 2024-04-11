@@ -3,6 +3,8 @@ import Paper from '@mui/material/Paper';
 import React, { CSSProperties, ReactNode } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   paper: {
     minHeight: 110,

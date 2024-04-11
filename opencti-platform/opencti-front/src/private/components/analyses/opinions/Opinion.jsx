@@ -13,6 +13,8 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,

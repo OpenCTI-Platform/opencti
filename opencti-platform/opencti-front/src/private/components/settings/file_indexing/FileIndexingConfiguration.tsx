@@ -36,6 +36,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',

@@ -44,6 +44,8 @@ import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   alert: {
     width: '100%',

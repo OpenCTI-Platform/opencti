@@ -29,6 +29,8 @@ import AlertsField from './AlertsField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',

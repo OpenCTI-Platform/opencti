@@ -35,6 +35,8 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
 }));

@@ -15,6 +15,8 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   item: {
     paddingLeft: 10,
@@ -301,26 +303,6 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         ... on StixCyberObservable {
           observable_value
         }
-        ... on IPv4Addr {
-          countries {
-            edges {
-              node {
-                name
-                x_opencti_aliases
-              }
-            }
-          }
-        }
-        ... on IPv6Addr {
-          countries {
-            edges {
-              node {
-                name
-                x_opencti_aliases
-              }
-            }
-          }
-        }
         createdBy {
           id
           entity_type
@@ -343,11 +325,6 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         creators {
           id
           name
-        }
-        reports {
-          pageInfo {
-            globalCount
-          }
         }
       }
     `,

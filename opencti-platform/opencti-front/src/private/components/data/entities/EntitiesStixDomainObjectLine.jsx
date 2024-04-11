@@ -18,6 +18,8 @@ import { resolveLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   item: {
     paddingLeft: 10,

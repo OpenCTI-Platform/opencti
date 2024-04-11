@@ -14,6 +14,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

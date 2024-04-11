@@ -17,6 +17,8 @@ import { UserLineDummy } from './UserLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { DataColumns } from '../../../../components/list_lines';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',

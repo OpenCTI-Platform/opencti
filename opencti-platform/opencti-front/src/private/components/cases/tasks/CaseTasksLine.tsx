@@ -20,6 +20,8 @@ import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graph
 import TaskPopover from './TaskPopover';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 15,

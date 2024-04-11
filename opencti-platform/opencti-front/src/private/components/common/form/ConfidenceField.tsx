@@ -7,6 +7,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
 import useConfidenceLevel from '../../../../utils/hooks/useConfidenceLevel';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',

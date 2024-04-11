@@ -38,6 +38,8 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   heading: {
     display: 'flex',

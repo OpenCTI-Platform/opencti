@@ -8,6 +8,8 @@ import { makeStyles } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   killChainPhaseItem: {
     paddingLeft: 10,

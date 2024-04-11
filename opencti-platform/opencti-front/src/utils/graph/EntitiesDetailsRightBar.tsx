@@ -18,6 +18,8 @@ import { isStixNestedRefRelationship } from '../Relation';
 import StixMetaObjectDetails from './StixMetaObjectDetails';
 import BasicRelationshipDetails from './BasicRelationshipDetails';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   drawerPaper: {
     position: 'fixed',
