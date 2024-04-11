@@ -66,23 +66,16 @@ class FiligranTelemetryManager {
     const logger = this.loggerProvider.getLogger('opencti-api');
     const logRecord = {
       body: {
-        opencti: {
-          settings: {
-            language: this.language,
-            isEEActivated: this.isEEActivated,
-            EEActivationDate: this.EEActivationDate,
-            numberOfInstances: this.numberOfInstances,
-          },
-          version: this.version,
-          numberOfActivUsers: this.activUsers.length,
-        }
-      },
-      attributes: {
+        opencti_version: this.version,
+        opencti_numberOfActivUsers: this.activUsers.length,
+        opencti_language: this.language,
+        opencti_isEEActivated: this.isEEActivated,
+        opencti_EEActivationDate: this.EEActivationDate,
+        opencti_numberOfInstances: this.numberOfInstances,
         timestamp,
       },
     };
     logger.emit(logRecord);
-    console.log('logger', logger);
   }
 
   registerFiligranTelemetry(timestamp: number) {

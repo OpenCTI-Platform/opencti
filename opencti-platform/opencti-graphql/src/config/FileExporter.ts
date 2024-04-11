@@ -15,10 +15,7 @@ export class FileExporter extends InMemoryLogRecordExporter {
   export(logs: LogRecord[], resultCallback: (callback: ExportResult) => void) {
     console.log('IN EXPORTER');
     console.log('logs', logs);
-    const formattedLogs = logs.map((log) => ({
-      body: log.body,
-      date: new Date(log.attributes.timestamp as number),
-    }));
+    const formattedLogs = logs.map((log) => log.body);
     fs.appendFile(
       this.filePath,
       `${JSON.stringify(formattedLogs)}\n`,
