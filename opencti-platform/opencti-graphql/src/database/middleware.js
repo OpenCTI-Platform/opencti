@@ -101,6 +101,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -635,10 +636,6 @@ export const validateCreatedBy = async (context, user, createdById) => {
 };
 
 const inputResolveRefs = async (context, user, input, type, entitySetting) => {
-  if (input.createdBy) {
-    await validateCreatedBy(context, user, input.createdBy);
-  }
-
   const inputResolveRefsFn = async () => {
     const fetchingIds = [];
     const expectedIds = [];
@@ -700,15 +697,29 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     if (embeddedFrom) {
       resolvedElements.push(embeddedFrom);
     }
-    const resolvedElementWithConfGroup = resolvedElements.map((d) => {
-      const resolvedIds = getInstanceIds(d);
-      const matchingConfigs = R.filter((a) => resolvedIds.includes(a.id), fetchingIds);
-      return matchingConfigs.map((c) => ({ ...d, i_group: c }));
-    });
-    const allResolvedElements = R.flatten(resolvedElementWithConfGroup);
-    const uniqElement = (a, b) => a.internal_id === b.internal_id && a.i_group.destKey === b.i_group.destKey;
-    const filteredElements = R.uniqWith(uniqElement, allResolvedElements);
-    const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, filteredElements);
+    const resolutionsMap = new Map();
+    const resolvedIds = new Set();
+    let startProcessingTime = new Date().getTime();
+    for (let i = 0; i < resolvedElements.length; i += 1) {
+      const resolvedElement = resolvedElements[i];
+      const instanceIds = getInstanceIds(resolvedElement);
+      instanceIds.forEach((instanceId) => resolvedIds.add(instanceId));
+      const matchingConfigs = R.filter((a) => instanceIds.includes(a.id), fetchingIds);
+      for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
+        const c = matchingConfigs[configIndex];
+        const data = { ...resolvedElement, i_group: c };
+        const dataKey = `${resolvedElement.internal_id}|${c.destKey}`;
+        resolutionsMap.set(dataKey, data);
+        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+          startProcessingTime = new Date().getTime();
+          await new Promise((resolve) => {
+            setImmediate(resolve);
+          });
+        }
+      }
+    }
+    const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
     const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
       const isMultiple = R.head(val).i_group.multiple;
       if (val.length === 1) {
@@ -719,17 +730,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       }
       return { [k]: val };
     });
-    const resolvedIds = R.flatten(
-      R.map((r) => {
-        const [, val] = R.head(Object.entries(r));
-        if (isNotEmptyField(val)) {
-          const values = Array.isArray(val) ? val : [val];
-          return R.map((v) => getInstanceIds(v), values);
-        }
-        return [];
-      }, resolved)
-    );
-    const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
+    const unresolvedIds = expectedIds.filter((id) => !resolvedIds.has(id));
     // In case of missing from / to, fail directly
     const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
@@ -771,6 +772,15 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
         throw MissingReferenceError({ context: 'Missing markings', input });
+      }
+    }
+    // Check if available created_by is a correct identity
+    const inputCreatedBy = inputResolved[INPUT_CREATED_BY];
+    if (inputCreatedBy) {
+      if (!isStixDomainObjectIdentity(inputCreatedBy.entity_type)) {
+        throw FunctionalError('CreatedBy relation must be an Identity entity.', {
+          createdBy: inputCreatedBy
+        });
       }
     }
     return inputResolved;
