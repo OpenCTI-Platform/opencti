@@ -1188,6 +1188,7 @@
   "Incidents": "インシデント",
   "Include files not related to any knowledge (data import)": "知識とは関係のないファイルを含める（データインポート）",
   "Include headers in the feed": "フィードにヘッダを含める",
+  "Include knowledge": "知識を含む",
   "independent": "無所属",
   "Indexed files": "索引的文件",
   "Indexing": "インデックス作成",
