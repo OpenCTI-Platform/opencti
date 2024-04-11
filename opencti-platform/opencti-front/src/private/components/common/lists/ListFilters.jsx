@@ -75,10 +75,11 @@ const ListFilters = ({
           groupLabel: isFilterKeyForAllTypes
             ? t_i18n('Most used filters')
             : t_i18n('All other filters'),
+          groupOrder: isFilterKeyForAllTypes ? 1 : 0,
         };
       })
       .sort((a, b) => a.label.localeCompare(b.label))
-      .sort((a, b) => b.groupLabel.localeCompare(a.groupLabel)) // 'Most used filters' before 'All other filters'
+      .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
     : availableFilterKeys
       .map((key) => {
         return {
