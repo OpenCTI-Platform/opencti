@@ -150,6 +150,11 @@ class StixDomainObjectsExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+
+    // global export pdf can not be used here
+    // export-report-pdf connector needs precise entity_type to work but the type sent here is incompatible
+    const availableFormat = exportScopes.filter((exportScope) => exportScope !== 'application/pdf');
+
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
@@ -186,12 +191,12 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting }) => (
+                {({ submitForm, handleReset, isSubmitting, resetForm }) => (
                   <Form>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
                       open={this.state.open}
-                      onClose={this.handleClose.bind(this)}
+                      onClose={resetForm}
                       fullWidth={true}
                     >
                       <DialogTitle>{t('Generate an export')}</DialogTitle>
@@ -204,7 +209,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         >
-                          {exportScopes.map((value, i) => (
+                          {availableFormat.map((value, i) => (
                             <MenuItem
                               key={i}
                               value={value}

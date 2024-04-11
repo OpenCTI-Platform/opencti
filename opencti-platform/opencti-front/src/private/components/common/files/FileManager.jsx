@@ -390,13 +390,13 @@ const FileManager = ({
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, isSubmitting, resetForm }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
                 open={openExport}
                 keepMounted={true}
-                onClose={handleCloseExport}
+                onClose={resetForm}
                 fullWidth={true}
               >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>

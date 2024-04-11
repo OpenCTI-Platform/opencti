@@ -172,12 +172,12 @@ const StixCoreObjectFileExportComponent = ({
         onSubmit={onSubmitExport}
         onReset={() => setOpen(false)}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ submitForm, handleReset, isSubmitting, resetForm }) => (
           <Form>
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={open}
-              onClose={() => setOpen(false)}
+              onClose={resetForm}
               fullWidth={true}
             >
               <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
