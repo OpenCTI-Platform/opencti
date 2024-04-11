@@ -610,10 +610,8 @@ const PlaybookAddComponentsContent = ({
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value }
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value) }
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
