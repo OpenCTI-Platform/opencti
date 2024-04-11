@@ -617,7 +617,7 @@ const PlaybookAddComponentsContent = ({
                           variant: 'standard',
                           label: t_i18n(v.$ref ?? k),
                         }}
-                        getOptionLabel={(option) => (option.title
+                        getOptionLabel={(option) => translateEntityType(option.title
                           ? option.title
                           : v.oneOf?.filter((n) => n.const === option)?.at(0)
                             ?.title ?? option)
