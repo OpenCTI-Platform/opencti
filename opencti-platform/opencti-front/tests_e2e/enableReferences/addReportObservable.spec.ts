@@ -2,20 +2,20 @@ import { expect, test } from '../fixtures/baseFixtures';
 import ReportPage from '../model/report.pageModel';
 import ContainerObservablesPage from '../model/containerObservables.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
-import ReportFormPage from '../model/reportForm.pageModel';
+import ReportFormPage from '../model/form/reportForm.pageModel';
 import LoginPage from '../model/login.pageModel';
 import DashboardPage from '../model/dashboard.pageModel';
 import CommitMessagePage from '../model/commitMessage.pageModel';
 import ContainerAddObservablesPage from '../model/containerAddObservables.pageModel';
 import RolesSettingsPage from '../model/rolesSettings.pageModel';
-import RoleFormPage from '../model/roleForm.pageModel';
+import RoleFormPage from '../model/form/roleForm.pageModel';
 import RolePage from '../model/role.pageModel';
 import GroupsSettingsPage from '../model/groupsSettings.pageModel';
 import GroupPage from '../model/group.pageModel';
-import GroupFormPage from '../model/groupForm.pageModel';
+import GroupFormPage from '../model/form/groupForm.pageModel';
 import UsersSettingsPage from '../model/usersSettings.pageModel';
 import UserPage from '../model/user.pageModel';
-import UserFormPage from '../model/userForm.pageModel';
+import UserFormPage from '../model/form/userForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 const noBypassUserAuthFile = 'tests_e2e/.setup/.auth/no-bypass-ref-user.json';
@@ -116,12 +116,12 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   // Create a report and check that adding an observable is possible
   await page.goto('/dashboard/analyses/reports');
   await page.getByTestId('ChevronRightIcon').click();
-  await reportPage.addNewReport();
-  await reportForm.fillNameInput('Test add observable e2e');
+  await reportPage.openNewReportForm();
+  await reportForm.nameField.fill('Test add observable e2e');
   await reportPage.getCreateReportButton().click();
   await reportPage.getItemFromList('Test add observable e2e').click();
   await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
-  await reportDetailsPage.getObservablesTab().click();
+  await reportDetailsPage.goToObservablesTab();
   await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await containerAddObservablesPage.createNewIPV4Observable('8.8.8.8');
@@ -140,7 +140,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
   await reportPage.getItemFromList('Test add observable e2e').click();
-  await reportDetailsPage.getObservablesTab().click();
+  await reportDetailsPage.goToObservablesTab();
   await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
@@ -168,12 +168,12 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     // Create a report and check that adding an observable is possible
     await page.goto('/dashboard/analyses/reports');
     await page.getByTestId('ChevronRightIcon').click();
-    await reportPage.addNewReport();
-    await reportForm.fillNameInput('Test add observable e2e 2');
+    await reportPage.openNewReportForm();
+    await reportForm.nameField.fill('Test add observable e2e 2');
     await reportPage.getCreateReportButton().click();
     await reportPage.getItemFromList('Test add observable e2e 2').click();
     await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
-    await reportDetailsPage.getObservablesTab().click();
+    await reportDetailsPage.goToObservablesTab();
     await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await containerAddObservablesPage.createNewIPV4Observable('9.9.9.9');
@@ -192,7 +192,7 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
 
     await leftBarPage.clickOnMenu('Analyses', 'Reports');
     await reportPage.getItemFromList('Test add observable e2e 2').click();
-    await reportDetailsPage.getObservablesTab().click();
+    await reportDetailsPage.goToObservablesTab();
     await expect(containerObservablesPage.getContainerObservablesPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();

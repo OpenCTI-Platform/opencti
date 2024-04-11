@@ -1,8 +1,8 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import IntrusionSetPage from '../model/intrusionSet.pageModel';
-import IntrusionSetFormPage from '../model/intrusionSetForm.pageModel';
+import IntrusionSetFormPage from '../model/form/intrusionSetForm.pageModel';
 import IntrusionSetDetailsPage from '../model/intrusionSetDetails.pageModel';
-import StixCoreRelationshipCreationFromEntityFormPage from '../model/stixCoreRelationshipCreationFromEntityForm.pageModel';
+import StixCoreRelationshipCreationFromEntityFormPage from '../model/form/stixCoreRelationshipCreationFromEntityForm.pageModel';
 
 test('Create a new relationship in intrusion set knowledge', async ({ page }) => {
   const intrusionSetPage = new IntrusionSetPage(page);

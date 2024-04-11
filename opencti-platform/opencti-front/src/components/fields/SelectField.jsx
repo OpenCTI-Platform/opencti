@@ -1,6 +1,7 @@
 import React from 'react';
 import { isNil } from 'ramda';
 import { getIn, useField } from 'formik';
+import { v4 as uuid } from 'uuid';
 import MuiSelect from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
@@ -68,6 +69,8 @@ const SelectField = (props) => {
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToSelect(props);
 
+  const labelId = uuid();
+
   return (
     <FormControl
       style={props.containerstyle}
@@ -76,6 +79,7 @@ const SelectField = (props) => {
       <InputLabel
         style={{ color: props.disabled ? '#4f4f4f' : '' }}
         variant={props.variant}
+        id={labelId}
       >
         {props.label}
       </InputLabel>
@@ -85,6 +89,7 @@ const SelectField = (props) => {
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
+        labelId={labelId}
       />
       <FormHelperText
         variant={props.variant}

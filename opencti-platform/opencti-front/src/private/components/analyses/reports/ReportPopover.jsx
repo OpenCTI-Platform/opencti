@@ -45,6 +45,7 @@ const ReportPopover = ({ id }) => {
         value="popover"
         size="small"
         onClick={handleOpen}
+        title={t_i18n('Report actions')}
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>

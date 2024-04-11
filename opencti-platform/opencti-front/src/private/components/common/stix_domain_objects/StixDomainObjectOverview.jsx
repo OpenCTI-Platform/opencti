@@ -140,22 +140,24 @@ class StixDomainObjectOverview extends Component {
                   />
                 </>
               )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{
-                  marginTop:
-                    withPattern
-                    || (!withoutMarking && stixDomainObject.objectMarking)
-                      ? 20
-                      : 0,
-                }}
-              >
-                {t('Author')}
-              </Typography>
-              <ItemAuthor
-                createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
-              />
+              <div>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{
+                    marginTop:
+                      withPattern
+                      || (!withoutMarking && stixDomainObject.objectMarking)
+                        ? 20
+                        : 0,
+                  }}
+                >
+                  {t('Author')}
+                </Typography>
+                <ItemAuthor
+                  createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
+                />
+              </div>
               {(displayConfidence || displayReliability) && (
                 <Grid container={true} columnSpacing={1}>
                   {displayReliability && (
@@ -236,7 +238,7 @@ class StixDomainObjectOverview extends Component {
                 disabled={!stixDomainObject.workflowEnabled}
               />
               {displayAssignees && (
-                <>
+                <div>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -245,10 +247,10 @@ class StixDomainObjectOverview extends Component {
                     {t('Assignees')}
                   </Typography>
                   <ItemAssignees assignees={stixDomainObject.objectAssignee ?? []}/>
-                </>
+                </div>
               )}
               {displayParticipants && (
-                <>
+                <div>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -257,7 +259,7 @@ class StixDomainObjectOverview extends Component {
                     {t('Participants')}
                   </Typography>
                   <ItemParticipants participants={stixDomainObject.objectParticipant ?? []}/>
-                </>
+                </div>
               )}
               <Typography
                 variant="h3"
@@ -285,14 +287,16 @@ class StixDomainObjectOverview extends Component {
                 {t('Platform creation date')}
               </Typography>
               {fldt(stixDomainObject.created_at)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Creators')}
-              </Typography>
-              <ItemCreators creators={stixDomainObject.creators ?? []} />
+              <div>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Creators')}
+                </Typography>
+                <ItemCreators creators={stixDomainObject.creators ?? []} />
+              </div>
               <div style={{ marginTop: 20 }}>
                 <Typography
                   variant="h3"

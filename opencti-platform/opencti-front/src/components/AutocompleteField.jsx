@@ -7,6 +7,7 @@ import { fieldToAutocomplete } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 import { truncate } from '../utils/String';
+import { useFormatter } from './i18n';
 
 const AutocompleteField = (props) => {
   const {
@@ -24,6 +25,7 @@ const AutocompleteField = (props) => {
     endAdornment,
   } = props;
   const [, meta] = useField(name);
+  const { t_i18n } = useFormatter();
   const internalOnChange = React.useCallback(
     (_, value) => {
       if (typeof onInternalChange === 'function') {
@@ -100,6 +102,7 @@ const AutocompleteField = (props) => {
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
           size="large"
+          title={t_i18n('Add')}
         >
           <Add />
         </IconButton>
