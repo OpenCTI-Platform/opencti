@@ -203,7 +203,7 @@ const Audit = () => {
             checked={types?.length === 2}
           />
         }
-        label="Include knowledge"
+        label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
     </div>
