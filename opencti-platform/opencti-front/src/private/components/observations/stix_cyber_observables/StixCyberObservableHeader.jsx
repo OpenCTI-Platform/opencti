@@ -9,6 +9,8 @@ import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObj
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',

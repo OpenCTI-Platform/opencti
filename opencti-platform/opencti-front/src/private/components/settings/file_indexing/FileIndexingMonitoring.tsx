@@ -41,6 +41,8 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
     fontSize: 20,

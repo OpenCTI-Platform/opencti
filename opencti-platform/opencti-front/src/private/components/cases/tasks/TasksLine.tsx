@@ -18,6 +18,8 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemDueDate from '../../../../components/ItemDueDate';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

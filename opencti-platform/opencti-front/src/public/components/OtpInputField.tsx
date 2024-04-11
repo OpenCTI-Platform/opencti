@@ -5,6 +5,8 @@ import type { Theme } from '../../components/Theme';
 
 export const OTP_CODE_SIZE = 6;
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   inputStyle: {
     outline: 'none',

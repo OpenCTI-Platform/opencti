@@ -32,6 +32,8 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { FilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
     padding: 0,

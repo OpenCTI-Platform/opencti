@@ -11,6 +11,8 @@ import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node
 import { DataColumns } from '../../../../components/list_lines';
 import ItemIcon from '../../../../components/ItemIcon';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>({
   item: {
     paddingLeft: 10,

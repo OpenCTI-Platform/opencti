@@ -20,6 +20,8 @@ export enum DrawerVariant {
   updateWithPanel = 'updateWithPanel',
 }
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
   drawerPaper: {
     minHeight: '100vh',

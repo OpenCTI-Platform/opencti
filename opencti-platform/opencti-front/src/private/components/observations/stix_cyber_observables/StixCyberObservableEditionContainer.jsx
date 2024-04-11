@@ -9,6 +9,8 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,

@@ -27,6 +27,8 @@ import { hexToRGB, itemColor } from '../Colors';
 import ItemCreators from '../../components/ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
     marginTop: '20px',

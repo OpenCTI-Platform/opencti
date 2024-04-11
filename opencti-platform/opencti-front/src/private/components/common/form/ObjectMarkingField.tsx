@@ -16,6 +16,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,

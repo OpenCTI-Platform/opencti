@@ -11,6 +11,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useFormatter } from '../../components/i18n';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   login: {
     padding: 15,

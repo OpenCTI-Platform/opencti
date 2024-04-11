@@ -14,6 +14,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     width: 400,

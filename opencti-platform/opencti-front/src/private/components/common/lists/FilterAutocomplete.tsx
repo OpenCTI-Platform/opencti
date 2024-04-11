@@ -10,6 +10,8 @@ import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,

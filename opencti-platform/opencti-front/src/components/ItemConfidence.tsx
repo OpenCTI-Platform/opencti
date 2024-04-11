@@ -5,6 +5,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { useLevel } from '../utils/hooks/useScale';
 import { hexToRGB } from '../utils/Colors';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,

@@ -13,6 +13,8 @@ import { rootPublicQuery } from '../LoginRoot';
 import logoLight from '../../static/images/logo_light.png';
 import logoDark from '../../static/images/logo_dark.png';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   container: {
     textAlign: 'center',

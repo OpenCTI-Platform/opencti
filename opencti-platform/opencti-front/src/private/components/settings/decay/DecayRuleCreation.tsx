@@ -24,6 +24,8 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

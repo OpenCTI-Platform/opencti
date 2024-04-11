@@ -36,6 +36,8 @@ const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, re
 ));
 Transition.displayName = 'TransitionSlide';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     height: 50,

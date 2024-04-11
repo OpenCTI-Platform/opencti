@@ -6,6 +6,8 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import type { ProfileQuery } from './__generated__/ProfileQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

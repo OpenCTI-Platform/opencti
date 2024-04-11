@@ -9,6 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   button: {
     marginLeft: 20,

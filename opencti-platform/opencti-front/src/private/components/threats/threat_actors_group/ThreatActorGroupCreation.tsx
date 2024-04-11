@@ -27,6 +27,8 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$variables } from './__generated__/ThreatActorGroupCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

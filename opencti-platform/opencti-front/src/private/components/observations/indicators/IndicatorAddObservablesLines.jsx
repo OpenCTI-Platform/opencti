@@ -20,6 +20,8 @@ import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   container: {
     padding: '20px 0 20px 0',

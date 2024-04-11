@@ -24,6 +24,8 @@ import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import notifierValidator from './NotifierValidator';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

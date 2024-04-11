@@ -33,6 +33,8 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   container: {
     transition: theme.transitions.create('padding', {

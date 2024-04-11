@@ -17,6 +17,8 @@ import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
     height: '100%',

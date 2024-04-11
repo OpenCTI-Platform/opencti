@@ -16,6 +16,8 @@ import SwitchField from '../../../../components/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: theme.spacing(2),

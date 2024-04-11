@@ -25,6 +25,8 @@ import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useAuth from '../../../../utils/hooks/useAuth';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
     zIndex: 1040,

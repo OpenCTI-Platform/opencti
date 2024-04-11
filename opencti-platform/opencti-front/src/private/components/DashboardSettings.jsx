@@ -24,6 +24,8 @@ import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
 import Transition from '../../components/Transition';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => createStyles({
   muiSelect: {
     display: 'flex',

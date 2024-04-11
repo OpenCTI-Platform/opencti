@@ -13,6 +13,8 @@ import ExternalReferenceStixCoreObjects from './ExternalReferenceStixCoreObjects
 import { ExternalReference_externalReference$data } from './__generated__/ExternalReference_externalReference.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

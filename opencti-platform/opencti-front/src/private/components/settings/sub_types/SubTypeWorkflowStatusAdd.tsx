@@ -15,6 +15,8 @@ import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   createButton: {
     position: 'fixed',

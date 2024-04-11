@@ -14,6 +14,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { CaseTemplateTasksLinesPaginationQuery$data } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateTasksPopover from './CaseTemplateTasksPopover';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

@@ -16,6 +16,8 @@ import { environment } from './relay/environment';
 import Loader from './components/Loader';
 import { THEME_DARK_DEFAULT_BACKGROUND } from './components/ThemeDark';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   loading: {
     width: '100%',

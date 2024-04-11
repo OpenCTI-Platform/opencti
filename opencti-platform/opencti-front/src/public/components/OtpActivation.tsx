@@ -11,6 +11,8 @@ import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.grap
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   input: {
     display: 'flex',

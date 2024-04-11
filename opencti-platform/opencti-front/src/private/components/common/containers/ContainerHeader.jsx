@@ -45,6 +45,8 @@ import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   containerDefault: {
     marginTop: 0,

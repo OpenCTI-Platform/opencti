@@ -17,6 +17,8 @@ import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from
 import { formatDate } from '../../../../utils/Time';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   icon: {
     color: theme.palette.primary.main,

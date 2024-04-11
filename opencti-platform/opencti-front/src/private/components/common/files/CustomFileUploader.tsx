@@ -24,6 +24,8 @@ interface CustomFileUploadProps {
   sizeLimit?: number; // in bytes
 }
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   box: {
     width: '100%',

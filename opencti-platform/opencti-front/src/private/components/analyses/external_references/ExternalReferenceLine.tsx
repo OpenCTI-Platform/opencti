@@ -15,6 +15,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceLine_node$data } from './__generated__/ExternalReferenceLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

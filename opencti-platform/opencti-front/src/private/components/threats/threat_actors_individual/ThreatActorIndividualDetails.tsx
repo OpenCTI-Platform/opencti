@@ -22,6 +22,8 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',

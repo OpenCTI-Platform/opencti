@@ -10,6 +10,8 @@ const BANNER_Z_INDEX = 2000;
 /* Styled class is not used in component  custom-rules/classes-rule */
 /* for the banner classes below which are derived in bannerColorClassName() component */
 /* eslint-disable */
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   banner: {
     textAlign: 'center',

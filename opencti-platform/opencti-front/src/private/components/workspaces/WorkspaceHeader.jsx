@@ -44,6 +44,8 @@ import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 import Transition from '../../../components/Transition';
 import useHelper from '../../../utils/hooks/useHelper';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   title: {
     float: 'left',

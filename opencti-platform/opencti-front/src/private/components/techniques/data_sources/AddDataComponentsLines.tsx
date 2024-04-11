@@ -14,6 +14,8 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import { AddDataComponentsLinesToDataSource_data$key } from './__generated__/AddDataComponentsLinesToDataSource_data.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     color: theme.palette.primary.main,

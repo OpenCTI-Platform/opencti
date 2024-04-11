@@ -31,6 +31,8 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: '0 0 60px 0',

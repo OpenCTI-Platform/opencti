@@ -3,6 +3,8 @@ import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import type { Theme } from '../../../../../../components/Theme';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
     border:

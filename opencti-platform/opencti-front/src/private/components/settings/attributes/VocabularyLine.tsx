@@ -18,6 +18,8 @@ import {
 } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,

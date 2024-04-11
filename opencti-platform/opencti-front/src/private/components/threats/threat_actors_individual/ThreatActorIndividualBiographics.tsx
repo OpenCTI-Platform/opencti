@@ -11,6 +11,8 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import { isEmptyField } from '../../../../utils/utils';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',

@@ -27,6 +27,8 @@ import { ChannelsLinesPaginationQuery$variables } from './__generated__/Channels
 import type { Theme } from '../../../../components/Theme';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

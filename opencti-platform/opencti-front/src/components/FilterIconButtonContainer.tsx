@@ -19,6 +19,8 @@ import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   filter3: {
     fontSize: 12,

@@ -5,6 +5,8 @@ import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, use
 import { ForceGraphMethods } from 'react-force-graph-2d';
 import type { Theme } from '../../components/Theme';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles({
   canvas: {
     position: 'absolute',

@@ -18,6 +18,8 @@ import MarkdownField from '../../../components/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,

@@ -6,6 +6,8 @@ import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
 import { SubType_subType$data } from '../private/components/settings/sub_types/__generated__/SubType_subType.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,

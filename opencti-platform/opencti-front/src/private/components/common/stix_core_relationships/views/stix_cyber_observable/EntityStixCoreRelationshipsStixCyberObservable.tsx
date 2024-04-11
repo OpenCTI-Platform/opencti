@@ -8,6 +8,8 @@ import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelat
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     marginTop: 15,

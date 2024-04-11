@@ -9,6 +9,8 @@ import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndT
 import { truncate } from '../String';
 import { getMainRepresentative } from '../defaultRepresentatives';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   label: {
     marginTop: '20px',

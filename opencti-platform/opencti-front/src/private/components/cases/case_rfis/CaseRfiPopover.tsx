@@ -22,6 +22,8 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,

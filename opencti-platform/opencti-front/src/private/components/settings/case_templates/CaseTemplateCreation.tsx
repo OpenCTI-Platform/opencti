@@ -16,6 +16,8 @@ import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutation.graphql';
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,

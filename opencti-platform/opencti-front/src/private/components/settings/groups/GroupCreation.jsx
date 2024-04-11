@@ -14,6 +14,8 @@ import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,

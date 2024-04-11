@@ -12,6 +12,8 @@ import TriggerDigestCreation from './TriggerDigestCreation';
 import TriggerLiveCreation from './TriggerLiveCreation';
 import { TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
     position: 'fixed',

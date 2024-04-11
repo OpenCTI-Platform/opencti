@@ -6,6 +6,8 @@ import { copyToClipboard } from '../utils/utils';
 import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
 
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   containerInline: {
     position: 'relative',
