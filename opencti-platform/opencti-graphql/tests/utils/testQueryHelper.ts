@@ -1,8 +1,7 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import { createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
-import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
+import { executeInternalQuery, queryAsAdmin } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
 

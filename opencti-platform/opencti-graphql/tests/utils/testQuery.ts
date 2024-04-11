@@ -27,7 +27,7 @@ export const SYNC_LIVE_EVENTS_SIZE = 600;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
-export const API_TOKEN = conf.get('app:admin:token');
+export const ADMIN_API_TOKEN = conf.get('app:admin:token');
 export const API_EMAIL = conf.get('app:admin:email');
 export const API_PASSWORD = conf.get('app:admin:password');
 const ONE_SECOND = 1000;

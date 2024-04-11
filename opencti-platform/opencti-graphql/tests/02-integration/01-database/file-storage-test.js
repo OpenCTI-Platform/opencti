@@ -2,7 +2,7 @@ import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
 import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';

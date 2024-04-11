@@ -2,20 +2,16 @@ import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { createReadStream } from 'node:fs';
 import {
-  API_TOKEN,
+  ADMIN_API_TOKEN,
   createHttpClient,
-  DATA_FILE_TEST, executeExternalQuery, FIFTEEN_MINUTES,
+  DATA_FILE_TEST,
+  executeExternalQuery,
+  FIFTEEN_MINUTES,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
   testContext
 } from '../../utils/testQuery';
-import {
-  checkPostSyncContent,
-  checkPreSyncContent, REPORT_QUERY,
-  SYNC_CREATION_QUERY,
-  SYNC_START_QUERY,
-  UPLOADED_FILE_SIZE
-} from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { wait } from '../../../src/database/utils';
 import { stixCoreObjectImportPush } from '../../../src/domain/stixCoreObject';
@@ -42,7 +38,7 @@ describe('Database sync direct', () => {
           listen_deletion: true,
           no_dependencies: false,
           stream_id: 'live',
-          token: API_TOKEN,
+          token: ADMIN_API_TOKEN,
         },
       };
       const synchronizer = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_CREATION_QUERY, SYNC_CREATE);

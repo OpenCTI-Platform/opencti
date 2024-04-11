@@ -437,3 +437,12 @@ export const streamConverter = (stream) => {
     stream.on('end', () => resolve(data));
   });
 };
+
+// Utilities to use typescript on file-storage-helper.
+export const sendS3Command = (command) => {
+  return s3Client.send(command);
+};
+
+export const openCTIBucket = () => {
+  return bucketName;
+};

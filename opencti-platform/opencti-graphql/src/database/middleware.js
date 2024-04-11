@@ -1064,6 +1064,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const { chosenFields = {} } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
+  logApp.info('[OPENCTI] Merging START -----------------------------');
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   // Pre-checks
   // - No self merge
@@ -1246,6 +1247,19 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     },
     { concurrency: ES_MAX_CONCURRENCY }
   );
+
+  // TODO Manage files on S3...
+  const entitiesWithFile = sourceEntities.map((entity) => {
+    if (entity.x_opencti_files) {
+      if (entity.x_opencti_files.length > 0) {
+        return entity.id;
+      }
+    }
+    return null;
+  });
+
+  logApp.info('Entity with files that must be moved:', { entitiesWithFile });
+
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.

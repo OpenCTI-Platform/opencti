@@ -1,9 +1,9 @@
 /* eslint-disable function-paren-newline */
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, ADMIN_API_TOKEN, API_URI, FIVE_MINUTES, PYTHON_PATH, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 
-const importOpts: string[] = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
+const importOpts: string[] = [API_URI, ADMIN_API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
 
 describe('Database provision', () => {
   it('Should import creation succeed', async () => {
