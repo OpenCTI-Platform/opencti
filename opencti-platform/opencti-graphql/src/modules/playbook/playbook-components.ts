@@ -113,7 +113,7 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   executor: async ({ bundle, playbookNode }) => {
     if (playbookNode.configuration.level) {
-      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', { bundle });
+      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', null, { bundle });
     }
     return { output_port: 'out', bundle, forceBundleTracking: true };
   }
