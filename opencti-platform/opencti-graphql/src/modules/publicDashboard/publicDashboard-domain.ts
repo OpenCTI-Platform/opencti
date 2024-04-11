@@ -25,7 +25,7 @@ import {
   type QueryPublicStixRelationshipsNumberArgs
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
-import { SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -126,11 +126,8 @@ export const addPublicDashboard = async (
     throw FunctionalError('Cannot published empty dashboard');
   }
 
-  const adminAuthorizedMembers = dashboard.authorized_members
-    .filter((member) => member.access_right === 'admin')
-    .map((member) => member.id);
-
-  if (!adminAuthorizedMembers.includes(user.id)) {
+  const access = getUserAccessRight(user, dashboard);
+  if (access !== MEMBER_ACCESS_RIGHT_ADMIN) {
     throw ForbiddenAccess('You are not allowed to do this.');
   }
 

@@ -11,7 +11,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../util
 import { internalFindByIds, storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
-import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
@@ -206,7 +206,9 @@ export const getDataSharingMaxMarkings = async (context, user, settings) => {
   if (!platform_data_sharing_max_markings) {
     return [];
   }
-  return internalFindByIds(context, user, platform_data_sharing_max_markings);
+  const dataSharingMaxMarkings = platform_data_sharing_max_markings ?? [];
+  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return dataSharingMaxMarkings.map((m) => allMarkingsMap.get(m) ?? m);
 };
 
 // Retrieves all available markings than can be shared.
