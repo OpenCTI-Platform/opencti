@@ -149,7 +149,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         }
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
-            code={result?.csvMapperTest?.objects || t_i18n('You will find here the result in JSON format')}
+            code={result?.csvMapperTest?.objects || t_i18n('You will find here the result in JSON format.')}
             language={'json'}
           />
         </Box>
