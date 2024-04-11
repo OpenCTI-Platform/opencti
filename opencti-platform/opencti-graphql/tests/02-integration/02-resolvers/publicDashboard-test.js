@@ -124,6 +124,42 @@ const DELETE_PRIVATE_DASHBOARD_QUERY = gql`
     }
 `;
 
+const MARKINGS_QUERY = gql`
+  query markings {
+    markingDefinitions {
+      edges {
+        node {
+          id
+          definition
+        }
+      }
+    }
+  }
+`;
+
+const READ_MAX_MARKINGS_QUERY = gql`
+  query settingsMaxMarkings {
+    settings {
+      id
+    }
+  }
+`;
+
+const EDIT_MAX_MARKINGS_QUERY = gql`
+  mutation edtSettingsMaxMarkings($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        platform_data_sharing_max_markings {
+          id
+          definition
+          definition_type
+          x_opencti_order
+        }
+      }
+    }
+  }
+`;
+
 describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
@@ -186,6 +222,7 @@ describe('PublicDashboard resolver', () => {
     describe('PublicDashboard resolver standard behavior', () => {
       let publicDashboardInternalId;
       let publicDashboardUriKey;
+      let userEditorId;
 
       it('User without EXPLORE_EXUPDATE_PUBLISH capability should not create public dashboards', async () => {
         // Create the publicDashboard
@@ -209,7 +246,7 @@ describe('PublicDashboard resolver', () => {
 
       it('User with EXPLORE_EXUPDATE_PUBLISH capability but private dashboard view access right cannot create public dashboard', async () => {
         // Add editor user in private dashboard authorizedMembers with view access right
-        const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+        userEditorId = await getUserIdByEmail(USER_EDITOR.email);
         const authorizedMembersUpdate = [
           {
             id: ADMIN_USER.id,
@@ -242,6 +279,77 @@ describe('PublicDashboard resolver', () => {
         expect(queryResult).not.toBeNull();
         expect(queryResult.errors.length).toEqual(1);
         expect(queryResult.errors.at(0).message).toEqual('You are not allowed to do this.');
+      });
+
+      it('User cannot create public dashboard with marking not in User allowed markings', async () => {
+        // Get marking
+        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
+        const markings = data.markingDefinitions.edges.map((e) => e.node);
+        const tlpRed = markings.find((m) => m.definition === 'TLP:RED');
+
+        // Set max markings
+        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
+        const settingsId = settingsResult.data.settings.id;
+        await queryAsAdmin({
+          query: EDIT_MAX_MARKINGS_QUERY,
+          variables: {
+            id: settingsId,
+            input: {
+              key: 'platform_data_sharing_max_markings',
+              value: [tlpRed.id]
+            }
+          },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+        // Add security user in private dashboard authorizedMembers with admin access right
+        const authorizedMembersUpdate = [
+          {
+            id: ADMIN_USER.id,
+            access_right: 'admin',
+          },
+          {
+            id: userEditorId,
+            access_right: 'admin',
+          },
+        ];
+
+        const authorizedMembersUpdateQuery = await queryAsAdmin({
+          query: UPDATE_MEMBERS_QUERY,
+          variables: { id: privateDashboardInternalId, input: authorizedMembersUpdate },
+        });
+        expect(authorizedMembersUpdateQuery.data.workspaceEditAuthorizedMembers.authorizedMembers.length).toEqual(2);
+
+        // Try to create public dashboard
+        const PUBLIC_DASHBOARD_TO_CREATE = {
+          input: {
+            name: 'public dashboard ',
+            uri_key: 'public-dashboard-markings-red',
+            dashboard_id: privateDashboardInternalId,
+            allowed_markings_ids: [tlpRed.id],
+            enabled: true,
+          },
+        };
+
+        const publicDashboardQuery = await editorQuery({
+          query: CREATE_QUERY,
+          variables: PUBLIC_DASHBOARD_TO_CREATE,
+        });
+        expect(publicDashboardQuery).not.toBeNull();
+        expect(publicDashboardQuery.errors.length).toEqual(1);
+        expect(publicDashboardQuery.errors.at(0).message).toEqual('Not allowed markings');
+
+        // Reset max markings.
+        await queryAsAdmin({
+          query: EDIT_MAX_MARKINGS_QUERY,
+          variables: {
+            id: settingsId,
+            input: {
+              key: 'platform_data_sharing_max_markings',
+              value: []
+            }
+          },
+        });
       });
 
       it('should publicDashboard created', async () => {
@@ -852,8 +960,6 @@ describe('PublicDashboard resolver', () => {
           expect(publicStixRelationships.edges[0].node.relationship_type).toEqual('targets');
           expect(publicStixRelationships.pageInfo.globalCount).toEqual(4);
         });
-
-        // TODO add tests for other APIS
       });
 
       it('should delete publicDashboard', async () => {
@@ -874,27 +980,6 @@ describe('PublicDashboard resolver', () => {
     });
 
     describe('Tests widgets API with markings', () => {
-      const READ_MAX_MARKINGS_QUERY = gql`
-        query settingsMaxMarkings {
-          settings {
-            id
-          }
-        }
-      `;
-      const EDIT_MAX_MARKINGS_QUERY = gql`
-        mutation edtSettingsMaxMarkings($id: ID!, $input: [EditInput]!) {
-          settingsEdit(id: $id) {
-            fieldPatch(input: $input) {
-              platform_data_sharing_max_markings {
-                id
-                definition
-                definition_type
-                x_opencti_order
-              }
-            }
-          }
-        }
-      `;
       const API_SCR_NUMBER_QUERY = gql`
         query PublicStixRelationshipsNumber(
           $startDate: DateTime
@@ -977,18 +1062,6 @@ describe('PublicDashboard resolver', () => {
 
       beforeAll(async () => {
         // region Fetch markings.
-        const MARKINGS_QUERY = gql`
-          query markings {
-            markingDefinitions {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
-            }
-          }
-        `;
         const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
         const markings = data.markingDefinitions.edges.map((e) => e.node);
         tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
@@ -1020,7 +1093,7 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        const publicDashboard = await queryAsAdmin({
+        const publicDashboard = await editorQuery({
           query: CREATE_QUERY,
           variables: PUBLIC_DASHBOARD_TO_CREATE,
         });
@@ -1115,7 +1188,6 @@ describe('PublicDashboard resolver', () => {
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        console.log(aaa);
         const result = aaa.data.publicStixRelationshipsNumber;
         expect(result.total).toEqual(2);
         expect(result.count).toEqual(0);

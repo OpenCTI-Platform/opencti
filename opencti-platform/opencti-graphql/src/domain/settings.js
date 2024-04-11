@@ -8,7 +8,7 @@ import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { internalFindByIds, storeLoadById } from '../database/middleware-loader';
+import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -203,9 +203,6 @@ export const getCriticalAlerts = async (context, user) => {
 // Retrieves max level of markings that can be shared.
 export const getDataSharingMaxMarkings = async (context, user, settings) => {
   const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  if (!platform_data_sharing_max_markings) {
-    return [];
-  }
   const dataSharingMaxMarkings = platform_data_sharing_max_markings ?? [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   return dataSharingMaxMarkings.map((m) => allMarkingsMap.get(m) ?? m);
