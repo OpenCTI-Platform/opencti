@@ -1,7 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createStreamProcessor, lockResource, type StreamProcessor } from '../database/redis';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { lockResource } from '../database/redis';
+import { executionContext } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
@@ -12,7 +12,7 @@ import { usersWithActiveSession } from '../database/session';
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000;
 
-const telemetryStreamHandler = async () => {
+const fetchTelemetryData = async () => {
   try {
     const context = executionContext('telemetry_manager');
     const timestamp = new Date().getTime();
@@ -38,16 +38,8 @@ const telemetryStreamHandler = async () => {
 };
 
 const initTelemetryManager = () => {
-  const WAIT_TIME_ACTION = 1000;
   let scheduler: SetIntervalAsyncTimer<[]>;
-  let streamProcessor: StreamProcessor;
   let running = false;
-  let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
 
   const telemetryHandler = async () => {
     let lock;
@@ -56,13 +48,7 @@ const initTelemetryManager = () => {
       lock = await lockResource([TELEMETRY_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running telemetry manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Telemetry manager', telemetryStreamHandler);
-      await streamProcessor.start('live');
-      while (!shutdown && streamProcessor.running()) {
-        lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
-      }
-      logApp.info('[OPENCTI-MODULE] End of telemetry manager processing');
+      await fetchTelemetryData();
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Telemetry manager already started by another API');
@@ -71,14 +57,14 @@ const initTelemetryManager = () => {
       }
     } finally {
       running = false;
-      if (streamProcessor) await streamProcessor.shutdown();
+      logApp.debug('[OPENCTI-MODULE] Telemetry manager done');
       if (lock) await lock.unlock();
     }
   };
 
   return {
     start: async () => {
-      // Start the listening of events
+      // Fetch data periodically
       scheduler = setIntervalAsync(async () => {
         await telemetryHandler();
       }, SCHEDULE_TIME);
@@ -92,7 +78,6 @@ const initTelemetryManager = () => {
     },
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping telemetry manager');
-      shutdown = true;
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
