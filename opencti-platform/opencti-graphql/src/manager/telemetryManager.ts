@@ -10,10 +10,11 @@ import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
-import { TelemetryMeterManager } from '../config/telemetryMeterManager';
+import { TelemetryMeterManager } from '../config/TelemetryMeterManager';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000;
+const EXPORT_INTERVAL = 10000;
 
 // ------- Telemetry
 let resource;
@@ -27,15 +28,18 @@ if (ENABLED_TELEMETRY) {
   resource = Resource.default().merge(filigranResource);
   filigranMetricReader = new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
-    exportIntervalMillis: 10000,
+    exportIntervalMillis: EXPORT_INTERVAL,
   });
 }
 const filigranMeterProvider = new MeterProvider(({
   resource: resource ?? undefined,
   readers: filigranMetricReader ? [filigranMetricReader] : [],
 }));
-const filigranMeter = filigranMeterProvider.getMeter('opencti');
-const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeter);
+const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
+// Register filigran telemetry data
+filigranTelemetryMeterManager.setVersion(PLATFORM_VERSION);
+filigranTelemetryMeterManager.registerFiligranTelemetry();
+
 const fetchTelemetryData = async () => {
   try {
     const context = executionContext('telemetry_manager');
@@ -54,8 +58,6 @@ const fetchTelemetryData = async () => {
     // Get number of active users over time
     const activUsers = await usersWithActiveSession();
     filigranTelemetryMeterManager.setActivUsers(activUsers, timestamp);
-    // Register filigran telemetry data
-    filigranTelemetryMeterManager.registerFiligranTelemetry(timestamp);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }

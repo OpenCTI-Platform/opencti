@@ -1,10 +1,8 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { LoggerProvider } from '@opentelemetry/sdk-logs';
+import type { ObservableResult } from '@opentelemetry/api-metrics';
 
-class FiligranTelemetryManager {
+export class TelemetryMeterManager {
   meterProvider: MeterProvider;
-
-  loggerProvider: LoggerProvider;
 
   private version = '0';
 
@@ -21,9 +19,8 @@ class FiligranTelemetryManager {
     lastActivSessionFoundDate: number, // last date when a session was found for the user
   }[];
 
-  constructor(meterProvider: MeterProvider, loggerProvider: LoggerProvider) {
+  constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
-    this.loggerProvider = loggerProvider;
   }
 
   setVersion(val: string) {
@@ -58,31 +55,12 @@ class FiligranTelemetryManager {
     this.activUsers = updatedActivUsers;
   }
 
-  registerMetrics() {
-    // TODO
-  }
-
-  registerLogs(timestamp: number) {
-    const logger = this.loggerProvider.getLogger('opencti-api');
-    const logRecord = {
-      body: {
-        opencti_version: this.version,
-        opencti_numberOfActivUsers: this.activUsers.length,
-        opencti_language: this.language,
-        opencti_isEEActivated: this.isEEActivated,
-        opencti_EEActivationDate: this.EEActivationDate,
-        opencti_numberOfInstances: this.numberOfInstances,
-        timestamp,
-      },
-    };
-    logger.emit(logRecord);
-  }
-
-  registerFiligranTelemetry(timestamp: number) {
-    this.registerMetrics(); // for metrics
-    this.registerLogs(timestamp); // for string
+  registerFiligranTelemetry() {
+    const meter = this.meterProvider.getMeter('opencti');
+    // - Gauges
+    const latencyGauge = meter.createObservableGauge('opencti_numberOfInstances');
+    latencyGauge.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.numberOfInstances);
+    });
   }
 }
-export const filigranTelemetryMeterProvider = new MeterProvider({});
-export const filigranTelemetryLoggerProvider = new LoggerProvider();
-export const filigranTelemetryManager = new FiligranTelemetryManager(filigranTelemetryMeterProvider, filigranTelemetryLoggerProvider);
