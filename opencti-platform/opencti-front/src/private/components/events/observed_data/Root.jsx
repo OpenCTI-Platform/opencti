@@ -113,6 +113,7 @@ class RootObservedData extends Component {
                   <ContainerHeader
                     container={observedData}
                     PopoverComponent={<ObservedDataPopover />}
+                    redirectToContent = {false}
                   />
                   <Box
                     sx={{
@@ -123,11 +124,7 @@ class RootObservedData extends Component {
                   >
                     <Tabs
                       value={
-                        location.pathname.includes(
-                          `/dashboard/events/observed_data/${observedData.id}/knowledge`,
-                        )
-                          ? `/dashboard/events/observed_data/${observedData.id}/knowledge`
-                          : location.pathname
+                        location.pathname
                       }
                     >
                       <Tab

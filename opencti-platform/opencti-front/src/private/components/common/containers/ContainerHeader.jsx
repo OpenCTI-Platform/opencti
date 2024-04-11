@@ -460,6 +460,7 @@ const ContainerHeader = (props) => {
     enableManageAuthorizedMembers,
     authorizedMembersMutation,
     enableAskAi,
+    redirectToContent,
   } = props;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
@@ -900,7 +901,7 @@ const ContainerHeader = (props) => {
               <StixCoreObjectFileExport
                 id={container.id}
                 type={container.entity_type}
-                redirectToContent={true}
+                redirectToContent={!!redirectToContent}
               />
             )}
             {enableSuggestions && (
