@@ -403,7 +403,7 @@ const ProfileOverviewComponent = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="unit_system"
-                label={t('Unit System')}
+                label={t('Unit system')}
                 fullWidth={true}
                 inputProps={{ name: 'unit_system', id: 'unit_system' }}
                 containerstyle={fieldSpacingContainerStyle}
