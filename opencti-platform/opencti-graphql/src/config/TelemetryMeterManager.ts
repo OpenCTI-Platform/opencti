@@ -52,15 +52,22 @@ export class TelemetryMeterManager {
         ? { user_id: activUser.user_id, lastActivSessionFoundDate: timestamp } // update timestamp
         : activUser)) // keep registered user
       .concat(newActivUsers);
-    this.activUsers = updatedActivUsers;
+    const limitDate = new Date().getTime() - 3600000; // TODO to set (actual date - 1 hour)
+    this.activUsers = updatedActivUsers.filter((user) => user.lastActivSessionFoundDate >= limitDate);
   }
 
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter('opencti');
     // - Gauges
-    const latencyGauge = meter.createObservableGauge('opencti_numberOfInstances');
-    latencyGauge.addCallback((observableResult: ObservableResult) => {
+    // number of instances
+    const numberOfInstancesGauge = meter.createObservableGauge('opencti_numberOfInstances');
+    numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.numberOfInstances);
+    });
+    // number of activ users
+    const activUsersGauge = meter.createObservableGauge('opencti_numberOfActivUsers');
+    activUsersGauge.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.activUsers.length);
     });
   }
 }
