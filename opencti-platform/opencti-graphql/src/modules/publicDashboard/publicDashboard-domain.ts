@@ -170,6 +170,12 @@ export const addPublicDashboard = async (
     throw UnsupportedError('Invalid markings');
   }
 
+  // check user allowed markings
+  const userMarkingIds = user.allowed_marking.map((m) => m.id);
+  if (input.allowed_markings_ids?.some((id) => !userMarkingIds.includes(id))) {
+    throw UnsupportedError('Not allowed markings');
+  }
+
   // Create publicDashboard
   const publicDashboardToCreate = {
     name: input.name,
