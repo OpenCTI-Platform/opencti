@@ -235,18 +235,20 @@ const StixCyberObservableCreation = ({
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
   const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
-  const [md5FieldDisabled, setMD5FieldDisabled] = useState(false);
-  const [sha1FieldDisabled, setSHA1FieldDisabled] = useState(false);
-  const [sha256FieldDisabled, setSHA256FieldDisabled] = useState(false);
-  const [sha512FieldDisabled, setSHA512FieldDisabled] = useState(false);
+  // const [md5FieldDisabled, setMD5FieldDisabled] = useState(false);
+  // const [sha1FieldDisabled, setSHA1FieldDisabled] = useState(false);
+  // const [sha256FieldDisabled, setSHA256FieldDisabled] = useState(false);
+  // const [sha512FieldDisabled, setSHA512FieldDisabled] = useState(false);
+  const [keyFieldDisabled, setKeyFieldDisabled] = useState(false);
   const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = values;
-    console.log("adaptedValues " + adaptedValues);
     if (adaptedValues) { // Verify not null for DeepScan compliance
       // Bulk Add Modal was used
       if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
+        console.log("adaptedValues " + adaptedValues);
+        console.log("inside bulk add, " + bulkAddMsg)
         const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_values = array_of_bulk_values.map((s) => s.trim());
@@ -478,13 +480,36 @@ const StixCyberObservableCreation = ({
   };
 
   function BulkAddDialog(props) {
-    console.log('inside BulkAddDialog function');
+    // console.log('inside BulkAddDialog function');
     const [openBulkAddDialog, setOpenBulkAddDialog] = React.useState(false);
     const handleOpenBulkAddDialog = () => {
-      const generic_value_field = document.getElementById('generic_value_field');
-      if (generic_value_field != null && generic_value_field.value != null
-        && generic_value_field.value.length > 0 && generic_value_field.value !== bulkAddMsg) {
-        props.setValue('bulk_value_field', generic_value_field.value.trim());
+      const hashes_MD5_field = document.getElementById('hashes_MD5');
+      const hashes_SHA1_field = document.getElementById('hashes_SHA-1');
+      const hashes_SHA256_field = document.getElementById('hashes_SHA-256');
+      const hashes_SHA512_field = document.getElementById('hashes_SHA-512');
+      if (hashes_MD5_field != null && hashes_MD5_field.value != null
+        && hashes_MD5_field.value.length > 0 && hashes_MD5_field.value !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        console.log('hashes_MD5_field');
+        props.setValue('bulk_value_field', hashes_MD5_field.value.trim());
+      }
+      if (hashes_SHA1_field != null && hashes_SHA1_field.value != null
+        && hashes_SHA1_field.value.length > 0 && hashes_SHA1_field.value !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        console.log('hashes_SHA1_field');
+        props.setValue('bulk_value_field', hashes_SHA1_field.value.trim());
+      }
+      if (hashes_SHA256_field != null && hashes_SHA256_field.value != null
+        && hashes_SHA256_field.value.length > 0 && hashes_SHA256_field.value !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        console.log('hashes_SHA256_field');
+        props.setValue('bulk_value_field', hashes_SHA256_field.value.trim());
+      }
+      if (hashes_SHA512_field != null && hashes_SHA512_field.value != null
+        && hashes_SHA512_field.value.length > 0 && hashes_SHA512_field.value !== bulkAddMsg) {
+        // Trim the field to avoid inserting whitespace as a default population value
+        console.log('hashes_SHA512_field');
+        props.setValue('bulk_value_field', hashes_SHA512_field.value.trim());
       }
       setOpenBulkAddDialog(true);
     };
@@ -493,18 +518,10 @@ const StixCyberObservableCreation = ({
       const bulk_value_field = document.getElementById('bulk_value_field');
       if (bulk_value_field != null && bulk_value_field.value != null && bulk_value_field.value.length > 0) {
         props.setValue('value', bulkAddMsg);
-        setGenericValueFieldDisabled(true);
-        setMD5FieldDisabled(true);
-        setSHA1FieldDisabled(true);
-        setSHA256FieldDisabled(true);
-        setSHA512FieldDisabled(true);
+        setKeyFieldDisabled(true);
       } else {
         props.setValue('value', '');
-        setGenericValueFieldDisabled(false);
-        setMD5FieldDisabled(false);
-        setSHA1FieldDisabled(false);
-        setSHA256FieldDisabled(false);
-        setSHA512FieldDisabled(false);
+        setKeyFieldDisabled(false);
       }
     };
     function getOption() {
@@ -749,7 +766,8 @@ const StixCyberObservableCreation = ({
                             <div key={attribute.value}>
                               {/* TODO: Disable these fields */}
                               <Field
-                                disabled={md5FieldDisabled}
+                                id="hashes_MD5"
+                                disabled={keyFieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_MD5"
@@ -758,7 +776,8 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
-                                disabled={sha1FieldDisabled}
+                                id="hashes_SHA-1"
+                                disabled={keyFieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-1"
@@ -767,7 +786,8 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
-                                disabled={sha256FieldDisabled}
+                                id="hashes_SHA-256"
+                                disabled={keyFieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-256"
@@ -776,7 +796,8 @@ const StixCyberObservableCreation = ({
                                 style={{ marginTop: 20 }}
                               />
                               <Field
-                                disabled={sha512FieldDisabled}
+                                id="hashes_SHA-512"
+                                disabled={keyFieldDisabled}
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-512"
@@ -860,6 +881,9 @@ const StixCyberObservableCreation = ({
                           // console.log('inside StixFile; attribute.value ' + attribute.value);
                           return (
                             <div key={attribute.value}>
+                              <Typography className={keyFieldDisabled ? classes.disabled : classes.active_typography} style={{ float: 'left', marginTop: 20 }}>
+                                {attribute.value}
+                              </Typography>
                               <Tooltip title="Copy/paste text content">
                                 <BulkAddDialog
                                   setValue={(field_name, new_value) => setFieldValue(field_name, new_value)}
