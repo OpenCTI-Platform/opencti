@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
-import { DeleteOperationLine_node$data } from './__generated__/DeleteOperationLine_node.graphql';
+import { DeleteOperationLine_node$key } from './__generated__/DeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -40,27 +40,44 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+const DeleteOperationFragment = graphql`
+  fragment DeleteOperationLine_node on DeleteOperation {
+    id
+    main_entity_name
+    main_entity_type
+    deletedBy {
+      id
+      name
+    }
+    timestamp
+    deleted_elements {
+      id
+    }
+  }
+`;
+
 interface DeleteOperationLineComponentProps {
   dataColumns: DataColumns;
-  node: DeleteOperationLine_node$data;
+  node: DeleteOperationLine_node$key;
   paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
 }
 
-const DeleteOperationLineComponent: React.FC<DeleteOperationLineComponentProps> = ({
+export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = ({
   dataColumns,
   node,
   paginationOptions,
 }) => {
   const classes = useStyles();
   const { fldt } = useFormatter();
+  const data = useFragment(DeleteOperationFragment, node);
+
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.main_entity_type} />
+        <ItemIcon type={data.main_entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -69,60 +86,39 @@ const DeleteOperationLineComponent: React.FC<DeleteOperationLineComponentProps> 
               className={classes.bodyItem}
               style={{ width: dataColumns.main_entity_type.width }}
             >
-              <ItemEntityType entityType={node.main_entity_type} />
+              <ItemEntityType entityType={data.main_entity_type} />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.main_entity_name.width }}
             >
-              {node.main_entity_name}
+              {data.main_entity_name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.deletedBy.width }}
             >
-              {node.deletedBy?.name}
+              {data.deletedBy?.name}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.timestamp.width }}
             >
-              {fldt(node.timestamp)}
+              {fldt(data.timestamp)}
             </div>
           </div>
         }
       />
       <ListItemSecondaryAction>
         <DeleteOperationPopover
-          mainEntityId={node.id}
-          deletedCount={node.deleted_elements.length}
+          mainEntityId={data.id}
+          deletedCount={data.deleted_elements.length}
           paginationOptions={paginationOptions}
         />
       </ListItemSecondaryAction>
     </ListItem>
   );
 };
-
-export const DeleteOperationLine = createFragmentContainer(
-  DeleteOperationLineComponent,
-  {
-    node: graphql`
-      fragment DeleteOperationLine_node on DeleteOperation {
-        id
-        main_entity_name
-        main_entity_type
-        deletedBy {
-          id
-          name
-        }
-        timestamp
-        deleted_elements {
-          id
-        }
-      }
-    `,
-  },
-);
 
 interface DeleteOperationLineDummyProps {
   dataColumns: DataColumns;
