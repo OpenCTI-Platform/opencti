@@ -97,10 +97,7 @@ export const createRedisClient = (provider: string, autoReconnect = false): Clus
     client = new Redis.Cluster(clusterNodes, clusterOptions());
   } else if (redisMode === 'sentinel') {
     const sentinelConfiguration: RedisOptions = {
-      sentinels: [
-        { host: conf.get('redis:sentinel_leader_host'), port: conf.get('redis:sentinel_leader_port') },
-        { host: conf.get('redis:sentinel_additional_host'), port: conf.get('redis:sentinel_additional_port') },
-      ],
+      sentinels: generateClusterNodes(conf.get('redis:hostnames')),
       name: conf.get('redis:sentinel_master_name'),
     };
 
