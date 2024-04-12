@@ -10,5 +10,6 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
     description?: string
     inCarousel?: boolean
     filename?: string
+    file_markings?: string[]
   }
 }

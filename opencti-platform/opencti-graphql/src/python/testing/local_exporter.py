@@ -47,7 +47,7 @@ if __name__ == "__main__":
             api_token=sys.argv[2],
             entity_id=sys.argv[3],
             file_name=sys.argv[4],
-            file_markings=sys.argv[5],
+            file_markings=[sys.argv[5]],
         ).upload()
     except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
