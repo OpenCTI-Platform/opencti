@@ -91,13 +91,13 @@ const clusterOptions = (): ClusterOptions => ({
 export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
   let client: Cluster | Redis;
   const redisMode: string = conf.get('redis:mode');
+  const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
 
   if (redisMode === 'cluster') {
-    const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
     client = new Redis.Cluster(clusterNodes, clusterOptions());
   } else if (redisMode === 'sentinel') {
     const sentinelConfiguration: RedisOptions = {
-      sentinels: generateClusterNodes(conf.get('redis:hostnames')),
+      sentinels: clusterNodes,
       name: conf.get('redis:sentinel_master_name'),
     };
 
