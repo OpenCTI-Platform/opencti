@@ -258,7 +258,7 @@ const createApp = async (app) => {
       await checkFileAccess(executeContext, auth, 'download', { id, filename, entity_id });
       await publishFileDownload(executeContext, auth, data);
       const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-      archive.append(await downloadFile(file), { name: `${filename}.zip` });
+      archive.append(await downloadFile(file), { name: filename });
       archive.finalize();
       res.attachment(`${filename}.zip`);
       archive.pipe(res);
