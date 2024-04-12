@@ -279,7 +279,7 @@ class StixDomainObjectContentComponent extends Component {
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch();
+      this.props.relay.refetch({ id: this.props.stixDomainObject.id });
     });
 
     const { stixDomainObject } = this.props;
@@ -804,7 +804,7 @@ const StixDomainObjectContent = createRefetchContainer(
             focusOn
           }
         }
-        importFiles(first: 500) {
+        importFiles(first: 500) @connection(key: "Pagination_importFiles") {
           edges {
             node {
               id
