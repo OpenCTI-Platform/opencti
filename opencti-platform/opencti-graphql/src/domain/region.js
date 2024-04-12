@@ -24,7 +24,7 @@ export const childRegionsPaginated = async (context, user, regionId, args) => {
 };
 
 export const countriesPaginated = async (context, user, elementId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, args);
 };
 
 export const addRegion = async (context, user, region) => {
