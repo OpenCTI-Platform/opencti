@@ -10,11 +10,11 @@ import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
-import { TelemetryMeterManager } from '../config/TelemetryMeterManager';
+import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
-const SCHEDULE_TIME = 10000;
-const EXPORT_INTERVAL = 10000;
+const SCHEDULE_TIME = 100000;
+const EXPORT_INTERVAL = 100000;
 
 // ------- Telemetry
 let resource;
@@ -22,7 +22,7 @@ let filigranMetricReader;
 if (ENABLED_TELEMETRY) {
   // Console exporter
   const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: 'opencti',
+    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
   });
   resource = Resource.default().merge(filigranResource);
@@ -52,7 +52,7 @@ const fetchTelemetryData = async () => {
       .filter((n) => n) as string[];
     // Set filigranTelemetryManager settings telemetry data
     filigranTelemetryMeterManager.setLanguage(settings.platform_language ?? 'undefined');
-    filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition));
+    filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users over time

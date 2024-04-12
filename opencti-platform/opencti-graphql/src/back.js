@@ -14,6 +14,7 @@ import './modules/index';
 // import managers
 import './manager/index';
 // endregion
+import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_METRICS, ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
@@ -24,7 +25,7 @@ import { meterManager, meterProvider } from './config/tracing';
 if (ENABLED_TRACING) {
   const provider = new NodeTracerProvider({
     resource: Resource.default().merge(new Resource({
-      'service.name': 'opencti-platform',
+      [SEMRESATTRS_SERVICE_NAME]: 'opencti-platform',
     })),
   });
   // OTLP - JAEGER ...
