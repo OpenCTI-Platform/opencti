@@ -25,10 +25,9 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER,
   INPUT_CREATED_BY,
   INPUT_LABELS,
-  INPUT_MARKINGS,
+  INPUT_MARKINGS
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
@@ -36,17 +35,10 @@ import { generateInternalId, generateStandardId } from '../../schema/identifier'
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
-import {
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  isStixDomainObjectContainer
-} from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { schemaTypesDefinition } from '../../schema/schema-types';
 import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
@@ -79,7 +71,10 @@ import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -327,6 +322,18 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
   },
   required: ['container_type'],
 };
+
+// For now, only a fixed list of containers are compatible
+// these are the containers that can be created with a name and no specific mandatory fields
+const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
+  ENTITY_TYPE_CONTAINER_FEEDBACK,
+  ENTITY_TYPE_CONTAINER_TASK,
+];
+
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
@@ -337,8 +344,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA,
   schema: async () => {
-    const entityTypes = schemaTypesDefinition.get(ENTITY_TYPE_CONTAINER);
-    const elements = entityTypes.map((t) => ({ const: t, title: t }));
+    const elements = PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.map((t) => ({ const: t, title: t }));
     const schemaElement = { properties: { container_type: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
@@ -352,31 +358,6 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
         created,
         published: created,
       };
-      // Adapt the container with generated mandatory fields, until we have some mappings in the UI
-      if (container_type === ENTITY_TYPE_CONTAINER_NOTE) {
-        containerData.content = `Generated Note content from playbook at ${created}`;
-      }
-      if (container_type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-        // "objects" cannot be empty, and we need the standard_id for calling generateStandardId on the containerData ("objects" resolver in identifier.js)
-        containerData.objects = [{ standard_id: dataInstanceId }];
-        containerData.first_observed = created;
-        containerData.last_observed = created;
-        containerData.number_observed = 1;
-      }
-      if (container_type === ENTITY_TYPE_CONTAINER_OPINION) {
-        containerData.explanation = `Generated Opinion explanation from playbook at ${created}`;
-        containerData.opinion = 'neutral';
-      }
-      // if (container_type === ENTITY_TYPE_CONTAINER_REPORT) -- name is enough
-      if (container_type === ENTITY_TYPE_CONTAINER_GROUPING) {
-        containerData.context = 'unspecified';
-      }
-      // if (container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) -- name is enough
-      // if (container_type === ENTITY_TYPE_CONTAINER_CASE_RFI) -- name is enough
-      // if (container_type === ENTITY_TYPE_CONTAINER_CASE_RFT) -- name is enough
-      // if (container_type === ENTITY_TYPE_CONTAINER_FEEDBACK) -- name is enough
-      // if (container_type === ENTITY_TYPE_CONTAINER_TASK) -- name is enough
-      // if (container_type === ENTITY_TYPE_CONTAINER_CASE) -- stix object can be created, but cannot be ingested by opencti (abstract)
       const standardId = generateStandardId(container_type, containerData);
       const storeContainer = {
         internal_id: uuidv4(),
