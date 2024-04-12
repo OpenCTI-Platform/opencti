@@ -171,11 +171,11 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   handleCloseEdition() {
-    const { params: { relationId } } = this.props;
+    const { stixCoreRelationship } = this.props;
     commitMutation({
       mutation: stixCoreRelationshipEditionFocus,
       variables: {
-        id: relationId,
+        id: stixCoreRelationship.id,
         input: { focusOn: '' },
       },
     });
@@ -194,19 +194,17 @@ class StixCoreRelationshipContainer extends Component {
     this.setState({ deleting: true });
     const {
       location,
-      match: {
-        params: { relationId },
-      },
+      stixCoreRelationship,
     } = this.props;
     commitMutation({
       mutation: stixCoreRelationshipEditionDeleteMutation,
       variables: {
-        id: relationId,
+        id: stixCoreRelationship.id,
       },
       onCompleted: () => {
         this.handleCloseEdition();
         this.props.navigate(
-          location.pathname.replace(`/relations/${relationId}`, ''),
+          location.pathname.replace(`/relations/${stixCoreRelationship.id}`, ''),
         );
       },
     });
