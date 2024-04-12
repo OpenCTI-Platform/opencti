@@ -26,6 +26,7 @@ export const getIndexFromDate = async (context: AuthContext) => {
     highlight: false,
     orderBy: 'uploaded_at',
     orderMode: 'desc',
+    excludeRemoved: false,
   };
   const lastIndexedFiles = await elSearchFiles(context, SYSTEM_USER, searchOptions);
   const lastIndexedFile = lastIndexedFiles?.length > 0 ? lastIndexedFiles[0] : null;

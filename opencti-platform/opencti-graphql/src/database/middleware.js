@@ -151,9 +151,10 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
 import { FROM_START, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
+import { elUpdateRemovedFiles } from './file-search';
 import { deleteAllObjectFiles, storeFileConverter, upload } from './file-storage';
 import {
   BYPASS_REFERENCE,
@@ -3389,9 +3390,19 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       // Start by deleting external files
-      await deleteAllObjectFiles(context, user, element);
+      const isTrashableElement = !isInferredIndex(element._index)
+          && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+      const forceDelete = !!opts.forceDelete || !isTrashableElement;
+      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
+        // do not delete files if logical deletion enabled
+        // mark indexed files as removed to exclude them from search
+        await elUpdateRemovedFiles(element, true);
+      } else {
+        // if logical deletion is disabled, delete files as usual
+        await deleteAllObjectFiles(context, user, element);
+      }
       // Delete all linked elements
-      await elDeleteElements(context, user, [element]);
+      await elDeleteElements(context, user, [element], { forceDelete });
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, opts);
     }

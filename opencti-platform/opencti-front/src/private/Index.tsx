@@ -11,6 +11,7 @@ import Message from '../components/Message';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
+import useHelper from '../utils/hooks/useHelper';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
@@ -31,6 +32,7 @@ const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
+const RootTrash = lazy(() => import('./components/trash/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
@@ -51,6 +53,7 @@ const Index = ({ settings }: IndexProps) => {
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const boxSx = {
     flexGrow: 1,
     padding: 3,
@@ -123,6 +126,11 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/*"
                 Component={boundaryWrapper(RootData)}
               />
+              {isFeatureEnable('LOGICAL_DELETION') && (
+                <Route path="/trash/*"
+                  Component={boundaryWrapper(RootTrash)}
+                />
+              )}
               <Route
                 path="/workspaces/*"
                 Component={boundaryWrapper(RootWorkspaces)}
