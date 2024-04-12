@@ -125,7 +125,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
       },
     };
     return (
-      <>
+      <div data-testid="groupings-page">
         <ListLines
           helpers={storageHelpers}
           sortBy={sortBy}
@@ -155,7 +155,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
                   {Array(20)
                     .fill(0)
                     .map((_, idx) => (
-                      <GroupingLineDummy key={idx} dataColumns={dataColumns} />
+                      <GroupingLineDummy key={idx} dataColumns={dataColumns}/>
                     ))}
                 </>
               }
@@ -184,7 +184,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           type="Grouping"
         />
-      </>
+      </div>
     );
   };
   return (
