@@ -2445,13 +2445,12 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const updatePatch = { ...basePatch };
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
-    const compareIds = [element.standard_id, generateStandardId(type, basePatch)];
-    const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !compareIds.includes(basePatch.stix_id)) {
-      ids.push(basePatch.stix_id);
+    const idsToAdd = [...(basePatch.x_opencti_stix_ids || [])];
+    if (isNotEmptyField(basePatch.stix_id) && basePatch.stix_id !== element.standard_id && !idsToAdd.includes(basePatch.stix_id)) {
+      idsToAdd.push(basePatch.stix_id);
     }
-    if (ids.length > 0) {
-      updatePatch.x_opencti_stix_ids = ids;
+    if (idsToAdd.length > 0) {
+      updatePatch.x_opencti_stix_ids = idsToAdd;
     }
   }
   // Cumulate creator id
