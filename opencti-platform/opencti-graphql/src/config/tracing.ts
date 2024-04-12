@@ -1,12 +1,16 @@
 import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { type ObservableResult, ValueType } from '@opentelemetry/api-metrics';
 import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import nconf from 'nconf';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENABLED_TRACING } from './conf';
+import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
+import { isNotEmptyField } from '../database/utils';
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -54,8 +58,30 @@ class MeterManager {
     nodeMetrics(this.meterProvider, { prefix: '' });
   }
 }
-export const meterProvider = new MeterProvider({});
+
+// ------- Metrics
+const metricReaders: MetricReader[] = [];
+if (ENABLED_METRICS) {
+  // OTLP - JAEGER ...
+  const exporterOtlp = nconf.get('app:telemetry:metrics:exporter_otlp');
+  if (isNotEmptyField(exporterOtlp)) {
+    const metricExporter = new OTLPMetricExporter({ url: exporterOtlp, headers: {}, concurrencyLimit: 1 });
+    const metricReader = new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 });
+    metricReaders.push(metricReader);
+  }
+  // PROMETHEUS
+  const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
+  if (isNotEmptyField(exporterPrometheus)) {
+    const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
+    metricReaders.push(prometheusExporter);
+  }
+}
+const meterProvider = new MeterProvider({
+  readers: metricReaders,
+});
 export const meterManager = new MeterManager(meterProvider);
+// Register metrics
+meterManager.registerMetrics();
 
 export const telemetry = (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
   // if tracing disabled or context is not correctly configured.

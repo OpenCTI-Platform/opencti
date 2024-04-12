@@ -16,28 +16,28 @@ const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 100000;
 const EXPORT_INTERVAL = 100000;
 
-// ------- Telemetry
-let resource;
-let filigranMetricReader;
+// ------- Telemetry // TODO telemetry service, wrap methods in the service
+let resource = Resource.default();
+const filigranMetricReaders = [];
 if (ENABLED_TELEMETRY) {
   // Console exporter
   const filigranResource = new Resource({
     [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
   });
-  resource = Resource.default().merge(filigranResource);
-  filigranMetricReader = new PeriodicExportingMetricReader({
+  resource = resource.merge(filigranResource);
+  const filigranMetricReader = new PeriodicExportingMetricReader({
     exporter: new ConsoleMetricExporter(),
     exportIntervalMillis: EXPORT_INTERVAL,
   });
+  filigranMetricReaders.push(filigranMetricReader);
 }
 const filigranMeterProvider = new MeterProvider(({
-  resource: resource ?? undefined,
-  readers: filigranMetricReader ? [filigranMetricReader] : [],
+  resource,
+  readers: filigranMetricReaders,
 }));
+
 const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
-// Register filigran telemetry data
-filigranTelemetryMeterManager.setVersion(PLATFORM_VERSION);
 filigranTelemetryMeterManager.registerFiligranTelemetry();
 
 const fetchTelemetryData = async () => {

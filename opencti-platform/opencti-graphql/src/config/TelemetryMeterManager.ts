@@ -25,10 +25,6 @@ export class TelemetryMeterManager {
     this.meterProvider = meterProvider;
   }
 
-  setVersion(val: string) {
-    this.version = val;
-  }
-
   setLanguage(lang: string) {
     this.language = lang;
   }
@@ -60,7 +56,7 @@ export class TelemetryMeterManager {
 
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
-    // - Gauges
+    // - Gauges - //
     // number of instances
     const numberOfInstancesGauge = meter.createObservableGauge('opencti_numberOfInstances');
     numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
