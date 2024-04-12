@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const OpinionComponent = ({ opinion }) => {
+const OpinionComponent = ({ opinion, enableReferences }) => {
   const classes = useStyles();
   return (
     <>
@@ -56,6 +56,7 @@ const OpinionComponent = ({ opinion }) => {
           <ContainerStixObjectsOrStixRelationships
             container={opinion}
             isSupportParticipation={true}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

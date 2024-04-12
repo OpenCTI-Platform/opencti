@@ -83,7 +83,7 @@ class RootOpinion extends Component {
                     <Route
                       path="/"
                       element={(
-                        <Opinion opinion={props.opinion} />
+                        <Opinion opinion={props.opinion} enableReferences={false} />
                       )}
                     />
                     <Route

@@ -171,6 +171,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity}
+        enableReferences={enableReferences}
       />
       {container && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

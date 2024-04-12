@@ -44,9 +44,10 @@ const useStyles = makeStyles(() => ({
 
 interface CaseIncidentProps {
   data: CaseUtils_case$key;
+  enableReferences: boolean;
 }
 
-const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) => {
+const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data, enableReferences }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
@@ -138,6 +139,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
                 handleSort={helpers.handleSort}
                 defaultMarkings={convertMarkings(caseIncidentData)}
                 containerRef={ref}
+                enableReferences={enableReferences}
               />
             </React.Suspense>
           )}
@@ -148,6 +150,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
             container={caseIncidentData}
             types={['Incident', 'stix-sighting-relationship', 'Report']}
             title={t_i18n('Origin of the case')}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -156,6 +159,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
             container={caseIncidentData}
             types={['Stix-Cyber-Observable']}
             title={t_i18n('Observables')}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -173,6 +177,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
               'Location',
             ]}
             title={t_i18n('Other entities')}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

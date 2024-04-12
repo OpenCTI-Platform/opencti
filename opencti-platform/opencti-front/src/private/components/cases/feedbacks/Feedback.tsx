@@ -82,9 +82,10 @@ const feedbackFragment = graphql`
 
 interface FeedbackProps {
   data: Feedback_case$key;
+  enableReferences: boolean;
 }
 
-const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
+const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data, enableReferences }) => {
   const classes = useStyles();
   const feedbackData = useFragment(feedbackFragment, data);
 
@@ -112,6 +113,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={feedbackData}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

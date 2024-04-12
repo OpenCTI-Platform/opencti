@@ -74,7 +74,7 @@ export const taskFragment = graphql`
   }
 `;
 
-const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
+const TaskComponent = ({ data, enableReferences }: { data: Tasks_tasks$key, enableReferences: boolean }) => {
   const classes = useStyles();
   const task = useFragment(taskFragment, data);
   return (
@@ -98,6 +98,7 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={task}
+            enableReferences={enableReferences}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

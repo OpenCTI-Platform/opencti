@@ -226,6 +226,7 @@ const ContainerContentComponent = ({ containerData }) => {
               contentMappingData={contentMappingData}
               contentMappingCount={mappedStringsCount}
               handleClearMapping={() => setOpenClearMapping(true)}
+              enableReferences={enableReferences}
             />
           </Paper>
         </Grid>

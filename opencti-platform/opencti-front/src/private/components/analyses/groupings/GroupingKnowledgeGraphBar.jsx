@@ -36,11 +36,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import { Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
@@ -105,6 +107,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
+      referenceDialogOpened: false,
     };
   }
 
@@ -303,6 +306,30 @@ class GroupingKnowledgeGraphBar extends Component {
     this.handleCloseSelectByType();
   }
 
+  closeReferencesPopup() {
+    this.setState({ referenceDialogOpened: false });
+  }
+
+  submitReference(values, { setSubmitting, resetForm }) {
+    const { handleDeleteSelected } = this.props;
+    const { deleteObject } = this.state;
+    const commitMessage = values.message;
+    const references = R.pluck('value', values.references || []);
+    this.handleCloseRemove();
+    handleDeleteSelected(deleteObject, commitMessage, references, setSubmitting, resetForm);
+  }
+
+  handleSubmitRemoveElements() {
+    const { enableReferences, handleDeleteSelected } = this.props;
+    const { deleteObject } = this.state;
+    if (enableReferences) {
+      this.setState({ referenceDialogOpened: true });
+    } else {
+      this.handleCloseRemove();
+      handleDeleteSelected(deleteObject);
+    }
+  }
+
   render() {
     const {
       t,
@@ -373,6 +400,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditObservable,
       openEditNested,
       deleteObject,
+      referenceDialogOpened,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred).length > 0
       || selectedLinks.filter((n) => n.inferred).length > 0;
@@ -1100,16 +1128,39 @@ class GroupingKnowledgeGraphBar extends Component {
                           {t('Cancel')}
                         </Button>
                         <Button
-                          onClick={() => {
-                            this.handleCloseRemove();
-                            handleDeleteSelected(deleteObject);
-                          }}
+                          onClick={ this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
                           {t('Remove')}
                         </Button>
                       </DialogActions>
                     </Dialog>
+                    {enableReferences && (
+                    <Formik
+                      initialValues={{ message: '', references: [] }}
+                      onSubmit={this.submitReference.bind(this)}
+                    >
+                      {({
+                        submitForm,
+                        isSubmitting,
+                        setFieldValue,
+                        values,
+                      }) => (
+                        <Form>
+                          <CommitMessage
+                            handleClose={this.closeReferencesPopup.bind(this)}
+                            open={referenceDialogOpened}
+                            submitForm={submitForm}
+                            disabled={isSubmitting}
+                            setFieldValue={setFieldValue}
+                            values={values.references}
+                            id={grouping.id}
+                            noStoreUpdate={true}
+                          />
+                        </Form>
+                      )}
+                    </Formik>
+                    )}
                   </div>
                 )}
                 <div className="clearfix" />

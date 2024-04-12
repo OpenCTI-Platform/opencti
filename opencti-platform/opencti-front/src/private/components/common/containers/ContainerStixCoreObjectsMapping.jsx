@@ -31,6 +31,7 @@ const ContainerStixCoreObjectsMapping = ({
   openDrawer,
   selectedText,
   handleClose,
+  enableReferences,
   handleClearMapping,
 }) => {
   const classes = useStyles();
@@ -171,11 +172,11 @@ const ContainerStixCoreObjectsMapping = ({
                 height={height}
                 contentMappingData={contentMappingData}
                 contentMappingCount={contentMappingCount}
-              />
-            </React.Suspense>
-          )}
-        </ListLines>
-      </div>
+            enableReferences={enableReferences}
+          />
+        </React.Suspense>
+        )}
+      </ListLines></div>
       <ContainerAddStixCoreObjects
         containerId={container.id}
         mapping={true}
@@ -191,6 +192,7 @@ const ContainerStixCoreObjectsMapping = ({
         confidence={container.confidence}
         paginationOptions={paginationOptions}
         onAdd={addMapping}
+        enableReferences={enableReferences}
         containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
       />
     </div>

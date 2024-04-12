@@ -33,11 +33,12 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
   isSupportParticipation: boolean;
   container: ContainerStixObjectsOrStixRelationships_container$data;
   variant?: string;
+  enableReferences: boolean;
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsComponentProps
-> = ({ container, isSupportParticipation = false, types, title, variant }) => {
+> = ({ container, isSupportParticipation = false, types, title, variant, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -104,6 +105,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
                 container={props.container}
                 dataColumns={dataColumns}
                 paginationOptions={paginationOptions}
+                enableReferences={enableReferences}
               />
             );
           }
@@ -143,6 +145,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
             defaultCreatedBy={container.createdBy ?? null}
             defaultMarkingDefinitions={container.objectMarking ?? []}
             confidence={container.confidence}
+            enableReferences={enableReferences}
           />
         </Security>
       )}

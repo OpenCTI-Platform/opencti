@@ -23,6 +23,8 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
@@ -102,6 +104,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
+  const enableReferences = useIsEnforceReference('Feedback') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
@@ -174,6 +177,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
               element={
                 <Feedback
                   data={feedbackData}
+                  enableReferences={enableReferences}
                 />}
             />
             <Route

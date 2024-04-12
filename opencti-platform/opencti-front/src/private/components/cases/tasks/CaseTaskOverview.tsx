@@ -57,10 +57,12 @@ const CaseTaskOverviewFragment = graphql`
 
 interface CaseTaskOverviewProps {
   tasksData: CaseTaskOverview_task$key;
+  enableReferences: boolean;
 }
 
 const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
   tasksData,
+  enableReferences,
 }) => {
   const { t_i18n, fldt } = useFormatter();
   const data: CaseTaskOverview_task$data = useFragment(
@@ -131,6 +133,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             isSupportParticipation={false}
             container={data}
             variant="noPaper"
+            enableReferences={enableReferences}
           />
         </div>
       </Grid>
