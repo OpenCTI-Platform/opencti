@@ -90,14 +90,23 @@ const clusterOptions = (): ClusterOptions => ({
 
 export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
   let client: Cluster | Redis;
-  const isCluster = conf.get('redis:mode') === 'cluster';
-  if (isCluster) {
-    const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
+  const redisMode: string = conf.get('redis:mode');
+  const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
+
+  if (redisMode === 'cluster') {
     client = new Redis.Cluster(clusterNodes, clusterOptions());
+  } else if (redisMode === 'sentinel') {
+    const sentinelConfiguration: RedisOptions = {
+      sentinels: clusterNodes,
+      name: conf.get('redis:sentinel_master_name'),
+    };
+
+    client = new Redis(sentinelConfiguration);
   } else {
     const singleOptions = redisOptions(autoReconnect);
     client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
+
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
   client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
   client.on('error', (err) => logApp.error(DatabaseError('Redis client connection fail', { cause: err, provider })));
@@ -248,8 +257,8 @@ export const extendSession = async (sessionId: string, extension: number) => {
 export const redisIsAlive = async () => {
   try {
     await getClientBase().get('test-key');
-    const isCluster = conf.get('redis:mode') === 'cluster';
-    logApp.info(`[REDIS] Clients initialized in ${isCluster ? 'cluster' : 'Single'} mode`);
+    const redisMode: string = conf.get('redis:mode');
+    logApp.info(`[REDIS] Clients initialized in ${redisMode} mode`);
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
