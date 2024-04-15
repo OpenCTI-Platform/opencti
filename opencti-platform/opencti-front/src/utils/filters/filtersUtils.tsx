@@ -33,7 +33,7 @@ export type Filter = {
 };
 
 export type FiltersRestrictions = {
-  valuesEdition?: string[], // filter keys whose values can't be changed
+  preventEditionFor?: string[], // filter keys whose values can't be changed
   preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
   preventRemoveFor?: string[], // filter keys whose filter can't be removed
 };

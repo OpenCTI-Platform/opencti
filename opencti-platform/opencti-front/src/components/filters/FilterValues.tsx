@@ -84,7 +84,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const deactivatePopoverMenu = !helpers || filtersRestrictions?.valuesEdition?.includes(filterKey);
+  const deactivatePopoverMenu = !helpers || filtersRestrictions?.preventEditionFor?.includes(filterKey);
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   if (isOperatorNil) {
     return (
