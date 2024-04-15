@@ -150,19 +150,19 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Redis
 
-| Parameter                  | Environment variable | Default value | Description                                                                           |
-|:---------------------------|:---------------------|:--------------|:--------------------------------------------------------------------------------------|
-| redis:mode                 | REDIS__MODE          | single        | Connect to redis in "single", "sentinel or "cluster"  mode                            |
-| redis:namespace            | REDIS__NAMESPACE     |               | Namespace (to use as prefix)                                                          |
-| redis:hostname             | REDIS__HOSTNAME      | localhost     | Hostname of the Redis Server                                                          |
-| redis:hostnames            | REDIS__HOSTNAMES     |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
-| redis:port                 | REDIS__PORT          | 6379          | Port of the Redis Server                                                              |
-| redis:sentinel_master_name | REDIS__MASTER_NAME   |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
-| redis:use_ssl              | REDIS__USE_SSL       | `false`       | Is the Redis Server has TLS enabled                                                   |
-| redis:username             | REDIS__USERNAME      |               | Username of the Redis Server                                                          |
-| redis:password             | REDIS__PASSWORD      |               | Password of the Redis Server                                                          |
-| redis:ca                   | REDIS__CA            | []            | List of path(s) of the CA certificate(s)                                              |
-| redis:trimming             | REDIS__TRIMMING      | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)                         |
+| Parameter                  | Environment variable        | Default value | Description                                                                           |
+|:---------------------------|:----------------------------|:--------------|:--------------------------------------------------------------------------------------|
+| redis:mode                 | REDIS__MODE                 | single        | Connect to redis in "single", "sentinel or "cluster"  mode                            |
+| redis:namespace            | REDIS__NAMESPACE            |               | Namespace (to use as prefix)                                                          |
+| redis:hostname             | REDIS__HOSTNAME             | localhost     | Hostname of the Redis Server                                                          |
+| redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
+| redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
+| redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
+| redis:use_ssl              | REDIS__USE_SSL              | `false`       | Is the Redis Server has TLS enabled                                                   |
+| redis:username             | REDIS__USERNAME             |               | Username of the Redis Server                                                          |
+| redis:password             | REDIS__PASSWORD             |               | Password of the Redis Server                                                          |
+| redis:ca                   | REDIS__CA                   | []            | List of path(s) of the CA certificate(s)                                              |
+| redis:trimming             | REDIS__TRIMMING             | 2000000       | Number of elements to maintain in the stream. (0 = unlimited)                         |
 
 #### RabbitMQ
 
