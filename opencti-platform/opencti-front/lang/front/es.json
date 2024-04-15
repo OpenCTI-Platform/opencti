@@ -36,6 +36,7 @@
   "Activity raw detail": "Detalle de actividad",
   "ACTIVITY_MANAGER": "Gestor de actividad",
   "Add": "Añadir",
+  "Add a file": "Añadir un archivo",
   "Add a group": "Añadir un grupo",
   "Add a height": "Añadir una altura",
   "Add a live trigger": "Añadir un Disparador",
@@ -2580,7 +2581,7 @@
   "Used tools": "Herramientas urilizadas",
   "Used TTPs": "TTP utilizadas",
   "USER": "USUARIO",
-  "User experience":"Experiencia del usuario",
+  "User experience": "Experiencia del usuario",
   "User interface": "Interfaz de usuario",
   "User responsible for data creation (empty = System)": "Usuario responsable de la creación de datos (vacío = System)",
   "user_id": "Usuario",
@@ -2705,5 +2706,7 @@
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
   "Your testing file (CSV only, max 1MB)": "Su archivo de prueba (CSV, 1MB max)",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Su URL contiene filtros en un formato obsoleto, los parámetros almacenados en la URL han sido eliminados.",
-  "Zoom": "Zoom"
+  "Zoom": "Zoom",
+  "Zoom in": "Ampliar",
+  "Zoom out": "Alejar"
 }
