@@ -7,7 +7,7 @@ const useEntityTranslation = () => {
     if (t_i18n(`entity_${type}`) !== `entity_${type}`) {
       return t_i18n(`entity_${type}`);
     }
-    if (t_i18n(`relationship_${type}`) !== `_${type}`) {
+    if (t_i18n(`relationship_${type}`) !== `relationship_${type}`) {
       return t_i18n(`relationship_${type}`);
     }
     return t_i18n(type);
