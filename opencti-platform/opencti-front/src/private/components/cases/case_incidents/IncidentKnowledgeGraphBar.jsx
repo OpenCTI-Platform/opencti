@@ -15,7 +15,6 @@ import {
   FilterListOutlined,
   GestureOutlined,
   LinkOutlined,
-  ReadMoreOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
@@ -42,6 +41,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -53,13 +53,12 @@ import { parseDomain } from '../../../../utils/Graph';
 import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixNestedRefRelationshipCreation, { stixNestedRefRelationshipCreationResolveQuery } from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
 import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = () => ({
   bottomNav: {
@@ -984,35 +983,15 @@ class IncidentKnowledgeGraphBar extends Component {
                       />
                     )}
                     {onAddRelation && (
-                      <Tooltip title={t('Create a nested relationship')}>
-                        {(nestedEnabled && relationFromObjects[0] && relationToObjects[0] && !this.state.openCreatedNested)
-                          && (<QueryRenderer
-                            query={stixNestedRefRelationshipCreationResolveQuery}
-                            variables={{
-                              id: relationFromObjects[0].id,
-                              toType: relationToObjects[0].entity_type,
-                            }}
-                            render={({ props }) => {
-                              if (props && props.stixSchemaRefRelationships) {
-                                const { from, to } = props.stixSchemaRefRelationships;
-                                if (from.length > 0 || to.length > 0) {
-                                  if (this.state.nestedRelationExist === false) this.handleSetNestedRelationExist(true);
-                                } else if (this.state.nestedRelationExist) this.handleSetNestedRelationExist(false);
-                              }
-                            }}
-                              />)
-                        }
-                        <span>
-                          <IconButton
-                            color="primary"
-                            onClick={this.handleOpenCreateNested.bind(this)}
-                            disabled={!nestedEnabled || !this.state.nestedRelationExist}
-                            size="large"
-                          >
-                            <ReadMoreOutlined />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      <StixNestedRefRelationshipCreationFromKnowledgeGraph
+                        nestedRelationExist={this.state.nestedRelationExist}
+                        openCreateNested={this.state.openCreateNested}
+                        nestedEnabled={nestedEnabled}
+                        relationFromObjects={relationFromObjects}
+                        relationToObjects={relationToObjects}
+                        handleSetNestedRelationExist={this.handleSetNestedRelationExist.bind(this)}
+                        handleOpenCreateNested={this.handleOpenCreateNested.bind(this)}
+                      />
                     )}
                     {onAddRelation && (
                       <StixNestedRefRelationshipCreation
