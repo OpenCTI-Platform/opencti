@@ -442,7 +442,7 @@ class ListLines extends Component {
           availableRelationFilterTypes={availableRelationFilterTypes}
           redirection
           entityTypes={entityTypes}
-          restrictedFiltersConfig={additionalFilterKeys?.restrictedFiltersConfig ?? undefined}
+          filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
         />
         <ErrorBoundary key={keyword}>
           {message && (

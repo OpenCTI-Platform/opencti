@@ -458,7 +458,7 @@ TriggerEditionOverviewProps
                   }}
                   redirection
                   entityTypes={['Instance']}
-                  restrictedFiltersConfig={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+                  filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
                 />
               : <FilterIconButton
                   filters={filters}
