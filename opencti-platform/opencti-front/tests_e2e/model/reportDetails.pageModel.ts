@@ -7,7 +7,7 @@ export default class ReportDetailsPage {
     return this.page.getByTestId('report-details-page');
   }
 
-  getOneReport(name: string) {
+  getItemFromList(name: string) {
     return this.page.getByRole('link', { name });
   }
 
@@ -23,34 +23,8 @@ export default class ReportDetailsPage {
     return this.page.getByLabel('Quick export');
   }
 
-  // getObservablesTab() {
-  //   return this.page.getByRole('tab', { name: 'Observables' });
-  // }
-  //
-  // getPopAlert(name: string) {
-  //   return this.page.getByRole('alert', { name });
-  // }
-  //
-  // getDataTab() {
-  //   return this.page.getByRole('tab', { name: 'Data' });
-  // }
-
-  getDataList(name: string) {
-    return this.page.getByRole('list', { name });
+  getDataList() {
+    const list = this.page.getByTestId('FileExportManager');
+    return list;
   }
-
-  // getNewFile() {
-  //   let previousCount = 0;
-  //   const checkInterval = setInterval(async () => {
-  //     const rows = await this.page.$$('.table-row');
-  //     if (rows.length !== previousCount) {
-  //       console.log(`Le nombre de lignes a changé. Nouveau nombre de lignes : ${rows.length}`);
-  //       previousCount = rows.length;
-  //     }
-  //   }, 1000); // Vérifie chaque seconde
-  //   // Pour arrêter l'intervalle après un certain temps
-  //   setTimeout(() => {
-  //     clearInterval(checkInterval);
-  //   }, 10000); // Arrête après 10 secondes
-  // }
 }

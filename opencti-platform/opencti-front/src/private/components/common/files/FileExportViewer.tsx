@@ -82,7 +82,7 @@ FileExportViewerComponentProps
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {exportFiles?.edges?.length ? (
-            <List>
+            <List data-testid={'FileExportManager'}>
               {exportFiles.edges.map((file) => (
                 file?.node && (
                   <FileLine
