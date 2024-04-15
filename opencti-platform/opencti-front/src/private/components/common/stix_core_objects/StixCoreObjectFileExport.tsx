@@ -148,6 +148,7 @@ const StixCoreObjectFileExportComponent = ({
             onClick={() => handleClickOpen()}
             disabled={!isExportPossible}
             value="quick-export"
+            aria-label="Quick export"
             aria-haspopup="true"
             color="primary"
             size="small"
@@ -215,6 +216,7 @@ const StixCoreObjectFileExportComponent = ({
                           component={SelectField}
                           variant="standard"
                           name="type"
+                          aria-label={'TYPE'}
                           label={t_i18n('Export type')}
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
