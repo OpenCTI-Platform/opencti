@@ -336,7 +336,7 @@ FilterIconButtonContainerProps
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
-                    (isReadWriteFilter && !(restrictedFiltersConfig?.filterRemoving?.includes(filterKey)))
+                    (isReadWriteFilter && !(restrictedFiltersConfig?.preventRemoveFor?.includes(filterKey)))
                       ? () => manageRemoveFilter(
                         currentFilter.id,
                         filterKey,
