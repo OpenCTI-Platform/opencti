@@ -26,7 +26,7 @@ const makeGroupWithOverrides = (confidence: number | null, overrideReport: numbe
 
 const makeUserWithOverrides = (confidence: number | null, overrideReport: number | null) => ({
   id: `user_${confidence}`,
-  effective_confidence_level: confidence ? { max_confidence: confidence, overrides: [{ entity_type: 'Report', max_confidence: overrideReport }] } : null
+  effective_confidence_level: confidence ? { max_confidence: confidence, overrides: overrideReport ? [{ entity_type: 'Report', max_confidence: overrideReport }] : [] } : null
 } as AuthUser);
 
 const makeReport = (confidence?: number | null) => ({
