@@ -575,6 +575,24 @@ export const values: RefAttribute = {
   },
   toTypes: [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE],
 };
+// xOpenctiLinkedTo is deprecated, but ref definition is still needed for migration to work properly
+export const xOpenctiLinkedTo: RefAttribute = {
+  name: 'xOpenctiLinkedTo',
+  type: 'ref',
+  databaseName: 'x_opencti_linked-to',
+  label: 'Linked to',
+  stixName: 'x_opencti_linked_to_refs',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isRefExistingForTypes(this, _, toType) {
+    return this.toTypes.includes(toType);
+  },
+  datable: true,
+  isFilterable: false,
+  toTypes: ['Stix-Core-Object'],
+};
 export const serviceDlls: RefAttribute = {
   name: INPUT_SERVICE_DLL,
   type: 'ref',
@@ -621,6 +639,7 @@ export const STIX_REF_RELATIONSHIPS: RefAttribute[] = [
   child,
   bodyMultipart,
   values,
+  xOpenctiLinkedTo, // deprecated, but needed for migration to work properly
   serviceDlls
 ];
 
