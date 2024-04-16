@@ -1,5 +1,6 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
+import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -57,6 +58,7 @@ export const resetCacheForEntity = (entityType: string) => {
   const types = [entityType, ...(STORE_ENTITIES_LINKS[entityType] ?? [])];
   types.forEach((type) => {
     if (cache[type]) {
+      logApp.debug('Reset cache for entity', { type, entityType });
       cache[type].values = undefined;
     } else {
       // This entity type is not part of the caching system
