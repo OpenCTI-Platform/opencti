@@ -5,12 +5,12 @@ import GroupingDetailsPage from '../model/groupingDetails.pageModel';
 import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 
 test('Create a new grouping', async ({ page }) => {
-  // go to groupings
   const groupingsPage = new GroupingsPage(page);
   const groupingForm = new GroupingFormPage(page);
   const groupingDetails = new GroupingDetailsPage(page);
   const stixDomainObjectContentTab = new StixDomainObjectContentTabPage(page);
 
+  // go to groupings
   await page.goto('/dashboard/analyses/groupings');
   await expect(groupingsPage.getPage()).toBeVisible();
   // add a new grouping
