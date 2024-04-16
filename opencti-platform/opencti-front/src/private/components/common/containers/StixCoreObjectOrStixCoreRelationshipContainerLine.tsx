@@ -201,7 +201,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             created
           }
           ... on ObservedData {
-              name
+            name
             first_observed
             last_observed
           }
@@ -240,6 +240,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             color
           }
           ... on ObservedData {
+            name
             objects(first: 1) {
               edges {
                 node {
@@ -278,6 +279,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }

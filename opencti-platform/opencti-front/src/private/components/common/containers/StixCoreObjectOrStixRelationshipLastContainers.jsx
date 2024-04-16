@@ -101,7 +101,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
             created
           }
           ... on ObservedData {
-              name
+            name
             first_observed
             last_observed
           }
@@ -139,6 +139,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
             color
           }
           ... on ObservedData {
+            name
             objects(first: 1) {
               edges {
                 node {
@@ -177,6 +178,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }
