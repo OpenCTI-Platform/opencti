@@ -1196,10 +1196,17 @@ const virtualOrganizationAdminCapability = {
   created_at: Date.now(),
   updated_at: Date.now()
 };
+const getStackTrace = () => {
+  const obj = {};
+  Error.captureStackTrace(obj, getStackTrace);
+  return obj.stack;
+};
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
+  const initialCallStack = getStackTrace();
+  logApp.debug('Building complete user', { client, stack: initialCallStack });
   const contactInformationFilter = {
     mode: 'and',
     filters: [{ key: 'contact_information', values: [client.user_email] }],
