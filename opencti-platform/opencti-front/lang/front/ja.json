@@ -36,6 +36,7 @@
   "Activity raw detail": "アクティビティ生詳細",
   "ACTIVITY_MANAGER": "活動マネージャー",
   "Add": "追加",
+  "Add a file": "ファイルを追加する",
   "Add a group": "グループを追加します",
   "Add a height": "高さを追加する",
   "Add a live trigger": "ライブトリガーを追加する",
@@ -2706,5 +2707,7 @@
   "Your confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
   "Your testing file (CSV only, max 1MB)": "テスト用のファイル (CSV, 最大1MB)",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "お使いのURLには廃止された形式のフィルタが含まれており、URLに保存されていたパラメータが削除されました。",
-  "Zoom": "ズーム"
+  "Zoom": "ズーム",
+  "Zoom in": "ズームイン",
+  "Zoom out": "ズームアウト"
 }

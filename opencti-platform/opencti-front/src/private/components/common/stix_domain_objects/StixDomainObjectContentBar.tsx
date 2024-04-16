@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -57,6 +58,8 @@ StixDomainObjectContentBarProps
   } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const enableZoom = handleZoomIn && handleZoomOut && currentZoom;
+  const { t_i18n } = useFormatter();
+
   return (
     <Drawer
       anchor="bottom"
@@ -86,6 +89,7 @@ StixDomainObjectContentBarProps
               onClick={handleSave}
               size="large"
               disabled={!changed}
+              aria-label={t_i18n('Save')}
             >
               <SaveOutlined />
             </IconButton>
@@ -96,6 +100,7 @@ StixDomainObjectContentBarProps
               onClick={handleZoomOut}
               disabled={currentZoom <= 0.6}
               size="large"
+              aria-label={t_i18n('Zoom out')}
             >
               <ZoomOutOutlined />
             </IconButton>
@@ -106,6 +111,7 @@ StixDomainObjectContentBarProps
               onClick={handleZoomIn}
               disabled={currentZoom >= 2}
               size="large"
+              aria-label={t_i18n('Zoom in')}
             >
               <ZoomInOutlined />
             </IconButton>
@@ -120,7 +126,7 @@ StixDomainObjectContentBarProps
           }}
         >
           {handleDownloadPdf && (
-            <Tooltip title={'Download in pdf'}>
+            <Tooltip title={t_i18n('Download in pdf')}>
               <IconButton
                 color="primary"
                 onClick={handleDownloadPdf}
@@ -131,7 +137,7 @@ StixDomainObjectContentBarProps
             </Tooltip>
           )}
           {directDownload ? (
-            <Tooltip title={'Download this file'}>
+            <Tooltip title={t_i18n('Download this file')}>
               <IconButton
                 color="primary"
                 component={Link}
@@ -144,7 +150,7 @@ StixDomainObjectContentBarProps
               </IconButton>
             </Tooltip>
           ) : (
-            <Tooltip title={'Download this file'}>
+            <Tooltip title={t_i18n('Download this file')}>
               <IconButton color="primary" onClick={handleDownload} size="large">
                 <CloudDownloadOutlined />
               </IconButton>

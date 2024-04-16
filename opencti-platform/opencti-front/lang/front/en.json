@@ -36,6 +36,7 @@
   "Activity raw detail": "Activity raw detail",
   "ACTIVITY_MANAGER": "Activity manager",
   "Add": "Add",
+  "Add a file": "Add a file",
   "Add a group": "Add a group",
   "Add a height": "Add a height",
   "Add a live trigger": "Add a live trigger",
@@ -2706,5 +2707,7 @@
   "Your confidence level is insufficient to edit this object.": "Your confidence level is insufficient to edit this object.",
   "Your testing file (CSV only, max 1MB)": "Your testing file (CSV only, max 1MB)",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Your url contains filters in a deprecated format, parameters stored in the url have been removed.",
-  "Zoom": "Zoom"
+  "Zoom": "Zoom",
+  "Zoom in": "Zoom in",
+  "Zoom out": "Zoom out"
 }

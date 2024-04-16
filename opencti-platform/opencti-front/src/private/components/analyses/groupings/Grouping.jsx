@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
 const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
   return (
-    <>
+    <div data-testid="grouping-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -48,7 +48,7 @@ const GroupingComponent = ({ grouping }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <GroupingEdition groupingId={grouping.id} />
       </Security>
-    </>
+    </div>
   );
 };
 

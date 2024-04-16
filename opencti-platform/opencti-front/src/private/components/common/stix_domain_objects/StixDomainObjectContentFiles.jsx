@@ -245,6 +245,7 @@ class StixDomainObjectContentFiles extends Component {
               onClick={this.handleOpenCreate.bind(this)}
               color="primary"
               size="small"
+              aria-label={t('Add a file')}
             >
               <AddOutlined />
             </IconButton>
