@@ -97,7 +97,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   const { t_i18n } = useFormatter();
   const [commit] = useMutation(IncidentMutation);
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),

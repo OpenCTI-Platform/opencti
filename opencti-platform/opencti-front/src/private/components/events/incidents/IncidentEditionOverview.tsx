@@ -157,7 +157,7 @@ IncidentEditionOverviewProps
   const { t_i18n } = useFormatter();
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     incident_type: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),

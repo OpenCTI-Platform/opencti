@@ -156,7 +156,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
   const taskData = useFragment(tasksEditionOverviewFragment, taskRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
   };

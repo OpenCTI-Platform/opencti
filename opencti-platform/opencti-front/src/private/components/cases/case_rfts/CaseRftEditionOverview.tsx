@@ -171,7 +171,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
   const caseData = useFragment(caseRftEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     takedown_types: Yup.array().nullable(),
     severity: Yup.string().nullable(),

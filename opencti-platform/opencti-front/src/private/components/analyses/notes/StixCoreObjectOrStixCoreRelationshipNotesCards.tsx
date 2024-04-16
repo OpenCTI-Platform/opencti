@@ -165,7 +165,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const basicShape = {
-    content: Yup.string().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number(),
     note_types: Yup.array(),

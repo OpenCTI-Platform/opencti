@@ -89,7 +89,7 @@ const ReportEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     published: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t_i18n('This field is required')),

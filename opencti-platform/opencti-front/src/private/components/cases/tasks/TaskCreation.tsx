@@ -79,7 +79,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const classes = useStyles();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),

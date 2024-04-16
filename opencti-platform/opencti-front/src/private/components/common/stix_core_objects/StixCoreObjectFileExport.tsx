@@ -42,7 +42,7 @@ const stixCoreObjectFileExportQuery = graphql`
 `;
 
 const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
+  format: Yup.string().trim().required(t('This field is required')),
 });
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;

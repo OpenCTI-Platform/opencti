@@ -78,8 +78,8 @@ const identityMutation = graphql`
 `;
 
 const identityValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  type: Yup.string().required(t('This field is required')),
+  name: Yup.string().trim().required(t('This field is required')),
+  type: Yup.string().trim().required(t('This field is required')),
 });
 
 class IdentityCreation extends Component {

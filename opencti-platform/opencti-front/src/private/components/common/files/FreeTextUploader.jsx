@@ -44,7 +44,7 @@ const freeTextUploaderEntityMutation = graphql`
 `;
 
 const freeTextValidation = (t) => Yup.object().shape({
-  content: Yup.string().required(t('This field is required')),
+  content: Yup.string().trim().required(t('This field is required')),
 });
 
 class FreeTextUploader extends Component {

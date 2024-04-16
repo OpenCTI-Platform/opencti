@@ -85,7 +85,7 @@ const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
