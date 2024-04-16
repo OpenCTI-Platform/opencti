@@ -50,8 +50,7 @@ export class TelemetryMeterManager {
         ? { user_id: activUser.user_id, lastActivSessionFoundDate: timestamp } // update timestamp
         : activUser)) // keep registered user
       .concat(newActivUsers);
-    const limitDate = new Date().getTime() - 3600000; // TODO to set (actual date - 1 hour)
-    this.activUsers = updatedActivUsers.filter((user) => user.lastActivSessionFoundDate >= limitDate);
+    this.activUsers = updatedActivUsers;
   }
 
   registerFiligranTelemetry() {
@@ -65,7 +64,7 @@ export class TelemetryMeterManager {
     // number of activ users
     const activUsersGauge = meter.createObservableGauge(
       'opencti_numberOfActivUsers',
-      { description: 'number of users activ in a session within the last hour' } // TODO to modify
+      { description: 'Number of users activ in a session within the last hour' }
     );
     activUsersGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.activUsers.length);

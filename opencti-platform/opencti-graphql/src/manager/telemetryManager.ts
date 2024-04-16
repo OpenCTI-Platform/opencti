@@ -43,7 +43,6 @@ filigranTelemetryMeterManager.registerFiligranTelemetry();
 const fetchTelemetryData = async () => {
   try {
     const context = executionContext('telemetry_manager');
-    const timestamp = new Date().getTime();
     // Fetch settings
     const settings = await getSettings(context) as Settings;
     const enabledModules = settings.platform_modules?.map((module) => (module.enable ? module.id : null))
@@ -56,8 +55,9 @@ const fetchTelemetryData = async () => {
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users over time
+    const userTimestamp = new Date().getTime();
     const activUsers = await usersWithActiveSession();
-    filigranTelemetryMeterManager.setActivUsers(activUsers, timestamp);
+    filigranTelemetryMeterManager.setActivUsers(activUsers, userTimestamp);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }
