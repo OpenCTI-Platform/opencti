@@ -350,7 +350,10 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const { container_type, all } = playbookNode.configuration;
-    if (container_type && isStixDomainObjectContainer(container_type)) {
+    if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
+      throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
+    }
+    if (container_type) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const created = baseData.extensions[STIX_EXT_OCTI].created_at;
       const containerData: Record<string, unknown> = {
