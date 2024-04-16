@@ -4,7 +4,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
+import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
+import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupEditionRoles, { groupEditionRolesLinesSearchQuery } from './GroupEditionRoles';
@@ -15,7 +16,6 @@ import { GroupEditionRolesLinesSearchQuery } from './__generated__/GroupEditionR
 import { GroupEditionContainerQuery } from './__generated__/GroupEditionContainerQuery.graphql';
 import { GroupEditionContainer_group$key } from './__generated__/GroupEditionContainer_group.graphql';
 import GroupEditionMarkings from './GroupEditionMarkings';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 export const groupEditionContainerQuery = graphql`
@@ -71,12 +71,12 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
 
   const groupData = usePreloadedQuery<GroupEditionContainerQuery>(groupEditionContainerQuery, groupQueryRef);
   const roleQueryRef = useQueryLoading<GroupEditionRolesLinesSearchQuery>(groupEditionRolesLinesSearchQuery);
+  const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery);
+
   const group = useFragment<GroupEditionContainer_group$key>(
     GroupEditionContainerFragment,
     groupData.group,
   );
-
-  const { paginationOptions } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(`group-${group?.id}-users`, {});
 
   if (!group) {
     return <ErrorNotFound />;
@@ -111,7 +111,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           </React.Suspense>
         )}
         {currentTab === 2 && <GroupEditionMarkings group={group} />}
-        {currentTab === 3 && <GroupEditionUsers group={group} paginationOptions={paginationOptions} />}
+        {currentTab === 3 && userQueryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <GroupEditionUsers group={group} queryRef={userQueryRef} />
+          </React.Suspense>
+        )}
       </>
     </Drawer>
   );
