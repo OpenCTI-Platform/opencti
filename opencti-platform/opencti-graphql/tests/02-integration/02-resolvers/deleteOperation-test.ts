@@ -41,7 +41,7 @@ const READ_DELETE_OPERATION_QUERY = gql`
     query deleteOperation($id: String!) {
         deleteOperation(id: $id) {
             id
-            timestamp
+            created_at
             deletedBy { 
                 id
                 name
@@ -77,7 +77,7 @@ const LIST_DELETE_OPERATION_QUERY = gql`
             edges {
                 node {
                     id
-                    timestamp
+                    created_at
                     deletedBy {
                         id
                         name
