@@ -24,7 +24,7 @@ const Trash: React.FC = () => {
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
-      sortBy: 'timestamp',
+      sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
       filters: emptyFilterGroup,
@@ -65,7 +65,7 @@ const Trash: React.FC = () => {
         width: '21%',
         isSortable: isRuntimeSort,
       },
-      timestamp: {
+      created_at: {
         label: 'Deletion date',
         width: '21%',
         isSortable: true,

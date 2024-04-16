@@ -23,7 +23,7 @@ type DeleteOperation implements InternalObject & BasicObject {
 # Ordering
 enum DeleteOperationOrdering {
   main_entity_name
-  timestamp
+  created_at
   deletedBy
   objectMarking
 }

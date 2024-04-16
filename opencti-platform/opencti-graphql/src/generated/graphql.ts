@@ -5532,10 +5532,10 @@ export type DeleteOperationEdge = {
 };
 
 export enum DeleteOperationOrdering {
+  CreatedAt = 'created_at',
   DeletedBy = 'deletedBy',
   MainEntityName = 'main_entity_name',
-  ObjectMarking = 'objectMarking',
-  Timestamp = 'timestamp'
+  ObjectMarking = 'objectMarking'
 }
 
 export type DeletedElement = {

@@ -88,7 +88,7 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
             <Box sx={{ ...cellSx, width: dataColumns.deletedBy.width ?? 'inherit' }}>
               {data.deletedBy?.name}
             </Box>
-            <Box sx={{ ...cellSx, width: dataColumns.timestamp.width ?? 'inherit' }}>
+            <Box sx={{ ...cellSx, width: dataColumns.created_at.width ?? 'inherit' }}>
               {fldt(data.created_at)}
             </Box>
             <Box sx={{ ...cellSx, width: dataColumns.objectMarking.width ?? 'inherit' }}>

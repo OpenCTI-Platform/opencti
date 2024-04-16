@@ -44,7 +44,7 @@ export const deleteOperationsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "DeleteOperationOrdering", defaultValue: timestamp }
+    orderBy: { type: "DeleteOperationOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )

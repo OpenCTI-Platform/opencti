@@ -23,10 +23,10 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
 
 export const completeDelete = async (context: AuthContext, user: AuthUser, id: string) => {
   const deleteOperation = await findById(context, user, id);
-  controlUserConfidenceAgainstElement(user, deleteOperation);
   if (!deleteOperation) {
     throw FunctionalError(`Delete operation ${id} cannot be found`);
   }
+  controlUserConfidenceAgainstElement(user, deleteOperation);
   // get all deleted elements & main deleted entity (from deleted_objects index)
   const mainEntityId = deleteOperation.main_entity_id;
   const deletedElementsIds = deleteOperation.deleted_elements.map((el) => el.id);
