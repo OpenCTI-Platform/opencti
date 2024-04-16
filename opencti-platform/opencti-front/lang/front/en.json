@@ -1506,7 +1506,7 @@
   "N/A": "N/A",
   "Name": "Name",
   "name": "name",
-  "Name must be at least 2 characters": "Le nom doit avoir au mojns 2 caractères",
+  "Name must be at least 2 characters": "Name must be at least 2 characters",
   "Narrative": "Narrative",
   "Narratives": "Narratives",
   "Nationality": "Nationality",
