@@ -958,11 +958,11 @@ export const RUNTIME_ATTRIBUTES = {
     field: 'deletedBy.keyword',
     type: 'keyword',
     getSource: async () => `
-        if (doc.containsKey('user_id')) {
-          def userId = doc['user_id.keyword'];
-          if (userId.size() == 1) {
-            def userName = params[userId[0]];
-            emit(userName != null ? userName : 'Unknown')
+        if (doc.containsKey('creator_id')) {
+          def creatorId = doc['creator_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
           } else {
             emit('Unknown')
           }

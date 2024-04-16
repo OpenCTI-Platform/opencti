@@ -10,8 +10,6 @@ export interface DeletedElement {
 }
 
 export interface BasicStoreEntityDeleteOperation extends BasicStoreEntity {
-  timestamp: Date
-  user_id: string
   main_entity_type: string
   main_entity_id: string
   main_entity_name: string
@@ -22,8 +20,6 @@ export interface StoreEntityDeleteOperation extends BasicStoreEntityDeleteOperat
 }
 
 export interface StixDeleteOperation extends StixObject {
-  timestamp: Date
-  user_id: string
   main_entity_type: string
   main_entity_id: string
   main_entity_name: string
