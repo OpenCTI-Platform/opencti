@@ -5517,7 +5517,6 @@ export type DeleteOperation = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   timestamp: Scalars['DateTime']['output'];
-  user_id: Scalars['String']['output'];
 };
 
 export type DeleteOperationConnection = {
@@ -31671,7 +31670,6 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

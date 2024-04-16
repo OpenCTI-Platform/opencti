@@ -3275,7 +3275,7 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
   const deleteOperationInput = {
     timestamp: new Date().getTime(),
-    user_id: user.id,
+    creator_id: user.id,
     main_entity_type: mainElement.entity_type,
     main_entity_id: mainElement.internal_id,
     main_entity_name: extractRepresentative(mainElement).main ?? mainElement.internal_id,

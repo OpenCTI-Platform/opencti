@@ -21,12 +21,10 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   },
   attributes: [
     { ...updatedAt, isFilterable: false },
-    { ...creators, isFilterable: false },
+    { ...creators, label: 'Deleted by' },
     { ...createdAt, isFilterable: false },
     confidence,
     { name: 'timestamp', label: 'Deletion date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    // TODO: filter on the user is disabled for now to avoid user info leaks
-    { name: 'user_id', label: 'Deleted by', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'main_entity_type', label: 'Deleted entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'main_entity_id', label: 'Deleted entity id', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'main_entity_name', label: 'Representation', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -14,7 +14,7 @@ const deleteOperationResolvers: Resolvers = {
   },
   DeleteOperation: {
     objectMarking: (deleteOperation, _, context) => markingDefinitionsLoader.load(deleteOperation, context, context.user),
-    deletedBy: (deleteOperation, _, context) => creatorLoader.load(deleteOperation.user_id, context, context.user),
+    deletedBy: (deleteOperation, _, context) => creatorLoader.load(deleteOperation.creator_id, context, context.user),
   },
   Mutation: {
     deleteOperationRestore: (_, { id }, context) => restoreDelete(context, context.user, id),
