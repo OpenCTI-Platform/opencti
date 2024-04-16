@@ -201,6 +201,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             created
           }
           ... on ObservedData {
+              name
             first_observed
             last_observed
           }
