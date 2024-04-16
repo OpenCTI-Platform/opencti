@@ -5507,7 +5507,7 @@ export type DeleteOperation = BasicObject & InternalObject & {
   __typename?: 'DeleteOperation';
   confidence?: Maybe<Scalars['Int']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
-  deletedBy: Creator;
+  deletedBy?: Maybe<Creator>;
   deleted_elements: Array<DeletedElement>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -5534,6 +5534,7 @@ export type DeleteOperationEdge = {
 export enum DeleteOperationOrdering {
   DeletedBy = 'deletedBy',
   MainEntityName = 'main_entity_name',
+  ObjectMarking = 'objectMarking',
   Timestamp = 'timestamp'
 }
 
@@ -31660,7 +31661,7 @@ export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType ext
 export type DeleteOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperation'] = ResolversParentTypes['DeleteOperation']> = ResolversObject<{
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  deletedBy?: Resolver<ResolversTypes['Creator'], ParentType, ContextType>;
+  deletedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   deleted_elements?: Resolver<Array<ResolversTypes['DeletedElement']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

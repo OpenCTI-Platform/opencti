@@ -13,7 +13,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   objectMarking: [MarkingDefinition!]
   confidence: Int
   created_at: DateTime
-  deletedBy: Creator!
+  deletedBy: Creator
   main_entity_type: String!
   main_entity_id: String!
   main_entity_name: String!
@@ -25,6 +25,7 @@ enum DeleteOperationOrdering {
   main_entity_name
   timestamp
   deletedBy
+  objectMarking
 }
 
 # Relay connections
