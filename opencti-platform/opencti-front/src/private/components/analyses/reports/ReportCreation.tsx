@@ -104,7 +104,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
     published: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t_i18n('This field is required')),
