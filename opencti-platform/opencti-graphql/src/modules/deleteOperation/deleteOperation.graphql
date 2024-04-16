@@ -12,7 +12,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   # DeleteOperation
   objectMarking: [MarkingDefinition!]
   confidence: Int
-  timestamp: DateTime!
+  created_at: DateTime
   deletedBy: Creator!
   main_entity_type: String!
   main_entity_id: String!

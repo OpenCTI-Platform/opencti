@@ -4,7 +4,6 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DELETE_OPERATION, type StixDeleteOperation, type StoreEntityDeleteOperation } from './deleteOperation-types';
 import convertDeleteOperationToStix from './deleteOperation-converter';
 import { confidence, createdAt, creators, updatedAt } from '../../schema/attribute-definition';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 
 const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
@@ -22,9 +21,8 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   attributes: [
     { ...updatedAt, isFilterable: false },
     { ...creators, label: 'Deleted by' },
-    { ...createdAt, isFilterable: false },
+    { ...createdAt, label: 'Deletion date' },
     confidence,
-    { name: 'timestamp', label: 'Deletion date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'main_entity_type', label: 'Deleted entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'main_entity_id', label: 'Deleted entity id', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'main_entity_name', label: 'Representation', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

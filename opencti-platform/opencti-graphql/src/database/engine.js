@@ -3274,7 +3274,7 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
   // We currently only handle deleteOperations of 1 element
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
   const deleteOperationInput = {
-    timestamp: new Date().getTime(),
+    created_at: new Date().getTime(),
     creator_id: user.id,
     main_entity_type: mainElement.entity_type,
     main_entity_id: mainElement.internal_id,

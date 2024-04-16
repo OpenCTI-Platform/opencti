@@ -5506,6 +5506,7 @@ export type DefinitionRefRelationship = {
 export type DeleteOperation = BasicObject & InternalObject & {
   __typename?: 'DeleteOperation';
   confidence?: Maybe<Scalars['Int']['output']>;
+  created_at?: Maybe<Scalars['DateTime']['output']>;
   deletedBy: Creator;
   deleted_elements: Array<DeletedElement>;
   entity_type: Scalars['String']['output'];
@@ -5516,7 +5517,6 @@ export type DeleteOperation = BasicObject & InternalObject & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
 };
 
 export type DeleteOperationConnection = {
@@ -31659,6 +31659,7 @@ export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType ext
 
 export type DeleteOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperation'] = ResolversParentTypes['DeleteOperation']> = ResolversObject<{
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   deletedBy?: Resolver<ResolversTypes['Creator'], ParentType, ContextType>;
   deleted_elements?: Resolver<Array<ResolversTypes['DeletedElement']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31669,7 +31670,6 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

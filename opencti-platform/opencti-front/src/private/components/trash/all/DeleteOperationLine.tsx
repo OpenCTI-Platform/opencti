@@ -26,7 +26,7 @@ const DeleteOperationFragment = graphql`
       id
       name
     }
-    timestamp
+    created_at
     deleted_elements {
       id
     }
@@ -89,7 +89,7 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
               {data.deletedBy?.name}
             </Box>
             <Box sx={{ ...cellSx, width: dataColumns.timestamp.width ?? 'inherit' }}>
-              {fldt(data.timestamp)}
+              {fldt(data.created_at)}
             </Box>
             <Box sx={{ ...cellSx, width: dataColumns.objectMarking.width ?? 'inherit' }}>
               <ItemMarkings variant="inList" markingDefinitions={data.objectMarking ?? []} limit={1}/>
