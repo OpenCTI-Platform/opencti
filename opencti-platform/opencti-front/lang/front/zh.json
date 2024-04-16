@@ -1506,6 +1506,7 @@
   "N/A": "不适用",
   "Name": "名称",
   "name": "名称",
+  "Name must be at least 2 characters": "名称必须至少为2个字符",
   "Narrative": "叙述",
   "Narratives": "叙述",
   "Nationality": "国籍",

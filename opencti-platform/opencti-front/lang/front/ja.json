@@ -1506,6 +1506,7 @@
   "N/A": "該当なし",
   "Name": "名前",
   "name": "名前",
+  "Name must be at least 2 characters": "名前は少なくとも2文字必要です。",
   "Narrative": "ナラティブ",
   "Narratives": "ナラティブ",
   "Nationality": "国籍",
