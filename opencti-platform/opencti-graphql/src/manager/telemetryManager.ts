@@ -55,9 +55,9 @@ const fetchTelemetryData = async () => {
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users over time
-    const userTimestamp = new Date().getTime();
     const activUsers = await usersWithActiveSession();
-    filigranTelemetryMeterManager.setActivUsers(activUsers, userTimestamp);
+    console.log('activUsers', activUsers);
+    filigranTelemetryMeterManager.setActivUsersInHistogram(activUsers);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }
@@ -68,12 +68,12 @@ const initTelemetryManager = () => {
   let running = false;
 
   const telemetryHandler = async () => {
+    logApp.info('[OPENCTI-MODULE] Running telemetry manager');
     let lock;
     try {
       // Lock the manager
       lock = await lockResource([TELEMETRY_KEY], { retryCount: 0 });
       running = true;
-      logApp.info('[OPENCTI-MODULE] Running telemetry manager');
       await fetchTelemetryData();
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {

@@ -1,5 +1,6 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import type { ObservableResult } from '@opentelemetry/api-metrics';
+import type { Histogram } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
@@ -12,14 +13,11 @@ export class TelemetryMeterManager {
 
   private isEEActivated = 0;
 
-  private EEActivationDate = undefined as string | undefined;
+  private EEActivationDate: string | undefined = undefined;
 
   private numberOfInstances = 0;
 
-  private activUsers = [] as {
-    user_id: string, // user id
-    lastActivSessionFoundDate: number, // last date when a session was found for the user
-  }[];
+  private activUsersHistogram: Histogram | null = null;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -41,33 +39,23 @@ export class TelemetryMeterManager {
     this.numberOfInstances = n;
   }
 
-  setActivUsers(activUsersInput: string[], timestamp: number) {
-    const newActivUsers = activUsersInput
-      .filter((userId) => !this.activUsers.map((n) => n.user_id).includes((userId))) // activ users that were not registered in this.activUsers
-      .map((userId) => ({ user_id: userId, lastActivSessionFoundDate: timestamp }));
-    const updatedActivUsers = this.activUsers
-      .map((activUser) => (activUsersInput.includes(activUser.user_id)
-        ? { user_id: activUser.user_id, lastActivSessionFoundDate: timestamp } // update timestamp
-        : activUser)) // keep registered user
-      .concat(newActivUsers);
-    this.activUsers = updatedActivUsers;
+  setActivUsersInHistogram(activUsersInput: string[]) {
+    this.activUsersHistogram?.record(activUsersInput.length);
   }
 
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
+    // - Histogram - //
+    // number of activ users
+    this.activUsersHistogram = meter.createHistogram(
+      'opencti_numberOfActivUsers',
+      { description: 'Number of users activ in a session within the last hour' }
+    );
     // - Gauges - //
     // number of instances
     const numberOfInstancesGauge = meter.createObservableGauge('opencti_numberOfInstances');
     numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.numberOfInstances);
-    });
-    // number of activ users
-    const activUsersGauge = meter.createObservableGauge(
-      'opencti_numberOfActivUsers',
-      { description: 'Number of users activ in a session within the last hour' }
-    );
-    activUsersGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.activUsers.length);
     });
     // is EE activated
     const isEEActivatedGauge = meter.createObservableGauge('opencti_isEEActivated');
