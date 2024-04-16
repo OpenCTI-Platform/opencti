@@ -16,31 +16,34 @@ const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 100000;
 const EXPORT_INTERVAL = 100000;
 
-// ------- Telemetry // TODO telemetry service, wrap methods in the service
-let resource = Resource.default();
-const filigranMetricReaders = [];
-if (ENABLED_TELEMETRY) {
-  // Console exporter
-  const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-  });
-  resource = resource.merge(filigranResource);
-  const filigranMetricReader = new PeriodicExportingMetricReader({
-    exporter: new ConsoleMetricExporter(),
-    exportIntervalMillis: EXPORT_INTERVAL,
-  });
-  filigranMetricReaders.push(filigranMetricReader);
-}
-const filigranMeterProvider = new MeterProvider(({
-  resource,
-  readers: filigranMetricReaders,
-}));
+const createFiligranTelemetryMeterManager = () => {
+  // ------- Telemetry // TODO telemetry service, wrap methods in the service
+  let resource = Resource.default();
+  const filigranMetricReaders = [];
+  if (ENABLED_TELEMETRY) {
+    // Console exporter
+    const filigranResource = new Resource({
+      [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+      [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
+    });
+    resource = resource.merge(filigranResource);
+    const filigranMetricReader = new PeriodicExportingMetricReader({
+      exporter: new ConsoleMetricExporter(),
+      exportIntervalMillis: EXPORT_INTERVAL,
+    });
+    filigranMetricReaders.push(filigranMetricReader);
+  }
+  const filigranMeterProvider = new MeterProvider(({
+    resource,
+    readers: filigranMetricReaders,
+  }));
 
-const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
-filigranTelemetryMeterManager.registerFiligranTelemetry();
+  const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
+  filigranTelemetryMeterManager.registerFiligranTelemetry();
+  return filigranTelemetryMeterManager;
+};
 
-const fetchTelemetryData = async () => {
+const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
     // Fetch settings
@@ -55,9 +58,10 @@ const fetchTelemetryData = async () => {
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users over time
-    const activUsers = await usersWithActiveSession();
+    const activUsers = await usersWithActiveSession(EXPORT_INTERVAL / 1000 / 60);
     console.log('activUsers', activUsers);
     filigranTelemetryMeterManager.setActivUsersInHistogram(activUsers);
+    console.log('is set');
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }
@@ -67,14 +71,14 @@ const initTelemetryManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let running = false;
 
-  const telemetryHandler = async () => {
+  const telemetryHandler = async (filigranTelemetryMeterManager: TelemetryMeterManager) => {
     logApp.info('[OPENCTI-MODULE] Running telemetry manager');
     let lock;
     try {
       // Lock the manager
       lock = await lockResource([TELEMETRY_KEY], { retryCount: 0 });
       running = true;
-      await fetchTelemetryData();
+      await fetchTelemetryData(filigranTelemetryMeterManager);
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Telemetry manager already started by another API');
@@ -90,9 +94,10 @@ const initTelemetryManager = () => {
 
   return {
     start: async () => {
+      const filigranTelemetryMeterManager = createFiligranTelemetryMeterManager();
       // Fetch data periodically
       scheduler = setIntervalAsync(async () => {
-        await telemetryHandler();
+        await telemetryHandler(filigranTelemetryMeterManager);
       }, SCHEDULE_TIME);
     },
     status: () => {
