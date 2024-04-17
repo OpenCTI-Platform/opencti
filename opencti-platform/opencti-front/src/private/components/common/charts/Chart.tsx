@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface ChartType extends ReactApexChart {
-  chart: { ctx: ApexCharts };
+  chart: { ctx: ApexCharts, opts: ApexOptions }
 }
 
 interface ExportPopoverProps {
@@ -60,7 +60,14 @@ const ExportPopover = ({
   const handleExportToCSV = () => {
     setAnchorEl(null);
     if (chartRef.current) {
-      chartRef.current.chart.ctx.exports.exportToCSV({ series });
+      const currentFormatter = chartRef.current.chart.opts.xaxis?.labels?.formatter;
+      if (currentFormatter) {
+        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: (value) => value } } }, false, false, false);
+        chartRef.current.chart.ctx.exports.exportToCSV({ series });
+        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: currentFormatter } } }, false);
+      } else {
+        chartRef.current.chart.ctx.exports.exportToCSV({ series });
+      }
     }
   };
   return (

@@ -105,6 +105,25 @@ export const defaultCommitMutation = {
   setSubmitting: undefined,
 };
 
+export const relayErrorHandling = (error, setSubmitting, onError) => {
+  if (setSubmitting) setSubmitting(false);
+  if (error && error.res && error.res.errors) {
+    const authRequired = R.filter(
+      (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
+      error.res.errors,
+    );
+    if (!R.isEmpty(authRequired)) {
+      MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
+    } else if (onError) {
+      const messages = buildErrorMessages(error);
+      onError(error, messages);
+    } else {
+      const messages = buildErrorMessages(error);
+      MESSAGING$.messages.next(messages);
+    }
+  }
+};
+
 // Relay functions
 export const commitMutation = ({
   mutation,
@@ -122,24 +141,7 @@ export const commitMutation = ({
   optimisticUpdater,
   optimisticResponse,
   onCompleted,
-  onError: (error) => {
-    if (setSubmitting) setSubmitting(false);
-    if (error && error.res && error.res.errors) {
-      const authRequired = R.filter(
-        (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
-        error.res.errors,
-      );
-      if (!R.isEmpty(authRequired)) {
-        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
-      } else if (onError) {
-        const messages = buildErrorMessages(error);
-        onError(error, messages);
-      } else {
-        const messages = buildErrorMessages(error);
-        MESSAGING$.messages.next(messages);
-      }
-    }
-  },
+  onError: (error) => relayErrorHandling(error, setSubmitting, onError),
 });
 
 export const requestSubscription = (args) => RS(environment, args);

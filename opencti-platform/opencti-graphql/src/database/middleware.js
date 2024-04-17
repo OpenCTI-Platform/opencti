@@ -1043,11 +1043,12 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
     };
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
-    const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
+    const relationRefType = redirectSide === 'from' ? source.i_relation.fromType : source.i_relation.toType;
+    const isSingleMeta = isSingleRelationsRef(relationRefType, source.i_relation.entity_type);
     const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type);
     const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
     // For single meta only rely on entity type to prevent relation duplications
-    const id = isSingleMeta ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
+    const id = (isSingleMeta && redirectSide === 'from') ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
     const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
     const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
@@ -3271,6 +3272,12 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     await indexCreatedElement(context, user, dataEntity);
     // Push the input in the stream
     const createdElement = { ...resolvedInput, ...dataEntity.element };
+    // In case we have created relation (like Marking for example) the input name is not the database name and the resolution might fail
+    const inputFields = schemaRelationsRefDefinition.getRelationsRef(createdElement.entity_type);
+    inputFields.forEach(({ name, databaseName }) => {
+      createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
+    });
+
     const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
@@ -3391,7 +3398,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     } else {
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
-          && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+        && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
         // do not delete files if logical deletion enabled
