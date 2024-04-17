@@ -11,7 +11,9 @@ import { PersonOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupEditionContainer_group$data } from '@components/settings/groups/__generated__/GroupEditionContainer_group.graphql';
+import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { usersLinesSearchQuery } from '../users/UsersLines';
+import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   list: {
@@ -60,9 +62,10 @@ const userMutationRelationDelete = graphql`
 interface GroupEditionUsersProps {
   group: GroupEditionContainer_group$data,
   queryRef: PreloadedQuery<UsersLinesSearchQuery>,
+  paginationOptionsForUpdater: GroupUsersLinesQuery$variables,
 }
 
-const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef }) => {
+const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater }) => {
   const classes = useStyles();
   const groupId = group.id;
   const groupUsers = group?.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
@@ -72,14 +75,27 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   const [commitAddUser] = useMutation(userMutationRelationAdd);
   const [commitRemoveUser] = useMutation(userMutationRelationDelete);
   const handleToggle = (userId: string, groupUser: { id: string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = {
+      fromId: userId,
+      relationship_type: 'member-of',
+    };
     if (event.target.checked) {
       commitAddUser({
         variables: {
           id: groupId,
-          input: {
-            fromId: userId,
-            relationship_type: 'member-of',
-          },
+          input,
+        },
+        updater: (store) => {
+          insertNode(
+            store,
+            'Pagination_group_members',
+            paginationOptionsForUpdater,
+            'groupEdit',
+            groupId,
+            'relationAdd',
+            { input },
+            'from',
+          );
         },
       });
     } else if (groupUser !== undefined) {
@@ -88,6 +104,9 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
           id: groupId,
           fromId: groupUser.id,
           relationship_type: 'member-of',
+        },
+        updater: (store) => {
+          deleteNodeFromId(store, groupId, 'Pagination_group_members', paginationOptionsForUpdater, groupUser.id);
         },
       });
     }

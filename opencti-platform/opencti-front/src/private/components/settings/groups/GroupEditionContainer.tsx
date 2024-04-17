@@ -6,6 +6,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
+import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupEditionRoles, { groupEditionRolesLinesSearchQuery } from './GroupEditionRoles';
@@ -17,6 +18,7 @@ import { GroupEditionContainerQuery } from './__generated__/GroupEditionContaine
 import { GroupEditionContainer_group$key } from './__generated__/GroupEditionContainer_group.graphql';
 import GroupEditionMarkings from './GroupEditionMarkings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -82,6 +84,22 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     return <ErrorNotFound />;
   }
 
+  const { paginationOptions: paginationOptionsForUserEdition } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
+    `group-${group.id}-users`,
+    {
+      id: group.id,
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      count: 25,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+    true,
+  );
+
   const { editContext } = group;
   return (
     <Drawer
@@ -115,7 +133,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <GroupEditionUsers group={group} queryRef={userQueryRef} />
+            <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition} />
           </React.Suspense>
         )}
       </>
