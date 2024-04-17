@@ -1,8 +1,9 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { editorQuery, queryAsAdmin, TEST_ORGANIZATION, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -46,6 +47,10 @@ const READ_DELETE_OPERATION_QUERY = gql`
                 id
                 name
             }
+            confidence,
+            objectMarking {
+                standard_id
+            }
             main_entity_name
             main_entity_type
             main_entity_id
@@ -81,6 +86,10 @@ const LIST_DELETE_OPERATION_QUERY = gql`
                     deletedBy {
                         id
                         name
+                    }
+                    confidence,
+                    objectMarking {
+                        standard_id
                     }
                     main_entity_name
                     main_entity_type
@@ -118,6 +127,9 @@ describe('Delete operation resolver testing', () => {
         name: 'Report for deletion',
         description: 'Report for deletion description',
         published: '2020-02-26T00:51:35.000Z',
+        confidence: 90,
+        objectMarking: [MARKING_TLP_RED],
+        objectOrganization: [TEST_ORGANIZATION.id],
       },
     };
     const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
@@ -144,8 +156,20 @@ describe('Delete operation resolver testing', () => {
     expect(getDeleteOperation.data?.deleteOperation).toBeDefined();
     expect(getDeleteOperation.data?.deleteOperation.main_entity_type).toBe(ENTITY_TYPE_CONTAINER_REPORT);
     expect(getDeleteOperation.data?.deleteOperation.main_entity_id).toBe(reportInternalId);
-    expect(getDeleteOperation.data?.deleteOperation.deleted_elements.length).toBe(1);
+    expect(getDeleteOperation.data?.deleteOperation.deleted_elements.length).toBe(3); // main entity + ref to marking + ref to organization
     expect(getDeleteOperation.data?.deleteOperation.deleted_elements[0].id).toBe(reportInternalId);
+    expect(getDeleteOperation.data?.deleteOperation.confidence).toBe(90);
+    expect(getDeleteOperation.data?.deleteOperation.objectMarking.length).toBe(1);
+    expect(getDeleteOperation.data?.deleteOperation.objectMarking[0].standard_id).toBe(MARKING_TLP_RED);
+  });
+
+  it('should Participant user not be allowed to list deleteOperations', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, { query: LIST_DELETE_OPERATION_QUERY, variables: { first: 10 } });
+  });
+
+  it('should TLP:AMBER user not be able to query TLP_RED deleteOperation', async () => {
+    const getDeleteOperation = await editorQuery({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId, }, });
+    expect(getDeleteOperation.data?.deleteOperation).toBeNull();
   });
 
   it('should deleteOperation be deleted', async () => {
