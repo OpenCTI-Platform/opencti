@@ -98,7 +98,7 @@ class StatusField extends Component {
 
   searchStatuses() {
     fetchQuery(statusFieldStatusesSearchQuery, {
-      first: 10,
+      first: 100,
       filters: this.props.type
         ? {
           mode: 'and',
