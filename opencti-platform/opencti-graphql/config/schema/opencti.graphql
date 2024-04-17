@@ -1332,7 +1332,7 @@ type Creator {
 }
 
 type ConfidenceLevel {
-  max_confidence: Int!
+  max_confidence: Int
   overrides: [ConfidenceLevelOverride!]!
 }
 type ConfidenceLevelOverride {
@@ -1470,7 +1470,7 @@ input UserAddInput {
 }
 
 input ConfidenceLevelInput {
-  max_confidence: Int!
+  max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
 }
 
