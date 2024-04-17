@@ -10,6 +10,10 @@ Allow to set a main organization for the entire platform. Users belonging to the
 ![Platform main organization](./assets/platform-main-organization.png)
 
 
+!!! warning "Numerous repercussions linked to the activation of this feature"
+
+    This feature has implications for the entire platform and must be fully understood before being used. For example, it's mandatory to have organizations set up for each user, otherwise they won't be able to log in. It is also advisable to include connector's users in the platform main organization to avoid import problems.
+
 ## Authentication strategies
 
 The authentication strategies section provides insights into the configured authentication methods. Additionally, an "Enforce Two-Factor Authentication" button is available, allowing administrators to mandate 2FA activation for users, enhancing overall account security.

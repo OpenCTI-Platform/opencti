@@ -9,7 +9,7 @@ Decay rules can be configured in the "Settings > Customization > Decay rule" men
 ![Decay rules](./assets/decay-rules.png)
 
 There are built-in decay rules that can't be modified and are applied by default to indicators depending on their main observable type.
-Decay rules are applied following their order : from highest to lowest (lowest being 0).
+Decay rules are applied from highest to lowest order (the lowest being 0).
 
 You can create new decay rules with higher order to apply them along with (or instead of) the built-in rules.
 
@@ -17,9 +17,12 @@ You can create new decay rules with higher order to apply them along with (or in
 
 When you create a decay rule, you can specify on which indicators' main observable types it will apply. If you don't enter any, it will apply to all indicators.
 
-You can also add reaction points which represent the scores at which indicators are updated. For example if you add one reaction point at 60 and another one at 40, indicators that have an initial score of 80 will be updated with a score of 60, then 40, depending on the decay curve.
+You can also add reaction points which represent the scores at which indicators are updated. For example, if you add one reaction point at 60 and another one at 40, indicators that have an initial score of 80 will be updated with a score of 60, then 40, depending on the decay curve.
 
-The decay curve is based on two parameters : lifetime and decay factor. Decay factor represent the speed at which the score drops, and lifetime is how long (in days) it will drop until reaching 0.
+The decay curve is based on two parameters: 
+
+- the decay factor, which represents the speed at which the score falls, and
+- the lifetime, which represents the time (in days) during which the value will be lowered until it reaches 0.
 
 Finally, the revoke score is the score at which the indicator can be revoked automatically.
 

@@ -8,23 +8,23 @@
 
 ## Description
 
-Having all the history in the user interface ([events](events.md)) its sometimes not enough to have a proactive monitoring.
-For this reason you can configure some specific triggers to receive notifications on audit events.
+Having all the history in the user interface ([events](events.md)) is sometimes not enough to have a proactive monitoring. For this reason, you can configure some specific triggers to receive notifications on audit events.
 You can configure like personal triggers, lives one that will be sent directly or digest depending on your needs. 
 
 ## Configuration
 
-In this kind of trigger you will have to configure different options:
-- Notification target: User interface or email
-- Recipients: who will receive the notification
-- Filters: a set of filters to get only events that really interested you. (who is responsible for this event, kind of events, ...)
+In this type of trigger, you will need to configure various options:
+
+- Notification target: user interface or email,
+- Recipients: the recipient of the notification,
+- Filters: a set of filters to get only events that really interest you.
 
 ## Event structure
 
 In order to correctly configure the filters, here's a definition of the event structure
 
 - Event type: `authentication`
-  - Event scopes: `login` and `logout` 
+    - Event scopes: `login` and `logout` 
 
 - Event type: `read`
     - Event scopes: `read` and `unauthorized` 

@@ -6,7 +6,7 @@
 
     [Please read the dedicated page to have all information](../enterprise.md)
 
-As explained in [overview page](overview.md), all administration actions are listen by default. 
+As explained in the [overview page](overview.md), all administration actions are listened by default. 
 However, all knowledge are not listened by default due to performance impact on the platform. 
 
 For this reason you need to explicitly activate extended listening on user / group or organization.

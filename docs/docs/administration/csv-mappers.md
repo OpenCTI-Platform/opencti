@@ -1,6 +1,6 @@
 # CSV Mappers
 
-In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Objects. The mappers are created and configured by users with the Manage CSV mappers capability. Then, they are available to users who import CSV files, for instance inside a report or in the global import view.
+In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Object. The mappers are created and configured by users with the Manage CSV mapper capability. Then, they are available to users who import CSV files, for instance inside a report or in the global import view.
 
 ## Principles
 
@@ -17,9 +17,9 @@ Enter a name for your mapper and some basic information about your CSV files:
 - The line separator used (defaults to the standard comma character)
 - The presence of a header on the first line
 
-!!! info "header management"
+!!! info "Header management"
 
-    The parser will not extract any information from the CSV header if any ; it will just skip the first line during parsing.
+    The parser will not extract any information from the CSV header if any, it will just skip the first line during parsing.
 
 ![Creating a new CSV Mapper](assets/csv-mappers-create.png)
 
@@ -46,7 +46,7 @@ Or to set default values in case some data is missing in the imported file.
 
 ## CSV Mapper validity
 
-The only parameter required to save a CSV Mapper is a name ; creating and refining its representations can be done iteratively.
+The only parameter required to save a CSV Mapper is a name. The creation and refinement of its representations can be done iteratively.
 
 Nonetheless, all CSV Mappers go through a quick validation that checks if all the representations have all their mandatory fields set. 
 Only valid mappers can be run by the users on their CSV files.
@@ -64,6 +64,10 @@ The code block contains the raw result of the parsing attempt, in the form of a 
 You can then check if the extracted values match the expected entities and relationships.
 
 ![Test a CSV Mapper](assets/csv-mappers-test.png)
+
+!!! warning "Test with a small file"
+
+    We strongly recommend limiting test files to 100 lines and 1MB. Otherwise, the browser may crash.
 
 
 ## Use a mapper for importing a CSV file
@@ -84,10 +88,10 @@ By default, the imported elements will be added in a new Analyst Workbench where
 
 ## Default values for attributes
 
-In the case of the CSV file misses some data, you can complete it with default values. To achieve this you have two possibilities:
+In the case of the CSV file misses some data, you can complete it with default values. To achieve this, you have two possibilities:
 
 - Set default values in the settings of the entities,
-- Set specific default values directly in the CSV mapper.
+- Set default values directly in the CSV mapper.
 
 ### Set default values in the settings of the entities
 
@@ -125,12 +129,12 @@ The example above shows the case of the attribute `architecture implementation` 
 
 ### Specific case of marking definitions
 
-For marking definitions, setting a default value is different from other attributes. We are not choosing a particular marking definition to use if none is specified in the CSV file. Instead, we will choose a default policy and we have two:
-
-![mapper-attribute](assets/csv-mappers-default-markings.png)
+For marking definitions, setting a default value is different from other attributes. We are not choosing a particular marking definition to use if none is specified in the CSV file. Instead, we will choose a default policy. Two option are available:
 
 - Use the default marking definitions of the user. In this case the default marking definitions of the connected user importing the CSV file will be used,
 - Let the user choose marking definitions. Here the user importing the CSV file will choose marking definitions (among the ones they can see) when selecting the CSV mapper.
+
+![mapper-attribute](assets/csv-mappers-default-markings.png)
 
 ## Additional resources
 

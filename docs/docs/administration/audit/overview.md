@@ -4,11 +4,12 @@
 
     Activity unified interface and logging are available under the "Filigran entreprise edition" license.
 
-    [Please read the dedicated page to have all information](../enterprise.md)
+    [Please read the dedicated page to have all the information](../enterprise.md)
 
 
-OpenCTI activity capability is the way to unified whats really happen in the platform.
+OpenCTI activity capability is the way to unify what's really happening in the platform.
 With this feature you will be able to answer "who did what, where, and when?" within your data with the maximum level of transparency. 
+
 Enabling activity helps your security, auditing, and compliance entities monitor platform for possible vulnerabilities or external data misuse.
 
 ## Categories
@@ -17,13 +18,11 @@ The activity groups 3 different concepts that need to be explained.
 
 ### Basic knowledge
 
-The basic knowledge refers to all STIX data knowledge inside OpenCTI. Every create/update/delete actions on that knowledge is accessible through the history.
-That basic activity is handled by the history manager and can be also found directly on each entity.
+The basic knowledge refers to all STIX data knowledge inside OpenCTI. Every create/update/delete action on that knowledge is accessible through the history. That basic activity is handled by the history manager and can also be found directly on each entity.
 
 ### Extended knowledge
 
-The extended knowledge refers to extra information data to track specific user activity.
-As this kind of tracking is expensive, the tracking will only be done for specific user/group/organization explicitly configured.
+The extended knowledge refers to extra information data to track specific user activity. As this kind of tracking is expensive, the tracking will only be done for specific users/groups/organizations explicitly configured in the [configuration](configuration.md) window.
 
 ### Audit knowledge
 
@@ -139,7 +138,7 @@ Some history actions are already included in the "basic knowledge". (basic marke
 | <div style="width:200px"></div> | Read                | Create              | Delete              | Edit                |
 |:--------------------------------|---------------------|:--------------------|:--------------------|:--------------------|
 | Platform knowledge              | :white_check_mark:  | basic               | basic               | basic               |
-| Background tasks Knowledge      | :prohibited:        | :white_check_mark:  | :white_check_mark:  | :prohibited:        |
+| Background tasks knowledge      | :prohibited:        | :white_check_mark:  | :white_check_mark:  | :prohibited:        |
 | Knowledge files                 | :white_check_mark:  | basic               | basic               | :prohibited:        |
 | Global data import files        | :white_check_mark:  | :white_check_mark:  | :white_check_mark:  | :prohibited:        |
 | Analyst workbenches files       | :prohibited:        | :white_check_mark:  | :white_check_mark:  | :prohibited:        |

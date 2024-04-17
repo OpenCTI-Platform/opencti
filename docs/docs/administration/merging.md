@@ -2,7 +2,11 @@
 
 ## Data merging
 
-Within the OpenCTI platform, the merge capability is present into the "Data > Entities" tab, and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon. NB: it is not possible to merge entities of different types, nor is it possible to merge more than 4 entities at a time (it will have to be done in several stages).
+Within the OpenCTI platform, the merge capability is present into the "Data > Entities" tab, and is fairly straightforward to use. To execute a merge, select the set of entities to be merged, then click on the Merge icon.
+
+!!! info "Merging limitation"
+
+    It is not possible to merge entities of different types, nor is it possible to merge more than 4 entities at a time (it will have to be done in several stages).
 
 ![Merge_panel](assets/merge_panel.png)
 

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In OpenCTI, the RBAC system not only related to what users can do or cannot do in the platform (aka. `Capabilities`) but also to the system of [data segregation](segregation.md). Also, platform behaviour such as default home dashboards, default triggers and digests as well as default hidden menus or entities can be defined across groups and organizations.
+In OpenCTI, the RBAC system not only related to what users can do or cannot do in the platform (aka. `Capabilities`) but also to the system of [data segregation](segregation.md). Also, platform behavior such as default home dashboards, default triggers and digests as well as default hidden menus or entities can be defined across groups and organizations.
 
 ## High level design
 
@@ -10,7 +10,7 @@ In OpenCTI, the RBAC system not only related to what users can do or cannot do i
 
 ## Roles 
 
-Roles are used in the platform to grant the given groups with some **capabilities** to define what users in those groupes can do or cannot do.
+Roles are used in the platform to grant the given groups with some **capabilities** to define what users in those groups can do or cannot do.
 
 ### List of capabilities
 
@@ -75,30 +75,30 @@ When access to a user, it is possible to:
 
 ![User overview](assets/user-overveiw-new.png)
 
-In the below image, you can see how to override the value inherited from the group.
+In the image below, you can see how to override the value inherited from the group.
 
 ![manage user](assets/user-manage.png)
 
 !!! warning "Mandatory max confidence level"
 
-  A user without Max confidence level won't have the ability to create, delete or update any data in our platform. Please be sure that your users are always either assigned to group that have a confidence level defined or that have an override of this group confidence level.
+    A user without Max confidence level won't have the ability to create, delete or update any data in our platform. Please be sure that your users are always either assigned to group that have a confidence level defined or that have an override of this group confidence level.
 
 ## Groups
 
-Groups is the main vehicule to manage permissions and [data segregation](segregation.md) as well as platform customization for the given users part of this group. You can manage the groups in `Settings > Security > Groups`.
+Groups are the main way to manage permissions and [data segregation](segregation.md) as well as platform customization for the given users part of this group. You can manage the groups in `Settings > Security > Groups`.
 
 Here is the description of the group available parameters.
 
-| Parameter              | Description                                                                                                                                                                                                                                                                                            |
-|:-----------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Auto new markings`    | If a new marking definition is created, this group will automatically be granted to it.                                                                                                                                                                                                                |
-| `Default membership`   | If a new user is created (manually or upon SSO), it will be added to this group.                                                                                                                                                                                                                       |
-| `Roles`                | Roles and capabilities granted to the users belonging to this group.                                                                                                                                                                                                                                   |
-| `Default dashboard`    | Customize the home dashboard for the users belonging to this group.                                                                                                                                                                                                                                    |
-| `Default markings`     | In `Settings > Customization > Entity types`, if default marking definitions is enabled, default markings of the group is used.                                                                                                                                                                        |
-| `Allowed markings`     | Grant access to the group to the defined marking definitions, more details in [data segregation](segregation.md).                                                                                                                                                                                      |
-| `Triggers and digests` | Define defaults triggers and digests for the users belonging to this group.                                                                                                                                                                                                                            |
-| `Max confidence level`   | Define the maximum confidence level for the group: it will impact the capacity to update entities, the confidence level of a newly created entity by a user of the group                                                                                                                             |
+| Parameter              | Description                                                                                                                                                               |
+|:-----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Auto new markings`    | If a new marking definition is created, this group will automatically be granted to it.                                                                                   |
+| `Default membership`   | If a new user is created (manually or upon SSO), it will be added to this group.                                                                                          |
+| `Roles`                | Roles and capabilities granted to the users belonging to this group.                                                                                                      |
+| `Default dashboard`    | Customize the home dashboard for the users belonging to this group.                                                                                                       |
+| `Default markings`     | In `Settings > Customization > Entity types`, if a default marking definition is enabled, default markings of the group is used.                                          |
+| `Allowed markings`     | Grant access to the group to the defined marking definitions, more details in [data segregation](segregation.md).                                                         |
+| `Triggers and digests` | Define defaults triggers and digests for the users belonging to this group.                                                                                               |
+| `Max confidence level` | Define the maximum confidence level for the group: it will impact the capacity to update entities, the confidence level of a newly created entity by a user of the group. |
 
 ![Group overview](assets/group-overview-new.png)
 
@@ -128,4 +128,6 @@ The platform administrator can promote/demote an organization admin through its 
 
 ![Organization admin promoting/demoting](assets/define_organization_admin.png)
 
-The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".
+!!! info "Organization admin rights"
+
+    The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".

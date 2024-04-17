@@ -25,7 +25,7 @@ This configuration enables an entity to automatically construct an external refe
 
 ## Enforce references
 
-This configuration enables the requirement of a reference message on an entity creation or modification. This option is helpful if you want to keep a strong consistency and traceability of your Knowledge and is well suited for manual creation and update.
+This configuration enables the requirement of a reference message on an entity creation or modification. This option is helpful if you want to keep a strong consistency and traceability of your knowledge and is well suited for manual creation and update.
 
 ![Entity configuration](./assets/entity-configuration.png)
 
@@ -65,4 +65,4 @@ Once you have customized your scale, click on "Update" to save your configuratio
 
 !!! note "Max confidence level"
 
-  The above scale also needs to take into account the confidence level per user. To understand the concept, please navigate to this [page](../usage/reliability-confidence.md)
+    The above scale also needs to take into account the confidence level per user. To understand the concept, please navigate to this [page](../usage/reliability-confidence.md)
