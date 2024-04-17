@@ -1647,7 +1647,7 @@ class StixCyberObservable:
                     ),
                 }
             result = self.opencti.query(query, input_variables)
-            if "payload_bin" in observable_data and "mime/type" in observable_data:
+            if "payload_bin" in observable_data and "mime_type" in observable_data:
                 self.add_file(
                     id=result["data"]["stixCyberObservableAdd"]["id"],
                     file_name=(
