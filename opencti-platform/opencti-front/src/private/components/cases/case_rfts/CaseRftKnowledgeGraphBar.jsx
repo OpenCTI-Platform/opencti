@@ -179,7 +179,7 @@ class CaseRftKnowledgeGraphBar extends Component {
   }
 
   handleCloseCreateRelationship() {
-    this.setState({ openCreatedRelation: false });
+    this.setState({ openCreatedRelation: false, relationReversed: null });
     this.props.handleCloseRelationCreation();
   }
 
@@ -204,7 +204,7 @@ class CaseRftKnowledgeGraphBar extends Component {
   }
 
   handleCloseCreateNested() {
-    this.setState({ openCreatedNested: false });
+    this.setState({ openCreatedNested: false, nestedReversed: null });
   }
 
   handleReverseNested() {
