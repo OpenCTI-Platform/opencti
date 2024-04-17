@@ -1043,11 +1043,12 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
     };
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
-    const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
+    const relationRefType = redirectSide === 'from' ? source.i_relation.fromType : source.i_relation.toType;
+    const isSingleMeta = isSingleRelationsRef(relationRefType, source.i_relation.entity_type);
     const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type);
     const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
     // For single meta only rely on entity type to prevent relation duplications
-    const id = isSingleMeta ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
+    const id = (isSingleMeta && redirectSide === 'from') ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
     const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
     const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
