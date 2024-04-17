@@ -3,28 +3,15 @@ import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-r
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { Theme } from '@mui/material/styles/createTheme';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import { PersonOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupEditionContainer_group$data } from '@components/settings/groups/__generated__/GroupEditionContainer_group.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { usersLinesSearchQuery } from '../users/UsersLines';
 import { deleteNodeFromId, insertNode } from '../../../../utils/store';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  list: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-}));
 
 const userMutationRelationAdd = graphql`
   mutation GroupEditionUsersRelationAddMutation(
@@ -66,9 +53,8 @@ interface GroupEditionUsersProps {
 }
 
 const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater }) => {
-  const classes = useStyles();
   const groupId = group.id;
-  const groupUsers = group?.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
+  const groupUsers = group.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
   const usersData = usePreloadedQuery<UsersLinesSearchQuery>(usersLinesSearchQuery, queryRef);
   const users = usersData.users?.edges.map((n) => n.node) ?? [];
 
@@ -113,11 +99,11 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   };
 
   return (
-    <List dense={true} className={classes.root}>
+    <List dense={true}>
       {users.map((user) => {
         const groupUser = groupUsers.find((g) => g.id === user.id);
         return (
-          <ListItem key={groupId} divider={true}>
+          <ListItem key={user.id} divider={true}>
             <ListItemIcon color="primary">
               <PersonOutlined/>
             </ListItemIcon>

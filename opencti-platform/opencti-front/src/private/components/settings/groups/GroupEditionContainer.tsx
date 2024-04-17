@@ -7,6 +7,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
+import { initialStaticPaginationForGroupUsers } from '@components/settings/users/GroupUsers';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupEditionRoles, { groupEditionRolesLinesSearchQuery } from './GroupEditionRoles';
@@ -88,14 +89,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     `group-${group.id}-users`,
     {
       id: group.id,
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      count: 25,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
+      ...initialStaticPaginationForGroupUsers,
     },
     true,
   );

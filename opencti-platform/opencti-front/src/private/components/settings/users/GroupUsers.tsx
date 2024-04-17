@@ -31,6 +31,17 @@ interface GroupUsersProps {
   groupId: string;
 }
 
+export const initialStaticPaginationForGroupUsers = {
+  searchTerm: '',
+  sortBy: 'name',
+  orderAsc: true,
+  count: 25,
+  numberOfElements: {
+    number: 0,
+    symbol: '',
+  },
+};
+
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -43,14 +54,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     LOCAL_STORAGE_KEY,
     {
       id: groupId,
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      count: 25,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
+      ...initialStaticPaginationForGroupUsers,
     },
     true,
   );
