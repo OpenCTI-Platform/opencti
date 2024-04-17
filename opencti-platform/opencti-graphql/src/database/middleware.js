@@ -3272,6 +3272,12 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     await indexCreatedElement(context, user, dataEntity);
     // Push the input in the stream
     const createdElement = { ...resolvedInput, ...dataEntity.element };
+    // In case we have created relation (like Marking for example) the input name is not the database name and the resolution might fail
+    const inputFields = schemaRelationsRefDefinition.getRelationsRef(createdElement.entity_type);
+    inputFields.forEach(({ name, databaseName }) => {
+      createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
+    });
+
     const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
@@ -3392,7 +3398,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     } else {
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
-          && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+        && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
         // do not delete files if logical deletion enabled
