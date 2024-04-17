@@ -13,7 +13,7 @@ export default class StixDomainObjectContentTabPage {
   }
 
   async selectFile(name: string) {
-    await this.page.getByText(name).click();
+    await this.page.getByText(name, { exact: true }).click();
     return this.page.getByLabel('Editor editing area: main');
   }
 
