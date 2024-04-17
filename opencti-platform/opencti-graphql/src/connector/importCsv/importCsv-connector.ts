@@ -2,13 +2,13 @@ import { Readable } from 'stream';
 import type { SdkStream } from '@smithy/types/dist-types/serde';
 import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, pushToSync, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile, upload } from '../../database/file-storage';
 import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
-import { resolveUserById } from '../../domain/user';
+import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
@@ -40,7 +40,7 @@ const initImportCsvConnector = () => {
     const workId = messageParsed.internal.work_id;
     const applicantId = messageParsed.internal.applicant_id;
     const fileId = messageParsed.event.file_id;
-    const applicantUser = await resolveUserById(context, applicantId);
+    const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
     const entityId = messageParsed.event.entity_id;
     const entity = entityId ? await internalLoadById(context, applicantUser, entityId) : undefined;
 

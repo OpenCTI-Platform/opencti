@@ -32,7 +32,7 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -1212,8 +1212,9 @@ export const buildCompleteUser = async (context, client) => {
     filters: [{ key: 'contact_information', values: [client.user_email] }],
     filterGroups: [],
   };
-  const args = { filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
-  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+  // find user corresponding individual (we need only to get the first one)
+  const individualArgs = { first: 1, indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
+  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
   const organizationsPromise = listAllToEntitiesThroughRelations(
     context,
     SYSTEM_USER,
@@ -1261,6 +1262,12 @@ export const buildCompleteUser = async (context, client) => {
     default_marking: marking.default,
     effective_confidence_level,
   };
+};
+
+export const resolveUserByIdFromCache = async (context, id) => {
+  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  return platformUsers.get(id);
 };
 
 export const resolveUserById = async (context, id) => {
@@ -1311,7 +1318,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
   const applicantId = req.headers['opencti-applicant-id'];
   if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
     if (isBypassUser(logged)) {
-      const applicantUser = await resolveUserById(context, applicantId);
+      const applicantUser = await resolveUserByIdFromCache(context, applicantId);
       if (isEmptyField(applicantUser)) {
         logApp.warn('User cant be impersonate (not exists)', { applicantId });
       } else {
@@ -1477,19 +1484,30 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
 // region context
 export const userCleanContext = async (context, user, userId) => {
   await delEditContext(user, userId);
-  return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 
 export const userEditContext = async (context, user, userId, input) => {
   await setEditContext(user, userId, input);
-  return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 // endregion
 
-export const getUserEffectiveConfidenceLevel = async (userId, context) => {
-  const user = await findById(context, context.user, userId); // this returns a complete user, with groups
-  if (!user) {
-    throw FunctionalError('User not found', { user_id: userId });
+export const getUserEffectiveConfidenceLevel = async (user, context) => {
+  // we load the user from cache to have the complete user with groupos
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const cachedUser = platformUsers.get(user.id);
+  let completeUser;
+  if (cachedUser) {
+    // in case we need to resolve user effective confidence level on edit (cache not updated with user edited fields yet)
+    // we need groups and capabilities to compute user effective confidence level, which are accurate in cache.
+    completeUser = {
+      ...user,
+      groups: cachedUser.groups,
+      capabilities: cachedUser.capabilities,
+    };
+  } else { // in case we need to resolve user effective confidence level on creation.
+    completeUser = await findById(context, context.user, user.id);
   }
-  return computeUserEffectiveConfidenceLevel(user);
+  return computeUserEffectiveConfidenceLevel(completeUser);
 };

@@ -20,7 +20,7 @@ import {
   updateTask
 } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { resolveUserById } from '../domain/user';
+import { resolveUserByIdFromCache } from '../domain/user';
 import {
   createRelation,
   deleteElementById,
@@ -460,7 +460,7 @@ const taskHandler = async () => {
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
-    const rawUser = await resolveUserById(context, task.initiator_id);
+    const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     let jobToExecute;
     if (isQueryTask) {
