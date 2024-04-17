@@ -153,6 +153,8 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
               <ConfidenceField
                 name={`${name}.max_confidence`}
                 entityType={value.entity_type}
+                onFocus={() => console.log('onFocus')}
+                onSubmit={() => console.log('onSubmit')}
               />
             )}
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
