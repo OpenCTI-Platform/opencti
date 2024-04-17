@@ -13,8 +13,8 @@ import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
-const SCHEDULE_TIME = 100000;
-const EXPORT_INTERVAL = 100000;
+const SCHEDULE_TIME = 100000; // record telemetry data period
+const EXPORT_INTERVAL = 100000; // TODO set to 1 per day
 
 const createFiligranTelemetryMeterManager = () => {
   // ------- Telemetry // TODO telemetry service, wrap methods in the service
@@ -57,11 +57,10 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterM
     filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
-    // Get number of active users over time
-    const activUsers = await usersWithActiveSession(EXPORT_INTERVAL / 1000 / 60);
+    // Get number of active users since fetchTelemetryData() last execution
+    const activUsers = await usersWithActiveSession(SCHEDULE_TIME / 1000 / 60);
     console.log('activUsers', activUsers);
-    filigranTelemetryMeterManager.setActivUsersInHistogram(activUsers);
-    console.log('is set');
+    filigranTelemetryMeterManager.setActivUsers(activUsers, new Date().getTime());
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }
