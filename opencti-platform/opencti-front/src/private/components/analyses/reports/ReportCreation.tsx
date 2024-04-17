@@ -9,7 +9,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -32,6 +32,8 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -148,6 +150,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: (response) => {
@@ -156,6 +159,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Report')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/analyses/reports/${response.reportAdd?.id}/knowledge/content`,
@@ -325,6 +329,7 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_reports',
@@ -334,7 +339,8 @@ const ReportCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a report')}
-      variant={DrawerVariant.create}
+      variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
+      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial(REPORT_TYPE) : undefined}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>
