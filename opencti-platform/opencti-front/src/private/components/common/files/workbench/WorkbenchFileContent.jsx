@@ -240,7 +240,7 @@ const workbenchFileContentMutation = graphql`
 `;
 
 const importValidation = (t) => Yup.object().shape({
-  connector_id: Yup.string().required(t('This field is required')),
+  connector_id: Yup.string().trim().required(t('This field is required')),
 });
 
 const WorkbenchFileContentComponent = ({

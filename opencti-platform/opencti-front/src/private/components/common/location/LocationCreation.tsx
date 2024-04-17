@@ -87,9 +87,9 @@ const locations = [
 ];
 
 const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  name: Yup.string().trim().required(t('This field is required')),
   description: Yup.string().nullable(),
-  type: Yup.string().required(t('This field is required')),
+  type: Yup.string().trim().required(t('This field is required')),
 });
 
 const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({

@@ -57,12 +57,12 @@ const formikSchema = Yup.object().shape({
   applyAccesses: Yup.boolean(),
   newAccessMember: Yup.object()
     .shape({
-      value: Yup.string().required(),
-      label: Yup.string().required(),
-      type: Yup.string().required(),
+      value: Yup.string().trim().required(),
+      label: Yup.string().trim().required(),
+      type: Yup.string().trim().required(),
     })
     .required(''),
-  newAccessRight: Yup.string().required(''),
+  newAccessRight: Yup.string().trim().required(''),
 });
 
 const AuthorizedMembersField = ({

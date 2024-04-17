@@ -117,12 +117,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
-    pattern: Yup.string().required(t_i18n('This field is required')),
-    pattern_type: Yup.string().required(t_i18n('This field is required')),
-    x_opencti_main_observable_type: Yup.string().required(
+    pattern: Yup.string().trim().required(t_i18n('This field is required')),
+    pattern_type: Yup.string().trim().required(t_i18n('This field is required')),
+    x_opencti_main_observable_type: Yup.string().trim().required(
       t_i18n('This field is required'),
     ),
     valid_from: Yup.date()

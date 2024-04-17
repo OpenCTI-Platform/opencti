@@ -55,10 +55,10 @@ const syncMutationFieldPatch = graphql`
 `;
 
 const syncValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  uri: Yup.string().required(t('This field is required')),
+  name: Yup.string().trim().required(t('This field is required')),
+  uri: Yup.string().trim().required(t('This field is required')),
   token: Yup.string(),
-  stream_id: Yup.string().required(t('This field is required')),
+  stream_id: Yup.string().trim().required(t('This field is required')),
   current_state_date: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),

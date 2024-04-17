@@ -128,7 +128,7 @@ StixCoreObjectQuickSubscriptionContentProps
   };
 
   const liveTriggerValidation = () => Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
+    name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array()
       .min(1, t_i18n('Minimum one event type'))

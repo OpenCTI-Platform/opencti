@@ -111,18 +111,18 @@ export const scopesConn = (exportConnectors) => {
 };
 
 const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
-  type: Yup.string().required(t('This field is required')),
+  format: Yup.string().trim().required(t('This field is required')),
+  type: Yup.string().trim().required(t('This field is required')),
 });
 
 const importValidation = (t, configurations) => {
   const shape = {
-    connector_id: Yup.string().required(t('This field is required')),
+    connector_id: Yup.string().trim().required(t('This field is required')),
   };
   if (configurations) {
     return Yup.object().shape({
       ...shape,
-      configuration: Yup.string().required(t('This field is required')),
+      configuration: Yup.string().trim().required(t('This field is required')),
     });
   }
   return Yup.object().shape(shape);

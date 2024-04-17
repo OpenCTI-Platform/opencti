@@ -60,7 +60,7 @@ export const StixCoreObjectsExportCreationMutation = graphql`
 `;
 
 const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
+  format: Yup.string().trim().required(t('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {

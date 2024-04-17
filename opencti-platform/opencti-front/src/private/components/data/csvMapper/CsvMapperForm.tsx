@@ -49,9 +49,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t_i18n('This field is required')),
+  name: Yup.string().trim().required(t_i18n('This field is required')),
   has_header: Yup.boolean().required(t_i18n('This field is required')),
-  separator: Yup.string().required(t_i18n('This field is required')),
+  separator: Yup.string().trim().required(t_i18n('This field is required')),
   skipLineChar: Yup.string().max(1),
 });
 

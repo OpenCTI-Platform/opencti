@@ -84,10 +84,10 @@ const IndicatorEditionOverviewComponent = ({
   const { t_i18n } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
-    pattern: Yup.string().required(t_i18n('This field is required')),
+    pattern: Yup.string().trim().required(t_i18n('This field is required')),
     valid_from: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),

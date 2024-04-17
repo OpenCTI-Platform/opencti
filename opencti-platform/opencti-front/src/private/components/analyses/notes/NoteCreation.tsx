@@ -128,7 +128,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t_i18n('This field is required')),
     attribute_abstract: Yup.string().nullable(),
-    content: Yup.string().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
     likelihood: Yup.number().min(0).max(100),

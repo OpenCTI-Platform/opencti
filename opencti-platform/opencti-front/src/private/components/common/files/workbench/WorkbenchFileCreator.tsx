@@ -58,7 +58,7 @@ const workbenchFileCreatorMutation = graphql`
 `;
 
 const fileValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  name: Yup.string().trim().required(t('This field is required')),
 });
 
 interface WorkbenchFileCreatorFormValues {

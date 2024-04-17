@@ -90,7 +90,7 @@ NoteEditionOverviewProps
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
-    content: Yup.string().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     created: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t_i18n('This field is required')),
