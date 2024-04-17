@@ -2253,6 +2253,7 @@
   "Subscriptions & digests": "订阅和摘要",
   "Subsectors": "子部门",
   "Success": "成功",
+  "successfully created": "创建成功",
   "suggestion_threats-arsenal": "在选定的威胁和武器库对象（TTP、工具、通道等）之间创建 \"使用 \"关系，然后将所有关系添加到容器中。",
   "suggestion_threats-indicators": "在指标和所选威胁之间创建“指示”关系，然后将所有关系添加到容器中",
   "suggestion_threats-targets": "在所选威胁和受害者对象（国家、部门等）之间创建 \"目标 \"关系，然后将所有关系添加到容器中。",

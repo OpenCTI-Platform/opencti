@@ -2253,6 +2253,7 @@
   "Subscriptions & digests": "Abonnements & Digests",
   "Subsectors": "Untersektoren",
   "Success": "Erfolg",
+  "successfully created": "erfolgreich erstellt",
   "suggestion_threats-arsenal": "Erstellen Sie \"uses\"-Beziehungen zwischen der ausgewählten Bedrohung und Arsenalobjekten (TTPs, Werkzeuge, Kanäle usw.) und fügen Sie dann alle Beziehungen zum Container hinzu.",
   "suggestion_threats-indicators": "Erstellen Sie `indicates` Beziehungen zwischen Indikatoren und der ausgewählten Bedrohung, und fügen Sie dann alle Beziehungen zum Container hinzu.",
   "suggestion_threats-targets": "Erstellen Sie \"Targets\"-Beziehungen zwischen der ausgewählten Bedrohung und den Opferobjekten (Länder, Sektoren usw.) und fügen Sie dann alle Beziehungen zum Container hinzu.",

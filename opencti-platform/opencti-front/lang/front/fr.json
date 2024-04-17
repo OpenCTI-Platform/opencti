@@ -2253,6 +2253,7 @@
   "Subscriptions & digests": "Souscriptions & résumés",
   "Subsectors": "Sous-secteurs",
   "Success": "Succès",
+  "successfully created": "créé avec succès",
   "suggestion_threats-arsenal": "Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.",
   "suggestion_threats-indicators": "Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.",
   "suggestion_threats-targets": "Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.",

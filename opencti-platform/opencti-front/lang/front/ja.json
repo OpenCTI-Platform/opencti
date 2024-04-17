@@ -2253,6 +2253,7 @@
   "Subscriptions & digests": "サブスクリプション & ダイジェスト版",
   "Subsectors": "下位セクター",
   "Success": "成功",
+  "successfully created": "正常に作成されました",
   "suggestion_threats-arsenal": "選択した脅威と武器庫オブジェクト（TTP、ツール、チャンネルなど）の間に `uses` リレーションシップを作成し、全てのリレーションシップをコンテナに追加します。",
   "suggestion_threats-indicators": "インジケータと脅威に `指し示す` のリレーションシップを作成したあと、全てのリレーションシップをコンテナに追加する。",
   "suggestion_threats-targets": "選択された脅威と被害オブジェクト（国、セクターなど）の間に「targets」関係 を作成し、すべての関係をコンテナに追加する。",

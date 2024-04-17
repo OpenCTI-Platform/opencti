@@ -2253,6 +2253,7 @@
   "Subscriptions & digests": "Suscripciones y resúmenes",
   "Subsectors": "Subsectores",
   "Success": "Éxito",
+  "successfully created": "creado exitosamente",
   "suggestion_threats-arsenal": "Crea relaciones `uses` entre la amenaza seleccionada y los objetos del arsenal (TTPs, herramientas, canales, etc.), luego añade todas las relaciones al contenedor.",
   "suggestion_threats-indicators": "La acción de crear `indica` reñacopmes emtre los indicadores y la amenaza seleccionada, después añade todas las relaciones al contenedor.",
   "suggestion_threats-targets": "Crea relaciones \"objetivos\" entre la amenaza seleccionada y los objetos víctimas (países, sectores, etc.) y añade todas las relaciones al contenedor.",
