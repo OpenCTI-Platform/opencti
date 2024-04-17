@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
-import { ADMIN_USER, adminQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
 import { parsingProcess } from '../../../src/parser/csv-parser';
 import { mappingProcess } from '../../../src/parser/csv-mapper';
@@ -75,14 +75,14 @@ describe('CSV-MAPPER', () => {
   let markings;
 
   afterAll(async () => {
-    await adminQuery(ENTITY_SETTINGS_UPDATE, {
+    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingArea.id],
       input: {
         key: 'attributes_configuration',
         value: entitySettingArea.attributes_configuration
       }
     });
-    await adminQuery(ENTITY_SETTINGS_UPDATE, {
+    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',
@@ -92,7 +92,7 @@ describe('CSV-MAPPER', () => {
   });
 
   beforeAll(async () => {
-    const { data } = await adminQuery(GET_QUERY);
+    const { data } = await internalAdminQuery(GET_QUERY);
     [individual,] = data.individuals.edges.map((e) => e.node);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
@@ -106,7 +106,7 @@ describe('CSV-MAPPER', () => {
       { name: 'longitude', default_values: ['2.22'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false }
     ];
-    await adminQuery(
+    await internalAdminQuery(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingArea.id],
@@ -124,7 +124,7 @@ describe('CSV-MAPPER', () => {
       { name: 'architecture_execution_envs', default_values: ['powerpc', 'x86'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false }
     ];
-    await adminQuery(ENTITY_SETTINGS_UPDATE, {
+    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',

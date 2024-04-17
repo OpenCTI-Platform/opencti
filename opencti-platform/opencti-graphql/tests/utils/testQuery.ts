@@ -69,7 +69,7 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   return response.data;
 };
 const adminClient = createHttpClient();
-export const adminQuery = async (query: unknown, variables = {}) => {
+export const internalAdminQuery = async (query: unknown, variables = {}) => {
   return executeInternalQuery(adminClient, query, variables);
 };
 
@@ -267,21 +267,21 @@ const GROUP_ASSIGN_MUTATION = `
   }
 `;
 const createGroup = async (input: Group): Promise<string> => {
-  const { data } = await adminQuery(GROUP_CREATION_MUTATION, {
+  const { data } = await internalAdminQuery(GROUP_CREATION_MUTATION, {
     input: { name: input.name, group_confidence_level: input.group_confidence_level }
   });
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
-    await adminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+    await internalAdminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
   }
   for (let index = 0; index < input.roles.length; index += 1) {
     const role = input.roles[index];
-    await adminQuery(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
+    await internalAdminQuery(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
   }
   return data.groupAdd.id;
 };
 const assignGroupToUser = async (group: Group, user: User) => {
-  await adminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
+  await internalAdminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
 };
 // endregion
 
@@ -310,14 +310,18 @@ const ORGANIZATION_ASSIGN_MUTATION = `
   }
 `;
 const createOrganization = async (input: { name: string }): Promise<string> => {
-  const organization = await adminQuery(ORGANIZATION_CREATION_MUTATION, input);
+  const organization = await internalAdminQuery(ORGANIZATION_CREATION_MUTATION, input);
   return organization.data.organizationAdd.id;
 };
 
 const assignOrganizationToUser = async (organization: Organization, user: User) => {
-  await adminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
+  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
 };
 // endregion
+
+export const adminQuery = async (request: any) => {
+  return internalAdminQuery(print(request.query), request.variables);
+};
 
 export const editorQuery = async (request: any) => {
   return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables);
@@ -355,11 +359,11 @@ const ROLE_EDITION_MUTATION = `
   }
 `;
 const createRole = async (input: { name: string, description: string, capabilities: string[] }): Promise<string> => {
-  const { data } = await adminQuery(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
+  const { data } = await internalAdminQuery(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
   for (let index = 0; index < input.capabilities.length; index += 1) {
     const capability = input.capabilities[index];
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
-    await adminQuery(ROLE_EDITION_MUTATION, { roleId: data.roleAdd.id, toId: generateToId });
+    await internalAdminQuery(ROLE_EDITION_MUTATION, { roleId: data.roleAdd.id, toId: generateToId });
   }
   return data.roleAdd.id;
 };
@@ -387,7 +391,7 @@ const createUser = async (user: User) => {
         const role = group.roles[index];
         await createRole(role);
       }
-      await adminQuery(USER_CREATION_MUTATION, {
+      await internalAdminQuery(USER_CREATION_MUTATION, {
         email: user.email,
         name: user.email,
         password: user.password,
@@ -427,7 +431,7 @@ const USERS_SEARCH_QUERY = `
   }
 `;
 export const getUserIdByEmail = async (email: string) => {
-  const { data } = await adminQuery(USERS_SEARCH_QUERY, { search: `"${email}"` });
+  const { data } = await internalAdminQuery(USERS_SEARCH_QUERY, { search: `"${email}"` });
   if (!data?.users.edges.length) {
     return null;
   }
@@ -479,7 +483,7 @@ const HEALTHCHECK_QUERY = `
 `;
 
 export const isPlatformAlive = async () => {
-  const { data } = await adminQuery(HEALTHCHECK_QUERY, { });
+  const { data } = await internalAdminQuery(HEALTHCHECK_QUERY, { });
   return !!data?.about.version;
 };
 

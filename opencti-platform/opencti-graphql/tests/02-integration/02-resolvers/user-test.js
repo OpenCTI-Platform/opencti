@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { ADMIN_USER, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
@@ -183,7 +183,7 @@ describe('User resolver standard behavior', () => {
         lastname: 'OpenCTI',
       },
     };
-    const user = await queryAsAdmin({
+    const user = await adminQuery({
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
@@ -210,7 +210,7 @@ describe('User resolver standard behavior', () => {
         }
       },
     };
-    const user2 = await queryAsAdmin({
+    const user2 = await adminQuery({
       query: CREATE_QUERY,
       variables: USER_TO_CREATE_WITH_CONFIDENCE,
     });
@@ -293,7 +293,7 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
@@ -348,7 +348,7 @@ describe('User resolver standard behavior', () => {
         }
       },
     };
-    const group = await queryAsAdmin({
+    const group = await adminQuery({
       query: GROUP_ADD_QUERY,
       variables: GROUP_TO_CREATE,
     });
@@ -377,7 +377,7 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await adminQuery({
       query: RELATION_ADD_QUERY,
       variables: {
         id: groupInternalId,
@@ -390,13 +390,13 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
   });
   it('should user groups to be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.groups.edges.length).toEqual(2); // the 2 groups are: 'Group of user' and 'Default'
   });
   it('should user confidence level be unchanged', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.user_confidence_level.max_confidence).toEqual(33);
@@ -426,7 +426,7 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({
+    const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
@@ -573,7 +573,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(1);
     expect(queryResult.data.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
     // Delete the group
-    await queryAsAdmin({
+    await adminQuery({
       query: DELETE_GROUP_QUERY,
       variables: { id: groupInternalId },
     });
@@ -582,12 +582,12 @@ describe('User resolver standard behavior', () => {
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i += 1) {
       const userId = userToDeleteIds[i];
-      await queryAsAdmin({
+      await adminQuery({
         query: DELETE_QUERY,
         variables: { id: userId },
       });
       // Verify is no longer found
-      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userId } });
+      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult).not.toBeNull();
       expect(queryResult.data.user).toBeNull();
     }

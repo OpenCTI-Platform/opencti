@@ -1,6 +1,6 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
 
 const MAPPER_INPUT = {
@@ -244,11 +244,11 @@ describe('CSV Mapper Resolver', () => {
   let addedMapper;
 
   beforeAll(async () => {
-    const { data } = await adminQuery(ENTITY_SETTINGS_GET);
+    const { data } = await internalAdminQuery(ENTITY_SETTINGS_GET);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingStixCoreRel = entitySettings.find((setting) => setting.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP);
 
-    await adminQuery(
+    await internalAdminQuery(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingStixCoreRel.id],
@@ -263,7 +263,7 @@ describe('CSV Mapper Resolver', () => {
   });
 
   afterAll(async () => {
-    await adminQuery(
+    await internalAdminQuery(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingStixCoreRel.id],

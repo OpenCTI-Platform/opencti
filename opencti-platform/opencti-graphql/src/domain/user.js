@@ -1494,10 +1494,8 @@ export const userEditContext = async (context, user, userId, input) => {
 // endregion
 
 export const getUserEffectiveConfidenceLevel = async (user, context) => {
-  let completeUser = user;
-  if (!user.groups) { // if we don't have groups, try to load the user from cache to have the complete user
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    completeUser = platformUsers.get(user.id) || user;
-  }
+  // we load the user from cache to have the complete user with groupos
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const completeUser = platformUsers.get(user.id) || user;
   return computeUserEffectiveConfidenceLevel(completeUser);
 };
