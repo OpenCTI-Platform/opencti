@@ -10,6 +10,7 @@ import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types'
 import { convertStoreToStix } from './stix-converter';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
+import { wait } from './utils';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -85,7 +86,14 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
       throw UnsupportedError('Cache configuration type not supported', { type });
     }
     if (!fromCache.values) {
-      fromCache.values = await fromCache.fn();
+      if (!fromCache.inProgress) {
+        fromCache.inProgress = true;
+        fromCache.values = await fromCache.fn();
+        fromCache.inProgress = false;
+      } else {
+        await wait(100);
+        return getEntitiesFromCache(context, user, type);
+      }
     }
     return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
   };
