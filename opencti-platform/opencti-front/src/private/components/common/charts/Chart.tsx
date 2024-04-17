@@ -62,7 +62,7 @@ const ExportPopover = ({
     if (chartRef.current) {
       const currentFormatter = chartRef.current.chart.opts.xaxis?.labels?.formatter;
       if (currentFormatter) {
-        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: (value) => value } } }, false, false, false);
+        chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: (value: string) => value } } }, false, false, false);
         chartRef.current.chart.ctx.exports.exportToCSV({ series });
         chartRef.current.chart.ctx.updateOptions({ xaxis: { labels: { formatter: currentFormatter } } }, false);
       } else {
