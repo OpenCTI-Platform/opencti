@@ -189,15 +189,16 @@ describe('User resolver standard behavior', () => {
     });
     expect(user).not.toBeNull();
     expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+    userStandardId = user.data.userAdd.standard_id;
+    userToDeleteIds.push(userInternalId);
+
     expect(user.data.userAdd.name).toEqual('User');
     expect(user.data.userAdd.user_confidence_level).toBeNull();
     // user created with default group, so effective confidence level shall be set
     expect(user.data.userAdd.effective_confidence_level.max_confidence).toEqual(100);
     expect(user.data.userAdd.effective_confidence_level.source.type).toEqual('Group');
     expect(user.data.userAdd.effective_confidence_level.source.object).toBeDefined();
-    userInternalId = user.data.userAdd.id;
-    userStandardId = user.data.userAdd.standard_id;
-    userToDeleteIds.push(userInternalId);
 
     const USER_TO_CREATE_WITH_CONFIDENCE = {
       input: {
@@ -434,7 +435,7 @@ describe('User resolver standard behavior', () => {
       },
     });
     const { userEdit } = queryResult.data;
-    expect(userEdit.fieldPatch.user_confidence_level).toBeNull;
+    expect(userEdit.fieldPatch.user_confidence_level).toBeNull();
     // now effective level is the highest values among the 2 groups (default: 100)
     expect(userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
   });

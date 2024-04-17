@@ -1496,6 +1496,18 @@ export const userEditContext = async (context, user, userId, input) => {
 export const getUserEffectiveConfidenceLevel = async (user, context) => {
   // we load the user from cache to have the complete user with groupos
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const completeUser = platformUsers.get(user.id) || user;
+  const cachedUser = platformUsers.get(user.id);
+  let completeUser;
+  if (cachedUser) {
+    // in case we need to resolve user effective confidence level on edit (cache not updated with user edited fields yet)
+    // we need groups and capabilities to compute user effective confidence level, which are accurate in cache.
+    completeUser = {
+      ...user,
+      groups: cachedUser.groups,
+      capabilities: cachedUser.capabilities,
+    };
+  } else { // in case we need to resolve user effective confidence level on creation.
+    completeUser = await findById(context, context.user, user.id);
+  }
   return computeUserEffectiveConfidenceLevel(completeUser);
 };
