@@ -2708,15 +2708,15 @@
   "You need a confidence level to edit objects in the platform.": "You need a confidence level to edit objects in the platform.",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "You need to activate a two-factor authentication. Please type the code generated in your application.",
   "You need to activate OpenCTI enterprise edition to use this feature.": "You need to activate OpenCTI enterprise edition to use this feature.",
+  "You need to validate your two-factor authentication. Please type the code generated in your application": "You need to validate your two-factor authentication. Please type the code generated in your application.",
   "You see only marking definitions that can be shared (defined by the admin)": "You see only marking definitions that can be shared (defined by the admin)",
   "You will be automatically logged out at end of the timer.": "You will be automatically logged out at end of the timer.",
   "You will find here the result in JSON format.": "You will find here the result in JSON format.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Your account has expired. If you would like to reactivate your account, please contact your administrator.",
   "Your confidence level is insufficient to edit this object.": "Your confidence level is insufficient to edit this object.",
-  "Zoom": "Zoom",
-  "Your testing file (CSV only, max 1MB)": "Your testing file (CSV only, max 1MB)",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Your url contains filters in a deprecated format, parameters stored in the url have been removed.",
+  "Zoom": "Zoom",
   "Zoom in": "Zoom in",
   "Zoom out": "Zoom out"
 }
