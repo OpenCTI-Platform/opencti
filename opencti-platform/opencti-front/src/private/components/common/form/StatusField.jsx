@@ -123,6 +123,9 @@ class StatusField extends Component {
             type: n.node.type,
           })),
         )(data);
+        statuses.sort((a, b) => {
+          return a.type < b.type ? -1 : 1;
+        });
         this.setState({ statuses: R.union(this.state.statuses, statuses) });
       });
   }
