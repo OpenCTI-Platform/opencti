@@ -2764,7 +2764,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // region confidence control
   const input = structuredClone(rawInput);
-  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, relationshipType);
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 

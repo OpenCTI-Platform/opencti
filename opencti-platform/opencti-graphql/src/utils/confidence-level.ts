@@ -87,7 +87,7 @@ const capInputConfidenceWithUserMaxConfidence = (overrideMaxConfidence: number, 
  * Assert the confidence control on an input object from create operations
  * Returns the confidence to apply on the resulting element.
  */
-export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T, type?: string) => {
+export const controlCreateInputWithUserConfidence = <T extends ObjectWithConfidence>(user: AuthUser, inputElement: T, type: string) => {
   const hasMaxConfidence = isNotEmptyField(user.effective_confidence_level?.max_confidence);
   const override = user.effective_confidence_level?.overrides?.find((e) => e.entity_type === type);
   if (!hasMaxConfidence && !override) {

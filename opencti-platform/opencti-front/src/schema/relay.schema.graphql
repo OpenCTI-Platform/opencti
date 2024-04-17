@@ -1405,7 +1405,7 @@ type Creator {
 }
 
 type ConfidenceLevel {
-  max_confidence: Int!
+  max_confidence: Int
   overrides: [ConfidenceLevelOverride!]!
 }
 
@@ -1542,7 +1542,7 @@ input UserAddInput {
 scalar user_email_String_NotNull_minLength_5_format_email
 
 input ConfidenceLevelInput {
-  max_confidence: Int!
+  max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
 }
 
