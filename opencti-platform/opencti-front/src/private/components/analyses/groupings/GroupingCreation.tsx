@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -29,6 +29,8 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/fields/RichTextField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -134,6 +136,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: (response) => {
@@ -142,6 +145,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
@@ -283,11 +287,13 @@ const GroupingCreation = ({
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={DrawerVariant.create}
+      variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
+      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial(GROUPING_TYPE) : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>
