@@ -254,7 +254,7 @@ class StixDomainObjectContentFiles extends Component {
         <List style={{ marginBottom: 30 }}>
           {filesList.map((file) => {
             return (
-              <Tooltip key={file.id} title={file.name}>
+              <Tooltip key={file.id} title={`${file.name} (${file.metaData.mimetype})`}>
                 <ListItemButton
                   dense={true}
                   divider={true}
