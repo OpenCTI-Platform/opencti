@@ -362,9 +362,10 @@ export interface ListAllEntitiesThroughRelation {
   withInferences: boolean
   filters?: FilterGroupWithNested | null
 }
+
 // This method is designed to fetch all entities
 // If you need to paginate, order and sort, use listEntitiesThroughRelationsPaginated
-export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser,
+export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
   relation: ListAllEntitiesThroughRelation): Promise<Array<T>> => {
   const { type, sourceSide, fromOrToId, fromOrToType, withInferences = false, filters: argsFilters } = relation;
   if (isEmptyField(fromOrToId) || isEmptyField(fromOrToType)) {
@@ -408,8 +409,12 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   return await elFindByIds(context, user, targetIds) as unknown as Array<T>;
 };
 
-interface ListAllOpts { withInferences?: boolean, filters?: FilterGroupWithNested | null }
-export const listAllToEntitiesThroughRelations = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser,
+interface ListAllOpts {
+  withInferences?: boolean,
+  filters?: FilterGroupWithNested | null
+}
+
+export const listAllToEntitiesThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
   fromId: string | string[], relationship_type: string, toType: string | string[], opts: ListAllOpts = {}): Promise<Array<T>> => {
   const rel: ListAllEntitiesThroughRelation = {
     type: relationship_type,
@@ -421,7 +426,7 @@ export const listAllToEntitiesThroughRelations = async <T extends BasicStoreComm
   };
   return listAllEntitiesThroughRelations(context, user, rel);
 };
-export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser,
+export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser,
   toId: string | string[], relationship_type: string, fromType: string | string[], opts: ListAllOpts = {}): Promise<Array<T>> => {
   const rel: ListAllEntitiesThroughRelation = {
     type: relationship_type,
@@ -519,7 +524,10 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       rebuildEdges.push(newEdge);
     }
   });
-  return { edges: rebuildEdges, pageInfo: entityPagination.pageInfo };
+  return {
+    edges: rebuildEdges,
+    pageInfo: { ...entityPagination.pageInfo, globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length) },
+  };
 };
 
 export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
