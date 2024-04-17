@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -18,6 +18,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
 import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
+import { RelayError } from '../../../../relay/relayTypes';
+import { MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,7 +47,7 @@ const RegionPopover = ({ id }: { id: string }) => {
   const [deleting, setDeleting] = useState<boolean>(false);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
 
-  const [commit] = useMutation(RegionPopoverDeletionMutation);
+  const [commit] = useApiMutation(RegionPopoverDeletionMutation);
   const queryRef = useQueryLoading<RegionEditionContainerQuery>(
     regionEditionQuery,
     { id },
@@ -76,6 +79,10 @@ const RegionPopover = ({ id }: { id: string }) => {
         setDeleting(false);
         handleClose();
         navigate('/dashboard/locations/regions');
+      },
+      onError: (error) => {
+        const { errors } = (error as unknown as RelayError).res;
+        MESSAGING$.notifyError(errors[0].message);
       },
     });
   };

@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -18,6 +18,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DeleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
@@ -41,8 +42,8 @@ interface DeleteOperationPopoverProps {
 const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEntityId, deletedCount, disabled, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
-  const [commitConfirm] = useMutation(DeleteOperationPopoverConfirmMutation);
-  const [commitRestore] = useMutation(DeleteOperationPopoverRestoreMutation);
+  const [commitConfirm] = useApiMutation(DeleteOperationPopoverConfirmMutation);
+  const [commitRestore] = useApiMutation(DeleteOperationPopoverRestoreMutation);
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -59,11 +60,6 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
       },
       onCompleted: () => {
         handleClose();
-      },
-      onError: (error) => {
-        // TODO: utilities or hook to turn any relay error to mlessaging display
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
       },
     });
   };

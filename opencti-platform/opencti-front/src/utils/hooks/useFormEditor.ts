@@ -1,12 +1,11 @@
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
-import { useMutation, UseMutationConfig } from 'react-relay';
+import { UseMutationConfig } from 'react-relay';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
 import { MutationParameters } from 'relay-runtime';
 import { Option } from '@components/common/form/ReferenceField';
-import { useCallback } from 'react';
 import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
-import { relayErrorHandling } from '../../relay/environment';
+import useApiMutation from './useApiMutation';
 
 export interface GenericData {
   id: string;
@@ -54,24 +53,11 @@ const useFormEditor = (
   queries: Queries,
   validator: ObjectSchema<{ [p: string]: unknown }>,
 ) => {
-  const [internalRelationAdd] = useMutation(queries.relationAdd);
-  const [internalRelationDelete] = useMutation(queries.relationDelete);
-  const [internalFieldPatch] = useMutation(queries.fieldPatch);
-  const [internalEditionFocus] = useMutation(queries.editionFocus);
+  const [commitRelationAdd] = useApiMutation(queries.relationAdd);
+  const [commitRelationDelete] = useApiMutation(queries.relationDelete);
+  const [commitFieldPatch] = useApiMutation(queries.fieldPatch);
+  const [commitEditionFocus] = useApiMutation(queries.editionFocus);
   const schemaFields = (validator.describe() as SchemaObjectDescription).fields;
-
-  const commitRelationAdd = useCallback((args: UseMutationConfig<MutationParameters>) => {
-    internalRelationAdd({ ...args, onError: relayErrorHandling as UseMutationConfig<MutationParameters>['onError'] });
-  }, [internalRelationAdd]);
-  const commitRelationDelete = useCallback((args: UseMutationConfig<MutationParameters>) => {
-    internalRelationDelete({ ...args, onError: relayErrorHandling as UseMutationConfig<MutationParameters>['onError'] });
-  }, [internalRelationDelete]);
-  const commitFieldPatch = useCallback((args: UseMutationConfig<MutationParameters>) => {
-    internalFieldPatch({ ...args, onError: relayErrorHandling as UseMutationConfig<MutationParameters>['onError'] });
-  }, [internalFieldPatch]);
-  const commitEditionFocus = useCallback((args: UseMutationConfig<MutationParameters>) => {
-    internalEditionFocus({ ...args, onError: relayErrorHandling as UseMutationConfig<MutationParameters>['onError'] });
-  }, [internalEditionFocus]);
 
   const validate = (
     name: string,
