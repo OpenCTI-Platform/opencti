@@ -1447,6 +1447,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'kill_chain_name',
   'definition',
   'definition_type',
+  'user_email',
   'main_entity_name', // deletedOperation
 ];
 
