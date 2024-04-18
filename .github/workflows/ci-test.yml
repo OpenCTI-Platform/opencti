@@ -31,20 +31,38 @@ jobs:
           python -V
         shell: alpine.sh --root {0}
 
-      - name: Install dependencies into Alpine and run test
+      - name: Install and build frontend dependencies into Alpine
         run: |
           cd opencti-platform/opencti-front
           yarn install
-          yarn playwright install
           yarn build
+          yarn test
+        shell: alpine.sh {0}
+
+      - name: Run linter and check TS
+        run: |
           yarn lint
           yarn check-ts
-          yarn test
+
+      - name: Run unit and integration tests
+        run: yarn test
+
+      - name: Run test e2e
+        run: |
+          yarn playwright install --with-deps
           yarn test:e2e
+
+      - name: Install backend dependencies into Alpine
+        run: |
           cd ../opencti-graphql
           yarn install
           yarn build
+        shell: alpine.sh {0}
+
+      - name: Run linter and check TS
+        run: |
           yarn lint
           yarn check-ts
-          yarn test:dev
-        shell: alpine.sh {0}
+
+      - name: Run unit and integration tests
+        run: yarn test:dev
