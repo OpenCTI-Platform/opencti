@@ -212,6 +212,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   };
 
   const handleLink = (url: string) => {
+    if (isFail || isOutdated || isProgress) return;
     handleCloseDownload();
     handleClose();
     window.location.pathname = url;
