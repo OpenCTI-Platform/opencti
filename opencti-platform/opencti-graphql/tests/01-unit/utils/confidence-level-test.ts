@@ -27,7 +27,7 @@ const makeGroupWithOverrides = (confidence: number | null, overrides: { entity_t
 const makeUserWithOverrides = (confidence: number | null, overrides: { entity_type: string, max_confidence: number }[] | null) => ({
   id: `user_${confidence}`,
   effective_confidence_level: {
-    max_confidence: confidence ? { max_confidence: confidence } : null,
+    max_confidence: confidence ?? null,
     overrides: overrides ?? [],
   }
 } as AuthUser);
@@ -207,7 +207,7 @@ describe('Control confidence', () => {
       entity_type: 'Artifact',
     })).not.toThrowError(); // existence of user level is not even checked
     expect(() => controlUserConfidenceAgainstElement(
-      makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]), 
+      makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]),
       makeReport(80),
     )).not.toThrowError();
     expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(40, null), makeReport(100)))
