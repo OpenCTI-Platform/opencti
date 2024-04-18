@@ -879,6 +879,7 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware).not.toBeNull();
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
+    expect(createdMalware.x_opencti_stix_ids.length).toEqual(1);
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
     let loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
@@ -895,6 +896,21 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware['object-marking'].length).toEqual(2);
+    // Upsert with new name but lower confidence
+    upMalware = {
+      name: 'MALWARE_TEST OTHER NAME',
+      aliases: ['MALWARE_TEST'],
+      stix_id: 'malware--600f3c54-c8b2-534a-a718-52a6693ba9de',
+      confidence: 10,
+    };
+    upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
+    expect(upsertedMalware.id).toEqual(createdMalware.id);
+    expect(upsertedMalware.standard_id).toEqual(createdMalware.standard_id);
+    expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    expect(upsertedMalware.name).toEqual('MALWARE_TEST');
+    loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
@@ -907,13 +923,17 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.name).toEqual('NEW NAME');
     expect(upsertedMalware.description).toEqual('MALWARE_TEST NEW');
     expect(upsertedMalware.id).toEqual(createdMalware.id);
-    expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
+    expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
     expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
     expect(loadMalware.id).toEqual(loadMalware.id);
-    expect(loadMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
+    expect(loadMalware.x_opencti_stix_ids.length).toEqual(2);
+    expect(loadMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    expect(loadMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
     expect(loadMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
     // Delete the markings
     const clear = await internalLoadById(testContext, ADMIN_USER, clearMarking);

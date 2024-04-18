@@ -464,7 +464,7 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     }
   }
   return data
-    // filter out unresolved data (like the SYSTEM user for instance)
+  // filter out unresolved data (like the SYSTEM user for instance)
     .filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]))
     .map((n) => {
       const element = allResolveLabels[n.label.toLowerCase()];
@@ -519,7 +519,7 @@ export const distributionHistory = async (context, user, types, args) => {
     ...args,
     field: finalField,
   });
-  // Take a maximum amount of distribution depending on the ordering.
+    // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'group_ids' || field === 'organization_ids' || field.includes('.id') || field.includes('_id')) {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
@@ -555,7 +555,7 @@ export const distributionEntities = async (context, user, types, args) => {
     ...distributionArgs,
     field: finalField
   });
-  // Take a maximum amount of distribution depending on the ordering.
+    // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
@@ -1588,7 +1588,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         const preparedAliases = (aliasesInput.value ?? [])
           .filter((a) => isNotEmptyField(a))
           .filter((a) => normalizeName(a) !== normalizeName(instance.name)
-            && normalizeName(a) !== normalizeName(askedModificationName))
+                        && normalizeName(a) !== normalizeName(askedModificationName))
           .map((a) => a.trim());
         aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
@@ -1760,12 +1760,12 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Impact the updated_at only if stix data is impacted
   // In case of upsert, this addition will be supported by the parent function
   if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
-    && !impactedInputs.find((i) => i.key === 'updated_at')) {
+        && !impactedInputs.find((i) => i.key === 'updated_at')) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
   if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)
-    && !impactedInputs.find((i) => i.key === 'modified')) {
+        && !impactedInputs.find((i) => i.key === 'modified')) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -2448,11 +2448,13 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   // -- Independent update
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
+  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
-    const compareIds = [element.standard_id, generateStandardId(type, basePatch)];
+    const compareIds = isConfidenceMatch ? [element.standard_id, generateStandardId(type, basePatch)] : [element.standard_id];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !compareIds.includes(basePatch.stix_id)) {
+    if (isNotEmptyField(basePatch.stix_id) && !compareIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
       ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
@@ -2521,7 +2523,6 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     inputs.push(fileImpact);
   }
   // region confidence control / upsert
-  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
   updatePatch.confidence = confidenceLevelToApply;
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
@@ -2573,7 +2574,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
           } else if ((isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
-            || (isInputWithData && !isCurrentWithData)
+                        || (isInputWithData && !isCurrentWithData)
           ) {
             // If data is provided, different from existing data, and of higher confidence
             // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
@@ -2753,7 +2754,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(data);
-  // 06. Return result if no need to reverse the relations from and to
+    // 06. Return result if no need to reverse the relations from and to
   return {
     element: created,
     isCreation: true,
@@ -2980,7 +2981,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-  // eslint-disable-next-line camelcase
+    // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
@@ -3113,7 +3114,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       }
     }
   };
-  // If file directly attached
+    // If file directly attached
   if (!isEmptyField(input.file)) {
     const path = `import/${type}/${internalId}`;
     const { upload: file } = await upload(context, user, path, input.file, { entity: data });
@@ -3312,7 +3313,7 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
     impactStandardId: false,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-  // Inferred entity have a specific standardId generated from dependencies data.
+    // Inferred entity have a specific standardId generated from dependencies data.
   const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   const instance = { standard_id: standardId, entity_type: type, ...input, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
@@ -3403,7 +3404,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     } else {
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
-        && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
+                && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
         // do not delete files if logical deletion enabled
