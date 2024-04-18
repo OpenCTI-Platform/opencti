@@ -233,12 +233,26 @@ describe('Control confidence', () => {
     expect(controlCreateInputWithUserConfidence(makeUser(30), makeReport(null), 'Report')).toEqual({
       confidenceLevelToApply: 30,
     });
-    expect(controlCreateInputWithUserConfidence(makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]), makeReport(null), 'Report')).toEqual({
-      confidenceLevelToApply: 90,
-    });
-    expect(controlCreateInputWithUserConfidence(makeUserWithOverrides(null, [{ entity_type: 'Report', max_confidence: 90 }]), makeReport(null), 'Report')).toEqual({
-      confidenceLevelToApply: 90,
-    });
+    expect(controlCreateInputWithUserConfidence(
+      makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]),
+      makeReport(null),
+      'Report'
+    )).toEqual({ confidenceLevelToApply: 90, });
+    expect(controlCreateInputWithUserConfidence(
+      makeUserWithOverrides(80, [{ entity_type: 'Report', max_confidence: 10 }]),
+      makeReport(null),
+      'Report'
+    )).toEqual({ confidenceLevelToApply: 10, });
+    expect(controlCreateInputWithUserConfidence(
+      makeUserWithOverrides(30, [{ entity_type: 'Malware', max_confidence: 90 }]),
+      makeReport(null),
+      'Report'
+    )).toEqual({ confidenceLevelToApply: 30, });
+    expect(controlCreateInputWithUserConfidence(
+      makeUserWithOverrides(null, [{ entity_type: 'Report', max_confidence: 90 }]),
+      makeReport(null),
+      'Report'
+    )).toEqual({ confidenceLevelToApply: 90, });
     expect(() => controlCreateInputWithUserConfidence(makeUser(null), makeReport(50), 'Report'))
       .toThrowError('User has no effective max confidence level and cannot create this element');
   });
