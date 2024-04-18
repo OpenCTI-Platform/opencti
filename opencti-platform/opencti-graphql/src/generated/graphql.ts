@@ -14139,13 +14139,14 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromRole?: InputMaybe<Scalars['String']['input']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
+  maxMarkingDefinition?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -14161,6 +14162,7 @@ export type MutationStixCoreRelationshipsExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14220,9 +14222,10 @@ export type MutationStixCyberObservableEditArgs = {
 export type MutationStixCyberObservablesExportAskArgs = {
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
+  maxMarkingDefinition?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -14234,6 +14237,7 @@ export type MutationStixCyberObservablesExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -34305,12 +34309,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;
   stixCoreRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipEditArgs, 'id'>>;
-  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'exportType' | 'format'>>;
-  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'entity_type' | 'file'>>;
+  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixCyberObservableAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableAddArgs, 'type'>>;
   stixCyberObservableEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableEditArgs, 'id'>>;
-  stixCyberObservablesExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'format'>>;
-  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'entity_type' | 'file'>>;
+  stixCyberObservablesExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;

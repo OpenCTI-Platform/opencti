@@ -12827,14 +12827,15 @@ Credential: CredentialAddInput
     format: String!
     exportType: String!
     exportContext: ExportContext
-    maxMarkingDefinition: String
+    maxMarkingDefinition: [String]
+    fileMarkings: [String]!
     search: String
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean
+  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
   artifactImport(
     file: Upload!
     x_opencti_description: String
@@ -12853,7 +12854,8 @@ Credential: CredentialAddInput
   stixCoreRelationshipsExportAsk(
     format: String!
     exportType: String!
-    maxMarkingDefinition: String
+    maxMarkingDefinition: [String]
+    fileMarkings: [String]!
     exportContext: ExportContext
     search: String
     orderBy: StixCoreRelationshipsOrdering
@@ -12872,7 +12874,7 @@ Credential: CredentialAddInput
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixCoreRelationshipsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreRelationshipsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX REF RELATIONSHIPS
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
