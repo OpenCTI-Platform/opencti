@@ -35,12 +35,14 @@ jobs:
         run: |
           cd opencti-platform/opencti-front
           yarn install
+          yarn build
           yarn lint
           yarn check-ts
           yarn test
           yarn test:e2e
           cd ../opencti-graphql
           yarn install
+          yarn build
           yarn lint
           yarn check-ts
           yarn test:dev
