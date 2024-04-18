@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,7 +55,7 @@ SubTypeWorkflowStatusAddProps
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
   const initialValues: StatusForm = { template: null, order: '' };
-  const [commit] = useMutation(subTypeWorkflowStatusAddCreationMutation);
+  const [commit] = useApiMutation(subTypeWorkflowStatusAddCreationMutation);
   const onSubmit: FormikConfig<StatusForm>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },

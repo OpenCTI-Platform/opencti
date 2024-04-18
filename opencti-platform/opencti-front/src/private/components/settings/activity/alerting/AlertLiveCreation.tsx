@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
@@ -31,6 +31,7 @@ import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -118,7 +119,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     handleClose?.();
     helpers.handleClearAllFilters();
   };
-  const [commitActivity] = useMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
+  const [commitActivity] = useApiMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
   const liveInitialValues: TriggerActivityLiveAddInput = {
     name: inputValue || '',
     description: '',

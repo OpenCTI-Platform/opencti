@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
@@ -20,6 +20,7 @@ import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -43,7 +44,7 @@ const CityPopover = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useMutation(CityPopoverDeletionMutation);
+  const [commit] = useApiMutation(CityPopoverDeletionMutation);
   const queryRef = useQueryLoading<CityEditionContainerQuery>(
     cityEditionQuery,
     { id },

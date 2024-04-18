@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer, graphql, useMutation } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import { assoc, groupBy, keys, map, pipe, pluck } from 'ramda';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -19,6 +19,7 @@ import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,8 +79,8 @@ const IndicatorAddObservablesLinesContainer = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [commitRelationAdd] = useMutation(indicatorMutationRelationAdd);
-  const [commitRelationDelete] = useMutation(indicatorMutationRelationDelete);
+  const [commitRelationAdd] = useApiMutation(indicatorMutationRelationAdd);
+  const [commitRelationDelete] = useApiMutation(indicatorMutationRelationDelete);
 
   const enableReferences = useIsEnforceReference('stix-core-relationship');
   const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t_i18n));

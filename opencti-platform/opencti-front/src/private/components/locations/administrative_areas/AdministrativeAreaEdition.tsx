@@ -1,17 +1,17 @@
 import React from 'react';
-import { useMutation } from 'react-relay';
 import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
 import { administrativeAreaEditionOverviewFocus } from './AdministrativeAreaEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const AdministrativeAreaEdition = ({
   administrativeAreaId,
 }: {
   administrativeAreaId: string;
 }) => {
-  const [commit] = useMutation(administrativeAreaEditionOverviewFocus);
+  const [commit] = useApiMutation(administrativeAreaEditionOverviewFocus);
   const handleClose = () => {
     commit({
       variables: {

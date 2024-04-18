@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -16,13 +16,14 @@ import { useFormatter } from '../../../../components/i18n';
 import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsMutationRelationDelete } from './AddAttackPatternsLines';
 import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/DataComponentAttackPatterns_dataComponent.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataComponentAttackPatternsComponent: FunctionComponent<{
   dataComponent: DataComponentAttackPatterns_dataComponent$data;
 }> = ({ dataComponent }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useMutation(addAttackPatternsMutationRelationDelete);
+  const [commit] = useApiMutation(addAttackPatternsMutationRelationDelete);
 
   const removeAttackPattern = (attackPatternId: string) => {
     commit({

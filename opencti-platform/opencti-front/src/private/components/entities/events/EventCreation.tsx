@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
@@ -28,6 +28,7 @@ import { EventCreationMutation, EventCreationMutation$variables } from './__gene
 import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -106,7 +107,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   };
   const eventValidator = useSchemaCreationValidation(EVENT_TYPE, basicShape);
 
-  const [commit] = useMutation<EventCreationMutation>(eventMutation);
+  const [commit] = useApiMutation<EventCreationMutation>(eventMutation);
 
   const onSubmit: FormikConfig<EventAddInput>['onSubmit'] = (
     values,

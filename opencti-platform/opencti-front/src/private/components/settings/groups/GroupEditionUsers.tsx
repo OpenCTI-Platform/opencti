@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -12,6 +12,7 @@ import { GroupEditionContainer_group$data } from '@components/settings/groups/__
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { usersLinesSearchQuery } from '../users/UsersLines';
 import { deleteNodeFromId, insertNode } from '../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const userMutationRelationAdd = graphql`
   mutation GroupEditionUsersRelationAddMutation(
@@ -58,8 +59,8 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   const usersData = usePreloadedQuery<UsersLinesSearchQuery>(usersLinesSearchQuery, queryRef);
   const users = usersData.users?.edges.map((n) => n.node) ?? [];
 
-  const [commitAddUser] = useMutation(userMutationRelationAdd);
-  const [commitRemoveUser] = useMutation(userMutationRelationDelete);
+  const [commitAddUser] = useApiMutation(userMutationRelationAdd);
+  const [commitRemoveUser] = useApiMutation(userMutationRelationDelete);
   const handleToggle = (userId: string, groupUser: { id: string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
     const input = {
       fromId: userId,

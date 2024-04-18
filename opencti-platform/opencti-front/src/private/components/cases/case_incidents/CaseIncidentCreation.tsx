@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,7 @@ import RichTextField from '../../../../components/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -112,7 +113,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     CASE_INCIDENT_TYPE,
     basicShape,
   );
-  const [commit] = useMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
+  const [commit] = useApiMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },

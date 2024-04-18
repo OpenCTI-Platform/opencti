@@ -16,7 +16,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
-import { useMutation, useRefetchableFragment } from 'react-relay';
+import { useRefetchableFragment } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer from '@components/common/drawer/Drawer';
 import { stixCoreObjectTriggersFragment } from '@components/common/stix_core_objects/stixCoreObjectTriggersUtils';
@@ -43,6 +43,7 @@ import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPo
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface InstanceTriggerEditionFormValues {
   id: string;
@@ -109,11 +110,11 @@ StixCoreObjectQuickSubscriptionContentProps
   const myInstanceTriggers = existingInstanceTriggersEdges.filter((e) => e.node.recipients?.some((r) => r.id === me.id)) ?? [];
   const triggerUpdate = myInstanceTriggers.length > 0;
 
-  const [commitAddTrigger] = useMutation<TriggerLiveCreationKnowledgeMutation>(
+  const [commitAddTrigger] = useApiMutation<TriggerLiveCreationKnowledgeMutation>(
     triggerLiveKnowledgeCreationMutation,
   );
-  const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
+  const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
+  const [commitDeleteTrigger] = useApiMutation(TriggerPopoverDeletionMutation);
 
   const handleOpen = () => {
     setOpen(true);

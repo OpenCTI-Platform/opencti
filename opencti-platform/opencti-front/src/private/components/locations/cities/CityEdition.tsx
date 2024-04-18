@@ -1,13 +1,13 @@
 import React from 'react';
-import { useMutation } from 'react-relay';
 import CityEditionContainer, { cityEditionQuery } from './CityEditionContainer';
 import { cityEditionOverviewFocus } from './CityEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const CityEdition = ({ cityId }: { cityId: string }) => {
-  const [commit] = useMutation(cityEditionOverviewFocus);
+  const [commit] = useApiMutation(cityEditionOverviewFocus);
   const handleClose = () => {
     commit({
       variables: {

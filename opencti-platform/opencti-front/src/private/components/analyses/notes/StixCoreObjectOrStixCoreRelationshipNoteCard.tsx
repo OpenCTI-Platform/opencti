@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Card from '@mui/material/Card';
@@ -32,6 +32,7 @@ import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObj
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,7 +116,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
     setDisplayDialog(false);
     setRemoving(false);
   };
-  const [commit] = useMutation(noteMutationRelationDelete);
+  const [commit] = useApiMutation(noteMutationRelationDelete);
   const removeNote = () => {
     commit({
       variables: {

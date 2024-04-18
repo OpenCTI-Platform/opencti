@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import NoteEditionContainer from './NoteEditionContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionOverviewFocus } from './NoteEditionOverview';
@@ -7,6 +7,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { CollaborativeSecurity } from '../../../../utils/Security';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const noteEditionQuery = graphql`
   query NoteEditionContainerQuery($id: String!) {
@@ -20,7 +21,7 @@ export const noteEditionQuery = graphql`
 `;
 
 const NoteEdition = ({ noteId }: { noteId: string }) => {
-  const [commit] = useMutation(noteEditionOverviewFocus);
+  const [commit] = useApiMutation(noteEditionOverviewFocus);
 
   const handleClose = () => {
     commit({

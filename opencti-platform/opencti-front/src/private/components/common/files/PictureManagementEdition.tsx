@@ -1,4 +1,3 @@
-import { useMutation } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -15,6 +14,7 @@ import { pictureManagementUtilsMutation } from './PictureManagementUtils';
 import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
 import { PictureManagementUtilsMutation, StixDomainObjectFileEditInput } from './__generated__/PictureManagementUtilsMutation.graphql';
 import SwitchField from '../../../../components/SwitchField';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,7 +44,7 @@ interface PictureManagementEditionFormValues {
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({ picture, entityId, handleClose }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [commit] = useMutation<PictureManagementUtilsMutation>(
+  const [commit] = useApiMutation<PictureManagementUtilsMutation>(
     pictureManagementUtilsMutation,
   );
   const pictureValidation = () => Yup.object().shape({

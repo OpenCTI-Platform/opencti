@@ -4,7 +4,6 @@ import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
-import { useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
@@ -13,6 +12,7 @@ import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Note', 'External-Reference']],
@@ -111,7 +111,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
     ...initialEntitySettingsEntityType,
   ]);
 
-  const [commit] = useMutation(entitySettingPatch);
+  const [commit] = useApiMutation(entitySettingPatch);
 
   const onChange = (values: string[]) => {
     const realValues = itemsFromGroup(values) ?? [];

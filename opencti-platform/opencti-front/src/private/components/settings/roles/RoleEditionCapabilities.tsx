@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation, usePreloadedQuery } from 'react-relay';
+import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -14,6 +14,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -74,8 +75,8 @@ RoleEditionCapabilitiesComponentProps
   const roleCapabilities = (role.capabilities ?? []).map((n) => ({
     name: n?.name,
   })) as { name: string }[];
-  const [commitAddCapability] = useMutation(roleEditionAddCapability);
-  const [commitRemoveCapability] = useMutation(roleEditionRemoveCapability);
+  const [commitAddCapability] = useApiMutation(roleEditionAddCapability);
+  const [commitRemoveCapability] = useApiMutation(roleEditionRemoveCapability);
   const handleToggle = (
     capabilityId: string,
     event: React.ChangeEvent<HTMLInputElement>,

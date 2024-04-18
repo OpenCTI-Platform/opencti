@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
@@ -25,6 +25,7 @@ import { IntrusionSetCreationMutation, IntrusionSetCreationMutation$variables } 
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,7 +97,7 @@ IntrusionSetFormProps
     INTRUSION_SET_TYPE,
     basicShape,
   );
-  const [commit] = useMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
+  const [commit] = useApiMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
   const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },

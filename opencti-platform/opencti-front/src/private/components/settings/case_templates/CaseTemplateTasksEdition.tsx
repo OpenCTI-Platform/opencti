@@ -1,5 +1,5 @@
 import { Field, Form, Formik } from 'formik';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import React from 'react';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
@@ -9,6 +9,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const caseTemplateMutationFieldPatch = graphql`
     mutation CaseTemplateTasksEditionFieldPatchMutation($id: ID!$input: [EditInput!]!) {
@@ -26,7 +27,7 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
     description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
-  const [commitFieldPatch] = useMutation(caseTemplateMutationFieldPatch);
+  const [commitFieldPatch] = useApiMutation(caseTemplateMutationFieldPatch);
   const onSubmit = (name: string, value: Option | Option[] | string) => {
     taskValidator
       .validateAt(name, { [name]: value })

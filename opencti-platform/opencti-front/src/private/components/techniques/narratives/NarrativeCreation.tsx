@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -30,6 +30,7 @@ import { NarrativesLinesPaginationQuery$variables } from './__generated__/Narrat
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -135,7 +136,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useMutation<NarrativeCreationMutation>(narrativeMutation);
+  const [commit] = useApiMutation<NarrativeCreationMutation>(narrativeMutation);
 
   const onSubmit: FormikConfig<NarrativeAddInput>['onSubmit'] = (
     values,

@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -17,6 +17,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
 import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataSourcePopoverDeletionMutation = graphql`
   mutation DataSourcePopoverDeletionMutation($id: ID!) {
@@ -33,7 +34,7 @@ const DataSourcePopover = ({ id }: { id: string }) => {
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
 
-  const [commit] = useMutation(DataSourcePopoverDeletionMutation);
+  const [commit] = useApiMutation(DataSourcePopoverDeletionMutation);
   const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(
     dataSourceEditionQuery,
     { id },

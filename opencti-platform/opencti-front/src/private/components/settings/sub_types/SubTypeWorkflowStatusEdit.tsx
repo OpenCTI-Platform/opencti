@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -15,6 +15,7 @@ import { SubTypeWorkflowStatusEdit_subType$key } from './__generated__/SubTypeWo
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
 import { StatusForm, statusValidation } from './statusFormUtils';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const statusEditFieldPatchMutation = graphql`
   mutation SubTypeWorkflowStatusEditFieldPatchMutation(
@@ -87,7 +88,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
     order: String(data.order) || '',
   };
 
-  const [commit] = useMutation(statusEditFieldPatchMutation);
+  const [commit] = useApiMutation(statusEditFieldPatchMutation);
   const handleSubmitStatusTemplate: FormikConfig<StatusEditForm>['onSubmit'] = (
     values,
     { setSubmitting },

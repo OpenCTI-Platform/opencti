@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
@@ -18,6 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { isOnlyOrganizationAdmin, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -105,10 +106,10 @@ UserEditionOverviewComponentProps
   const { me, settings } = useAuth();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
-  const [commitFocus] = useMutation(userEditionOverviewFocus);
-  const [commitFieldPatch] = useMutation(userMutationFieldPatch);
-  const [commitOrganizationAdd] = useMutation(userMutationOrganizationAdd);
-  const [commitOrganizationDelete] = useMutation(userMutationOrganizationDelete);
+  const [commitFocus] = useApiMutation(userEditionOverviewFocus);
+  const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
+  const [commitOrganizationAdd] = useApiMutation(userMutationOrganizationAdd);
+  const [commitOrganizationDelete] = useApiMutation(userMutationOrganizationDelete);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;

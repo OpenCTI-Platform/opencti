@@ -5,7 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,
@@ -15,6 +15,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 import { handleError, MESSAGING$ } from '../../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 interface WorkspaceDuplicationDialogProps {
   workspace: {
@@ -65,7 +66,7 @@ WorkspaceDuplicationDialogProps
     [t_i18n, workspace.name],
   );
   const [newName, setNewName] = useState(duplicatedDashboardInitialName);
-  const [commitDuplicatedWorkspaceCreation] = useMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
+  const [commitDuplicatedWorkspaceCreation] = useApiMutation<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation>(
     workspaceDuplicationDialogDuplicatedWorkspaceCreation,
   );
   const submitDashboardDuplication = (submittedWorkspace: {

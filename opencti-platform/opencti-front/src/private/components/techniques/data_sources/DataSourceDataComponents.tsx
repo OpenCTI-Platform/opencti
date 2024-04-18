@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -14,13 +14,14 @@ import { useFormatter } from '../../../../components/i18n';
 import AddDataComponents from './AddDataComponents';
 import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLines';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataSourceDataComponentsComponent: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useMutation(addDataComponentsMutationRelationDelete);
+  const [commit] = useApiMutation(addDataComponentsMutationRelationDelete);
 
   const removeDataComponent = (dataComponentId: string) => commit({
     variables: {

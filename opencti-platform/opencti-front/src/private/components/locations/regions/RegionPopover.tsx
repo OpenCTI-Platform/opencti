@@ -80,10 +80,6 @@ const RegionPopover = ({ id }: { id: string }) => {
         handleClose();
         navigate('/dashboard/locations/regions');
       },
-      onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors[0].message);
-      },
     });
   };
   return (

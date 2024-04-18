@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
@@ -40,6 +40,7 @@ import { WeightFieldAdd } from '../../common/form/WeightField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -200,7 +201,7 @@ ThreatActorIndividualFormProps
     THREAT_ACTOR_INDIVIDUAL_TYPE,
     basicShape,
   );
-  const [commit] = useMutation<ThreatActorIndividualCreationMutation>(
+  const [commit] = useApiMutation<ThreatActorIndividualCreationMutation>(
     ThreatActorIndividualMutation,
   );
 

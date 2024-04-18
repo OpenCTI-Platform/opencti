@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
@@ -29,6 +29,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -95,7 +96,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commit] = useMutation(IncidentMutation);
+  const [commit] = useApiMutation(IncidentMutation);
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),

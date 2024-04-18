@@ -1,11 +1,12 @@
 import React from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import OpinionEditionContainer from './OpinionEditionContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionOverviewFocus } from './OpinionEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { CollaborativeSecurity } from '../../../../utils/Security';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const opinionEditionQuery = graphql`
   query OpinionEditionContainerQuery($id: String!) {
@@ -19,7 +20,7 @@ export const opinionEditionQuery = graphql`
 `;
 
 const OpinionEdition = ({ opinionId }) => {
-  const [commit] = useMutation(opinionEditionOverviewFocus);
+  const [commit] = useApiMutation(opinionEditionOverviewFocus);
   const handleClose = () => {
     commit({
       variables: {

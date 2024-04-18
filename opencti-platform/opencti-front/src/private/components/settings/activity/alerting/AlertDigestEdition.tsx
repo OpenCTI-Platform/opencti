@@ -6,7 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownField from '../../../../../components/MarkdownField';
 import SelectField from '../../../../../components/SelectField';
@@ -25,6 +25,7 @@ import { AlertingPaginationQuery$variables } from './__generated__/AlertingPagin
 import { digestTriggerValidation } from './AlertDigestCreation';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertsField from './AlertsField';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertDigestEditionProps {
   handleClose: () => void
@@ -102,7 +103,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
-  const [commitFieldPatch] = useMutation(alertDigestEditionFieldPatch);
+  const [commitFieldPatch] = useApiMutation(alertDigestEditionFieldPatch);
   const onSubmit: FormikConfig<AlertDigestFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     commitFieldPatch({
       variables: {

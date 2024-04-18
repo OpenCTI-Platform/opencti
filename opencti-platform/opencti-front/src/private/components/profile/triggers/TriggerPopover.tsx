@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -18,6 +18,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import { deleteNode } from '../../../../utils/store';
 import TriggerEditionContainer, { triggerKnowledgeEditionQuery } from './TriggerEditionContainer';
 import { TriggerEditionContainerKnowledgeQuery } from './__generated__/TriggerEditionContainerKnowledgeQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const TriggerPopoverDeletionMutation = graphql`
   mutation TriggerPopoverDeletionMutation($id: ID!) {
@@ -39,7 +40,7 @@ const TriggerPopover = ({
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [commit] = useMutation(TriggerPopoverDeletionMutation);
+  const [commit] = useApiMutation(TriggerPopoverDeletionMutation);
   const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerKnowledgeQuery>(triggerKnowledgeEditionQuery);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     loadQuery({ id }, { fetchPolicy: 'store-and-network' });

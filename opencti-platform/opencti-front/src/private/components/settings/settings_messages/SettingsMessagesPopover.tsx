@@ -4,12 +4,13 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import React, { useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import SettingsMessageEdition from './SettingsMessageEdition';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const settingsMessagesPopoverPatch = graphql`
   mutation SettingsMessagesPopoverPatchMutation(
@@ -50,7 +51,7 @@ const SettingsMessagesPopover = ({
 
   const deletion = useDeletion({ handleClose });
 
-  const [commit] = useMutation(settingsMessagesPopoverPatch);
+  const [commit] = useApiMutation(settingsMessagesPopoverPatch);
   const submitDelete = () => {
     deletion.setDeleting(true);
     commit({

@@ -5,7 +5,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
 import * as R from 'ramda';
 import { truncate } from '../../../../utils/String';
@@ -16,6 +16,7 @@ import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../
 import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -258,10 +259,10 @@ const StixCoreRelationshipCreationFromEntityList = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [commitRelationAdd] = useMutation(
+  const [commitRelationAdd] = useApiMutation(
     stixCoreRelationshipCreationFromEntityListRelationAdd,
   );
-  const [commitRelationDelete] = useMutation(
+  const [commitRelationDelete] = useApiMutation(
     stixCoreRelationshipCreationFromEntityListRelationDelete,
   );
 

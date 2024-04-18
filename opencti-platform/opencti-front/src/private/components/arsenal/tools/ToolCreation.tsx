@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
@@ -27,6 +27,7 @@ import type { Theme } from '../../../../components/Theme';
 import { ToolCreationMutation, ToolCreationMutation$variables } from './__generated__/ToolCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -98,7 +99,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   };
   const toolValidator = useSchemaCreationValidation(TOOL_TYPE, basicShape);
 
-  const [commit] = useMutation<ToolCreationMutation>(toolMutation);
+  const [commit] = useApiMutation<ToolCreationMutation>(toolMutation);
 
   const onSubmit: FormikConfig<ToolAddInput>['onSubmit'] = (
     values,

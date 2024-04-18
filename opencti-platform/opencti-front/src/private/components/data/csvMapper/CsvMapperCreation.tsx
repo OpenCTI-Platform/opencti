@@ -1,12 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { FormikConfig } from 'formik';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import CsvMapperForm from '@components/data/csvMapper/CsvMapperForm';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
 import { CsvMapperAddInput } from '@components/data/csvMapper/__generated__/CsvMapperCreationContainerMutation.graphql';
 import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { insertNode } from '../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const csvMapperCreation = graphql`
   mutation CsvMapperCreationContainerMutation($input: CsvMapperAddInput!) {
@@ -30,7 +31,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
   onClose,
   paginationOptions,
 }) => {
-  const [commit] = useMutation(csvMapperCreation);
+  const [commit] = useApiMutation(csvMapperCreation);
 
   const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,

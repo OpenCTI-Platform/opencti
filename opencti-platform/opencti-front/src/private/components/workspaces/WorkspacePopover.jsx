@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,7 @@ import Transition from '../../../components/Transition';
 import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,7 +66,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const handleCloseDuplicate = () => {
     setDisplayDuplicate(false);
   };
-  const [commit] = useMutation(WorkspacePopoverDeletionMutation);
+  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
   const updater = (store) => {
     if (paginationOptions) {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');

@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -26,6 +26,7 @@ import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMu
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -88,7 +89,7 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
+  const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
 
   useEffect(() => {

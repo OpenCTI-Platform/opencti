@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikErrors, FormikValues } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -22,6 +22,7 @@ import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultVa
 import { fetchQuery, handleErrorInForm } from '../../../../../relay/environment';
 import { AccessRight, INPUT_AUTHORIZED_MEMBERS } from '../../../../../utils/authorizedMembers';
 import { defaultValuesToStringArray } from '../../../../../utils/defaultValues';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,7 +106,7 @@ const EntitySettingAttributeEdition = ({
     {},
   );
 
-  const [commit] = useMutation(entitySettingAttributeEditionPatch);
+  const [commit] = useApiMutation(entitySettingAttributeEditionPatch);
 
   const [membersData, setMembersData] = useState<EntitySettingAttributeEditionMembersQuery$data>();
 

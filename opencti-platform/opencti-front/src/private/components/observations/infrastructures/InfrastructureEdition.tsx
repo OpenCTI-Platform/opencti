@@ -1,13 +1,13 @@
 import React from 'react';
-import { useMutation } from 'react-relay';
 import InfrastructureEditionContainer, { infrastructureEditionContainerQuery } from './InfrastructureEditionContainer';
 import { infrastructureEditionOverviewFocus } from './InfrastructureEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const InfrastructureEdition = ({ infrastructureId }: { infrastructureId: string }) => {
-  const [commit] = useMutation(infrastructureEditionOverviewFocus);
+  const [commit] = useApiMutation(infrastructureEditionOverviewFocus);
   const handleClose = () => {
     commit({
       variables: {

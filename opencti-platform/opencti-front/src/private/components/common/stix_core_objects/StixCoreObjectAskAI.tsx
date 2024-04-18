@@ -4,7 +4,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { v4 as uuid } from 'uuid';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
 import { PopoverProps } from '@mui/material/Popover';
 import { DialogTitle } from '@mui/material';
@@ -50,6 +50,7 @@ import useAI from '../../../../utils/hooks/useAI';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
 import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // region types
 interface StixCoreObjectAskAiProps {
@@ -138,11 +139,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   };
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationUpdateContent] = useMutation<StixDomainObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
-  const [commitMutationCreateFile] = useMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
-  const [commitMutationContainerReport] = useMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
-  const [commitMutationSummarizeFiles] = useMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
-  const [commitMutationConvertFilesToStix] = useMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);
+  const [commitMutationUpdateContent] = useApiMutation<StixDomainObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
+  const [commitMutationCreateFile] = useApiMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
+  const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
+  const [commitMutationSummarizeFiles] = useApiMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
+  const [commitMutationConvertFilesToStix] = useApiMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);
   const handleAskAi = () => {
     handleCloseOptions();
     setDisableResponse(true);

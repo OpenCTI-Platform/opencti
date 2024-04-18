@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -14,6 +14,7 @@ import SubTypeWorkflowStatusEdit, { statusEditQuery } from './SubTypeWorkflowSta
 import Transition from '../../../../components/Transition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const workflowStatusDeletionMutation = graphql`
   mutation SubTypeWorkflowStatusPopoverDeletionMutation(
@@ -57,7 +58,7 @@ SubTypeStatusPopoverProps
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-  const [commit] = useMutation(workflowStatusDeletionMutation);
+  const [commit] = useApiMutation(workflowStatusDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
     commit({

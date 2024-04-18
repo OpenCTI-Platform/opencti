@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -48,6 +48,7 @@ import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -209,11 +210,11 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const [commitUserSessionKill] = useMutation<UserSessionKillMutation>(
+  const [commitUserSessionKill] = useApiMutation<UserSessionKillMutation>(
     userSessionKillMutation,
   );
-  const [commitUserUserSessionsKill] = useMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
-  const [commitUserOtpDeactivation] = useMutation<UserOtpDeactivationMutation>(
+  const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
+  const [commitUserOtpDeactivation] = useApiMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);

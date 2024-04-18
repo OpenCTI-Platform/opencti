@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -31,6 +31,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,7 +116,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     content: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation(REPORT_TYPE, basicShape);
-  const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
+  const [commit] = useApiMutation<ReportCreationMutation>(reportCreationMutation);
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },

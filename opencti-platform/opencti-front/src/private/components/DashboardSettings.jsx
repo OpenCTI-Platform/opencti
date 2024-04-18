@@ -10,7 +10,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import React, { useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
@@ -23,6 +23,7 @@ import { EXPLORE } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
 import Transition from '../../components/Transition';
+import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -86,7 +87,7 @@ const DashboardSettings = () => {
     },
   } = useAuth();
   const [open, setOpen] = useState(false);
-  const [updateDashboard] = useMutation(dashboardSettingsMutation);
+  const [updateDashboard] = useApiMutation(dashboardSettingsMutation);
   const handleUpdate = (name, newValue) => {
     let value = newValue;
     if (value === 'default') {

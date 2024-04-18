@@ -1,8 +1,8 @@
 import React from 'react';
-import { Form, Formik, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useCookies } from 'react-cookie';
@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useFormatter } from '../../components/i18n';
+import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -46,7 +47,7 @@ const LoginForm = () => {
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
-  const [commitLoginMutation] = useMutation(loginMutation);
+  const [commitLoginMutation] = useApiMutation(loginMutation);
   const onSubmit: FormikConfig<LoginFormValues>['onSubmit'] = (
     values,
     { setSubmitting, setErrors },

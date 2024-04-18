@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -17,6 +17,7 @@ import DataComponentEditionContainer, { dataComponentEditionQuery } from './Data
 import Transition from '../../../../components/Transition';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataComponentPopoverDeletionMutation = graphql`
   mutation DataComponentPopoverDeletionMutation($id: ID!) {
@@ -40,7 +41,7 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-  const [commit] = useMutation(DataComponentPopoverDeletionMutation);
+  const [commit] = useApiMutation(DataComponentPopoverDeletionMutation);
   const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(
     dataComponentEditionQuery,
     { id: dataComponentId },

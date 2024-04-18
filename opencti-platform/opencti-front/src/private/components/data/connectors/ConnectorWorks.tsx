@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { graphql, createRefetchContainer, RelayRefetchProp, useMutation } from 'react-relay';
+import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -28,6 +28,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -87,7 +88,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const classes = useStyles();
   const [displayErrors, setDisplayErrors] = useState<boolean>(false);
   const [errors, setErrors] = useState<WorkMessages>([]);
-  const [commit] = useMutation(connectorWorksWorkDeletionMutation);
+  const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
 
   const handleOpenErrors = (errorsList: WorkMessages) => {
     if (!errorsList) return;

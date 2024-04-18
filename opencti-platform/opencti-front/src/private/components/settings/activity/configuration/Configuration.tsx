@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { Form, Formik } from 'formik';
-import { graphql, usePreloadedQuery, useMutation, PreloadedQuery } from 'react-relay';
+import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -43,6 +43,7 @@ import { Option } from '../../../common/form/ReferenceField';
 import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,7 +102,7 @@ ConfigurationComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commit] = useMutation(configurationFieldPatch);
+  const [commit] = useApiMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,
     queryRef,

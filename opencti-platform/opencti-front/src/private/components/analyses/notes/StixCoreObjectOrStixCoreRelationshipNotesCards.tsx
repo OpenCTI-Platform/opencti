@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
-import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
@@ -37,6 +37,7 @@ import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -215,7 +216,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const handleToggleMore = () => {
     setMore(!more);
   };
-  const [commit] = useMutation(noteCreationUserMutation);
+  const [commit] = useApiMutation(noteCreationUserMutation);
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },

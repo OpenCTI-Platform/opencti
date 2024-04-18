@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { BellPlusOutline, BellRemoveOutline, BellCogOutline, BellOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import { CheckCircleOutlined, UnpublishedOutlined, DeleteOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Checkbox from '@mui/material/Checkbox';
@@ -32,6 +32,7 @@ import { deleteNode } from '../../../../utils/store';
 import { NotificationsLinesPaginationQuery$variables } from './__generated__/NotificationsLinesPaginationQuery.graphql';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../../utils/utils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -154,10 +155,10 @@ NotificationLineProps
   const events = data.notification_content.map((n) => n.events).flat();
   const isDigest = data.notification_type === 'digest';
   const firstEvent = events.at(0);
-  const [commitMarkRead] = useMutation(
+  const [commitMarkRead] = useApiMutation(
     notificationLineNotificationMarkReadMutation,
   );
-  const [commitDelete] = useMutation(
+  const [commitDelete] = useApiMutation(
     notificationLineNotificationDeleteMutation,
   );
   const handleRead = (read: boolean) => {

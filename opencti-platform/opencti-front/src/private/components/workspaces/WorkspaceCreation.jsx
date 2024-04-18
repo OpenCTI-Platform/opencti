@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -17,6 +17,7 @@ import TextField from '../../../components/TextField';
 import MarkdownField from '../../../components/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -67,8 +68,8 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const inputRef = useRef();
-  const [commitImportMutation] = useMutation(importMutation);
-  const [commitCreationMutation] = useMutation(workspaceMutation);
+  const [commitImportMutation] = useApiMutation(importMutation);
+  const [commitCreationMutation] = useApiMutation(workspaceMutation);
   const navigate = useNavigate();
 
   const handleImport = (event) => {

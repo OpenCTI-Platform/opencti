@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -16,6 +16,7 @@ import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEdi
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -95,10 +96,10 @@ IncidentEditionDetailsProps
   const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
   const isInferred = incident.is_inferred;
 
-  const [commitFieldPatch] = useMutation<IncidentEditionDetailsFieldPatchMutation>(
+  const [commitFieldPatch] = useApiMutation<IncidentEditionDetailsFieldPatchMutation>(
     incidentMutationFieldPatch,
   );
-  const [commitEditionDetailsFocus] = useMutation<IncidentEditionDetailsFocusMutation>(
+  const [commitEditionDetailsFocus] = useApiMutation<IncidentEditionDetailsFocusMutation>(
     incidentEditionDetailsFocus,
   );
 

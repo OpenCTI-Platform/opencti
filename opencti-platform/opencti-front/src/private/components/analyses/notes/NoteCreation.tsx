@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -33,6 +33,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -141,8 +142,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   );
 
   const [commit] = userIsKnowledgeEditor
-    ? useMutation(noteCreationMutation)
-    : useMutation(noteCreationUserMutation);
+    ? useApiMutation(noteCreationMutation)
+    : useApiMutation(noteCreationUserMutation);
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },

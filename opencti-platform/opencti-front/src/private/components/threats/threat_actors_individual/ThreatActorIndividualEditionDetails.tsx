@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -23,6 +23,7 @@ import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated_
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -100,7 +101,7 @@ ThreatActorIndividualEditionDetailsProps
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
   );
-  const [commitEditionDetailsFocus] = useMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
+  const [commitEditionDetailsFocus] = useApiMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
     ThreatActorIndividualEditionDetailsFocus,
   );
   const basicShape = {

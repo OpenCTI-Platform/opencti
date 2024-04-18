@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -17,6 +17,7 @@ import { InfrastructureEditionContainerQuery } from './__generated__/Infrastruct
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import InfrastructureEditionContainer, { infrastructureEditionContainerQuery } from './InfrastructureEditionContainer';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const InfrastructurePopoverDeletionMutation = graphql`
   mutation InfrastructurePopoverDeletionMutation($id: ID!) {
@@ -33,7 +34,7 @@ const InfrastructurePopover = ({ id }: { id: string }) => {
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [commit] = useMutation(InfrastructurePopoverDeletionMutation);
+  const [commit] = useApiMutation(InfrastructurePopoverDeletionMutation);
   const queryRef = useQueryLoading<InfrastructureEditionContainerQuery>(
     infrastructureEditionContainerQuery,
     { id },

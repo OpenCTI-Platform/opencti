@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import * as R from 'ramda';
 import { FormikConfig } from 'formik/dist/types';
 import { CsvMapperEditionContainerFragment_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerFragment_csvMapper.graphql';
@@ -13,6 +13,7 @@ import {
 import { CsvMapperRepresentationAttributesFormFragment } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const csvMapperEditionPatch = graphql`
   mutation CsvMapperEditionPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -31,7 +32,7 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
   csvMapper,
   onClose,
 }) => {
-  const [commitUpdateMutation] = useMutation(csvMapperEditionPatch);
+  const [commitUpdateMutation] = useApiMutation(csvMapperEditionPatch);
   const { schemaAttributes } = useCsvMappersData();
   const data = useFragment<CsvMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     CsvMapperRepresentationAttributesFormFragment,

@@ -9,7 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -22,6 +22,7 @@ import Transition from '../../../../components/Transition';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const NotePopoverDeletionMutation = graphql`
   mutation NotePopoverDeletionMutation($id: ID!) {
@@ -61,7 +62,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-  const [commit] = useMutation(NotePopoverDeletionMutation);
+  const [commit] = useApiMutation(NotePopoverDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
     commit({

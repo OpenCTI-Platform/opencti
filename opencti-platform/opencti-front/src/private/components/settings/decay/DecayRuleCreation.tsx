@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Button from '@mui/material/Button';
@@ -23,6 +23,7 @@ import { insertNode } from '../../../../utils/store';
 import { handleErrorInForm } from '../../../../relay/environment';
 import decayRuleValidator from './DecayRuleValidator';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,7 +77,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commit] = useMutation(decayRuleCreationMutation);
+  const [commit] = useApiMutation(decayRuleCreationMutation);
 
   const onSubmit: FormikConfig<DecayRuleCreationFormData>['onSubmit'] = (
     values,

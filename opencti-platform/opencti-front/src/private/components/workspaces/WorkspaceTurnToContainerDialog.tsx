@@ -10,7 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
 import { Option } from '@components/common/form/ReferenceField';
@@ -21,6 +21,7 @@ import { resolveLink } from '../../../utils/Entity';
 import { handleError } from '../../../relay/environment';
 import type { Theme } from '../../../components/Theme';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,7 +102,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   ]; // change when useSearchEntities will be in TS;
   const containersFromElements = entities.id ?? [];
 
-  const [commitInvestigationToContainerAdd] = useMutation<WorkspaceTurnToContainerDialogMutation>(
+  const [commitInvestigationToContainerAdd] = useApiMutation<WorkspaceTurnToContainerDialogMutation>(
     investigationToContainerMutation,
   );
   const navigate = useNavigate();

@@ -10,7 +10,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import Transition from '../../../../../components/Transition';
@@ -22,6 +22,7 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertDigestEdition from './AlertDigestEdition';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,7 +56,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [commit] = useMutation(alertingPopoverDeletionMutation);
+  const [commit] = useApiMutation(alertingPopoverDeletionMutation);
   //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

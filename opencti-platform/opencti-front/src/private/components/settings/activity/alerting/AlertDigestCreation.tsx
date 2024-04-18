@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,6 +28,7 @@ import NotifierField from '../../../common/form/NotifierField';
 import AlertsField from './AlertsField';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,7 +117,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose && handleClose();
-  const [commitDigest] = useMutation(triggerDigestCreationMutation);
+  const [commitDigest] = useApiMutation(triggerDigestCreationMutation);
   const digestInitialValues: TriggerDigestActivityAddInput = {
     name: inputValue || '',
     description: '',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -20,6 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,9 +93,9 @@ const GroupEditionMarkingsComponent = ({
       ?.values ?? []
   ).filter((v) => groupMarkingDefinitions.map((m) => m.id).includes(v.id));
 
-  const [commitAdd] = useMutation(groupMutationRelationAdd);
-  const [commitDelete] = useMutation(groupMutationRelationDelete);
-  const [commitPatch] = useMutation(groupMutationPatchDefaultValues);
+  const [commitAdd] = useApiMutation(groupMutationRelationAdd);
+  const [commitDelete] = useApiMutation(groupMutationRelationDelete);
+  const [commitPatch] = useApiMutation(groupMutationPatchDefaultValues);
 
   const handleToggle = (
     markingDefinitionId: string,

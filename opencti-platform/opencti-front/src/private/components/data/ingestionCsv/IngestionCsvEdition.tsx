@@ -1,4 +1,4 @@
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
@@ -27,6 +27,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -118,7 +119,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
-  const [commitUpdate] = useMutation(ingestionCsvEditionPatch);
+  const [commitUpdate] = useApiMutation(ingestionCsvEditionPatch);
 
   const onSubmit: FormikConfig<IngestionCsvEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;

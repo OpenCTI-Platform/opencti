@@ -12,7 +12,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
@@ -28,6 +28,7 @@ import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const stixCoreObjectFileExportQuery = graphql`
   query StixCoreObjectFileExportQuery {
@@ -69,7 +70,7 @@ const StixCoreObjectFileExportComponent = ({
     stixCoreObjectFileExportQuery,
     queryRef,
   );
-  const [commitExport] = useMutation<FileManagerExportMutation>(
+  const [commitExport] = useApiMutation<FileManagerExportMutation>(
     fileManagerExportMutation,
   );
   const [open, setOpen] = useState(false);
