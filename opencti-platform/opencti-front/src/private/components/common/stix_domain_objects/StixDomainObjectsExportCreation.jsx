@@ -80,8 +80,8 @@ export const StixDomainObjectsExportCreationMutation = graphql`
 const exportValidation = (t) => Yup.object().shape({
   format: Yup.string().required(t('This field is required')),
   type: Yup.string().required(t('This field is required')),
-  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')), // rename to contentMaxMarkings
-  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')), // rename to fileMarkings
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {
@@ -117,16 +117,16 @@ class StixDomainObjectsExportCreationComponent extends Component {
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
 
-    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value); // rename to contentMaxMarkings
-    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value); // rename to fileMarkings
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
     commitMutation({
       mutation: StixDomainObjectsExportCreationMutation,
       variables: {
         format: values.format,
         exportType: values.type,
-        contentMaxMarkings: contentMaxMarkingDefinitions,
-        fileMarkings: fileMarkingDefinitions,
+        contentMaxMarkings,
+        fileMarkings,
         exportContext,
         ...paginationOptions,
         selectedIds,
@@ -184,8 +184,8 @@ class StixDomainObjectsExportCreationComponent extends Component {
                   format: '',
                   type: 'simple',
                   maxMarkingDefinition: 'none',
-                  contentMaxMarkingDefinitions: [], // rename to contentMaxMarkings
-                  fileMarkingsDefinitions: [], // rename to fileMarkings
+                  contentMaxMarkings: [],
+                  fileMarkings: [],
                 }}
                 validationSchema={exportValidation(t)}
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
@@ -237,12 +237,12 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           </MenuItem>
                         </Field>
                         <ObjectMarkingField
-                          name="contentMaxMarkingDefinitions"
+                          name="contentMaxMarkings"
                           label={t('Content max marking definition levels')}
                           style={fieldSpacingContainerStyle}
                         />
                         <ObjectMarkingField
-                          name="fileMarkingDefinitions"
+                          name="fileMarkings"
                           label={t('File marking definition levels')}
                           style={fieldSpacingContainerStyle}
                         />
