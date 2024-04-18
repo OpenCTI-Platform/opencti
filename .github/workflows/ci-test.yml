@@ -13,10 +13,56 @@ on:
     - cron: "21 11 * * 0"
 
 jobs:
-  ci:
-    name: CI test
+  frontend:
+    name: Frontend CI
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./opencti-platform/opencti-front
+        shell: alpine.sh --root {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jirutka/setup-alpine@v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: subdir/package-lock.json
+          branch: v3.18
+          packages: >
+            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
+      - name: Setup Node.js & python
+        run: |
+          npm install -g node-gyp yarn
+          python -V
+
+      - name: Install and build frontend dependencies into Alpine
+        run: |
+          yarn install
+          yarn build
+
+      - name: Run linter and check TS
+        run: |
+          yarn lint
+          yarn check-ts
+
+      - name: Run unit and integration tests
+        run: |
+          yarn test
+
+      - name: Run test e2e
+        run: |
+          yarn playwright install --with-deps
+          yarn test:e2e
+
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./opencti-platform/opencti-graphql
+        shell: alpine.sh --root {0}
     steps:
       - uses: actions/checkout@v4
       - uses: jirutka/setup-alpine@v1
@@ -29,45 +75,17 @@ jobs:
         run: |
           npm install -g node-gyp yarn
           python -V
-        shell: alpine.sh --root {0}
 
-      - name: Install and build frontend dependencies into Alpine
+      - name: Install and build backend dependencies into Alpine
         run: |
-          cd opencti-platform/opencti-front
           yarn install
           yarn build
-          yarn test
-        shell: alpine.sh {0}
 
       - name: Run linter and check TS
         run: |
-          cd opencti-platform/opencti-front
           yarn lint
           yarn check-ts
 
       - name: Run unit and integration tests
         run: |
-          cd opencti-platform/opencti-front
-          yarn test
-
-      - name: Run test e2e
-        run: |
-          cd opencti-platform/opencti-front
-          yarn playwright install --with-deps
-          yarn test:e2e
-
-      - name: Install backend dependencies into Alpine
-        run: |
-          cd opencti-platform/opencti-graphql
-          yarn install
-          yarn build
-        shell: alpine.sh {0}
-
-      - name: Run linter and check TS
-        run: |
-          cd opencti-platform/opencti-graphql
-          yarn lint
-          yarn check-ts
-
-      - name: Run unit and integration tests
-        run: yarn test:dev
+          yarn test:dev
