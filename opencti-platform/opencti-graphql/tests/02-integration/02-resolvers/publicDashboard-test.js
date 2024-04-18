@@ -203,7 +203,7 @@ describe('PublicDashboard resolver', () => {
 
     expect(emptyPublicDashboard).not.toBeNull();
     expect(emptyPublicDashboard.errors.length).toEqual(1);
-    expect(emptyPublicDashboard.errors.at(0).message).toEqual('Cannot published empty dashboard');
+    expect(emptyPublicDashboard.errors.at(0).message).toEqual('Cannot publish empty dashboard');
   });
 
   describe('Tests with manifest', () => {

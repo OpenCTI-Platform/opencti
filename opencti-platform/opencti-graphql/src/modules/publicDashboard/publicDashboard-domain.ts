@@ -123,7 +123,7 @@ export const addPublicDashboard = async (
     throw FunctionalError('Cannot find dashboard');
   }
   if (!dashboard.manifest) {
-    throw FunctionalError('Cannot published empty dashboard');
+    throw FunctionalError('Cannot publish an empty dashboard');
   }
 
   const access = getUserAccessRight(user, dashboard);
@@ -134,7 +134,7 @@ export const addPublicDashboard = async (
   const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-');
   const existingDashboard = await getPublicDashboardByUriKey(context, uriKey);
   if (existingDashboard) {
-    throw FunctionalError(`Cannot published the dashboard, uri key ${uriKey} already used.`);
+    throw FunctionalError(`Cannot publish this dashboard, uri key ${uriKey} already used.`);
   }
 
   const parsedManifest = JSON.parse(fromBase64(dashboard.manifest) ?? '{}');
