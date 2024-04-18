@@ -328,11 +328,11 @@ const filteredIdContributions = (contrib, way, data) => {
     }
     const destKey = dest || src;
     const resolver = contrib.resolvers[src];
-    const resolvedValue = (resolver && value) ? resolver(value) : value;
-    if (isEmptyField(resolvedValue)) {
-      return {}; // missing contribution
+    if (resolver) {
+      objectData[destKey] = value ? resolver(value) : value;
+    } else {
+      objectData[destKey] = value;
     }
-    objectData[destKey] = resolvedValue;
   }
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
 };
