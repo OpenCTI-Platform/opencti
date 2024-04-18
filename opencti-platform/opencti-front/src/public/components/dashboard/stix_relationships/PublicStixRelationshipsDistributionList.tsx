@@ -82,7 +82,7 @@ const PublicStixRelationshipsDistributionListComponent = ({
         type: o.entity?.entity_type ?? o.label,
       };
     });
-    return <WidgetDistributionList data={data} />;
+    return <WidgetDistributionList data={data} publicWidget />;
   }
   return <WidgetNoData />;
 };

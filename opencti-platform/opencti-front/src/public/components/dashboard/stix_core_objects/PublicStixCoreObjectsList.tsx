@@ -220,6 +220,7 @@ const PublicStixCoreObjectsListComponent = ({
       <WidgetListCoreObjects
         data={[...publicStixCoreObjects.edges]}
         dateAttribute={dateAttribute}
+        publicWidget
       />
     );
   }

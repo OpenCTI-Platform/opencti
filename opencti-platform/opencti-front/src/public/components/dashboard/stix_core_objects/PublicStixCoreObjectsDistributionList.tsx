@@ -91,7 +91,7 @@ const PublicStixCoreObjectsDistributionListComponent = ({
         type: n.entity?.entity_type ?? n.label,
       };
     });
-    return <WidgetDistributionList data={data} />;
+    return <WidgetDistributionList data={data} publicWidget />;
   }
   return <WidgetNoData />;
 };

@@ -7,7 +7,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import { PublicStixCoreObjectsTimelineQuery } from './__generated__/PublicStixCoreObjectsTimelineQuery.graphql';
-import { resolveLink } from '../../../../utils/Entity';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 
 const publicStixCoreObjectsTimelineQuery = graphql`
@@ -86,10 +85,8 @@ const PublicStixCoreObjectsTimelineComponent = ({
     const data = stixCoreObjectsEdges.flatMap((stixCoreObjectEdge) => {
       const stixCoreObject = stixCoreObjectEdge?.node;
       if (!stixCoreObject) return [];
-      const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
       return {
         value: stixCoreObject,
-        link,
       };
     });
     return <WidgetTimeline data={data} />;

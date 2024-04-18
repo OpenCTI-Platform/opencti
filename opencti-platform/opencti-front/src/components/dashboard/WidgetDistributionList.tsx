@@ -16,12 +16,14 @@ interface WidgetDistributionListProps {
   data: any[]
   hasSettingAccess?: boolean
   overflow?: string
+  publicWidget?: boolean
 }
 
 const WidgetDistributionList = ({
   data,
   hasSettingAccess = false,
   overflow = 'auto',
+  publicWidget = false,
 }: WidgetDistributionListProps) => {
   const theme = useTheme<Theme>();
   const { n } = useFormatter();
@@ -42,7 +44,7 @@ const WidgetDistributionList = ({
           const label = getMainRepresentative(entry.entity) || entry.label;
 
           let link: string | null = null;
-          if (entry.type !== 'User' || hasSettingAccess) {
+          if (!publicWidget && (entry.type !== 'User' || hasSettingAccess)) {
             const node: {
               id: string;
               entity_type: string;
@@ -67,6 +69,7 @@ const WidgetDistributionList = ({
               key={entry.id ?? entry.label}
               dense={true}
               divider={true}
+              disableRipple={publicWidget}
               {...linkProps}
               sx={{
                 height: 50,

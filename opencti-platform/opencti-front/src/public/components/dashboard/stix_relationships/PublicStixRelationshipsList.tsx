@@ -4365,6 +4365,7 @@ const PublicStixRelationshipsListComponent = ({
       <WidgetListRelationships
         data={[...publicStixRelationships.edges]}
         dateAttribute={dateAttribute}
+        publicWidget
       />
     );
   }
