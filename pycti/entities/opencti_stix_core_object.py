@@ -438,6 +438,15 @@ class StixCoreObject:
             }      
             ... on StixCyberObservable {
                 observable_value
+                indicators {
+                    edges {
+                        node {
+                            id
+                            pattern
+                            pattern_type
+                        }
+                    }
+                }
             }
             ... on AutonomousSystem {
                 number
@@ -1093,6 +1102,15 @@ class StixCoreObject:
             }      
             ... on StixCyberObservable {
                 observable_value
+                indicators {
+                    edges {
+                        node {
+                            id
+                            pattern
+                            pattern_type
+                        }
+                    }
+                }
             }
             ... on AutonomousSystem {
                 number
