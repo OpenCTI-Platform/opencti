@@ -13,8 +13,8 @@ on:
     - cron: "21 11 * * 0"
 
 jobs:
-  frontend:
-    name: Frontend
+  ci:
+    name: CI test
     runs-on: ubuntu-latest
 
     steps:
