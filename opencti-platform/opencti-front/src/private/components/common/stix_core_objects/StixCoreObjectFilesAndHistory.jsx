@@ -108,10 +108,10 @@ export const scopesConn = (exportConnectors) => {
 };
 
 const exportValidation = (t_i18n) => Yup.object().shape({
-    format: Yup.string().trim().required(t_i18n('This field is required')),
-    type: Yup.string().trim().required(t_i18n('This field is required')),
-    contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
-    fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  format: Yup.string().trim().required(t_i18n('This field is required')),
+  type: Yup.string().trim().required(t_i18n('This field is required')),
+  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 const importValidation = (t_i18n, configurations) => {
