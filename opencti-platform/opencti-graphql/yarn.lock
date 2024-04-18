@@ -5240,15 +5240,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:0.10.3":
-  version: 0.10.3
-  resolution: "amqplib@npm:0.10.3"
+"amqplib@npm:0.10.4":
+  version: 0.10.4
+  resolution: "amqplib@npm:0.10.4"
   dependencies:
     "@acuminous/bitsyntax": "npm:^0.1.2"
     buffer-more-ints: "npm:~1.0.0"
     readable-stream: "npm:1.x >=1.1.9"
     url-parse: "npm:~1.5.10"
-  checksum: 10/ec96c384e659cda401ecd512b94aa0d5a0632a8c0a78c1d054bc4ac34d18f512fc9b150ae906f70701d36cc22bd337fe6bd127f65e0c294731b6c10350c4830d
+  checksum: 10/de96a1da2be66e8367174a6a76266e9e5088cff60c8ef4ca0843eaf320a8a745f37e17316d4fa8bc895e9ff7dadbe572ae2dd7db5d9e4a42f67e69fa00d0309e
   languageName: node
   linkType: hard
 
@@ -11072,7 +11072,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:7.3.1"
     "@vitest/coverage-v8": "npm:1.4.0"
     ajv: "npm:8.12.0"
-    amqplib: "npm:0.10.3"
+    amqplib: "npm:0.10.4"
     antlr4: "npm:4.13.1"
     apollo-errors: "npm:1.9.0"
     apollo-server-core: "npm:3.13.0"
