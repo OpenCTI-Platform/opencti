@@ -242,7 +242,6 @@ const StixCyberObservableCreation = ({
   const hashes_SHA256_field = document.getElementById('hashes_SHA-256');
   const hashes_SHA512_field = document.getElementById('hashes_SHA-512');
   const divRowStyle = { display: 'flex', flexWrap: 'wrap' };
-  const [myValue, setMyValue] = useState("");
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('onSubmit was called');
@@ -526,6 +525,13 @@ const StixCyberObservableCreation = ({
         setKeyFieldDisabled(false);
       }
     };
+
+    const [selectedAttribute, setSelectedAttribute] = useState('');
+
+    const handleSelectChange = (event) => {
+      setSelectedAttribute(event.target.value);
+    };
+
     function getOption() {
       const selectElement = document.querySelector('#attributes');
       const output = selectElement.value;
@@ -549,7 +555,7 @@ const StixCyberObservableCreation = ({
           <DialogContent style={{ marginTop: 0, paddingTop: 10 }}>
             <form name="formSelectAttributes" id="formSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }} action="/action_page.php">
               {t_i18n('Create Entities from multiple')}:
-              <select name="attributes" id="attributes" onSelect={getOption} onChange={(e) => setMyValue(e.target.value)}>
+              <select name="attributes" id="attributes" onSelect={getOption} onChange={handleSelectChange}>
                 <option selected disabled>Select attribute</option>
                 <option value="NAME">name</option>
                 <option value="MD5">md5</option>
@@ -559,7 +565,7 @@ const StixCyberObservableCreation = ({
               </select>
             </form>
             <Typography style={{ float: 'left', marginTop: 10 }}>
-              <span>{myValue}</span>
+              <span style={{ fontSize: '0.7em' }}>{selectedAttribute}</span>
               <span className="output"></span>
             </Typography>
             <Field
