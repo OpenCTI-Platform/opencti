@@ -1,7 +1,7 @@
 import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { constraintDirectiveTypeDefs, constraintDirectiveDocumentation } from 'graphql-constraint-directive';
+import { constraintDirectiveTypeDefs } from 'graphql-constraint-directive';
 // eslint-disable-next-line import/extensions
 import { GraphQLScalarType, GraphQLError, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';

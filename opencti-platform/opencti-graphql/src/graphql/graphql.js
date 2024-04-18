@@ -17,8 +17,7 @@ import { executionContext } from '../utils/access';
 
 const createApolloServer = () => {
   let schema = createSchema();
-
-  // constraint-directive plugin configuration
+  // graphql-constraint-directive plugin configuration
   const formats = {
     'not-blank': (value) => {
       if (value.length > 0 && value.trim() === '') {
@@ -32,6 +31,8 @@ const createApolloServer = () => {
 
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   const apolloValidationRules = [];
+
+  // optional graphql-armor plugin configuration
   if (GRAPHQL_ARMOR_ENABLED) {
     const armor = new ApolloArmor({
       costLimit: { // Blocking too expensive requests (DoS attack attempts).
