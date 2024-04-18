@@ -36,6 +36,7 @@ import { capitalizeFirstLetter } from '../../../../utils/String';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,6 +98,7 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
@@ -297,8 +299,7 @@ const PlaybookAddComponentsContent = ({
             label={t_i18n('Value')}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
-            ])
-                        }
+            ])}
           />
         );
       default:
@@ -606,20 +607,19 @@ const PlaybookAddComponentsContent = ({
                             placement="bottom-start"
                           >
                             <MenuItem value={value.const}>
-                              {value.title}
+                              {/* value might be an entity type, we try to translate it */}
+                              {translateEntityType(value.title)}
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value)
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value }
+                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value) }
                         options={v.oneOf}
                         textfieldprops={{
                           variant: 'standard',
                           label: t_i18n(v.$ref ?? k),
                         }}
-                        getOptionLabel={(option) => (option.title
+                        getOptionLabel={(option) => translateEntityType(option.title
                           ? option.title
                           : v.oneOf?.filter((n) => n.const === option)?.at(0)
                             ?.title ?? option)

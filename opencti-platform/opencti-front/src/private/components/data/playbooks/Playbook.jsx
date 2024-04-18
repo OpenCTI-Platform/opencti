@@ -25,6 +25,8 @@ import nodeTypes from './types/nodes';
 import edgeTypes from './types/edges';
 import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
 import useManipulateComponents from './hooks/useManipulateComponents';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,6 +43,7 @@ const fitViewOptions = { padding: 0.8 };
 
 const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const definition = JSON.parse(playbook.playbook_definition);
   const width = window.innerWidth - 80;
   const height = window.innerHeight - 160;
@@ -91,6 +94,15 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   };
   return (
     <>
+      <Breadcrumbs
+        variant="list"
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Processing') },
+          { label: t_i18n('Automation'), link: '/dashboard/data/processing/automation' },
+          { label: playbook.name, current: true },
+        ]}
+      />
       <PlaybookHeader playbook={playbook} />
       <ErrorBoundary
         display={

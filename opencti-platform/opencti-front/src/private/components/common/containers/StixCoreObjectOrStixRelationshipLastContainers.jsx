@@ -319,7 +319,7 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
     const filtersContent = [
       {
         key: 'entity_type',
-        values: ['Report', 'Case', 'Observed-Data', 'Grouping'],
+        values: ['Report', 'Case', 'Observed-Data', 'Grouping', 'Task'],
       },
     ];
     if (authorId) {

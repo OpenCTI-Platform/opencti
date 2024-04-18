@@ -25,10 +25,9 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER,
   INPUT_CREATED_BY,
   INPUT_LABELS,
-  INPUT_MARKINGS,
+  INPUT_MARKINGS
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
@@ -40,7 +39,6 @@ import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../..
 import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { schemaTypesDefinition } from '../../schema/schema-types';
 import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
@@ -73,6 +71,10 @@ import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -113,7 +115,7 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   executor: async ({ bundle, playbookNode }) => {
     if (playbookNode.configuration.level) {
-      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', { bundle });
+      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', null, { bundle });
     }
     return { output_port: 'out', bundle, forceBundleTracking: true };
   }
@@ -320,6 +322,18 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
   },
   required: ['container_type'],
 };
+
+// For now, only a fixed list of containers are compatible
+// these are the containers that can be created with a name and no specific mandatory fields
+const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
+  ENTITY_TYPE_CONTAINER_FEEDBACK,
+  ENTITY_TYPE_CONTAINER_TASK,
+];
+
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
@@ -330,17 +344,19 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
   ports: [{ id: 'out', type: 'out' }],
   configuration_schema: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA,
   schema: async () => {
-    const entityTypes = schemaTypesDefinition.get(ENTITY_TYPE_CONTAINER);
-    const elements = entityTypes.map((c) => ({ const: c, title: c }));
+    const elements = PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.map((t) => ({ const: t, title: t }));
     const schemaElement = { properties: { container_type: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const { container_type, all } = playbookNode.configuration;
-    if (container_type && isStixDomainObjectContainer(container_type)) {
+    if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
+      throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
+    }
+    if (container_type) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const created = baseData.extensions[STIX_EXT_OCTI].created_at;
-      const containerData = {
+      const containerData: Record<string, unknown> = {
         name: extractStixRepresentative(baseData) ?? `Generated container wrapper from playbook at ${created}`,
         created,
         published: created,
@@ -354,12 +370,14 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
         ...containerData
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
+      // add all objects in the container if requested in the playbook confif
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
       } else {
         container.object_refs = [baseData.id];
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
+      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -369,14 +387,15 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       if ((<StixDomainObject>baseData).created_by_ref) {
         container.created_by_ref = (<StixDomainObject>baseData).created_by_ref;
       }
-      if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
-        (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
-      }
       if (baseData.extensions[STIX_EXT_OCTI].participant_ids) {
         container.extensions[STIX_EXT_OCTI].participant_ids = baseData.extensions[STIX_EXT_OCTI].participant_ids;
       }
       if (baseData.extensions[STIX_EXT_OCTI].assignee_ids) {
         container.extensions[STIX_EXT_OCTI].assignee_ids = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
+      }
+      // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
+      if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+        (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       bundle.objects.push(container);
     }
