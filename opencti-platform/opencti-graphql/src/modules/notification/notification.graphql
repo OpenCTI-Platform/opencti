@@ -30,7 +30,7 @@ enum TriggerEventType {
     delete
 }
 input TriggerLiveAddInput {
-    name: String! @constraint(minLength: 1)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     event_types: [TriggerEventType!]!
     notifiers: [StixRef!]
@@ -39,7 +39,7 @@ input TriggerLiveAddInput {
     recipients: [String!]
 }
 input TriggerDigestAddInput {
-    name: String! @constraint(minLength: 1)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     trigger_ids: [String!]! # Triggers that composed the digest
     period: DigestPeriod!
@@ -90,7 +90,7 @@ enum TriggerActivityEventType {
     command
 }
 input TriggerActivityLiveAddInput {
-    name: String! @constraint(minLength: 1)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     notifiers: [StixRef!]
     filters: String
@@ -98,7 +98,7 @@ input TriggerActivityLiveAddInput {
 }
 
 input TriggerActivityDigestAddInput {
-    name: String! @constraint(minLength: 1)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     trigger_ids: [String!]! # Triggers that composed the digest
     period: DigestPeriod!

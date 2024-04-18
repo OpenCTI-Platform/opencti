@@ -175,7 +175,7 @@ type Query {
 
 # Mutations
 input TaskAddInput {
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   created: DateTime
   due_date: DateTime

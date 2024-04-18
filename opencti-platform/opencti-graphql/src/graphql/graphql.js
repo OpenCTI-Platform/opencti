@@ -4,6 +4,8 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
+import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
+import { GraphQLError } from 'graphql/error';
 import createSchema from './schema';
 import { basePath, DEV_MODE, PLAYGROUND_INTROSPECTION_DISABLED, ENABLED_TRACING, PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED, logApp } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
@@ -14,8 +16,21 @@ import httpResponsePlugin from './httpResponsePlugin';
 import { executionContext } from '../utils/access';
 
 const createApolloServer = () => {
-  const schema = createSchema();
-  const apolloPlugins = [loggerPlugin, httpResponsePlugin];
+  let schema = createSchema();
+
+  // constraint-directive plugin configuration
+  const formats = {
+    'not-blank': (value) => {
+      if (value.length > 0 && value.trim() === '') {
+        throw new GraphQLError('Value cannot have only whitespace(s)');
+      }
+      return true;
+    }
+  };
+  const constraintPlugin = createApolloQueryValidationPlugin({ schema }, { formats });
+  schema = constraintDirectiveDocumentation()(schema);
+
+  const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
   const apolloValidationRules = [];
   if (GRAPHQL_ARMOR_ENABLED) {
     const armor = new ApolloArmor({

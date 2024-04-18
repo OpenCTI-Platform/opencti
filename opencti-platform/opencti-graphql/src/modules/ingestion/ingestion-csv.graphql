@@ -59,7 +59,7 @@ type Query {
 
 # Mutations
 input IngestionCsvAddInput {
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     authentication_type: CsvAuthType!
     authentication_value: String

@@ -186,7 +186,7 @@ type Query {
 input CaseIncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   severity: String
   priority: String
   description: String

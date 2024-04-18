@@ -40,7 +40,7 @@ type Query {
 
 # Mutations
 input CaseTemplateAddInput {
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   created: DateTime
   tasks: [StixRef!]!

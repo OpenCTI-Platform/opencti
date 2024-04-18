@@ -45,7 +45,7 @@ type Query {
 
 # Mutations
 input TaskTemplateAddInput {
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
 }
 

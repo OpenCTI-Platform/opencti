@@ -156,7 +156,7 @@ type Query {
 input EventAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     event_types: [String!]
     start_time: DateTime

@@ -1,7 +1,7 @@
 import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { constraintDirective } from 'graphql-constraint-directive';
+import { constraintDirectiveTypeDefs, constraintDirectiveDocumentation } from 'graphql-constraint-directive';
 // eslint-disable-next-line import/extensions
 import { GraphQLScalarType, GraphQLError, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';
@@ -172,6 +172,8 @@ const globalResolvers = {
   }),
 };
 const schemaResolvers = [
+  // EXTERNAL
+  constraintDirectiveTypeDefs,
   // INTERNAL
   globalResolvers,
   taxiiResolvers,
@@ -268,7 +270,6 @@ const createSchema = () => {
     resolvers,
     inheritResolversFromInterfaces: true,
   });
-  schema = constraintDirective()(schema);
   schema = authDirectiveTransformer(schema);
   return schema;
 };

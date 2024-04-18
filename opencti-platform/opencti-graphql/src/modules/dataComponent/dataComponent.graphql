@@ -164,7 +164,7 @@ input DataComponentAddInput {
     modified: DateTime
     clientMutationId: String
     update: Boolean
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     aliases: [String]
     dataSource: String

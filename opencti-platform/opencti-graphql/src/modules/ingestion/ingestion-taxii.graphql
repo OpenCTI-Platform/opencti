@@ -63,7 +63,7 @@ type Query {
 
 # Mutations
 input IngestionTaxiiAddInput {
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     version: TaxiiVersion!
     authentication_type: TaxiiAuthType!

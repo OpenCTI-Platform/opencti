@@ -171,7 +171,7 @@ type Query {
 input OrganizationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
