@@ -19,6 +19,7 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useHelper from 'src/utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -29,6 +30,7 @@ interface ExternalReferencesProps {
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -114,6 +116,12 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           entityTypes={['External-Reference']}
+          createButton={isFeatureEnable("FAB_REPLACEMENT") && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ExternalReferenceCreation
+              paginationOptions={queryPaginationOptions}
+              openContextual={false}
+            />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -160,12 +168,14 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ExternalReferenceCreation
-          paginationOptions={queryPaginationOptions}
-          openContextual={false}
-        />
-      </Security>
+      {!isFeatureEnable("FAB_REPLACEMENT") &&
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ExternalReferenceCreation
+            paginationOptions={queryPaginationOptions}
+            openContextual={false}
+          />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

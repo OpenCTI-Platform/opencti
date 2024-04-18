@@ -14,7 +14,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { MESSAGING$, commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -23,6 +23,8 @@ import { ExternalReferencesLinesPaginationQuery$variables } from './__generated_
 import type { Theme } from '../../../../components/Theme';
 import { ExternalReferenceAddInput, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -100,6 +102,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable("FAB_REPLACEMENT");
 
   const [open, setOpen] = useState(false);
 
@@ -134,6 +138,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       setSubmitting,
@@ -144,6 +149,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         if (onCreate) {
           onCreate(response.externalReferenceAdd, true);
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}`);
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -200,7 +206,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     return (
       <Drawer
         title={t_i18n('Create an external reference')}
-        variant={DrawerVariant.create}
+        variant={FABReplaced ? undefined : DrawerVariant.create}
+        controlledDial={FABReplaced ? CreateEntityControlledDial("entity_External-Reference") : undefined}
       >
         {({ onClose }) => (
           <Formik
@@ -286,7 +293,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {!handleCloseContextual && (
+        {!handleCloseContextual && !FABReplaced && (
           <Fab
             onClick={handleOpen}
             color="secondary"
@@ -298,12 +305,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         )}
         <Dialog
           PaperProps={{ elevation: 1 }}
-          open={!handleCloseContextual ? open : openContextual}
-          onClose={!handleCloseContextual ? handleClose : handleCloseContextual}
+          open={FABReplaced || handleCloseContextual ? openContextual : open}
+          onClose={FABReplaced || handleCloseContextual ? handleCloseContextual : handleClose}
         >
           <Formik
             enableReinitialize={true}
-            onSubmit={!handleCloseContextual ? onSubmit : onSubmitContextual}
+            onSubmit={!creationCallback && (FABReplaced || !handleCloseContextual) ? onSubmit : onSubmitContextual}
             initialValues={{
               source_name: inputValue || '',
               external_id: '',

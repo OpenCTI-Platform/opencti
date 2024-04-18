@@ -175,6 +175,8 @@ class AddExternalReferencesLinesContainer extends Component {
       open,
       search,
       paginationOptions,
+      openContextual,
+      handleCloseContextual,
     } = this.props;
     const stixCoreObjectOrStixCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
@@ -248,6 +250,8 @@ class AddExternalReferencesLinesContainer extends Component {
         <ExternalReferenceCreation
           display={open}
           contextual={true}
+          openContextual={openContextual}
+          handleCloseContextual={handleCloseContextual}
           inputValue={search}
           paginationOptions={paginationOptions}
           onCreate={this.toggleExternalReference.bind(this)}
