@@ -8,7 +8,58 @@ import { computeAvailableMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
-import { getAvailableDataSharingMarkings } from '../../domain/settings';
+import { getDataSharingMaxMarkings } from '../../domain/settings';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
+
+/**
+ * Find which markings should be used when searching the data to populate in the widgets.
+ *
+ * @param context
+ * @param publicDashboard The one we want to retrieve data for its widgets.
+ * @param userAuthorPublicDashboard The user who creates the public dashboard.
+ */
+export const findWidgetsMaxMarkings = async (
+  context: AuthContext,
+  publicDashboard: PublicDashboardCached,
+  userAuthorPublicDashboard: AuthUser
+) => {
+  // To find max markings allowed for widgets we keep the intersection of markings from:
+  // - Max markings for data sharing defined by the admin of the platform,
+  // - Max markings of the public dashboard defined by the user who created it,
+  // - Max markings of the user who created it.
+  // (The last case is necessary if the user has lost markings between the time they create the public
+  // dashboard and the time someone access the public dashboard).
+  const dataSharingMaxMarkings = await getDataSharingMaxMarkings(context, SYSTEM_USER);
+  const dashboardMaxMarkings = publicDashboard.allowed_markings;
+  // Call of cleanMarkings to keep only the max for each type.
+  const userMaxMarkings = await cleanMarkings(context, userAuthorPublicDashboard.allowed_marking);
+
+  const widgetsMaxMarkingsMap: Record<string, StoreMarkingDefinition> = {};
+  [...dataSharingMaxMarkings, ...dashboardMaxMarkings, ...userMaxMarkings]
+    // To be acceptable, a type should be present in all of the three arrays.
+    .filter((marking) => {
+      return (
+        dataSharingMaxMarkings.some((m) => m.definition_type === marking.definition_type)
+        && dashboardMaxMarkings.some((m) => m.definition_type === marking.definition_type)
+        && userMaxMarkings.some((m) => m.definition_type === marking.definition_type)
+      );
+    })
+    .forEach((marking) => {
+      const saveMarking = widgetsMaxMarkingsMap[marking.definition_type];
+      // Keep the min order for each type of markings.
+      if (!saveMarking || saveMarking.x_opencti_order > marking.x_opencti_order) {
+        widgetsMaxMarkingsMap[marking.definition_type] = marking;
+      }
+    });
+
+  // Return the list of all available markings from the max markings determined above.
+  const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION
+  );
+  return computeAvailableMarkings(Object.values(widgetsMaxMarkingsMap), allMarkings);
+};
 
 interface WidgetArguments {
   user: AuthUser,
@@ -31,7 +82,7 @@ export const getWidgetArguments = async (
     throw UnsupportedError('Dashboard not enabled');
   }
 
-  const { user_id, private_manifest, allowed_markings }: PublicDashboardCached = publicDashboard;
+  const { user_id, private_manifest }: PublicDashboardCached = publicDashboard;
 
   // Get user that creates the public dashboard from cache
   const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -41,18 +92,20 @@ export const getWidgetArguments = async (
   }
 
   // Determine the marking definitions allowed.
-  const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, SYSTEM_USER)).map((m) => m.id);
-  const availableDashboardMarkings = computeAvailableMarkings(allowed_markings, allMarkings);
-  const allowedMarkings = availableDashboardMarkings.filter((m) => availableDataSharingMarkingIds.includes(m.id));
+  const allowedMaxMarkings = await findWidgetsMaxMarkings(context, publicDashboard, platformUser);
+
   // To replace User capabilities by KNOWLEDGE capability
-  const accessKnowledgeCapability: UserCapability = await elLoadById(context, SYSTEM_USER, 'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493') as unknown as UserCapability;
+  const accessKnowledgeCapability: UserCapability = await elLoadById(
+    context,
+    SYSTEM_USER,
+    'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493'
+  ) as unknown as UserCapability;
 
   // Construct a fake user to be able to call private API
   const user = {
     ...platformUser,
     origin: { user_id: platformUser.id, referer: 'public-dashboard' },
-    allowed_marking: allowedMarkings,
+    allowed_marking: allowedMaxMarkings,
     capabilities: [accessKnowledgeCapability]
   };
 

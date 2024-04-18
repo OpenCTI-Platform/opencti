@@ -200,8 +200,14 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-// Retrieves max level of markings that can be shared.
-export const getDataSharingMaxMarkings = async (context, user, settings) => {
+/**
+ * Retrieves max level of markings that can be shared.
+ * @param context
+ * @param user
+ * @param settings
+ * @returns {Promise<StoreMarkingDefinition[]>}
+ */
+export const getDataSharingMaxMarkings = async (context, user, settings = undefined) => {
   const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const dataSharingMaxMarkings = platform_data_sharing_max_markings ?? [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
