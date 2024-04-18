@@ -206,7 +206,10 @@ describe('Control confidence', () => {
       id: 'object_no_confidence',
       entity_type: 'Artifact',
     })).not.toThrowError(); // existence of user level is not even checked
-    expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]), makeReport(80)));
+    expect(() => controlUserConfidenceAgainstElement(
+      makeUserWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]), 
+      makeReport(80),
+    )).not.toThrowError();
     expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(40, null), makeReport(100)))
       .toThrowError('User effective max confidence level is insufficient to update this element');
     expect(() => controlUserConfidenceAgainstElement(makeUserWithOverrides(null, null), makeReport(80)))
