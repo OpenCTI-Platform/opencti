@@ -34,6 +34,9 @@ import { NoteCreationMutation$variables } from './__generated__/NoteCreationMuta
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from 'src/relay/environment';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -173,12 +176,16 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
         }
       },
+      onError: (error: Error) => {
+        MESSAGING$.notifyError(`${error}`);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Note')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -309,6 +316,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -318,7 +326,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a note')}
-        variant={DrawerVariant.create}
+        variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
+        controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial("entity_Note") : undefined}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>

@@ -340,7 +340,7 @@ const ReportCreation = ({
     <Drawer
       title={t_i18n('Create a report')}
       variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
-      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial(REPORT_TYPE) : undefined}
+      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial("entity_Report") : undefined}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>

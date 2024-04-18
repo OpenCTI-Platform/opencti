@@ -293,7 +293,7 @@ const GroupingCreation = ({
     <Drawer
       title={t_i18n('Create a grouping')}
       variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
-      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial(GROUPING_TYPE) : undefined}
+      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial("entity_Grouping") : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>
