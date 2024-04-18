@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import UserConfidenceLevelField from '@components/settings/users/UserConfidenceLevelField';
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik, useFormikContext } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
@@ -9,13 +9,13 @@ import * as Yup from 'yup';
 import { useMutation } from 'react-relay';
 import { userEditionOverviewFocus, userMutationFieldPatch } from '@components/settings/users/UserEditionOverview';
 import UserConfidenceOverridesField from '@components/settings/users/UserConfidenceOverridesField';
-import { FormikHelpers } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
+import { FormikHelpers } from 'formik/dist/types';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 
-interface Override {
+export interface Override {
   max_confidence: number;
   entity_type: string;
 }
@@ -119,6 +119,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
     userConfidenceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
+        console.log('name', name, 'value', value)
         // specific case for user confidence level: to update an object we have several use-cases
         if (name === 'user_confidence_level') {
           if (user.user_confidence_level && value) {
@@ -210,7 +211,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                     <Add fontSize="small" />
                   </IconButton>
 
-                  {values.overrides.map((override, idx) => (
+                  {values.overrides.map((_, idx) => (
 
                     <Field
                       key={idx}
@@ -220,6 +221,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                       availableTypes={availableEntityTypes}
                       prefixLabel="entity_"
                       onDelete={() => arrayHelpers.remove(idx)}
+                      onSubmit={handleSubmitField}
                     />
                   ))}
                 </div>
