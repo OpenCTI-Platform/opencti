@@ -41,26 +41,31 @@ jobs:
 
       - name: Run linter and check TS
         run: |
+          cd opencti-platform/opencti-front
           yarn lint
           yarn check-ts
 
       - name: Run unit and integration tests
-        run: yarn test
+        run: |
+          cd opencti-platform/opencti-front
+          yarn test
 
       - name: Run test e2e
         run: |
+          cd opencti-platform/opencti-front
           yarn playwright install --with-deps
           yarn test:e2e
 
       - name: Install backend dependencies into Alpine
         run: |
-          cd ../opencti-graphql
+          cd opencti-platform/opencti-graphql
           yarn install
           yarn build
         shell: alpine.sh {0}
 
       - name: Run linter and check TS
         run: |
+          cd opencti-platform/opencti-graphql
           yarn lint
           yarn check-ts
 
