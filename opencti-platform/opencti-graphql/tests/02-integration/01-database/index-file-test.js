@@ -5,6 +5,9 @@ import { elIndexFiles, elSearchFiles } from '../../../src/database/file-search';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteFile, getFileContent, upload } from '../../../src/database/file-storage';
 import { INDEX_FILES } from '../../../src/database/utils';
+import { resetFileIndexing } from '../../../src/domain/indexedFile';
+import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../../../src/modules/managerConfiguration/managerConfiguration-domain';
+import { SYSTEM_USER } from '../../../src/utils/access';
 
 const indexFile = async (fileName, mimetype, documentId) => {
   const file = {
@@ -143,5 +146,15 @@ describe('Indexing file test', () => {
       sort: [0.6007867, new Date(document2.indexed_at).getTime(), 'test_file_2'],
     };
     await testFilesSearching('control', [expectedFile4, expectedFile2]);
+  });
+});
+
+describe('Indexing file configuration', () => {
+  it('Should reset file indexing', async () => {
+    const managerConfiguration = await getManagerConfigurationFromCache(testContext, ADMIN_USER, 'FILE_INDEX_MANAGER');
+    // set last run start and end date (otherwise reset won't change anything)
+    await updateManagerConfigurationLastRun(testContext, SYSTEM_USER, managerConfiguration.id, { last_run_start_date: new Date(), last_run_end_date: new Date() });
+    const reset = await resetFileIndexing(testContext, ADMIN_USER);
+    expect(reset).toBeTruthy();
   });
 });
