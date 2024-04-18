@@ -14097,11 +14097,12 @@ export type MutationStixCoreObjectEditArgs = {
 
 
 export type MutationStixCoreObjectsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -14113,6 +14114,7 @@ export type MutationStixCoreObjectsExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14261,7 +14263,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
@@ -34304,8 +34306,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   statusTemplateDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationStatusTemplateDeleteArgs, 'id'>>;
   statusTemplateFieldPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateFieldPatchArgs, 'id' | 'input'>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
-  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'format'>>;
-  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file'>>;
+  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;
   stixCoreRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipEditArgs, 'id'>>;
@@ -34318,7 +34320,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
-  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
+  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;

@@ -13,12 +13,14 @@ import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -35,7 +37,8 @@ export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
     $format: String!
     $exportType: String!
-    $maxMarkingDefinition: String
+    $contentMaxMarkings: [String]
+    $fileMarkings: [String]!
     $exportContext: ExportContext
     $search: String
     $orderBy: StixCoreObjectsOrdering
@@ -46,7 +49,8 @@ export const StixCoreObjectsExportCreationMutation = graphql`
     stixCoreObjectsExportAsk(
       format: $format
       exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
+      contentMaxMarkings: $contentMaxMarkings
+      fileMarkings: $fileMarkings
       exportContext: $exportContext
       search: $search
       orderBy: $orderBy
@@ -59,8 +63,10 @@ export const StixCoreObjectsExportCreationMutation = graphql`
   }
 `;
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().trim().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+  format: Yup.string().trim().required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {
@@ -91,9 +97,9 @@ const StixCoreObjectsExportCreationComponent = ({
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
@@ -102,7 +108,8 @@ const StixCoreObjectsExportCreationComponent = ({
         exportType: 'full',
         selectedIds,
         ...paginationOptions,
-        maxMarkingDefinition,
+        contentMaxMarkings,
+        fileMarkings,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -148,7 +155,8 @@ const StixCoreObjectsExportCreationComponent = ({
               enableReinitialize={true}
               initialValues={{
                 format: '',
-                maxMarkingDefinition: 'none',
+                contentMaxMarkings: [],
+                fileMarkings: [],
               }}
               validationSchema={exportValidation(t_i18n)}
               onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
@@ -189,30 +197,16 @@ const StixCoreObjectsExportCreationComponent = ({
                                   </MenuItem>
                                 ))}
                               </Field>
-                              <Field
-                                component={SelectField}
-                                variant="standard"
-                                name="maxMarkingDefinition"
-                                label={t_i18n('Max marking definition level')}
-                                fullWidth={true}
-                                containerstyle={{
-                                  marginTop: 20,
-                                  width: '100%',
-                                }}
-                              >
-                                <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                                {R.map(
-                                  (markingDefinition) => (
-                                    <MenuItem
-                                      key={markingDefinition.node.id}
-                                      value={markingDefinition.node.id}
-                                    >
-                                      {markingDefinition.node.definition}
-                                    </MenuItem>
-                                  ),
-                                  props.markingDefinitions.edges,
-                                )}
-                              </Field>
+                              <ObjectMarkingField
+                                name="contentMaxMarkings"
+                                label={t_i18n('Content max marking definition levels')}
+                                style={fieldSpacingContainerStyle}
+                              />
+                              <ObjectMarkingField
+                                name="fileMarkings"
+                                label={t_i18n('File marking definition levels')}
+                                style={fieldSpacingContainerStyle}
+                              />
                             </DialogContent>
                           );
                         }

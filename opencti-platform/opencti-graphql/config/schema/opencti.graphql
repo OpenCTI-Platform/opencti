@@ -12695,7 +12695,8 @@ type Mutation {
   stixCoreObjectsExportAsk(
     format: String!
     exportType: String!
-    maxMarkingDefinition: String
+    contentMaxMarkings: [String]
+    fileMarkings: [String]!
     search: String
     exportContext: ExportContext
     orderBy: StixCoreObjectsOrdering
@@ -12703,7 +12704,7 @@ type Mutation {
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12712,7 +12713,7 @@ type Mutation {
     format: String!
     exportType: String!
     contentMaxMarkings: [String],
-    fileMarkings: [String]
+    fileMarkings: [String]!
     search: String
     exportContext: ExportContext
     relationship_type: [String]

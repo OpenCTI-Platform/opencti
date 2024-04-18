@@ -50,7 +50,7 @@ export const StixDomainObjectsExportCreationMutation = graphql`
     $format: String!
     $exportType: String!
     $contentMaxMarkings: [String]
-    $fileMarkings: [String]
+    $fileMarkings: [String]!
     $exportContext: ExportContext
     $search: String
     $orderBy: StixDomainObjectsOrdering

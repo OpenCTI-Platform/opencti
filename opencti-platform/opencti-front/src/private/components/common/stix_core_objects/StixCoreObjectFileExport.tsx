@@ -47,8 +47,8 @@ const stixCoreObjectFileExportQuery = graphql`
 const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
   format: Yup.string().trim().required(t('This field is required')),
   type: Yup.string().required(t('This field is required')),
-  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')),
-  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
 });
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
@@ -60,8 +60,8 @@ interface StixCoreObjectFileExportComponentProps {
 interface FormValues {
   format: string;
   type: string;
-  contentMaxMarkingDefinitions: Option[];
-  fileMarkingDefinitions: Option[];
+  contentMaxMarkings: Option[];
+  fileMarkings: Option[];
 }
 
 const StixCoreObjectFileExportComponent = ({
@@ -84,16 +84,16 @@ const StixCoreObjectFileExportComponent = ({
     values: FormValues,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<FormValues>,
   ) => {
-    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value); // rename to contentMaxMarkings
-    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value); // rename to fileMarkingDefinitions
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitExport({
       variables: {
         id,
         input: {
           format: values.format,
           exportType: values.type,
-          contentMaxMarkings: contentMaxMarkingDefinitions,
-          fileMarkings: fileMarkingDefinitions,
+          contentMaxMarkings,
+          fileMarkings,
         },
       },
       onError: (error) => {
@@ -166,8 +166,8 @@ const StixCoreObjectFileExportComponent = ({
         initialValues={{
           format: formatValue,
           type: 'full',
-          contentMaxMarkingDefinitions: [], // rename to contentMaxMarkings
-          fileMarkingDefinitions: [], // rename to fileMarkings
+          contentMaxMarkings: [],
+          fileMarkings: [],
         }}
         validationSchema={exportValidation(t_i18n)}
         onSubmit={onSubmitExport}
@@ -229,12 +229,12 @@ const StixCoreObjectFileExportComponent = ({
                           </MenuItem>
                         </Field>
                         <ObjectMarkingField
-                          name="contentMaxMarkingDefinitions"
+                          name="contentMaxMarkings"
                           label={t_i18n('Content max marking definition levels')}
                           style={fieldSpacingContainerStyle}
                         />
                         <ObjectMarkingField
-                          name="fileMarkingDefinitions"
+                          name="fileMarkings"
                           label={t_i18n('File marking definition levels')}
                           style={fieldSpacingContainerStyle}
                         />
