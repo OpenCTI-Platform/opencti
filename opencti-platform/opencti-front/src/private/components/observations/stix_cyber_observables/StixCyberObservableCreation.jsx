@@ -262,6 +262,8 @@ const StixCyberObservableCreation = ({
       }
 
       console.log("adaptedValues.hashes_SHA-256 " + adaptedValues['hashes_SHA-256']);
+      console.log("adaptedValues.hashes_SHA-256 value " + adaptedValues['hashes_SHA-256'].value());
+      console.log("adaptedValues.hashes_SHA-256 valueList " + adaptedValues['hashes_SHA-256'].valueList());
       // Potential dicts
       if (
         adaptedValues.hashes_MD5
@@ -491,37 +493,47 @@ const StixCyberObservableCreation = ({
       if (hashes_MD5_field != null && hashes_MD5_field.value != null
         && hashes_MD5_field.value.length > 0 && hashes_MD5_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_MD5_field');
-        props.setValue('bulk_value_field', hashes_MD5_field.value.trim());
+        console.log('hashes_MD5');
+        props.setValue('hashes_MD5', hashes_MD5_field.value.trim());
       }
       if (hashes_SHA1_field != null && hashes_SHA1_field.value != null
         && hashes_SHA1_field.value.length > 0 && hashes_SHA1_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA1_field');
-        props.setValue('bulk_value_field', hashes_SHA1_field.value.trim());
+        console.log('hashes_SHA-1');
+        props.setValue('hashes_SHA-1', hashes_SHA1_field.value.trim());
       }
       if (hashes_SHA256_field != null && hashes_SHA256_field.value != null
         && hashes_SHA256_field.value.length > 0 && hashes_SHA256_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA256_field');
-        props.setValue('bulk_value_field', hashes_SHA256_field.value.trim());
+        console.log('hashes_SHA-256');
+        props.setValue('hashes_SHA-256', hashes_SHA256_field.value.trim());
       }
       if (hashes_SHA512_field != null && hashes_SHA512_field.value != null
         && hashes_SHA512_field.value.length > 0 && hashes_SHA512_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA512_field');
-        props.setValue('bulk_value_field', hashes_SHA512_field.value.trim());
+        console.log('hashes_SHA-512');
+        props.setValue('hashes_SHA-512', hashes_SHA512_field.value.trim());
       }
       setOpenBulkAddDialog(true);
     };
+
     const handleCloseBulkAddDialog = () => {
       setOpenBulkAddDialog(false);
-      const bulk_value_field = document.getElementById('bulk_value_field');
-      if (bulk_value_field != null && bulk_value_field.value != null && bulk_value_field.value.length > 0) {
-        props.setValue('hashes', bulkAddMsg);
+      const bulk_hashes_field = document.getElementById('bulk_hashes_field');
+
+      if (bulk_hashes_field != null && bulk_hashes_field.value != null && bulk_hashes_field.value.length > 0) {
+        props.setValue('hashes_MD5', bulkAddMsg);
+        props.setValue('hashes_SHA-1', bulkAddMsg);
+        props.setValue('hashes_SHA-256', bulkAddMsg);
+        props.setValue('hashes_SHA-512', bulkAddMsg);
+        props.setValue('name', bulkAddMsg);
         setKeyFieldDisabled(true);
       } else {
-        props.setValue('hashes', '');
+        props.setValue('hashes_MD5', '');
+        props.setValue('hashes_SHA-1', '');
+        props.setValue('hashes_SHA-256', '');
+        props.setValue('hashes_SHA-512', '');
+        props.setValue('name', '');
         setKeyFieldDisabled(false);
       }
     };
@@ -570,10 +582,10 @@ const StixCyberObservableCreation = ({
             </Typography>
             <Field
               component={TextField}
-              id="bulk_value_field"
+              id="bulk_hashes_field"
               variant="standard"
-              key="bulk_value_field"
-              name="bulk_value_field"
+              key="bulk_hashes_field"
+              name="bulk_hashes_field"
               fullWidth={true}
               multiline={true}
               rows="5"
@@ -594,7 +606,6 @@ const StixCyberObservableCreation = ({
   };
 
   function BulkAddModal(props) {
-    console.log('inside bulkAddModal');
     const [openBulkModal, setOpenBulkModal] = React.useState(false);
     const handleOpenBulkModal = () => {
       const generic_value_field = document.getElementById('generic_value_field');
@@ -824,6 +835,7 @@ const StixCyberObservableCreation = ({
                           );
                         }
                         if (isVocabularyField(status.type, attribute.value)) {
+                          console.log("attribute.value: " + attribute.value);
                           return (
                             <OpenVocabField
                               key={attribute.value}
