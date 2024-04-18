@@ -35,6 +35,7 @@ jobs:
         run: |
           cd opencti-platform/opencti-front
           yarn install
+          yarn playwright install
           yarn build
           yarn lint
           yarn check-ts
