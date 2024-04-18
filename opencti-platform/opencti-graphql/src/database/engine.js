@@ -1860,7 +1860,9 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
       const subQuery = await buildSubQueryForFilterGroup(context, user, group);
-      localMustFilters.push(subQuery);
+      if (subQuery) { // can be null
+        localMustFilters.push(subQuery);
+      }
     }
   }
   // Handle filters
@@ -2596,6 +2598,7 @@ export const elCount = async (context, user, indexName, options = {}) => {
 export const elHistogramCount = async (context, user, indexName, options = {}) => {
   const { interval, field, types = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
+  body.size = 0; // we only need aggregations
   let dateFormat;
   switch (interval) {
     case 'year':
