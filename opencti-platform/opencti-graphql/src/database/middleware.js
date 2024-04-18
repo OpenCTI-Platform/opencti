@@ -933,7 +933,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     }
     finalVal = [patchedInstance[key]];
   } else {
-    const evaluateValue = value ? R.head(value) : null;
+    // now we  check if the new value would actually result in no change in database
+    let evaluateValue = value ? R.head(value) : null;
+    // string values will be trimmed before indexing ; we should not update attribute if the value once trimmed is identical.
+    if (typeof evaluateValue === 'string') {
+      evaluateValue = evaluateValue.trim();
+    }
     if (isDateAttribute(key)) {
       if (isEmptyField(evaluateValue)) {
         if (instance[key] === FROM_START_STR || instance[key] === UNTIL_END_STR) {
