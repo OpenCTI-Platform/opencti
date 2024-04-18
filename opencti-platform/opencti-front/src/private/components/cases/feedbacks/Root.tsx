@@ -4,7 +4,7 @@
 // @ts-nocheck
 import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
@@ -43,6 +43,7 @@ const feedbackQuery = graphql`
     feedback(id: $id) {
       id
       name
+      entity_type
       currentUserAccessRight
       authorized_members {
         id
