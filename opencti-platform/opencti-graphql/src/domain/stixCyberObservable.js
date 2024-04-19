@@ -41,6 +41,7 @@ import { now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -153,6 +154,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
 
 export const promoteObservableToIndicator = async (context, user, observableId) => {
   const observable = await storeLoadByIdWithRefs(context, user, observableId);
+  controlUserConfidenceAgainstElement(user, observable);
   const objectLabel = (observable[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const objectOrganization = (observable[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);

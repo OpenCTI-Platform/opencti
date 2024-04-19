@@ -2770,7 +2770,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
 
   // region confidence control
   const input = structuredClone(rawInput);
-  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, relationshipType);
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 
@@ -3156,7 +3156,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // region confidence control
   const input = { ...rawInput };
-  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input);
+  const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
   // region - Pre-Check

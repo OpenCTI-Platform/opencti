@@ -3356,12 +3356,12 @@ export type Cluster = {
 
 export type ConfidenceLevel = {
   __typename?: 'ConfidenceLevel';
-  max_confidence: Scalars['Int']['output'];
+  max_confidence?: Maybe<Scalars['Int']['output']>;
   overrides: Array<ConfidenceLevelOverride>;
 };
 
 export type ConfidenceLevelInput = {
-  max_confidence: Scalars['Int']['input'];
+  max_confidence?: InputMaybe<Scalars['Int']['input']>;
   overrides: Array<ConfidenceLevelOverrideInput>;
 };
 
@@ -6001,6 +6001,7 @@ export type EditUserContext = {
 export type EffectiveConfidenceLevel = {
   __typename?: 'EffectiveConfidenceLevel';
   max_confidence: Scalars['Int']['output'];
+  overrides: Array<ConfidenceLevelOverride>;
   source?: Maybe<EffectiveConfidenceLevelSource>;
 };
 
@@ -30894,7 +30895,7 @@ export type ClusterResolvers<ContextType = any, ParentType extends ResolversPare
 }>;
 
 export type ConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevel'] = ResolversParentTypes['ConfidenceLevel']> = ResolversObject<{
-  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -31837,6 +31838,7 @@ export type EditUserContextResolvers<ContextType = any, ParentType extends Resol
 
 export type EffectiveConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevel'] = ResolversParentTypes['EffectiveConfidenceLevel']> = ResolversObject<{
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

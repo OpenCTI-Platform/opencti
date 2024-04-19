@@ -307,7 +307,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       upsert: false,
       isFilterable: false,
       mappings: [
-        { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
+        { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
         { name: 'overrides',
           label: 'Overrides',
           type: 'object',

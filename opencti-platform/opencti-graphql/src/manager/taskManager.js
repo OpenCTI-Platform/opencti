@@ -34,7 +34,7 @@ import {
 import { now } from '../utils/format';
 import { EVENT_TYPE_CREATE, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { elPaginate, elUpdate, ES_MAX_CONCURRENCY } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError, ValidationError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError, ValidationError } from '../config/errors';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -70,6 +70,8 @@ const ACTION_ON_CONTAINER_FIELD = 'container-object';
 const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
 const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
+
+const MAX_TASK_ERRORS = 100;
 
 let running = false;
 
@@ -171,12 +173,12 @@ const appendTaskErrors = async (task, errors) => {
   if (errors.length === 0) {
     return;
   }
-  let source = '';
-  const params = { received_time: now() };
-  for (let index = 0; index < errors.length; index += 1) {
-    const error = errors[index];
-    source += `ctx._source.errors.add(["timestamp": params.received_time, "id": "${error.id}", "message": "${error.message}"]); `;
-  }
+  const params = { errors: errors.map((err) => ({
+    timestamp: now(),
+    id: err.id,
+    message: err.message,
+  })) };
+  const source = `if (ctx._source.errors.length < ${MAX_TASK_ERRORS}) { ctx._source.errors.addAll(params.errors); }`;
   await elUpdate(task._index, task.id, { script: { source, lang: 'painless', params } });
 };
 
@@ -381,7 +383,10 @@ const executeProcessing = async (context, user, job) => {
           const operations = { [INPUT_OBJECTS]: type.toLowerCase() }; // add, remove, replace
           await patchAttribute(context, user, value, ENTITY_TYPE_CONTAINER, patch, { operations });
         } catch (err) {
-          errors.push({ id: value, message: err.message, reason: err.reason });
+          logApp.error(err);
+          if (errors.length < MAX_TASK_ERRORS) {
+            errors.push({ id: value, message: err.message, reason: err.reason });
+          }
         }
       }
     } else { // Classic action, need to be apply on each element
@@ -425,13 +430,13 @@ const executeProcessing = async (context, user, job) => {
             await executeUnshare(context, user, actionContext, element);
           }
         } catch (err) {
-          errors.push({ id: element.id, message: `${err.message} - ${err.data?.reason ?? err.reason ?? 'no reason provided'}` });
+          logApp.error(err);
+          if (errors.length < MAX_TASK_ERRORS) {
+            errors.push({ id: element.id, message: `${err.message}${err.data?.reason ? ` - ${err.reason}` : ''}` });
+          }
         }
       }
     }
-  }
-  if (errors.length > 0) {
-    logApp.error(UnknownError('Tasks execution failure', { executions: errors }));
   }
   return errors;
 };
