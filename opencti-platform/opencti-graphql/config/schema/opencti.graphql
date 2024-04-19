@@ -12828,7 +12828,7 @@ Credential: CredentialAddInput
     format: String!
     exportType: String!
     exportContext: ExportContext
-    maxMarkingDefinition: [String]
+    contentMaxMarkings: [String]
     fileMarkings: [String]!
     search: String
     orderBy: StixCyberObservablesOrdering
@@ -12855,7 +12855,7 @@ Credential: CredentialAddInput
   stixCoreRelationshipsExportAsk(
     format: String!
     exportType: String!
-    maxMarkingDefinition: [String]
+    contentMaxMarkings: [String]
     fileMarkings: [String]!
     exportContext: ExportContext
     search: String

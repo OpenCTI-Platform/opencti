@@ -14138,6 +14138,7 @@ export type MutationStixCoreRelationshipEditArgs = {
 
 
 export type MutationStixCoreRelationshipsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
@@ -14148,7 +14149,6 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromRole?: InputMaybe<Scalars['String']['input']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  maxMarkingDefinition?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -14222,12 +14222,12 @@ export type MutationStixCyberObservableEditArgs = {
 
 
 export type MutationStixCyberObservablesExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
   fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;

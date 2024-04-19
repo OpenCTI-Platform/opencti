@@ -2,6 +2,8 @@ import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, entityType, id, internalId, standardId } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
+import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
+import { objectMarking } from '../../../schema/stixRefRelationship';
 
 const attributes: Array<AttributeDefinition> = [
   id,
@@ -87,3 +89,5 @@ const attributes: Array<AttributeDefinition> = [
 ];
 
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);
+
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTERNAL_FILE, [objectMarking]);

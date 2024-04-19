@@ -53,7 +53,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
     $format: String!
     $exportType: String!
-    $maxMarkingDefinition: [String]
+    $contentMaxMarkings: [String]
     $fileMarkings: [String]!
     $exportContext: ExportContext
     $search: String
@@ -74,7 +74,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
     stixCoreRelationshipsExportAsk(
       format: $format
       exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
+      contentMaxMarkings: $contentMaxMarkings
       fileMarkings: $fileMarkings
       exportContext: $exportContext
       search: $search
@@ -99,7 +99,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
 
 const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().required(t_i18n('This field is required')),
-  maxMarkingDefinition: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
   fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
@@ -133,15 +133,16 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, availableFilterKeys, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition.map(({ value }) => value);
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const finalFilters = paginationOptions.filters ?? emptyFilterGroup;
+
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
         format: values.format,
         exportType: 'full',
-        maxMarkingDefinition,
+        contentMaxMarkings,
         fileMarkings,
         exportContext,
         ...paginationOptions,
@@ -199,7 +200,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       enableReinitialize={true}
                       initialValues={{
                         format: '',
-                        maxMarkingDefinition: [],
+                        contentMaxMarkings: [],
                         fileMarkings: [],
                       }}
                       validationSchema={exportValidation(t)}
@@ -244,7 +245,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         ))}
                                       </Field>
                                       <ObjectMarkingField
-                                        name="maxMarkingDefinition"
+                                        name="contentMaxMarkings"
                                         label={t('Content max marking definition levels')}
                                         style={fieldSpacingContainerStyle}
                                       />

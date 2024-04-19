@@ -110,8 +110,8 @@ export const scopesConn = (exportConnectors) => {
 const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().trim().required(t_i18n('This field is required')),
   type: Yup.string().trim().required(t_i18n('This field is required')),
-  contentMaxMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
-  fileMarkingDefinitions: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 const importValidation = (t_i18n, configurations) => {
@@ -182,8 +182,9 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
-    const contentMaxMarkingDefinitions = values.contentMaxMarkingDefinitions.map(({ value }) => value);
-    const fileMarkingDefinitions = values.fileMarkingDefinitions.map(({ value }) => value);
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
     commitMutation({
       mutation: stixCoreObjectFilesAndHistoryExportMutation,
       variables: {
@@ -191,8 +192,8 @@ const StixCoreObjectFilesAndHistory = ({
         input: {
           format: values.format,
           exportType: values.type,
-          contentMaxMarkings: contentMaxMarkingDefinitions,
-          fileMarkings: fileMarkingDefinitions,
+          contentMaxMarkings,
+          fileMarkings,
         },
       },
       updater: (store) => {
@@ -201,8 +202,8 @@ const StixCoreObjectFilesAndHistory = ({
           input: {
             format: values.format,
             exportType: values.type,
-            contentMaxMarkings: contentMaxMarkingDefinitions,
-            fileMarkings: fileMarkingDefinitions,
+            contentMaxMarkings,
+            fileMarkings,
           },
         });
         const entityPage = store.get(id);
@@ -370,8 +371,8 @@ const StixCoreObjectFilesAndHistory = ({
           initialValues={{
             format: '',
             type: 'full',
-            contentMaxMarkingDefinitions: [],
-            fileMarkingDefinitions: [],
+            contentMaxMarkings: [],
+            fileMarkings: [],
           }}
           validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
@@ -422,12 +423,12 @@ const StixCoreObjectFilesAndHistory = ({
                     </MenuItem>
                   </Field>
                   <ObjectMarkingField
-                    name="contentMaxMarkingDefinitions"
+                    name="contentMaxMarkings"
                     label={t_i18n('Content max marking definition levels')}
                     style={fieldSpacingContainerStyle}
                   />
                   <ObjectMarkingField
-                    name="fileMarkingDefinitions"
+                    name="fileMarkings"
                     label={t_i18n('File marking definition levels')}
                     style={fieldSpacingContainerStyle}
                   />

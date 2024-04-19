@@ -51,7 +51,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
   mutation StixCyberObservablesExportCreationMutation(
     $format: String!
     $exportType: String!
-    $maxMarkingDefinition: [String],
+    $contentMaxMarkings: [String],
     $fileMarkings: [String]!,
     $exportContext: ExportContext
     $search: String
@@ -63,7 +63,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
     stixCyberObservablesExportAsk(
       format: $format
       exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
+      contentMaxMarkings: $contentMaxMarkings
       fileMarkings: $fileMarkings
       exportContext: $exportContext
       search: $search
@@ -80,7 +80,7 @@ export const StixCyberObservablesExportCreationMutation = graphql`
 const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().required(t_i18n('This field is required')),
   type: Yup.string().trim().required(t_i18n('This field is required')),
-  maxMarkingDefinition: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
   fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
@@ -116,7 +116,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition.map(({ value }) => value);
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
     commitMutation({
@@ -125,7 +125,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
         format: values.format,
         exportType: values.type,
         fileMarkings,
-        maxMarkingDefinition,
+        contentMaxMarkings,
         exportContext,
         ...paginationOptions,
         selectedIds,
@@ -177,7 +177,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 initialValues={{
                   format: '',
                   type: 'simple',
-                  maxMarkingDefinition: [],
+                  contentMaxMarkings: [],
                   fileMarkings: [],
                 }}
                 validationSchema={exportValidation(t)}
@@ -239,7 +239,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   </MenuItem>
                                 </Field>
                                 <ObjectMarkingField
-                                  name="maxMarkingDefinition"
+                                  name="contentMaxMarkings"
                                   label={t('Content max marking definition levels')}
                                   style={fieldSpacingContainerStyle}
                                 />
