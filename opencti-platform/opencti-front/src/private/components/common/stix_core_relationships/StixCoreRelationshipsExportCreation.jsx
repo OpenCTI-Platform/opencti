@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
-import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
