@@ -11,6 +11,9 @@ import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import nconf from 'nconf';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 100000; // record telemetry data period
@@ -21,17 +24,34 @@ const createFiligranTelemetryMeterManager = () => {
   let resource = Resource.default();
   const filigranMetricReaders = [];
   if (ENABLED_TELEMETRY) {
-    // Console exporter
+    // -- Resource
     const filigranResource = new Resource({
       [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
     });
     resource = resource.merge(filigranResource);
-    const filigranMetricReader = new PeriodicExportingMetricReader({
+    // -- Readers with exporter
+    // Console Exporter
+    const readerWithConsoleExporter = new PeriodicExportingMetricReader({
       exporter: new ConsoleMetricExporter(),
       exportIntervalMillis: EXPORT_INTERVAL,
     });
-    filigranMetricReaders.push(filigranMetricReader);
+    filigranMetricReaders.push(readerWithConsoleExporter);
+    // OTLP Exporter
+    const otlpUri = nconf.get('app:telemetry:filigran:exporter_otlp');
+    if (isNotEmptyField(otlpUri)) {
+      const readerWithOtlpExporter = new PeriodicExportingMetricReader({
+        exporter: new OTLPMetricExporter({ url: otlpUri }),
+        exportIntervalMillis: EXPORT_INTERVAL,
+      });
+      filigranMetricReaders.push(readerWithOtlpExporter);
+    }
+    // Exporter Prometheus
+    const exporterPrometheus = nconf.get('app:telemetry:filigran:exporter_prometheus');
+    if (isNotEmptyField(exporterPrometheus)) {
+      const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
+      filigranMetricReaders.push(prometheusExporter);
+    }
   }
   const filigranMeterProvider = new MeterProvider(({
     resource,
