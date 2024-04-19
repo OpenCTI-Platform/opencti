@@ -34,6 +34,7 @@ const DateTimePickerField = (props) => {
   } = props;
   const intl = useIntl();
   const [field, meta] = useField(name);
+
   const internalOnAccept = React.useCallback(
     (date) => {
       setFieldTouched(name, true);
@@ -43,6 +44,7 @@ const DateTimePickerField = (props) => {
     },
     [setFieldTouched, onSubmit, name],
   );
+
   const internalOnChange = React.useCallback(
     (date) => {
       setFieldValue(name, date ?? null);
@@ -52,11 +54,13 @@ const DateTimePickerField = (props) => {
     },
     [setFieldValue, onChange, name],
   );
+
   const internalOnFocus = React.useCallback(() => {
     if (typeof onFocus === 'function' && name) {
       onFocus(name);
     }
   }, [onFocus, name]);
+
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
     const { value } = field;
@@ -64,32 +68,15 @@ const DateTimePickerField = (props) => {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
   }, [setFieldTouched, onSubmit, name, field]);
+
+  const views = ['year', 'month', 'day', 'hours', 'minutes'];
   if (withSeconds) {
-    return (
-      <DateTimePicker
-        {...fieldToDateTimePicker(props)}
-        variant="inline"
-        disableToolbar={false}
-        autoOk={true}
-        allowKeyboardControl={true}
-        onAccept={internalOnAccept}
-        onChange={internalOnChange}
-        views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-        format={
-          dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
-        }
-        slotProps={{
-          textField: {
-            ...textFieldProps,
-            onFocus: internalOnFocus,
-            onBlur: internalOnBlur,
-            error: !R.isNil(meta.error),
-            helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
-          },
-        }}
-      />
-    );
+    views.push('seconds');
   }
+
+  const formatNoSeconds = dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a';
+  const formatWithSeconds = dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a';
+
   return (
     <DateTimePicker
       {...fieldToDateTimePicker(props)}
@@ -99,8 +86,8 @@ const DateTimePickerField = (props) => {
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
-      views={['year', 'month', 'day', 'hours', 'minutes']}
-      format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
+      views={views}
+      format={withSeconds ? formatWithSeconds : formatNoSeconds}
       slotProps={{
         textField: {
           ...textFieldProps,
