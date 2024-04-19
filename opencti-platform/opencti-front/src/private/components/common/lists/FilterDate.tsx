@@ -1,5 +1,5 @@
 import React, { FunctionComponent, KeyboardEvent } from 'react';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
@@ -61,11 +61,14 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
       }
     }
   };
+
+  const filterDate = findFilterFromKey(inputValues, filterKey, operator)?.values[0];
+
   return (
     <DatePicker
       key={filterKey}
       label={filterLabel}
-      value={findFilterFromKey(inputValues, filterKey, operator)?.values[0] || null}
+      value={filterDate ? new Date(filterDate) : null}
       onChange={(value) => handleChangeDate(value as Date)}
       onAccept={(value) => handleAcceptDate(value as Date)}
       slotProps={{

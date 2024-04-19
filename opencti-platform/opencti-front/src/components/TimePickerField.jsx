@@ -1,5 +1,5 @@
 import React from 'react';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { TimePicker } from '@mui/x-date-pickers';
 import { fieldToTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';

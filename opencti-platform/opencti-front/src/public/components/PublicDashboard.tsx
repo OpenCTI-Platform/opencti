@@ -57,10 +57,6 @@ const PublicDashboardComponent = ({
     auditWidget,
   } = usePublicDashboardWidgets(uriKey, config);
 
-  const onChangeRelativeDate = () => {};
-  const onChangeStartDate = () => {};
-  const onChangeEndDate = () => {};
-
   if (!publicDashboardByUriKey || !config) {
     return null;
   }
@@ -71,9 +67,6 @@ const PublicDashboardComponent = ({
       <PublicDashboardHeader
         title={publicDashboardByUriKey?.name ?? ''}
         manifestConfig={config}
-        onChangeRelativeDate={onChangeRelativeDate}
-        onChangeStartDate={onChangeStartDate}
-        onChangeEndDate={onChangeEndDate}
       />
 
       <ReactGridLayout

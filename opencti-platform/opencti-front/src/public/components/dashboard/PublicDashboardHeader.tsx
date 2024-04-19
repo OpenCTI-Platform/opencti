@@ -4,24 +4,18 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DatePicker } from '@mui/x-date-pickers';
 import { useFormatter } from '../../../components/i18n';
 import type { PublicManifestConfig } from './PublicManifest';
 
 interface PublicDashboardHeaderProps {
   title: string
   manifestConfig: PublicManifestConfig
-  onChangeRelativeDate: (value: string) => void
-  onChangeStartDate: (value: string | null) => void
-  onChangeEndDate: (value: string | null) => void
 }
 
 const PublicDashboardHeader = ({
   title,
   manifestConfig,
-  onChangeRelativeDate,
-  onChangeStartDate,
-  onChangeEndDate,
 }: PublicDashboardHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { relativeDate, startDate, endDate } = manifestConfig;
@@ -54,7 +48,6 @@ const PublicDashboardHeader = ({
           labelId="relative"
           label={t_i18n('Relative time')}
           value={relativeDate ?? ''}
-          onChange={(event) => onChangeRelativeDate(event.target.value)}
           variant="outlined"
           disabled
         >
@@ -69,11 +62,10 @@ const PublicDashboardHeader = ({
       </FormControl>
       <DatePicker
         disabled
-        value={startDate ?? null}
+        value={startDate ? new Date(startDate) : null}
         label={t_i18n('Start date')}
         sx={{ width: 220 }}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeStartDate(value)}
         slotProps={{
           field: {
             clearable: true,
@@ -89,10 +81,9 @@ const PublicDashboardHeader = ({
       />
       <DatePicker
         disabled
-        value={endDate ?? null}
+        value={endDate ? new Date(endDate) : null}
         label={t_i18n('End date')}
         disableFuture
-        onChange={(value, context) => !context.validationError && onChangeEndDate(value)}
         sx={{ width: 220 }}
         slotProps={{
           field: {
