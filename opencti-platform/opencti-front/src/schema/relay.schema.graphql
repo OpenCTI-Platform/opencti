@@ -1169,6 +1169,7 @@ type Settings implements InternalObject & BasicObject {
   entity_type: String!
   parent_types: [String!]!
   platform_organization: Organization
+  platform_data_sharing_max_markings: [MarkingDefinition!]
   platform_title: String
   platform_favicon: String
   platform_email: String
@@ -11328,6 +11329,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   updated_at: DateTime
   editContext: [EditUserContext!]
   authorized_members: [MemberAccess!]
+  enabled: Boolean!
 }
 
 type PublicDistribution {
@@ -11356,9 +11358,11 @@ type PublicDashboardEdge {
 
 input PublicDashboardAddInput {
   name: String!
+  uri_key: String!
   description: String
   dashboard_id: String!
   allowed_markings_ids: [String!]
+  enabled: Boolean!
 }
 
 enum Tone {

@@ -28,11 +28,13 @@ interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   dateAttribute: string
+  publicWidget?: boolean
 }
 
 const WidgetListCoreObjects = ({
   data,
   dateAttribute,
+  publicWidget = false,
 }: WidgetListCoreObjectsProps) => {
   const { fsd } = useFormatter();
 
@@ -52,14 +54,23 @@ const WidgetListCoreObjects = ({
           const stixCoreObject = stixCoreObjectEdge.node;
           const date = stixCoreObject[dateAttribute];
 
+          const link = publicWidget ? null : `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+          let linkProps = {};
+          if (link) {
+            linkProps = {
+              component: Link,
+              to: link,
+            };
+          }
+
           return (
             <ListItem
               key={stixCoreObject.id}
               className="noDrag"
               divider={true}
+              disableRipple={publicWidget}
               button={true}
-              component={Link}
-              to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
+              {...linkProps}
               sx={{
                 paddingLeft: '10px',
                 height: 50,

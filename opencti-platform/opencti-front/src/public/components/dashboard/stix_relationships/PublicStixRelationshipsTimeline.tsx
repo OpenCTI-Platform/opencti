@@ -1,6 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
-import { resolveLink } from '../../../../utils/Entity';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
@@ -980,19 +979,11 @@ const PublicStixRelationshipsTimelineComponent = ({
         : stixRelationship.from;
       if (!remoteNode) return [];
 
-      const restricted = stixRelationship.from === null
-        || stixRelationship.to === null;
-      const link = restricted
-        ? undefined
-        : `${resolveLink(remoteNode.entity_type)}/${
-          remoteNode.id
-        }/knowledge/relations/${stixRelationship.id}`;
       return {
         value: {
           ...remoteNode,
           created: stixRelationship.created,
         },
-        link,
       };
     });
     return <WidgetTimeline data={data} />;

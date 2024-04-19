@@ -6,12 +6,15 @@ import Button from '@mui/material/Button';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
+import SwitchField from '../../../components/SwitchField';
 
 export interface WorkspaceShareFormData {
   name: string;
+  enabled: boolean;
   uri_key: string;
   max_markings: Option[];
 }
@@ -25,6 +28,8 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
 
   const formValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
+    uri_key: Yup.string(),
+    enabled: Yup.boolean(),
     max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
   });
 
@@ -34,6 +39,7 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
       validationSchema={formValidation}
       initialValues={{
         name: '',
+        enabled: true,
         uri_key: '',
         max_markings: [],
       }}
@@ -47,14 +53,17 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             variant="standard"
             label={t_i18n('Name')}
             style={{ width: '100%' }}
+            onChange={(_: string, val: string) => {
+              setFieldValue('uri_key', val.replace(/[^a-zA-Z0-9 ]+/g, '').replace(/\s+/g, '-'));
+            }}
           />
           <Field
             disabled
             name="uri_key"
             component={TextField}
             variant="standard"
-            label={t_i18n('Public dashboard ID')}
-            helperText={t_i18n('Specify the ID of your public dashboard')}
+            label={t_i18n('Public dashboard URI KEY')}
+            helperText={t_i18n('ID of your public dashboard')}
             style={fieldSpacingContainerStyle}
             InputProps={{
               startAdornment: (
@@ -64,6 +73,14 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
               ),
             }}
           />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="enabled"
+            label={t_i18n('Enabled')}
+            containerstyle={fieldSpacingContainerStyle}
+            helpertext={t_i18n('Disabled dashboard...')}
+          />
           <ObjectMarkingField
             name='max_markings'
             label={t_i18n('Max level markings')}
@@ -71,7 +88,11 @@ const WorkspaceShareForm = ({ onSubmit }: WorkspaceShareFormProps) => {
             style={fieldSpacingContainerStyle}
             onChange={() => {}}
             setFieldValue={setFieldValue}
+            limitToMaxSharing
           />
+          <Alert severity="info" variant="outlined" style={{ marginTop: '10px' }}>
+            {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
+          </Alert>
 
           <div
             style={{

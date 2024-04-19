@@ -32,7 +32,7 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
   if (isEmptyDynamic) {
     return [];
   }
-  return distributionRelations(context, context.user, dynamicArgs);
+  return distributionRelations(context, user, dynamicArgs);
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], authorId } = args;

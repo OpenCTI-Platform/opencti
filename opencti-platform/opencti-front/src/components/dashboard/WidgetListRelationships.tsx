@@ -28,11 +28,13 @@ interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   dateAttribute: string
+  publicWidget?: boolean
 }
 
 const WidgetListRelationships = ({
   data,
   dateAttribute,
+  publicWidget = false,
 }: WidgetListRelationshipsProps) => {
   const theme = useTheme<Theme>();
   const { fsd, t_i18n } = useFormatter();
@@ -55,7 +57,7 @@ const WidgetListRelationships = ({
             ? stixRelationship.from
             : stixRelationship.to;
           let link = null;
-          if (remoteNode) {
+          if (!publicWidget && remoteNode) {
             link = computeLink(remoteNode);
           }
           let linkProps = {};
@@ -72,6 +74,7 @@ const WidgetListRelationships = ({
               dense={true}
               className="noDrag"
               divider={true}
+              disableRipple={publicWidget}
               {...linkProps}
               style={{
                 height: 50,

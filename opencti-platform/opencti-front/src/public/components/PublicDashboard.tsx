@@ -17,6 +17,7 @@ const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
     publicDashboardByUriKey(uri_key: $uri_key) {
       name
+      enabled
       public_manifest
     }
   }
@@ -43,12 +44,17 @@ const PublicDashboardComponent = ({
     if (publicDashboardByUriKey === null) {
       navigate('/');
     }
+    const enabled = publicDashboardByUriKey?.enabled;
+    if (!enabled) {
+      navigate('/');
+    }
   }, [publicDashboardByUriKey]);
 
   const {
     entityWidget,
     relationshipWidget,
     rawWidget,
+    auditWidget,
   } = usePublicDashboardWidgets(uriKey, config);
 
   const onChangeRelativeDate = () => {};
@@ -101,6 +107,7 @@ const PublicDashboardComponent = ({
             >
               {widget.perspective === 'entities' && entityWidget(widget)}
               {widget.perspective === 'relationships' && relationshipWidget(widget)}
+              {widget.perspective === 'audits' && auditWidget(widget)}
               {widget.perspective === null && rawWidget(widget)}
             </ErrorBoundary>
           </Paper>

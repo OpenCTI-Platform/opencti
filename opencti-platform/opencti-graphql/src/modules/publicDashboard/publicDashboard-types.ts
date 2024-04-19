@@ -9,6 +9,7 @@ export const ENTITY_TYPE_PUBLIC_DASHBOARD = 'PublicDashboard';
 // region Database types
 export interface BasicStoreEntityPublicDashboard extends BasicStoreEntity {
   name: string;
+  enabled: boolean;
   description: string;
   dashboard_id: string;
   user_id: string;
@@ -22,6 +23,7 @@ export interface BasicStoreEntityPublicDashboard extends BasicStoreEntity {
 
 export interface StoreEntityPublicDashboard extends StoreEntity {
   name: string;
+  enabled: boolean;
   description: string;
   dashboard_id: string;
   user_id: string;
@@ -74,6 +76,7 @@ export interface PublicDashboardCachedWidget {
 
 export interface PublicDashboardCached {
   id: string;
+  enabled: boolean;
   internal_id: string;
   uri_key: string;
   dashboard_id: string;
@@ -94,6 +97,7 @@ export interface PublicDashboardCached {
 // region Stix type
 export interface StixPublicDashboard extends StixDomainObject {
   name: string;
+  enabled: boolean;
   description: string;
   dashboard_id: string;
   user_id: string;

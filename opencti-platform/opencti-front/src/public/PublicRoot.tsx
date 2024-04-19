@@ -12,6 +12,7 @@ import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graph
 import PublicDataSharing from './components/PublicDataSharing';
 import PublicDashboard from './components/PublicDashboard';
 import PublicSettingsProvider from './PublicSettingsProvider';
+import Message from '../components/Message';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -28,8 +29,9 @@ const PublicRoot = () => {
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
-          <CssBaseline />
           <ConnectedIntlProvider settings={settings}>
+            <CssBaseline />
+            <Message />
             <Routes>
               <Route path="/" Component={boundaryWrapper(PublicDataSharing)} />
               <Route path="/dashboard/:uriKey/*" Component={boundaryWrapper(PublicDashboard)} />

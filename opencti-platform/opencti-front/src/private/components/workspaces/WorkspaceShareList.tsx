@@ -9,10 +9,15 @@ import Tooltip from '@mui/material/Tooltip';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useTheme } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
+import DoneIcon from '@mui/icons-material/Done';
+import { ReportGmailerrorred } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { copyToClipboard } from '../../../utils/utils';
 import ItemMarkings from '../../../components/ItemMarkings';
+import ItemBoolean from '../../../components/ItemBoolean';
+import useAuth from '../../../utils/hooks/useAuth';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {
@@ -21,6 +26,7 @@ export const workspaceShareListQuery = graphql`
         node {
           id
           uri_key
+          enabled
           name
           user_id
           created_at
@@ -28,7 +34,9 @@ export const workspaceShareListQuery = graphql`
           allowed_markings {
             id
             definition
+            definition_type
             x_opencti_color
+            x_opencti_order
           }
         }
       }
@@ -39,11 +47,16 @@ export const workspaceShareListQuery = graphql`
 interface WorkspaceShareListProps {
   queryRef: PreloadedQuery<WorkspaceShareListQuery>
   onDelete: (id: string) => void
+  onToggleEnabled: (id: string, enabled: boolean) => void
 }
 
-const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => {
+const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceShareListProps) => {
+  const { settings } = useAuth();
+  const { platform_data_sharing_max_markings } = settings;
+
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
+
   const { publicDashboards } = usePreloadedQuery(workspaceShareListQuery, queryRef);
   const dashboards = publicDashboards?.edges
     .map((edge) => edge.node)
@@ -60,80 +73,119 @@ const WorkspaceShareList = ({ queryRef, onDelete }: WorkspaceShareListProps) => 
     return <p>{t_i18n('No public dashboard created yet')}</p>;
   }
 
+  const filterMaxMarkings = (dashboard: typeof dashboards[0]) => {
+    const { allowed_markings } = dashboard;
+    return (platform_data_sharing_max_markings ?? []).filter((maxMarking) => {
+      const marking = (allowed_markings ?? []).find((m) => m.definition_type === maxMarking.definition_type);
+      return marking && marking.x_opencti_order > maxMarking.x_opencti_order;
+    });
+  };
+
   return (
     <div style={{ marginTop: '12px', display: 'flex', gap: '12px', flexDirection: 'column' }}>
-      {dashboards.map((dashboard) => (
-        <Paper
-          key={dashboard.uri_key}
-          variant="outlined"
-          sx={{ padding: '12px' }}
-        >
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'start',
-            marginBottom: '8px',
-          }}
+      {dashboards.map((dashboard) => {
+        const maxMarkings = filterMaxMarkings(dashboard);
+        return (
+          <Paper
+            key={dashboard.uri_key}
+            variant="outlined"
+            sx={{ padding: '12px' }}
           >
-            <div>
-              <Typography variant="body1">
-                {dashboard.name}
-              </Typography>
-              <Typography variant="body2">
-                public/dashboard/{dashboard.uri_key}
-              </Typography>
-            </div>
-
-            <ToggleButtonGroup size="small">
-              <Tooltip title={t_i18n('Copy link')}>
-                <ToggleButton
-                  aria-label="Label"
-                  size="small"
-                  value="copy-link"
-                  onClick={() => copyLinkUrl(dashboard.uri_key)}
-                >
-                  <ContentCopyIcon fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
-              {/* <Tooltip title={t_i18n('Disable public dashboard')}> */}
-              {/*  <ToggleButton */}
-              {/*    aria-label="Label" */}
-              {/*    size="small" */}
-              {/*    value="disable-link" */}
-              {/*  > */}
-              {/*    <DoNotDisturbAltIcon fontSize="small" color="primary" /> */}
-              {/*  </ToggleButton> */}
-              {/* </Tooltip> */}
-              <Tooltip title={t_i18n('Delete public dashboard')}>
-                <ToggleButton
-                  aria-label="Label"
-                  size="small"
-                  value="delete-link"
-                  onClick={() => onDelete(dashboard.id)}
-                >
-                  <DeleteIcon fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
-            </ToggleButtonGroup>
-          </div>
-
-          <div
-            style={{
+            <div style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'end',
+              alignItems: 'start',
+              marginBottom: '8px',
             }}
-          >
-            <ItemMarkings
-              variant="inList"
-              markingDefinitions={dashboard.allowed_markings ?? []}
-            />
-            <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
-              {t_i18n('Link created')} {fld(dashboard.created_at)}
-            </Typography>
-          </div>
-        </Paper>
-      ))}
+            >
+              <div>
+                <Typography variant="body1">
+                  {dashboard.name}
+                </Typography>
+                <Typography variant="body2">
+                  public/dashboard/{dashboard.uri_key}
+                </Typography>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <ItemBoolean
+                  status={dashboard.enabled}
+                  label={dashboard.enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+                />
+
+                <ToggleButtonGroup size="small">
+                  <Tooltip title={t_i18n('Copy link')}>
+                    <ToggleButton
+                      aria-label="Label"
+                      size="small"
+                      value="copy-link"
+                      onClick={() => copyLinkUrl(dashboard.uri_key)}
+                    >
+                      <ContentCopyIcon fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                  <Tooltip title={dashboard.enabled ? t_i18n('Disable public dashboard') : t_i18n('Enable public dashboard')}>
+                    <ToggleButton
+                      aria-label="Label"
+                      size="small"
+                      value="disable-link"
+                      onClick={() => onToggleEnabled(dashboard.id, !dashboard.enabled)}
+                    >
+                      {dashboard.enabled && <DoNotDisturbAltIcon fontSize="small" color="primary" />}
+                      {!dashboard.enabled && <DoneIcon fontSize="small" color="primary" />}
+                    </ToggleButton>
+                  </Tooltip>
+                  <Tooltip title={t_i18n('Delete public dashboard')}>
+                    <ToggleButton
+                      aria-label="Label"
+                      size="small"
+                      value="delete-link"
+                      onClick={() => onDelete(dashboard.id)}
+                    >
+                      <DeleteIcon fontSize="small" color="primary" />
+                    </ToggleButton>
+                  </Tooltip>
+                </ToggleButtonGroup>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'end',
+              }}
+            >
+              <div>
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitions={dashboard.allowed_markings ?? []}
+                />
+                {maxMarkings.length > 0 && (
+                  <Tooltip
+                    title={(
+                      <div style={{ display: 'flex', flexFlow: 'column', padding: '4px', gap: '4px' }}>
+                        <div>{t_i18n('Max marking definitions override...')}</div>
+                        <div>
+                          <ItemMarkings
+                            variant="inList"
+                            markingDefinitions={maxMarkings}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  >
+                    <ReportGmailerrorred fontSize={'small'} color={'error'} />
+                  </Tooltip>
+                )}
+              </div>
+              <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
+                {t_i18n('Public dashboard created the')} {fld(dashboard.created_at)}
+              </Typography>
+            </div>
+          </Paper>
+        );
+      })}
     </div>
   );
 };

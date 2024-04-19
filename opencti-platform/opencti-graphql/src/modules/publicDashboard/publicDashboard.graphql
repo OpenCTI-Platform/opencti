@@ -17,6 +17,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   updated_at: DateTime @auth(for: [KNOWLEDGE, EXPLORE])
   editContext: [EditUserContext!]  @auth(for: [KNOWLEDGE, EXPLORE])
   authorized_members: [MemberAccess!]  @auth(for: [KNOWLEDGE, EXPLORE])
+  enabled: Boolean!
 }
 
 type PublicDistribution {
@@ -114,9 +115,11 @@ type PublicDashboardEdge {
 # Mutation
 input PublicDashboardAddInput {
   name: String!
+  uri_key: String!
   description: String
   dashboard_id: String!
   allowed_markings_ids: [String!]
+  enabled: Boolean!
 }
 
 type Mutation {

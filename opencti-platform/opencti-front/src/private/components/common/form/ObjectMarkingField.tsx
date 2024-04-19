@@ -58,6 +58,7 @@ interface ObjectMarkingFieldProps {
   disabled?: boolean;
   label?: string;
   setFieldValue?: (name: string, values: Option[]) => void;
+  limitToMaxSharing?: boolean
 }
 
 interface OptionValues {
@@ -73,6 +74,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   disabled,
   label,
   setFieldValue,
+  limitToMaxSharing = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -81,8 +83,15 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
 
-  const { me } = useAuth();
-  const allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
+  const { me, settings } = useAuth();
+  let allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
+  if (limitToMaxSharing) {
+    const { platform_data_sharing_max_markings } = settings;
+    allowedMarkingDefinitions = allowedMarkingDefinitions.filter((def) => {
+      const maxMarking = platform_data_sharing_max_markings?.find((marking) => marking.definition_type === def.definition_type);
+      return !!maxMarking && maxMarking.x_opencti_order >= def.x_opencti_order;
+    });
+  }
 
   const optionSorted = allowedMarkingDefinitions.sort((a, b) => {
     if (a.definition_type === b.definition_type) {

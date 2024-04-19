@@ -37,7 +37,7 @@ function sortAllJSONFiles(dirPath) {
       const filePath = path.join(dirPath, file);
       
       // Skip if not a JSON file or if it's en.json
-      if (!file.endsWith('.json') || file === 'en.json') {
+      if (!file.endsWith('.json')) {
         return;
       }
       
