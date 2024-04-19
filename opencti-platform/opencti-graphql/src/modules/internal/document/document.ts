@@ -89,5 +89,3 @@ const attributes: Array<AttributeDefinition> = [
 ];
 
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);
-
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTERNAL_FILE, [objectMarking]);

@@ -99,7 +99,7 @@ export const askListExport = async (context, user, exportContext, format, select
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity_type}${entity ? `/${entity.id}` : ''}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
