@@ -35,6 +35,7 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'yarn'
+          cache-dependency-path: ./opencti-platform/opencti-front/yarn.lock
 
       - name: Setup Python
         # This is the version of the action for setting up Python, not the Python version.
