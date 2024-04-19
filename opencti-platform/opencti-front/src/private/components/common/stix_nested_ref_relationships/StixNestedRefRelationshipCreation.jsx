@@ -133,7 +133,7 @@ const styles = (theme) => ({
   },
 });
 
-const stixNestedRefRelationshipCreationResolveQuery = graphql`
+export const stixNestedRefRelationshipCreationResolveQuery = graphql`
   query StixNestedRefRelationshipCreationResolveQuery($id: String!, $toType: String!) {
     stixSchemaRefRelationships(id: $id, toType: $toType) {
       from
@@ -370,7 +370,7 @@ class StixNestedRefRelationshipCreation extends Component {
     this.props.handleClose();
   }
 
-  renderForm(resolveEntityRef) {
+  renderForm(resolveEntityRef, canReverseRelation) {
     const {
       t,
       classes,
@@ -472,14 +472,14 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
                   <br />
-                  <Button
+                  {canReverseRelation && <Button
                     variant="outlined"
                     onClick={this.handleReverseRelation.bind(this)}
                     color="secondary"
                     size="small"
-                  >
+                                         >
                     {t('Reverse')}
-                  </Button>
+                  </Button>}
                 </div>
                 <div
                   className={classes.item}
@@ -859,9 +859,13 @@ class StixNestedRefRelationshipCreation extends Component {
           }}
           render={({ props }) => {
             if (props && props.stixSchemaRefRelationships) {
+              if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
+                this.handleReverseRelation();
+                return this.renderLoader();
+              }
               return (
                 <div>
-                  {this.renderForm(props.stixSchemaRefRelationships)}
+                  {this.renderForm(props.stixSchemaRefRelationships, props.stixSchemaRefRelationships.to.length > 0)}
                 </div>
               );
             }

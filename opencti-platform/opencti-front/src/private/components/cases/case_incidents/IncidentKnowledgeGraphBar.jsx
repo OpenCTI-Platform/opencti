@@ -15,7 +15,6 @@ import {
   FilterListOutlined,
   GestureOutlined,
   LinkOutlined,
-  ReadMoreOutlined,
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
@@ -42,6 +41,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -97,6 +97,7 @@ class IncidentKnowledgeGraphBar extends Component {
       relationReversed: false,
       sightingReversed: false,
       nestedReversed: false,
+      nestedRelationExist: false,
       openEditRelation: false,
       openEditSighting: false,
       openEditNested: false,
@@ -210,6 +211,10 @@ class IncidentKnowledgeGraphBar extends Component {
 
   handleReverseNested() {
     this.setState({ nestedReversed: !this.state.nestedReversed });
+  }
+
+  handleSetNestedRelationExist(val) {
+    this.setState({ nestedRelationExist: val });
   }
 
   handleOpenEditItem() {
@@ -978,18 +983,15 @@ class IncidentKnowledgeGraphBar extends Component {
                       />
                     )}
                     {onAddRelation && (
-                      <Tooltip title={t('Create a nested relationship')}>
-                        <span>
-                          <IconButton
-                            color="primary"
-                            onClick={this.handleOpenCreateNested.bind(this)}
-                            disabled={!nestedEnabled}
-                            size="large"
-                          >
-                            <ReadMoreOutlined />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      <StixNestedRefRelationshipCreationFromKnowledgeGraph
+                        nestedRelationExist={this.state.nestedRelationExist}
+                        openCreateNested={this.state.openCreateNested}
+                        nestedEnabled={nestedEnabled}
+                        relationFromObjects={relationFromObjects}
+                        relationToObjects={relationToObjects}
+                        handleSetNestedRelationExist={this.handleSetNestedRelationExist.bind(this)}
+                        handleOpenCreateNested={this.handleOpenCreateNested.bind(this)}
+                      />
                     )}
                     {onAddRelation && (
                       <StixNestedRefRelationshipCreation
