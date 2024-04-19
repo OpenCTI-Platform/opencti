@@ -28,7 +28,7 @@ jobs:
         with:
           branch: v3.18
           packages: >
-            git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
+            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
       - name: Setup NodeJS and cache dependencies
         uses: actions/setup-node@v4
