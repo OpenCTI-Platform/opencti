@@ -1,34 +1,27 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import UserConfidenceLevelField from '@components/settings/users/UserConfidenceLevelField';
+import React, { FunctionComponent } from 'react';
+import UserConfidenceLevelField from '@components/settings/users/edition/UserConfidenceLevelField';
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
-import { Field, FieldArray, Form, Formik, useFormikContext } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { useMutation } from 'react-relay';
-import { userEditionOverviewFocus, userMutationFieldPatch } from '@components/settings/users/UserEditionOverview';
-import UserConfidenceOverridesField from '@components/settings/users/UserConfidenceOverridesField';
-import { Option } from '@components/common/form/ReferenceField';
-import { FormikHelpers } from 'formik/dist/types';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { userMutationFieldPatch } from '@components/settings/users/edition/UserEditionOverview';
+import UserConfidenceOverrideField, { OverrideState } from '@components/settings/users/edition/UserConfidenceOverrideField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { useFormatter } from '../../../../../components/i18n';
+import { isNotEmptyField } from '../../../../../utils/utils';
 
 export interface Override {
   max_confidence: number;
   entity_type: string;
 }
 
-interface ConfidenceFormData {
+export interface ConfidenceFormData {
   user_confidence_level_enabled: boolean;
   user_confidence_level: number | null | undefined;
   overrides: Override[]
-}
-
-export interface AvailableEntityOption extends Option {
-  type: string;
-  id: string;
 }
 
 interface UserEditionConfidenceProps {
@@ -41,52 +34,30 @@ interface UserEditionConfidenceProps {
   | null | undefined;
 }
 
-const userConfidenceValidation = (t: (value: string) => string) => Yup.object().shape({
-  user_confidence_level_enabled: Yup.boolean(),
-  user_confidence_level: Yup.number()
+const userConfidenceValidation = (t: (value: string) => string) => {
+  const maxConfidenceValidator = Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'))
     .when('user_confidence_level_enabled', {
       is: true,
       then: (schema) => schema.required(t('This field is required')).nullable(),
       otherwise: (schema) => schema.nullable(),
-    }),
-});
+    });
+
+  return Yup.object().shape({
+    user_confidence_level_enabled: Yup.boolean(),
+    user_confidence_level: maxConfidenceValidator,
+    overrides: Yup.array().of(
+      Yup.object().shape({
+        entity_type: Yup.string(),
+        max_confidence: maxConfidenceValidator,
+      }),
+    ),
+  });
+};
 
 const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ user, context }) => {
   const { t_i18n } = useFormatter();
-  const { schema } = useAuth();
-
-  const [availableEntityTypes, setAvailableEntityTypes] = useState<
-  AvailableEntityOption[]
-  >([]);
-
-  // load the available types once in state
-  // TODO: Create a hook to call EntityTypes (useEntityTypes remix)
-  useEffect(() => {
-    const { sdos, scos, smos } = schema;
-    const entityTypes = sdos
-      .map((sdo) => ({
-        ...sdo,
-        value: sdo.id,
-        type: 'entity_Stix-Domain-Objects',
-      }))
-      .concat(
-        scos.map((sco) => ({
-          ...sco,
-          value: sco.id,
-          type: 'entity_Stix-Cyber-Observables',
-        })),
-      )
-      .concat(
-        smos.map((smo) => ({
-          ...smo,
-          value: smo.id,
-          type: 'entity_Stix-Meta-Objects',
-        })),
-      );
-    setAvailableEntityTypes(entityTypes);
-  }, [schema]);
 
   const initialValues: ConfidenceFormData = {
     user_confidence_level_enabled: !!user.user_confidence_level,
@@ -94,35 +65,14 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
     overrides: [...user.user_confidence_level?.overrides ?? []],
   };
 
-  const onAddOverrideEntity = (
-    setFieldValue: FormikHelpers<ConfidenceFormData>['setFieldValue'],
-    values: ConfidenceFormData,
-  ) => {
-    setFieldValue('overrides', [...values.overrides, { entity_type: '', max_confidence: 0 }]);
-  };
-
-  const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
 
-  const handleChangeFocus = (name: string) => {
-    commitFocus({
-      variables: {
-        id: user.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  };
-
-  const handleSubmitField = (name: string, value: string | null) => {
+  const handleSubmitMaxConfidence = (name: string, value: string | null) => {
     userConfidenceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
-        console.log('name', name, 'value', value)
-        // specific case for user confidence level: to update an object we have several use-cases
         if (name === 'user_confidence_level') {
-          if (user.user_confidence_level && value) {
+          if (user.user_confidence_level && isNotEmptyField(value)) {
             // We edit an existing value inside the object: use object_path
             commitFieldPatch({
               variables: {
@@ -162,17 +112,46 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
               },
             });
           }
-        } else {
-          // simple case for all flat attributes
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: { key: name, value: value || '' },
-            },
-          });
         }
       })
       .catch(() => false);
+  };
+
+  const handleSubmitOverride = (index: number, value: OverrideState | null) => {
+    const name = `overrides[${index}]`;
+    console.log('name', name, 'value', value, typeof value);
+    if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
+      userConfidenceValidation(t_i18n)
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitFieldPatch({
+            variables: {
+              id: user.id,
+              input: {
+                key: 'user_confidence_level',
+                object_path: `/user_confidence_level/overrides/${index}`,
+                value: [{
+                  entity_type: value.entity_type,
+                  max_confidence: parseInt(value.max_confidence ?? '0', 10),
+                }],
+              },
+            },
+          });
+        })
+        .catch(() => false);
+    } else {
+      commitFieldPatch({
+        variables: {
+          id: user.id,
+          input: {
+            key: 'user_confidence_level',
+            operation: 'remove',
+            object_path: `/user_confidence_level/overrides/${index}`,
+            value: [null],
+          },
+        },
+      });
+    }
   };
 
   return (
@@ -182,18 +161,16 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
         initialValues={initialValues}
         onSubmit={() => {}}
       >
-        {({ values, setFieldValue }) => (
+        {({ values }) => (
           <Form>
             <UserConfidenceLevelField
               name="user_confidence_level"
               label={t_i18n('Max Confidence Level')}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
+              onSubmit={handleSubmitMaxConfidence}
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               user={user}
             />
-
             <FieldArray
               name="overrides"
               render={(arrayHelpers) => (
@@ -204,24 +181,22 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                   <IconButton
                     color="primary"
                     aria-label="Add"
-                    onClick={() => onAddOverrideEntity(setFieldValue, values)}
+                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: 0 })}
                     style={{ marginTop: '5px' }}
                     size="large"
                   >
                     <Add fontSize="small" />
                   </IconButton>
-
                   {values.overrides.map((_, idx) => (
-
                     <Field
+                      // Field props
                       key={idx}
-                      component={UserConfidenceOverridesField}
-                      name={`overrides[${idx}]`}
                       index={idx}
-                      availableTypes={availableEntityTypes}
-                      prefixLabel="entity_"
+                      name={`overrides[${idx}]`}
+                      // rendered components and its props
+                      component={UserConfidenceOverrideField}
                       onDelete={() => arrayHelpers.remove(idx)}
-                      onSubmit={handleSubmitField}
+                      onSubmit={handleSubmitOverride}
                     />
                   ))}
                 </div>

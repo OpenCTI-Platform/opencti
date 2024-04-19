@@ -10,16 +10,16 @@ import Button from '@mui/material/Button';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import { FieldProps } from 'formik';
-import { Option } from '@components/common/form/ReferenceField';
-import { AvailableEntityOption, Override } from '@components/settings/users/UserEditionConfidence';
+import { FieldProps, useFormikContext } from 'formik';
+import { ConfidenceFormData, Override } from '@components/settings/users/edition/UserEditionConfidence';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import { useFormatter } from '../../../../components/i18n';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import ItemIcon from '../../../../components/ItemIcon';
-import type { Theme } from '../../../../components/Theme';
-import { isEmptyField } from '../../../../utils/utils';
+import { useFormatter } from '../../../../../components/i18n';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import ItemIcon from '../../../../../components/ItemIcon';
+import type { Theme } from '../../../../../components/Theme';
+import { isEmptyField } from '../../../../../utils/utils';
+import useSchema, { AvailableEntityOption } from '../../../../../utils/hooks/useSchema';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -38,36 +38,55 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+export interface OverrideState {
+  entity_type: string | null;
+  max_confidence: string | null;
+}
+
 interface UserConfidenceOverridesFieldComponentProps
   extends FieldProps {
   index: number;
-  availableTypes: { value: string; type: string; id: string; label: string }[];
   onDelete: () => void;
-  prefixLabel: string;
-  handleSubmit: () => void;
+  onSubmit: (index: number, value: OverrideState | null) => void;
 }
 
-const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
+const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
   index,
-  field,
   onDelete,
-  availableTypes,
-  prefixLabel,
-  handleSubmit,
+  onSubmit,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-
-  const { name, value } = field;
-
+  const { availableEntityTypes } = useSchema();
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
+  const { values, setFieldValue } = useFormikContext<ConfidenceFormData>();
+  const value = values.overrides[index];
 
+  const handleDeleteOverride = (event: MouseEvent) => {
+    event.stopPropagation(); // to avoid open/close the accordion
+    handleOpenDelete();
+  };
 
-  const deleteLine = async () => {
-    onDelete();
+  const handleSubmitDelete = async () => {
+    onDelete(); // will remove from Formik values
+    onSubmit(index, null);
     setDeleting(false);
     handleCloseDelete();
+  };
+
+  const [state, setState] = useState<OverrideState>(value);
+
+  const handleSubmitEntityType = async (newValue: AvailableEntityOption | null) => {
+    await setFieldValue(`overrides[${index}].entity_type`, newValue?.value);
+    setState((s) => ({ ...s, entity_type: newValue?.value }));
+    onSubmit(index, newValue === null ? null : { entity_type: newValue.value, max_confidence: state.max_confidence ?? '0' });
+  };
+
+  const handleSubmitConfidence = async (name: string, newValue: string) => {
+    await setFieldValue(`overrides[${index}].max_confidence`, newValue);
+    setState((s) => ({ ...s, max_confidence: newValue }));
+    onSubmit(index, { entity_type: state.entity_type, max_confidence: newValue });
   };
 
   // -- ACCORDION --
@@ -84,9 +103,9 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
   const searchType = (event: React.SyntheticEvent) => {
     const selectChangeEvent = event as SelectChangeEvent;
     const val = selectChangeEvent?.target.value ?? '';
-    return availableTypes.filter(
+    return availableEntityTypes.filter(
       (type) => type.value.includes(val)
-        || t_i18n(`${prefixLabel}${type.label}`).includes(val),
+        || t_i18n(`entity_${type.label}`).includes(val),
     );
   };
 
@@ -98,7 +117,7 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
     if (isEmptyField(override.entity_type)) {
       return `${number} ${t_i18n('New override of an entity')}`;
     }
-    const label = `${t_i18n(`${override.entity_type}`)}`;
+    const label = `${t_i18n(`entity_${override.entity_type}`)}`;
     return `${number} ${label[0].toUpperCase()}${label.slice(1)}`;
   };
 
@@ -115,7 +134,7 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
               {overrideLabel(index, value)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleOpenDelete}>
+              <IconButton color="error" onClick={handleDeleteOverride}>
                 <DeleteOutlined fontSize="small"/>
               </IconButton>
             </Tooltip>
@@ -127,13 +146,13 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
               selectOnFocus
               openOnFocus
               autoHighlight
-              getOptionLabel={(option) => t_i18n(`${prefixLabel}${option.label}`)}
+              getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
-              options={availableTypes}
+              options={availableEntityTypes}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
-              value={availableTypes.find((e) => e.id === value.entity_type) || null}
+              value={availableEntityTypes.find((e) => e.id === value.entity_type) || null}
               onInputChange={(event) => searchType(event)}
-              onChange={handleSubmit}
+              onChange={(_, selectedValue) => handleSubmitEntityType(selectedValue)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -148,18 +167,17 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
                     <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
-                    {t_i18n(`${prefixLabel}${option.label}`)}
+                    {t_i18n(`entity_${option.label}`)}
                   </div>
                 </li>
               )}
             />
             {value.entity_type && (
               <ConfidenceField
-                name={`${name}.max_confidence`}
+                name={`overrides[${index}].max_confidence`}
                 entityType={value.entity_type}
                 variant="edit"
-                onFocus={() => console.log('onFocus')}
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmitConfidence}
               />
             )}
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
@@ -177,10 +195,10 @@ const UserConfidenceOverridesField: FunctionComponent<UserConfidenceOverridesFie
       <DeleteDialog
         title={t_i18n('Do you want to delete this line?')}
         deletion={deletion}
-        submitDelete={deleteLine}
+        submitDelete={handleSubmitDelete}
       />
     </>
   );
 };
 
-export default UserConfidenceOverridesField;
+export default UserConfidenceOverrideField;
