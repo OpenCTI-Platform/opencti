@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
@@ -15,6 +15,7 @@ import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHi
 import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -65,7 +66,7 @@ const EntitySettingSettings = ({
     return <ErrorNotFound />;
   }
 
-  const [commit] = useMutation(entitySettingPatch);
+  const [commit] = useApiMutation(entitySettingPatch);
 
   const handleSubmitField = (name: string, value: boolean) => {
     commit({

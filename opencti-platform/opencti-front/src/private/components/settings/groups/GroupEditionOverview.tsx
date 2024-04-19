@@ -1,6 +1,6 @@
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
@@ -17,6 +17,7 @@ import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -82,7 +83,7 @@ interface GroupEditionOverviewComponentProps {
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const [commitFieldPatch] = useMutation(groupMutationFieldPatch);
+  const [commitFieldPatch] = useApiMutation(groupMutationFieldPatch);
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),

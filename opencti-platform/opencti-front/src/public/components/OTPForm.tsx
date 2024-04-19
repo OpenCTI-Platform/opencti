@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
+import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,8 +41,8 @@ const OTPForm = () => {
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
-  const [commitLogoutMutation] = useMutation(logoutMutation);
-  const [commitOtpMutation] = useMutation(otpMutation);
+  const [commitLogoutMutation] = useApiMutation(logoutMutation);
+  const [commitOtpMutation] = useApiMutation(otpMutation);
   const handleLogout = () => {
     commitLogoutMutation({
       variables: {},

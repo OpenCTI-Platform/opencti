@@ -7,9 +7,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { now } from '../../../../utils/Time';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const EnterpriseEditionAgreementMutationFieldPatch = graphql`
   mutation EnterpriseEditionAgreementMutation($id: ID!, $input: [EditInput]!) {
@@ -33,7 +34,7 @@ EnterpriseEditionAgreementProps
 > = ({ open, onClose, settingsId }) => {
   const { t_i18n } = useFormatter();
   const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
-  const [commitMutation] = useMutation(
+  const [commitMutation] = useApiMutation(
     EnterpriseEditionAgreementMutationFieldPatch,
   );
   const enableEnterpriseEdition = () => {

@@ -23,7 +23,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { Field, Form, Formik } from 'formik';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { useMutation } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
@@ -35,6 +34,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,7 +78,7 @@ FileIndexingConfigurationProps
     max_file_size: manager_setting?.max_file_size,
     entity_types: manager_setting?.entity_types,
   };
-  const [commitManagerSetting] = useMutation(
+  const [commitManagerSetting] = useApiMutation(
     fileIndexingConfigurationFieldPatch,
   );
   const onSubmitForm: FormikConfig<FileIndexingConfigurationFormValues>['onSubmit'] = (values, { setSubmitting, setErrors }) => {

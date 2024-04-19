@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
@@ -25,6 +25,7 @@ import type { Theme } from '../../../../components/Theme';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,7 +91,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     user_id: Yup.object().nullable(),
   });
 
-  const [commit] = useMutation(ingestionCsvCreationMutation);
+  const [commit] = useApiMutation(ingestionCsvCreationMutation);
   const onSubmit: FormikConfig<IngestionCsvCreationForm>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },

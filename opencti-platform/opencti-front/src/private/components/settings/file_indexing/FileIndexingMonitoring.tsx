@@ -20,7 +20,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { ClearOutlined, PauseOutlined, PlayArrowOutlined, SyncDisabledOutlined, SyncOutlined, FolderOutlined, StorageOutlined } from '@mui/icons-material';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
 import { FileIndexingMonitoringQuery } from '@components/settings/file_indexing/__generated__/FileIndexingMonitoringQuery.graphql';
 import { interval } from 'rxjs';
@@ -38,6 +38,7 @@ import type { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -143,7 +144,7 @@ FileIndexingMonitoringComponentProps
   const volumeIndexed = indexedFilesMetrics?.globalSize ?? 0;
   const dataToIndex = filesMetrics?.globalSize ?? 0;
   const metricsByMimeType = filesMetrics?.metricsByMimeType ?? [];
-  const [commitManagerRunning] = useMutation(
+  const [commitManagerRunning] = useApiMutation(
     fileIndexingConfigurationFieldPatch,
   );
   const updateManagerRunning = (running: boolean) => {
@@ -162,7 +163,7 @@ FileIndexingMonitoringComponentProps
       },
     });
   };
-  const [commitManagerReset] = useMutation(fileIndexingResetMutation);
+  const [commitManagerReset] = useApiMutation(fileIndexingResetMutation);
   const resetManager = () => {
     commitManagerReset({
       variables: {},

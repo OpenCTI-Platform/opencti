@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -10,6 +10,7 @@ import { truncate } from '../../../../utils/String';
 import { AddDataSourcesLines_data$key } from './__generated__/AddDataSourcesLines_data.graphql';
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const addDataSourcesLinesMutationAdd = graphql`
   mutation AddDataSourcesLinesAddMutation($id: ID!, $input: [EditInput]!) {
@@ -64,7 +65,7 @@ AddDataSourcesLinesContainerProps
     queryRef,
   });
 
-  const [commit] = useMutation(addDataSourcesLinesMutationAdd);
+  const [commit] = useApiMutation(addDataSourcesLinesMutationAdd);
 
   const addDataSource = (dataSource: {
     readonly description?: string | null;

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
@@ -32,6 +32,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -150,7 +151,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     data.markingDefinitions,
   );
 
-  const [commitField] = useMutation(policiesFieldPatch);
+  const [commitField] = useApiMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const handleSubmitField = (name: string, value: string | string[] | Option) => {

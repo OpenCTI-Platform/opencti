@@ -1,4 +1,4 @@
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
@@ -19,6 +19,7 @@ import { deleteNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
   mutation IngestionCsvPopoverDeletionMutation($id: ID!) {
@@ -77,7 +78,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   // -- Deletion --
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commit] = useMutation(ingestionCsvPopoverDeletionMutation);
+  const [commit] = useApiMutation(ingestionCsvPopoverDeletionMutation);
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
@@ -103,7 +104,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   };
 
   // -- Running --
-  const [commitRunning] = useMutation(ingestionCsvEditionPatch);
+  const [commitRunning] = useApiMutation(ingestionCsvEditionPatch);
   const submitStart = () => {
     setStarting(true);
     commitRunning({

@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -32,6 +32,7 @@ import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -141,7 +142,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     setInstanceTrigger(newInstanceTriggerValue);
   };
 
-  const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(
+  const [commitLive] = useApiMutation<TriggerLiveCreationKnowledgeMutation>(
     triggerLiveKnowledgeCreationMutation,
   );
   const liveInitialValues: TriggerLiveAddInput = {

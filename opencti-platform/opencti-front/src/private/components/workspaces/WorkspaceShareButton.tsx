@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import WorkspaceShareForm, { WorkspaceShareFormData } from '@components/workspaces/WorkspaceShareForm';
 import WorkspaceShareList, { workspaceShareListQuery } from '@components/workspaces/WorkspaceShareList';
 import { WorkspaceShareListQuery } from '@components/workspaces/__generated__/WorkspaceShareListQuery.graphql';
-import { graphql, useMutation, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
+import { graphql, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
@@ -16,6 +16,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
 import { handleError } from '../../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const workspaceShareButtonCreateMutation = graphql`
   mutation WorkspaceShareButtonCreateMutation($input: PublicDashboardAddInput!) {
@@ -53,9 +54,9 @@ const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
   const deletion = useDeletion({});
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [commitCreateMutation] = useMutation(workspaceShareButtonCreateMutation);
-  const [commitDeleteMutation] = useMutation(workspaceShareButtonDeleteMutation);
-  const [commitEditMutation] = useMutation(workspaceShareButtonEditMutation);
+  const [commitCreateMutation] = useApiMutation(workspaceShareButtonCreateMutation);
+  const [commitDeleteMutation] = useApiMutation(workspaceShareButtonDeleteMutation);
+  const [commitEditMutation] = useApiMutation(workspaceShareButtonEditMutation);
 
   const [publicDashboardsQueryRef, fetchList] = useQueryLoader<WorkspaceShareListQuery>(workspaceShareListQuery);
   const fetchWithFilters = (options?: UseQueryLoaderLoadQueryOptions) => {

@@ -1,4 +1,4 @@
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -12,6 +12,7 @@ import { IngestionCsvMapperTestDialogMutation$data } from '@components/data/inge
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const ingestionCsvMapperTestMutation = graphql`
   mutation IngestionCsvMapperTestDialogMutation($input: IngestionCsvAddInput!) {
@@ -48,7 +49,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
 }) => {
   const { t_i18n } = useFormatter();
   const [result, setResult] = useState<IngestionCsvMapperTestDialogMutation$data | undefined>(undefined);
-  const [commitTest] = useMutation(ingestionCsvMapperTestMutation);
+  const [commitTest] = useApiMutation(ingestionCsvMapperTestMutation);
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {

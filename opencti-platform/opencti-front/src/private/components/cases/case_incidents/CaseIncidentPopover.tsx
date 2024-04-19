@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +19,7 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const caseIncidentPopoverDeletionMutation = graphql`
   mutation CaseIncidentPopoverCaseDeletionMutation($id: ID!) {
@@ -31,7 +32,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useMutation(caseIncidentPopoverDeletionMutation);
+  const [commit] = useApiMutation(caseIncidentPopoverDeletionMutation);
   const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
     caseIncidentEditionQuery,
     { id },

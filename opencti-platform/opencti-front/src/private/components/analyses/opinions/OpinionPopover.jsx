@@ -9,7 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -17,6 +17,7 @@ import { opinionEditionQuery } from './OpinionEdition';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OpinionEditionContainer from './OpinionEditionContainer';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -45,7 +46,7 @@ const OpinionPopover = (data) => {
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-  const [commit] = useMutation(OpinionPopoverDeletionMutation);
+  const [commit] = useApiMutation(OpinionPopoverDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
     commit({

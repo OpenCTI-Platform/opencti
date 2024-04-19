@@ -49,7 +49,7 @@ import ReactMde from 'react-mde';
 import SpeedDial from '@mui/material/SpeedDial';
 import { SpeedDialIcon } from '@mui/material';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import WidgetFilters from './WidgetFilters';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Transition from '../../../../components/Transition';
@@ -61,6 +61,7 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -356,7 +357,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     widget?.dataSelection ?? [initialSelection],
   );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
-  const [commitWidgetImportMutation] = useMutation(workspaceImportWidgetMutation);
+  const [commitWidgetImportMutation] = useApiMutation(workspaceImportWidgetMutation);
   const setDataSelectionWithIndex = (data, index) => {
     setDataSelection([...dataSelection.map((d, i) => (i === index ? data : d))]);
   };

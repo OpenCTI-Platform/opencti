@@ -1,7 +1,8 @@
 import React from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import HiddenTypesField from '../hidden_types/HiddenTypesField';
 import { GroupHiddenTypesField_group$key } from './__generated__/GroupHiddenTypesField_group.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const groupHiddenTypesFieldPatch = graphql`
   mutation GroupHiddenTypesFieldPatchMutation(
@@ -29,7 +30,7 @@ const GroupHiddenTypesField = ({
   groupData: GroupHiddenTypesField_group$key
 }) => {
   const group = useFragment<GroupHiddenTypesField_group$key>(groupHiddenTypesFieldFragment, groupData);
-  const [commit] = useMutation(groupHiddenTypesFieldPatch);
+  const [commit] = useApiMutation(groupHiddenTypesFieldPatch);
 
   const handleChange = (newValues: string[]) => {
     commit({

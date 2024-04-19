@@ -1,13 +1,13 @@
 import React from 'react';
-import { useMutation } from 'react-relay';
 import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { countryEditionOverviewFocus } from './CountryEditionOverview';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const CountryEdition = ({ countryId }: { countryId: string }) => {
-  const [commit] = useMutation(countryEditionOverviewFocus);
+  const [commit] = useApiMutation(countryEditionOverviewFocus);
   const handleClose = () => {
     commit({
       variables: {

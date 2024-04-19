@@ -9,7 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
@@ -24,6 +24,7 @@ import TasksEditionContainer, { tasksEditionQuery } from './TasksEditionContaine
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,7 +56,7 @@ const TaskPopover = ({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useMutation(taskPopoverDeletionMutation);
+  const [commit] = useApiMutation(taskPopoverDeletionMutation);
   const queryRef = useQueryLoading<TasksEditionContainerQuery>(
     tasksEditionQuery,
     { id },

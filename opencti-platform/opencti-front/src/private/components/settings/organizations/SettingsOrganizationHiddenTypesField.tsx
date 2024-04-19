@@ -1,7 +1,8 @@
 import React from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import HiddenTypesField from '../hidden_types/HiddenTypesField';
 import { SettingsOrganizationHiddenTypesField_organization$key } from './__generated__/SettingsOrganizationHiddenTypesField_organization.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const settingsOrganizationHiddenTypesFieldPatch = graphql`
   mutation SettingsOrganizationHiddenTypesFieldPatchMutation(
@@ -27,7 +28,7 @@ const SettingsOrganizationHiddenTypesField = ({
   organizationData: SettingsOrganizationHiddenTypesField_organization$key
 }) => {
   const organization = useFragment<SettingsOrganizationHiddenTypesField_organization$key>(settingsOrganizationHiddenTypesFieldFragment, organizationData);
-  const [commit] = useMutation(settingsOrganizationHiddenTypesFieldPatch);
+  const [commit] = useApiMutation(settingsOrganizationHiddenTypesFieldPatch);
 
   const handleChange = (newValues: string[]) => {
     commit({

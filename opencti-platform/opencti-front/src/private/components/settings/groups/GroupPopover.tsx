@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -14,6 +14,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import GroupEdition from './GroupEdition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -54,8 +55,8 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commitCleanContext] = useMutation(groupPopoverCleanContext);
-  const [commitDeleteMutation] = useMutation(groupPopoverDeletionMutation);
+  const [commitCleanContext] = useApiMutation(groupPopoverCleanContext);
+  const [commitDeleteMutation] = useApiMutation(groupPopoverDeletionMutation);
 
   const handleOpen = (event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget);

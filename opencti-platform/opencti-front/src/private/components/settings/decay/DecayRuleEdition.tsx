@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import * as R from 'ramda';
@@ -19,6 +19,7 @@ import SwitchField from '../../../../components/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { handleError } from '../../../../relay/environment';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const decayRuleEditionMutation = graphql`
   mutation DecayRuleEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -51,7 +52,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   onCompleted,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commitUpdate] = useMutation(decayRuleEditionMutation);
+  const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
     decayRuleValidator(t_i18n)

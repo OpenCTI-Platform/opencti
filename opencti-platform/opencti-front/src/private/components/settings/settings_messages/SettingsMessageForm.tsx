@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@mui/styles';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -15,6 +15,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -73,7 +74,7 @@ const SettingsMessageForm = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [commit] = useMutation(settingsMessageEditionPatch);
+  const [commit] = useApiMutation(settingsMessageEditionPatch);
   const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
     values,
     { setSubmitting },

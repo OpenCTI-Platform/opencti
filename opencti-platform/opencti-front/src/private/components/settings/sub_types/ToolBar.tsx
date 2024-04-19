@@ -9,7 +9,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Switch from '@mui/material/Switch';
-import { useMutation } from 'react-relay';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -24,6 +23,7 @@ import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,7 +105,7 @@ const ToolBar: FunctionComponent<{
   const [notAvailableSetting, setNotAvailableSetting] = useState<
   EntitySetting[]
   >([]);
-  const [commit] = useMutation(entitySettingPatch);
+  const [commit] = useApiMutation(entitySettingPatch);
   const handleOpen = () => setDisplay(true);
   const handleClose = () => {
     setDisplay(false);

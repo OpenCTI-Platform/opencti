@@ -5,7 +5,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { v4 as uuid } from 'uuid';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
@@ -26,6 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // region types
 interface TextFieldAskAiProps {
@@ -108,12 +109,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const handleCloseToneOptions = () => setOpenToneOptions(false);
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationFixSpelling] = useMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
-  const [commitMutationMakeShorter] = useMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
-  const [commitMutationMakeLonger] = useMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
-  const [commitMutationChangeTone] = useMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
-  const [commitMutationSummarize] = useMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
-  const [commitMutationExplain] = useMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
+  const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
+  const [commitMutationMakeShorter] = useApiMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
+  const [commitMutationMakeLonger] = useApiMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
+  const [commitMutationChangeTone] = useApiMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
+  const [commitMutationSummarize] = useApiMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
+  const [commitMutationExplain] = useApiMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
   const handleAskAi = (action: string, canBeAccepted = true) => {
     setDisableResponse(true);
     handleCloseMenu();

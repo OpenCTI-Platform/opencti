@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
-import { graphql, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { FormikHelpers } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -27,6 +27,7 @@ import {
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
 import { MESSAGING$ } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -95,12 +96,12 @@ StixCoreObjectOpinionsRadarDialogProps
   };
   const handleClose = () => setOpen(false);
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const [commitCreation] = useMutation(
+  const [commitCreation] = useApiMutation(
     userIsKnowledgeEditor
       ? opinionCreationMutation
       : opinionCreationUserMutation,
   );
-  const [commitEdition] = useMutation(opinionMutationFieldPatch);
+  const [commitEdition] = useApiMutation(opinionMutationFieldPatch);
   const onSubmit = (
     values: OpinionAddInput,
     { setSubmitting, resetForm }: FormikHelpers<OpinionAddInput>,

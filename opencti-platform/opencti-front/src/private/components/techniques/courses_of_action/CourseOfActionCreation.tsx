@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
@@ -30,6 +30,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { CourseOfActionCreationMutation, CourseOfActionCreationMutation$variables } from './__generated__/CourseOfActionCreationMutation.graphql';
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -118,7 +119,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     basicShape,
   );
 
-  const [commit] = useMutation<CourseOfActionCreationMutation>(
+  const [commit] = useApiMutation<CourseOfActionCreationMutation>(
     courseOfActionMutation,
   );
 

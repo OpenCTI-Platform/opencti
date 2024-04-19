@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
@@ -22,6 +22,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
 import { TasksLinesPaginationQuery$variables } from './__generated__/TasksLinesPaginationQuery.graphql';
 import { insertNode } from '../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -89,7 +90,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
-  const [commit] = useMutation<TaskCreationMutation>(taskAddMutation);
+  const [commit] = useApiMutation<TaskCreationMutation>(taskAddMutation);
 
   const initialValues: FormikTaskAddInput = {
     name: '',

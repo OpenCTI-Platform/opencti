@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect } from 'react';
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
@@ -25,6 +25,7 @@ import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_t
 import { alertEditionQuery } from './AlertEditionQuery';
 import { liveActivityTriggerValidation } from './AlertLiveCreation';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertLiveEditionProps {
   handleClose: () => void;
@@ -103,7 +104,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
     data.triggerKnowledge,
   );
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger?.filters ?? undefined) ?? undefined);
-  const [commitFieldPatch] = useMutation(alertLiveEditionFieldPatch);
+  const [commitFieldPatch] = useApiMutation(alertLiveEditionFieldPatch);
   useEffect(() => {
     commitFieldPatch({
       variables: {

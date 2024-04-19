@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
 import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated__/WorkspaceManageAccessDialog_authorizedMembers.graphql';
 import { handleErrorInForm } from '../../../relay/environment';
 import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const workspaceManageAccessDialogEditAuthorizedMembersMutation = graphql`
   mutation WorkspaceManageAccessDialogEditAuthorizedMembersMutation(
@@ -41,7 +42,7 @@ interface WorkspaceManageAccessDialogProps {
 const WorkspaceManageAccessDialog: FunctionComponent<
 WorkspaceManageAccessDialogProps
 > = ({ workspaceId, authorizedMembersData, owner, handleClose, open }) => {
-  const [commit] = useMutation(
+  const [commit] = useApiMutation(
     workspaceManageAccessDialogEditAuthorizedMembersMutation,
   );
   const data = useFragment<WorkspaceManageAccessDialog_authorizedMembers$key>(

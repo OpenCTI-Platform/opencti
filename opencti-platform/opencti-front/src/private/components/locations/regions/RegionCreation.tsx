@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
@@ -24,6 +24,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,7 +91,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     confidence: Yup.number().nullable(),
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
-  const [commit] = useMutation(regionMutation);
+  const [commit] = useApiMutation(regionMutation);
 
   const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (
     values,

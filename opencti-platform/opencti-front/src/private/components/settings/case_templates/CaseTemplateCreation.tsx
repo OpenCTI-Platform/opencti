@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
@@ -15,6 +15,7 @@ import { insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutation.graphql';
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,7 +53,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [commitMutation] = useMutation(caseTemplateMutation);
+  const [commitMutation] = useApiMutation(caseTemplateMutation);
 
   const onSubmit: FormikConfig<CaseTemplateAddInput>['onSubmit'] = (
     values,

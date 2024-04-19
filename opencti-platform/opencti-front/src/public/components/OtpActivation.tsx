@@ -1,7 +1,7 @@
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import qrcode from 'qrcode';
 import { useTheme } from '@mui/material/styles';
 import Loader from '../../components/Loader';
@@ -10,6 +10,7 @@ import { useFormatter } from '../../components/i18n';
 import { OtpActivationQuery$data } from './__generated__/OtpActivationQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
+import useApiMutation from '../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,7 +52,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
-  const [commit] = useMutation(validateOtpPatch);
+  const [commit] = useApiMutation(validateOtpPatch);
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commit({

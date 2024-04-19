@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { pick } from 'ramda';
 import * as Yup from 'yup';
@@ -9,6 +9,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionOverviewFieldPatchMutation(
@@ -54,10 +55,10 @@ ExternalReferenceEditionOverviewComponentProps
 > = ({ externalReference, context }) => {
   const { t_i18n } = useFormatter();
 
-  const [commitMutationExternalReferenceEditionOverviewFocus] = useMutation(
+  const [commitMutationExternalReferenceEditionOverviewFocus] = useApiMutation(
     externalReferenceEditionOverviewFocus,
   );
-  const [commitMutationExternalReferenceMutationFieldPatch] = useMutation(
+  const [commitMutationExternalReferenceMutationFieldPatch] = useApiMutation(
     externalReferenceMutationFieldPatch,
   );
 

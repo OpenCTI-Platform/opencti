@@ -8,17 +8,18 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { TaskTemplateAddInput, CaseTemplateTasksCreationMutation } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
+import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,7 +77,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
   const { t_i18n } = useFormatter();
   const [tasks, setTasks] = useState<Option[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
-  const [commitTaskCreation] = useMutation<CaseTemplateTasksCreationMutation>(
+  const [commitTaskCreation] = useApiMutation<CaseTemplateTasksCreationMutation>(
     CaseTemplateTasksCreation,
   );
   const searchTasks = (event: React.ChangeEvent<HTMLInputElement>) => {

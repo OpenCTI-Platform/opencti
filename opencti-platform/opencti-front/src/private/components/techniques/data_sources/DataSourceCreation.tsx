@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -31,6 +31,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -122,7 +123,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useMutation(dataSourceMutation);
+  const [commit] = useApiMutation(dataSourceMutation);
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,

@@ -3,13 +3,13 @@ import { LockPersonOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
 import { FormikHelpers } from 'formik/dist/types';
-import { useMutation } from 'react-relay';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface FormAuthorizedMembersDialogProps {
   id: string;
@@ -27,7 +27,7 @@ const FormAuthorizedMembersDialog = ({
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const [commit] = useMutation(mutation);
+  const [commit] = useApiMutation(mutation);
   const onSubmit = (
     values: FormAuthorizedMembersInputs,
     {

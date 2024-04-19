@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -20,6 +20,7 @@ import { Option } from '../../form/ReferenceField';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,7 +91,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [commitWorkbench] = useMutation<WorkbenchFileCreatorMutation>(
+  const [commitWorkbench] = useApiMutation<WorkbenchFileCreatorMutation>(
     workbenchFileCreatorMutation,
   );
   const entityId = entity?.id;

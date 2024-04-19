@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -26,6 +26,7 @@ import { AccountBalanceOutlined } from '@mui/icons-material';
 import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../components/i18n';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(
@@ -70,8 +71,8 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
 
-  const [promoteMemberMutation] = useMutation(userEditionOrganizationsAdminAddMutation);
-  const [demoteMemberMutation] = useMutation(userEditionOrganizationsAdminRemoveMutation);
+  const [promoteMemberMutation] = useApiMutation(userEditionOrganizationsAdminAddMutation);
+  const [demoteMemberMutation] = useApiMutation(userEditionOrganizationsAdminRemoveMutation);
 
   const handleToggle = (organizationId, event) => {
     if (event.target.checked) {

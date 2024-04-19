@@ -3,7 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNode } from '../../../../utils/store';
@@ -14,6 +14,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const notifierPopoverDeletionMutation = graphql`
   mutation NotifierPopoverDeletionMutation($id: ID!) {
@@ -26,7 +27,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
   const [queryRef, loadQuery] = useQueryLoader<NotifierEditionQuery>(notifierEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useMutation(notifierPopoverDeletionMutation);
+  const [commit] = useApiMutation(notifierPopoverDeletionMutation);
   //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

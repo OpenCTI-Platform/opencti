@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -14,6 +14,7 @@ import AddDataSources from './AddDataSources';
 import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const dataComponentDataSourcesRemoveMutation = graphql`
   mutation DataComponentDataSourcesRemoveMutation(
@@ -54,7 +55,7 @@ DataComponentDataSourcesProps
 
   const dataSourceId: string | undefined = data.dataSource?.id;
 
-  const [commit] = useMutation(dataComponentDataSourcesRemoveMutation);
+  const [commit] = useApiMutation(dataComponentDataSourcesRemoveMutation);
 
   const removeDataSource = () => {
     commit({

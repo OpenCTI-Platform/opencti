@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -20,6 +20,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import Transition from '../../../../components/Transition';
 import ThreatActorIndividualEditionContainer, { ThreatActorIndividualEditionQuery } from './ThreatActorIndividualEditionContainer';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const ThreatActorIndividualPopoverDeletionMutation = graphql`
   mutation ThreatActorIndividualPopoverDeletionMutation($id: ID!) {
@@ -33,7 +34,7 @@ const ThreatActorIndividualPopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
-  const [commit] = useMutation(ThreatActorIndividualPopoverDeletionMutation);
+  const [commit] = useApiMutation(ThreatActorIndividualPopoverDeletionMutation);
   const queryRef = useQueryLoading<ThreatActorIndividualEditionContainerQuery>(
     ThreatActorIndividualEditionQuery,
     { id },

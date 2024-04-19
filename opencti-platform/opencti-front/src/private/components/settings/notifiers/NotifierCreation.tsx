@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import JsonForm from '@rjsf/mui';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikHelpers } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
@@ -23,6 +23,7 @@ import { uiSchema } from './NotifierUtils';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import notifierValidator from './NotifierValidator';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,7 +91,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     description: '',
     authorized_members: [],
   };
-  const [commit] = useMutation(notifierMutation);
+  const [commit] = useApiMutation(notifierMutation);
   const submitForm = (
     values: NotifierAddInput,
     current: MutableRefObject<CoreForm>['current'] | null,

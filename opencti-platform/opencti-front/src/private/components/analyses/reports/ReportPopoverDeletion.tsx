@@ -1,4 +1,4 @@
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import DialogContent from '@mui/material/DialogContent';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const reportPopoverDeletionQuery = graphql`
   query ReportPopoverDeletionQuery($id: String) {
@@ -52,7 +53,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commitMutation] = useMutation(reportPopoverDeletionMutation);
+  const [commitMutation] = useApiMutation(reportPopoverDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({

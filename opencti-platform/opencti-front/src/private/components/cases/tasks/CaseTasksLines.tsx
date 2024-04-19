@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import React, { FunctionComponent, MutableRefObject, useState } from 'react';
-import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import { GridTypeMap } from '@mui/material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -27,6 +27,7 @@ import { CaseTasksLine } from './CaseTasksLine';
 import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -128,7 +129,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const [commit] = useMutation(caseSetTemplateQuery);
+  const [commit] = useApiMutation(caseSetTemplateQuery);
   const { data } = usePreloadedPaginationFragment<CaseTasksLinesQuery,
   CaseTasksLines_data$key>({
     queryRef,

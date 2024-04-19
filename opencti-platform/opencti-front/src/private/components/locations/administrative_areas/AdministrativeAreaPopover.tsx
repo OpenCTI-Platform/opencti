@@ -8,7 +8,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +19,7 @@ import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const AdministrativeAreaPopoverDeletionMutation = graphql`
   mutation AdministrativeAreaPopoverDeletionMutation($id: ID!) {
@@ -31,7 +32,7 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [commit] = useMutation(AdministrativeAreaPopoverDeletionMutation);
+  const [commit] = useApiMutation(AdministrativeAreaPopoverDeletionMutation);
   const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(
     administrativeAreaEditionQuery,
     { id },

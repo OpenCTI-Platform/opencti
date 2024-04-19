@@ -10,7 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import VocabularyEdition from './VocabularyEdition';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +19,7 @@ import Transition from '../../../../components/Transition';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,7 +82,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
     handleCloseDelete,
     setDeleting,
   } = useDeletion({ handleClose });
-  const [commit] = useMutation(VocabularyPopoverDeletionMutation);
+  const [commit] = useApiMutation(VocabularyPopoverDeletionMutation);
   const submitDelete = () => {
     setDeleting(true);
     commit({

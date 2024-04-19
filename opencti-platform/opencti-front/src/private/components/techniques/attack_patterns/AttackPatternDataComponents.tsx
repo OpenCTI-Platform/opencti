@@ -1,4 +1,4 @@
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -15,13 +15,14 @@ import { AttackPatternDataComponents_attackPattern$data } from './__generated__/
 import AddDataComponents from './AddDataComponents';
 import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLines';
 import { deleteNodeFromEdge } from '../../../../utils/store';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const AttackPatternDataComponentsComponent: FunctionComponent<{
   attackPattern: AttackPatternDataComponents_attackPattern$data;
 }> = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useMutation(addDataComponentsMutationRelationDelete);
+  const [commit] = useApiMutation(addDataComponentsMutationRelationDelete);
 
   const removeDataComponent = (dataComponentId: string) => {
     commit({

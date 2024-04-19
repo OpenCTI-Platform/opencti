@@ -12,7 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
@@ -28,6 +28,7 @@ import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -120,7 +121,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose && handleClose();
-  const [commitDigest] = useMutation(triggerDigestCreationMutation);
+  const [commitDigest] = useApiMutation(triggerDigestCreationMutation);
   const digestInitialValues: TriggerDigestAddInput = {
     name: inputValue || '',
     description: '',

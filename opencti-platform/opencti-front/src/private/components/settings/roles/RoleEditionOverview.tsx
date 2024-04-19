@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
@@ -8,6 +8,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -51,8 +52,8 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
     ['name', 'description'],
     role,
   );
-  const [commitFocus] = useMutation(roleEditionOverviewFocus);
-  const [commitFieldPatch] = useMutation(roleMutationFieldPatch);
+  const [commitFocus] = useApiMutation(roleEditionOverviewFocus);
+  const [commitFieldPatch] = useApiMutation(roleMutationFieldPatch);
   const handleChangeFocus = (name: string) => {
     commitFocus({
       variables: {

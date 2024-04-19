@@ -3,7 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
 import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@components/data/csvMapper/CsvMapperEditionContainer';
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
@@ -13,6 +13,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const csvMapperPopoverDelete = graphql`
   mutation CsvMapperPopoverDeleteMutation($id: ID!) {
@@ -49,7 +50,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
 
   // -- Deletion --
 
-  const [commit] = useMutation(csvMapperPopoverDelete);
+  const [commit] = useApiMutation(csvMapperPopoverDelete);
 
   const deletion = useDeletion({ handleClose });
   const submitDelete = () => {

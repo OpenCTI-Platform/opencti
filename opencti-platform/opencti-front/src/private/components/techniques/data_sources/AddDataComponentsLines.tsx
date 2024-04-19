@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,6 +13,7 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import { AddDataComponentsLinesToDataSource_data$key } from './__generated__/AddDataComponentsLinesToDataSource_data.graphql';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -95,8 +96,8 @@ AddDataComponentsLinesContainerProps
     nodePath: ['dataComponents', 'pageInfo', 'globalCount'],
   });
 
-  const [commitAdd] = useMutation(addDataComponentsMutationRelationAdd);
-  const [commitDelete] = useMutation(addDataComponentsMutationRelationDelete);
+  const [commitAdd] = useApiMutation(addDataComponentsMutationRelationAdd);
+  const [commitDelete] = useApiMutation(addDataComponentsMutationRelationDelete);
 
   const dataComponents = dataSource.dataComponents?.edges;
   const dataComponentsIds = dataComponents?.map(

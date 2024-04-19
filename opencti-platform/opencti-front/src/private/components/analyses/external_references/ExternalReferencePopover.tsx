@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,6 +17,7 @@ import ExternalReferenceEditionContainer from './ExternalReferenceEditionContain
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
 import Transition from '../../../../components/Transition';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const externalReferencePopoverDeletionMutation = graphql`
   mutation ExternalReferencePopoverDeletionMutation($id: ID!) {
@@ -50,7 +51,7 @@ ExternalReferencePopoverProps
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commit] = useMutation(externalReferencePopoverDeletionMutation);
+  const [commit] = useApiMutation(externalReferencePopoverDeletionMutation);
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };

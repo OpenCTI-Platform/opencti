@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -29,6 +29,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,7 +116,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     basicShape,
   );
 
-  const [commit] = useMutation(dataComponentMutation);
+  const [commit] = useApiMutation(dataComponentMutation);
   const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
     values: DataComponentAddInput,
     {

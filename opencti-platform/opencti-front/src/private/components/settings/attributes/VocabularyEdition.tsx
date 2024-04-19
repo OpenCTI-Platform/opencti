@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, useMutation } from 'react-relay';
+import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import { TextField } from 'formik-mui';
@@ -15,6 +15,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import { Option } from '../../common/form/ReferenceField';
 import { RelayError } from '../../../../relay/relayTypes';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -59,7 +60,7 @@ const VocabularyEdition = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
-  const [commitUpdateMutation] = useMutation(vocabularyMutationUpdate);
+  const [commitUpdateMutation] = useApiMutation(vocabularyMutationUpdate);
 
   const onSubmit: FormikConfig<VocabularyEditionFormikValues>['onSubmit'] = (
     values,
