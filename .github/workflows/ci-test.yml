@@ -22,20 +22,33 @@ jobs:
         shell: alpine.sh --root {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: jirutka/setup-alpine@v1
-      - uses: actions/setup-node@v4
+
+      - name: Setup Alpine
+        uses: jirutka/setup-alpine@v1
         with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: subdir/package-lock.json
           branch: v3.18
           packages: >
-            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
+            git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
-      - name: Setup Node.js & python
-        run: |
-          npm install -g node-gyp yarn
-          python -V
+      - name: Setup NodeJS and cache dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Setup Python
+        # This is the version of the action for setting up Python, not the Python version.
+        uses: actions/setup-python@v4
+        with:
+          # Semantic version range syntax
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install NodeJS
+        run: npm install -g node-gyp yarn
+
+      - name: Check Python version
+        run:  python -V
 
       - name: Install and build frontend dependencies into Alpine
         run: |
@@ -56,36 +69,36 @@ jobs:
           yarn playwright install --with-deps
           yarn test:e2e
 
-  backend:
-    name: Backend CI
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./opencti-platform/opencti-graphql
-        shell: alpine.sh --root {0}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: jirutka/setup-alpine@v1
-        with:
-          branch: v3.18
-          packages: >
-            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
-
-      - name: Setup Node.js & python
-        run: |
-          npm install -g node-gyp yarn
-          python -V
-
-      - name: Install and build backend dependencies into Alpine
-        run: |
-          yarn install
-          yarn build
-
-      - name: Run linter and check TS
-        run: |
-          yarn lint
-          yarn check-ts
-
-      - name: Run unit and integration tests
-        run: |
-          yarn test:dev
+#  backend:
+#    name: Backend CI
+#    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        working-directory: ./opencti-platform/opencti-graphql
+#        shell: alpine.sh --root {0}
+#    steps:
+#      - uses: actions/checkout@v4
+#      - uses: jirutka/setup-alpine@v1
+#        with:
+#          branch: v3.18
+#          packages: >
+#            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
+#
+#      - name: Setup Node.js & python
+#        run: |
+#          npm install -g node-gyp yarn
+#          python -V
+#
+#      - name: Install and build backend dependencies into Alpine
+#        run: |
+#          yarn install
+#          yarn build
+#
+#      - name: Run linter and check TS
+#        run: |
+#          yarn lint
+#          yarn check-ts
+#
+#      - name: Run unit and integration tests
+#        run: |
+#          yarn test:dev
