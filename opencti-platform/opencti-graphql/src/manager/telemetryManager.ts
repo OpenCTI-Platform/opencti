@@ -46,12 +46,6 @@ const createFiligranTelemetryMeterManager = () => {
       });
       filigranMetricReaders.push(readerWithOtlpExporter);
     }
-    // Exporter Prometheus
-    const exporterPrometheus = nconf.get('app:telemetry:filigran:exporter_prometheus');
-    if (isNotEmptyField(exporterPrometheus)) {
-      const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
-      filigranMetricReaders.push(prometheusExporter);
-    }
   }
   const filigranMeterProvider = new MeterProvider(({
     resource,
