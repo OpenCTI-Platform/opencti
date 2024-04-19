@@ -18,8 +18,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
 import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
-import { RelayError } from '../../../../relay/relayTypes';
-import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
