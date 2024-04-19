@@ -49,9 +49,9 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
   const connectors = await connectorsForExport(context, user, format, true);
-  const { entity_id, entity_type } = exportContext;
+  const { entity_type } = exportContext;
   const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
-  const entity = entity_id ? await storeLoadById(context, user, entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const entity = exportContext?.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;

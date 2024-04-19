@@ -51,47 +51,9 @@ const styles = () => ({
 
 export const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
-    $format: String!
-    $exportType: String!
-    $contentMaxMarkings: [String]
-    $fileMarkings: [String]!
-    $exportContext: ExportContext
-    $search: String
-    $orderBy: StixCoreRelationshipsOrdering
-    $orderMode: OrderingMode
-    $selectedIds: [String]
-    $fromOrToId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
-    $filters: FilterGroup
+    $input: StixCoreRelationshipsExportAskInput!
   ) {
-    stixCoreRelationshipsExportAsk(
-      format: $format
-      exportType: $exportType
-      contentMaxMarkings: $contentMaxMarkings
-      fileMarkings: $fileMarkings
-      exportContext: $exportContext
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-      selectedIds: $selectedIds
-      fromOrToId: $fromOrToId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      filters: $filters
-    ) {
+    stixCoreRelationshipsExportAsk(input: $input) {
       id
     }
   }
@@ -133,21 +95,25 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, availableFilterKeys, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
+    const { orderBy, orderMode, filters } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-    const finalFilters = paginationOptions.filters ?? emptyFilterGroup;
+    const finalFilters = filters ?? emptyFilterGroup;
 
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
-        format: values.format,
-        exportType: 'full',
-        contentMaxMarkings,
-        fileMarkings,
-        exportContext,
-        ...paginationOptions,
-        filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
-        selectedIds,
+        input: {
+          format: values.format,
+          exportType: 'full',
+          contentMaxMarkings,
+          fileMarkings,
+          exportContext,
+          orderMode,
+          orderBy,
+          filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
+          selectedIds,
+        },
       },
       onCompleted: () => {
         setSubmitting(false);

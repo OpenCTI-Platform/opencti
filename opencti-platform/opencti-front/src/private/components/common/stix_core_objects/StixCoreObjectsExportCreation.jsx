@@ -35,29 +35,9 @@ const useStyles = makeStyles(() => ({
 
 export const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
-    $format: String!
-    $exportType: String!
-    $contentMaxMarkings: [String]
-    $fileMarkings: [String]!
-    $exportContext: ExportContext
-    $search: String
-    $orderBy: StixCoreObjectsOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-    $selectedIds: [String]
+    $input: StixCoreObjectsExportAskInput!
   ) {
-    stixCoreObjectsExportAsk(
-      format: $format
-      exportType: $exportType
-      contentMaxMarkings: $contentMaxMarkings
-      fileMarkings: $fileMarkings
-      exportContext: $exportContext
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      selectedIds: $selectedIds
-    ) {
+    stixCoreObjectsExportAsk(input: $input) {
       id
     }
   }
@@ -97,19 +77,23 @@ const StixCoreObjectsExportCreationComponent = ({
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
+    const { orderBy, filters, orderMode } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
-        exportContext,
-        format: values.format,
-        exportType: 'full',
-        selectedIds,
-        ...paginationOptions,
-        contentMaxMarkings,
-        fileMarkings,
+        input: {
+          exportContext,
+          format: values.format,
+          exportType: 'full',
+          selectedIds,
+          orderBy,
+          filters,
+          orderMode,
+          contentMaxMarkings,
+          fileMarkings,
+        },
       },
       onCompleted: () => {
         setSubmitting(false);

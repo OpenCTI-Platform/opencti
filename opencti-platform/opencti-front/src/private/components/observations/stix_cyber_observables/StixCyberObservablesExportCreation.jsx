@@ -48,30 +48,8 @@ const styles = () => ({
 });
 
 export const StixCyberObservablesExportCreationMutation = graphql`
-  mutation StixCyberObservablesExportCreationMutation(
-    $format: String!
-    $exportType: String!
-    $contentMaxMarkings: [String],
-    $fileMarkings: [String]!,
-    $exportContext: ExportContext
-    $search: String
-    $orderBy: StixCyberObservablesOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-    $selectedIds: [String]
-  ) {
-    stixCyberObservablesExportAsk(
-      format: $format
-      exportType: $exportType
-      contentMaxMarkings: $contentMaxMarkings
-      fileMarkings: $fileMarkings
-      exportContext: $exportContext
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      selectedIds: $selectedIds
-    ) {
+  mutation StixCyberObservablesExportCreationMutation($input: StixCyberObservablesExportAskInput!) {
+    stixCyberObservablesExportAsk(input: $input) {
       id
     }
   }
@@ -116,19 +94,24 @@ class StixCyberObservablesExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
+    const { orderBy, orderMode, filters } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
     commitMutation({
       mutation: StixCyberObservablesExportCreationMutation,
       variables: {
-        format: values.format,
-        exportType: values.type,
-        fileMarkings,
-        contentMaxMarkings,
-        exportContext,
-        ...paginationOptions,
-        selectedIds,
+        input: {
+          format: values.format,
+          exportType: values.type,
+          fileMarkings,
+          contentMaxMarkings,
+          exportContext,
+          filters,
+          orderBy,
+          orderMode,
+          selectedIds,
+        },
       },
       onCompleted: () => {
         setSubmitting(false);

@@ -115,7 +115,7 @@ const stixCyberObservableResolvers = {
       promote: () => promoteObservableToIndicator(context, context.user, id),
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
-    stixCyberObservablesExportAsk: (_, args, context) => stixCyberObservablesExportAsk(context, context.user, args),
+    stixCyberObservablesExportAsk: (_, { input }, context) => stixCyberObservablesExportAsk(context, context.user, input),
     stixCyberObservablesExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
       const entityType = entity_type ?? 'Stix-Cyber-Observable';
       return stixCoreObjectsExportPush(context, context.user, entity_id, entityType, file, file_markings, listFilters);
