@@ -6560,10 +6560,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^4.0.0":
-  version: 4.1.1
-  resolution: "commander@npm:4.1.1"
-  checksum: 10/3b2dc4125f387dab73b3294dbcb0ab2a862f9c0ad748ee2b27e3544d25325b7a8cdfbcc228d103a98a716960b14478114a5206b5415bd48cdafa38797891562c
+"commander@npm:^6.1.0":
+  version: 6.2.1
+  resolution: "commander@npm:6.2.1"
+  checksum: 10/25b88c2efd0380c84f7844b39cf18510da7bfc5013692d68cdc65f764a1c34e6c8a36ea6d72b6620e3710a930cf8fab2695bdec2bf7107a0f4fa30a3ef3b7d0e
   languageName: node
   linkType: hard
 
@@ -7092,15 +7092,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dot-object@npm:2.1.4":
-  version: 2.1.4
-  resolution: "dot-object@npm:2.1.4"
+"dot-object@npm:2.1.5":
+  version: 2.1.5
+  resolution: "dot-object@npm:2.1.5"
   dependencies:
-    commander: "npm:^4.0.0"
-    glob: "npm:^7.1.5"
+    commander: "npm:^6.1.0"
+    glob: "npm:^7.1.6"
   bin:
     dot-object: bin/dot-object
-  checksum: 10/9b99365f0c5b71f338992e0c7d7cbc2b7d69e9a141721d00b0c17fe9f19d625f2377c77b04ad64457b343a559c7de02c84b779233858f75a1d0b29f6bd75f546
+  checksum: 10/db2414eff38269b6283ea7641f1455d3fdaa4675fe63a4f3595b736cd63e53f3ce4bddfa89e2c10173be5f7383097867e97ad8a8ae41e5e9bad74368ced089f4
   languageName: node
   linkType: hard
 
@@ -8545,7 +8545,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^7.1.1, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.5":
+"glob@npm:^7.1.1, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6":
   version: 7.2.3
   resolution: "glob@npm:7.2.3"
   dependencies:
@@ -11094,7 +11094,7 @@ __metadata:
     csv-parse: "npm:5.5.5"
     dataloader: "npm:2.2.2"
     domino: "npm:2.1.6"
-    dot-object: "npm:2.1.4"
+    dot-object: "npm:2.1.5"
     ejs: "npm:3.1.9"
     esbuild: "npm:0.20.2"
     esbuild-plugin-import-glob: "npm:0.1.1"

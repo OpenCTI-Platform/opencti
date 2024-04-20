@@ -85,7 +85,7 @@
     "csv-parse": "5.5.5",
     "dataloader": "2.2.2",
     "domino": "2.1.6",
-    "dot-object": "2.1.4",
+    "dot-object": "2.1.5",
     "ejs": "3.1.9",
     "eventsource": "2.0.2",
     "express": "4.19.2",
