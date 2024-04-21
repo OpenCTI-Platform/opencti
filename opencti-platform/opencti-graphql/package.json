@@ -86,7 +86,7 @@
     "dataloader": "2.2.2",
     "domino": "2.1.6",
     "dot-object": "2.1.5",
-    "ejs": "3.1.9",
+    "ejs": "3.1.10",
     "eventsource": "2.0.2",
     "express": "4.19.2",
     "express-rate-limit": "7.2.0",
