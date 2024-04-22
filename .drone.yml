@@ -94,8 +94,8 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev cargo
-      - BRANCH=$(echo $DRONE_COMMIT_BRANCH)
-      - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo issue/$(echo $BRANCH | cut -d "/" -f 2) || echo 'master' )
+      - BRANCH=$(echo $DRONE_SOURCE_BRANCH)
+      - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo $(echo $BRANCH | cut -d "/" -f2-) || echo 'master' )
       - git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
       - cd /tmp/opencti/opencti-platform/opencti-graphql
       - OPENCTI_COMMIT=$(git rev-parse --short HEAD)
