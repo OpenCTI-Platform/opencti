@@ -17,7 +17,7 @@ exporters:
     endpoint: 0.0.0.0:8889
     namespace: filigran
   file:
-    path: /oltp-output.log
+    path: /etc/outputs/oltp-output.log
 
 service:
 
