@@ -5,7 +5,6 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
@@ -13,6 +12,7 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { FieldProps } from 'formik';
 import { OverrideFormData } from '@components/settings/users/edition/UserEditionConfidence';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
@@ -20,23 +20,6 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
 import { isEmptyField } from '../../../../../utils/utils';
 import useSchema, { AvailableEntityOption } from '../../../../../utils/hooks/useSchema';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
 
 interface UserConfidenceOverridesFieldComponentProps
   extends FieldProps<OverrideFormData> {
@@ -53,7 +36,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   onSubmit,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
@@ -75,13 +58,13 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   const handleSubmitEntityType = async (entityType: AvailableEntityOption | null) => {
     const newValue = entityType === null
       ? null : { entity_type: entityType.value, max_confidence: value.max_confidence };
-    await setFieldValue(`${name}.entity_type`, newValue);
+    await setFieldValue(name, newValue);
     onSubmit(index, newValue);
   };
 
   const handleSubmitConfidence = async (_: string, maxConfidence: string) => {
     const newValue = { entity_type: value.entity_type, max_confidence: maxConfidence };
-    await setFieldValue(`${name}.max_confidence`, newValue);
+    await setFieldValue(name, newValue);
     onSubmit(index, newValue);
   };
 
@@ -125,7 +108,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
         style={{ width: '100%', marginBottom: '20px' }}
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined/>} onClick={toggle}>
-          <div className={classes.container}>
+          <div style={{ display: 'inline-flex', alignItems: 'center' }}>
             <Typography>
               {overrideLabel(index, value)}
             </Typography>
@@ -159,10 +142,20 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
               )}
               renderOption={(props, option) => (
                 <li {...props}>
-                  <div className={classes.icon}>
+                  <div style={{
+                    paddingTop: 4,
+                    display: 'inline-block',
+                    color: theme.palette.primary.main,
+                  }}
+                  >
                     <ItemIcon type={option.label} />
                   </div>
-                  <div className={classes.text}>
+                  <div style={{
+                    display: 'inline-block',
+                    flexGrow: 1,
+                    marginLeft: 10,
+                  }}
+                  >
                     {t_i18n(`entity_${option.label}`)}
                   </div>
                 </li>
