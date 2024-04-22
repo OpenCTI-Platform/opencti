@@ -9,6 +9,7 @@ type SupportPackage implements InternalObject & BasicObject {
     package_url: String
     package_upload_dir: String
     nodes_status: [SupportNodeStatus]
+    nodes_count: Int!
 }
 
 type SupportPackageConnection {

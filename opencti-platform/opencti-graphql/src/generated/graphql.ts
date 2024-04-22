@@ -24233,6 +24233,7 @@ export type SupportPackage = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  nodes_count: Scalars['Int']['output'];
   nodes_status?: Maybe<Array<Maybe<SupportNodeStatus>>>;
   package_status: PackageStatus;
   package_upload_dir?: Maybe<Scalars['String']['output']>;
@@ -37314,6 +37315,7 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  nodes_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nodes_status?: Resolver<Maybe<Array<Maybe<ResolversTypes['SupportNodeStatus']>>>, ParentType, ContextType>;
   package_status?: Resolver<ResolversTypes['PackageStatus'], ParentType, ContextType>;
   package_upload_dir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -64,6 +64,17 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
       upsert: true,
       isFilterable: false,
       format: 'flat'
+    },
+    {
+      name: 'nodes_count',
+      label: 'Number of nodes in cluster',
+      type: 'numeric',
+      precision: 'integer',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: true
     }
   ],
   relations: [],

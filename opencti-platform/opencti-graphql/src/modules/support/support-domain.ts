@@ -14,6 +14,7 @@ import { fileToReadStream, uploadToStorage } from '../../database/file-storage-h
 import { wait } from '../../database/utils';
 import { notify } from '../../database/redis';
 import { FilesystemError } from '../../config/errors';
+import { getSettings } from '../../domain/settings';
 
 export const SUPPORT_S3_FOLDER = 'support';
 const ZIP_TIMEOUT_MS = 15000; // Max time to archive all files
@@ -116,7 +117,7 @@ const downloadAllLogFiles = async (user: AuthUser, s3Directory: string, localDir
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];
     logApp.info(`Found ${supportFile?.name}`);
-    if (supportFile) {
+    if (supportFile && supportFile.name.substring(supportFile.name.length - 4, supportFile.name.length) !== '.zip') {
       const newLocalFile = join(localDirectory, `${supportFile.name}`);
       fs.closeSync(fs.openSync(newLocalFile, 'w'));
       const stream = await downloadFile(supportFile.id);
@@ -152,9 +153,10 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
  * @param entity
  */
 export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, entity: BasicStoreEntitySupportPackage) => {
-  const zipLocalFolder: string = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id);
+  const zipLocalFolder: string = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id, NODE_INSTANCE_ID);
+
   if (!fs.existsSync(zipLocalFolder)) {
-    fs.mkdirSync(zipLocalFolder);
+    fs.mkdirSync(zipLocalFolder, { recursive: true });
   }
 
   await downloadAllLogFiles(user, `${entity.package_upload_dir}/`, zipLocalFolder);
@@ -204,10 +206,16 @@ const createAndUploadTelemetry = async (context: AuthContext, user: AuthUser, en
  * @param input
  */
 export const prepareNewSupportPackage = async (context: AuthContext, user: AuthUser, input: SupportPackageAddInput) => {
+  const settings = await getSettings(context);
+  logSupport.warn('Platform settings are:', { settings });
+  logApp.info(`Starting support package generation with ${settings.platform_cluster.instances_number} nodes.`);
+  const instancesNumber = settings.platform_cluster.instances_number;
+
   const defaultOps = {
     package_status: PackageStatus.InProgress,
     created_at: new Date(),
     nodes_status: [],
+    nodes_count: instancesNumber,
   };
   const supportInput = { ...input, ...defaultOps };
   const supportDataCreated = await createInternalObject<StoreEntitySupportPackage>(context, user, supportInput, ENTITY_TYPE_SUPPORT_PACKAGE);
@@ -253,24 +261,30 @@ export const requestZipPackage = async (context: AuthContext, user: AuthUser, su
 };
 
 export const computePackageEntityChanges = (packageEntity: BasicStoreEntitySupportPackage, newNodeStatus: PackageStatus, nodeId: string) => {
-  const nodeStatus: SupportNodeStatus = {
-    node_id: nodeId,
-    package_status: newNodeStatus,
-  };
+  const newNodeStatusList: SupportNodeStatus[] = [];
 
   const updateInput: EditInput[] = [];
-  let editOp = EditOperation.Add;
+  let editOp = EditOperation.Replace;
   if (packageEntity.nodes_status) {
-    const nodesStatus: SupportNodeStatus[] = packageEntity.nodes_status;
-    if (nodesStatus.some((oneStatus) => oneStatus.node_id === nodeId)) {
-      editOp = EditOperation.Replace;
+    const allNodesStatusList: SupportNodeStatus[] = packageEntity.nodes_status;
+    // first keep all other nodes
+    for (let i = 0; i < allNodesStatusList.length; i += 1) {
+      if (allNodesStatusList[i].node_id !== nodeId) {
+        newNodeStatusList.push(allNodesStatusList[i]);
+      }
     }
 
+    // Change node status
+    newNodeStatusList.push({
+      node_id: nodeId,
+      package_status: newNodeStatus,
+    });
+
     // Check if overall status must change now or not.
-    if (newNodeStatus === PackageStatus.Ready || newNodeStatus === PackageStatus.InError) {
-      if (!nodesStatus.some((oneStatus) => oneStatus.node_id !== nodeId && oneStatus.package_status === PackageStatus.InProgress)) {
+    if (packageEntity.nodes_status.length === packageEntity.nodes_count && (newNodeStatus === PackageStatus.Ready || newNodeStatus === PackageStatus.InError)) {
+      if (!allNodesStatusList.some((oneStatus) => oneStatus.node_id !== nodeId && oneStatus.package_status === PackageStatus.InProgress)) {
         // All is ready or error, so it's finished.
-        if (nodesStatus.some((oneStatus) => oneStatus.package_status === PackageStatus.InError) || newNodeStatus === PackageStatus.InError) {
+        if (allNodesStatusList.some((oneStatus) => oneStatus.package_status === PackageStatus.InError) || newNodeStatus === PackageStatus.InError) {
           updateInput.push({
             key: 'package_status',
             value: [PackageStatus.InError],
@@ -285,11 +299,19 @@ export const computePackageEntityChanges = (packageEntity: BasicStoreEntitySuppo
         }
       }
     }
+  } else {
+    // Nothing in list yet, add current node.
+    newNodeStatusList.push({
+      node_id: nodeId,
+      package_status: newNodeStatus,
+    });
+    editOp = EditOperation.Replace; // to remove ?
   }
+
   updateInput.push({
     key: 'nodes_status',
-    value: [nodeStatus],
-    operation: editOp
+    value: newNodeStatusList,
+    operation: editOp,
   });
   return updateInput;
 };

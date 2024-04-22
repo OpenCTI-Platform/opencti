@@ -37,19 +37,38 @@ describe('Testing support package filesystem tools - findAllSupportFiles', () =>
 describe('Testing support package status changes', () => {
   it('should add first node in progress', async () => {
     const packageEntity: Partial<BasicStoreEntitySupportPackage> = {
-      id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+      id: '2-nodes-pf-only-one-send-support-data',
       package_status: PackageStatus.InProgress,
       nodes_status: undefined,
+      nodes_count: 2
     };
 
     const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.InProgress, 'newNodeId');
-    expect(editResult.length).toBe(1);
-    expect(editResult[0].operation).toBe(EditOperation.Add);
+    expect(editResult.length, 'One node status should be added in the list').toBe(1);
+    expect(editResult[0].operation).toBe(EditOperation.Replace);
+  });
+
+  it('should not be overall READY if waiting for other nodes log status', async () => {
+    const packageEntity: Partial<BasicStoreEntitySupportPackage> = {
+      id: 'platform-with-2-nodes',
+      package_status: PackageStatus.InProgress,
+      nodes_status: [
+        {
+          node_id: 'firstNodeId',
+          package_status: PackageStatus.InProgress,
+        }],
+      nodes_count: 2
+    };
+
+    const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.Ready, 'firstNodeId');
+    expect(editResult.length, 'Only the node status should be updated, overall status is still in progress despite first node is ready.').toBe(1);
+    expect(editResult[0].operation).toBe(EditOperation.Replace);
+    expect(editResult[0].value.length, 'Expecting 1 node status in the list.').toBe(1);
   });
 
   it('should add another node in progress', async () => {
     const packageEntity: Partial<BasicStoreEntitySupportPackage> = {
-      id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+      id: '3-nodes-pf',
       package_status: PackageStatus.InProgress,
       nodes_status: [
         {
@@ -59,11 +78,13 @@ describe('Testing support package status changes', () => {
         { node_id: 'secondNodeId',
           package_status: PackageStatus.InProgress,
         }],
+      nodes_count: 3
     };
 
     const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.Ready, 'newNodeId');
     expect(editResult.length).toBe(1);
-    expect(editResult[0].operation).toBe(EditOperation.Add);
+    expect(editResult[0].operation).toBe(EditOperation.Replace);
+    expect(editResult[0].value.length, 'Expecting 3 nodes status in the list.').toBe(3);
   });
 
   it('should update existing node as ready', async () => {
@@ -78,16 +99,18 @@ describe('Testing support package status changes', () => {
         { node_id: 'secondNodeId',
           package_status: PackageStatus.InProgress,
         }],
+      nodes_count: 2
     };
 
     const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.Ready, 'firstNodeId');
     expect(editResult.length).toBe(1);
     expect(editResult[0].operation).toBe(EditOperation.Replace);
+    expect(editResult[0].value.length, 'Expecting 2 nodes status in the list.').toBe(2);
   });
 
   it('should update the last node as ready, update global status', async () => {
     const packageEntity: Partial<BasicStoreEntitySupportPackage> = {
-      id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+      id: '3-nodes-waiting-for-last-ready',
       package_status: PackageStatus.InProgress,
       nodes_status: [
         {
@@ -101,16 +124,20 @@ describe('Testing support package status changes', () => {
           node_id: 'thirdNodeId',
           package_status: PackageStatus.Ready,
         }],
+      nodes_count: 3
     };
 
     const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.Ready, 'secondNodeId');
     expect(editResult.length).toBe(2);
-    expect(editResult[0].operation).toBe(EditOperation.Replace);
+    expect(editResult[0].key).toBe('package_status');
+    expect(editResult[0].value[0], 'Overall status must be change to READY.').toBe(PackageStatus.Ready);
+    expect(editResult[1].operation).toBe(EditOperation.Replace);
+    expect(editResult[1].value.length, 'Expecting 3 nodes status in the list.').toBe(3);
   });
 
   it('should update the last node as Ready, update global status in InError if some error', async () => {
     const packageEntity: Partial<BasicStoreEntitySupportPackage> = {
-      id: 'aaaaaaaaaaaaaaaaaaaaaaaa',
+      id: '3-nodes-one-in-error',
       package_status: PackageStatus.InProgress,
       nodes_status: [
         {
@@ -124,6 +151,7 @@ describe('Testing support package status changes', () => {
           node_id: 'thirdNodeId',
           package_status: PackageStatus.Ready,
         }],
+      nodes_count: 3
     };
 
     const editResult: EditInput[] = computePackageEntityChanges(packageEntity as BasicStoreEntitySupportPackage, PackageStatus.Ready, 'secondNodeId');
@@ -134,7 +162,7 @@ describe('Testing support package status changes', () => {
 
     expect(editResult[1].operation).toBe(EditOperation.Replace);
     expect(editResult[1].key).toBe('nodes_status');
-    expect(editResult[1].value[0].package_status).toBe(PackageStatus.Ready);
-    expect(editResult[1].value[0].node_id).toBe('secondNodeId');
+
+    expect(editResult[1].value.length).toBe(3);
   });
 });
