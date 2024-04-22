@@ -304,6 +304,7 @@
   "confidence_gt": "より大きい信頼度",
   "confidence_lte": "以下の信頼度",
   "confidence_unknown": "未検証",
+  "Confidences": "コンフィデンス",
   "Configuration": "配置",
   "Configuration version": "設定バージョン",
   "Configuration_version": "設定_バージョン",

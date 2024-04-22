@@ -304,6 +304,7 @@
   "confidence_gt": "Konfidenz größer als",
   "confidence_lte": "Konfidenz kleiner als oder gleich",
   "confidence_unknown": "Unbekannt",
+  "Confidences": "Vertraulichkeiten",
   "Configuration": "Konfiguration",
   "Configuration version": "Version der Konfiguration",
   "Configuration_version": "Konfiguration_version",
