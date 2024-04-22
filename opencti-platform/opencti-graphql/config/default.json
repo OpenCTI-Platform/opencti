@@ -171,6 +171,13 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "garbage_collection_manager": {
+    "enabled": true,
+    "lock_key": "garbage_collection_manager_lock",
+    "batch_size": 10000,
+    "interval": 60000,
+    "deleted_retention_days": 7
+  },
   "publisher_manager": {
     "enabled": true,
     "lock_key": "publisher_manager_lock",

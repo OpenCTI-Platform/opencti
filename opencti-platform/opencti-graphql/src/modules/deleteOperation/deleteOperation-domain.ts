@@ -2,11 +2,12 @@ import { type BasicStoreEntityDeleteOperation, ENTITY_TYPE_DELETE_OPERATION } fr
 import { FunctionalError } from '../../config/errors';
 import { elDeleteInstances, elFindByIds } from '../../database/engine';
 import { deleteAllObjectFiles } from '../../database/file-storage';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
-import type { QueryDeleteOperationsArgs } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode, type QueryDeleteOperationsArgs } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
+import { prepareDate } from '../../utils/format';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDeleteOperation>(context, user, id, ENTITY_TYPE_DELETE_OPERATION);
@@ -14,6 +15,25 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 
 export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDeleteOperationsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
+};
+
+export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, daysOld: number, maxSize: number) => {
+  const dateThreshold = new Date();
+  dateThreshold.setDate(dateThreshold.getDate() - daysOld);
+  const filters = {
+    orderBy: 'created_at',
+    orderMode: OrderingMode.Asc,
+    mode: FilterMode.And,
+    filters: [
+      { key: ['created_at'], values: [prepareDate(dateThreshold)], operator: FilterOperator.Lt }
+    ],
+    filterGroups: [],
+  };
+  const args = {
+    filters,
+    maxSize,
+  };
+  return listAllEntities<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -151,7 +151,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENABLED_GARBAGE_COLLECTION_MANAGER, isFeatureEnabled, logApp } from '../config/conf';
 import { FROM_START, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -3405,8 +3405,10 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
                 && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
-      const forceDelete = !!opts.forceDelete || !isTrashableElement;
-      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
+      // isModuleActivated from domain/settings cannot be used because of dependency cycle issues, we use the flag from conf instead
+      const isGarbageCollectionActivated = ENABLED_GARBAGE_COLLECTION_MANAGER;
+      const forceDelete = !!opts.forceDelete || !isTrashableElement || !isGarbageCollectionActivated;
+      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete && isGarbageCollectionActivated) {
         // do not delete files if logical deletion enabled
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);

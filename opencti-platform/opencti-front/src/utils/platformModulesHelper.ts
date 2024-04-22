@@ -15,6 +15,7 @@ export const FILE_INDEX_MANAGER = 'FILE_INDEX_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
 export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 export const INDICATOR_DECAY_MANAGER = 'INDICATOR_DECAY_MANAGER';
+export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
@@ -29,6 +30,7 @@ export interface ModuleHelper {
   isIngestionManagerEnable: () => boolean;
   isFileIndexManagerEnable: () => boolean;
   isIndicatorDecayManagerEnable: () => boolean;
+  isGarbageCollectionManagerEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -74,6 +76,7 @@ const platformModuleHelper = (
   isIngestionManagerEnable: () => isModuleEnable(settings, INGESTION_MANAGER),
   isFileIndexManagerEnable: () => isModuleEnable(settings, FILE_INDEX_MANAGER),
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
+  isGarbageCollectionManagerEnable: () => isModuleEnable(settings, GARBAGE_COLLECTION_MANAGER),
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 
