@@ -1,7 +1,11 @@
 import * as R from 'ramda';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { created, modified } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
+
+schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_META_OBJECT, [created, modified]);
 
 const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_MARKING_DEFINITION]: [
