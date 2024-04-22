@@ -82,6 +82,7 @@ services:
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
+      - "./otlp-output.log:/otlp-output.log"
     command:
       - '--config=/etc/config/otlp-config.yaml'
     ports:

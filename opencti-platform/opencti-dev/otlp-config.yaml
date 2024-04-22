@@ -16,6 +16,8 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: filigran
+  file:
+    path: /oltp-output.log
 
 service:
 
@@ -24,6 +26,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, prometheus]
+      exporters: [debug, prometheus, file]
 
   extensions: [health_check]
