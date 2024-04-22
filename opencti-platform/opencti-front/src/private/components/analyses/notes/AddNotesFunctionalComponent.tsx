@@ -1,18 +1,17 @@
-import { FunctionComponent, useState } from "react";
-import { NotesLinesPaginationQuery$variables } from "./__generated__/NotesLinesPaginationQuery.graphql";
-import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from "@mui/material";
-import { Add } from "@mui/icons-material";
-import Drawer from "@components/common/drawer/Drawer";
-import { useFormatter } from "src/components/i18n";
-import SearchInput from "src/components/SearchInput";
-import { styled } from "@mui/system";
-import { FragmentRefs, RecordSourceSelectorProxy } from "relay-runtime";
-import { QueryRenderer } from "src/relay/environment";
-import AddNotesLines, { addNotesLinesQuery } from "./AddNotesLines";
-import { AddNotesLinesQuery$data } from "./__generated__/AddNotesLinesQuery.graphql";
-import { NoteCreationForm } from "./NoteCreation";
-import { insertNode } from "src/utils/store";
-import { StyledCreateButton } from "@components/common/menus/CreateEntityControlledDial";
+import React, { FunctionComponent, useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton, styled } from '@mui/material';
+import { Add } from '@mui/icons-material';
+import Drawer from '@components/common/drawer/Drawer';
+import { useFormatter } from 'src/components/i18n';
+import SearchInput from 'src/components/SearchInput';
+import { FragmentRefs, RecordSourceSelectorProxy } from 'relay-runtime';
+import { QueryRenderer } from 'src/relay/environment';
+import { insertNode } from 'src/utils/store';
+import { StyledCreateButton } from '@components/common/menus/CreateEntityControlledDial';
+import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
+import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.graphql';
+import { NoteCreationForm } from './NoteCreation';
+import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 
 const CreateButton = styled(IconButton)({
   float: 'right',
@@ -28,15 +27,15 @@ interface AddNotesFunctionalComponentProps {
   stixCoreObjectOrStixCoreRelationshipId: string,
   stixCoreObjectOrStixCoreRelationshipNotes: readonly {
     readonly node: {
+      readonly id: string;
+      readonly objectMarking: readonly {
+        readonly definition: string | null | undefined;
+        readonly definition_type: string | null | undefined;
         readonly id: string;
-        readonly objectMarking: readonly {
-            readonly definition: string | null | undefined;
-            readonly definition_type: string | null | undefined;
-            readonly id: string;
-            readonly x_opencti_color: string | null | undefined;
-            readonly x_opencti_order: number;
-        }[] | null | undefined;
-        readonly " $fragmentSpreads": FragmentRefs<"StixCoreObjectOrStixCoreRelationshipNoteCard_node">;
+        readonly x_opencti_color: string | null | undefined;
+        readonly x_opencti_order: number;
+      }[] | null | undefined;
+      readonly ' $fragmentSpreads': FragmentRefs<'StixCoreObjectOrStixCoreRelationshipNoteCard_node'>;
     };
   }[],
   paginationOptions: NotesLinesPaginationQuery$variables,
@@ -81,7 +80,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
     <>
       <CreateButton
         color="primary"
-        aria-label="Add"
+        aria-label={t_i18n('Add')}
         onClick={handleOpen}
         size="large"
       >
@@ -90,7 +89,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
       <Drawer
         open={open}
         onClose={handleClose}
-        title={t_i18n("Add notes")}
+        title={t_i18n('Add notes')}
         header={(
           <StyledDrawerHeader>
             <SearchInput
@@ -103,7 +102,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
               size='small'
               variant='contained'
             >
-              {t_i18n('Create')} {t_i18n('Note')} <Add />
+              {t_i18n('Create')} {t_i18n('entity_Note')} <Add />
             </StyledCreateButton>
           </StyledDrawerHeader>
         )}
@@ -111,7 +110,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
         <QueryRenderer
           query={addNotesLinesQuery}
           variables={{
-            search: search,
+            search,
             count: 20,
           }}
           render={({ props }: { props: AddNotesLinesQuery$data }) => {

@@ -18,6 +18,8 @@ const CreateEntityControlledDial = (entity_type: string) => {
       color='primary'
       size='small'
       variant='contained'
+      aria-label={`${t_i18n('Create')} ${t_i18n(entity_type)}`}
+      data-testid='CreateEntityControlledDial'
     >
       {t_i18n('Create')} {t_i18n(entity_type)} <Add />
     </StyledCreateButton>

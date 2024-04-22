@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import Security from '../../../utils/Security';
@@ -16,7 +17,6 @@ import NoteCreation from './notes/NoteCreation';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useHelper from 'src/utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
@@ -139,7 +139,7 @@ const Notes: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={isFeatureEnable("FAB_REPLACEMENT") && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+          createButton={isFeatureEnable('FAB_REPLACEMENT') && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <NoteCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -186,8 +186,8 @@ const Notes: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
-      {!isFeatureEnable("FAB_REPLACEMENT") &&
-        <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+      {!isFeatureEnable('FAB_REPLACEMENT')
+        && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
           <NoteCreation paginationOptions={queryPaginationOptions} />
         </Security>
       }

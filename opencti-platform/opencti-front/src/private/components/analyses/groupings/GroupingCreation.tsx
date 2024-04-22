@@ -8,6 +8,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -29,8 +31,6 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/fields/RichTextField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from 'src/utils/hooks/useHelper';
-import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -292,8 +292,8 @@ const GroupingCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
-      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial("entity_Grouping") : undefined}
+      variant={isFeatureEnable('FAB_REPLACEMENT') ? undefined : DrawerVariant.create}
+      controlledDial={isFeatureEnable('FAB_REPLACEMENT') ? CreateEntityControlledDial('entity_Grouping') : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

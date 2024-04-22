@@ -8,6 +8,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -32,8 +34,6 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from 'src/utils/hooks/useHelper';
-import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -339,8 +339,8 @@ const ReportCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a report')}
-      variant={isFeatureEnable("FAB_REPLACEMENT") ? undefined : DrawerVariant.create}
-      controlledDial={isFeatureEnable("FAB_REPLACEMENT") ? CreateEntityControlledDial("entity_Report") : undefined}
+      variant={isFeatureEnable('FAB_REPLACEMENT') ? undefined : DrawerVariant.create}
+      controlledDial={isFeatureEnable('FAB_REPLACEMENT') ? CreateEntityControlledDial('entity_Report') : undefined}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>

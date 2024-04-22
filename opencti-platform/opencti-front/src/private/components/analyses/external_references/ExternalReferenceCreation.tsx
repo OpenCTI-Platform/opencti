@@ -14,6 +14,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { MESSAGING$, commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,8 +25,6 @@ import { ExternalReferencesLinesPaginationQuery$variables } from './__generated_
 import type { Theme } from '../../../../components/Theme';
 import { ExternalReferenceAddInput, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useHelper from 'src/utils/hooks/useHelper';
-import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,7 +103,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable("FAB_REPLACEMENT");
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [open, setOpen] = useState(false);
 
@@ -207,7 +207,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       <Drawer
         title={t_i18n('Create an external reference')}
         variant={FABReplaced ? undefined : DrawerVariant.create}
-        controlledDial={FABReplaced ? CreateEntityControlledDial("entity_External-Reference") : undefined}
+        controlledDial={FABReplaced ? CreateEntityControlledDial('entity_External-Reference') : undefined}
       >
         {({ onClose }) => (
           <Formik

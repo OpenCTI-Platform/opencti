@@ -7,13 +7,13 @@ import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import { Button, styled } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
-import { useFormatter } from 'src/components/i18n';
-import useHelper from 'src/utils/hooks/useHelper';
-import { Button, styled } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -49,7 +49,7 @@ const AddExternalReferences = ({
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const FABReplaced = isFeatureEnable("FAB_REPLACEMENT");
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpen = () => {
     setOpen(true);
@@ -77,7 +77,7 @@ const AddExternalReferences = ({
         <Add fontSize="small" />
       </IconButton>
       <Drawer
-        title={t_i18n("Add external references")}
+        title={t_i18n('Add external references')}
         open={open}
         onClose={handleClose}
         header={(
@@ -86,13 +86,13 @@ const AddExternalReferences = ({
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            {FABReplaced &&
-              <CreateButtonWithMargin
+            {FABReplaced
+              && <CreateButtonWithMargin
                 onClick={() => setDialogOpen(true)}
                 color='primary'
                 size='small'
                 variant='contained'
-              >
+                 >
                 {t_i18n('Create')} {t_i18n('entity_External-Reference')} <Add />
               </CreateButtonWithMargin>
             }

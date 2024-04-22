@@ -38,6 +38,6 @@ export default class ContainerAddObservablesPage {
   }
 
   getCloseObservablesListButton() {
-    return this.page.getByLabel('Close');
+    return this.page.getByRole('button', { name: 'Close' });
   }
 }

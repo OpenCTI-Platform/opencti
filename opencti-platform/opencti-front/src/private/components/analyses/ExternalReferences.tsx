@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
@@ -19,7 +20,6 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useHelper from 'src/utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -116,7 +116,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           entityTypes={['External-Reference']}
-          createButton={isFeatureEnable("FAB_REPLACEMENT") && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          createButton={isFeatureEnable('FAB_REPLACEMENT') && <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceCreation
               paginationOptions={queryPaginationOptions}
               openContextual={false}
@@ -168,8 +168,8 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {renderLines()}
-      {!isFeatureEnable("FAB_REPLACEMENT") &&
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFeatureEnable('FAB_REPLACEMENT')
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ExternalReferenceCreation
             paginationOptions={queryPaginationOptions}
             openContextual={false}

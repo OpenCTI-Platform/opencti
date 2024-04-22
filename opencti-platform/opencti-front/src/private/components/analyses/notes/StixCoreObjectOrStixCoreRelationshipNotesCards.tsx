@@ -11,6 +11,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
+import useHelper from 'src/utils/hooks/useHelper';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
@@ -38,7 +39,6 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from 'src/utils/hooks/useHelper';
 import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -253,17 +253,17 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           >
             <EditOutlined fontSize="small" />
           </IconButton>
-          {isFeatureEnable("FAB_REPLACEMENT")
+          {isFeatureEnable('FAB_REPLACEMENT')
             ? <AddNotesFunctionalComponent
-              stixCoreObjectOrStixCoreRelationshipId={id}
-              stixCoreObjectOrStixCoreRelationshipNotes={notes}
-              paginationOptions={paginationOptions}
-            />
+                stixCoreObjectOrStixCoreRelationshipId={id}
+                stixCoreObjectOrStixCoreRelationshipNotes={notes}
+                paginationOptions={paginationOptions}
+              />
             : <AddNotes
-              stixCoreObjectOrStixCoreRelationshipId={id}
-              stixCoreObjectOrStixCoreRelationshipNotes={notes}
-              paginationOptions={paginationOptions}
-            />
+                stixCoreObjectOrStixCoreRelationshipId={id}
+                stixCoreObjectOrStixCoreRelationshipNotes={notes}
+                paginationOptions={paginationOptions}
+              />
           }
         </>
       </Security>

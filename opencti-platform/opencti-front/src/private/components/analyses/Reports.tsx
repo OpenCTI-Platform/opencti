@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -16,7 +17,6 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import useHelper from 'src/utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'reports';
 
@@ -139,7 +139,7 @@ const Reports: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={isFeatureEnable("FAB_REPLACEMENT") && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          createButton={isFeatureEnable('FAB_REPLACEMENT') && <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ReportCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -187,8 +187,8 @@ const Reports: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
-      {!isFeatureEnable("FAB_REPLACEMENT") &&
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFeatureEnable('FAB_REPLACEMENT')
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportCreation paginationOptions={queryPaginationOptions} />
         </Security>
       }
