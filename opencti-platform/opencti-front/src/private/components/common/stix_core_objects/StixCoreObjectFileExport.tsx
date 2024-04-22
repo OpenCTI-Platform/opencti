@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { filter, map } from 'ramda';
+import { filter } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
