@@ -151,6 +151,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   aria-label="Add"
                   className={classes.createButton}
                   disabled={!isExportPossible}
+                  data-testid="StixCyberObservablesExportCreationAddButton"
                 >
                   <Add />
                 </Fab>
@@ -177,6 +178,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         this.handleClose();
                       }}
                       fullWidth={true}
+                      data-testid="StixCyberObservablesExportCreationDialog"
                     >
                       <DialogTitle>{t('Generate an export')}</DialogTitle>
                       <QueryRenderer

@@ -153,6 +153,7 @@ const StixCoreObjectFileExportComponent = ({
             color="primary"
             size="small"
             style={{ marginRight: 3 }}
+            data-testid="StixCoreObjectFileExportQuickExportButton"
           >
             <FileExportOutline
               fontSize="small"
@@ -180,6 +181,7 @@ const StixCoreObjectFileExportComponent = ({
               open={open}
               onClose={resetForm}
               fullWidth={true}
+              data-testid="StixCoreObjectFileExportDialog"
             >
               <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
               {/* Duplicate code for displaying list of marking in select input. TODO a component */}

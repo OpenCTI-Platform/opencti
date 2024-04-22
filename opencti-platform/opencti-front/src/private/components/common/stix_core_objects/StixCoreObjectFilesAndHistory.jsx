@@ -237,7 +237,7 @@ const StixCoreObjectFilesAndHistory = ({
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="StixCoreObjectFilesAndHistory">
       <Grid
         container={true}
         spacing={3}
@@ -386,6 +386,7 @@ const StixCoreObjectFilesAndHistory = ({
                 keepMounted={true}
                 onClose={handleCloseExport}
                 fullWidth={true}
+                data-testid="StixCoreObjectFilesAndHistoryExportDialog"
               >
                 <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
                 <DialogContent>

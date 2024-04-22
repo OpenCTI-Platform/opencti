@@ -131,6 +131,7 @@ const StixCoreObjectsExportCreationComponent = ({
                 aria-label="Add"
                 className={classes.createButton}
                 disabled={!isExportPossible}
+                data-testid="StixCoreObjectsExportCreationAddButton"
               >
                 <Add />
               </Fab>
@@ -157,6 +158,7 @@ const StixCoreObjectsExportCreationComponent = ({
                       setOpen(false);
                     }}
                     fullWidth={true}
+                    data-testid="StixCoreObjectsExportCreationDialog"
                   >
                     <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
                     <QueryRenderer

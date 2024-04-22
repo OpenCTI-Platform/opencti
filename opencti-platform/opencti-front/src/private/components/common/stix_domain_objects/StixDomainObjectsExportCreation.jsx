@@ -174,6 +174,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                   aria-label="Add"
                   className={classes.createButton}
                   disabled={!isExportPossible}
+                  data-testid="StixDomainObjectsExportCreationAddButton"
                 >
                   <Add />
                 </Fab>
@@ -198,6 +199,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                       open={this.state.open}
                       onClose={resetForm}
                       fullWidth={true}
+                      data-testid="StixDomainObjectsExportCreationDialog"
                     >
                       <DialogTitle>{t('Generate an export')}</DialogTitle>
                       <DialogContent>

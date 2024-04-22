@@ -153,6 +153,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       aria-label="generate-export"
                     >
                       <Fab
+                        data-testid="StixCoreRelationshipsExportCreationAddButton"
                         onClick={this.handleOpen.bind(this)}
                         color="secondary"
                         aria-label="Add"
@@ -176,6 +177,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       {({ submitForm, handleReset, isSubmitting, resetForm }) => (
                         <Form>
                           <Dialog
+                            data-testid="StixCoreRelationshipsExportCreationDialog"
                             PaperProps={{ elevation: 1 }}
                             open={this.state.open}
                             onClose={() => {

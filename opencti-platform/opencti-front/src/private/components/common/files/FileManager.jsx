@@ -248,7 +248,7 @@ const FileManager = ({
   ].includes(entity.entity_type);
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="FileManager">
       <Grid
         container={true}
         spacing={3}
@@ -398,6 +398,7 @@ const FileManager = ({
                 keepMounted={true}
                 onClose={resetForm}
                 fullWidth={true}
+                data-testid="FileManagerExportDialog"
               >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
