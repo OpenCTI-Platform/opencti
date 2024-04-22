@@ -48,9 +48,11 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
 };
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
+  if (!exportContext || !exportContext?.entity_type) throw new Error('entity_type is missing from askListExport');
+
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
-  const entity = exportContext && exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const entity = exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
   const { entity_type } = exportContext;
 
   const toFileName = (connector) => {
