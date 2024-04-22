@@ -92,7 +92,11 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
-  const [commit] = useApiMutation<TaskCreationMutation>(taskAddMutation);
+  const [commit] = useApiMutation<TaskCreationMutation>(
+    taskAddMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
+  );
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',

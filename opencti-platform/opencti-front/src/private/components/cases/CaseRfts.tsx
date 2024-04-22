@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -25,6 +26,7 @@ export const LOCAL_STORAGE_KEY = 'caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -42,6 +44,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
       filters: emptyFilterGroup,
     },
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     sortBy,
@@ -143,6 +146,9 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         paginationOptions={queryPaginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseRftCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -184,9 +190,11 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for takedown'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRftCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CaseRftCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

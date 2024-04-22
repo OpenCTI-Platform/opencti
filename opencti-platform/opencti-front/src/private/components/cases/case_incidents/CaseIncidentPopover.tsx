@@ -76,6 +76,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
         value="popover"
         size="small"
         onClick={handleOpen}
+        title={t_i18n('Incident response actions')}
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>

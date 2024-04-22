@@ -7,7 +7,8 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import { handleErrorInForm } from 'src/relay/environment';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -32,6 +33,8 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -113,10 +116,14 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     CASE_INCIDENT_TYPE,
     basicShape,
   );
-  const [commit] = useApiMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
+  const [commit] = useApiMutation<CaseIncidentCreationCaseMutation>(
+    caseIncidentMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Case-Incident')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseIncidentAddInput = {
       name: values.name,
@@ -144,6 +151,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         if (updater && response) {
           updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: (response) => {
         setSubmitting(false);
@@ -338,17 +349,23 @@ const CaseIncidentCreation = ({
   paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_incidents_caseIncidents',
     paginationOptions,
     'caseIncidentAdd',
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateCaseIncidentControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Case-Incident' {...props} />
+  );
 
   return (
     <Drawer
       title={t_i18n('Create an incident response')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateCaseIncidentControlledDial : undefined}
     >
       <CaseIncidentCreationForm updater={updater} />
     </Drawer>

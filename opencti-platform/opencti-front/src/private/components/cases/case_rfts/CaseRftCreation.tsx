@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -8,6 +8,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { handleErrorInForm } from 'src/relay/environment';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -32,6 +33,8 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -112,11 +115,15 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     CASE_RFT_TYPE,
     basicShape,
   );
-  const [commit] = useApiMutation<CaseRftCreationCaseMutation>(caseRftMutation);
+  const [commit] = useApiMutation<CaseRftCreationCaseMutation>(
+    caseRftMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Case-Rft')} ${t_i18n('successfully created')}` },
+  );
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRftAddInput = {
       name: values.name,
@@ -144,6 +151,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         if (updater && response) {
           updater(store, 'caseRftAdd', response.caseRftAdd);
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: (response) => {
         setSubmitting(false);
@@ -332,16 +343,23 @@ const CaseRftCreation = ({
   paginationOptions: CaseRftLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfts',
     paginationOptions,
     'caseRftAdd',
   );
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateCaseRftControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Case-Rft' {...props} />
+  );
+
   return (
     <Drawer
       title={t_i18n('Create a request for takedown')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateCaseRftControlledDial : undefined}
     >
       <CaseRftCreationForm updater={updater} />
     </Drawer>
