@@ -132,7 +132,7 @@ class RootAttackPattern extends Component {
                     ]}
                     />
                     <StixDomainObjectHeader
-                      entityType="AttackPattern"
+                      entityType="Attack-Pattern"
                       disableSharing={true}
                       stixDomainObject={props.attackPattern}
                       PopoverComponent={<AttackPatternPopover />}
