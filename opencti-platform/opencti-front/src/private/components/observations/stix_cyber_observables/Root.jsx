@@ -227,7 +227,7 @@ class RootStixCyberObservable extends Component {
                         }
                       />
                       <Route
-                        path="/relations/:relationId"
+                        path="/knowledge/relations/:relationId"
                         element={
                           <StixCoreRelationship
                             entityId={observableId}
