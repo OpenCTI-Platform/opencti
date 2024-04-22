@@ -4,7 +4,7 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "disabled_dev_features": ["LOGICAL_DELETION"],
+    "disabled_dev_features": ["LOGICAL_DELETION", "FAB_REPLACEMENT"],
     "https_cert": {
       "ca": [],
       "key": null,
