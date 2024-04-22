@@ -43,7 +43,6 @@ describe('Confidence level utilities', () => {
     const groupNull = makeGroup(null);
     const group70 = makeGroup(70);
     const group80 = makeGroup(80);
-    const group40 = makeGroupWithOverrides(40, 90);
     const group40WithReport90 = makeGroupWithOverrides(40, [{ entity_type: 'Report', max_confidence: 90 }]);
     const group40WithOverrides = makeGroupWithOverrides(
       40,
@@ -254,9 +253,6 @@ describe('Control confidence', () => {
       makeReport(null),
       'Report'
     )).toEqual({ confidenceLevelToApply: 90, });
-    expect(controlCreateInputWithUserConfidence(makeUserWithOverrides(null, [{ entity_type: 'Report', max_confidence: 90 }]), makeReport(null), 'Report')).toEqual({
-      confidenceLevelToApply: 90,
-    });
     expect(() => controlCreateInputWithUserConfidence(makeUser(null), makeReport(50), 'Report'))
       .toThrowError('User has no effective max confidence level and cannot create this element');
   });
