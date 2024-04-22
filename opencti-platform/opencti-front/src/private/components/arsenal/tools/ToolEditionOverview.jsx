@@ -302,6 +302,7 @@ export default createFragmentContainer(ToolEditionOverviewComponent, {
         description
         tool_types
         confidence
+        entity_type
         createdBy {
           ... on Identity {
             id

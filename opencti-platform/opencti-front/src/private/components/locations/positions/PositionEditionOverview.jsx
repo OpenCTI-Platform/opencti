@@ -345,6 +345,7 @@ export default createFragmentContainer(PositionEditionOverviewComponent, {
       street_address
       postal_code
       confidence
+      entity_type
       description
       createdBy {
         ... on Identity {

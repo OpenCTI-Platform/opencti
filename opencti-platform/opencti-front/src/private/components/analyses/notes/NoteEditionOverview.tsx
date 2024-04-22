@@ -285,6 +285,7 @@ const NoteEditionOverview = createFragmentContainer(
         id
         created
         attribute_abstract
+        entity_type
         content
         note_types
         confidence

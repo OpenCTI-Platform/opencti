@@ -274,6 +274,7 @@ export default createFragmentContainer(CampaignEditionOverviewComponent, {
       id
       name
       confidence
+      entity_type
       description
       createdBy {
         ... on Identity {

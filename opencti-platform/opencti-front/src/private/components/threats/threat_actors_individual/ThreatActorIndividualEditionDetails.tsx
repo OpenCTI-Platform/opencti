@@ -68,6 +68,7 @@ const threatActorIndividualEditionDetailsFragment = graphql`
     goals
     roles
     confidence
+    entity_type
     objectMarking {
       id
       definition_type

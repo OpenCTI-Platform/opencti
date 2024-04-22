@@ -94,6 +94,7 @@ export const infrastructureEditionOverviewFragment = graphql`
     name
     description
     confidence
+    entity_type
     first_seen
     last_seen
     infrastructure_types

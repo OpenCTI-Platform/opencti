@@ -280,6 +280,7 @@ export default createFragmentContainer(NarrativeEditionOverviewComponent, {
       name
       description
       confidence
+      entity_type
       createdBy {
         ... on Identity {
           id

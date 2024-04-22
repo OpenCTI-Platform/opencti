@@ -342,6 +342,7 @@ export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
       name
       description
       confidence
+      entity_type
       x_opencti_threat_hunting
       x_opencti_log_sources
       x_mitre_id

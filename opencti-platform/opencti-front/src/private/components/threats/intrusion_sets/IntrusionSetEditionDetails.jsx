@@ -301,6 +301,7 @@ export default createFragmentContainer(IntrusionSetEditionDetailsComponent, {
       secondary_motivations
       goals
       confidence
+      entity_type
     }
   `,
 });

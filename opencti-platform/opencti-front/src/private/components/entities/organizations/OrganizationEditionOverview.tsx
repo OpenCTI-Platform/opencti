@@ -339,6 +339,7 @@ export default createFragmentContainer(OrganizationEditionOverviewComponent, {
         name
         description
         confidence
+        entity_type
         contact_information
         x_opencti_organization_type
         x_opencti_reliability

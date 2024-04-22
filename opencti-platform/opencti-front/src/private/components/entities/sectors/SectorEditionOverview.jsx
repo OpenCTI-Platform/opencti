@@ -271,6 +271,7 @@ export default createFragmentContainer(SectorEditionOverviewComponent, {
         description
         isSubSector
         confidence
+        entity_type
         createdBy {
           ... on Identity {
             id

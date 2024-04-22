@@ -280,6 +280,7 @@ export default createFragmentContainer(ChannelEditionOverviewComponent, {
       channel_types
       description
       confidence
+      entity_type
       createdBy {
         ... on Identity {
           id

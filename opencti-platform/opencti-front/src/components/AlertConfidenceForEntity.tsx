@@ -5,6 +5,7 @@ import { useFormatter } from './i18n';
 
 type AlertConfidenceForEntityProps = {
   entity: {
+    entity_type?: string | null
     confidence?: number | null
   }
 };

@@ -86,6 +86,10 @@ const rootPrivateQuery = graphql`
       individual_id
       effective_confidence_level {
         max_confidence
+        overrides {
+          entity_type
+          max_confidence
+        }
       }
       capabilities {
         name

@@ -57,6 +57,7 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
     marital_status
     job_title
     confidence
+    entity_type
     bornIn {
       id
       name

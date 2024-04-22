@@ -67,6 +67,7 @@ const caseRftEditionOverviewFragment = graphql`
     revoked
     description
     confidence
+    entity_type
     created
     takedown_types
     severity

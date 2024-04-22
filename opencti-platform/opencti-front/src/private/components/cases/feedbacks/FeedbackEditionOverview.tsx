@@ -65,6 +65,7 @@ const feedbackEditionOverviewFragment = graphql`
     description
     rating
     confidence
+    entity_type
     x_opencti_stix_ids
     createdBy {
       ... on Identity {

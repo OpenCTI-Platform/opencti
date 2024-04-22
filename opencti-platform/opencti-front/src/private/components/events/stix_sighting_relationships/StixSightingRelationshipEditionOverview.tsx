@@ -72,6 +72,7 @@ const StixSightingRelationshipEditionOverviewFragment = graphql`
     attribute_count
     x_opencti_negative
     confidence
+    entity_type
     first_seen
     last_seen
     description

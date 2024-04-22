@@ -24,7 +24,17 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
     );
   }
 
-  // TODO: add overrides in a tooltip when in use
+  const renderOverrides = () => {
+    return (
+      <>
+        {user.effective_confidence_level?.overrides?.map((override, index) => (
+          <div key={index} style={{ marginTop: '5px' }}>
+            {`${override.entity_type}: ${override.max_confidence}`}
+          </div>
+        ))}
+      </>
+    );
+  };
 
   const renderSource = () => {
     const source = user.effective_confidence_level?.source;
@@ -34,16 +44,21 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
         return (
           <Tooltip
             sx={{ marginLeft: 1 }}
-            title={t_i18n('', {
-              id: 'The Max Confidence Level is currently inherited from...',
-              values: {
-                link: (
-                  <Link to={`/dashboard/settings/accesses/groups/${source.object.id}`}>
-                    {source.object.name}
-                  </Link>
-                ),
-              },
-            })}
+            title={
+              <>
+                {t_i18n('', {
+                  id: 'The Max Confidence Level is currently inherited from...',
+                  values: {
+                    link: (
+                      <Link to={`/dashboard/settings/accesses/groups/${source.object.id}`}>
+                        {source.object.name}
+                      </Link>
+                    ),
+                  },
+                })}
+                {renderOverrides()}
+              </>
+            }
           >
             <InformationOutline fontSize={'small'} color={'info'} />
           </Tooltip>
@@ -54,7 +69,12 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
         return (
           <Tooltip
             sx={{ marginLeft: 1 }}
-            title={t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
+            title={
+              <div>
+                {t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
+                {renderOverrides()}
+              </div>
+            }
           >
             <InformationOutline fontSize={'small'} color={'info'} />
           </Tooltip>

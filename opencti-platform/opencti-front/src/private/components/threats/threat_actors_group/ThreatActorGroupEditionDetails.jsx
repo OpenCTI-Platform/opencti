@@ -343,6 +343,7 @@ export default createFragmentContainer(
         goals
         roles
         confidence
+        entity_type
       }
     `,
   },

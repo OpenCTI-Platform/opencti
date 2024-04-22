@@ -227,6 +227,7 @@ export default createFragmentContainer(AttackPatternEditionDetailsComponent, {
       x_mitre_permissions_required
       x_mitre_detection
       confidence
+      entity_type
     }
   `,
 });

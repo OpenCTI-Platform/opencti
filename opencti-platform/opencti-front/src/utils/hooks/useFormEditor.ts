@@ -9,6 +9,7 @@ import useApiMutation from './useApiMutation';
 
 export interface GenericData {
   id: string;
+  entity_type?: string;
   confidence?: number;
   readonly objectMarking: {
     readonly edges: ReadonlyArray<{

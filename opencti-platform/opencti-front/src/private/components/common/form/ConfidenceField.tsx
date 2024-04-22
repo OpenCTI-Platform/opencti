@@ -49,6 +49,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
   const { effectiveConfidenceLevel } = useConfidenceLevel();
+  const getConfidenceLevel = effectiveConfidenceLevel(entityType);
   return (
     <Alert
       classes={{ root: classes.alert, message: classes.message }}
@@ -70,7 +71,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
         onSubmit={onSubmit}
         editContext={editContext}
         disabled={disabled}
-        maxLimit={effectiveConfidenceLevel?.max_confidence ?? 0}
+        maxLimit={getConfidenceLevel}
       />
     </Alert>
   );

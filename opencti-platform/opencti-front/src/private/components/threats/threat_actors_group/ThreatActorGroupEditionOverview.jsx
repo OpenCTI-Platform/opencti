@@ -301,6 +301,7 @@ export default createFragmentContainer(
         name
         threat_actor_types
         confidence
+        entity_type
         description
         createdBy {
           ... on Identity {

@@ -283,6 +283,7 @@ export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
       id
       name
       confidence
+      entity_type
       description
       createdBy {
         ... on Identity {
