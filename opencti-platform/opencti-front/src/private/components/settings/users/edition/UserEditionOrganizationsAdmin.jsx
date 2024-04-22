@@ -26,7 +26,7 @@ import { AccountBalanceOutlined } from '@mui/icons-material';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(

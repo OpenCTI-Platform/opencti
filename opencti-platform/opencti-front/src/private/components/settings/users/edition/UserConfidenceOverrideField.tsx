@@ -10,8 +10,8 @@ import Button from '@mui/material/Button';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
-import { FieldProps, useFormikContext } from 'formik';
-import { ConfidenceFormData, Override } from '@components/settings/users/edition/UserEditionConfidence';
+import { FieldProps } from 'formik';
+import { OverrideFormData } from '@components/settings/users/edition/UserEditionConfidence';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
@@ -38,19 +38,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export interface OverrideState {
-  entity_type: string | null;
-  max_confidence: string | null;
-}
-
 interface UserConfidenceOverridesFieldComponentProps
-  extends FieldProps {
+  extends FieldProps<OverrideFormData> {
   index: number;
   onDelete: () => void;
-  onSubmit: (index: number, value: OverrideState | null) => void;
+  onSubmit: (index: number, value: OverrideFormData | null) => void;
 }
 
 const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
+  form,
+  field,
   index,
   onDelete,
   onSubmit,
@@ -60,10 +57,10 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   const { availableEntityTypes } = useSchema();
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
-  const { values, setFieldValue } = useFormikContext<ConfidenceFormData>();
-  const value = values.overrides[index];
+  const { value, name } = field;
+  const { setFieldValue } = form;
 
-  const handleDeleteOverride = (event: MouseEvent) => {
+  const handleDeleteOverride = (event: React.MouseEvent) => {
     event.stopPropagation(); // to avoid open/close the accordion
     handleOpenDelete();
   };
@@ -75,18 +72,17 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
     handleCloseDelete();
   };
 
-  const [state, setState] = useState<OverrideState>(value);
-
-  const handleSubmitEntityType = async (newValue: AvailableEntityOption | null) => {
-    await setFieldValue(`overrides[${index}].entity_type`, newValue?.value);
-    setState((s) => ({ ...s, entity_type: newValue?.value }));
-    onSubmit(index, newValue === null ? null : { entity_type: newValue.value, max_confidence: state.max_confidence ?? '0' });
+  const handleSubmitEntityType = async (entityType: AvailableEntityOption | null) => {
+    const newValue = entityType === null
+      ? null : { entity_type: entityType.value, max_confidence: value.max_confidence };
+    await setFieldValue(`${name}.entity_type`, newValue);
+    onSubmit(index, newValue);
   };
 
-  const handleSubmitConfidence = async (name: string, newValue: string) => {
-    await setFieldValue(`overrides[${index}].max_confidence`, newValue);
-    setState((s) => ({ ...s, max_confidence: newValue }));
-    onSubmit(index, { entity_type: state.entity_type, max_confidence: newValue });
+  const handleSubmitConfidence = async (_: string, maxConfidence: string) => {
+    const newValue = { entity_type: value.entity_type, max_confidence: maxConfidence };
+    await setFieldValue(`${name}.max_confidence`, newValue);
+    onSubmit(index, newValue);
   };
 
   // -- ACCORDION --
@@ -111,7 +107,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
 
   const overrideLabel = (
     idx: number,
-    override: Override,
+    override: OverrideFormData,
   ) => {
     const number = `#${idx + 1}`;
     if (isEmptyField(override.entity_type)) {
@@ -174,7 +170,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
             />
             {value.entity_type && (
               <ConfidenceField
-                name={`overrides[${index}].max_confidence`}
+                name={`${name}.max_confidence`}
                 entityType={value.entity_type}
                 variant="edit"
                 onSubmit={handleSubmitConfidence}

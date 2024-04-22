@@ -6,22 +6,22 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { useMutation } from 'react-relay';
 import { userMutationFieldPatch } from '@components/settings/users/edition/UserEditionOverview';
-import UserConfidenceOverrideField, { OverrideState } from '@components/settings/users/edition/UserConfidenceOverrideField';
+import UserConfidenceOverrideField from '@components/settings/users/edition/UserConfidenceOverrideField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
-export interface Override {
-  max_confidence: number;
+export interface OverrideFormData {
+  max_confidence: string;
   entity_type: string;
 }
 
 export interface ConfidenceFormData {
   user_confidence_level_enabled: boolean;
   user_confidence_level: number | null | undefined;
-  overrides: Override[]
+  overrides: OverrideFormData[]
 }
 
 interface UserEditionConfidenceProps {
@@ -62,10 +62,12 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
   const initialValues: ConfidenceFormData = {
     user_confidence_level_enabled: !!user.user_confidence_level,
     user_confidence_level: user.user_confidence_level?.max_confidence,
-    overrides: [...user.user_confidence_level?.overrides ?? []],
-  };
+    overrides: user.user_confidence_level?.overrides?.map((override) => ({
+      ...override,
+      max_confidence: override.max_confidence.toString(),
+    })) ?? [] };
 
-  const [commitFieldPatch] = useMutation(userMutationFieldPatch);
+  const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
 
   const handleSubmitMaxConfidence = (name: string, value: string | null) => {
     userConfidenceValidation(t_i18n)
@@ -117,9 +119,8 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
       .catch(() => false);
   };
 
-  const handleSubmitOverride = (index: number, value: OverrideState | null) => {
+  const handleSubmitOverride = (index: number, value: OverrideFormData | null) => {
     const name = `overrides[${index}]`;
-    console.log('name', name, 'value', value, typeof value);
     if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
       userConfidenceValidation(t_i18n)
         .validateAt(name, { [name]: value })

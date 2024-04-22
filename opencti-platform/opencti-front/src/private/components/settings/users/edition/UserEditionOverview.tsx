@@ -17,7 +17,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
