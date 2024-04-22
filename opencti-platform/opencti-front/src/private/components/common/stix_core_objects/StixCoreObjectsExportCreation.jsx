@@ -76,6 +76,8 @@ const StixCoreObjectsExportCreationComponent = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
+  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
     const { orderBy, filters, orderMode } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
@@ -189,11 +191,13 @@ const StixCoreObjectsExportCreationComponent = ({
                               <ObjectMarkingField
                                 name="contentMaxMarkings"
                                 label={t_i18n('Content max marking definition levels')}
+                                onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                                 style={fieldSpacingContainerStyle}
                               />
                               <ObjectMarkingField
                                 name="fileMarkings"
                                 label={t_i18n('File marking definition levels')}
+                                filterTargetIds={selectedContentMaxMarkingsIds}
                                 style={fieldSpacingContainerStyle}
                               />
                             </DialogContent>

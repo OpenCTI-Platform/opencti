@@ -140,6 +140,7 @@ const StixCoreObjectFilesAndHistory = ({
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
@@ -151,7 +152,7 @@ const StixCoreObjectFilesAndHistory = ({
   const handleCloseImport = () => setFileToImport(null);
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
-
+  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
@@ -426,11 +427,13 @@ const StixCoreObjectFilesAndHistory = ({
                   <ObjectMarkingField
                     name="contentMaxMarkings"
                     label={t_i18n('Content max marking definition levels')}
+                    onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                     style={fieldSpacingContainerStyle}
                   />
                   <ObjectMarkingField
                     name="fileMarkings"
                     label={t_i18n('File marking definition levels')}
+                    filterTargetIds={selectedContentMaxMarkingsIds}
                     style={fieldSpacingContainerStyle}
                   />
                 </DialogContent>

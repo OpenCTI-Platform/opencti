@@ -82,7 +82,11 @@ export const scopesConn = (exportConnectors) => {
 class StixCoreRelationshipsExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+  }
+
+  handleSelectedContentMaxMarkingsChange(values) {
+    this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
   }
 
   handleOpen() {
@@ -215,11 +219,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                       <ObjectMarkingField
                                         name="contentMaxMarkings"
                                         label={t('Content max marking definition levels')}
+                                        onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                         style={fieldSpacingContainerStyle}
                                       />
                                       <ObjectMarkingField
                                         name="fileMarkings"
                                         label={t('File marking definition levels')}
+                                        filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                         style={fieldSpacingContainerStyle}
                                       />
                                     </DialogContent>

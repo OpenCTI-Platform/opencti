@@ -15,6 +15,7 @@ import { RenderOption } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';
+import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,7 +59,8 @@ interface ObjectMarkingFieldProps {
   disabled?: boolean;
   label?: string;
   setFieldValue?: (name: string, values: Option[]) => void;
-  limitToMaxSharing?: boolean
+  limitToMaxSharing?: boolean;
+  filterTargetIds?: string[];
 }
 
 interface OptionValues {
@@ -75,6 +77,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   label,
   setFieldValue,
   limitToMaxSharing = false,
+  filterTargetIds,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -92,8 +95,9 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       return !!maxMarking && maxMarking.x_opencti_order >= def.x_opencti_order;
     });
   }
+  const filteredAllowedMarkingDefinitionsOut = filterTargetIds ? filterMarkingsOutFor(allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)), allowedMarkingDefinitions) : allowedMarkingDefinitions;
 
-  const optionSorted = allowedMarkingDefinitions.sort((a, b) => {
+  const optionSorted = filteredAllowedMarkingDefinitionsOut.sort((a, b) => {
     if (a.definition_type === b.definition_type) {
       return a.x_opencti_order < b.x_opencti_order ? -1 : 1;
     }

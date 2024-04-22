@@ -81,7 +81,11 @@ export const scopesConn = (exportConnectors) => {
 class StixCyberObservablesExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+  }
+
+  handleSelectedContentMaxMarkingsChange(values) {
+    this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
   }
 
   handleOpen() {
@@ -226,11 +230,13 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                 <ObjectMarkingField
                                   name="contentMaxMarkings"
                                   label={t('Content max marking definition levels')}
+                                  onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                   style={fieldSpacingContainerStyle}
                                 />
                                 <ObjectMarkingField
                                   name="fileMarkings"
                                   label={t('File marking definition levels')}
+                                  filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                   style={fieldSpacingContainerStyle}
                                 />
                               </DialogContent>

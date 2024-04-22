@@ -140,6 +140,8 @@ const FileManager = ({
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
+  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
@@ -444,11 +446,13 @@ const FileManager = ({
                           <ObjectMarkingField
                             name="contentMaxMarkings"
                             label={t_i18n('Content max marking definition levels')}
+                            onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                           />
                           <ObjectMarkingField
                             name="fileMarkings"
                             label={t_i18n('File marking definition levels')}
+                            filterTargetIds={selectedContentMaxMarkingsIds}
                             style={fieldSpacingContainerStyle}
                           />
                         </DialogContent>

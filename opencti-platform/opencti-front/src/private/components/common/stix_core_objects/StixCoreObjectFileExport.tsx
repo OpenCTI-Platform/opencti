@@ -80,6 +80,8 @@ const StixCoreObjectFileExportComponent = ({
     fileManagerExportMutation,
   );
   const [open, setOpen] = useState(false);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState(['']);
+  const handleSelectedContentMaxMarkingsChange = (values: Option[]) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
   const onSubmitExport = (
     values: FormValues,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<FormValues>,
@@ -233,11 +235,13 @@ const StixCoreObjectFileExportComponent = ({
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t_i18n('Content max marking definition levels')}
+                          onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                           style={fieldSpacingContainerStyle}
                         />
                         <ObjectMarkingField
                           name="fileMarkings"
                           label={t_i18n('File marking definition levels')}
+                          filterTargetIds={selectedContentMaxMarkingsIds}
                           style={fieldSpacingContainerStyle}
                         />
                       </DialogContent>
