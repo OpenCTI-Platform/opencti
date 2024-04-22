@@ -169,7 +169,7 @@ class RootStixCyberObservable extends Component {
                         }
                       />
                       <Route
-                        path="/knowledge/*"
+                        path="/knowledge"
                         element={
                           <StixCyberObservableKnowledge
                             stixCyberObservable={props.stixCyberObservable}
@@ -227,7 +227,7 @@ class RootStixCyberObservable extends Component {
                         }
                       />
                       <Route
-                        path="/relations/:relationId"
+                        path="/knowledge/relations/:relationId"
                         element={
                           <StixCoreRelationship
                             entityId={observableId}
