@@ -15,7 +15,7 @@ Here are some examples of use cases:
 <a id="dashboard-section"></a>
 ## Welcome dashboard
 
-The welcome gives any visitor on the OpenCTI platform an outlook on the live of the platform. It can be replaced by a [custom dashboard](dashboards.md), created by a user (or the default dashboard in a role, a group or an organization).
+The welcome page gives any visitor on the OpenCTI platform an overview of what's happening on the platform. It can be replaced by a [custom dashboard](dashboards.md), created by a user (or the default dashboard set up in a role, a group or an organization).
 
 ![Dashboard](assets/dashboard.png)
 
@@ -23,20 +23,26 @@ The welcome gives any visitor on the OpenCTI platform an outlook on the live of 
 
 #### Numbers
 
-| Component             | Description                                                                                                    |
-| :-------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Total entities        | Number of entities (`threat actor`, `intrusion set`, `indicator`, etc.).                                       |
-| Total relationships   | Number of relationships (`targets`, `uses`, `indicates`, etc.).                                                |
-| Total reports         | Number of reports.                                                                                             |
-| Total observables     | Number of observables (`IPv4-Addr`, `File`, etc.).                                                             |
+| Component      | Description                      |
+|:---------------|:---------------------------------|
+| Intrusion sets | Number of intrusion sets       . |
+| Malware        | Number of malware.               |
+| Reports        | Number of reports.               |
+| Indicators     | Number of indicators.            |
 
 #### Charts & lists
 
-| Component               | Description                                                                                                    |
-| :---------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Top labels              | Top labels given to entities during the last 3 months.                                                         |
-| Ingested entities       | Number of entities ingested by month.                                                                          |
-| Top 10 active entities  | List of the entities with the greatest number of relations over the last 3 months.                             |
-| Targeted countries      | Intensity of the targeting tied to the number of relations `targets` for a given country.                      |
-| Observable distribution | Distribution of the number of observables by type.                                                             |
-| Last ingested reports   | Last reports ingested in the platform.                                                                         |
+| Component                                   | Description                                                                                                                                                |
+|:--------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Most active threats (3 last months)         | Top active threats (threat actor, intrusion set and campaign) during the last 3 months.                                                                    |
+| Most targeted victims (3 last months)       | Intensity of the targeting tied to the number of relations `targets` for a given entities (organization, sector, location, etc.) during the last 3 months. |
+| Relationships created                       | Volume of relationships created over the past 12 months.                                                                                                   |
+| Most active malware (3 last months)         | Top active malware during the last 3 months.                                                                                                               |
+| Most active vulnerabilities (3 last months) | List of the vulnerabilities with the greatest number of relations over the last 3 months.                                                                  |
+| Targeted countries (3 last months)          | Intensity of the targeting tied to the number of relations `targets` for a given country over the past 3 months.                                           |
+| Latest reports                              | Last reports ingested in the platform.                                                                                                                     |
+| Most active labels (3 last months)          | Top labels given to entities during the last 3 months.                                                                                                     |
+
+!!! info "Explore the platform"
+
+    To start exploring the platform and understand how information is structured, we recommend starting with the [overview documentation page](overview.md).

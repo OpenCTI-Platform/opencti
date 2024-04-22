@@ -63,26 +63,26 @@ All tutorials are published directly on the [Medium blog](https://blog.filigran.
 
 <div class="grid cards" markdown>
 
--   __Introducing malware analysis: enhance your cybersecurity triage with OpenCTI__<br />
-    <sub><sup>Jul 22, 2023</sup></sub>
+-   __Introducing decay rules implementation for Indicators in OpenCTI__<br />
+    <sub><sup>Mar 25, 2024</sup></sub>
 
-    As a cybersecurity analyst, you understand the importance of quickly identifying and analyzing suspicious or malicious files, URLs, and network traffic...
+    Cyber Threat Intelligence is made to be used. To be useful, it must be relevant and on time. It is why managing the lifecycle of Indicators of Compromise...
 
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-malware-analysis-enhance-your-cybersecurity-triage-with-opencti-900e41ccccf0)**
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-decay-rules-implementation-for-indicators-in-opencti-472f6e8449fb)**
 
--   __OpenCTI case management is ready for takeoff: what is available and what’s next__<br />
-    <sub><sup>Jul 3, 2023</sup></sub>
+  -   __Introducing advanced filtering possibilities in OpenCTI__<br />
+      <sub><sup>Feb 5, 2024</sup></sub>
 
-    As part of our 2023 strategic roadmap, we’ve worked since January on the case management system within the OpenCTI platform. This initiative comes from 2 simple statements...
+      CTI databases are usually vast and made of complex, inter-dependent objects ingested from various sources. In this challenging context, cyber analysts need...
 
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-case-management-is-ready-for-takeoff-what-is-available-and-whats-next-23f44cc7aa70)**
+      **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-advanced-filtering-possibilities-in-opencti-552147565faf)**
 
--   __Progressive rollout of the OpenCTI Enterprise Edition: why, what and how?__<br />
-    <sub><sup>June 10, 2023</sup></sub>
+-   __Breaking change: evolution of the way Connector, Streams and Feeds import data in OpenCTI__<br />
+    <sub><sup>Jan 29, 2024</sup></sub>
 
-    We are thrilled to announce that, from OpenCTI 5.8, Filigran is now providing some customers with an Enterprise Edition of the platform, whether on-premise...
+    How Connectors, Feeds and Streams use Confidence level currently...
 
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)**
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/breaking-change-evolution-of-the-way-connector-streams-and-feeds-import-data-in-opencti-d10d7eb4407e)**
     
 </div>
 
@@ -98,8 +98,8 @@ List of available connectors and integrations to expand platform usage.
 [**:material-school-outline:{ .middle } Training Courses**](https://training.filigran.io)<br />
 Training courses for analysts and administrators in the Filigran training center.
 
-[**:material-clipboard-pulse-outline:{ .middle } Performances tests & metrics**](https://kibana.opencti.io/s/public/goto/011b80ae0da7aca60de6db2d6cf76c75)<br />
-Regular performance tests based on default configuration and datasets.
+[**:material-video-youtube:{ .middle } Video materials**](https://www.youtube.com/@Filigran/videos)<br />
+Set of video illustrating the implementation of use cases and platform capabilities.
 
 </div>
 <br /><br /><br />
