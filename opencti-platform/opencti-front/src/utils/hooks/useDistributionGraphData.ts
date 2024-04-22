@@ -75,18 +75,14 @@ const useDistributionGraphData = () => {
     });
   };
 
-  const buildDistributionRedirectionUtils = (distributionData: DistributionQueryData, selection: Selection) => {
-    // only build redirections on names distribution
-    if (selection.attribute === 'name') {
-      return distributionData.flatMap((n) => {
-        if (!n || !n.entity) return [];
-        return {
-          id: n.entity.id,
-          entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
-        };
-      });
-    }
-    return undefined;
+  const buildDistributionRedirectionUtils = (distributionData: DistributionQueryData) => {
+    return distributionData.flatMap((n) => {
+      if (!n || !n.entity || !n.entity.id) return [];
+      return {
+        id: n.entity.id,
+        entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
+      };
+    });
   };
 
   /**
@@ -102,7 +98,7 @@ const useDistributionGraphData = () => {
         name: selection.label || t_i18n(defaultGraphLabel),
         data: buildDistributionGraphData(distributionData, selection),
       }],
-      redirectionUtils: buildDistributionRedirectionUtils(distributionData, selection),
+      redirectionUtils: buildDistributionRedirectionUtils(distributionData),
     };
   };
 
