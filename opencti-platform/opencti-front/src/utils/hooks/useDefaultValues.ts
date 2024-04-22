@@ -117,7 +117,8 @@ const useDefaultValues = <Values extends FormikValues>(
 
   // Default confidence
   if (keys.includes('confidence') && isEmptyField(initialValues.confidence) && isEmptyField(defaultValues.confidence)) {
-    defaultValues.confidence = effectiveConfidenceLevel?.max_confidence ?? 75;
+    const getEffectiveConfidence = effectiveConfidenceLevel(id);
+    defaultValues.confidence = getEffectiveConfidence ?? 75;
   }
 
   // Default published
