@@ -26,6 +26,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, prometheus, file]
+      exporters: [debug, prometheus]
 
   extensions: [health_check]

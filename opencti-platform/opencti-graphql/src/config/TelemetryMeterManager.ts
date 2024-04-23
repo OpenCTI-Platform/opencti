@@ -6,8 +6,6 @@ export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
-  private version = '0';
-
   private language = 'auto';
 
   private isEEActivated = 0;
@@ -55,19 +53,25 @@ export class TelemetryMeterManager {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     // - Gauges - //
     // number of instances
-    const numberOfInstancesGauge = meter.createObservableGauge('opencti_numberOfInstances');
+    const numberOfInstancesGauge = meter.createObservableGauge(
+      'opencti_numberOfInstances',
+      { description: 'number of instances', unit: 'count' },
+    );
     numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.numberOfInstances);
     });
     // is EE activated
-    const isEEActivatedGauge = meter.createObservableGauge('opencti_isEEActivated');
+    const isEEActivatedGauge = meter.createObservableGauge(
+      'opencti_isEEActivated',
+      { description: 'if Enterprise Edition is activated', unit: 'boolean' },
+    );
     isEEActivatedGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.isEEActivated, { EEActivationDate: this.EEActivationDate });
     });
     // number of users activ in the last 24 hours
     const activUsersGauge = meter.createObservableGauge(
       'opencti_numberOfActivUsers',
-      { description: 'number of activ users, i.e. users activ in the last 24 hours' },
+      { description: 'number of activ users, i.e. users activ in the last 24 hours', unit: 'count' },
     );
     activUsersGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.activUsers.length);
