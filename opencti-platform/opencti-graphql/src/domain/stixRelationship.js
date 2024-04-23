@@ -64,7 +64,8 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  const relationship_type = args.relationship_type ?? [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
   }
