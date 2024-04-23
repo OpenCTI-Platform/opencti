@@ -57,7 +57,7 @@ export const findAllSupportFiles = (files: string[]): string[] => {
   return allSupportFiles;
 };
 
-const archiveFolderToZipAndDeleteLocalFolder = async (zipLocalFolder: string, zipFullpath: string) => {
+const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) => {
   const archive = archiver('zip');
   const output = fs.createWriteStream(zipFullpath);
 
@@ -79,13 +79,6 @@ const archiveFolderToZipAndDeleteLocalFolder = async (zipLocalFolder: string, zi
   while (!closed && initWaitingTime > 0) {
     await wait(500);
     initWaitingTime -= 500;
-  }
-
-  // Cleanup local filesystem
-  if (cleanupFiles) {
-    if (fs.existsSync(zipLocalFolder)) {
-      fs.rmSync(zipLocalFolder, { recursive: true, force: true });
-    }
   }
 };
 
@@ -153,24 +146,28 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
  * @param entity
  */
 export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, entity: BasicStoreEntitySupportPackage) => {
-  const zipLocalFolder: string = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id, NODE_INSTANCE_ID);
+  const zipLocalRootFolder = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id);
+  const zipLocalFullFolder: string = join(zipLocalRootFolder, NODE_INSTANCE_ID);
 
-  if (!fs.existsSync(zipLocalFolder)) {
-    fs.mkdirSync(zipLocalFolder, { recursive: true });
+  if (!fs.existsSync(zipLocalFullFolder)) {
+    fs.mkdirSync(zipLocalFullFolder, { recursive: true });
   }
 
-  await downloadAllLogFiles(user, `${entity.package_upload_dir}/`, zipLocalFolder);
+  await downloadAllLogFiles(user, `${entity.package_upload_dir}/`, zipLocalFullFolder);
 
   const zipName = `${entity.id}.zip`;
   const zipFullpath = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName);
   // FIXME I'm quite sure that we can generate a zip steam without writing on filesystem.
-  await archiveFolderToZipAndDeleteLocalFolder(zipLocalFolder, zipFullpath);
+  await archiveFolderToZip(zipLocalFullFolder, zipFullpath);
 
   const updatedEntity2 = await uploadArchivedSupportPackageToS3(context, user, SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName, entity);
 
-  // FIXME enable at the end
-  // Cleanup zip locally
+  // Cleaning zip folder and zip file locally
   if (cleanupFiles) {
+    if (fs.existsSync(zipLocalRootFolder)) {
+      fs.rmSync(zipLocalRootFolder, { recursive: true, force: true });
+    }
+
     if (fs.existsSync(zipFullpath)) {
       fs.rmSync(zipFullpath, { recursive: true, force: true });
     }
