@@ -9,35 +9,36 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { FileUploaderEntityMutation$data } from './__generated__/FileUploaderEntityMutation.graphql';
 import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlobalMutation.graphql';
+import FileImportMarkingSelectionPopup from './FileImportMarkingSelectionPopup';
 
 const fileUploaderGlobalMutation = graphql`
-  mutation FileUploaderGlobalMutation($file: Upload!) {
-    uploadImport(file: $file) {
-      id
-      ...FileLine_file
+    mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]!) {
+        uploadImport(file: $file, fileMarkings: $fileMarkings) {
+            id
+            ...FileLine_file
+        }
     }
-  }
 `;
 
 const fileUploaderEntityMutation = graphql`
-  mutation FileUploaderEntityMutation($id: ID!, $file: Upload!) {
-    stixCoreObjectEdit(id: $id) {
-      importPush(file: $file) {
-        id
-        ...FileLine_file
-        metaData {
-          entity {
-            ... on StixObject {
-              id
+    mutation FileUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]!) {
+        stixCoreObjectEdit(id: $id) {
+            importPush(file: $file, fileMarkings: $fileMarkings) {
+                id
+                ...FileLine_file
+                metaData {
+                    entity {
+                        ... on StixObject {
+                            id
+                        }
+                        ... on StixDomainObject {
+                            ...PictureManagementViewer_entity
+                        }
+                    }
+                }
             }
-            ... on StixDomainObject {
-              ...PictureManagementViewer_entity
-            }
-          }
         }
-      }
     }
-  }
 `;
 
 interface FileUploaderProps {
@@ -59,17 +60,20 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
 
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const [upload, setUpload] = useState<string | null>(null);
-
+  const [selectedFile, setSelectedFile] = useState<File>();
   const handleOpenUpload = () => uploadRef.current?.click();
 
-  const handleUpload = (file: File) => {
+  const closeFileImportMarkingSelectionPopup = () => setSelectedFile(undefined);
+
+  const handleUpload = (fileMarkings: string[]) => {
+    if (!selectedFile) return;
     commitMutation({
       mutation: entityId
         ? fileUploaderEntityMutation
         : fileUploaderGlobalMutation,
-      variables: { file, id: entityId },
+      variables: { file: selectedFile, fileMarkings, id: entityId },
       optimisticUpdater: () => {
-        setUpload(file.name);
+        setUpload(selectedFile.name);
       },
       onCompleted: (
         result:
@@ -94,9 +98,11 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
       updater: undefined,
       optimisticResponse: undefined,
       onError: undefined,
-      setSubmitting: undefined,
+      setSubmitting: true,
     });
   };
+
+  const hasSelectedFile = !!selectedFile;
 
   return (
     <React.Fragment>
@@ -107,9 +113,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           style={{ display: 'none' }}
           onChange={({ target: { validity, files } }) => {
             const file = files?.item(0);
-            if (file && validity.valid) {
-              handleUpload(file);
-            }
+            if (file && validity.valid) setSelectedFile(file);
           }}
           accept={accept}
         />
@@ -120,10 +124,15 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           style={{ display: 'none' }}
           onChange={({ target: { validity, files } }) => {
             const file = files?.item(0);
-            if (file && validity.valid) {
-              handleUpload(file);
-            }
+            if (file && validity.valid) setSelectedFile(file);
           }}
+        />
+      )}
+      {hasSelectedFile && (
+        <FileImportMarkingSelectionPopup
+          isOpen={hasSelectedFile}
+          handleUpload={handleUpload}
+          closePopup={closeFileImportMarkingSelectionPopup}
         />
       )}
       {upload ? (

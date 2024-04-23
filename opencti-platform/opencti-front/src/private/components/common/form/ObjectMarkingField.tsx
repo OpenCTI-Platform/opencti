@@ -176,7 +176,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         open={!!newMarking}
         keepMounted={true}
         TransitionComponent={Transition}
-        onClose={handleClose}
+        onClose={handleCancellation}
       >
         <DialogContent>
           <DialogContentText>
