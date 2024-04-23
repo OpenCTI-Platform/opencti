@@ -89,7 +89,7 @@ export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
       }
     }
   }
-`; // retrieve objectMarking or rel_object-marking.internal_id
+`;
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
