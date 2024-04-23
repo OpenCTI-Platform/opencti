@@ -54,7 +54,7 @@ const ThreatActorsGroup = () => {
 
   const { isFeatureEnable } = useHelper();
   const dataTableEnabled = isFeatureEnable('DATA_TABLES');
-
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderCards = () => {
     const {
       numberOfElements,
@@ -95,6 +95,9 @@ const ThreatActorsGroup = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleChangeView={dataTableEnabled ? helpers.handleChangeView : undefined}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -184,9 +187,11 @@ const ThreatActorsGroup = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Threat actors (group)'), current: true }]} />
       {viewStorage.view !== 'lines' || !dataTableEnabled ? renderCards() : renderList()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ThreatActorGroupCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </>
   );
 };

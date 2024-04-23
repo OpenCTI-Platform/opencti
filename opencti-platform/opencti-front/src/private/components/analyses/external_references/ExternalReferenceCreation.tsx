@@ -320,7 +320,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
             enableReinitialize={true}
             onSubmit={!creationCallback && (isFABReplaced || !handleCloseContextual) ? onSubmit : onSubmitContextual}
             initialValues={{
-              source_name: inputValue || '',
+              source_name: inputValue ?? '',
               external_id: '',
               url: '',
               description: '',
