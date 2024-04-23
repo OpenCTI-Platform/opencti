@@ -15,7 +15,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../common/menus/CreateEntityControlledDial';
+import { QueryRenderer } from '../../../../relay/environment';
 import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
@@ -170,6 +172,11 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [search, setSearch] = useState('');
+  const [commit] = useApiMutation(
+    stixSightingRelationshipCreationFromEntityMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
+  );
 
   const handleOpen = () => {
     setOpen(true);
@@ -198,15 +205,13 @@ const StixSightingRelationshipCreationFromEntity = ({
         R.pluck('value', values.externalReferences),
       ),
     )(values);
-    commitMutation({
-      mutation: stixSightingRelationshipCreationFromEntityMutation,
+    commit({
       variables: { input: finalValues },
       updater: (store) => {
         if (typeof onCreate !== 'function') {
           insertNode(store, 'Pagination_stixSightingRelationships', paginationOptions, 'stixSightingRelationshipAdd');
         }
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -455,29 +460,41 @@ const StixSightingRelationshipCreationFromEntity = ({
       </div>
     );
   };
+
+  const openElement = () => {
+    switch (variant) {
+      case 'controlledDial':
+        return CreateEntityControlledDial('entity_Sighting')({ onOpen: handleOpen });
+      case 'inLine':
+        return (
+          <IconButton
+            color="secondary"
+            aria-label="Label"
+            onClick={handleOpen}
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        );
+      default:
+        return (
+          <Fab
+            onClick={handleOpen}
+            color="secondary"
+            aria-label="Add"
+            className={classes.createButton}
+            style={{ right: paddingRight || 30 }}
+          >
+            <Add />
+          </Fab>
+        );
+    }
+  };
+
   return (
     <div>
-      {variant === 'inLine' ? (
-        <IconButton
-          color="secondary"
-          aria-label="Label"
-          onClick={handleOpen}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      ) : (
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-          style={{ right: paddingRight || 30 }}
-        >
-          <Add />
-        </Fab>
-      )}
+      {openElement()}
       <Drawer
         open={open}
         anchor="right"

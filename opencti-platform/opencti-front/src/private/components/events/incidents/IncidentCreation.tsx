@@ -11,7 +11,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
-import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -98,7 +98,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation(IncidentMutation);
+  const [commit] = useApiMutation(
+    IncidentMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
+  );
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     confidence: Yup.number().nullable(),
@@ -144,7 +148,6 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -153,7 +156,6 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         if (onCompleted) {
           onCompleted();
         }
-        MESSAGING$.notifySuccess(`${t_i18n('entity_Incident')} ${t_i18n('successfully created')}`);
       },
     });
   };

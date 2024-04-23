@@ -9,7 +9,7 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
-import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -113,6 +113,8 @@ ObservedDataFormProps
   );
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
     observedDataCreationMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
     values,
@@ -141,7 +143,6 @@ ObservedDataFormProps
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -150,7 +151,6 @@ ObservedDataFormProps
         if (onCompleted) {
           onCompleted();
         }
-        MESSAGING$.notifySuccess(`${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}`);
       },
     });
   };
