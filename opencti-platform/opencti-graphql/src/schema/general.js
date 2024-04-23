@@ -5,7 +5,6 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 export const STIX_TYPE_RELATION = 'relationship';
 export const STIX_TYPE_SIGHTING = 'sighting';
 
-export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNORGARESTRICT';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
 export const KNOWLEDGE_MANAGE_AUTH_MEMBERS = 'KNMANAGEAUTHMEMBERS';
 export const KNOWLEDGE_UPDATE = 'KNUPDATE';

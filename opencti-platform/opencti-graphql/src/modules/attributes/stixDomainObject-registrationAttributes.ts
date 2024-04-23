@@ -9,6 +9,7 @@ import {
   iAliasedIds,
   identityClass,
   lang,
+  modified,
   revoked,
   xOpenctiAliases,
   xOpenctiReliability
@@ -40,6 +41,8 @@ import {
 } from '../../schema/stixDomainObject';
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
+  created,
+  modified,
   lang,
   confidence,
   revoked,
