@@ -20,7 +20,7 @@ export default class GroupingsPage {
   }
 
   getCreateButton() {
-    return this.page.getByTestId('CreateEntityControlledDial');
+    return this.page.getByRole('button', { name: 'Create' })
   }
 
   getItemFromList(name: string) {
