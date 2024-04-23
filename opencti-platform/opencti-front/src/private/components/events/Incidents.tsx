@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import IncidentsLines, { incidentsLinesPaginationQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
@@ -21,6 +22,7 @@ export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -111,6 +113,7 @@ const Incidents: FunctionComponent = () => {
       isSortable: isRuntimeSort,
     },
   };
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderLines = () => {
     return (
       <>
@@ -135,6 +138,9 @@ const Incidents: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IncidentCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -179,9 +185,11 @@ const Incidents: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IncidentCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!FABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };
