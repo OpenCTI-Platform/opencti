@@ -1,9 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
-import { USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, USER_PARTICIPATE } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import type { SupportPackage } from '../../../src/generated/graphql';
+import { addSupportPackage } from '../../../src/modules/support/support-domain';
+import convertSupportPackageToStix from '../../../src/modules/support/support-converter';
+import type { StoreEntitySupportPackage } from '../../../src/modules/support/support-types';
+import type { AuthContext } from '../../../src/types/user';
 
 const CREATE_QUERY = gql`
     mutation supportPackageAdd($input: SupportPackageAddInput!) {
@@ -154,5 +158,15 @@ describe('SupportPackage rights management checks', () => {
         },
       },
     });
+  });
+});
+
+describe('Testing STIX conversion for the day when Internal object will be exported.', () => {
+  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'supportPackageListener-test', otp_mandatory: false };
+  it('should be STIX converted', async () => {
+    const supportPackage = await addSupportPackage(adminContext, ADMIN_USER, { name: 'testing-stix-converter' });
+
+    const stixResult = convertSupportPackageToStix(supportPackage as StoreEntitySupportPackage);
+    expect(stixResult.id.startsWith('support-package--'), `${stixResult.id} does not start with support-package--`).toBeTruthy();
   });
 });
