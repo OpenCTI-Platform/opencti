@@ -205,8 +205,8 @@ import {
   controlUpsertInputWithUserConfidence,
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
-import { uploadToStorage } from './file-storage-helper';
-import { deleteAllObjectFiles, storeFileConverter } from './file-storage';
+import { deleteAllObjectFiles, uploadToStorage } from './file-storage-helper';
+import { storeFileConverter } from './file-storage';
 
 // region global variables
 const MAX_BATCH_SIZE = 300;

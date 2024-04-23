@@ -9,13 +9,13 @@ import mime from 'mime-types';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
-import { createWork, deleteWorkForFile, deleteWorkForSource } from '../domain/work';
+import { createWork, deleteWorkForFile } from '../domain/work';
 import { isNotEmptyField } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
-import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
+import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 
 // Minio configuration
@@ -86,6 +86,7 @@ export const deleteBucket = async () => {
     await s3Client.send(new s3.DeleteBucketCommand({ Bucket: bucketName }));
   } catch (err) {
     // Dont care
+    logApp.info('[FILE STORAGE] Bucket cannot be deleted.', { err });
   }
 };
 
@@ -132,7 +133,7 @@ export const downloadFile = async (id) => {
     }));
     return object.Body;
   } catch (err) {
-    logApp.info('[OPENCTI] Cannot retrieve file from S3', { error: err });
+    logApp.info('[FILE STORAGE] Cannot retrieve file from S3', { error: err });
     return null;
   }
 };
@@ -199,7 +200,7 @@ export const loadFile = async (user, filename, opts = {}) => {
     };
   } catch (err) {
     if (dontThrow) {
-      logApp.error('Load file from storage fail', { cause: err, user_id: user.id, filename });
+      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename });
       return undefined;
     }
     throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
@@ -266,7 +267,7 @@ export const loadedFilesListing = async (user, directory, opts = {}) => {
         requestParams.ContinuationToken = response.NextContinuationToken;
       }
     } catch (err) {
-      logApp.error(DatabaseError('Storage files read fail', { cause: err }));
+      logApp.error(DatabaseError('[FILE STORAGE] Storage files read fail', { cause: err }));
       truncated = false;
     }
   }
@@ -387,23 +388,6 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
   }
   return { upload: file, untouched: false };
-};
-
-export const deleteAllObjectFiles = async (context, user, element) => {
-  const importPath = `import/${element.entity_type}/${element.internal_id}`;
-  const importFilesPromise = allFilesForPaths(context, user, [importPath]);
-  const importWorkPromise = deleteWorkForSource(importPath);
-  const exportPath = `export/${element.entity_type}/${element.internal_id}`;
-  const exportFilesPromise = allFilesForPaths(context, user, [exportPath]);
-  const exportWorkPromise = deleteWorkForSource(exportPath);
-  const [importFiles, exportFiles, _, __] = await Promise.all([
-    importFilesPromise,
-    exportFilesPromise,
-    importWorkPromise,
-    exportWorkPromise
-  ]);
-  const ids = [...importFiles, ...exportFiles].map((file) => file.id);
-  return deleteFiles(context, user, ids);
 };
 
 export const streamConverter = (stream) => {

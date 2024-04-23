@@ -1,9 +1,9 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import axios from 'axios';
-import { API_TOKEN, API_URI, executeInternalQuery, queryAsAdmin } from './testQuery';
+import { executeInternalQuery, queryAsAdmin } from './testQuery';
 import { FORBIDDEN_ACCESS } from '../../src/config/errors';
+import { downloadFile, streamConverter } from '../../src/database/file-storage';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -36,12 +36,6 @@ export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, requ
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
-  const storageGetUrl = `${API_URI}/storage/get/${storageId}`;
-  return axios.get(storageGetUrl, { headers: { Authorization: `Bearer ${API_TOKEN}` } })
-    .then((res) => {
-      return res.data;
-    })
-    .catch((error) => {
-      throw Error(error);
-    });
+  const stream = await downloadFile(storageId);
+  return streamConverter(stream);
 };

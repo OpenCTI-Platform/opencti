@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { USER_PARTICIPATE } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
+import type { SupportPackage } from '../../../src/generated/graphql';
 
 const CREATE_QUERY = gql`
     mutation supportPackageAdd($input: SupportPackageAddInput!) {
@@ -14,8 +15,20 @@ const CREATE_QUERY = gql`
     }
 `;
 
+const READ_QUERY = gql`
+    query supportPackage($id: String!) {
+        supportPackage(id: $id) {
+            id
+            standard_id
+            name
+            package_url
+            package_status
+        }
+    }
+`;
+
 describe('SupportPackage resolver standard behavior', () => {
-  let createdSupportPackageId: string = '';
+  let createdSupportPackage: SupportPackage;
   it('should support package be created', async () => {
     const supportPackageCreationResponse = await queryAsAdminWithSuccess({
       query: CREATE_QUERY,
@@ -26,7 +39,7 @@ describe('SupportPackage resolver standard behavior', () => {
       },
     });
     expect(supportPackageCreationResponse.data?.supportPackageAdd.id).toBeDefined();
-    createdSupportPackageId = supportPackageCreationResponse.data?.supportPackageAdd.id;
+    createdSupportPackage = supportPackageCreationResponse.data?.supportPackageAdd;
 
     expect(supportPackageCreationResponse.data?.supportPackageAdd.package_url).toBeDefined();
   });
@@ -49,7 +62,7 @@ describe('SupportPackage resolver standard behavior', () => {
       query: FORCE_ZIP_QUERY,
       variables: {
         input: {
-          id: createdSupportPackageId,
+          id: createdSupportPackage.id,
         },
       },
     });
@@ -61,18 +74,10 @@ describe('SupportPackage resolver standard behavior', () => {
   });
 
   it('should support package be findById', async () => {
-    const READ_QUERY = gql`
-          query supportPackage($id: String!) {
-              supportPackage(id: $id) {
-                  id
-                  standard_id
-                  name
-              }
-          }
-      `;
-
-    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: createdSupportPackageId } });
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: createdSupportPackage.id } });
     expect(queryResult.data?.supportPackage.name).toBeDefined();
+    expect(queryResult.data?.supportPackage.package_url).toBeDefined(); // after force zip, zip should exists
+    createdSupportPackage = queryResult.data?.supportPackage;
   });
 
   it('should list all support package', async () => {
@@ -107,10 +112,40 @@ describe('SupportPackage resolver standard behavior', () => {
     const queryResult = await queryAsAdminWithSuccess({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.supportPackages.edges.length).toBeGreaterThan(0);
   });
+
+  it('should delete support package by Id', async () => {
+    const DELETE_QUERY = gql`
+            mutation supportPackageDelete($id: ID!) {
+                supportPackageDelete(id: $id)
+            }
+        `;
+
+    const deleteQueryResult = await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: createdSupportPackage.id } });
+    expect(deleteQueryResult.data?.supportPackageDelete).toBeDefined();
+
+    // Waiting for S3 storage to process delete.
+    await wait(3000);
+
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: createdSupportPackage.id } });
+    expect(queryResult.data?.supportPackage).toBeNull();
+
+    // Check that files does not exist anymore on storage.
+    expect(createdSupportPackage.package_url).toBeDefined();
+    let gotFileStorageError = false;
+    try {
+      if (createdSupportPackage?.package_url) {
+        await requestFileFromStorageAsAdmin(createdSupportPackage?.package_url);
+      }
+    } catch (e) {
+      gotFileStorageError = true;
+    } finally {
+      expect(gotFileStorageError, 'We expect that the file cannot be found on storage anymore.').toBeTruthy();
+    }
+  });
 });
 
 describe('SupportPackage rights management checks', () => {
-  it('should Participant/Editor user not be allowed to create a DecayRule.', async () => {
+  it('should Participant/Editor user not be allowed to create a SupportPackage.', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
       query: CREATE_QUERY,
       variables: {

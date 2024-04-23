@@ -10,22 +10,21 @@ import { downloadFile, loadedFilesListing, streamConverter } from '../../databas
 import type { EditInput, QuerySupportPackagesArgs, SupportNodeStatus, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, uploadToStorage } from '../../database/file-storage-helper';
+import { fileToReadStream, SUPPORT_STORAGE_PATH, uploadToStorage } from '../../database/file-storage-helper';
 import { wait } from '../../database/utils';
 import { notify } from '../../database/redis';
 import { FilesystemError } from '../../config/errors';
 import { getSettings } from '../../domain/settings';
 
-export const SUPPORT_S3_FOLDER = 'support';
 const ZIP_TIMEOUT_MS = 15000; // Max time to archive all files
 const ZIP_MIME_TYPE = 'application/zip';
 
 // FIXME FOR TESTS PURPOSE only, should be true in production.
 const cleanupFiles: boolean = true;
 
-export const getS3UploadFolder = (entity: BasicStoreEntitySupportPackage) => {
+export const getS3UploadFolder = (entityId: string) => {
   // Be carefull to NOT use join, on S3 we need a / and not an OS dependent separator.
-  return `${SUPPORT_S3_FOLDER}/${entity.id}`;
+  return `${SUPPORT_STORAGE_PATH}/${entityId}`;
 };
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -37,6 +36,7 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QuerySupport
 };
 
 export const deleteSupportPackage = async (context: AuthContext, user: AuthUser, supportPackageId: string) => {
+  logApp.info(`[OPENCTI-MODULE] - DELETE support package ${supportPackageId}.`);
   return deleteInternalObject(context, user, supportPackageId, ENTITY_TYPE_SUPPORT_PACKAGE);
 };
 
@@ -102,7 +102,7 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
   const allSupportFiles = findAllSupportFiles(fs.readdirSync(SUPPORT_LOG_RELATIVE_LOCAL_DIR));
 
   // Upload all files
-  const uploadDir = getS3UploadFolder(entity);
+  const uploadDir = getS3UploadFolder(entity.id);
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     logApp.info(`sendSupportLogToS3 - I have a support file ${allSupportFiles[i]} to send to ${uploadDir}.`);
     const s3Filename = `${allSupportFiles[i]}-${NODE_INSTANCE_ID}.log`;
@@ -134,7 +134,7 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
 
   if (fs.existsSync(zipFullpath)) {
     logApp.debug('Zip exists on filesystem, all good.');
-    const uploadDirectory = getS3UploadFolder(entity);
+    const uploadDirectory = getS3UploadFolder(entity.id);
     logApp.info(`sendSupportLogToS3 - I have a support zip file ${zipPathAndName} to send to ${uploadDirectory}.`);
     const { upload } = await uploadToStorage(context, user, uploadDirectory, fileToReadStream(zipFullpath, zipFileName, zipFileName, ZIP_MIME_TYPE), {});
     entityUpdated.package_url = upload.id;
@@ -188,7 +188,7 @@ const createAndUploadTelemetry = async (context: AuthContext, user: AuthUser, en
   const newLocalFile = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, filename);
   fs.writeFileSync(newLocalFile, '{ \'message\': \'Telemetry not implemented yet\'}', {});
 
-  const uploadDirectory = getS3UploadFolder(entity);
+  const uploadDirectory = getS3UploadFolder(entity.id);
   logApp.info(`Sending telemetry to S3 - send to ${uploadDirectory}.`);
   await uploadToStorage(context, user, uploadDirectory, fileToReadStream(SUPPORT_LOG_RELATIVE_LOCAL_DIR, filename, filename, 'application/json'), {});
 
@@ -222,7 +222,7 @@ export const prepareNewSupportPackage = async (context: AuthContext, user: AuthU
 
   const updateInput: EditInput[] = [{
     key: 'package_upload_dir',
-    value: [getS3UploadFolder(supportDataCreated)],
+    value: [getS3UploadFolder(supportDataCreated.id)],
     operation: EditOperation.Replace
   }];
   await updateAttribute(context, user, supportDataCreated.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
