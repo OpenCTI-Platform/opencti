@@ -6,8 +6,6 @@ export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
-  private language = 'auto';
-
   private isEEActivated = 0;
 
   private EEActivationDate: string | undefined = undefined;
@@ -18,10 +16,6 @@ export class TelemetryMeterManager {
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
-  }
-
-  setLanguage(lang: string) {
-    this.language = lang;
   }
 
   setIsEEActivated(EE: number) {

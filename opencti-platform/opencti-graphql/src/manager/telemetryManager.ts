@@ -4,6 +4,7 @@ import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
+import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import conf, { booleanConf, ENABLED_TELEMETRY, logApp, PLATFORM_VERSION } from '../config/conf';
 import { lockResource } from '../database/redis';
 import { executionContext } from '../utils/access';
@@ -18,15 +19,20 @@ const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 100000; // record telemetry data period
 const EXPORT_INTERVAL = 100000; // TODO set to 1 per day
 
-const createFiligranTelemetryMeterManager = () => {
+const createFiligranTelemetryMeterManager = async () => {
   // ------- Telemetry // TODO telemetry service, wrap methods in the service
   let resource = Resource.default();
   const filigranMetricReaders = [];
   if (ENABLED_TELEMETRY) {
+    // Fetch settings
+    const context = executionContext('telemetry_manager');
+    const settings = await getSettings(context) as Settings;
+    const plateformId = settings.id;
     // -- Resource
     const filigranResource = new Resource({
       [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
+      [SEMRESATTRS_SERVICE_INSTANCE_ID]: plateformId,
     });
     resource = resource.merge(filigranResource);
     // -- Readers with exporter
@@ -62,7 +68,6 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterM
     // Fetch settings
     const settings = await getSettings(context) as Settings;
     // Set filigranTelemetryManager settings telemetry data
-    filigranTelemetryMeterManager.setLanguage(settings.platform_language ?? 'undefined');
     filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
     filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
@@ -101,7 +106,7 @@ const initTelemetryManager = () => {
 
   return {
     start: async () => {
-      const filigranTelemetryMeterManager = createFiligranTelemetryMeterManager();
+      const filigranTelemetryMeterManager = await createFiligranTelemetryMeterManager();
       // Fetch data periodically
       scheduler = setIntervalAsync(async () => {
         await telemetryHandler(filigranTelemetryMeterManager);
