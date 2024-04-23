@@ -1,14 +1,14 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import {compose, filter, flatten, fromPairs, includes, map, uniq, zip} from 'ramda';
+import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
-import {ConnectionHandler} from 'relay-runtime';
+import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
-import {createFragmentContainer, graphql} from 'react-relay';
-import {Field, Form, Formik} from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,12 +19,12 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import {commitMutation, handleError, MESSAGING$} from '../../../../relay/environment';
-import inject18n, {useFormatter} from '../../../../components/i18n';
+import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
-import {fieldSpacingContainerStyle} from '../../../../utils/field';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = () => ({
   container: {

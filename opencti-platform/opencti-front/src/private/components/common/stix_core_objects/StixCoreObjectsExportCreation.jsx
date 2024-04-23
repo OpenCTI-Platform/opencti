@@ -1,26 +1,26 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import {Add} from '@mui/icons-material';
-import {createFragmentContainer, graphql} from 'react-relay';
-import {Field, Form, Formik} from 'formik';
+import { Add } from '@mui/icons-material';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import {useFormatter} from '../../../../components/i18n';
-import {commitMutation, MESSAGING$, QueryRenderer} from '../../../../relay/environment';
-import {markingDefinitionsLinesSearchQuery} from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
-import {ExportContext} from '../../../../utils/ExportContextProvider';
-import {fieldSpacingContainerStyle} from '../../../../utils/field';
+import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
