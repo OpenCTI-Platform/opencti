@@ -168,7 +168,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         }}
         noOptionsText={t_i18n('No available options')}
         options={optionSorted}
-        onChange={typeof onChange === 'function' ? handleOnChange : null}
+        onChange={handleOnChange}
         renderOption={renderOption}
       />
       <Dialog
@@ -176,7 +176,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         open={!!newMarking}
         keepMounted={true}
         TransitionComponent={Transition}
-        onClose={handleClose}
+        onClose={handleCancellation}
       >
         <DialogContent>
           <DialogContentText>

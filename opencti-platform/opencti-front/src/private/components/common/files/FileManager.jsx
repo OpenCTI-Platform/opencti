@@ -154,7 +154,7 @@ const FileManager = ({
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
 
-  const onSubmitImport = (values, { setSubmitting, resetForm }) => {
+  const onSubmitImport = (values, { setSubmitting, resetForm, setFieldValue }) => {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
@@ -448,12 +448,14 @@ const FileManager = ({
                             label={t_i18n('Content max marking definition levels')}
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
+                            setFieldValue={setFieldValue}
                           />
                           <ObjectMarkingField
                             name="fileMarkings"
                             label={t_i18n('File marking definition levels')}
                             filterTargetIds={selectedContentMaxMarkingsIds}
                             style={fieldSpacingContainerStyle}
+                            setFieldValue={setFieldValue}
                           />
                         </DialogContent>
                       );

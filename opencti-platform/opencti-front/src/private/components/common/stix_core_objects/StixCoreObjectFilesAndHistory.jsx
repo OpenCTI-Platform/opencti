@@ -379,7 +379,7 @@ const StixCoreObjectFilesAndHistory = ({
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
@@ -429,12 +429,14 @@ const StixCoreObjectFilesAndHistory = ({
                     label={t_i18n('Content max marking definition levels')}
                     onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                     style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
                   />
                   <ObjectMarkingField
                     name="fileMarkings"
                     label={t_i18n('File marking definition levels')}
                     filterTargetIds={selectedContentMaxMarkingsIds}
                     style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
                   />
                 </DialogContent>
                 <DialogActions>
