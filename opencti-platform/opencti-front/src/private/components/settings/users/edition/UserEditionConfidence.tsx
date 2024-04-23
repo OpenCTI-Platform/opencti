@@ -77,22 +77,16 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
           let finalValue;
           if (user.user_confidence_level && isNotEmptyField(value)) {
             // We edit an existing value inside the object: use object_path
-            finalValue = {
-              value: parseInt(value, 10),
-            };
+            finalValue = parseInt(value, 10);
           } else if (!user.user_confidence_level && value) {
             // We have no user_confidence_level, and we add one: push a complete object
             finalValue = {
-              value: {
-                max_confidence: parseInt(value, 10),
-                overrides: [],
-              },
+              max_confidence: parseInt(value, 10),
+              overrides: [],
             };
           } else if (user.user_confidence_level && !value) {
             // we have an existing value, but we want to remove it: push [null] (and not null!)
-            finalValue = {
-              value: [null],
-            };
+            finalValue = [null];
           }
           if (finalValue) {
             commitFieldPatch({
@@ -101,7 +95,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                 input: {
                   key: 'user_confidence_level',
                   object_path: '/user_confidence_level/max_confidence',
-                  value: finalValue.value,
+                  value: finalValue,
                 },
               },
             });
