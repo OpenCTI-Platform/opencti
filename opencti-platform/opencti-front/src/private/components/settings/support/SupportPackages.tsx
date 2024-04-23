@@ -19,6 +19,8 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
+import { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -120,35 +122,43 @@ const SupportPackages = () => {
   };
 
   return (
-    <div className={classes.container}>
-      <Breadcrumbs variant="list"
-        elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
-      />
-      <Grid container={true} spacing={4}
-        classes={{ container: classes.gridContainer }}
-      >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <div style={{ height: '100%' }}>
-            <div className="clearfix"/>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '8px', fontSize: '13px' }}>
-                {t_i18n('Generated Support Package')}
-              </Typography>
-              <Button
-                classes={{ root: classes.createButton }}
-                onClick={generateSupportPackage}
-                size="small"
-                variant="outlined"
-                color="primary"
-              >
-                {t_i18n('Generate Support Package')}
-              </Button>
-              {renderLines()}
-            </Paper>
-          </div>
+    <Security
+      needs={[KNOWLEDGE]}
+      placeholder={<>{t_i18n(
+        'You do not have any access to the knowledge of this OpenCTI instance.',
+      )}</>}
+    >
+      <div className={classes.container}>
+        <Breadcrumbs variant="list"
+          elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
+        />
+
+        <Grid container={true} spacing={4}
+          classes={{ container: classes.gridContainer }}
+        >
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+            <div style={{ height: '100%' }}>
+              <div className="clearfix"/>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '8px', fontSize: '13px' }}>
+                  {t_i18n('Generated Support Package')}
+                </Typography>
+                <Button
+                  classes={{ root: classes.createButton }}
+                  onClick={generateSupportPackage}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                >
+                  {t_i18n('Generate Support Package')}
+                </Button>
+                {renderLines()}
+              </Paper>
+            </div>
+          </Grid>
         </Grid>
-      </Grid>
-    </div>
+      </div>
+    </Security>
   );
 };
 
