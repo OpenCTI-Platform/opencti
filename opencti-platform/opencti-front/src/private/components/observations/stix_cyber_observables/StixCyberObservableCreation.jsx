@@ -247,14 +247,11 @@ const StixCyberObservableCreation = ({
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('onSubmit was called');
     let adaptedValues = values;
-    const bulk_hashes_field = document.getElementById('bulk_hashes_field');
 
     if (adaptedValues) { // Verify not null for DeepScan compliance
       // Bulk Add Modal was used
       console.log("adaptedValues " + adaptedValues.value);
-  
       if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
-        console.log('onSubmit: bulk_value_field.value ' + bulk_value_field.value);
         const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_values = array_of_bulk_values.map((s) => s.trim());
@@ -264,12 +261,12 @@ const StixCyberObservableCreation = ({
         adaptedValues.value = [...new Set(cleaned_bulk_values)].join('\n');
       }
 
+      // Making the values from the form readable
       // Bulk Add Dialog was used
       console.log("bulkAddDialog: adaptedValues.bulk_hashes_field " + adaptedValues.bulk_hashes_field);
+      console.log('bulkAddDialog: adaptedValues.value ' + adaptedValues.value);
 
-      if (adaptedValues.bulk_hashes_field && adaptedValues.hashes === bulkAddMsg) {
-        console.log('bulkAddDialog in the if: bulk_hashes_field.value ' + bulk_hashes_field.value);
-        console.log('bulkAddDialog in the if: adaptedValues.hashes ' + adaptedValues.hashes);
+      if (adaptedValues.bulk_hashes_field && adaptedValues.name === bulkAddMsg) {
         const array_of_bulk_hashes = adaptedValues.bulk_hashes_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_hashes = array_of_bulk_hashes.map((s) => s.trim());
@@ -277,9 +274,12 @@ const StixCyberObservableCreation = ({
         const cleaned_bulk_hashes = trimmed_bulk_hashes.reduce((elements, i) => (i ? [...elements, i] : elements), []);
         // De-duplicate by unique then rejoin
         adaptedValues.value = [...new Set(cleaned_bulk_hashes)].join('\n');
-        console.log('bulkAddDialog in the if: adaptedValues.value ' + adaptedValues.value);
       }
 
+      //commitStixCyberObservable using stixFileMutation
+
+
+      // Adding those readable values back into the StixFileObservables
       // Potential dicts
       if (
         adaptedValues.hashes_MD5
@@ -287,32 +287,26 @@ const StixCyberObservableCreation = ({
         || adaptedValues['hashes_SHA-256']
         || adaptedValues['hashes_SHA-512']
       ) {
-        console.log('inside potential dicts');
         adaptedValues.hashes = [];
         if (adaptedValues.hashes_MD5.length > 0 && selectedAttribute === 'MD5') {
-          console.log('inside md5 dicts. adaptedValues.hashes_MD5.length is ' + adaptedValues.hashes_MD5.length);
           adaptedValues.hashes.push({
             algorithm: 'MD5',
             hash: adaptedValues.hashes_MD5,
           });
         }
         if (adaptedValues['hashes_SHA-1'].length > 0 && selectedAttribute === 'SHA1') {
-          console.log('inside sha1 dicts. adaptedValues[hashes_SHA-1].length is ' + adaptedValues['hashes_SHA-1'].length);
           adaptedValues.hashes.push({
             algorithm: 'SHA-1',
             hash: adaptedValues['hashes_SHA-1'],
           });
         }
         if (adaptedValues['hashes_SHA-256'].length > 0 && selectedAttribute === 'SHA256') {
-          console.log('inside sha256 dicts. adaptedValues[hashes_SHA-256].length is ' + adaptedValues['hashes_SHA-256'].length);
-          console.log(adaptedValues['hashes_SHA-256']);
           adaptedValues.hashes.push({
             algorithm: 'SHA-256',
             hash: adaptedValues['hashes_SHA-256'],
           });
         }
         if (adaptedValues['hashes_SHA-512'].length > 0 && selectedAttribute === 'SHA512') {
-          console.log('inside sha512 dicts. adaptedValues[hashes_SHA-512].length is ' + adaptedValues['hashes_SHA-512'].length);
           adaptedValues.hashes.push({
             algorithm: 'SHA-512',
             hash: adaptedValues['hashes_SHA-512'],
@@ -365,16 +359,100 @@ const StixCyberObservableCreation = ({
         finalValues.file = values.file;
       }
 
+
+
+      //Create a new stixCyberObservable for each input of the bulk_hashes_field (each line gets a new stixCyberObservable)
+
+      //trim and get each individual line from the bulk_hashes_field
+
+      //hashes is an array of one object
+
+      //key = algorithm; value = hash
+
+      //pass the form information into each of the new stixCyberObservables (things that arent the hashes+name)
+
       const error_array = [];
       let validObservables = 0;
       const commit = async () => {
-        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined;
+        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; //List of the inputs
+        const hashList = values?.hash !== '' ? values?.hash?.split('\n') || values?.hash : undefined;
+        console.log('valueList ' + valueList);
+        console.log('hashList ' + hashList);
+        //if (hashList) {
+        //do similar to valueList but with hashes
+        //add each individual line from the bulk_hashes_field into the new stixCyberObservable
+
+        if (hashList) {
+          console.log('in hashList if');
+          const promises = hashList.map((hashes) => commitMutationWithPromise({
+            mutation: stixCyberObservableMutation,
+            variables: {
+              ...finalValues,
+              [observableType]: { hashes }, //StixFile
+            },
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              localHandleClose();
+            },
+            onError: () => {
+              setSubmitting(false);
+            },
+          }));
+          await Promise.allSettled(promises).then((results) => {
+            results.forEach(({ status: promiseStatus, reason }) => {
+              if (promiseStatus === 'fulfilled') {
+                validObservables += 1;
+              } else {
+                error_array.push(reason);
+              }
+            });
+          });
+          const totalObservables = valueList.length;
+          let closeFormWithAnySuccess = false;
+          if (error_array.length > 0) {
+            const errorObservables = error_array.length;
+            let message_string = '';
+            if (validObservables > 0) {
+              message_string = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+              closeFormWithAnySuccess = true;
+            }
+            message_string += ` ${errorObservables}/${totalObservables} ${t_i18n('observables contained errors and were not added.')} `;
+            const consolidated_errors = { res: { errors: error_array[0] } };
+            // Short Error message, just has total success and failure counts with translation support
+            consolidated_errors.res.errors[0].message = message_string;
+            // Long Error message with all errors
+            // consolidated_errors.res.errors[0].message = message_string + error_messages.join('\n');
+            // Toast Error Message to Screen - Will not close the form since errors exist for correction.
+            handleErrorInForm(consolidated_errors, setErrors);
+          } else {
+            let bulk_success_message = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+            if (totalObservables === 1) {
+              // This is for consistent messaging when adding just (1) Observable
+              bulk_success_message = t_i18n('Observable successfully added');
+            }
+            // Toast Message on Bulk Add Success
+            MESSAGING$.notifySuccess(bulk_success_message);
+            closeFormWithAnySuccess = true;
+          }
+          // Close the form if any observables were successfully added.
+          if (closeFormWithAnySuccess === true) {
+            localHandleClose();
+          }
+        }
         if (valueList) {
+          console.log('in valueList if');
           const promises = valueList.map((value) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
             variables: {
               ...finalValues,
-              [observableType]: { value },
+              [observableType]: { value }, //StixFile
             },
             updater: (store) => insertNode(
               store,
@@ -713,7 +791,6 @@ const StixCyberObservableCreation = ({
   };
 
   const renderForm = () => {
-    console.log("renderForm; status.type " + status.type);
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
@@ -854,7 +931,6 @@ const StixCyberObservableCreation = ({
                           );
                         }
                         if (isVocabularyField(status.type, attribute.value)) {
-                          console.log("attribute.value: " + attribute.value);
                           return (
                             <OpenVocabField
                               key={attribute.value}
@@ -1022,10 +1098,6 @@ const StixCyberObservableCreation = ({
   };
 
   const renderClassic = () => {
-    if (status.type) {
-      console.log("inside renderClassic");
-      console.log("status.type " + status.type);
-    }
     return (
       <>
         <Fab
