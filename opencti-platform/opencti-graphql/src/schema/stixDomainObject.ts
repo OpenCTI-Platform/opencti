@@ -20,6 +20,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rf
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -187,4 +188,8 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
   ENTITY_TYPE_WORK, // Work is defined as an history object
   ENTITY_TYPE_TAXII_COLLECTION, // TODO TaxiiCollection must be migrate to add according parent types
   ENTITY_TYPE_INTERNAL_FILE, // TODO InternalFile must be migrate to add according parent types
+];
+
+export const STIX_ORGANIZATIONS_RESTRICTED = [
+  ENTITY_TYPE_DELETE_OPERATION, // deleted operations are internal objects but need to have organization restrictions applied
 ];

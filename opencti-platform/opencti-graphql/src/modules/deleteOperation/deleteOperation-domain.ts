@@ -6,6 +6,7 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import { READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import type { QueryDeleteOperationsArgs } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDeleteOperation>(context, user, id, ENTITY_TYPE_DELETE_OPERATION);
@@ -25,6 +26,7 @@ export const completeDelete = async (context: AuthContext, user: AuthUser, id: s
   if (!deleteOperation) {
     throw FunctionalError(`Delete operation ${id} cannot be found`);
   }
+  controlUserConfidenceAgainstElement(user, deleteOperation);
   // get all deleted elements & main deleted entity (from deleted_objects index)
   const mainEntityId = deleteOperation.main_entity_id;
   const deletedElementsIds = deleteOperation.deleted_elements.map((el) => el.id);

@@ -5505,17 +5505,18 @@ export type DefinitionRefRelationship = {
 
 export type DeleteOperation = BasicObject & InternalObject & {
   __typename?: 'DeleteOperation';
-  deletedBy: Creator;
+  confidence?: Maybe<Scalars['Int']['output']>;
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  deletedBy?: Maybe<Creator>;
   deleted_elements: Array<DeletedElement>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   main_entity_id: Scalars['String']['output'];
   main_entity_name: Scalars['String']['output'];
   main_entity_type: Scalars['String']['output'];
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
-  user_id: Scalars['String']['output'];
 };
 
 export type DeleteOperationConnection = {
@@ -5531,9 +5532,10 @@ export type DeleteOperationEdge = {
 };
 
 export enum DeleteOperationOrdering {
+  CreatedAt = 'created_at',
   DeletedBy = 'deletedBy',
   MainEntityName = 'main_entity_name',
-  Timestamp = 'timestamp'
+  ObjectMarking = 'objectMarking'
 }
 
 export type DeletedElement = {
@@ -31696,17 +31698,18 @@ export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType ext
 }>;
 
 export type DeleteOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperation'] = ResolversParentTypes['DeleteOperation']> = ResolversObject<{
-  deletedBy?: Resolver<ResolversTypes['Creator'], ParentType, ContextType>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  deletedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   deleted_elements?: Resolver<Array<ResolversTypes['DeletedElement']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   main_entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   main_entity_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   main_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

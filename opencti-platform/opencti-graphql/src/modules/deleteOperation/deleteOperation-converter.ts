@@ -6,8 +6,6 @@ const convertDeleteOperationToStix = (instance: StoreEntityDeleteOperation): Sti
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
-    timestamp: instance.timestamp,
-    user_id: instance.user_id,
     main_entity_type: instance.main_entity_type,
     main_entity_id: instance.main_entity_id,
     main_entity_name: instance.main_entity_name,

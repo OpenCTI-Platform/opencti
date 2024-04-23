@@ -8,6 +8,7 @@ import { MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Box from '@mui/material/Box';
+import ItemMarkings from '../../../../components/ItemMarkings';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import { DeleteOperationLine_node$key } from './__generated__/DeleteOperationLine_node.graphql';
 import DeleteOperationPopover from './DeleteOperationPopover';
@@ -25,9 +26,15 @@ const DeleteOperationFragment = graphql`
       id
       name
     }
-    timestamp
+    created_at
     deleted_elements {
       id
+    }
+    objectMarking {
+      id
+      definition
+      definition_type
+      x_opencti_color
     }
   }
 `;
@@ -81,8 +88,11 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
             <Box sx={{ ...cellSx, width: dataColumns.deletedBy.width ?? 'inherit' }}>
               {data.deletedBy?.name}
             </Box>
-            <Box sx={{ ...cellSx, width: dataColumns.timestamp.width ?? 'inherit' }}>
-              {fldt(data.timestamp)}
+            <Box sx={{ ...cellSx, width: dataColumns.created_at.width ?? 'inherit' }}>
+              {fldt(data.created_at)}
+            </Box>
+            <Box sx={{ ...cellSx, width: dataColumns.objectMarking.width ?? 'inherit' }}>
+              <ItemMarkings variant="inList" markingDefinitions={data.objectMarking ?? []} limit={1}/>
             </Box>
           </div>
         }

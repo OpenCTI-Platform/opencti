@@ -82,6 +82,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObject,
   isStixObjectAliased,
+  STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
@@ -419,10 +420,25 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     // If user have organization management role, he can bypass this restriction.
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    const excludedEntityMatches = [
-      { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
-      { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
-    ];
+    // We want to exlucde a set of entities from organization restrictions while forcing restrictions for an other set of entities
+    const excludedEntityMatches = {
+      bool: {
+        must: [
+          {
+            bool: { must_not: [{ terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_RESTRICTED } }] }
+          },
+          {
+            bool: {
+              should: [
+                { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
+                { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
+              ],
+              minimum_should_match: 1
+            }
+          }
+        ]
+      }
+    };
     if (settings.platform_organization) {
       if (user.inside_platform_organization) {
         // Data are visible independently of the organizations
@@ -430,7 +446,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       } else {
         // Data with Empty granted_refs are not visible
         // Data with granted_refs users that participate to at least one
-        const should = [...excludedEntityMatches];
+        const should = [excludedEntityMatches];
         const shouldOrgs = user.allowed_organizations
           .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
         should.push(...shouldOrgs);
@@ -444,7 +460,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     } else {
       // Data with Empty granted_refs are granted to everyone
-      const should = [...excludedEntityMatches];
+      const should = [excludedEntityMatches];
       should.push({ bool: { must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_GRANTED_TO) } }] } });
       // Data with granted_refs users that participate to at least one
       if (user.allowed_organizations.length > 0) {
@@ -942,11 +958,11 @@ export const RUNTIME_ATTRIBUTES = {
     field: 'deletedBy.keyword',
     type: 'keyword',
     getSource: async () => `
-        if (doc.containsKey('user_id')) {
-          def userId = doc['user_id.keyword'];
-          if (userId.size() == 1) {
-            def userName = params[userId[0]];
-            emit(userName != null ? userName : 'Unknown')
+        if (doc.containsKey('creator_id')) {
+          def creatorId = doc['creator_id.keyword'];
+          if (creatorId.size() == 1) {
+            def creatorName = params[creatorId[0]];
+            emit(creatorName != null ? creatorName : 'Unknown')
           } else {
             emit('Unknown')
           }
@@ -3262,8 +3278,8 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
   // We currently only handle deleteOperations of 1 element
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
   const deleteOperationInput = {
-    timestamp: new Date().getTime(),
-    user_id: user.id,
+    created_at: new Date().getTime(),
+    creator_id: user.id,
     main_entity_type: mainElement.entity_type,
     main_entity_id: mainElement.internal_id,
     main_entity_name: extractRepresentative(mainElement).main ?? mainElement.internal_id,
@@ -3271,6 +3287,7 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
   };
   const internalID = generateInternalId();
   const standardID = generateStandardId(ENTITY_TYPE_DELETE_OPERATION, deleteOperationInput);
+  const mainElementConfidence = mainElement.confidence ?? 100;
   const deleteOperationRawElement = {
     ...deleteOperationInput,
     _index: INDEX_INTERNAL_OBJECTS,
@@ -3278,6 +3295,7 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
     [ID_STANDARD]: standardID,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: mainElement[RELATION_OBJECT_MARKING] ?? [],
     [buildRefRelationKey(RELATION_GRANTED_TO)]: mainElement[RELATION_GRANTED_TO] ?? [],
+    confidence: mainElementConfidence,
     entity_type: ENTITY_TYPE_DELETE_OPERATION,
     base_type: BASE_TYPE_ENTITY,
     parent_types: getParentTypes(ENTITY_TYPE_DELETE_OPERATION),

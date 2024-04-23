@@ -10,9 +10,10 @@ type DeleteOperation implements InternalObject & BasicObject {
   standard_id: String!
   parent_types: [String!]!
   # DeleteOperation
-  timestamp: DateTime!
-  user_id: String!
-  deletedBy: Creator!
+  objectMarking: [MarkingDefinition!]
+  confidence: Int
+  created_at: DateTime
+  deletedBy: Creator
   main_entity_type: String!
   main_entity_id: String!
   main_entity_name: String!
@@ -22,8 +23,9 @@ type DeleteOperation implements InternalObject & BasicObject {
 # Ordering
 enum DeleteOperationOrdering {
   main_entity_name
-  timestamp
+  created_at
   deletedBy
+  objectMarking
 }
 
 # Relay connections
