@@ -31,7 +31,8 @@ const useConfidenceLevel = () => {
 
     if (entity.confidence && entityConfidenceLevel >= entity.confidence) {
       return true;
-    } if (entity.confidence) {
+    }
+    if (entity.confidence) {
       if (notifyError) {
         MESSAGING$.notifyError(t_i18n('Your confidence level is insufficient to edit this object.'));
       }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Option } from '@components/common/form/ReferenceField';
 import useAuth from './useAuth';
 
@@ -16,31 +16,25 @@ const useSchema = () => {
     return relationshipsNames.includes(entityType.toLowerCase());
   };
 
-  const [availableEntityTypes, setAvailableEntityTypes] = useState<AvailableEntityOption[]>([]);
-
-  useEffect(() => {
+  const availableEntityTypes = useMemo(() => {
     const { sdos, scos, smos } = schema;
-    const entityTypes = sdos
-      .map((sdo) => ({
+    return [
+      ...sdos.map((sdo) => ({
         ...sdo,
         value: sdo.id,
         type: 'entity_Stix-Domain-Objects',
-      }))
-      .concat(
-        scos.map((sco) => ({
-          ...sco,
-          value: sco.id,
-          type: 'entity_Stix-Cyber-Observables',
-        })),
-      )
-      .concat(
-        smos.map((smo) => ({
-          ...smo,
-          value: smo.id,
-          type: 'entity_Stix-Meta-Objects',
-        })),
-      );
-    setAvailableEntityTypes(entityTypes);
+      })),
+      ...scos.map((sco) => ({
+        ...sco,
+        value: sco.id,
+        type: 'entity_Stix-Cyber-Observables',
+      })),
+      ...smos.map((smo) => ({
+        ...smo,
+        value: smo.id,
+        type: 'entity_Stix-Meta-Objects',
+      })),
+    ];
   }, [schema]);
 
   return {

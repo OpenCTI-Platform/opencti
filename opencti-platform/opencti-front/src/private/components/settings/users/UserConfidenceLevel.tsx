@@ -24,7 +24,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
     );
   }
 
-  const renderOverrides = () => {
+  const Overrides = () => {
     return (
       <>
         {user.effective_confidence_level?.overrides?.map((override, index) => (
@@ -36,7 +36,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
     );
   };
 
-  const renderSource = () => {
+  const ConfidenceSource = () => {
     const source = user.effective_confidence_level?.source;
     if (source) {
       if (source.type === 'Group' && !!source.object) {
@@ -56,7 +56,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
                     ),
                   },
                 })}
-                {renderOverrides()}
+                <Overrides />
               </>
             }
           >
@@ -72,7 +72,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
             title={
               <div>
                 {t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
-                {renderOverrides()}
+                <Overrides />
               </div>
             }
           >
@@ -98,7 +98,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
   return (
     <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${user.effective_confidence_level.max_confidence ?? '-'}`}</span>
-      {renderSource()}
+      {user.effective_confidence_level.source && <ConfidenceSource />}
     </Box>
   );
 };

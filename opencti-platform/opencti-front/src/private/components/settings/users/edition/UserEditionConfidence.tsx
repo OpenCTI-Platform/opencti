@@ -74,43 +74,37 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
       .validateAt(name, { [name]: value })
       .then(() => {
         if (name === 'user_confidence_level') {
+          let finalValue;
           if (user.user_confidence_level && isNotEmptyField(value)) {
             // We edit an existing value inside the object: use object_path
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  object_path: '/user_confidence_level/max_confidence',
-                  value: parseInt(value, 10),
-                },
-              },
-            });
+            finalValue = {
+              key: 'user_confidence_level',
+              object_path: '/user_confidence_level/max_confidence',
+              value: parseInt(value, 10),
+            };
           } else if (!user.user_confidence_level && value) {
-            // We have no user_confidence_level and we add one: push a complete object
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  object_path: '/user_confidence_level/max_confidence',
-                  value: {
-                    max_confidence: parseInt(value, 10),
-                    overrides: [],
-                  },
-                },
+            // We have no user_confidence_level, and we add one: push a complete object
+            finalValue = {
+              key: 'user_confidence_level',
+              object_path: '/user_confidence_level/max_confidence',
+              value: {
+                max_confidence: parseInt(value, 10),
+                overrides: [],
               },
-            });
+            };
           } else if (user.user_confidence_level && !value) {
-            // we have an existing value but we want to remove it: push [null] (and not null!)
+            // we have an existing value, but we want to remove it: push [null] (and not null!)
+            finalValue = {
+              key: 'user_confidence_level',
+              object_path: '/user_confidence_level/max_confidence',
+              value: [null],
+            };
+          }
+          if (finalValue) {
             commitFieldPatch({
               variables: {
                 id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  object_path: '/user_confidence_level/max_confidence',
-                  value: [null],
-                },
+                input: finalValue,
               },
             });
           }
