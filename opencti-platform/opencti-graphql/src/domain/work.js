@@ -6,11 +6,12 @@ import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
+import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -168,7 +169,7 @@ export const deleteWorkForSource = async (sourceId) => {
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
-  const { receivedTime = null } = args;
+  const { receivedTime = null, fileMarkings = [] } = args;
   // Create the work and an initial job
   const { id: workId, timestamp } = generateWorkId(connector.internal_id);
   const work = {
@@ -192,6 +193,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     completed_number: 0,
     messages: [],
     errors: [],
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings]
   };
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(context, user, workId);

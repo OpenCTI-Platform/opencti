@@ -6872,6 +6872,13 @@ export enum EventsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ExportAskInput = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  format: Scalars['String']['input'];
+};
+
 export type ExportContext = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
@@ -7388,6 +7395,7 @@ export type FileEdge = {
 
 export type FileMetadata = {
   __typename?: 'FileMetadata';
+  content_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   creator?: Maybe<Creator>;
   creator_id?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -7396,6 +7404,7 @@ export type FileMetadata = {
   entity_id?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   external_reference_id?: Maybe<Scalars['String']['output']>;
+  file_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   inCarousel?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   labels_text?: Maybe<Scalars['String']['output']>;
@@ -14088,15 +14097,7 @@ export type MutationStixCoreObjectEditArgs = {
 
 
 export type MutationStixCoreObjectsExportAskArgs = {
-  exportContext?: InputMaybe<ExportContext>;
-  exportType: Scalars['String']['input'];
-  filters?: InputMaybe<FilterGroup>;
-  format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  input: StixCoreObjectsExportAskInput;
 };
 
 
@@ -14104,6 +14105,7 @@ export type MutationStixCoreObjectsExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14127,24 +14129,7 @@ export type MutationStixCoreRelationshipEditArgs = {
 
 
 export type MutationStixCoreRelationshipsExportAskArgs = {
-  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  exportContext?: InputMaybe<ExportContext>;
-  exportType: Scalars['String']['input'];
-  filters?: InputMaybe<FilterGroup>;
-  format: Scalars['String']['input'];
-  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fromRole?: InputMaybe<Scalars['String']['input']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  toRole?: InputMaybe<Scalars['String']['input']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  input: StixCoreRelationshipsExportAskInput;
 };
 
 
@@ -14152,6 +14137,7 @@ export type MutationStixCoreRelationshipsExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14209,15 +14195,7 @@ export type MutationStixCyberObservableEditArgs = {
 
 
 export type MutationStixCyberObservablesExportAskArgs = {
-  exportContext?: InputMaybe<ExportContext>;
-  exportType: Scalars['String']['input'];
-  filters?: InputMaybe<FilterGroup>;
-  format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
-  orderBy?: InputMaybe<StixCyberObservablesOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  input: StixCyberObservablesExportAskInput;
 };
 
 
@@ -14225,6 +14203,7 @@ export type MutationStixCyberObservablesExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14245,11 +14224,12 @@ export type MutationStixDomainObjectsDeleteArgs = {
 
 
 export type MutationStixDomainObjectsExportAskArgs = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -14262,6 +14242,7 @@ export type MutationStixDomainObjectsExportPushArgs = {
   entity_id?: InputMaybe<Scalars['String']['input']>;
   entity_type: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
   listFilters?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -22152,9 +22133,7 @@ export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
 
 
 export type StixCoreObjectEditMutationsExportAskArgs = {
-  exportType: Scalars['String']['input'];
-  format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
+  input: ExportAskInput;
 };
 
 
@@ -22208,6 +22187,19 @@ export type StixCoreObjectsDistributionParameters = {
   search?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+export type StixCoreObjectsExportAskInput = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportContext?: InputMaybe<ExportContext>;
+  exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  format: Scalars['String']['input'];
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type StixCoreObjectsNumberParameters = {
@@ -22461,6 +22453,28 @@ export type StixCoreRelationshipsDistributionParameters = {
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+export type StixCoreRelationshipsExportAskInput = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportContext?: InputMaybe<ExportContext>;
+  exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  format: Scalars['String']['input'];
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromOrToId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22758,6 +22772,19 @@ export type StixCyberObservableEditMutationsRelationsAddArgs = {
   input: StixRefRelationshipsAddInput;
 };
 
+export type StixCyberObservablesExportAskInput = {
+  contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  exportContext?: InputMaybe<ExportContext>;
+  exportType: Scalars['String']['input'];
+  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  filters?: InputMaybe<FilterGroup>;
+  format: Scalars['String']['input'];
+  orderBy?: InputMaybe<StixCyberObservablesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  selectedIds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
 export enum StixCyberObservablesOrdering {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -23010,14 +23037,13 @@ export type StixDomainObjectEditMutationsContextPatchArgs = {
 
 
 export type StixDomainObjectEditMutationsExportAskArgs = {
-  exportType: Scalars['String']['input'];
-  format: Scalars['String']['input'];
-  maxMarkingDefinition?: InputMaybe<Scalars['String']['input']>;
+  input: ExportAskInput;
 };
 
 
 export type StixDomainObjectEditMutationsExportPushArgs = {
   file: Scalars['Upload']['input'];
+  file_markings: Array<InputMaybe<Scalars['String']['input']>>;
 };
 
 
@@ -28571,6 +28597,7 @@ export type ResolversTypes = ResolversObject<{
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node: ResolversTypes['Event'] }>;
   EventsOrdering: EventsOrdering;
+  ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: ResolverTypeWrapper<ExternalReference>;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -28936,6 +28963,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
   StixCoreObjectOrStixCoreRelationship: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['StixCoreObjectOrStixCoreRelationship']>;
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
+  StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
   StixCoreObjectsNumberParameters: StixCoreObjectsNumberParameters;
   StixCoreObjectsOrdering: StixCoreObjectsOrdering;
   StixCoreObjectsTimeSeriesParameters: StixCoreObjectsTimeSeriesParameters;
@@ -28945,12 +28973,14 @@ export type ResolversTypes = ResolversObject<{
   StixCoreRelationshipEdge: ResolverTypeWrapper<Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversTypes['StixCoreRelationship'] }>;
   StixCoreRelationshipEditMutations: ResolverTypeWrapper<Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreRelationship']>, relationsAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreRelationship']> }>;
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
+  StixCoreRelationshipsExportAskInput: StixCoreRelationshipsExportAskInput;
   StixCoreRelationshipsOrdering: StixCoreRelationshipsOrdering;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
   StixCyberObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCyberObservable']>;
   StixCyberObservableConnection: ResolverTypeWrapper<Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversTypes['StixCyberObservableEdge']> }>;
   StixCyberObservableEdge: ResolverTypeWrapper<Omit<StixCyberObservableEdge, 'node'> & { node: ResolversTypes['StixCyberObservable'] }>;
   StixCyberObservableEditMutations: ResolverTypeWrapper<Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'promote' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversTypes['StixCyberObservable']>, fieldPatch?: Maybe<ResolversTypes['StixCyberObservable']>, promote?: Maybe<ResolversTypes['StixCyberObservable']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversTypes['StixCyberObservable']> }>;
+  StixCyberObservablesExportAskInput: StixCyberObservablesExportAskInput;
   StixCyberObservablesOrdering: StixCyberObservablesOrdering;
   StixDomainObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixDomainObject']>;
   StixDomainObjectAddInput: StixDomainObjectAddInput;
@@ -29330,6 +29360,7 @@ export type ResolversParentTypes = ResolversObject<{
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   EventEdge: Omit<EventEdge, 'node'> & { node: ResolversParentTypes['Event'] };
+  ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExternalReference: ExternalReference;
   ExternalReferenceAddInput: ExternalReferenceAddInput;
@@ -29646,6 +29677,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
   StixCoreObjectOrStixCoreRelationship: ResolversUnionTypes<ResolversParentTypes>['StixCoreObjectOrStixCoreRelationship'];
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
+  StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
   StixCoreObjectsNumberParameters: StixCoreObjectsNumberParameters;
   StixCoreObjectsTimeSeriesParameters: StixCoreObjectsTimeSeriesParameters;
   StixCoreRelationship: Omit<StixCoreRelationship, 'cases' | 'containers' | 'createdBy' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'stixCoreRelationships' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
@@ -29654,11 +29686,13 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreRelationshipEdge: Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixCoreRelationship'] };
   StixCoreRelationshipEditMutations: Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']> };
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
+  StixCoreRelationshipsExportAskInput: StixCoreRelationshipsExportAskInput;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
   StixCyberObservable: ResolversInterfaceTypes<ResolversParentTypes>['StixCyberObservable'];
   StixCyberObservableConnection: Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCyberObservableEdge']> };
   StixCyberObservableEdge: Omit<StixCyberObservableEdge, 'node'> & { node: ResolversParentTypes['StixCyberObservable'] };
   StixCyberObservableEditMutations: Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'promote' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversParentTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, fieldPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, promote?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversParentTypes['StixCyberObservable']> };
+  StixCyberObservablesExportAskInput: StixCyberObservablesExportAskInput;
   StixDomainObject: ResolversInterfaceTypes<ResolversParentTypes>['StixDomainObject'];
   StixDomainObjectAddInput: StixDomainObjectAddInput;
   StixDomainObjectConnection: Omit<StixDomainObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixDomainObjectEdge']>>> };
@@ -32299,6 +32333,7 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
+  content_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32307,6 +32342,7 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  file_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34288,22 +34324,22 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   statusTemplateDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationStatusTemplateDeleteArgs, 'id'>>;
   statusTemplateFieldPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateFieldPatchArgs, 'id' | 'input'>>;
   stixCoreObjectEdit?: Resolver<Maybe<ResolversTypes['StixCoreObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectEditArgs, 'id'>>;
-  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'exportType' | 'format'>>;
-  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file'>>;
+  stixCoreObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportAskArgs, 'input'>>;
+  stixCoreObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixCoreRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<MutationStixCoreRelationshipAddArgs>>;
   stixCoreRelationshipDelete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationStixCoreRelationshipDeleteArgs, 'fromId' | 'relationship_type' | 'toId'>>;
   stixCoreRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipEditArgs, 'id'>>;
-  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'exportType' | 'format'>>;
-  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'entity_type' | 'file'>>;
+  stixCoreRelationshipsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportAskArgs, 'input'>>;
+  stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixCyberObservableAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableAddArgs, 'type'>>;
   stixCyberObservableEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableEditArgs, 'id'>>;
-  stixCyberObservablesExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'format'>>;
-  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'entity_type' | 'file'>>;
+  stixCyberObservablesExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'input'>>;
+  stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
-  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
-  stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file'>>;
+  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
   stixRefRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRefRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipEditArgs, 'id'>>;
@@ -36415,7 +36451,7 @@ export type StixCoreObjectEdgeResolvers<ContextType = any, ParentType extends Re
 export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEditMutations'] = ResolversParentTypes['StixCoreObjectEditMutations']> = ResolversObject<{
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
+  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationAddArgs, 'input'>>;
@@ -36642,8 +36678,8 @@ export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType
   contextClean?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
-  exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file'>>;
+  exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportAskArgs, 'input'>>;
+  exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file' | 'file_markings'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationAddArgs, 'input'>>;

@@ -306,19 +306,19 @@ export const stixCyberObservableEditContext = (context, user, stixCyberObservabl
 
 // region export
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
-  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters, types } = args;
   const argsFilters = { search, orderBy, orderMode, filters, types };
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, ordersOpts);
   const observableContext = { ...exportContext, entity_type: exportContext.entity_type ?? 'Stix-Cyber-Observable' };
-  const works = await askListExport(context, user, observableContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, observableContext, format, selectedIds, listParams, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
 export const stixCyberObservableExportAsk = async (context, user, stixCyberObservableId, args) => {
-  const { format, exportType, maxMarkingDefinition = null } = args;
+  const { format, exportType, contentMaxMarkings = [], fileMarkings = [] } = args;
   const entity = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
+  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w.work));
 };
 // endregion

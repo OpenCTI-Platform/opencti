@@ -82,19 +82,17 @@ FileExportViewerComponentProps
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {exportFiles?.edges?.length ? (
-            <List>
-              {exportFiles.edges.map((file) => {
-                return (
-                  file?.node && (
-                    <FileLine
-                      key={file?.node.id}
-                      file={file?.node}
-                      dense={true}
-                      disableImport={true}
-                    />
-                  )
-                );
-              })}
+            <List data-testid={'FileExportManager'}>
+              {exportFiles.edges.map((file) => (
+                file?.node && (
+                  <FileLine
+                    key={file?.node.id}
+                    file={file?.node}
+                    dense={true}
+                    disableImport={true}
+                  />
+                )
+              ))}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>

@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
 import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
@@ -65,15 +65,11 @@ export const fileManagerAskJobImportMutation = graphql`
 export const fileManagerExportMutation = graphql`
   mutation FileManagerExportMutation(
     $id: ID!
-    $format: String!
-    $exportType: String!
-    $maxMarkingDefinition: String
+    $input: ExportAskInput!
   ) {
     stixCoreObjectEdit(id: $id) {
       exportAsk(
-        format: $format
-        exportType: $exportType
-        maxMarkingDefinition: $maxMarkingDefinition
+        input: $input
       ) {
         id
         name
@@ -110,19 +106,21 @@ export const scopesConn = (exportConnectors) => {
   return fromPairs(zipped);
 };
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().trim().required(t('This field is required')),
-  type: Yup.string().trim().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+  format: Yup.string().trim().required(t_i18n('This field is required')),
+  type: Yup.string().trim().required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
-const importValidation = (t, configurations) => {
+const importValidation = (t_i18n, configurations) => {
   const shape = {
-    connector_id: Yup.string().trim().required(t('This field is required')),
+    connector_id: Yup.string().trim().required(t_i18n('This field is required')),
   };
   if (configurations) {
     return Yup.object().shape({
       ...shape,
-      configuration: Yup.string().trim().required(t('This field is required')),
+      configuration: Yup.string().trim().required(t_i18n('This field is required')),
     });
   }
   return Yup.object().shape(shape);
@@ -138,9 +136,12 @@ const FileManager = ({
   isArtifact,
   directDownload = false,
 }) => {
+  const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
+  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
@@ -181,24 +182,29 @@ const FileManager = ({
     });
   };
 
-  const onSubmitExport = (values, { setSubmitting, resetForm }) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+  const onSubmitExport = (values, { setSubmitting, setErrors, resetForm }) => {
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitMutation({
       mutation: fileManagerExportMutation,
       variables: {
         id,
-        format: values.format,
-        exportType: values.type,
-        maxMarkingDefinition,
+        input: {
+          format: values.format,
+          exportType: values.type,
+          contentMaxMarkings,
+          fileMarkings,
+        },
       },
       updater: (store) => {
         const root = store.getRootField('stixCoreObjectEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
-          format: values.format,
-          exportType: values.type,
-          maxMarkingDefinition,
+          input: {
+            format: values.format,
+            exportType: values.type,
+            contentMaxMarkings,
+            fileMarkings,
+          },
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
@@ -210,6 +216,10 @@ const FileManager = ({
           const newEdge = payload.setLinkedRecord(payload, 'node');
           ConnectionHandler.insertEdgeBefore(conn, newEdge);
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -240,7 +250,7 @@ const FileManager = ({
   ].includes(entity.entity_type);
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="FileManager">
       <Grid
         container={true}
         spacing={3}
@@ -375,20 +385,22 @@ const FileManager = ({
           initialValues={{
             format: '',
             type: 'full',
-            maxMarkingDefinition: 'none',
+            contentMaxMarkings: [],
+            fileMarkings: [],
           }}
-          validationSchema={exportValidation(t)}
+          validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, isSubmitting, resetForm }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
                 open={openExport}
                 keepMounted={true}
-                onClose={handleCloseExport}
+                onClose={resetForm}
                 fullWidth={true}
+                data-testid="FileManagerExportDialog"
               >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
@@ -431,27 +443,18 @@ const FileManager = ({
                               {t('Full export (entity and first neighbours)')}
                             </MenuItem>
                           </Field>
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="maxMarkingDefinition"
-                            label={t('Max marking definition level')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
-                              (markingDefinition) => (
-                                <MenuItem
-                                  key={markingDefinition.node.id}
-                                  value={markingDefinition.node.id}
-                                >
-                                  {markingDefinition.node.definition}
-                                </MenuItem>
-                              ),
-                              props.markingDefinitions.edges,
-                            )}
-                          </Field>
+                          <ObjectMarkingField
+                            name="contentMaxMarkings"
+                            label={t_i18n('Content max marking definition levels')}
+                            onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
+                            style={fieldSpacingContainerStyle}
+                          />
+                          <ObjectMarkingField
+                            name="fileMarkings"
+                            label={t_i18n('File marking definition levels')}
+                            filterTargetIds={selectedContentMaxMarkingsIds}
+                            style={fieldSpacingContainerStyle}
+                          />
                         </DialogContent>
                       );
                     }

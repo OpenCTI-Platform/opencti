@@ -109,7 +109,7 @@ import { stixRefsExtractor } from '../../../src/schema/stixEmbeddedRelationship'
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { confidence, created, entityType, xOpenctiStixIds } from '../../../src/schema/attribute-definition';
 import { getParentTypes } from '../../../src/schema/schemaUtils';
-import { ENTITY_TYPE_RULE } from '../../../src/schema/internalObject';
+import {ENTITY_TYPE_RULE, ENTITY_TYPE_WORK} from '../../../src/schema/internalObject';
 import { RELATION_MIGRATES } from '../../../src/schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
@@ -127,6 +127,7 @@ describe('Testing relation consistency', () => {
     [RELATION_OBJECT_LABEL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_TYPE_LABEL, true],
     // MARKING
     [RELATION_OBJECT_MARKING, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_TYPE_MARKING_DEFINITION, true],
+    [RELATION_OBJECT_MARKING, ENTITY_TYPE_WORK, ENTITY_TYPE_MARKING_DEFINITION, true],
     [RELATION_OBJECT_MARKING, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_MALWARE, false],
     [RELATION_OBJECT_MARKING, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_MALWARE, false],
     // OBS_CONTENT

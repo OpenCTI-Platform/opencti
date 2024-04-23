@@ -100,18 +100,18 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
-  const { exportContext, format, exportType, maxMarkingDefinition, selectedIds } = args;
+  const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
   const filteringArgs = { search, orderBy, orderMode, filters };
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
   const listParams = exportTransformFilters(filteringArgs, ordersOpts);
-  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
-export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectId, args) => {
-  const { format, exportType = null, maxMarkingDefinition = null } = args;
+export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectId, input) => {
+  const { format, exportType, contentMaxMarkings, fileMarkings } = input;
   const entity = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
+  const works = await askEntityExport(context, user, format, entity, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
 

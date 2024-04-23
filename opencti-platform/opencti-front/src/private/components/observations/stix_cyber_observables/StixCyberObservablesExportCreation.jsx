@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -47,35 +48,18 @@ const styles = () => ({
 });
 
 export const StixCyberObservablesExportCreationMutation = graphql`
-  mutation StixCyberObservablesExportCreationMutation(
-    $format: String!
-    $exportType: String!
-    $maxMarkingDefinition: String
-    $exportContext: ExportContext
-    $search: String
-    $orderBy: StixCyberObservablesOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-    $selectedIds: [String]
-  ) {
-    stixCyberObservablesExportAsk(
-      format: $format
-      exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
-      exportContext: $exportContext
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      selectedIds: $selectedIds
-    ) {
+  mutation StixCyberObservablesExportCreationMutation($input: StixCyberObservablesExportAskInput!) {
+    stixCyberObservablesExportAsk(input: $input) {
       id
     }
   }
 `;
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+  format: Yup.string().required(t_i18n('This field is required')),
+  type: Yup.string().trim().required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {
@@ -97,7 +81,11 @@ export const scopesConn = (exportConnectors) => {
 class StixCyberObservablesExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+  }
+
+  handleSelectedContentMaxMarkingsChange(values) {
+    this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
   }
 
   handleOpen() {
@@ -110,18 +98,24 @@ class StixCyberObservablesExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const { orderBy, orderMode, filters } = paginationOptions;
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
     commitMutation({
       mutation: StixCyberObservablesExportCreationMutation,
       variables: {
-        format: values.format,
-        exportType: values.type,
-        maxMarkingDefinition,
-        exportContext,
-        ...paginationOptions,
-        selectedIds,
+        input: {
+          format: values.format,
+          exportType: values.type,
+          fileMarkings,
+          contentMaxMarkings,
+          exportContext,
+          filters,
+          orderBy,
+          orderMode,
+          selectedIds,
+        },
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -161,6 +155,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   aria-label="Add"
                   className={classes.createButton}
                   disabled={!isExportPossible}
+                  data-testid="StixCyberObservablesExportCreationAddButton"
                 >
                   <Add />
                 </Fab>
@@ -170,19 +165,24 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 initialValues={{
                   format: '',
                   type: 'simple',
-                  maxMarkingDefinition: 'none',
+                  contentMaxMarkings: [],
+                  fileMarkings: [],
                 }}
                 validationSchema={exportValidation(t)}
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting }) => (
+                {({ submitForm, handleReset, isSubmitting, resetForm }) => (
                   <Form>
                     <Dialog
                       open={this.state.open}
                       PaperProps={{ elevation: 1 }}
-                      onClose={this.handleClose.bind(this)}
+                      onClose={() => {
+                        resetForm();
+                        this.handleClose();
+                      }}
                       fullWidth={true}
+                      data-testid="StixCyberObservablesExportCreationDialog"
                     >
                       <DialogTitle>{t('Generate an export')}</DialogTitle>
                       <QueryRenderer
@@ -227,30 +227,18 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                     )}
                                   </MenuItem>
                                 </Field>
-                                <Field
-                                  component={SelectField}
-                                  variant="standard"
-                                  name="maxMarkingDefinition"
-                                  label={t('Max marking definition level')}
-                                  fullWidth={true}
-                                  containerstyle={{
-                                    marginTop: 20,
-                                    width: '100%',
-                                  }}
-                                >
-                                  <MenuItem value="none">{t('None')}</MenuItem>
-                                  {map(
-                                    (markingDefinition) => (
-                                      <MenuItem
-                                        key={markingDefinition.node.id}
-                                        value={markingDefinition.node.id}
-                                      >
-                                        {markingDefinition.node.definition}
-                                      </MenuItem>
-                                    ),
-                                    props.markingDefinitions.edges,
-                                  )}
-                                </Field>
+                                <ObjectMarkingField
+                                  name="contentMaxMarkings"
+                                  label={t('Content max marking definition levels')}
+                                  onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                                  style={fieldSpacingContainerStyle}
+                                />
+                                <ObjectMarkingField
+                                  name="fileMarkings"
+                                  label={t('File marking definition levels')}
+                                  filterTargetIds={this.state.selectedContentMaxMarkingsIds}
+                                  style={fieldSpacingContainerStyle}
+                                />
                               </DialogContent>
                             );
                           }

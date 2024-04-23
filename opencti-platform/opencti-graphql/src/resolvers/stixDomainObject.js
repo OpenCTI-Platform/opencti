@@ -77,15 +77,15 @@ const stixDomainObjectResolvers = {
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
-      exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, id, args),
-      exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
+      exportAsk: ({ input }) => stixDomainObjectExportAsk(context, context.user, id, input),
+      exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
       stixDomainObjectFileEdit: ({ input }) => stixDomainObjectFileEdit(context, context.user, id, input),
     }),
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
-      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
+    stixDomainObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, file_markings, listFilters);
     },
   },
   Subscription: {

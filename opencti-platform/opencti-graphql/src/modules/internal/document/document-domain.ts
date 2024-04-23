@@ -18,6 +18,8 @@ import { FROM_START_STR } from '../../../utils/format';
 import { buildContextDataForFile, publishUserAction } from '../../../listener/UserActionListener';
 import type { UserAction } from '../../../listener/UserActionListener';
 import { ForbiddenAccess } from '../../../config/errors';
+import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
+import { buildRefRelationKey } from '../../../schema/general';
 
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {
@@ -41,6 +43,7 @@ export const buildFileDataForIndexing = (file: File) => {
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? []
   };
 };
 
@@ -164,7 +167,7 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   const listOptions = { ...opts, entity_id, ...findOpts, ...orderOptions };
 
   await checkFileAccess(context, user, 'read', { entity_id, id: path, filename: '' });
-  const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, SYSTEM_USER, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
+  const pagination = await listEntitiesPaginated<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
 
   // region enrichment only possible for single path resolution
   // Enrich pagination for import images

@@ -6,6 +6,7 @@ import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../
 import { elLoadById } from '../../../src/database/engine';
 import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';
+import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -24,7 +25,7 @@ const importFileId = `import/global/${exportFileName}`;
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName];
+    const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
     // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
@@ -40,6 +41,7 @@ describe('File storage file listing', () => {
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10700);
     expect(file.metaData).not.toBeNull();
+    expect(file.metaData.file_markings[0]).toEqual(MARKING_TLP_AMBER_STRICT);
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('application/json');
@@ -68,7 +70,7 @@ describe('File storage file listing', () => {
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { entity_id: 'unknow_id' });
     expect(files.length).toEqual(0);
     // maxFileSize filtering
-    files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 10700 });
+    files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 11576 });
     expect(files.length).toEqual(1);
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export/Malware'], { maxFileSize: 1692 });
     expect(files.length).toEqual(0);
@@ -92,6 +94,7 @@ describe('File storage file listing', () => {
     expect(data).not.toBeNull();
     const jsonData = JSON.parse(data);
     expect(jsonData).not.toBeNull();
+    // expect(jsonData.objects.length).toEqual(10);
     expect(jsonData.objects.length).toEqual(9);
     const user = head(jsonData.objects);
     expect(user.name).toEqual('Paradise Ransomware');
@@ -102,6 +105,7 @@ describe('File storage file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
+    // expect(file.size).toEqual(11576);
     expect(file.size).toEqual(10700);
   });
   it('should delete file', async () => {

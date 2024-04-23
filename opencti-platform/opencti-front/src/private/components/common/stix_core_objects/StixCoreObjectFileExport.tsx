@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { filter, map } from 'ramda';
+import { filter } from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import ToggleButton from '@mui/material/ToggleButton';
-import { DialogTitle } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
@@ -19,6 +19,8 @@ import { FileManagerExportMutation } from '@components/common/files/__generated_
 import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
 import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { Option } from '@components/common/form/ReferenceField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,7 +28,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -44,6 +46,9 @@ const stixCoreObjectFileExportQuery = graphql`
 
 const exportValidation = (t: (arg: string) => string) => Yup.object().shape({
   format: Yup.string().trim().required(t('This field is required')),
+  type: Yup.string().required(t('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
 });
 interface StixCoreObjectFileExportComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
@@ -55,7 +60,8 @@ interface StixCoreObjectFileExportComponentProps {
 interface FormValues {
   format: string;
   type: string;
-  maxMarkingDefinition: string | null;
+  contentMaxMarkings: Option[];
+  fileMarkings: Option[];
 }
 
 const StixCoreObjectFileExportComponent = ({
@@ -74,19 +80,27 @@ const StixCoreObjectFileExportComponent = ({
     fileManagerExportMutation,
   );
   const [open, setOpen] = useState(false);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState(['']);
+  const handleSelectedContentMaxMarkingsChange = (values: Option[]) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitExport = (
     values: FormValues,
-    { setSubmitting, resetForm }: FormikHelpers<FormValues>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<FormValues>,
   ) => {
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
-      ? null
-      : values.maxMarkingDefinition;
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitExport({
       variables: {
         id,
-        format: values.format,
-        exportType: values.type,
-        maxMarkingDefinition,
+        input: {
+          format: values.format,
+          exportType: values.type,
+          contentMaxMarkings,
+          fileMarkings,
+        },
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: (exportData) => {
         const fileId = exportData.stixCoreObjectEdit?.exportAsk?.[0].id;
@@ -136,10 +150,12 @@ const StixCoreObjectFileExportComponent = ({
             onClick={() => handleClickOpen()}
             disabled={!isExportPossible}
             value="quick-export"
+            aria-label="Quick export"
             aria-haspopup="true"
             color="primary"
             size="small"
             style={{ marginRight: 3 }}
+            data-testid="StixCoreObjectFileExportQuickExportButton"
           >
             <FileExportOutline
               fontSize="small"
@@ -153,19 +169,21 @@ const StixCoreObjectFileExportComponent = ({
         initialValues={{
           format: formatValue,
           type: 'full',
-          maxMarkingDefinition: 'none',
+          contentMaxMarkings: [],
+          fileMarkings: [],
         }}
         validationSchema={exportValidation(t_i18n)}
         onSubmit={onSubmitExport}
         onReset={() => setOpen(false)}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ submitForm, handleReset, isSubmitting, resetForm }) => (
           <Form>
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={open}
-              onClose={() => setOpen(false)}
+              onClose={resetForm}
               fullWidth={true}
+              data-testid="StixCoreObjectFileExportDialog"
             >
               <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
               {/* Duplicate code for displaying list of marking in select input. TODO a component */}
@@ -202,6 +220,7 @@ const StixCoreObjectFileExportComponent = ({
                           component={SelectField}
                           variant="standard"
                           name="type"
+                          aria-label={'TYPE'}
                           label={t_i18n('Export type')}
                           fullWidth={true}
                           containerstyle={fieldSpacingContainerStyle}
@@ -213,27 +232,18 @@ const StixCoreObjectFileExportComponent = ({
                             {t_i18n('Full export (entity and first neighbours)')}
                           </MenuItem>
                         </Field>
-                        <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="maxMarkingDefinition"
-                          label={t_i18n('Max marking definition level')}
-                          fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                        >
-                          <MenuItem value="none">{t_i18n('None')}</MenuItem>
-                          {map(
-                            (markingDefinition) => (
-                              <MenuItem
-                                key={markingDefinition.node.id}
-                                value={markingDefinition.node.id}
-                              >
-                                {markingDefinition.node.definition}
-                              </MenuItem>
-                            ),
-                            props.markingDefinitions.edges,
-                          )}
-                        </Field>
+                        <ObjectMarkingField
+                          name="contentMaxMarkings"
+                          label={t_i18n('Content max marking definition levels')}
+                          onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
+                          style={fieldSpacingContainerStyle}
+                        />
+                        <ObjectMarkingField
+                          name="fileMarkings"
+                          label={t_i18n('File marking definition levels')}
+                          filterTargetIds={selectedContentMaxMarkingsIds}
+                          style={fieldSpacingContainerStyle}
+                        />
                       </DialogContent>
                     );
                   }

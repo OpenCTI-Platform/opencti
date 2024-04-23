@@ -107,9 +107,9 @@ const stixCoreRelationshipResolvers = {
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),
-    stixCoreRelationshipsExportAsk: (_, args, context) => stixCoreRelationshipsExportAsk(context, context.user, args),
-    stixCoreRelationshipsExportPush: (_, { entity_id, entity_type, file, listFilters }, context) => {
-      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, listFilters);
+    stixCoreRelationshipsExportAsk: (_, { input }, context) => stixCoreRelationshipsExportAsk(context, context.user, input),
+    stixCoreRelationshipsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
+      return stixCoreObjectsExportPush(context, context.user, entity_id, entity_type, file, file_markings, listFilters);
     },
     stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, context) => {
       return stixCoreRelationshipDeleteByFromAndTo(context, context.user, fromId, toId, relationshipType);

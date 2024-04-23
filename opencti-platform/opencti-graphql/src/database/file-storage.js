@@ -318,7 +318,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 };
 
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [] } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -369,11 +369,10 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [] },
-    uploadStatus: 'complete'
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    uploadStatus: 'complete',
   };
   await indexFileToDocument(file);
-
   // confidence control on the context entity (like a report) if we want auto-enrichment
   // noThrow ; we do not want to fail here as it's an automatic process.
   // we will simply not start the job

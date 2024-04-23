@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import Tooltip from '@mui/material/Tooltip';
 import Fab from '@mui/material/Fab';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -23,6 +24,7 @@ import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { emptyFilterGroup, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -49,52 +51,18 @@ const styles = () => ({
 
 export const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
-    $format: String!
-    $exportType: String!
-    $maxMarkingDefinition: String
-    $exportContext: ExportContext
-    $search: String
-    $orderBy: StixCoreRelationshipsOrdering
-    $orderMode: OrderingMode
-    $selectedIds: [String]
-    $fromOrToId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
-    $filters: FilterGroup
+    $input: StixCoreRelationshipsExportAskInput!
   ) {
-    stixCoreRelationshipsExportAsk(
-      format: $format
-      exportType: $exportType
-      maxMarkingDefinition: $maxMarkingDefinition
-      exportContext: $exportContext
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-      selectedIds: $selectedIds
-      fromOrToId: $fromOrToId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      filters: $filters
-    ) {
+    stixCoreRelationshipsExportAsk(input: $input) {
       id
     }
   }
 `;
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
+const exportValidation = (t_i18n) => Yup.object().shape({
+  format: Yup.string().required(t_i18n('This field is required')),
+  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {
@@ -114,7 +82,11 @@ export const scopesConn = (exportConnectors) => {
 class StixCoreRelationshipsExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+  }
+
+  handleSelectedContentMaxMarkingsChange(values) {
+    this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
   }
 
   handleOpen() {
@@ -127,18 +99,25 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, availableFilterKeys, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const maxMarkingDefinition = values.maxMarkingDefinition === 'none' ? null : values.maxMarkingDefinition;
-    const finalFilters = paginationOptions.filters ?? emptyFilterGroup;
+    const { orderBy, orderMode, filters } = paginationOptions;
+    const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const finalFilters = filters ?? emptyFilterGroup;
+
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
-        format: values.format,
-        exportType: 'full',
-        maxMarkingDefinition,
-        exportContext,
-        ...paginationOptions,
-        filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
-        selectedIds,
+        input: {
+          format: values.format,
+          exportType: 'full',
+          contentMaxMarkings,
+          fileMarkings,
+          exportContext,
+          orderMode,
+          orderBy,
+          filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
+          selectedIds,
+        },
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -178,6 +157,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       aria-label="generate-export"
                     >
                       <Fab
+                        data-testid="StixCoreRelationshipsExportCreationAddButton"
                         onClick={this.handleOpen.bind(this)}
                         color="secondary"
                         aria-label="Add"
@@ -191,18 +171,23 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       enableReinitialize={true}
                       initialValues={{
                         format: '',
-                        maxMarkingDefinition: 'none',
+                        contentMaxMarkings: [],
+                        fileMarkings: [],
                       }}
                       validationSchema={exportValidation(t)}
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
                       onReset={this.handleClose.bind(this)}
                     >
-                      {({ submitForm, handleReset, isSubmitting }) => (
+                      {({ submitForm, handleReset, isSubmitting, resetForm }) => (
                         <Form>
                           <Dialog
+                            data-testid="StixCoreRelationshipsExportCreationDialog"
                             PaperProps={{ elevation: 1 }}
                             open={this.state.open}
-                            onClose={this.handleClose.bind(this)}
+                            onClose={() => {
+                              resetForm();
+                              this.handleClose();
+                            }}
                             fullWidth={true}
                           >
                             <DialogTitle>{t('Generate an export')}</DialogTitle>
@@ -231,30 +216,18 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                           </MenuItem>
                                         ))}
                                       </Field>
-                                      <Field
-                                        component={SelectField}
-                                        variant="standard"
-                                        name="maxMarkingDefinition"
-                                        label={t('Max marking definition level')}
-                                        fullWidth={true}
-                                        containerstyle={{
-                                          marginTop: 20,
-                                          width: '100%',
-                                        }}
-                                      >
-                                        <MenuItem value="none">{t('None')}</MenuItem>
-                                        {R.map(
-                                          (markingDefinition) => (
-                                            <MenuItem
-                                              key={markingDefinition.node.id}
-                                              value={markingDefinition.node.id}
-                                            >
-                                              {markingDefinition.node.definition}
-                                            </MenuItem>
-                                          ),
-                                          props.markingDefinitions.edges,
-                                        )}
-                                      </Field>
+                                      <ObjectMarkingField
+                                        name="contentMaxMarkings"
+                                        label={t('Content max marking definition levels')}
+                                        onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                                        style={fieldSpacingContainerStyle}
+                                      />
+                                      <ObjectMarkingField
+                                        name="fileMarkings"
+                                        label={t('File marking definition levels')}
+                                        filterTargetIds={this.state.selectedContentMaxMarkingsIds}
+                                        style={fieldSpacingContainerStyle}
+                                      />
                                     </DialogContent>
                                   );
                                 }

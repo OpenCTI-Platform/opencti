@@ -47,11 +47,14 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
+export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
+  if (!exportContext || !exportContext?.entity_type) throw new Error('entity_type is missing from askListExport');
+
   const connectors = await connectorsForExport(context, user, format, true);
-  const { entity_id, entity_type } = exportContext;
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
-  const entity = entity_id ? await storeLoadById(context, user, entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
+  const entity = exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const { entity_type } = exportContext;
+
   const toFileName = (connector) => {
     const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
@@ -64,7 +67,8 @@ export const askListExport = async (context, user, exportContext, format, select
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type, // Exported entity type
     // All the params needed to execute the export on python connector
-    max_marking: maxMarkingId, // Max marking id
+    content_max_markings: contentMaxMarkings,
+    file_markings: fileMarkings,
   };
   const buildExportMessage = (work, fileName) => {
     const internal = {
@@ -98,7 +102,7 @@ export const askListExport = async (context, user, exportContext, format, select
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity_type}${entity ? `/${entity.id}` : ''}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
@@ -114,12 +118,15 @@ export const askListExport = async (context, user, exportContext, format, select
   return worksForExport;
 };
 
-export const askEntityExport = async (context, user, format, entity, type = 'simple', maxMarkingId = null) => {
+export const askEntityExport = async (context, user, format, entity, type, contentMaxMarkings, fileMarkings) => {
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
+  const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
+    return await findMarkingDefinitionById(context, user, id);
+  }));
+  const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
-    return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
+    return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const baseEvent = {
     format,
@@ -128,7 +135,8 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type
     export_type: type, // Simple or full
-    max_marking: maxMarkingId, // Max marking id
+    content_max_markings: contentMaxMarkings,
+    file_markings: fileMarkings,
   };
   const buildExportMessage = (work, fileName) => {
     return {
@@ -145,10 +153,10 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   };
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
-    map(async (connector) => {
+    map(async (connector) => { // can be refactored to native map
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;

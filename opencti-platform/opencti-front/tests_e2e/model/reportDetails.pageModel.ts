@@ -7,15 +7,28 @@ export default class ReportDetailsPage {
     return this.page.getByTestId('report-details-page');
   }
 
+  getItemFromList(name: string) {
+    return this.page.getByRole('link', { name });
+  }
+
   getTitle(name: string) {
     return this.page.getByRole('heading', { name });
+  }
+
+  getObservablesTab() {
+    return this.page.getByRole('tab', { name: 'Observables' });
   }
 
   getEditButton() {
     return this.page.getByLabel('Edit');
   }
 
-  getObservablesTab() {
-    return this.page.getByRole('tab', { name: 'Observables' });
+  getExportButton() {
+    return this.page.getByLabel('Quick export');
+  }
+
+  getDataList() {
+    const list = this.page.getByTestId('FileExportManager');
+    return list;
   }
 }
