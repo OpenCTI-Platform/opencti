@@ -17,7 +17,6 @@ import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
-import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
