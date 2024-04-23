@@ -80,7 +80,7 @@ const platformClean = async () => {
   logApp.info('[vitest-global-setup] cleaning up platform');
   const stopTime = new Date().getTime();
   // Delete the bucket
-  await deleteAllBucketContent(testContext, ADMIN_USER);
+  // await deleteAllBucketContent(testContext, ADMIN_USER);
   // Delete all rabbitmq queues
   await deleteQueues(testContext, ADMIN_USER);
   // Remove all elastic indices
