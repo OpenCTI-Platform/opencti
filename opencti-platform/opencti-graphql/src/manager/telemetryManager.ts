@@ -2,6 +2,8 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { ConsoleMetricExporter, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import nconf from 'nconf';
 import conf, { booleanConf, ENABLED_TELEMETRY, logApp, PLATFORM_VERSION } from '../config/conf';
 import { lockResource } from '../database/redis';
 import { executionContext } from '../utils/access';
@@ -11,9 +13,6 @@ import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import nconf from 'nconf';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 100000; // record telemetry data period
@@ -62,10 +61,6 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterM
     const context = executionContext('telemetry_manager');
     // Fetch settings
     const settings = await getSettings(context) as Settings;
-    const enabledModules = settings.platform_modules?.map((module) => (module.enable ? module.id : null))
-      .filter((n) => n) as string[];
-    const runningModules = settings.platform_modules?.map((module) => (module.running ? module.id : null))
-      .filter((n) => n) as string[];
     // Set filigranTelemetryManager settings telemetry data
     filigranTelemetryMeterManager.setLanguage(settings.platform_language ?? 'undefined');
     filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
@@ -73,7 +68,6 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterM
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users since fetchTelemetryData() last execution
     const activUsers = await usersWithActiveSession(SCHEDULE_TIME / 1000 / 60);
-    console.log('activUsers', activUsers);
     filigranTelemetryMeterManager.setActivUsers(activUsers, new Date().getTime());
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });

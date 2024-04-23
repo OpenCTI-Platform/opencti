@@ -13,18 +13,14 @@ export class FileExporter extends InMemoryLogRecordExporter {
   private filePath;
 
   export(logs: LogRecord[], resultCallback: (callback: ExportResult) => void) {
-    console.log('IN EXPORTER');
-    console.log('logs', logs);
     const formattedLogs = logs.map((log) => log.body);
     fs.appendFile(
       this.filePath,
       `${JSON.stringify(formattedLogs)}\n`,
       (err) => {
         if (err) {
-          console.log('err', err);
           return resultCallback({ code: 1, error: err });
         }
-        console.log('OK');
         return resultCallback({ code: 0 });
       }
     );
