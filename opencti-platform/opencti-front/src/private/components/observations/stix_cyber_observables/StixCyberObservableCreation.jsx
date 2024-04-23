@@ -39,6 +39,7 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import { convertMarking } from '../../../../utils/edition';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { ConsoleLine } from 'mdi-material-ui';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -236,22 +237,24 @@ const StixCyberObservableCreation = ({
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
   const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
   const [keyFieldDisabled, setKeyFieldDisabled] = useState(false);
+  const [selectedAttribute, setSelectedAttribute] = useState('');
   const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
   const hashes_MD5_field = document.getElementById('hashes_MD5');
   const hashes_SHA1_field = document.getElementById('hashes_SHA-1');
   const hashes_SHA256_field = document.getElementById('hashes_SHA-256');
   const hashes_SHA512_field = document.getElementById('hashes_SHA-512');
   const divRowStyle = { display: 'flex', flexWrap: 'wrap' };
-
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('onSubmit was called');
     let adaptedValues = values;
+    const bulk_hashes_field = document.getElementById('bulk_hashes_field');
+
     if (adaptedValues) { // Verify not null for DeepScan compliance
       // Bulk Add Modal was used
       console.log("adaptedValues " + adaptedValues.value);
-      console.log("adaptedValues.bulk_value_field " + adaptedValues.bulk_value_field);
+  
       if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
-        console.log("inside bulk add, " + bulkAddMsg);
+        console.log('onSubmit: bulk_value_field.value ' + bulk_value_field.value);
         const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_values = array_of_bulk_values.map((s) => s.trim());
@@ -261,9 +264,22 @@ const StixCyberObservableCreation = ({
         adaptedValues.value = [...new Set(cleaned_bulk_values)].join('\n');
       }
 
-      console.log("adaptedValues.hashes_SHA-256 " + adaptedValues['hashes_SHA-256']);
-      console.log("adaptedValues.hashes_SHA-256 value " + adaptedValues['hashes_SHA-256'].value());
-      console.log("adaptedValues.hashes_SHA-256 valueList " + adaptedValues['hashes_SHA-256'].valueList());
+      // Bulk Add Dialog was used
+      console.log("bulkAddDialog: adaptedValues.bulk_hashes_field " + adaptedValues.bulk_hashes_field);
+
+      if (adaptedValues.bulk_hashes_field && adaptedValues.hashes === bulkAddMsg) {
+        console.log('bulkAddDialog in the if: bulk_hashes_field.value ' + bulk_hashes_field.value);
+        console.log('bulkAddDialog in the if: adaptedValues.hashes ' + adaptedValues.hashes);
+        const array_of_bulk_hashes = adaptedValues.bulk_hashes_field.split(/\r?\n/);
+        // Trim them just to remove any extra spacing on front or rear of string
+        const trimmed_bulk_hashes = array_of_bulk_hashes.map((s) => s.trim());
+        // Remove any "" or empty resulting elements
+        const cleaned_bulk_hashes = trimmed_bulk_hashes.reduce((elements, i) => (i ? [...elements, i] : elements), []);
+        // De-duplicate by unique then rejoin
+        adaptedValues.value = [...new Set(cleaned_bulk_hashes)].join('\n');
+        console.log('bulkAddDialog in the if: adaptedValues.value ' + adaptedValues.value);
+      }
+
       // Potential dicts
       if (
         adaptedValues.hashes_MD5
@@ -273,25 +289,30 @@ const StixCyberObservableCreation = ({
       ) {
         console.log('inside potential dicts');
         adaptedValues.hashes = [];
-        if (adaptedValues.hashes_MD5.length > 0) {
+        if (adaptedValues.hashes_MD5.length > 0 && selectedAttribute === 'MD5') {
+          console.log('inside md5 dicts. adaptedValues.hashes_MD5.length is ' + adaptedValues.hashes_MD5.length);
           adaptedValues.hashes.push({
             algorithm: 'MD5',
             hash: adaptedValues.hashes_MD5,
           });
         }
-        if (adaptedValues['hashes_SHA-1'].length > 0) {
+        if (adaptedValues['hashes_SHA-1'].length > 0 && selectedAttribute === 'SHA1') {
+          console.log('inside sha1 dicts. adaptedValues[hashes_SHA-1].length is ' + adaptedValues['hashes_SHA-1'].length);
           adaptedValues.hashes.push({
             algorithm: 'SHA-1',
             hash: adaptedValues['hashes_SHA-1'],
           });
         }
-        if (adaptedValues['hashes_SHA-256'].length > 0) {
+        if (adaptedValues['hashes_SHA-256'].length > 0 && selectedAttribute === 'SHA256') {
+          console.log('inside sha256 dicts. adaptedValues[hashes_SHA-256].length is ' + adaptedValues['hashes_SHA-256'].length);
+          console.log(adaptedValues['hashes_SHA-256']);
           adaptedValues.hashes.push({
             algorithm: 'SHA-256',
             hash: adaptedValues['hashes_SHA-256'],
           });
         }
-        if (adaptedValues['hashes_SHA-512'].length > 0) {
+        if (adaptedValues['hashes_SHA-512'].length > 0 && selectedAttribute === 'SHA512') {
+          console.log('inside sha512 dicts. adaptedValues[hashes_SHA-512].length is ' + adaptedValues['hashes_SHA-512'].length);
           adaptedValues.hashes.push({
             algorithm: 'SHA-512',
             hash: adaptedValues['hashes_SHA-512'],
@@ -487,32 +508,31 @@ const StixCyberObservableCreation = ({
   };
 
   function BulkAddDialog(props) {
-    // console.log('inside BulkAddDialog function');
     const [openBulkAddDialog, setOpenBulkAddDialog] = React.useState(false);
     const handleOpenBulkAddDialog = () => {
       if (hashes_MD5_field != null && hashes_MD5_field.value != null
         && hashes_MD5_field.value.length > 0 && hashes_MD5_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_MD5');
-        props.setValue('hashes_MD5', hashes_MD5_field.value.trim());
+        console.log('bulkAddDialog: hashes_MD5');
+        props.hashes.push('hashes_MD5', hashes_MD5_field.value.trim());
       }
       if (hashes_SHA1_field != null && hashes_SHA1_field.value != null
         && hashes_SHA1_field.value.length > 0 && hashes_SHA1_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA-1');
-        props.setValue('hashes_SHA-1', hashes_SHA1_field.value.trim());
+        console.log('bulkAddDialog: hashes_SHA-1');
+        props.hashes.push('hashes_SHA-1', hashes_SHA1_field.value.trim());
       }
       if (hashes_SHA256_field != null && hashes_SHA256_field.value != null
         && hashes_SHA256_field.value.length > 0 && hashes_SHA256_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA-256');
-        props.setValue('hashes_SHA-256', hashes_SHA256_field.value.trim());
+        console.log('bulkAddDialog: hashes_SHA-256');
+        props.hashes.push('hashes_SHA-256', hashes_SHA256_field.value.trim());
       }
       if (hashes_SHA512_field != null && hashes_SHA512_field.value != null
         && hashes_SHA512_field.value.length > 0 && hashes_SHA512_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('hashes_SHA-512');
-        props.setValue('hashes_SHA-512', hashes_SHA512_field.value.trim());
+        console.log('bulkAddDialog: hashes_SHA-512');
+        props.hashes.push('hashes_SHA-512', hashes_SHA512_field.value.trim());
       }
       setOpenBulkAddDialog(true);
     };
@@ -522,6 +542,7 @@ const StixCyberObservableCreation = ({
       const bulk_hashes_field = document.getElementById('bulk_hashes_field');
 
       if (bulk_hashes_field != null && bulk_hashes_field.value != null && bulk_hashes_field.value.length > 0) {
+        console.log('handleCloseBulkAddDialog: bulk_hashes_field.value ' + bulk_hashes_field.value);
         props.setValue('hashes_MD5', bulkAddMsg);
         props.setValue('hashes_SHA-1', bulkAddMsg);
         props.setValue('hashes_SHA-256', bulkAddMsg);
@@ -537,8 +558,6 @@ const StixCyberObservableCreation = ({
         setKeyFieldDisabled(false);
       }
     };
-
-    const [selectedAttribute, setSelectedAttribute] = useState('');
 
     const handleSelectChange = (event) => {
       setSelectedAttribute(event.target.value);
