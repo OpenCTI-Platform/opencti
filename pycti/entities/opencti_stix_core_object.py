@@ -435,7 +435,7 @@ class StixCoreObject:
                         }
                     }
                 }
-            }      
+            }
             ... on StixCyberObservable {
                 observable_value
                 indicators {
@@ -1099,7 +1099,7 @@ class StixCoreObject:
                         }
                     }
                 }
-            }      
+            }
             ... on StixCyberObservable {
                 observable_value
                 indicators {
@@ -1477,13 +1477,21 @@ class StixCoreObject:
         return entity["importFiles"]
 
     def push_list_export(
-        self, entity_id, entity_type, file_name, data, list_filters="", mime_type=None
+        self,
+        entity_id,
+        entity_type,
+        file_name,
+        file_markings,
+        data,
+        list_filters="",
+        mime_type=None,
     ):
         query = """
-            mutation StixCoreObjectsExportPush($entity_id: String, $entity_type: String!, $file: Upload!, $listFilters: String) {
-                stixCoreObjectsExportPush(entity_id: $entity_id, entity_type: $entity_type, file: $file, listFilters: $listFilters)
+            mutation StixCoreObjectsExportPush($entity_id: String, $entity_type: String!, $file: Upload!, $file_markings: [String]!, $listFilters: String) {
+                stixCoreObjectsExportPush(entity_id: $entity_id, entity_type: $entity_type, file: $file, file_markings: $file_markings, listFilters: $listFilters)
             }
         """
+
         if mime_type is None:
             file = self.file(file_name, data)
         else:
@@ -1494,6 +1502,7 @@ class StixCoreObject:
                 "entity_id": entity_id,
                 "entity_type": entity_type,
                 "file": file,
+                "file_markings": file_markings,
                 "listFilters": list_filters,
             },
         )
