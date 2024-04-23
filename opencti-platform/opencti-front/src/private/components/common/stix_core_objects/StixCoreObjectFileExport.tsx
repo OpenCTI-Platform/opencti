@@ -16,8 +16,12 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
-import { StixCoreObjectFileExportQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
-import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import {
+  StixCoreObjectFileExportQuery
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectFileExportQuery.graphql';
+import {
+  MarkingDefinitionsLinesSearchQuery$data
+} from '@components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { Option } from '@components/common/form/ReferenceField';
@@ -81,7 +85,7 @@ const StixCoreObjectFileExportComponent = ({
   );
   const [open, setOpen] = useState(false);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState(['']);
-  const handleSelectedContentMaxMarkingsChange = (values: Option[]) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
+  const handleSelectedContentMaxMarkingsChange = (values: Option[]) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitExport = (
     values: FormValues,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<FormValues>,

@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -95,7 +95,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       return !!maxMarking && maxMarking.x_opencti_order >= def.x_opencti_order;
     });
   }
-  const filteredAllowedMarkingDefinitionsOut = filterTargetIds ? filterMarkingsOutFor(allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)), allowedMarkingDefinitions) : allowedMarkingDefinitions;
+  const filteredAllowedMarkingDefinitionsOut = filterTargetIds
+    ? filterMarkingsOutFor(allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)), allowedMarkingDefinitions) : allowedMarkingDefinitions;
 
   const optionSorted = filteredAllowedMarkingDefinitionsOut.sort((a, b) => {
     if (a.definition_type === b.definition_type) {

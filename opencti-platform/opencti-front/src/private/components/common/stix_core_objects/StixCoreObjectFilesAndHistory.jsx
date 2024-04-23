@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import * as R from 'ramda';
+import {compose, filter, flatten, fromPairs, includes, map, uniq, zip} from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
-import { ConnectionHandler } from 'relay-runtime';
+import {ConnectionHandler} from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { Form, Formik, Field } from 'formik';
+import {createFragmentContainer, graphql} from 'react-relay';
+import {Field, Form, Formik} from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
 import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
-import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import {commitMutation, handleError, MESSAGING$} from '../../../../relay/environment';
+import inject18n, {useFormatter} from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import {fieldSpacingContainerStyle} from '../../../../utils/field';
 
 const styles = () => ({
   container: {
@@ -152,7 +152,7 @@ const StixCoreObjectFilesAndHistory = ({
   const handleCloseImport = () => setFileToImport(null);
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
-  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value))
+  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
