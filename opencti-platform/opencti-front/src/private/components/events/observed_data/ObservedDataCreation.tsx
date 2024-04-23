@@ -7,7 +7,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { handleErrorInForm } from '../../../../relay/environment';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
+import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -139,6 +141,7 @@ ObservedDataFormProps
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: () => {
@@ -147,6 +150,7 @@ ObservedDataFormProps
         if (onCompleted) {
           onCompleted();
         }
+        MESSAGING$.notifySuccess(`${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -264,16 +268,19 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
     paginationOptions,
     'observedDataAdd',
   );
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Drawer
       title={t_i18n('Create an observed data')}
-      variant={DrawerVariant.create}
+      variant={FABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={FABReplaced ? CreateEntityControlledDial('entity_Observed-Data') : undefined}
     >
       {({ onClose }) => (
         <ObservedDataCreationForm
