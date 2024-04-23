@@ -1,5 +1,6 @@
 import { FunctionComponent } from 'react';
 import { React } from 'mdi-material-ui';
+import useHelper from 'src/utils/hooks/useHelper';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -23,6 +24,7 @@ const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -124,6 +126,8 @@ const StixCyberObservables: FunctionComponent = () => {
     };
   };
 
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const renderLines = () => {
     return (
       <>
@@ -149,6 +153,19 @@ const StixCyberObservables: FunctionComponent = () => {
           iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCyberObservableCreation
+              paginationKey="Pagination_stixCyberObservables"
+              paginationOptions={paginationOptions}
+              contextual={false}
+              open={false}
+              handleClose={undefined}
+              type={undefined}
+              display={undefined}
+              speeddial={false}
+              inputValue={undefined}
+            />
+          </Security>}
         >
           <QueryRenderer
             query={stixCyberObservablesLinesQuery}
@@ -191,19 +208,21 @@ const StixCyberObservables: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCyberObservableCreation
-          paginationKey="Pagination_stixCyberObservables"
-          paginationOptions={paginationOptions}
-          contextual={false}
-          open={false}
-          handleClose={undefined}
-          type={undefined}
-          display={undefined}
-          speeddial={false}
-          inputValue={undefined}
-        />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCyberObservableCreation
+            paginationKey="Pagination_stixCyberObservables"
+            paginationOptions={paginationOptions}
+            contextual={false}
+            open={false}
+            handleClose={undefined}
+            type={undefined}
+            display={undefined}
+            speeddial={false}
+            inputValue={undefined}
+          />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

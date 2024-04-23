@@ -11,7 +11,8 @@ import { FormikConfig } from 'formik/dist/types';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -37,6 +38,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -147,7 +149,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useApiMutation<IndicatorCreationMutation>(indicatorMutation);
+  const [commit] = useApiMutation<IndicatorCreationMutation>(
+    indicatorMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}` },
+  );
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IndicatorCreationMutation$variables['input'] = {
@@ -392,12 +398,16 @@ interface IndicatorCreationProps {
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Indicator' {...props} />
+  );
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_indicators',
@@ -438,7 +448,8 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   return (
     <Drawer
       title={t_i18n('Create an indicator')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateIndicatorControlledDial : undefined}
     >
       {({ onClose }) => (
         <IndicatorCreationForm
