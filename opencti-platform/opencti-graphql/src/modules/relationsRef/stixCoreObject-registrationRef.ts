@@ -4,5 +4,5 @@ import { createdBy, externalReferences, internalFiles, objectLabel, objectMarkin
 
 schemaRelationsRefDefinition.registerRelationsRef(
   ABSTRACT_STIX_CORE_OBJECT,
-  [createdBy, objectMarking, objectLabel, externalReferences, internalFiles, work, xOpenctiLinkedTo]
+  [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]
 );
