@@ -11,7 +11,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -30,6 +30,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -111,7 +112,11 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useApiMutation<DataSourceCreationMutation>(dataSourceMutation);
+  const [commit] = useApiMutation<DataSourceCreationMutation>(
+    dataSourceMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -166,7 +171,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   };
 
   const initialValues = useDefaultValues<DataSourceAddInput>(DATA_SOURCE_TYPE, {
-    name: inputValue || '',
+    name: inputValue ?? '',
     description: '',
     createdBy: defaultCreatedBy ?? null,
     objectMarking: defaultMarkingDefinitions ?? [],
@@ -334,6 +339,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACED');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -345,15 +351,22 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     paginationOptions,
     'dataSourceAdd',
   );
-
+  const CreateDataSourceControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Data-Source' {...props} />
+  );
+  const CreateNarrativeControlledDialContextual = CreateDataSourceControlledDial({
+    onOpen: handleOpen,
+    onClose: () => {},
+  });
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a data source')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateDataSourceControlledDial : undefined}
     >
       {({ onClose }) => (
         <DataSourceCreationForm
@@ -370,19 +383,27 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        style={{
-          position: 'fixed',
-          bottom: 30,
-          right: 30,
-          zIndex: 2000,
-        }}
-      >
-        <Add />
-      </Fab>
+      {isFABReplaced
+        ? (
+          <div style={{ marginTop: '5px' }}>
+            {CreateNarrativeControlledDialContextual}
+          </div>
+        ) : (
+          <Fab
+            onClick={handleOpen}
+            color="secondary"
+            aria-label="Add"
+            style={{
+              position: 'fixed',
+              bottom: 30,
+              right: 30,
+              zIndex: 2000,
+            }}
+          >
+            <Add />
+          </Fab>
+        )
+      }
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <DialogTitle>
           {t_i18n('Create a data source')}

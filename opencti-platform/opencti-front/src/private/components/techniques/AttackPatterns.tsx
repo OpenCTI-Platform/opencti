@@ -4,6 +4,7 @@ import {
   AttackPatternsLinesPaginationQuery$variables,
 } from '@components/techniques/attack_patterns/__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import { AttackPatternLineDummy } from '@components/techniques/attack_patterns/AttackPatternLine';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import AttackPatternsLines, { attackPatternsLinesQuery } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
@@ -19,6 +20,8 @@ const LOCAL_STORAGE_KEY = 'attackPattern';
 
 const AttackPatterns = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AttackPatternsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -94,6 +97,9 @@ const AttackPatterns = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AttackPatternCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
         <React.Suspense
@@ -127,9 +133,11 @@ const AttackPatterns = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <AttackPatternCreation paginationOptions={paginationOptions} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AttackPatternCreation paginationOptions={paginationOptions} />
+        </Security>
+      )}
     </>
   );
 };

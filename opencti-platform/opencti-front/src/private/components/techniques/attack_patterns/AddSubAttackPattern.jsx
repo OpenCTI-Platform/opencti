@@ -96,10 +96,24 @@ class AddSubAttackPattern extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add sub attack patterns')}
           header={(
-            <div className={classes.search}>
+            <div
+              style={{
+                marginLeft: 'auto',
+                marginRight: '20px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+              }}
+            >
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
+              />
+              <AttackPatternCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={paginationOptions}
               />
             </div>
           )}
@@ -122,12 +136,6 @@ class AddSubAttackPattern extends Component {
                   />
                 );
               }}
-            />
-            <AttackPatternCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={paginationOptions}
             />
           </>
         </Drawer>
