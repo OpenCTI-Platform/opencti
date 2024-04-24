@@ -16,7 +16,7 @@ import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
-const SCHEDULE_TIME = 100000; // record telemetry data period
+const SCHEDULE_TIME = 10000; // record telemetry data period
 const EXPORT_INTERVAL = 100000; // TODO set to 1 per day
 
 const createFiligranTelemetryMeterManager = async () => {
@@ -73,7 +73,7 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager: TelemetryMeterM
     filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
     // Get number of active users since fetchTelemetryData() last execution
     const activUsers = await usersWithActiveSession(SCHEDULE_TIME / 1000 / 60);
-    filigranTelemetryMeterManager.setActivUsers(activUsers, new Date().getTime());
+    filigranTelemetryMeterManager.setActivUsersHistogram(activUsers.length);
   } catch (e) {
     logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
   }
@@ -84,7 +84,6 @@ const initTelemetryManager = () => {
   let running = false;
 
   const telemetryHandler = async (filigranTelemetryMeterManager: TelemetryMeterManager) => {
-    logApp.info('[OPENCTI-MODULE] Running telemetry manager');
     let lock;
     try {
       // Lock the manager
@@ -106,6 +105,7 @@ const initTelemetryManager = () => {
 
   return {
     start: async () => {
+      logApp.info('[OPENCTI-MODULE] Starting telemetry manager');
       const filigranTelemetryMeterManager = await createFiligranTelemetryMeterManager();
       // Fetch data periodically
       scheduler = setIntervalAsync(async () => {

@@ -1,5 +1,5 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import type { ObservableResult } from '@opentelemetry/api-metrics';
+import type { Histogram, ObservableResult } from '@opentelemetry/api-metrics';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
@@ -12,7 +12,7 @@ export class TelemetryMeterManager {
 
   private numberOfInstances = 0;
 
-  private activUsers: { user_id: string, lastActivity: number }[] = []; // user activ in the last 24 hours and their last activity timestamp
+  private activUsersHistogram: Histogram | null = null;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -30,21 +30,20 @@ export class TelemetryMeterManager {
     this.numberOfInstances = n;
   }
 
-  setActivUsers(activUsersInput: string[], timestamp: number) {
-    const newActivUsers = activUsersInput
-      .filter((userId) => !this.activUsers.map((n) => n.user_id).includes((userId))) // activ users that were not registered in this.activUsers
-      .map((userId) => ({ user_id: userId, lastActivity: timestamp }));
-    const updatedActivUsers = this.activUsers
-      .map((activUser) => (activUsersInput.includes(activUser.user_id)
-        ? { user_id: activUser.user_id, lastActivity: timestamp } // update timestamp
-        : activUser)) // keep registered user
-      .concat(newActivUsers);
-    const limitDate = timestamp - 86400000; // clear the users not activ in the last 24 hours
-    this.activUsers = updatedActivUsers.filter((user) => user.lastActivity >= limitDate);
+  setActivUsersHistogram(activUsersNumber: number) {
+    this.activUsersHistogram?.record(activUsersNumber);
   }
 
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
+    // - Histogram - //
+    // number of activ users
+    this.activUsersHistogram = meter.createHistogram(
+      'opencti_numberOfActivUsers',
+      { description: 'Number of users activ in a session within the last hour',
+        unit: 'count',
+      }
+    );
     // - Gauges - //
     // number of instances
     const numberOfInstancesGauge = meter.createObservableGauge(
@@ -61,14 +60,6 @@ export class TelemetryMeterManager {
     );
     isEEActivatedGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.isEEActivated, { EEActivationDate: this.EEActivationDate });
-    });
-    // number of users activ in the last 24 hours
-    const activUsersGauge = meter.createObservableGauge(
-      'opencti_numberOfActivUsers',
-      { description: 'number of activ users, i.e. users activ in the last 24 hours', unit: 'count' },
-    );
-    activUsersGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.activUsers.length);
     });
   }
 }
