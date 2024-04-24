@@ -170,6 +170,7 @@ const IngestionRssEditionContainer = ({
               name="object_marking_refs"
               style={fieldSpacingContainerStyle}
               onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
             />
           </Form>
         )}

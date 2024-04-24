@@ -212,6 +212,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
         <ObjectMarkingField
           name="objectMarking"
           style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
         />
         <ExternalReferencesField
           name="externalReferences"

@@ -1830,6 +1830,7 @@ const WorkbenchFileContentComponent = ({
                     <ObjectMarkingField
                       name="objectMarking"
                       style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
@@ -2281,6 +2282,7 @@ const WorkbenchFileContentComponent = ({
                     <ObjectMarkingField
                       name="objectMarking"
                       style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
@@ -2563,6 +2565,7 @@ const WorkbenchFileContentComponent = ({
                     <ObjectMarkingField
                       name="objectMarking"
                       style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
@@ -2768,6 +2771,7 @@ const WorkbenchFileContentComponent = ({
                     <ObjectMarkingField
                       name="objectMarking"
                       style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
                     />
                     <ExternalReferencesField
                       name="externalReferences"

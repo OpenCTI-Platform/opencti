@@ -206,6 +206,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <OpenVocabField
             type="tool_types_ov"

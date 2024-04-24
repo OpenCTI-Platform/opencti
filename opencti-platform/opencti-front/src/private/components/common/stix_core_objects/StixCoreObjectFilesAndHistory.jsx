@@ -277,7 +277,7 @@ const StixCoreObjectFilesAndHistory = ({
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               PaperProps={{ elevation: 1 }}
@@ -342,6 +342,7 @@ const StixCoreObjectFilesAndHistory = ({
                       <ObjectMarkingField
                         name="objectMarking"
                         style={fieldSpacingContainerStyle}
+                        setFieldValue={setFieldValue}
                       />
                       <DialogContentText>
                         {t_i18n('Marking definitions to use by the csv mapper...')}

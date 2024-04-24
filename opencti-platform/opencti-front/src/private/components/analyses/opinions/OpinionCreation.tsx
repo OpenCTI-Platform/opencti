@@ -203,6 +203,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
@@ -350,6 +351,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

@@ -202,6 +202,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

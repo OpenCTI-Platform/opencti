@@ -238,6 +238,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

@@ -244,6 +244,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

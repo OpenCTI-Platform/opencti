@@ -208,6 +208,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               marginTop: 20,
               width: '100%',
             }}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

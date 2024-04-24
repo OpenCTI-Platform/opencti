@@ -268,6 +268,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

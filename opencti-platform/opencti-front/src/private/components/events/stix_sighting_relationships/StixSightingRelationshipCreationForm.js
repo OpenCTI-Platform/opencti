@@ -298,6 +298,7 @@ const StixSightingRelationshipCreationForm = ({
             <ObjectMarkingField
               name="objectMarking"
               style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
             />
             <Field
               component={SwitchField}

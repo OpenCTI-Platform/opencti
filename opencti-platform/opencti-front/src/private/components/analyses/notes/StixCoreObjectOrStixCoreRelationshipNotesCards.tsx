@@ -5,7 +5,7 @@ import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
-import { EditOutlined, ExpandMoreOutlined, ExpandLessOutlined, RateReviewOutlined } from '@mui/icons-material';
+import { EditOutlined, ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -312,6 +312,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                   <ObjectMarkingField
                     name="objectMarking"
                     style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
                   />
                   {more && (
                     <>

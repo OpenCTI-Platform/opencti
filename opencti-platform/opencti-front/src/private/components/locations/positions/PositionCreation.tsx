@@ -239,6 +239,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

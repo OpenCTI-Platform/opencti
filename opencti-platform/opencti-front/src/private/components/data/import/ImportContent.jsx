@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -511,7 +511,7 @@ class ImportContentComponent extends Component {
             onSubmit={this.onSubmitImport.bind(this)}
             onReset={this.handleCloseImport.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToImport}
@@ -577,6 +577,7 @@ class ImportContentComponent extends Component {
                           <ObjectMarkingField
                             name="objectMarking"
                             style={fieldSpacingContainerStyle}
+                            setFieldValue={setFieldValue}
                           />
                           <DialogContentText>
                             {t('Marking definitions to use by the csv mapper...')}
