@@ -96,7 +96,8 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
  */
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
-    const allFiles = await loadedFilesListing(user, `${ALL_ROOT_FOLDERS[i]}/`, { recursive: true });
+    const folder = ALL_ROOT_FOLDERS[i];
+    const allFiles = await loadedFilesListing(user, `${folder}/`, { recursive: true });
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
@@ -104,10 +105,10 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
         ids.push(currentFile.id);
       }
     }
-    logApp.info(`[FILE STORAGE] deleting ${ids.length} files in $\{ALL_ROOT_FOLDERS[i]}/`);
+    logApp.info(`[FILE STORAGE] deleting ${ids.length} files in ${folder}/`);
     await deleteFiles(context, user, ids);
   }
 
   // Once all files are deleted, then bucket can be removed.
-  await deleteBucket();
+  // await deleteBucket();
 };
