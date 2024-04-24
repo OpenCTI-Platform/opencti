@@ -101,9 +101,32 @@ const SupportPackages = () => {
       supportPackageLinesQuery,
       paginationOptions,
     );
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '25%',
+        isSortable: true,
+      },
+      packageStatus: {
+        label: 'Status',
+        width: '25%',
+        isSortable: true,
+      },
+      creators: {
+        label: 'Creator',
+        width: '25%',
+        isSortable: true,
+      },
+      created: {
+        label: 'Date',
+        width: '25%',
+        isSortable: true,
+      },
+    };
     return (
       <ListLines
         helpers={helpers}
+        dataColumns={dataColumns}
         sortBy={sortBy}
         orderAsc={orderAsc}
         keyword={searchTerm}
@@ -113,6 +136,7 @@ const SupportPackages = () => {
             <SupportPackageLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
           </React.Suspense>
@@ -136,11 +160,11 @@ const SupportPackages = () => {
         <Grid container={true} spacing={4}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <Grid item={true} xs={8} style={{ paddingTop: 10 }}>
             <div style={{ height: '100%' }}>
               <div className="clearfix"/>
               <Paper classes={{ root: classes.paper }} variant="outlined">
-                <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '8px', fontSize: '13px' }}>
+                <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '8px', fontSize: '13px', marginBottom: '40px' }}>
                   {t_i18n('Generated Support Package')}
                 </Typography>
                 <Button

@@ -24229,7 +24229,9 @@ export type SupportNodeStatus = {
 
 export type SupportPackage = BasicObject & InternalObject & {
   __typename?: 'SupportPackage';
-  created: Scalars['DateTime']['output'];
+  createdBy?: Maybe<Individual>;
+  created_at: Scalars['DateTime']['output'];
+  creators?: Maybe<Array<Creator>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -24263,7 +24265,10 @@ export type SupportPackageForceZipInput = {
 };
 
 export enum SupportPackageOrdering {
-  Name = 'name'
+  CreatedAt = 'created_at',
+  Creators = 'creators',
+  Name = 'name',
+  PackageStatus = 'package_status'
 }
 
 export type Synchronizer = {
@@ -37311,7 +37316,9 @@ export type SupportNodeStatusResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type SupportPackageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackage'] = ResolversParentTypes['SupportPackage']> = ResolversObject<{
-  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -9,10 +9,12 @@ import SupportPackageLine from '@components/settings/support/SupportPackageLine'
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { DataColumns } from '../../../../components/list_lines';
 
 const nbOfRowsToLoad = 50;
 
 interface SupportPackageLinesProps {
+  dataColumns: DataColumns;
   queryRef: PreloadedQuery<SupportPackageLinesPaginationQuery>;
   paginationOptions: SupportPackageLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
@@ -70,6 +72,7 @@ const supportPackageLinesFragment = graphql`
 const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
   queryRef,
   setNumberOfElements,
+  dataColumns,
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
@@ -89,6 +92,7 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
         loadMore={loadMore}
         hasMore={hasMore}
         isLoading={isLoadingMore}
+        dataColumns={dataColumns}
         dataList={data?.supportPackages?.edges ?? []}
         globalCount={
           data?.supportPackages?.pageInfo?.globalCount ?? nbOfRowsToLoad

@@ -4,12 +4,14 @@ type SupportPackage implements InternalObject & BasicObject {
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
-    created: DateTime!
+    created_at: DateTime!
     package_status: PackageStatus!
     package_url: String
     package_upload_dir: String
     nodes_status: [SupportNodeStatus]
     nodes_count: Int!
+    createdBy: Individual
+    creators: [Creator!]
 }
 
 type SupportPackageConnection {
@@ -35,6 +37,9 @@ enum PackageStatus {
 
 enum SupportPackageOrdering {
     name
+    created_at
+    creators
+    package_status
 }
 
 input SupportPackageAddInput {
