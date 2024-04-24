@@ -154,7 +154,7 @@ const FileManager = ({
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
 
-  const onSubmitImport = (values, { setSubmitting, resetForm, setFieldValue }) => {
+  const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
@@ -392,7 +392,7 @@ const FileManager = ({
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
-          {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+          {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 PaperProps={{ elevation: 1 }}
