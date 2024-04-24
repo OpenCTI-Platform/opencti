@@ -3406,9 +3406,8 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const isTrashableElement = !isInferredIndex(element._index)
                 && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       // isModuleActivated from domain/settings cannot be used because of dependency cycle issues, we use the flag from conf instead
-      const isGarbageCollectionActivated = ENABLED_GARBAGE_COLLECTION_MANAGER;
-      const forceDelete = !!opts.forceDelete || !isTrashableElement || !isGarbageCollectionActivated;
-      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete && isGarbageCollectionActivated) {
+      const forceDelete = !!opts.forceDelete || !isTrashableElement || !ENABLED_GARBAGE_COLLECTION_MANAGER;
+      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
         // do not delete files if logical deletion enabled
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);
