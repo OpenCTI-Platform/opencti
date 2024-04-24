@@ -144,7 +144,7 @@ ContainerStixCyberObservablesLinesProps
   enableReferences,
 }) => {
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixCyberObservablesLinesQuery,
   ContainerStixCyberObservablesLines_container$key
@@ -183,7 +183,7 @@ ContainerStixCyberObservablesLinesProps
         onToggleEntity={onToggleEntity}
         enableReferences={enableReferences}
       />
-      {!FABReplaced && data?.container && (
+      {!isFABReplaced && data?.container && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={data?.container.id}

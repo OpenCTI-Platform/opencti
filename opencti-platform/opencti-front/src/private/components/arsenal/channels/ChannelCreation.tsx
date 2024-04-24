@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -32,6 +32,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import TextField from '../../../../components/TextField';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -99,7 +100,11 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     basicShape,
   );
 
-  const [commit] = useApiMutation<ChannelCreationMutation>(channelMutation);
+  const [commit] = useApiMutation<ChannelCreationMutation>(
+    channelMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -141,6 +146,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       inputs,
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: (total: number) => {
         setSubmitting(false);
@@ -304,6 +310,10 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   );
 };
 
+const CreateChannelControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType='Channel' {...props} />
+);
+
 const ChannelCreation = ({
   paginationOptions,
 }: {
@@ -311,17 +321,19 @@ const ChannelCreation = ({
 }) => {
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <Drawer
       title={t_i18n('Create a channel')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateChannelControlledDial : undefined}
     >
       {({ onClose }) => (
         <ChannelCreationForm
