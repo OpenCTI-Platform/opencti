@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { join } from 'node:path';
 import fs from 'node:fs';
-import { deleteBucket, deleteFiles, loadedFilesListing, upload } from './file-storage';
+import { deleteFiles, loadedFilesListing, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase } from '../types/store';
 import { logApp } from '../config/conf';
