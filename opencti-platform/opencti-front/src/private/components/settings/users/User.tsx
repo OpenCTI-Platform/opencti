@@ -158,9 +158,17 @@ const UserFragment = graphql`
     default_hidden_types
     user_confidence_level {
       max_confidence
+      overrides {
+        max_confidence
+        entity_type
+      }
     }
     effective_confidence_level {
       max_confidence
+      overrides {
+        max_confidence
+        entity_type
+      }
       source {
         type
         object {

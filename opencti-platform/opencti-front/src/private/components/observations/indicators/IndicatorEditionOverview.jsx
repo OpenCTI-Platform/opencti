@@ -437,6 +437,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         id
         name
         confidence
+        entity_type
         description
         pattern
         valid_from

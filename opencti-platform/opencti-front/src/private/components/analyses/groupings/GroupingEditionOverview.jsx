@@ -299,6 +299,7 @@ export default createFragmentContainer(GroupingEditionOverviewComponent, {
       description
       context
       confidence
+      entity_type
       createdBy {
         ... on Identity {
           id

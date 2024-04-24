@@ -70,6 +70,7 @@ const caseIncidentEditionOverviewFragment = graphql`
     description
     rating
     confidence
+    entity_type
     created
     response_types
     creators {

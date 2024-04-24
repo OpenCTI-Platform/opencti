@@ -356,6 +356,7 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
       report_types
       published
       confidence
+      entity_type
       x_opencti_reliability
       createdBy {
         ... on Identity {

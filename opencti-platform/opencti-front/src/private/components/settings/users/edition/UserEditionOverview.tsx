@@ -5,22 +5,21 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
-import UserConfidenceLevelField from './UserConfidenceLevelField';
-import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import MarkdownField from '../../../../components/MarkdownField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import { convertOrganizations } from '../../../../utils/edition';
-import { useFormatter } from '../../../../components/i18n';
-import { UserEditionOverview_user$data } from './__generated__/UserEditionOverview_user.graphql';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useAuth from '../../../../utils/hooks/useAuth';
-import useGranted, { isOnlyOrganizationAdmin, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
+import TextField from '../../../../../components/TextField';
+import SelectField from '../../../../../components/SelectField';
+import { SubscriptionFocus } from '../../../../../components/Subscription';
+import MarkdownField from '../../../../../components/MarkdownField';
+import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
+import { convertOrganizations } from '../../../../../utils/edition';
+import { useFormatter } from '../../../../../components/i18n';
+import DateTimePickerField from '../../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
-const userMutationFieldPatch = graphql`
+export const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -28,12 +27,13 @@ const userMutationFieldPatch = graphql`
     userEdit(id: $id) {
       fieldPatch(input: $input) {
         ...UserEditionOverview_user
+        ...UserEdition_user
       }
     }
   }
 `;
 
-const userEditionOverviewFocus = graphql`
+export const userEditionOverviewFocus = graphql`
   mutation UserEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     userEdit(id: $id) {
       contextPatch(input: $input) {
@@ -78,15 +78,6 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
-  user_confidence_level_enabled: Yup.boolean(),
-  user_confidence_level: Yup.number()
-    .min(0, t('The value must be greater than or equal to 0'))
-    .max(100, t('The value must be less than or equal to 100'))
-    .when('user_confidence_level_enabled', {
-      is: true,
-      then: (schema) => schema.required(t('This field is required')).nullable(),
-      otherwise: (schema) => schema.nullable(),
-    }),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -104,7 +95,6 @@ UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
-  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const [commitFocus] = useApiMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
@@ -125,8 +115,6 @@ UserEditionOverviewComponentProps
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
-    user_confidence_level_enabled: !!user.user_confidence_level,
-    user_confidence_level: user.user_confidence_level?.max_confidence,
     objectOrganization,
   };
 
@@ -145,55 +133,12 @@ UserEditionOverviewComponentProps
     userValidation(t_i18n, userIsOnlyOrganizationAdmin)
       .validateAt(name, { [name]: value })
       .then(() => {
-        // specific case for user confidence level: to update an object we have several use-cases
-        if (name === 'user_confidence_level') {
-          if (user.user_confidence_level && value) {
-            // We edit an existing value inside the object: use object_path
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  object_path: '/user_confidence_level/max_confidence',
-                  value: parseInt(value, 10),
-                },
-              },
-            });
-          } else if (!user.user_confidence_level && value) {
-            // We have no user_confidence_level and we add one: push a complete object
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  value: {
-                    max_confidence: parseInt(value, 10),
-                    overrides: [],
-                  },
-                },
-              },
-            });
-          } else if (user.user_confidence_level && !value) {
-            // we have an existing value but we want to remove it: push [null] (and not null!)
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  value: [null],
-                },
-              },
-            });
-          }
-        } else {
-          // simple case for all flat attributes
-          commitFieldPatch({
-            variables: {
-              id: user.id,
-              input: { key: name, value: value || '' },
-            },
-          });
-        }
+        commitFieldPatch({
+          variables: {
+            id: user.id,
+            input: { key: name, value: value || '' },
+          },
+        });
       })
       .catch(() => false);
   };
@@ -372,17 +317,6 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          { hasSetAccess && (
-            <UserConfidenceLevelField
-              name="user_confidence_level"
-              label={t_i18n('Max Confidence Level')}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              user={user}
-            />
-          )}
         </Form>
       )}
     </Formik>
@@ -414,19 +348,6 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
-        user_confidence_level {
-          max_confidence
-        }
-        effective_confidence_level {
-          max_confidence
-          source {
-            type
-            object {
-              ... on User { entity_type id name }
-              ... on Group { entity_type id name }
-            }
-          }
-        }
         roles {
           id
           name

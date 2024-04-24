@@ -317,6 +317,7 @@ export default createFragmentContainer(EventEditionOverviewComponent, {
         description
         start_time
         confidence
+        entity_type
         stop_time
         createdBy {
           ... on Identity {

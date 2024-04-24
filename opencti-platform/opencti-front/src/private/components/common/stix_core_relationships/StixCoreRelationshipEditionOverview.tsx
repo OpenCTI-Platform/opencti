@@ -69,6 +69,7 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
   fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
     id
     confidence
+    entity_type
     start_time
     stop_time
     description

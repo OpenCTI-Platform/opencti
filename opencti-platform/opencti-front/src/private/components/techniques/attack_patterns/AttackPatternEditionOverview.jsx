@@ -310,6 +310,7 @@ export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
       x_mitre_id
       description
       confidence
+      entity_type
       createdBy {
         ... on Identity {
           id

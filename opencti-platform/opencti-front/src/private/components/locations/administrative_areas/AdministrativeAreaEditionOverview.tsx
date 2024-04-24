@@ -90,6 +90,7 @@ export const administrativeAreaEditionOverviewFragment = graphql`
     latitude
     longitude
     confidence
+    entity_type
     createdBy {
       ... on Identity {
         id

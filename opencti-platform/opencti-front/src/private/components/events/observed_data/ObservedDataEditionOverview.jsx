@@ -323,6 +323,7 @@ export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
     fragment ObservedDataEditionOverview_observedData on ObservedData {
       id
       confidence
+      entity_type
       first_observed
       last_observed
       number_observed

@@ -60,7 +60,6 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   const currentLevel = buildScaleLevel(value, scale);
 
   const [initialValue] = useState(value);
-
   if (variant === 'edit') {
     return (
       <>
@@ -103,7 +102,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           </Grid>
         </Grid>
         <Slider
-          value={value || 0}
+          value={typeof value === 'string' ? parseInt(value, 10) : value ?? 0}
           min={min}
           max={max}
           onChange={(_, v) => setFieldValue(name, v.toString())}

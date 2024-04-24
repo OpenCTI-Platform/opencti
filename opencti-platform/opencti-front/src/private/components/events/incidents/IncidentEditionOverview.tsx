@@ -92,6 +92,7 @@ const incidentEditionOverviewFragment = graphql`
     id
     name
     confidence
+    entity_type
     description
     source
     incident_type

@@ -87,6 +87,7 @@ export const cityEditionOverviewFragment = graphql`
     name
     description
     confidence
+    entity_type
     latitude
     longitude
     createdBy {

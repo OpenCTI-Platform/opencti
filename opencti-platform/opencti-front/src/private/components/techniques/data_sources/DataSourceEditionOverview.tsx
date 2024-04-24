@@ -88,6 +88,7 @@ const dataSourceEditionOverviewFragment = graphql`
     name
     description
     confidence
+    entity_type
     x_opencti_stix_ids
     x_mitre_platforms
     collection_layers

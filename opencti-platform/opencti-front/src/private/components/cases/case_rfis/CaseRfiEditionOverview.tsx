@@ -67,6 +67,7 @@ const caseRfiEditionOverviewFragment = graphql`
     revoked
     description
     confidence
+    entity_type
     created
     information_types
     severity

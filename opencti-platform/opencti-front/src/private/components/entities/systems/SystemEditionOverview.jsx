@@ -301,6 +301,7 @@ export default createFragmentContainer(SystemEditionOverviewComponent, {
         name
         description
         confidence
+        entity_type
         contact_information
         x_opencti_reliability
         createdBy {

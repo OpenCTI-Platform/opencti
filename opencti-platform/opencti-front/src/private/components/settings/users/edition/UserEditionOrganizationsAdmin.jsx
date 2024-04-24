@@ -23,10 +23,10 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import { AccountBalanceOutlined } from '@mui/icons-material';
-import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { useFormatter } from '../../../../../components/i18n';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 const userEditionOrganizationsAdminAddMutation = graphql`
   mutation UserEditionOrganizationsAdminAddMutation(

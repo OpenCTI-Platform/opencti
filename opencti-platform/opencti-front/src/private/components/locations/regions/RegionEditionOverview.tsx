@@ -87,6 +87,7 @@ const regionEditionOverviewFragment = graphql`
     name
     description
     confidence
+    entity_type
     createdBy {
       ... on Identity {
         id

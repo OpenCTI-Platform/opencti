@@ -60,6 +60,7 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
       measure
     }
     confidence
+    entity_type
     objectMarking {
       id
       definition_type

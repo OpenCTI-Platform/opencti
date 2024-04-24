@@ -88,6 +88,7 @@ const threatActorIndividualEditionOverviewFragment = graphql`
     name
     threat_actor_types
     confidence
+    entity_type
     description
     x_opencti_stix_ids
     createdBy {

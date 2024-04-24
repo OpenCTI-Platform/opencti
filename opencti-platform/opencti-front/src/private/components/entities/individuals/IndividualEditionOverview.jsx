@@ -304,6 +304,7 @@ export default createFragmentContainer(IndividualEditionOverviewComponent, {
         description
         contact_information
         confidence
+        entity_type
         x_opencti_reliability
         createdBy {
           ... on Identity {

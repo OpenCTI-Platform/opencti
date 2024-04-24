@@ -5,12 +5,12 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
-import { UserEditionOverview_user$data } from '@components/settings/users/__generated__/UserEditionOverview_user.graphql';
-import InputSliderField from '../../../../components/InputSliderField';
-import { useFormatter } from '../../../../components/i18n';
-import UserConfidenceLevel from './UserConfidenceLevel';
-import type { Theme } from '../../../../components/Theme';
-import SwitchField from '../../../../components/SwitchField';
+import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
+import InputSliderField from '../../../../../components/InputSliderField';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import SwitchField from '../../../../../components/SwitchField';
+import UserConfidenceLevel from '../UserConfidenceLevel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,7 +41,7 @@ interface UserConfidenceLevelFieldProps {
   | null;
   containerStyle?: Record<string, string | number>;
   disabled?: boolean;
-  user?: UserEditionOverview_user$data; // only for edition
+  user?: UserEdition_user$data; // only for edition
 }
 
 const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps> = ({

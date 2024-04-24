@@ -57,6 +57,7 @@ const incidentEditionDetailsFragment = graphql`
     objective
     is_inferred
     confidence
+    entity_type
   }
 `;
 
