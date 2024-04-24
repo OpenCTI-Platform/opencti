@@ -112,7 +112,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   const [deleting, setDeleting] = useState(false);
   const [commitDelete] = useMutation(SupportPackageLineDeleteMutation);
   const [commitForceZip] = useMutation(SupportPackageLineForceZipMutation);
-  const isProgress = data?.package_status === 'IN_PROGRESS';
+  const isProgress = data.package_status === 'IN_PROGRESS';
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -189,7 +189,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {data?.name}
+                  {data.name}
                 </div>
               </Tooltip>
               <div
@@ -203,7 +203,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                     borderColor: packageStatusColors[data.package_status],
                     backgroundColor: hexToRGB(packageStatusColors[data.package_status]),
                   }}
-                  label={data?.package_status}
+                  label={data.package_status}
                 />
               </div>
               <div
@@ -236,7 +236,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <IconButton
                 disabled={isProgress || !data.package_url}
                 href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  data?.package_url || '',
+                  data.package_url || '',
                 )}`}
               >
                 <GetAppOutlined fontSize="small" />
