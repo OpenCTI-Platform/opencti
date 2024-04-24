@@ -491,7 +491,6 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'exfiltrates-to':
     case 'exploits':
     case 'investigates':
-    case 'x_opencti_linked-to':
     case 'originates-from':
     case 'participates-in':
     case 'body-multipart':

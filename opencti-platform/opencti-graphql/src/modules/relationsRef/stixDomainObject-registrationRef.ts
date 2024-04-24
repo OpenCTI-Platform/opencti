@@ -11,8 +11,7 @@ import {
   objectParticipant,
   objects,
   operatingSystems,
-  samples,
-  xOpenctiLinkedTo
+  samples
 } from '../../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -39,7 +38,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences, xOpenctiLinkedTo]);
+schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [objects]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_IDENTITY, []);
