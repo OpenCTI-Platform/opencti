@@ -88,7 +88,7 @@ import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCor
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
+import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER, userFilterStoreElements } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -139,6 +139,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 
 const ELK_ENGINE = 'elk';
@@ -3250,7 +3251,11 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
   if (elements.length === 0) return;
   const { forceDelete = true } = opts;
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, elements);
+  // User must have access to all relations to remove to be able to delete
+  const filteredRelations = await userFilterStoreElements(context, user, relations);
+  if (relations.length !== filteredRelations.length) throw FunctionalError('Cannot delete element: cannot access all related relations');
+  relations.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
   // Compute the id that needs to be removed from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   // Update all rel connections that will remain

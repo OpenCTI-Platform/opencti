@@ -1316,14 +1316,17 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
 
 const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
   const data = { [INTERNAL_FROM_FIELD]: [], [INTERNAL_TO_FIELD]: [] };
+  const rawDependencies = [];
   for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex += 1) {
     const entityId = entityIds[entityIndex];
     // Internal From
     const listFromCallback = async (elements) => {
-      const findArgs = { toMap: true, baseData: true };
+      const findArgs = { toMap: true };
       const relTargets = await internalFindByIds(context, user, elements.map((rel) => rel.toId), findArgs);
+      rawDependencies.push(...Object.values(relTargets));
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
+        rawDependencies.push(rel);
         if (relTargets[rel.toId]) {
           data[INTERNAL_FROM_FIELD].push({
             _index: relTargets[rel.toId]._index,
@@ -1335,14 +1338,16 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
         }
       }
     };
-    const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
+    const fromArgs = { fromId: entityId, callback: listFromCallback };
     await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
     // Internal to
     const listToCallback = async (elements) => {
-      const findArgs = { toMap: true, baseData: true };
+      const findArgs = { toMap: true };
       const relSources = await internalFindByIds(context, user, elements.map((rel) => rel.fromId), findArgs);
+      rawDependencies.push(...Object.values(relSources));
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
+        rawDependencies.push(rel);
         if (relSources[rel.fromId]) {
           data[INTERNAL_TO_FIELD].push({
             _index: relSources[rel.fromId]._index,
@@ -1354,10 +1359,10 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
         }
       }
     };
-    const toArgs = { baseData: true, toId: entityId, callback: listToCallback };
+    const toArgs = { toId: entityId, callback: listToCallback };
     await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, toArgs);
   }
-  return data;
+  return { data, rawDependencies };
 };
 
 export const mergeEntities = async (context, user, targetEntityId, sourceEntityIds, opts = {}) => {
@@ -1390,8 +1395,13 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
     const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
-    const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
-    const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
+    const { data: sourcesDependencies, rawDependencies: sourcesRawDependencies } = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
+    const { data: targetDependencies, rawDependencies: targetRawDependencies } = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
+    // User must have access to all dependencies to be able to merge
+    const allDependencies = [...sourcesRawDependencies, ...targetRawDependencies];
+    const filteredDependencies = await userFilterStoreElements(context, user, allDependencies);
+    if (allDependencies.length !== filteredDependencies.length) throw FunctionalError('Cannot access all entities dependencies for merging');
+    allDependencies.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
     await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
