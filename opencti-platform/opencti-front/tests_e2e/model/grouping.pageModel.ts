@@ -20,7 +20,7 @@ export default class GroupingsPage {
   }
 
   getCreateButton() {
-    return this.page.getByRole('button', { name: 'Create' })
+    return this.page.getByRole('button', { name: 'Create Grouping' })
   }
 
   getItemFromList(name: string) {

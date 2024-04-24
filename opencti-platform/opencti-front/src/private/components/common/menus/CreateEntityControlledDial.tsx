@@ -10,6 +10,7 @@ export const StyledCreateButton = styled(Button)({
 
 const CreateEntityControlledDial = (entity_type: string) => {
   const { t_i18n } = useFormatter();
+  const buttonValue = `${t_i18n('Create')} ${t_i18n(entity_type)}`;
   const controlledDial = ({ onOpen }: {
     onOpen: () => void
   }) => (
@@ -18,10 +19,10 @@ const CreateEntityControlledDial = (entity_type: string) => {
       color='primary'
       size='small'
       variant='contained'
-      aria-label={`${t_i18n('Create')} ${t_i18n(entity_type)}`}
-      data-testid='CreateEntityControlledDial'
+      aria-label={buttonValue}
+      title={buttonValue}
     >
-      {t_i18n('Create')} {t_i18n(entity_type)} <Add />
+      {buttonValue} <Add />
     </StyledCreateButton>
   );
   return controlledDial;
