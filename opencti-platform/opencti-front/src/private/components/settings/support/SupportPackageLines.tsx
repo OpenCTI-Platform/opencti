@@ -1,5 +1,5 @@
-import { graphql, PreloadedQuery } from 'react-relay';
-import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
+import React, { FunctionComponent, useEffect } from 'react';
 import {
   SupportPackageLinesPaginationQuery,
   SupportPackageLinesPaginationQuery$variables,
@@ -57,6 +57,7 @@ const supportPackageLinesFragment = graphql`
     ) @connection(key: "Pagination_supportPackages") {
       edges {
         node {
+          id
           ...SupportPackageLine_node
         }
       }
@@ -85,6 +86,22 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
     nodePath: ['supportPackages', 'edges'],
     setNumberOfElements,
   });
+
+  const queryData = usePreloadedQuery(supportPackageLinesQuery, queryRef);
+
+  const [_, refetch] = useRefetchableFragment<
+  SupportPackageLinesPaginationQuery,
+  SupportPackageLines_data$key
+  >(supportPackageLinesFragment, queryData);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch({}, { fetchPolicy: 'store-and-network' });
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [refetch]);
+
   return (
     <>
       <ListLinesContent

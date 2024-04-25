@@ -5,10 +5,10 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { FileOutline, ProgressUpload } from 'mdi-material-ui';
+import { FileOutline } from 'mdi-material-ui';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DownloadingOutlined, GetAppOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -194,7 +194,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </Tooltip>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.packageStatus.width }}
+                style={{ width: dataColumns.package_status.width }}
               >
                 <Chip
                   classes={{ root: classes.chipInList, label: classes.label }}
@@ -216,16 +216,16 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           }
         />
         <ListItemSecondaryAction>
-          <Tooltip title={t_i18n('Force Download on this file')}>
+          <Tooltip title={t_i18n('Force download on this support package')}>
             <span>
               <IconButton
                 onClick={handleForceZip}
               >
-                <ProgressUpload fontSize="small" />
+                <DownloadingOutlined fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
-          <Tooltip title={t_i18n('Download this file')}>
+          <Tooltip title={t_i18n('Download this support package')}>
             <span>
               <IconButton
                 disabled={isProgress || !data.package_url}

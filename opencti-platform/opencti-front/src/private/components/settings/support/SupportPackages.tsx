@@ -63,8 +63,8 @@ const SupportPackages = () => {
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
-      sortBy: '',
-      orderAsc: false,
+      sortBy: 'name',
+      orderAsc: true,
     },
   );
 
@@ -89,7 +89,7 @@ const SupportPackages = () => {
           `Support package request send for ${supportPackageName}.`,
         );
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         handleError(error);
       },
     });
@@ -107,7 +107,7 @@ const SupportPackages = () => {
         width: '25%',
         isSortable: true,
       },
-      packageStatus: {
+      package_status: {
         label: 'Status',
         width: '25%',
         isSortable: true,
@@ -125,6 +125,7 @@ const SupportPackages = () => {
         sortBy={sortBy}
         orderAsc={orderAsc}
         keyword={searchTerm}
+        handleSort={helpers.handleSort}
       >
         {queryRef && (
           <React.Suspense>
