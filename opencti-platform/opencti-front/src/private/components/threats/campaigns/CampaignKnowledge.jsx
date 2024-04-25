@@ -81,7 +81,7 @@ class CampaignKnowledgeComponent extends Component {
             element={
               <EntityStixCoreRelationships
                 entityId={campaign.id}
-                relationshipTypes={['attributed-to']}
+                relationshipTypes={['attributed-to', 'participates-in']}
                 stixCoreObjectTypes={['Threat-Actor', 'Intrusion-Set']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
