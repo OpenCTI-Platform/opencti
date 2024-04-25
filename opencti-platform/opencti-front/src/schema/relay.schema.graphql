@@ -7591,6 +7591,7 @@ type Subscription {
   workspace(id: ID!): Workspace
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
+  supportPackage(id: ID!): SupportPackage
 }
 
 type WorkEditMutations {

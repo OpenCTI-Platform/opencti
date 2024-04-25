@@ -112,11 +112,6 @@ const SupportPackages = () => {
         width: '25%',
         isSortable: true,
       },
-      creators: {
-        label: 'Creator',
-        width: '25%',
-        isSortable: true,
-      },
       created: {
         label: 'Date',
         width: '25%',

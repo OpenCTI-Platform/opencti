@@ -208,12 +208,6 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.creators.width }}
-              >
-                {(data.creators ?? []).map((c) => c?.name).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
                 {fd(data.created_at)}

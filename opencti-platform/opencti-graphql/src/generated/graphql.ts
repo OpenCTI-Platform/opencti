@@ -24117,6 +24117,7 @@ export type Subscription = {
   stixDomainObject?: Maybe<StixDomainObject>;
   stixRefRelationship?: Maybe<StixRefRelationship>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
+  supportPackage?: Maybe<SupportPackage>;
   user?: Maybe<User>;
   workspace?: Maybe<Workspace>;
 };
@@ -24208,6 +24209,11 @@ export type SubscriptionStixRefRelationshipArgs = {
 
 
 export type SubscriptionStixSightingRelationshipArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionSupportPackageArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -37305,6 +37311,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   stixDomainObject?: SubscriptionResolver<Maybe<ResolversTypes['StixDomainObject']>, "stixDomainObject", ParentType, ContextType, RequireFields<SubscriptionStixDomainObjectArgs, 'id'>>;
   stixRefRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixRefRelationship']>, "stixRefRelationship", ParentType, ContextType, RequireFields<SubscriptionStixRefRelationshipArgs, 'id'>>;
   stixSightingRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixSightingRelationship']>, "stixSightingRelationship", ParentType, ContextType, RequireFields<SubscriptionStixSightingRelationshipArgs, 'id'>>;
+  supportPackage?: SubscriptionResolver<Maybe<ResolversTypes['SupportPackage']>, "supportPackage", ParentType, ContextType, RequireFields<SubscriptionSupportPackageArgs, 'id'>>;
   user?: SubscriptionResolver<Maybe<ResolversTypes['User']>, "user", ParentType, ContextType, RequireFields<SubscriptionUserArgs, 'id'>>;
   workspace?: SubscriptionResolver<Maybe<ResolversTypes['Workspace']>, "workspace", ParentType, ContextType, RequireFields<SubscriptionWorkspaceArgs, 'id'>>;
 }>;
