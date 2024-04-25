@@ -53,7 +53,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
               dense={false}
             >
               {entry.icon && (
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon>
                   {entry.icon}
                 </ListItemIcon>
               )}

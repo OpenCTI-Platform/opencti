@@ -133,11 +133,7 @@ class ListLines extends Component {
   renderHeaderElement(field, label, width, isSortable) {
     const { classes, t, sortBy, orderAsc } = this.props;
     if (isSortable) {
-      const orderComponent = orderAsc ? (
-        <ArrowDropDown classes={{ root: classes.sortIcon }} />
-      ) : (
-        <ArrowDropUp classes={{ root: classes.sortIcon }} />
-      );
+      const orderComponent = orderAsc ? (<ArrowDropDown />) : (<ArrowDropUp />);
       return (
         <div
           key={field}
