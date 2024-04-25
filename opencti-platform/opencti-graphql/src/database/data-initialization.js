@@ -1,6 +1,6 @@
 import { logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
-import { BYPASS, BYPASS_REFERENCE, KNOWLEDGE_ORGANIZATION_RESTRICT, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -38,7 +38,7 @@ const KNOWLEDGE_CAPABILITIES = {
       description: 'Create / Update knowledge',
       attribute_order: 200,
       dependencies: [
-        { name: KNOWLEDGE_ORGANIZATION_RESTRICT, attribute_order: 290, description: 'Restrict organization access' },
+        { name: 'KNORGARESTRICT', attribute_order: 290, description: 'Restrict organization access' },
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 },
         { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
       ],
