@@ -1,6 +1,7 @@
 import React from 'react';
 import { SystemLineDummy } from '@components/entities/systems/SystemLine';
 import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';
@@ -16,6 +17,8 @@ const LOCAL_STORAGE_KEY = 'systems';
 
 const Systems = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SystemsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -81,6 +84,9 @@ const Systems = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SystemCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -114,9 +120,11 @@ const Systems = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <SystemCreation paginationOptions={paginationOptions} />
-      </Security>
+      {!isFABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SystemCreation paginationOptions={paginationOptions} />
+        </Security>
+      }
     </>
   );
 };

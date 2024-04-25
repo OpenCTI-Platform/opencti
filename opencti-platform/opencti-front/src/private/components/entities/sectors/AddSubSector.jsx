@@ -96,11 +96,21 @@ class AddSubSector extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={this.state.search}
-            />
+            <div>
+              <SearchInput
+                variant="small"
+                onSubmit={this.handleSearch.bind(this)}
+                keyword={this.state.search}
+              />
+              <div style={{ float: 'right' }}>
+                <SectorCreation
+                  display={this.state.open}
+                  contextual={true}
+                  inputValue={this.state.search}
+                  paginationOptions={paginationOptions}
+                />
+              </div>
+            </div>
             <QueryRenderer
               query={addSubSectorsLinesQuery}
               variables={{
@@ -116,12 +126,6 @@ class AddSubSector extends Component {
                   />
                 );
               }}
-            />
-            <SectorCreation
-              display={this.state.open}
-              contextual={true}
-              inputValue={this.state.search}
-              paginationOptions={paginationOptions}
             />
           </>
         </Drawer>

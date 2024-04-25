@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -12,13 +11,6 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import withRouter from '../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-
-const styles = () => ({
-  parameters: {
-    float: 'left',
-    marginTop: -10,
-  },
-});
 
 const LOCAL_STORAGE_KEY = 'sectors';
 
@@ -55,17 +47,21 @@ class Sectors extends Component {
 
   render() {
     const { searchTerm } = this.state;
-    const { t, classes } = this.props;
+    const { t } = this.props;
     return (
       <>
         <Breadcrumbs variant="list" elements={[{ label: t('Entities') }, { label: t('Sectors'), current: true }]} />
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={searchTerm}
-            />
+        <div style={{ marginTop: -10 }}>
+          <SearchInput
+            variant="small"
+            onSubmit={this.handleSearch.bind(this)}
+            keyword={searchTerm}
+            style={{ float: 'left' }}
+          />
+          <div style={{ float: 'right' }}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <SectorCreation />
+            </Security>
           </div>
         </div>
         <div className="clearfix" />
@@ -76,9 +72,6 @@ class Sectors extends Component {
             <SectorsLines data={props} keyword={searchTerm} />
           )}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SectorCreation />
-        </Security>
       </>
     );
   }
@@ -88,7 +81,6 @@ Sectors.propTypes = {
   t: PropTypes.func,
   navigate: PropTypes.func,
   location: PropTypes.object,
-  classes: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(Sectors);
+export default compose(inject18n, withRouter)(Sectors);
