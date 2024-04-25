@@ -20,7 +20,7 @@ import { now } from '../../../../utils/Time';
 import { isValidStixBundle } from '../../../../utils/String';
 
 const freeTextUploaderGlobalMutation = graphql`
-    mutation FreeTextUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]!) {
+    mutation FreeTextUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
         uploadImport(file: $file, fileMarkings: $fileMarkings) {
             ...FileLine_file
         }
@@ -28,7 +28,7 @@ const freeTextUploaderGlobalMutation = graphql`
 `;
 
 const freeTextUploaderEntityMutation = graphql`
-    mutation FreeTextUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]!) {
+    mutation FreeTextUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]) {
         stixCoreObjectEdit(id: $id) {
             importPush(file: $file, fileMarkings: $fileMarkings) {
                 ...FileLine_file
@@ -39,7 +39,6 @@ const freeTextUploaderEntityMutation = graphql`
 
 const freeTextValidation = (t: (arg: string) => string) => Yup.object().shape({
   content: Yup.string().required(t('This field is required')),
-  fileMarkings: Yup.array().min(1, t('This field is required')).required(t('This field is required')),
 });
 
 type FreeTextUploaderType = {

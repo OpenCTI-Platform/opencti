@@ -12344,7 +12344,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  importPush(file: Upload!, fileMarkings: [String]!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
@@ -12368,7 +12368,7 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!, file_markings: [String]!): Boolean @auth(for: [CONNECTORAPI])
@@ -12651,7 +12651,7 @@ type StixRefRelationshipEditMutations {
 type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  uploadImport(file: Upload!, fileMarkings: [String]!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])

@@ -12,7 +12,7 @@ import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlo
 import FileImportMarkingSelectionPopup from './FileImportMarkingSelectionPopup';
 
 const fileUploaderGlobalMutation = graphql`
-    mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]!) {
+    mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
         uploadImport(file: $file, fileMarkings: $fileMarkings) {
             id
             ...FileLine_file
@@ -21,7 +21,7 @@ const fileUploaderGlobalMutation = graphql`
 `;
 
 const fileUploaderEntityMutation = graphql`
-    mutation FileUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]!) {
+    mutation FileUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]) {
         stixCoreObjectEdit(id: $id) {
             importPush(file: $file, fileMarkings: $fileMarkings) {
                 id
@@ -57,7 +57,6 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   nameInCallback,
 }) => {
   const { t_i18n } = useFormatter();
-
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const [upload, setUpload] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File>();

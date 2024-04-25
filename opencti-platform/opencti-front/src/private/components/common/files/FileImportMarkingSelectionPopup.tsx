@@ -1,4 +1,3 @@
-import * as Yup from 'yup';
 import { Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -21,10 +20,6 @@ export type SubmittedMarkingsType = {
   fileMarkings: Option[];
 };
 
-const fileImportMarkingSelectionFormValidation = (t: (arg: string) => string) => Yup.object().shape({
-  fileMarkings: Yup.array().min(1, t('This field is required')).required(t('This field is required')),
-});
-
 const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: FileImportMarkingSelectionPopupProps) => {
   const { t_i18n } = useFormatter();
 
@@ -42,7 +37,6 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
           fileMarkings: [],
         }}
         onSubmit={handleSubmit}
-        validationSchema={fileImportMarkingSelectionFormValidation(t_i18n)}
       >
         {({ resetForm, submitForm }) => (
           <Dialog open={isOpen} fullWidth={true} PaperProps={{ elevation: 1 }} onClose={() => {

@@ -14499,7 +14499,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 export type MutationUploadImportArgs = {
   file: Scalars['Upload']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -22147,7 +22147,7 @@ export type StixCoreObjectEditMutationsExportPushArgs = {
 
 export type StixCoreObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
 };
@@ -23060,6 +23060,7 @@ export type StixDomainObjectEditMutationsFieldPatchArgs = {
 
 export type StixDomainObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
 };
@@ -34391,7 +34392,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
-  uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file' | 'fileMarkings'>>;
+  uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
@@ -36458,7 +36459,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
-  importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file' | 'fileMarkings'>>;
+  importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationsAddArgs, 'input'>>;
