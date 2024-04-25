@@ -27,6 +27,7 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
+import useHelper from '../../utils/hooks/useHelper';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -619,11 +620,13 @@ const DashboardComponent = ({ queryRef }) => {
 };
 
 const Dashboard = () => {
+  const { isFeatureEnable } = useHelper();
   const queryRef = useQueryLoading(dashboardQuery, {});
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<div />}>
+          {isFeatureEnable('TEST') && <h1>TEST E2E WITH FEATURE FLAGS</h1>}
           <DashboardComponent queryRef={queryRef} />
         </React.Suspense>
       )}
