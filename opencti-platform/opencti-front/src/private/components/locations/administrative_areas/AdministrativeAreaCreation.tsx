@@ -213,6 +213,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
           />
           <ObjectMarkingField
             name="objectMarking"
+            setFieldValue={setFieldValue}
             style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField

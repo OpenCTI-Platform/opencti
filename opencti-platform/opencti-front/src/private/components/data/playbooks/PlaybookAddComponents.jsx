@@ -227,7 +227,7 @@ const PlaybookAddComponentsContent = ({
       </Select>
     );
   };
-  const renderValuesOptions = (i) => {
+  const renderValuesOptions = (i, setFieldValue) => {
     const disabled = isEmptyField(actionsInputs[i]?.attribute);
     switch (actionsInputs[i]?.attribute) {
       case 'objectMarking':
@@ -235,6 +235,7 @@ const PlaybookAddComponentsContent = ({
           <ObjectMarkingField
             name={`actions-${i}-value`}
             disabled={disabled}
+            setFieldValue={setFieldValue}
             onChange={(_, value) => handleChangeActionInput(
               i,
               'value',
@@ -543,7 +544,7 @@ const PlaybookAddComponentsContent = ({
                                     </FormControl>
                                   </Grid>
                                   <Grid item={true} xs={6}>
-                                    {renderValuesOptions(i)}
+                                    {renderValuesOptions(i, setFieldValue)}
                                   </Grid>
                                 </Grid>
                               </div>
