@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
 import CityCreation from './cities/CityCreation';
@@ -16,6 +17,8 @@ const LOCAL_STORAGE_KEY = 'cities';
 
 const Cities: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -79,6 +82,9 @@ const Cities: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CityCreation paginationOptions={paginationOptions} />
+        </Security>}
       >
         {queryRef && (
           <React.Suspense
@@ -107,9 +113,11 @@ const Cities: FunctionComponent = () => {
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CityCreation paginationOptions={paginationOptions} />
-      </Security>
+      {!FABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CityCreation paginationOptions={paginationOptions} />
+        </Security>
+      }
     </>
   );
 };

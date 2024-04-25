@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -23,6 +23,7 @@ import { Option } from '../../common/form/ReferenceField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
@@ -105,7 +106,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     basicShape,
   );
 
-  const [commit] = useApiMutation<AdministrativeAreaCreationMutation>(administrativeAreaMutation);
+  const [commit] = useApiMutation<AdministrativeAreaCreationMutation>(
+    administrativeAreaMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
+  );
   const {
     bulkCommit,
     bulkCount,
@@ -320,6 +325,7 @@ const AdministrativeAreaCreation = ({
   const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => {
     insertNode(
       store,
@@ -329,14 +335,18 @@ const AdministrativeAreaCreation = ({
     );
   };
 
+  const CreateAreaControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Administrative-Area' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create an area')}
-      variant={DrawerVariant.create}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={isFeatureEnable('BULK_ENTITIES')
         ? <BulkTextModalButton onClick={() => setBulkOpen(true)} />
         : <></>
       }
+      controlledDial={isFABReplaced ? CreateAreaControlledDial : undefined}
     >
       {({ onClose }) => (
         <AdministrativeAreaCreationForm
