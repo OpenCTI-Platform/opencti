@@ -13,8 +13,8 @@ import useAuth from '../../utils/hooks/useAuth';
 import { SearchRootFilesCountQuery } from './__generated__/SearchRootFilesCountQuery.graphql';
 import Breadcrumbs from '../../components/Breadcrumbs';
 
-const searchRootFilesCountQuery = graphql`
-  query SearchRootFilesCountQuery($search: String) {
+const searchContainerQueryFilesCountQuery = graphql`
+  query SearchContainerQueryFilesCountQuery($search: String) {
     indexedFilesCount(search: $search)
   }
 `;
@@ -73,7 +73,7 @@ interface SearchContainerQueryWithRefProps {
 }
 
 const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({ queryRef, children }) => {
-  const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchRootFilesCountQuery, queryRef);
+  const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchContainerQueryFilesCountQuery, queryRef);
   const filesCount = indexedFilesCount ?? 0;
   return (
     <SearchContainer filesCount={filesCount}>
@@ -94,7 +94,7 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
 
-  const [queryRef, loadQuery] = useQueryLoader<SearchRootFilesCountQuery>(searchRootFilesCountQuery);
+  const [queryRef, loadQuery] = useQueryLoader<SearchRootFilesCountQuery>(searchContainerQueryFilesCountQuery);
   const queryArgs = {
     search: searchTerm,
   };
