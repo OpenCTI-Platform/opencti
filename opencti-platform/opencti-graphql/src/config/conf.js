@@ -314,6 +314,22 @@ const supportLogger = winston.createLogger({
   })],
 });
 
+// Setup telemetry logs
+export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = './telemetry';
+export const TELEMETRY_LOG_FILE_SUFFIX = 'telemetry.log';
+const telemetryLogTransports = [new DailyRotateFile({
+  dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
+  filename: TELEMETRY_LOG_FILE_SUFFIX,
+  maxFiles: 7,
+  maxSize: '10m',
+  level: 'info',
+})];
+const telemetryLogger = winston.createLogger({
+  level: 'info',
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: telemetryLogTransports,
+});
+
 // Specific case to fail any test that produce an error log
 const LOG_APP = 'APP';
 const buildMetaErrors = (error) => {
@@ -381,6 +397,15 @@ export const logSupport = {
     supportLogger.log(level, message, addBasicMetaInformation(LOG_SUPPORT, error, meta));
   },
   warn: (message, meta = {}) => logSupport._log('warn', message, null, meta),
+};
+
+const LOG_TELEMETRY = 'TELEMETRY';
+export const logTelemetry = {
+  _log: (level, message, error, meta = {}) => {
+    telemetryLogger.log(level, message, addBasicMetaInformation(LOG_TELEMETRY, error, meta));
+  },
+  info: (message, meta = {}) => logTelemetry._log('info', message, null, meta),
+  warn: (message, meta = {}) => logTelemetry._log('warn', message, null, meta),
 };
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';

@@ -18,7 +18,7 @@ import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
-import { FILE_EXPORTER_PATH, MetricFileExporter } from '../config/MetricFileExporter';
+import { MetricFileExporter } from '../config/MetricFileExporter';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000; // record telemetry data period
@@ -58,7 +58,7 @@ const createFiligranTelemetryMeterManager = async () => {
     }
     // File exporter for air gap platforms
     const fileExporterReader = new PeriodicExportingMetricReader({
-      exporter: new MetricFileExporter(0, FILE_EXPORTER_PATH),
+      exporter: new MetricFileExporter(0),
       exportIntervalMillis: EXPORT_INTERVAL,
     });
     filigranMetricReaders.push(fileExporterReader);
