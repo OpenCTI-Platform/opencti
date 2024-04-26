@@ -244,6 +244,7 @@ const StixCyberObservableCreation = ({
   const hashes_SHA256_field = document.getElementById('hashes_SHA-256');
   const hashes_SHA512_field = document.getElementById('hashes_SHA-512');
   const divRowStyle = { display: 'flex', flexWrap: 'wrap' };
+  let hashesList = [];
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     console.log('onSubmit was called');
     let adaptedValues = values;
@@ -266,14 +267,31 @@ const StixCyberObservableCreation = ({
       console.log("bulkAddDialog: adaptedValues.bulk_hashes_field " + adaptedValues.bulk_hashes_field);
       console.log('bulkAddDialog: adaptedValues.value ' + adaptedValues.value);
 
+      console.log(typeof hashesList);
+
       if (adaptedValues.bulk_hashes_field && adaptedValues.name === bulkAddMsg) {
         const array_of_bulk_hashes = adaptedValues.bulk_hashes_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_hashes = array_of_bulk_hashes.map((s) => s.trim());
         // Remove any "" or empty resulting elements
         const cleaned_bulk_hashes = trimmed_bulk_hashes.reduce((elements, i) => (i ? [...elements, i] : elements), []);
+        console.log('cleaned_bulk_hashes ' + cleaned_bulk_hashes);
         // De-duplicate by unique then rejoin
-        adaptedValues.value = [...new Set(cleaned_bulk_hashes)].join('\n');
+        hashesList = [...new Set(cleaned_bulk_hashes)];
+        console.log(typeof hashesList);
+
+        delete adaptedValues.hashes_MD5;
+        delete adaptedValues['hashes_SHA-1'];
+        delete adaptedValues['hashes_SHA-256'];
+        delete adaptedValues['hashes_SHA-512'];
+
+//delete string values from the adaptedValues.hashes_MD5 || adaptedValues['hashes_SHA-1'] || adaptedValues['hashes_SHA-256'] || adaptedValues['hashes_SHA-512']
+
+        console.log('adaptedValues.value after cleaned_bulk_hashes ' + adaptedValues.value);
+        console.log('adaptedValues.value table below');
+        console.table(adaptedValues.value);
+        console.log('hashesList table below');
+        console.table(hashesList);
       }
 
       //commitStixCyberObservable using stixFileMutation
@@ -288,30 +306,39 @@ const StixCyberObservableCreation = ({
         || adaptedValues['hashes_SHA-512']
       ) {
         adaptedValues.hashes = [];
-        if (adaptedValues.hashes_MD5.length > 0 && selectedAttribute === 'MD5') {
+        if (adaptedValues.hashes_MD5.length > 0) {
           adaptedValues.hashes.push({
             algorithm: 'MD5',
             hash: adaptedValues.hashes_MD5,
           });
         }
-        if (adaptedValues['hashes_SHA-1'].length > 0 && selectedAttribute === 'SHA1') {
+        if (adaptedValues['hashes_SHA-1'].length > 0) {
           adaptedValues.hashes.push({
             algorithm: 'SHA-1',
             hash: adaptedValues['hashes_SHA-1'],
           });
         }
-        if (adaptedValues['hashes_SHA-256'].length > 0 && selectedAttribute === 'SHA256') {
+        if (adaptedValues['hashes_SHA-256'].length > 0) {
           adaptedValues.hashes.push({
             algorithm: 'SHA-256',
             hash: adaptedValues['hashes_SHA-256'],
           });
+
+          console.log('adaptedValues.hashes.length ' + adaptedValues.hashes.length);
+          console.log('adaptedValues.hashes table below');
+          console.table(adaptedValues.hashes);
         }
-        if (adaptedValues['hashes_SHA-512'].length > 0 && selectedAttribute === 'SHA512') {
+        if (adaptedValues['hashes_SHA-512'].length > 0) {
           adaptedValues.hashes.push({
             algorithm: 'SHA-512',
             hash: adaptedValues['hashes_SHA-512'],
           });
         }
+        // delete adaptedValues.hashes_MD5;
+        // delete adaptedValues['hashes_SHA-1'];
+        // delete adaptedValues['hashes_SHA-256'];
+        // delete adaptedValues['hashes_SHA-512'];
+        //consider removing the adaptedValues.hashes at this point
       }
       adaptedValues = pipe(
         dissoc('x_opencti_description'),
@@ -359,7 +386,11 @@ const StixCyberObservableCreation = ({
         finalValues.file = values.file;
       }
 
+      console.log('adaptedValues.hashes table below');
+      console.table(adaptedValues.hashes);
 
+      console.log('hashesList table below, before const commit');
+      console.table(hashesList);
 
       //Create a new stixCyberObservable for each input of the bulk_hashes_field (each line gets a new stixCyberObservable)
 
@@ -375,20 +406,23 @@ const StixCyberObservableCreation = ({
       let validObservables = 0;
       const commit = async () => {
         const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; //List of the inputs
-        const hashList = values?.hash !== '' ? values?.hash?.split('\n') || values?.hash : undefined;
-        console.log('valueList ' + valueList);
-        console.log('hashList ' + hashList);
+        const algorithm = selectedAttribute.toLowerCase();
         //if (hashList) {
         //do similar to valueList but with hashes
         //add each individual line from the bulk_hashes_field into the new stixCyberObservable
 
-        if (hashList) {
-          console.log('in hashList if');
-          const promises = hashList.map((hashes) => commitMutationWithPromise({
+        console.log(typeof hashesList);
+
+        if (hashesList) {
+          console.log('in hashesList if');
+          console.log('hashesList table below');
+          console.table(hashesList);
+          console.log(typeof hashesList);
+          const promises = hashesList.map((hash) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
             variables: {
               ...finalValues,
-              [observableType]: { hashes }, //StixFile
+              [observableType]: { hashes: [{ algorithm, hash }] }, //StixFile
             },
             updater: (store) => insertNode(
               store,
@@ -405,6 +439,7 @@ const StixCyberObservableCreation = ({
               setSubmitting(false);
             },
           }));
+          console.log('before promise.allSettled');
           await Promise.allSettled(promises).then((results) => {
             results.forEach(({ status: promiseStatus, reason }) => {
               if (promiseStatus === 'fulfilled') {
@@ -414,8 +449,11 @@ const StixCyberObservableCreation = ({
               }
             });
           });
-          const totalObservables = valueList.length;
+          const totalObservables = hashesList.length;
           let closeFormWithAnySuccess = false;
+          console.log('error_array.length ' + error_array.length);
+          console.log('error array below');
+          console.table(error_array);
           if (error_array.length > 0) {
             const errorObservables = error_array.length;
             let message_string = '';
