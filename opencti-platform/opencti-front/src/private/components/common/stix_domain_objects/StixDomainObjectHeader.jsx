@@ -523,12 +523,13 @@ const StixDomainObjectHeader = (props) => {
             />
           )}
           {enableAskAi && (
-          <StixCoreObjectAskAI
-            instanceId={stixDomainObject.id}
-            instanceType={stixDomainObject.entity_type}
-            instanceName={getMainRepresentative(stixDomainObject)}
-            type={type}
-          />
+            <StixCoreObjectAskAI
+              instanceId={stixDomainObject.id}
+              instanceType={stixDomainObject.entity_type}
+              instanceName={getMainRepresentative(stixDomainObject)}
+              instanceMarkings={stixDomainObject.objectMarking.map(({ id }) => id) ?? []}
+              type={type}
+            />
           )}
           {(isKnowledgeUpdater || isKnowledgeEnricher) && (
           <div className={classes.popover}>

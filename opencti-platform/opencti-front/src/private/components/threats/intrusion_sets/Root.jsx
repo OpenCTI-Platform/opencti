@@ -45,6 +45,9 @@ const intrusionSetQuery = graphql`
       entity_type
       name
       aliases
+      objectMarking {
+          id
+      } 
       x_opencti_graph_data
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet

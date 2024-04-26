@@ -57,6 +57,7 @@ interface StixCoreObjectAskAiProps {
   instanceId: string;
   instanceName: string;
   instanceType: string;
+  instanceMarkings?: string[];
   type: 'container' | 'threat' | 'victim' | 'unsupported';
 }
 
@@ -98,7 +99,7 @@ const actionsExplanation = {
   'convert-files': 'Try to convert the selected files (or all files associated to this entity) in a STIX 2.1 bundle.',
 };
 
-const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type }) => {
+const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ instanceId, instanceType, instanceName, type, instanceMarkings }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -251,10 +252,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
     const file = new File([blob], fileName, {
       type,
     });
+    const fileMarkings = instanceMarkings ?? [];
     commitMutationCreateFile({
       variables: {
         id: instanceId,
         file,
+        fileMarkings,
         noTriggerImport: false,
       },
       onCompleted: (response: StixDomainObjectContentFilesUploadStixDomainObjectMutation$data) => {
