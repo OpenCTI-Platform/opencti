@@ -3405,7 +3405,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       // Start by deleting external files
       const isTrashableElement = !isInferredIndex(element._index)
                 && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
-      // isModuleActivated from domain/settings cannot be used because of dependency cycle issues, we use the flag from conf instead
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
         // do not delete files if logical deletion enabled
