@@ -6,12 +6,12 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
-import ExportContextProvider from '../../utils/ExportContextProvider';
-import { useFormatter } from '../../components/i18n';
-import { decodeSearchKeyword } from '../../utils/SearchUtils';
-import useAuth from '../../utils/hooks/useAuth';
-import { SearchRootFilesCountQuery } from './__generated__/SearchRootFilesCountQuery.graphql';
-import Breadcrumbs from '../../components/Breadcrumbs';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { useFormatter } from '../../../components/i18n';
+import { decodeSearchKeyword } from '../../../utils/SearchUtils';
+import useAuth from '../../../utils/hooks/useAuth';
+import { SearchContainerQueryFilesCountQuery } from './__generated__/SearchContainerQueryFilesCountQuery.graphql';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 
 const searchContainerQueryFilesCountQuery = graphql`
   query SearchContainerQueryFilesCountQuery($search: String) {
@@ -69,11 +69,11 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
 
 interface SearchContainerQueryWithRefProps {
   children: ReactNode
-  queryRef: PreloadedQuery<SearchRootFilesCountQuery>;
+  queryRef: PreloadedQuery<SearchContainerQueryFilesCountQuery>;
 }
 
 const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({ queryRef, children }) => {
-  const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchContainerQueryFilesCountQuery, queryRef);
+  const { indexedFilesCount } = usePreloadedQuery<SearchContainerQueryFilesCountQuery>(searchContainerQueryFilesCountQuery, queryRef);
   const filesCount = indexedFilesCount ?? 0;
   return (
     <SearchContainer filesCount={filesCount}>
@@ -94,7 +94,7 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
 
-  const [queryRef, loadQuery] = useQueryLoader<SearchRootFilesCountQuery>(searchContainerQueryFilesCountQuery);
+  const [queryRef, loadQuery] = useQueryLoader<SearchContainerQueryFilesCountQuery>(searchContainerQueryFilesCountQuery);
   const queryArgs = {
     search: searchTerm,
   };

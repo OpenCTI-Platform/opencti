@@ -1,8 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import React from 'react';
-import SearchContainerQuery from '@components/SearchContainerQuery';
-import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
-import Search from '@components/Search';
+import Search from './Search';
+import SearchContainerQuery from './search/SearchContainerQuery';
+import SearchIndexedFiles from './search/SearchIndexedFiles';
 
 const SearchFiles = () => {
   return (
