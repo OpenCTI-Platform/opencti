@@ -4847,7 +4847,7 @@ input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: String!
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
