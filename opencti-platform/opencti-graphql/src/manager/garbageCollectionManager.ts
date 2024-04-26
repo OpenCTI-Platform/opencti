@@ -1,9 +1,9 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { ENABLED_GARBAGE_COLLECTION_MANAGER, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
 import { completeDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
 
-const GARBAGE_COLLECTION_MANAGER_ENABLED = ENABLED_GARBAGE_COLLECTION_MANAGER;
+const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock_key') || 'garbage_collection_manager_lock';
 const SCHEDULE_TIME = conf.get('garbage_collection_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('garbage_collection_manager:batch_size') || 10000;
