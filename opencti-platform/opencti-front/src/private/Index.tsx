@@ -18,7 +18,6 @@ import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
-const SearchRoot = lazy(() => import('@components/SearchRoot'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
 const SearchBulk = lazy(() => import('./components/SearchBulk'));
 const RootAnalyses = lazy(() => import('./components/analyses/Root'));
@@ -26,6 +25,7 @@ const RootCases = lazy(() => import('./components/cases/Root'));
 const RootEvents = lazy(() => import('./components/events/Root'));
 const RootObservations = lazy(() => import('./components/observations/Root'));
 const RootProfile = lazy(() => import('./components/profile/Root'));
+const RootSearch = lazy(() => import('@components/RootSearch'));
 const RootThreats = lazy(() => import('./components/threats/Root'));
 const RootArsenal = lazy(() => import('./components/arsenal/Root'));
 const RootTechnique = lazy(() => import('./components/techniques/Root'));
@@ -105,7 +105,7 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/" Component={boundaryWrapper(Dashboard)}/>
 
               {/* Search need to be rework */}
-              <Route path="/search/*" Component={boundaryWrapper(SearchRoot)} />
+              <Route path="/search/*" Component={boundaryWrapper(RootSearch)} />
               <Route path="/id/:id" Component={boundaryWrapper(StixObjectOrStixRelationship)} />
               <Route path="/search_bulk" Component={boundaryWrapper(SearchBulk)} />
               <Route path="/analyses/*" Component={boundaryWrapper(RootAnalyses)} />

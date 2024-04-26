@@ -1,10 +1,8 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import Search from '@components/Search';
-import SearchIndexedFiles from '@components/search/SearchIndexedFiles';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
@@ -22,10 +20,11 @@ const searchRootFilesCountQuery = graphql`
 `;
 
 interface SearchRootComponentProps {
+  children: ReactNode;
   filesCount?: number;
 }
 
-const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ filesCount = 0 }) => {
+const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children, filesCount = 0 }) => {
   const { t_i18n } = useFormatter();
   const { keyword } = useParams() as { keyword: string };
   const location = useLocation();
@@ -63,53 +62,31 @@ const SearchRootComponent: FunctionComponent<SearchRootComponentProps> = ({ file
           />
         </Tabs>
       </Box>
-      <Routes>
-        <Route
-          path="/knowledge"
-          element={
-            <Search />
-          }
-        />
-        <Route
-          path="/knowledge/:keyword"
-          element={
-            <Search />
-          }
-        />
-        <Route
-          path="/files"
-          element={
-            <SearchIndexedFiles />
-          }
-        />
-        <Route
-          path="/files/:keyword"
-          element={
-            <SearchIndexedFiles />
-          }
-        />
-        <Route path="/" element={
-          <Navigate to="/dashboard/search/knowledge" />
-        }
-        />
-      </Routes>
+      {children}
     </ExportContextProvider>
   );
 };
 
-interface SearchRootComponentWithQueryProps {
+interface SearchContainerQueryWithRefProps {
+  children: ReactNode
   queryRef: PreloadedQuery<SearchRootFilesCountQuery>;
 }
 
-const SearchRootComponentWithQuery: FunctionComponent<SearchRootComponentWithQueryProps> = ({ queryRef }) => {
+const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({ queryRef, children }) => {
   const { indexedFilesCount } = usePreloadedQuery<SearchRootFilesCountQuery>(searchRootFilesCountQuery, queryRef);
   const filesCount = indexedFilesCount ?? 0;
   return (
-    <SearchRootComponent filesCount={filesCount} />
+    <SearchContainer filesCount={filesCount}>
+      {children}
+    </SearchContainer>
   );
 };
 
-const SearchRoot = () => {
+interface SearchContainerQueryProps {
+  children: ReactNode
+}
+
+const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
   const {
     platformModuleHelpers: { isFileIndexManagerEnable },
   } = useAuth();
@@ -128,9 +105,17 @@ const SearchRoot = () => {
   }, []);
 
   if (queryRef) {
-    return (<SearchRootComponentWithQuery queryRef={queryRef} />);
+    return (
+      <SearchContainerQueryWithRef queryRef={queryRef}>
+        {children}
+      </SearchContainerQueryWithRef>
+    );
   }
-  return (<SearchRootComponent />);
+  return (
+    <SearchContainer>
+      {children}
+    </SearchContainer>
+  );
 };
 
-export default SearchRoot;
+export default SearchContainerQuery;
