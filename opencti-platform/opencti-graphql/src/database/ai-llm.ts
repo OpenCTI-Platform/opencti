@@ -29,7 +29,7 @@ if (AI_ENABLED && AI_TOKEN) {
   }
 }
 
-export const queryMistralAi = async (busId: string, question: string, user: AuthUser) => {
+export const queryMistralAi = async (busId: string | null, question: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -46,7 +46,9 @@ export const queryMistralAi = async (busId: string, question: string, user: Auth
         if (chunk.choices[0].delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
           content += streamText;
-          await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
+          if (busId !== null) {
+            await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
+          }
         }
       }
       return content;
@@ -61,7 +63,7 @@ export const queryMistralAi = async (busId: string, question: string, user: Auth
   }
 };
 
-export const queryChatGpt = async (busId: string, question: string, user: AuthUser) => {
+export const queryChatGpt = async (busId: string | null, question: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -79,7 +81,9 @@ export const queryChatGpt = async (busId: string, question: string, user: AuthUs
         if (chunk.choices[0].delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
           content += streamText;
-          await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
+          if (busId !== null) {
+            await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content }, user);
+          }
         }
       }
       return content;
@@ -94,7 +98,7 @@ export const queryChatGpt = async (busId: string, question: string, user: AuthUs
   }
 };
 
-export const compute = async (busId: string, question: string, user: AuthUser) => {
+export const compute = async (busId: string | null, question: string, user: AuthUser) => {
   switch (AI_TYPE) {
     case 'mistralai':
       return queryMistralAi(busId, question, user);

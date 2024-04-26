@@ -754,7 +754,6 @@ const ContainerHeader = (props) => {
     },
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
-
   return (
     <Box sx={containerStyle}>
       <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

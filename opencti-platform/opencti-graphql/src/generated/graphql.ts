@@ -13743,20 +13743,32 @@ export type MutationNotifierFieldPatchArgs = {
 
 
 export type MutationObasContainerGenerateScenarioArgs = {
+  filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  level?: InputMaybe<Scalars['String']['input']>;
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
 export type MutationObasThreatGenerateScenarioArgs = {
+  filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  level?: InputMaybe<Scalars['String']['input']>;
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
 export type MutationObasVictimGenerateScenarioArgs = {
+  filters?: InputMaybe<FilterGroup>;
   id: Scalars['ID']['input'];
-  level?: InputMaybe<Scalars['String']['input']>;
+  interval?: InputMaybe<Scalars['Int']['input']>;
+  selection?: InputMaybe<Selection>;
+  simulationType?: InputMaybe<SimulationType>;
+  useAI?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -17819,6 +17831,8 @@ export type Query = {
   notifier?: Maybe<Notifier>;
   notifierTest?: Maybe<Scalars['String']['output']>;
   notifiers?: Maybe<NotifierConnection>;
+  obasScenarioElementsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  obasStixCoreObjectSimulationsResult?: Maybe<StixObjectSimulationsResult>;
   observedData?: Maybe<ObservedData>;
   observedDataContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']['output']>;
   observedDatas?: Maybe<ObservedDataConnection>;
@@ -19037,6 +19051,18 @@ export type QueryNotifiersArgs = {
   orderBy?: InputMaybe<NotifierOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryObasScenarioElementsDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  id: Scalars['ID']['input'];
+  type?: InputMaybe<ScenarioType>;
+};
+
+
+export type QueryObasStixCoreObjectSimulationsResultArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -21243,6 +21269,12 @@ export type ScaleAttribute = {
   scale: Scalars['String']['output'];
 };
 
+export enum ScenarioType {
+  Container = 'container',
+  Threat = 'threat',
+  Victim = 'victim'
+}
+
 export type SearchMetrics = {
   __typename?: 'SearchMetrics';
   fetch_total?: Maybe<Scalars['String']['output']>;
@@ -21520,6 +21552,11 @@ export enum SectorsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum Selection {
+  Multiple = 'multiple',
+  Random = 'random'
+}
+
 export type SessionDetail = {
   __typename?: 'SessionDetail';
   created?: Maybe<Scalars['DateTime']['output']>;
@@ -21650,6 +21687,19 @@ export type SettingsMessageInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
   message: Scalars['String']['input'];
   recipients?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum SimulationType {
+  Mixed = 'mixed',
+  Simulated = 'simulated',
+  Technical = 'technical'
+}
+
+export type SimulationsResult = {
+  __typename?: 'SimulationsResult';
+  failure?: Maybe<Scalars['Int']['output']>;
+  success?: Maybe<Scalars['Int']['output']>;
+  unknown?: Maybe<Scalars['Int']['output']>;
 };
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -23457,6 +23507,13 @@ export enum StixObjectOrStixRelationshipsOrdering {
   StartTime = 'start_time',
   UpdatedAt = 'updated_at'
 }
+
+export type StixObjectSimulationsResult = {
+  __typename?: 'StixObjectSimulationsResult';
+  detection?: Maybe<SimulationsResult>;
+  human?: Maybe<SimulationsResult>;
+  prevention?: Maybe<SimulationsResult>;
+};
 
 export type StixRefRelationship = BasicRelationship & StixRelationship & {
   __typename?: 'StixRefRelationship';
@@ -28931,6 +28988,7 @@ export type ResolversTypes = ResolversObject<{
   RuleManager: ResolverTypeWrapper<RuleManager>;
   RuleTask: ResolverTypeWrapper<RuleTask>;
   ScaleAttribute: ResolverTypeWrapper<ScaleAttribute>;
+  ScenarioType: ScenarioType;
   SearchMetrics: ResolverTypeWrapper<SearchMetrics>;
   Sector: ResolverTypeWrapper<Omit<Sector, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'reports' | 'stixCoreRelationships' | 'subSectors' | 'targetedOrganizations'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversTypes['SectorConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, subSectors?: Maybe<ResolversTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   SectorAddInput: SectorAddInput;
@@ -28938,11 +28996,14 @@ export type ResolversTypes = ResolversObject<{
   SectorEdge: ResolverTypeWrapper<Omit<SectorEdge, 'node'> & { node: ResolversTypes['Sector'] }>;
   SectorEditMutations: ResolverTypeWrapper<Omit<SectorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Sector']>, contextPatch?: Maybe<ResolversTypes['Sector']>, fieldPatch?: Maybe<ResolversTypes['Sector']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Sector']> }>;
   SectorsOrdering: SectorsOrdering;
+  Selection: Selection;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'platform_critical_alerts' | 'platform_organization'> & { platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_organization?: Maybe<ResolversTypes['Organization']> }>;
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<SettingsMessage>;
   SettingsMessageInput: SettingsMessageInput;
+  SimulationType: SimulationType;
+  SimulationsResult: ResolverTypeWrapper<SimulationsResult>;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -29009,6 +29070,7 @@ export type ResolversTypes = ResolversObject<{
   StixObjectOrStixRelationshipRefConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipRefConnection>;
   StixObjectOrStixRelationshipRefEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
   StixObjectOrStixRelationshipsOrdering: StixObjectOrStixRelationshipsOrdering;
+  StixObjectSimulationsResult: ResolverTypeWrapper<StixObjectSimulationsResult>;
   StixRef: ResolverTypeWrapper<Scalars['StixRef']['output']>;
   StixRefRelationship: ResolverTypeWrapper<Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, from?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
@@ -29661,6 +29723,7 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: SettingsMessage;
   SettingsMessageInput: SettingsMessageInput;
+  SimulationsResult: SimulationsResult;
   Software: Omit<Software, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -29717,6 +29780,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixObjectOrStixRelationshipOrCreator: ResolversUnionTypes<ResolversParentTypes>['StixObjectOrStixRelationshipOrCreator'];
   StixObjectOrStixRelationshipRefConnection: StixObjectOrStixRelationshipRefConnection;
   StixObjectOrStixRelationshipRefEdge: Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
+  StixObjectSimulationsResult: StixObjectSimulationsResult;
   StixRef: Scalars['StixRef']['output'];
   StixRefRelationship: Omit<StixRefRelationship, 'cases' | 'containers' | 'createdBy' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   StixRefRelationshipAddInput: StixRefRelationshipAddInput;
@@ -35579,6 +35643,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   notifier?: Resolver<Maybe<ResolversTypes['Notifier']>, ParentType, ContextType, RequireFields<QueryNotifierArgs, 'id'>>;
   notifierTest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryNotifierTestArgs, 'input'>>;
   notifiers?: Resolver<Maybe<ResolversTypes['NotifierConnection']>, ParentType, ContextType, Partial<QueryNotifiersArgs>>;
+  obasScenarioElementsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryObasScenarioElementsDistributionArgs, 'id'>>;
+  obasStixCoreObjectSimulationsResult?: Resolver<Maybe<ResolversTypes['StixObjectSimulationsResult']>, ParentType, ContextType, RequireFields<QueryObasStixCoreObjectSimulationsResultArgs, 'id'>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, Partial<QueryObservedDataArgs>>;
   observedDataContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryObservedDataContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;
   observedDatas?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<QueryObservedDatasArgs>>;
@@ -36294,6 +36360,13 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SimulationsResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['SimulationsResult'] = ResolversParentTypes['SimulationsResult']> = ResolversObject<{
+  failure?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  success?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  unknown?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SoftwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Software'] = ResolversParentTypes['Software']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SoftwareCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SoftwareConnectorsArgs>>;
@@ -36843,6 +36916,13 @@ export type StixObjectOrStixRelationshipRefEdgeResolvers<ContextType = any, Pare
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
   types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixObjectSimulationsResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectSimulationsResult'] = ResolversParentTypes['StixObjectSimulationsResult']> = ResolversObject<{
+  detection?: Resolver<Maybe<ResolversTypes['SimulationsResult']>, ParentType, ContextType>;
+  human?: Resolver<Maybe<ResolversTypes['SimulationsResult']>, ParentType, ContextType>;
+  prevention?: Resolver<Maybe<ResolversTypes['SimulationsResult']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38825,6 +38905,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Settings?: SettingsResolvers<ContextType>;
   SettingsEditMutations?: SettingsEditMutationsResolvers<ContextType>;
   SettingsMessage?: SettingsMessageResolvers<ContextType>;
+  SimulationsResult?: SimulationsResultResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;
@@ -38866,6 +38947,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixObjectOrStixRelationshipOrCreator?: StixObjectOrStixRelationshipOrCreatorResolvers<ContextType>;
   StixObjectOrStixRelationshipRefConnection?: StixObjectOrStixRelationshipRefConnectionResolvers<ContextType>;
   StixObjectOrStixRelationshipRefEdge?: StixObjectOrStixRelationshipRefEdgeResolvers<ContextType>;
+  StixObjectSimulationsResult?: StixObjectSimulationsResultResolvers<ContextType>;
   StixRef?: GraphQLScalarType;
   StixRefRelationship?: StixRefRelationshipResolvers<ContextType>;
   StixRefRelationshipConnection?: StixRefRelationshipConnectionResolvers<ContextType>;

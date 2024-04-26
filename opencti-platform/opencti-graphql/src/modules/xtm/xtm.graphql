@@ -1,5 +1,39 @@
+enum ScenarioType {
+    container
+    threat
+    victim
+}
+
+enum Selection {
+    multiple
+    random
+}
+
+enum SimulationType {
+    technical
+    simulated
+    mixed
+}
+
+type SimulationsResult {
+    unknown: Int
+    success: Int
+    failure: Int
+}
+
+type StixObjectSimulationsResult {
+    prevention: SimulationsResult
+    detection: SimulationsResult
+    human: SimulationsResult
+}
+
+type Query {
+    obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult @auth(for: [KNOWLEDGE])
+    obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution] @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 type Mutation {
-    obasContainerGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasThreatGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
-    obasVictimGenerateScenario(id: ID!, level: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
+    obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Campaign from './Campaign';
@@ -118,6 +119,7 @@ class RootCampaign extends Component {
             if (props) {
               if (props.campaign) {
                 const { campaign } = props;
+                const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaign.id}`;
                 return (
                   <div
                     style={{
@@ -187,6 +189,9 @@ class RootCampaign extends Component {
                           label={t('History')}
                         />
                       </Tabs>
+                      {isOverview && (
+                        <StixCoreObjectSimulationResult id={campaign.id} type="threat" />
+                      )}
                     </Box>
                     <Routes>
                       <Route

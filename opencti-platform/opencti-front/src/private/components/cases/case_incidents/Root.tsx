@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -89,6 +90,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   let paddingRight = 0;
+  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
   if (caseData) {
     if (
       location.pathname.includes(
@@ -177,6 +179,9 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 label={t_i18n('Data')}
               />
             </Tabs>
+            {isOverview && (
+            <StixCoreObjectSimulationResult id={caseData.id} type="container" />
+            )}
           </Box>
           <Routes>
             <Route

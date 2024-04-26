@@ -21,6 +21,7 @@ import { extractEntityRepresentativeName, extractRepresentativeDescription } fro
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
+import { Format, Tone } from '../../generated/graphql';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { compute } from '../../database/ai-llm';
@@ -36,25 +37,12 @@ import {
 } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
-import { getEntityFromCache } from '../../database/cache';
-import type { BasicStoreSettings } from '../../types/settings';
-import { SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import { UnsupportedError } from '../../config/errors';
-import { Format, Tone } from '../../generated/graphql';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import { elSearchFiles } from '../../database/file-search';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
+import { checkEnterpriseEdition } from '../../utils/ee';
 
 const RESOLUTION_LIMIT = 200;
-
-export const checkEnterpriseEdition = async (context: AuthContext) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const enterpriseEditionEnabled = isNotEmptyField(settings?.enterprise_edition);
-  if (!enterpriseEditionEnabled) {
-    throw UnsupportedError('Enterprise edition is not enabled');
-  }
-};
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);

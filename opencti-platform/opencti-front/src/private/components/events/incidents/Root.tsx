@@ -8,6 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -83,6 +84,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
+  const isOverview = location.pathname === `/dashboard/events/incidents/${incident.id}`;
   return (
     <>
       {incident ? (
@@ -150,6 +152,9 @@ const RootIncidentComponent = ({ queryRef }) => {
                 label={t_i18n('History')}
               />
             </Tabs>
+            {isOverview && (
+              <StixCoreObjectSimulationResult id={incident.id} type="threat" />
+            )}
           </Box>
           <Routes>
             <Route

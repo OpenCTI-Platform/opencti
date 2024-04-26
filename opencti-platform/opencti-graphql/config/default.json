@@ -112,6 +112,7 @@
   "xtm": {
     "openbas_url": "",
     "openbas_token": "",
+    "openbas_reject_unauthorized": false,
     "openerm_url": "",
     "openrm_token": "",
     "openmtd_url": "",

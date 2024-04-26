@@ -738,6 +738,11 @@ export const polarAreaChartOptions = (
  * @param {string} legendPosition
  * @param {boolean} reversed
  * @param {string[]} chartColors
+ * @param {boolean} displayLegend
+ * @param {boolean} displayLabels
+ * @param {boolean} displayValue
+ * @param {boolean} displayTooltip
+ * @param {number} size
  */
 export const donutChartOptions = (
   theme,
@@ -745,6 +750,11 @@ export const donutChartOptions = (
   legendPosition = 'bottom',
   reversed = false,
   chartColors = [],
+  displayLegend = true,
+  displayLabels = true,
+  displayValue = true,
+  displayTooltip = true,
+  size = 70,
 ) => {
   const temp = theme.palette.mode === 'dark' ? 400 : 600;
   let dataLabelsColors = labels.map(() => theme.palette.text.primary);
@@ -799,16 +809,17 @@ export const donutChartOptions = (
       colors: [theme.palette.background.paper],
     },
     tooltip: {
+      enabled: displayTooltip,
       theme: theme.palette.mode,
       custom: simpleLabelTooltip(theme),
     },
     legend: {
-      show: true,
+      show: displayLegend,
       position: legendPosition,
       fontFamily: '"IBM Plex Sans", sans-serif',
     },
     dataLabels: {
-      enabled: true,
+      enabled: displayLabels,
       style: {
         fontSize: '10px',
         fontFamily: '"IBM Plex Sans", sans-serif',
@@ -825,8 +836,11 @@ export const donutChartOptions = (
     plotOptions: {
       pie: {
         donut: {
+          value: {
+            show: displayValue,
+          },
           background: 'transparent',
-          size: '70%',
+          size: `${size}%`,
         },
       },
     },

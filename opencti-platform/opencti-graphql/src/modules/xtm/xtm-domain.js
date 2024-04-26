@@ -1,0 +1,414 @@
+import * as R from 'ramda';
+import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { distributionEntities } from '../../database/middleware';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP
+} from '../../schema/stixDomainObject';
+import { DatabaseError, UnsupportedError } from '../../config/errors';
+import conf, { logApp } from '../../config/conf';
+import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getResultsForAttackPatterns } from '../../database/xtm-obas';
+import { isNotEmptyField } from '../../database/utils';
+import { checkEnterpriseEdition } from '../../utils/ee';
+import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
+import { elSearchFiles } from '../../database/file-search';
+import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
+import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
+import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
+import { compute } from '../../database/ai-llm';
+
+const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
+const RESOLUTION_LIMIT = 50;
+
+const getShuffledArr = (arr) => {
+  const newArr = arr.slice();
+  // eslint-disable-next-line no-plusplus
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const rand = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[rand]] = [newArr[rand], newArr[i]];
+  }
+  return newArr;
+};
+
+export const stixCoreObjectSimulationsResult = async (context, user, args) => {
+  const { id } = args;
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
+  let attackPatterns = [];
+  if (stixCoreObject.parent_types.includes(ENTITY_TYPE_CONTAINER)) {
+    attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
+  } else if (
+    [
+      ENTITY_TYPE_THREAT_ACTOR_GROUP,
+      ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+      ENTITY_TYPE_INTRUSION_SET,
+      ENTITY_TYPE_CAMPAIGN,
+      ENTITY_TYPE_INCIDENT
+    ].includes(stixCoreObject.entity_type)) {
+    attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  } else {
+    const threats = await listAllToEntitiesThroughRelations(
+      context,
+      user,
+      id,
+      RELATION_TARGETS,
+      [
+        ENTITY_TYPE_THREAT_ACTOR_GROUP,
+        ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+        ENTITY_TYPE_INTRUSION_SET,
+        ENTITY_TYPE_CAMPAIGN,
+        ENTITY_TYPE_INCIDENT
+      ]
+    );
+    const threatsIds = threats.map((n) => n.id);
+    attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  }
+  const attackPatternsExternalIds = attackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
+  await getResultsForAttackPatterns(attackPatternsExternalIds);
+  // TODO, temporary results, waiting for API on OpenBAS
+  return {
+    prevention: {
+      unknown: 100,
+      success: 0,
+      failure: 0,
+    },
+    detection: {
+      unknown: 100,
+      success: 0,
+      failure: 0,
+    },
+    human: {
+      unknown: 100,
+      success: 0,
+      failure: 0,
+    }
+  };
+};
+
+export const scenarioElementsDistribution = async (context, user, args) => {
+  const { id } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey('*', '*'), id);
+  return distributionEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], { field: 'entity_type', filters });
+};
+
+export const resolveFiles = async (context, user, stixCoreObject) => {
+  const opts = {
+    first: 20,
+    prefixMimeTypes: undefined,
+    entity_id: stixCoreObject.id,
+    entity_type: stixCoreObject.entity_type
+  };
+  const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+  const fileIds = importFiles.edges.map((n) => n.node.id);
+  const files = await elSearchFiles(context, user, {
+    first: 10,
+    fileIds,
+    connectionFormat: false,
+    excludeFields: [],
+    includeContent: true
+  });
+  return files;
+};
+
+export const resolveContent = async (context, user, stixCoreObject) => {
+  let names = [];
+  let descriptions = [];
+  let files = [];
+  if (stixCoreObject.parent_types.includes(ENTITY_TYPE_CONTAINER)) {
+    names = [stixCoreObject.name];
+    descriptions = [stixCoreObject.description];
+    files = await resolveFiles(context, user, stixCoreObject);
+  } else {
+    const containers = await listAllToEntitiesThroughRelations(context, user, stixCoreObject.id, RELATION_OBJECT, [ENTITY_TYPE_CONTAINER_REPORT]);
+    const allFiles = await Promise.all(R.take(15, containers).map((container) => resolveFiles(context, user, container)));
+    files = allFiles.flat();
+    names = containers.map((n) => n.name);
+    descriptions = containers.map((n) => n.description);
+  }
+  return [...names, ...descriptions, ...files.map((n) => n.content)].join(' ');
+};
+
+export const generateOpenBasScenario = async (context, user, stixCoreObject, attackPatterns, labels, author, simulationType, interval, selection, useAI) => {
+  const content = await resolveContent(context, user, stixCoreObject);
+  const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
+
+  // Get kill chin phases
+  const sortByPhaseOrder = R.sortBy(R.prop('phase_order'));
+  const obasKillChainPhases = await getKillChainPhases();
+  const sortedObasKillChainPhases = sortByPhaseOrder(obasKillChainPhases);
+  const killChainPhasesListOfNames = sortedObasKillChainPhases.map((n) => n.phase_name).join(', ');
+  const indexedSortedObasKillChainPhase = R.indexBy(R.prop('phase_id'), sortedObasKillChainPhases);
+
+  let dependsOnDuration = 0;
+  try {
+    if (attackPatterns.length === 0) {
+      if (useAI) {
+      // eslint-disable-next-line no-restricted-syntax
+        for (const obasKillChainPhase of sortedObasKillChainPhases) {
+          const killChainPhaseName = obasKillChainPhase.phase_name;
+          // Mail to incident response
+          const promptIncidentResponse = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}
+            - We are in the kill chain phase ${killChainPhaseName}
+            - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack
+            - The incident response team is under attack
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            
+            # Context about the attack
+            ${content}
+            `;
+          const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
+          const promptIncidentResponseSubject = `
+            # Instructions
+            - Generate a subject for the following email
+            - The subject should be short and comprehensible
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseIncidentResponse}
+            `;
+          const responseIncidentResponseSubject = await compute(null, promptIncidentResponseSubject, user);
+          const titleIncidentResponse = `[${killChainPhaseName}] ${responseIncidentResponseSubject} - Email to the incident response team`;
+          await createInjectInScenario(
+            obasScenario.scenario_id,
+            'openbas_email',
+            '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+            titleIncidentResponse,
+            dependsOnDuration,
+            {
+              expectations: [],
+              subject: `[${killChainPhaseName}] ${responseIncidentResponseSubject}`,
+              body: responseIncidentResponse
+            }
+          );
+          dependsOnDuration += (interval * 60);
+          // Mail to CISO
+          const promptCiso = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}
+            - We are in the kill chain phase ${killChainPhaseName}
+            - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
+            - The email message should be addressed from the security operation center team to the chief security officer, talking about the phase of the attack
+            - The incident response team is under attack
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            
+            # Context about the attack
+            ${content}
+            `;
+          const responseCiso = await compute(null, promptCiso, user);
+          const promptCisoSubject = `
+            # Instructions
+            - Generate a subject for the following email
+            - The subject should be short and comprehensible
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseCiso}
+            `;
+          const responseCisoSubject = await compute(null, promptCisoSubject, user);
+          const titleCiso = `[${killChainPhaseName}] ${responseCisoSubject} - Email to the CISO`;
+          await createInjectInScenario(
+            obasScenario.scenario_id,
+            'openbas_email',
+            '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+            titleCiso,
+            dependsOnDuration,
+            {
+              expectations: [],
+              subject: `[${killChainPhaseName}] ${responseCisoSubject}`,
+              body: responseCiso
+            }
+          );
+          dependsOnDuration += (interval * 60);
+        }
+      }
+      throw UnsupportedError('Since no attack patterns can be found in this container and AI not enabled, the platform is unable to generate a scenario.');
+    }
+
+    // Get contracts from OpenBAS related to found attack patterns
+    // Create the scenario
+    const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
+    const description = extractRepresentativeDescription(stixCoreObject);
+    const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
+    const obasScenario = await createScenario(name, subtitle, description, labels);
+
+    // Get attack patterns
+    const obasAttackPatterns = await getAttackPatterns();
+
+    // Extract attack patterns
+    const attackPatternsMitreIds = finalAttackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
+
+    // Keep only attack patterns matching the container ones
+    const filteredObasAttackPatterns = obasAttackPatterns.filter((n) => attackPatternsMitreIds.includes(n.attack_pattern_external_id));
+
+    // Enrich with the earliest kill chain phase
+    const enrichedFilteredObasAttackPatterns = filteredObasAttackPatterns.map(
+      (n) => R.assoc('attack_pattern_kill_chain_phase', sortByPhaseOrder(n.attack_pattern_kill_chain_phases.map((o) => indexedSortedObasKillChainPhase[o])).at(0), n)
+    );
+
+    // Sort attack pattern by kill chain phase
+    const sortByKillChainPhase = R.sortBy(R.path(['attack_pattern_kill_chain_phase', 'phase_order']));
+    const sortedEnrichedFilteredObasAttackPatterns = sortByKillChainPhase(enrichedFilteredObasAttackPatterns);
+
+    // Get the injector contracts
+    // eslint-disable-next-line no-restricted-syntax
+    for (const obasAttackPattern of sortedEnrichedFilteredObasAttackPatterns) {
+      const killChainPhaseName = obasAttackPattern.attack_pattern_kill_chain_phase.phase_name;
+      if (simulationType === 'simulated') {
+        // Mail to incident response
+        const promptIncidentResponse = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
+            - You should take into account the context about the attack
+            - You should write an email message representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack
+            - The incident response team is under attack
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            
+            # Context about the attack
+            ${content}
+            
+            # Content
+            ${obasAttackPattern.attack_pattern_description}
+            `;
+        const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
+        const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
+        await createInjectInScenario(
+          obasScenario.scenario_id,
+          'openbas_email',
+          '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+          titleIncidentResponse,
+          dependsOnDuration,
+          { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseIncidentResponse }
+        );
+        dependsOnDuration += (interval * 60);
+        const promptCiso = `
+            # Instructions
+            - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
+            - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - Order of kill chain phases is ${killChainPhasesListOfNames}
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
+            - You should write an email message representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
+            - You should take into account the context about the attack
+            - The email message should be addressed from the security operation center team to the chief information security officer
+            - The CISO is under attack
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+          
+            # Context about the attack
+            ${content}
+            
+            # Content
+            ${obasAttackPattern.attack_pattern_description}
+        `;
+        const responseCiso = await compute(null, promptCiso, user);
+        const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
+        await createInjectInScenario(
+          obasScenario.scenario_id,
+          'openbas_email',
+          '2790bd39-37d4-4e39-be7e-53f3ca783f86',
+          titleCiso,
+          dependsOnDuration,
+          { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseCiso }
+        );
+        dependsOnDuration += (interval * 60);
+      } else {
+        const obasInjectorContracts = await getInjectorContracts(obasAttackPattern.attack_pattern_id);
+        let finalObasInjectorContracts = R.take(5, getShuffledArr(obasInjectorContracts));
+        if (selection === 'random') {
+          finalObasInjectorContracts = R.take(1, finalObasInjectorContracts);
+        }
+        if (simulationType === 'technical') {
+          // eslint-disable-next-line no-restricted-syntax
+          for (const finalObasInjectorContract of finalObasInjectorContracts) {
+            const obasInjectorContractContent = JSON.parse(finalObasInjectorContract.injector_contract_content);
+            const title = `[${obasAttackPattern.attack_pattern_external_id}] ${obasAttackPattern.attack_pattern_name} - ${finalObasInjectorContract.injector_contract_labels.en}`;
+            await createInjectInScenario(
+              obasScenario.scenario_id,
+              obasInjectorContractContent.config.type,
+              finalObasInjectorContract.injector_contract_id,
+              title,
+              dependsOnDuration
+            );
+            dependsOnDuration += (interval * 60);
+          }
+        } else {
+          // TODO
+        }
+      }
+    }
+    return `${XTM_OPENBAS_URL}/admin/scenarios/${obasScenario.scenario_id}/injects`;
+  } catch (err) {
+    logApp.error('[XTM-OBAS] Cannot query OpenBAS', { error: err });
+    throw DatabaseError('Unable to query OpenBAS', { err });
+  }
+};
+
+export const generateContainerScenario = async (context, user, args) => {
+  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  if (useAI || simulationType !== 'technical') {
+    await checkEnterpriseEdition(context);
+  }
+  const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER);
+  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
+  return generateOpenBasScenario(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+};
+
+export const generateThreatScenario = async (context, user, args) => {
+  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  if (useAI || simulationType !== 'technical') {
+    await checkEnterpriseEdition(context);
+  }
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+};
+
+export const generateVictimScenario = async (context, user, args) => {
+  const { id, interval, selection, simulationType = 'technical', useAI = false } = args;
+  if (useAI || simulationType !== 'technical') {
+    await checkEnterpriseEdition(context);
+  }
+  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const threats = await listAllToEntitiesThroughRelations(
+    context,
+    user,
+    id,
+    RELATION_TARGETS,
+    [
+      ENTITY_TYPE_THREAT_ACTOR_GROUP,
+      ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+      ENTITY_TYPE_INTRUSION_SET,
+      ENTITY_TYPE_CAMPAIGN,
+      ENTITY_TYPE_INCIDENT
+    ]
+  );
+  const threatsIds = threats.map((n) => n.id);
+  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  return generateOpenBasScenario(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationType, interval, selection, useAI);
+};

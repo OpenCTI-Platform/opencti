@@ -7560,6 +7560,8 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
+  obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
+  obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
 }
@@ -8329,6 +8331,9 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
+  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
+  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
+  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
 }
@@ -11419,6 +11424,35 @@ enum IndicatorFormat {
 type AIBus {
   bus_id: String!
   content: String!
+}
+
+enum ScenarioType {
+  container
+  threat
+  victim
+}
+
+enum Selection {
+  multiple
+  random
+}
+
+enum SimulationType {
+  technical
+  simulated
+  mixed
+}
+
+type SimulationsResult {
+  unknown: Int
+  success: Int
+  failure: Int
+}
+
+type StixObjectSimulationsResult {
+  prevention: SimulationsResult
+  detection: SimulationsResult
+  human: SimulationsResult
 }
 
 type DeletedElement {

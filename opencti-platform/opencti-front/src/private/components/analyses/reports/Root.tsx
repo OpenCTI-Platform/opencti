@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
@@ -97,6 +98,7 @@ const RootReport = () => {
             if (props.report) {
               const { report } = props;
               let paddingRight = 0;
+              const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
               if (
                 location.pathname.includes(
                   `/dashboard/analyses/reports/${report.id}/entities`,
@@ -130,6 +132,7 @@ const RootReport = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}
+                    overview={isOverview}
                   />
                   <Box
                     sx={{
@@ -184,6 +187,9 @@ const RootReport = () => {
                         label={t_i18n('Data')}
                       />
                     </Tabs>
+                    {isOverview && (
+                      <StixCoreObjectSimulationResult id={report.id} type="container" />
+                    )}
                   </Box>
                   <Routes>
                     <Route

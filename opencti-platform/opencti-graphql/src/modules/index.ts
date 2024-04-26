@@ -97,6 +97,7 @@ import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
+import './xtm/xtm-graphql';
 import './deleteOperation/deleteOperation-graphql';
 // import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

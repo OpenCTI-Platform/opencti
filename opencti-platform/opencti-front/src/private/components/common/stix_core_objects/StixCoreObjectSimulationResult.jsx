@@ -1,0 +1,536 @@
+import React, { useState } from 'react';
+import { makeStyles, useTheme } from '@mui/styles';
+import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Box from '@mui/material/Box';
+import { graphql } from 'react-relay';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
+import Drawer, { DrawerVariant } from '../drawer/Drawer';
+import Chart from '../charts/Chart';
+import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isEmptyField } from '../../../../utils/utils';
+import { donutChartOptions } from '../../../../utils/Charts';
+import { fileUri, QueryRenderer } from '../../../../relay/environment';
+import obasDark from '../../../../static/images/xtm/obas_dark.png';
+import obasLight from '../../../../static/images/xtm/obas_light.png';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAI from '../../../../utils/hooks/useAI';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Transition from '../../../../components/Transition';
+
+const useStyles = makeStyles((theme) => ({
+  simulationResults: {
+    display: 'flex',
+    margin: '-45px 20px 0 0',
+    float: 'right',
+    alignItems: 'center',
+  },
+  charts: {
+    display: 'flex',
+  },
+  chartContainer: {
+    width: 40,
+    position: 'relative',
+  },
+  iconOverlay: {
+    position: 'absolute',
+    top: 17,
+    left: 30,
+    fontSize: 18,
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+}));
+
+const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
+    query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
+        obasStixCoreObjectSimulationsResult(id: $id) {
+            prevention {
+                unknown
+                success
+                failure
+            }
+            detection {
+                unknown
+                success
+                failure
+            }
+            human {
+                unknown
+                success
+                failure
+            }
+        }
+    }
+`;
+
+const stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation = graphql`
+    mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+        obasContainerGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+    }
+`;
+
+const stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation = graphql`
+    mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+        obasThreatGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+    }
+`;
+
+const stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation = graphql`
+    mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioMutation($id: ID!, $interval: Int, $selection: Selection, $simulationType: SimulationType, $useAI: Boolean, $filters: FilterGroup) {
+        obasVictimGenerateScenario(id: $id, interval: $interval, selection: $selection, simulationType: $simulationType, useAI: $useAI, filters: $filters)
+    }
+`;
+
+const StixCoreObjectSimulationResult = ({ id, type }) => {
+  const theme = useTheme();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { enabled, configured } = useAI();
+  const [simulationType, setSimulationType] = useState('technical');
+  const [selection, setSelection] = useState('random');
+  const [interval, setInterval] = useState(5);
+  const [useGenAI, setUseGenAI] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+  const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const { t_i18n } = useFormatter();
+  const { settings: { platform_openbas_url: openBASUrl } } = useAuth();
+  const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+  const handleClose = () => {
+    setSimulationType('technical');
+    setInterval(5);
+    setUseGenAI(false);
+    helpers.handleClearAllFilters();
+    setOpen(false);
+  };
+
+  const handleCloseFinal = () => {
+    setResult(null);
+    handleClose();
+  };
+
+  const [commitMutationGenerateContainer] = useApiMutation(stixCoreObjectSimulationResultObasContainerGenerateScenarioMutation);
+  const [commitMutationGenerateThreat] = useApiMutation(stixCoreObjectSimulationResultObasThreatGenerateScenarioMutation);
+  const [commitMutationGenerateVictim] = useApiMutation(stixCoreObjectSimulationResultObasVictimGenerateScenarioMutation);
+
+  const handleGenerate = () => {
+    setIsSubmitting(true);
+    setOpen(false);
+    switch (type) {
+      case 'container':
+        commitMutationGenerateContainer({
+          variables: {
+            id,
+            interval,
+            selection,
+            simulationType,
+            useAI: useGenAI,
+            filters,
+          },
+          onCompleted: (response) => {
+            setResult(response.obasContainerGenerateScenario);
+            setIsSubmitting(false);
+            handleClose();
+          },
+          onError: (error) => {
+            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setIsSubmitting(false);
+            handleClose();
+          },
+        });
+        break;
+      case 'threat':
+        commitMutationGenerateThreat({
+          variables: {
+            id,
+            interval,
+            selection,
+            simulationType,
+            useAI: useGenAI,
+            filters,
+          },
+          onCompleted: (response) => {
+            setResult(response.obasThreatGenerateScenario);
+            setIsSubmitting(false);
+            handleClose();
+          },
+          onError: (error) => {
+            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setIsSubmitting(false);
+            handleClose();
+          },
+        });
+        break;
+      case 'victim':
+        commitMutationGenerateVictim({
+          variables: {
+            id,
+            interval,
+            selection,
+            simulationType,
+            useAI: useGenAI,
+            filters,
+          },
+          onCompleted: (response) => {
+            setResult(response.obasVictimGenerateScenario);
+            setIsSubmitting(false);
+            handleClose();
+          },
+          onError: (error) => {
+            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setIsSubmitting(false);
+            handleClose();
+          },
+        });
+        break;
+      default:
+            // do nothing
+    }
+  };
+  const renderCharts = () => {
+    return (
+      <QueryRenderer
+        query={stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery}
+        variables={{ id }}
+        render={({ props }) => {
+          const labels = [t_i18n('Unknown'), t_i18n('Success'), t_i18n('Failure')];
+          const chartColors = [theme.palette.action.disabled, theme.palette.success.main, theme.palette.error.main];
+          if (props && props.obasStixCoreObjectSimulationsResult) {
+            const { prevention, detection, human } = props.obasStixCoreObjectSimulationsResult;
+            return (
+              <div className={classes.charts}>
+                <div className={classes.chartContainer}>
+                  <Chart
+                    options={donutChartOptions(
+                      theme,
+                      labels,
+                      'bottom',
+                      false,
+                      chartColors,
+                      false,
+                      false,
+                      true,
+                      false,
+                      60,
+                    )}
+                    series={[prevention.unknown, prevention.success, prevention.failure]}
+                    type="donut"
+                    width={75}
+                    height={75}
+                  />
+                  <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
+                    <ShieldOutlined className={classes.iconOverlay}/>
+                  </Tooltip>
+                </div>
+                <div className={classes.chartContainer}>
+                  <Chart
+                    options={donutChartOptions(
+                      theme,
+                      labels,
+                      'bottom',
+                      false,
+                      chartColors,
+                      false,
+                      false,
+                      true,
+                      false,
+                      60,
+                    )}
+                    series={[detection.unknown, detection.success, detection.failure]}
+                    type="donut"
+                    width={75}
+                    height={75}
+                  />
+                  <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
+                    <TrackChangesOutlined className={classes.iconOverlay}/>
+                  </Tooltip>
+                </div>
+                <div className={classes.chartContainer}>
+                  <Chart
+                    options={donutChartOptions(
+                      theme,
+                      labels,
+                      'bottom',
+                      false,
+                      chartColors,
+                      false,
+                      false,
+                      true,
+                      false,
+                      60,
+                    )}
+                    series={[human.unknown, human.success, human.failure]}
+                    type="donut"
+                    width={75}
+                    height={75}
+                  />
+                  <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
+                    <SensorOccupiedOutlined className={classes.iconOverlay}/>
+                  </Tooltip>
+                </div>
+              </div>
+            );
+          }
+          const chartData = [100];
+          return (
+            <div className={classes.charts}>
+              <div className={classes.chartContainer}>
+                <Chart
+                  options={donutChartOptions(
+                    theme,
+                    labels,
+                    'bottom',
+                    false,
+                    chartColors,
+                    false,
+                    false,
+                    true,
+                    false,
+                    60,
+                  )}
+                  series={chartData}
+                  type="donut"
+                  width={75}
+                  height={75}
+                />
+                <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
+                  <ShieldOutlined className={classes.iconOverlay}/>
+                </Tooltip>
+              </div>
+              <div className={classes.chartContainer}>
+                <Chart
+                  options={donutChartOptions(
+                    theme,
+                    labels,
+                    'bottom',
+                    false,
+                    chartColors,
+                    false,
+                    false,
+                    true,
+                    false,
+                    60,
+                  )}
+                  series={chartData}
+                  type="donut"
+                  width={75}
+                  height={75}
+                />
+                <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
+                  <TrackChangesOutlined className={classes.iconOverlay}/>
+                </Tooltip>
+              </div>
+              <div className={classes.chartContainer}>
+                <Chart
+                  options={donutChartOptions(
+                    theme,
+                    labels,
+                    'bottom',
+                    false,
+                    chartColors,
+                    false,
+                    false,
+                    true,
+                    false,
+                    60,
+                  )}
+                  series={chartData}
+                  type="donut"
+                  width={75}
+                  height={75}
+                />
+                <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
+                  <SensorOccupiedOutlined className={classes.iconOverlay}/>
+                </Tooltip>
+              </div>
+            </div>
+          );
+        }}
+      />
+    );
+  };
+  const renderForm = () => {
+    return (
+      <>
+        <TextField
+          label={t_i18n('Interval between injections (in minute)')}
+          fullWidth={true}
+          type="number"
+          value={interval}
+          onChange={(event) => setInterval(Number.isNaN(parseInt(event.target.value, 10)) ? 1 : parseInt(event.target.value, 10))}
+          style={fieldSpacingContainerStyle}
+        />
+        <FormControl style={fieldSpacingContainerStyle}>
+          <InputLabel id="simulationType">{t_i18n('Number of injects by attack pattern')}</InputLabel>
+          <Select
+            labelId="selection"
+            value={selection}
+            onChange={(event) => setSelection(event.target.value)}
+            fullWidth={true}
+          >
+            <MenuItem value="multiple">{t_i18n('Multiple (limited to 5)')}</MenuItem>
+            <MenuItem value="random">{t_i18n('One (random)')}</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControlLabel
+          style={{ marginTop: 20 }}
+          label={t_i18n('Use AI')}
+          control={
+            <Switch disabled={!enabled || !configured || !isEnterpriseEdition} value={useGenAI} onChange={(event) => setUseGenAI(event.target.checked)} />
+                  }
+        />
+        <FormControl style={fieldSpacingContainerStyle}>
+          <InputLabel id="simulationType">{t_i18n('Simulation type')}</InputLabel>
+          <Select
+            labelId="simulationType"
+            value={simulationType}
+            onChange={(event) => setSimulationType(event.target.value)}
+            fullWidth={true}
+            disabled={!useGenAI}
+          >
+            <MenuItem value="technical">{t_i18n('Technical (payloads)')}</MenuItem>
+            <MenuItem value="simulated">{t_i18n('Simulated (emails)')}</MenuItem>
+            <MenuItem value="mixed" disabled={true}>{t_i18n('Mixed (both)')}</MenuItem>
+          </Select>
+        </FormControl>
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleGenerate}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t_i18n('Generate')}
+          </Button>
+        </div>
+      </>
+    );
+  };
+  const renderCooking = () => {
+    return (
+      <div style={{ margin: '0 auto', width: 200, height: 230 }}>
+        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+          <CircularProgress size={200} thickness={0.3} />
+          <Box
+            sx={{
+              top: 0,
+              left: 0,
+              bottom: 0,
+              right: 0,
+              position: 'absolute',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography
+              variant="caption"
+              component="div"
+              color="text.secondary"
+            >
+              {t_i18n('Scenario generation in progress...')}
+            </Typography>
+          </Box>
+        </Box>
+      </div>
+    );
+  };
+  const renderResult = () => {
+    return (
+      <>
+        <Alert icon={<CheckOutlined fontSize="inherit" />} severity="success">
+          {t_i18n('The scenario has been correctly generated in your OpenBAS platform')}
+        </Alert>
+        <Box textAlign='center' style={{ marginTop: 20 }}>
+          <Button component={Link} to={result} target="_blank" variant="outlined" endIcon={<OpenInNewOutlined />}>
+            {t_i18n('Access to the scenario')}
+          </Button>
+        </Box>
+      </>
+    );
+  };
+  return (
+    <>
+      <div className={classes.simulationResults}>
+        <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
+          <Button
+            variant="outlined"
+            size="small"
+            style={{
+              fontSize: 12,
+              color: isEmptyField(openBASUrl) || !isGrantedToUpdate ? theme.palette.text.disabled : theme.palette.text.primary,
+            }}
+            disabled={isEmptyField(openBASUrl) || !isGrantedToUpdate}
+            onClick={() => setOpen(true)}
+          >
+            <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
+            {t_i18n('OBAS security posture')}
+          </Button>
+        </Tooltip>
+        {renderCharts()}
+      </div>
+      <Drawer
+        title={t_i18n('Generate a simulation scenario')}
+        open={open}
+        onClose={handleClose}
+        variant={DrawerVariant.create}
+      >
+        {renderForm()}
+      </Drawer>
+      <Dialog
+        open={isSubmitting || result}
+        PaperProps={{ elevation: 1 }}
+        TransitionComponent={Transition}
+        onClose={handleCloseFinal}
+        maxWidth="xs"
+        fullWidth={true}
+      >
+        <DialogContent>
+          {isSubmitting && renderCooking()}
+          {!isSubmitting && result && renderResult()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseFinal} disabled={isSubmitting}>{t_i18n('Close')}</Button>
+        </DialogActions>
+      </Dialog>
+
+    </>
+  );
+};
+
+export default StixCoreObjectSimulationResult;

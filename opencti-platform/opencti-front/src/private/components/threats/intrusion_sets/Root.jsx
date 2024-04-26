@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import IntrusionSet from './IntrusionSet';
@@ -121,6 +122,7 @@ class RootIntrusionSet extends Component {
             if (props) {
               if (props.intrusionSet) {
                 const { intrusionSet } = props;
+                const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
                 return (
                   <div
                     style={{
@@ -192,6 +194,9 @@ class RootIntrusionSet extends Component {
                           label={t('History')}
                         />
                       </Tabs>
+                      {isOverview && (
+                        <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
+                      )}
                     </Box>
                     <Routes>
                       <Route
