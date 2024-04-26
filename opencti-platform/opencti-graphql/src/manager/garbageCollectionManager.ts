@@ -23,14 +23,14 @@ export const garbageCollectionHandler = async () => {
       const deleteOperation = deleteOperationsToManage[i];
       await completeDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
     } catch (e) {
-      logApp.warn(e, `[OPENCTI-MODULE] Error when processing delete operation for ${deleteOperationsToManage[i].id}, skipping.`);
+      logApp.warn(e, { manager: 'GARBAGE_COLLECTION_MANAGER', id: deleteOperationsToManage[i].id });
       errorCount += 1;
     }
   }
   if (errorCount > 0) {
-    logApp.error(`[OPENCTI-MODULE] Garbage collection manager got ${errorCount} error for ${deleteOperationsToManage.length} indicators. Please have a look to previous warning.`);
+    logApp.error('[OPENCTI-MODULE] Garbage collection manager had errors during cleanup. Please have a look at previous warnings.', { count: deleteOperationsToManage.length, errorCount });
   } else {
-    logApp.debug(`[OPENCTI-MODULE] Garbage collection manager completely deleted ${deleteOperationsToManage.length} delete operations`);
+    logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
   }
 };
 
