@@ -1331,13 +1331,15 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
       const relTargets = await internalFindByIds(context, user, elements.map((rel) => rel.toId), findArgs);
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
-        data[INTERNAL_FROM_FIELD].push({
-          _index: relTargets[rel.toId]._index,
-          internal_id: rel.toId,
-          entity_type: rel.toType,
-          name: rel.toName,
-          i_relation: rel
-        });
+        if (relTargets[rel.toId]) {
+          data[INTERNAL_FROM_FIELD].push({
+            _index: relTargets[rel.toId]._index,
+            internal_id: rel.toId,
+            entity_type: rel.toType,
+            name: rel.toName,
+            i_relation: rel
+          });
+        }
       }
     };
     const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
@@ -1348,13 +1350,15 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
       const relSources = await internalFindByIds(context, user, elements.map((rel) => rel.fromId), findArgs);
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
-        data[INTERNAL_TO_FIELD].push({
-          _index: relSources[rel.fromId]._index,
-          internal_id: rel.fromId,
-          entity_type: rel.fromType,
-          name: rel.fromName,
-          i_relation: rel
-        });
+        if (relSources[rel.fromId]) {
+          data[INTERNAL_TO_FIELD].push({
+            _index: relSources[rel.fromId]._index,
+            internal_id: rel.fromId,
+            entity_type: rel.fromType,
+            name: rel.fromName,
+            i_relation: rel
+          });
+        }
       }
     };
     const toArgs = { baseData: true, toId: entityId, callback: listToCallback };
