@@ -68,7 +68,7 @@ type WorkspaceEdge {
 # Mutations
 input WorkspaceAddInput {
     type: String!
-    name: String!
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     tags: [String]
     authorized_members: [MemberAccessInput!]
@@ -77,7 +77,7 @@ input WorkspaceAddInput {
 
 input WorkspaceDuplicateInput {
     type: String!
-    name: String!
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     manifest: String
     tags: [String]

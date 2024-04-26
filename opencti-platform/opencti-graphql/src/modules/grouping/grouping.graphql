@@ -210,7 +210,7 @@ type Query {
 input GroupingAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     content: String
     content_mapping: String

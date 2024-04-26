@@ -166,7 +166,7 @@ input CsvMapperRepresentationInput {
   to: String
 }
 input CsvMapperAddInput {
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   has_header: Boolean!
   separator: String!
   representations: String!

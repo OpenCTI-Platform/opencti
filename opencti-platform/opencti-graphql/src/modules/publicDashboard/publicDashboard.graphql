@@ -114,7 +114,7 @@ type PublicDashboardEdge {
 
 # Mutation
 input PublicDashboardAddInput {
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   uri_key: String!
   description: String
   dashboard_id: String!

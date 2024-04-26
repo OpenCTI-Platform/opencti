@@ -46,7 +46,7 @@ type Query {
 
 # Mutations
 input IngestionRssAddInput {
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     uri: String! @constraint(minLength: 5)
     current_state_date: DateTime

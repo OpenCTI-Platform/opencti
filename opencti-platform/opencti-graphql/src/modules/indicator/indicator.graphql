@@ -186,7 +186,7 @@ input IndicatorAddInput {
   pattern_type: String!
   pattern_version: String
   pattern: String!
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   indicator_types: [String!]
   valid_from: DateTime

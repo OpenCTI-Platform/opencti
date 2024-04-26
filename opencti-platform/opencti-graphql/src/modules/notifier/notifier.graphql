@@ -65,7 +65,7 @@ type Query {
 
 # Mutations
 input NotifierAddInput {
-    name: String! @constraint(minLength: 1)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     notifier_connector_id: String!
     notifier_configuration: String!

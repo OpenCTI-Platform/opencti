@@ -498,7 +498,7 @@ type TaxiiCollectionEdge {
   node: TaxiiCollection!
 }
 input TaxiiCollectionAddInput {
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   filters: String
   taxii_public: Boolean
@@ -547,7 +547,7 @@ input FeedAttributeMappingInput {
 }
 
 input FeedAddInput {
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   filters: String
   separator: String!
@@ -601,7 +601,7 @@ type StreamCollectionEdge {
   node: StreamCollection!
 }
 input StreamCollectionAddInput {
-  name: String!
+  name: String! @constraint(minLength:2, format: "not-blank")
   description: String
   filters: String
   stream_live: Boolean
@@ -680,7 +680,7 @@ input StatusAddInput {
   order: Int!
 }
 input StatusTemplateAddInput {
-  name: String!
+  name: String! @constraint(minLength:2, format: "not-blank")
   color: String!
 }
 
@@ -720,7 +720,7 @@ type SynchronizerConnection {
 }
 
 input SynchronizerAddInput {
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   uri: String! @constraint(minLength: 2)
   token: String
   stream_id: String! @constraint(minLength: 2)
@@ -1012,7 +1012,7 @@ input QueryTaskAddInput {
 }
 
 input RetentionRuleAddInput {
-  name: String!
+  name: String! @constraint(minLength:2, format: "not-blank")
   filters: String!
   max_retention: Int! @constraint(min: 1)
 }
@@ -1234,7 +1234,7 @@ type Group implements InternalObject & BasicObject {
   editContext: [EditUserContext!]
 }
 input GroupAddInput {
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   default_assignation: Boolean
   auto_new_marking: Boolean
@@ -1455,7 +1455,7 @@ type UserSession {
 }
 input UserAddInput {
   user_email: String! @constraint(minLength: 5, format: "email")
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   password: String!
   firstname: String
   lastname: String
@@ -1524,7 +1524,7 @@ type Role implements BasicObject & InternalObject {
   editContext: [EditUserContext!]
 }
 input RoleAddInput {
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   clientMutationId: String
 }
@@ -1619,7 +1619,7 @@ input StixCyberObservablesExportAskInput {
 
 input RegisterConnectorInput {
   id: ID!
-  name: String!
+  name: String! @constraint(minLength:2, format: "not-blank")
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
@@ -1958,7 +1958,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  source_name: String! @constraint(minLength: 2)
+  source_name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   url: String
   hash: String
@@ -2321,7 +2321,7 @@ interface StixDomainObject {
 input StixDomainObjectAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   confidence: Int
   pattern_type: String
@@ -2484,7 +2484,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
 input AttackPatternAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   revoked: Boolean
@@ -2646,7 +2646,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input CampaignAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   revoked: Boolean
@@ -3548,7 +3548,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input ReportAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   content: String
   content_mapping: String
@@ -3711,7 +3711,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
 input CourseOfActionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   x_opencti_aliases: [String]
   x_mitre_id: String
@@ -3872,7 +3872,7 @@ input IdentityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
@@ -4032,7 +4032,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
 input IndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
@@ -4198,7 +4198,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input SectorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
@@ -4358,7 +4358,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input SystemAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   contact_information: String
   roles: [String]
@@ -4523,7 +4523,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 input InfrastructureAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   infrastructure_types: [String]
@@ -4685,7 +4685,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 input IntrusionSetAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   first_seen: DateTime
@@ -4847,7 +4847,7 @@ input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: String!
-  name: String!
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
@@ -5007,7 +5007,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input PositionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
@@ -5171,7 +5171,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input CityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
@@ -5328,7 +5328,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input CountryAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
@@ -5488,7 +5488,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 input RegionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   latitude: Float
   longitude: Float
@@ -5655,7 +5655,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input MalwareAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   malware_types: [String]
   aliases: [String]
@@ -5965,7 +5965,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   threat_actor_types: [String]
@@ -6130,7 +6130,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input ToolAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
   tool_types: [String]
@@ -6295,7 +6295,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
 input VulnerabilityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   x_opencti_aliases: [String]
   x_opencti_cvss_base_score: Float
@@ -6467,7 +6467,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
 input IncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
+  name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   confidence: Int
   revoked: Boolean

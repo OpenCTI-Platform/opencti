@@ -79,7 +79,7 @@ type Query {
 }
 
 input PlaybookAddInput {
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
 }
 
@@ -89,7 +89,7 @@ input PositionInput {
 }
 
 input PlaybookAddNodeInput {
-    name: String!
+    name: String! @constraint(minLength: 2, format: "not-blank")
     component_id: String!
     position: PositionInput!
     configuration: String
