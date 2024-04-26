@@ -1,5 +1,6 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import type { Histogram, ObservableResult } from '@opentelemetry/api-metrics';
+import { ValueType } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 
@@ -42,13 +43,14 @@ export class TelemetryMeterManager {
       'opencti_numberOfActivUsers',
       { description: 'Number of users activ in a session within the last hour',
         unit: 'count',
+        valueType: ValueType.INT,
       }
     );
     // - Gauges - //
     // number of instances
     const numberOfInstancesGauge = meter.createObservableGauge(
       'opencti_numberOfInstances',
-      { description: 'number of instances', unit: 'count' },
+      { description: 'number of instances', unit: 'count', valueType: ValueType.INT },
     );
     numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.numberOfInstances);
@@ -56,7 +58,7 @@ export class TelemetryMeterManager {
     // is EE activated
     const isEEActivatedGauge = meter.createObservableGauge(
       'opencti_isEEActivated',
-      { description: 'if Enterprise Edition is activated', unit: 'boolean' },
+      { description: 'if Enterprise Edition is activated', unit: 'boolean', valueType: ValueType.INT },
     );
     isEEActivatedGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.isEEActivated, { EEActivationDate: this.EEActivationDate });

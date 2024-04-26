@@ -1,10 +1,14 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { ConsoleMetricExporter, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { ConsoleMetricExporter, InstrumentType, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
+import { ExplicitBucketHistogramAggregation } from '@opentelemetry/sdk-metrics/build/src/view/Aggregation';
+import { FilteringAttributesProcessor } from '@opentelemetry/sdk-metrics/build/src/view/AttributesProcessor';
+import { InstrumentSelector } from '@opentelemetry/sdk-metrics/build/src/view/InstrumentSelector';
+import { MeterSelector } from '@opentelemetry/sdk-metrics/build/src/view/MeterSelector';
 import conf, { booleanConf, ENABLED_TELEMETRY, logApp, PLATFORM_VERSION } from '../config/conf';
 import { lockResource } from '../database/redis';
 import { executionContext } from '../utils/access';
@@ -14,6 +18,7 @@ import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
+import { FILE_EXPORTER_PATH, FileExporter } from '../config/FileExporter';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000; // record telemetry data period
@@ -37,24 +42,36 @@ const createFiligranTelemetryMeterManager = async () => {
     resource = resource.merge(filigranResource);
     // -- Readers with exporter
     // Console Exporter
-    const readerWithConsoleExporter = new PeriodicExportingMetricReader({
+    const ConsoleExporterReader = new PeriodicExportingMetricReader({
       exporter: new ConsoleMetricExporter(),
       exportIntervalMillis: EXPORT_INTERVAL,
     });
-    filigranMetricReaders.push(readerWithConsoleExporter);
+    filigranMetricReaders.push(ConsoleExporterReader);
     // OTLP Exporter
     const otlpUri = nconf.get('app:telemetry:filigran:exporter_otlp');
     if (isNotEmptyField(otlpUri)) {
-      const readerWithOtlpExporter = new PeriodicExportingMetricReader({
+      const OtlpExporterReader = new PeriodicExportingMetricReader({
         exporter: new OTLPMetricExporter({ url: otlpUri }),
         exportIntervalMillis: EXPORT_INTERVAL,
       });
-      filigranMetricReaders.push(readerWithOtlpExporter);
+      filigranMetricReaders.push(OtlpExporterReader);
     }
+    // File exporter for air gap platforms
+    const fileExporterReader = new PeriodicExportingMetricReader({
+      exporter: new FileExporter(0, FILE_EXPORTER_PATH),
+      exportIntervalMillis: EXPORT_INTERVAL,
+    });
+    filigranMetricReaders.push(fileExporterReader);
   }
   const filigranMeterProvider = new MeterProvider(({
     resource,
     readers: filigranMetricReaders,
+    views: [{
+      aggregation: new ExplicitBucketHistogramAggregation([0, 1, 2, 3]),
+      attributesProcessor: new FilteringAttributesProcessor([]),
+      instrumentSelector: new InstrumentSelector({ type: InstrumentType.HISTOGRAM }),
+      meterSelector: new MeterSelector(),
+    }],
   }));
 
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
