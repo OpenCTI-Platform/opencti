@@ -238,9 +238,9 @@ class WorkbenchFileToolbar extends Component {
                   onSubmit={this.onSubmitApplyMarking.bind(this)}
                   onReset={this.onResetApplyMarking.bind(this)}
                 >
-                  {({ submitForm, handleReset, isSubmitting }) => (
+                  {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                     <Form>
-                      <ObjectMarkingField name="objectMarking" />
+                      <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue}/>
                       <div className={classes.buttons}>
                         <Button
                           onClick={handleReset}

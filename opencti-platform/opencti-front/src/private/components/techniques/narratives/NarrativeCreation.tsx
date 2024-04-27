@@ -232,6 +232,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

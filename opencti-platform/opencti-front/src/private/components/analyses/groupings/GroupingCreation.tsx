@@ -229,6 +229,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

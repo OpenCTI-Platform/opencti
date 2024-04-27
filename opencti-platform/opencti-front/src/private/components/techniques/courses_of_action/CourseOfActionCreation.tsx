@@ -227,6 +227,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

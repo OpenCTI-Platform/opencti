@@ -228,6 +228,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               marginTop: 20,
               width: '100%',
             }}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

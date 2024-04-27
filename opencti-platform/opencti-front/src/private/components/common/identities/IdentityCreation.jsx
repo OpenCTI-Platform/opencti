@@ -210,6 +210,7 @@ class IdentityCreation extends Component {
                     <ObjectMarkingField
                       name="objectMarking"
                       style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
                     />
                   )}
                   {!dryrun && (

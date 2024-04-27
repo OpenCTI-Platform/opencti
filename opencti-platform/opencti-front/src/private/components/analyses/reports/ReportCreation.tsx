@@ -270,6 +270,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+
           />
           <ExternalReferencesField
             name="externalReferences"

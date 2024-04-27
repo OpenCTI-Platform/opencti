@@ -186,6 +186,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               marginTop: 20,
               width: '100%',
             }}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

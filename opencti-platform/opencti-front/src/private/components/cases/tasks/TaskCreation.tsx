@@ -138,7 +138,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       onReset={onClose}
       validationSchema={taskValidator}
     >
-      {({ isSubmitting, handleReset, submitForm }) => (
+      {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             style={{ marginBottom: 20 }}
@@ -168,6 +168,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <Field
             component={MarkdownField}

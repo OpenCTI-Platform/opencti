@@ -196,7 +196,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+                {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                   <Form>
                     <Dialog
                       PaperProps={{ elevation: 1 }}
@@ -247,12 +247,14 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           label={t('Content max marking definition levels')}
                           onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                           style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
                         />
                         <ObjectMarkingField
                           name="fileMarkings"
                           label={t('File marking definition levels')}
                           filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                           style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
                         />
                       </DialogContent>
                       <DialogActions>

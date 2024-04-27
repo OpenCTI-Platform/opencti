@@ -410,7 +410,7 @@ class StixNestedRefRelationshipCreation extends Component {
         validationSchema={stixNestedRefRelationshipValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
-        {({ submitForm, isSubmitting }) => (
+        {({ submitForm, isSubmitting, setFieldValue }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
@@ -478,8 +478,8 @@ class StixNestedRefRelationshipCreation extends Component {
                     color="secondary"
                     size="small"
                                          >
-                    {t('Reverse')}
-                  </Button>}
+                      {t('Reverse')}
+                    </Button>}
                 </div>
                 <div
                   className={classes.item}
@@ -567,6 +567,7 @@ class StixNestedRefRelationshipCreation extends Component {
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
               />
               <div className={classes.buttons}>
                 <Button

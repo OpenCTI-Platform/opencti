@@ -150,7 +150,7 @@ const StixCoreObjectsExportCreationComponent = ({
               }
               onReset={() => setOpen(false)}
             >
-              {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+              {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                 <Form>
                   <Dialog
                     PaperProps={{ elevation: 1 }}
@@ -193,12 +193,14 @@ const StixCoreObjectsExportCreationComponent = ({
                                 label={t_i18n('Content max marking definition levels')}
                                 onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                                 style={fieldSpacingContainerStyle}
+                                setFieldValue={setFieldValue}
                               />
                               <ObjectMarkingField
                                 name="fileMarkings"
                                 label={t_i18n('File marking definition levels')}
                                 filterTargetIds={selectedContentMaxMarkingsIds}
                                 style={fieldSpacingContainerStyle}
+                                setFieldValue={setFieldValue}
                               />
                             </DialogContent>
                           );

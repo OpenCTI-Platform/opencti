@@ -279,6 +279,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"

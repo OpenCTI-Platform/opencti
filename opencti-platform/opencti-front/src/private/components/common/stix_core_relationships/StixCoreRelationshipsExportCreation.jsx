@@ -178,7 +178,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
                       onReset={this.handleClose.bind(this)}
                     >
-                      {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
@@ -221,12 +221,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         label={t('Content max marking definition levels')}
                                         onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                         style={fieldSpacingContainerStyle}
+                                        setFieldValue={setFieldValue}
                                       />
                                       <ObjectMarkingField
                                         name="fileMarkings"
                                         label={t('File marking definition levels')}
                                         filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                         style={fieldSpacingContainerStyle}
+                                        setFieldValue={setFieldValue}
                                       />
                                     </DialogContent>
                                   );
