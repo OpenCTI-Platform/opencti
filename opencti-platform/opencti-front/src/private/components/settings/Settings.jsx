@@ -417,11 +417,7 @@ const Settings = () => {
                     </Paper>
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom={true}
-                      stye={{ float: 'left' }}
-                    >
+                    <Typography variant="h4" gutterBottom={true} stye={{ float: 'left' }}>
                       {t_i18n('OpenCTI platform')}
                     </Typography>
                     {!isEnterpriseEdition ? (

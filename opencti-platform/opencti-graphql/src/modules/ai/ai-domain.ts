@@ -51,11 +51,11 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text for any spelling mistakes and correct them accordingly.
+  - Examine the provided text for any spelling mistakes and correct them accordingly in the original language of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct.
   - If no mistake is detected, just return the original text without anything else.
   - Do NOT change the length of the text.
-  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
+  - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format and the intended content.
 
   # Content
   ${content}
@@ -71,8 +71,8 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text or the number of paragraphs.
-  - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts.
+  - Examine the provided text related to cybersecurity and cyber threat intelligence and make it shorter by dividing by 2 the size / length of the text or the number of paragraphs.
+  - Make it shorter by dividing by 2 the number of lines but you should keep the main ideas and concepts as well as original language of the text.
   - Do NOT summarize nor enumerate points.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
@@ -91,8 +91,9 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text or the number of paragraphs.
+  - Examine the provided text related to cybersecurity and cyber threat intelligence and make it longer by doubling the size / length of the text or the number of paragraphs.
   - Make it longer by doubling the number of lines by explaining concepts and developing the ideas but NOT too long, the final size should be twice the initial one.
+  - Respect the original language of the text.
   - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
@@ -112,7 +113,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
+  - Examine the provided text related to cybersecurity and cyber threat intelligence and change its tone to be more ${tone}.
   - Do NOT change the length of the text, the size of the output should be the same as the input.
   - Do NOT summarize nor enumerate points. 
   - Ensure that all words are accurately spelled and that the grammar is correct. 
@@ -132,7 +133,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and summarize it with main ideas and concepts.
+  - Examine the provided text related to cybersecurity and cyber threat intelligence and summarize it with main ideas and concepts.
   - Make it shorter and summarize key points highlighting the deep meaning of the text.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
   - Your response should match the provided content format which is ${format}. Be sure to respect this format and to NOT output anything else than the format.
@@ -151,10 +152,10 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   }
   const prompt = `
   # Instructions
-  - Examine the provided English text related to cybersecurity and cyber threat intelligence and explain it.
+  - Examine the provided text related to cybersecurity and cyber threat intelligence and explain it.
   - Popularize the text to enlighten non-specialist by explaining key concepts and overall meaning.
   - Ensure that all words are accurately spelled and that the grammar is correct. 
-  - Your response should be done in plain text english regardless of the original format.
+  - Your response should be done in plain text regardless of the original format.
 
   # Content
   ${content}
@@ -322,7 +323,7 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   - Do your best to convert even if it is challenging and not accurate.
   - Your response should be in JSON STIX 2.1 format. Just output the JSON and nothing else.
   - Always consider threat actors as intrusion sets, the bundle should not contain any threat actor.
-  - Response should only contain the JSON output with no other sentences in English nor explanation.
+  - Response should only contain the JSON output with no other sentences nor explanation.
   
   # Content
   ${filesContent.join('')}
