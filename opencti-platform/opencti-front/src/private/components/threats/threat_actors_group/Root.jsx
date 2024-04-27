@@ -6,6 +6,7 @@ import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ThreatActorGroup from './ThreatActorGroup';
@@ -122,6 +123,7 @@ class RootThreatActorGroup extends Component {
             if (props) {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
+                const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
                 return (
                   <div
                     style={{
@@ -191,6 +193,9 @@ class RootThreatActorGroup extends Component {
                           label={t('History')}
                         />
                       </Tabs>
+                      {isOverview && (
+                        <StixCoreObjectSimulationResult id={threatActorGroup.id} type="threat" />
+                      )}
                     </Box>
                     <Routes>
                       <Route

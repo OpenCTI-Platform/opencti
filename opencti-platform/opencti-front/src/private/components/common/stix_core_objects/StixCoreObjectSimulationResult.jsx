@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@mui/styles';
-import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
+import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined, ErrorOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -25,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { isEmptyField } from '../../../../utils/utils';
 import { donutChartOptions } from '../../../../utils/Charts';
-import { fileUri, QueryRenderer } from '../../../../relay/environment';
+import { extractSimpleError, fileUri, QueryRenderer } from '../../../../relay/environment';
 import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import obasLight from '../../../../static/images/xtm/obas_light.png';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -118,6 +118,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [useGenAI, setUseGenAI] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+  const [resultError, setResultError] = useState(null);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
   const { settings: { platform_openbas_url: openBASUrl } } = useAuth();
@@ -132,6 +133,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
 
   const handleCloseFinal = () => {
     setResult(null);
+    setResultError(null);
     handleClose();
   };
 
@@ -159,7 +161,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             handleClose();
           },
           onError: (error) => {
-            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setResultError(extractSimpleError(error));
             setIsSubmitting(false);
             handleClose();
           },
@@ -181,7 +183,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             handleClose();
           },
           onError: (error) => {
-            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setResultError(extractSimpleError(error));
             setIsSubmitting(false);
             handleClose();
           },
@@ -203,7 +205,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             handleClose();
           },
           onError: (error) => {
-            setResult(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setResultError(extractSimpleError(error));
             setIsSubmitting(false);
             handleClose();
           },
@@ -484,6 +486,15 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
       </>
     );
   };
+  const renderResultError = () => {
+    return (
+      <>
+        <Alert icon={<ErrorOutlined fontSize="inherit" />} severity="error">
+          {resultError}
+        </Alert>
+      </>
+    );
+  };
   return (
     <>
       <div className={classes.simulationResults}>
@@ -513,7 +524,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         {renderForm()}
       </Drawer>
       <Dialog
-        open={isSubmitting || result}
+        open={isSubmitting || result || resultError}
         PaperProps={{ elevation: 1 }}
         TransitionComponent={Transition}
         onClose={handleCloseFinal}
@@ -523,6 +534,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         <DialogContent>
           {isSubmitting && renderCooking()}
           {!isSubmitting && result && renderResult()}
+          {!isSubmitting && resultError && renderResultError()}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseFinal} disabled={isSubmitting}>{t_i18n('Close')}</Button>

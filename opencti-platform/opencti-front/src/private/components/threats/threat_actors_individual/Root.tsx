@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -92,7 +93,8 @@ const RootThreatActorIndividualComponent = ({
     ThreatActorIndividualQuery,
     queryRef,
   );
-  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
+  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
+  const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
   return (
     <>
       <Routes>
@@ -190,6 +192,9 @@ const RootThreatActorIndividualComponent = ({
                   label={t_i18n('History')}
                 />
               </Tabs>
+              {isOverview && (
+                <StixCoreObjectSimulationResult id={data.id} type="threat" />
+              )}
             </Box>
             <Routes>
               <Route

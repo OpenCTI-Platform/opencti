@@ -124,6 +124,14 @@ export const relayErrorHandling = (error, setSubmitting, onError) => {
   }
 };
 
+export const extractSimpleError = (error) => {
+  if (error && error.res && error.res.errors) {
+    const messages = buildErrorMessages(error);
+    return messages[0].text;
+  }
+  return 'Unknown error';
+};
+
 // Relay functions
 export const commitMutation = ({
   mutation,
