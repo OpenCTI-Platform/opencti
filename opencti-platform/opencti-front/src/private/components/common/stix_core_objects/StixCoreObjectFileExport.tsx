@@ -26,7 +26,7 @@ import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';

@@ -22,7 +22,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';

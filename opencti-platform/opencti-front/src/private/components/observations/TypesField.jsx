@@ -5,7 +5,7 @@ import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../components/i18n';
-import SelectField from '../../../components/SelectField';
+import SelectField from '../../../components/fields/SelectField';
 import { QueryRenderer } from '../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './stix_cyber_observables/StixCyberObservablesLines';
 

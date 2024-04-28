@@ -13,7 +13,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';

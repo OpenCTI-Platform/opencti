@@ -24,7 +24,7 @@ import FileUploader from '../../common/files/FileUploader';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../../common/files/FileManager';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';

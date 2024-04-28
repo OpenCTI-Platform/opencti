@@ -8,7 +8,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Option } from '@components/common/form/ReferenceField';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';

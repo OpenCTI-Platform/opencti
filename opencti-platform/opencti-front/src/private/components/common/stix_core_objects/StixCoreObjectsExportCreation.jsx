@@ -17,7 +17,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

@@ -2,7 +2,7 @@ import { Field, FieldProps, Formik } from 'formik';
 import React from 'react';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 
 interface MarkingDefinition {
   id: string

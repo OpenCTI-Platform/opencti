@@ -14,7 +14,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 export const BASIC_AUTH = 'basic';

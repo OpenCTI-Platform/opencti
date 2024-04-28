@@ -27,7 +27,7 @@ import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
 import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';

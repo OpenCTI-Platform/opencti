@@ -11,7 +11,7 @@ import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
 import { convertUser } from '../../../../utils/edition';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH } from './IngestionTaxiiCreation';

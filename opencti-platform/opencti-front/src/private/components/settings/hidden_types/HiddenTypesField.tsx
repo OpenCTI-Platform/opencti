@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';

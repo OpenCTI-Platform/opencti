@@ -11,7 +11,7 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 const styles = (theme) => ({
   drawerPaper: {

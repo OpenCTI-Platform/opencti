@@ -18,7 +18,7 @@ import Fab from '@mui/material/Fab';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 

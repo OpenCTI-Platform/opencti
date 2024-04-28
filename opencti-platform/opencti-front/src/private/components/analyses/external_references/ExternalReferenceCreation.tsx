@@ -17,7 +17,7 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import type { Theme } from '../../../../components/Theme';

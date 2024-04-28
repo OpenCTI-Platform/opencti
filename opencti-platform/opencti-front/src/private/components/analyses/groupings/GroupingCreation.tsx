@@ -13,7 +13,7 @@ import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -26,7 +26,7 @@ import { GroupingCreationMutation, GroupingCreationMutation$variables } from './
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import RichTextField from '../../../../components/RichTextField';
+import RichTextField from '../../../../components/fields/RichTextField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 

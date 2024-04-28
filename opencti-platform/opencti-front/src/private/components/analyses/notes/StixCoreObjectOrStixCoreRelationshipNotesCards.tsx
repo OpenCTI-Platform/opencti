@@ -22,7 +22,7 @@ import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
 import AddNotes from './AddNotes';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -33,7 +33,7 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
-import SliderField from '../../../../components/SliderField';
+import SliderField from '../../../../components/fields/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';

@@ -9,7 +9,7 @@ import { UserEdition_user$data } from '@components/settings/users/__generated__/
 import InputSliderField from '../../../../../components/InputSliderField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import SwitchField from '../../../../../components/SwitchField';
+import SwitchField from '../../../../../components/fields/SwitchField';
 import UserConfidenceLevel from '../UserConfidenceLevel';
 
 // Deprecated - https://mui.com/system/styles/basics/

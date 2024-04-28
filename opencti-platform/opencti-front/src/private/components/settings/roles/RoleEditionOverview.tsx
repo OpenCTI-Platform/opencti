@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

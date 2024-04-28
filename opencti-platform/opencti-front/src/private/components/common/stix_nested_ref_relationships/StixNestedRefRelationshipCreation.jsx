@@ -19,7 +19,7 @@ import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { truncate } from '../../../../utils/String';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';

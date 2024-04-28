@@ -23,7 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import StixNestedRefRelationCreationFromEntityLines, { stixNestedRefRelationshipCreationFromEntityLinesQuery } from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { truncate } from '../../../../utils/String';

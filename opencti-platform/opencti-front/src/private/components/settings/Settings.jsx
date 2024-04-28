@@ -19,7 +19,7 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import SelectField from '../../../components/SelectField';
+import SelectField from '../../../components/fields/SelectField';
 import Loader from '../../../components/Loader';
 import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesField from './hidden_types/HiddenTypesField';

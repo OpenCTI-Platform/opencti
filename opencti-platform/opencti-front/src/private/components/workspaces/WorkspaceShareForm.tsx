@@ -10,7 +10,7 @@ import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import SwitchField from '../../../components/SwitchField';
+import SwitchField from '../../../components/fields/SwitchField';
 
 export interface WorkspaceShareFormData {
   name: string;

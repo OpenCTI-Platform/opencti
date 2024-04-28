@@ -6,14 +6,14 @@ import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { pictureManagementUtilsMutation } from './PictureManagementUtils';
 import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
 import { PictureManagementUtilsMutation, StixDomainObjectFileEditInput } from './__generated__/PictureManagementUtilsMutation.graphql';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/

@@ -16,10 +16,10 @@ import { convertGrantableGroups } from '../organizations/SettingsOrganizationEdi
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';

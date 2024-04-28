@@ -10,7 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import RatingField from '../../../../components/RatingField';
+import RatingField from '../../../../components/fields/RatingField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';

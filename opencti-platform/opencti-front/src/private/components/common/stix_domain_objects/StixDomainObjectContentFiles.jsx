@@ -30,7 +30,7 @@ import { FileLineDeleteMutation } from '../files/FileLine';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import withHooksSettingsMessagesBannerHeight from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({

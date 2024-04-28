@@ -14,7 +14,7 @@ import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';

@@ -20,7 +20,7 @@ import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';

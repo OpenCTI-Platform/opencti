@@ -13,10 +13,10 @@ import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 /**
  * Returns true if the authorized member option is generic.

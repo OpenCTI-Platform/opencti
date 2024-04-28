@@ -29,7 +29,7 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';

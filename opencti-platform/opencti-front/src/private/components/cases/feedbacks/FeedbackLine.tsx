@@ -16,7 +16,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
-import RatingField from '../../../../components/RatingField';
+import RatingField from '../../../../components/fields/RatingField';
 import { FeedbackLine_node$data, FeedbackLine_node$key } from './__generated__/FeedbackLine_node.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/

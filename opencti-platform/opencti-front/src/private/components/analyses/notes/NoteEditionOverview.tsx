@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -19,7 +19,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
-import SliderField from '../../../../components/SliderField';
+import SliderField from '../../../../components/fields/SliderField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';

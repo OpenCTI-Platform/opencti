@@ -3,7 +3,7 @@ import { Field } from 'formik';
 import React from 'react';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import SelectField from '../../../../../../components/SelectField';
+import SelectField from '../../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperDefaultMarkingProps {

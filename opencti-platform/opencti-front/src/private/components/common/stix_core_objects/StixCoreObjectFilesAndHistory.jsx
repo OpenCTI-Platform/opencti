@@ -18,7 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleError, MESSAGING$ } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistory from './StixCoreObjectHistory';

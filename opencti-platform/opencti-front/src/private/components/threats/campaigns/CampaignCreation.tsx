@@ -13,7 +13,7 @@ import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

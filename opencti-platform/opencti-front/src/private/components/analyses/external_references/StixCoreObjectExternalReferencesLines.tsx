@@ -36,7 +36,7 @@ import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
 import ExternalReferencePopover from './ExternalReferencePopover';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { scopesConn, stixCoreObjectFilesAndHistoryAskJobImportMutation } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';

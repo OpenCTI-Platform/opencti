@@ -4,9 +4,9 @@ import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
-import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
-import { useFormatter } from './i18n';
-import MarkdownDisplay from './MarkdownDisplay';
+import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
+import { useFormatter } from '../i18n';
+import MarkdownDisplay from '../MarkdownDisplay';
 
 const MarkdownField = (props) => {
   const {

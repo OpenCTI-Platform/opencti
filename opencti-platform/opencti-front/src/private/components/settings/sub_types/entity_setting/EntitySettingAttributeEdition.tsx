@@ -10,7 +10,7 @@ import { EntitySettingAttributeEditionMembersQuery$data } from '@components/sett
 import DefaultValueField from '@components/common/form/DefaultValueField';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import SwitchField from '../../../../../components/SwitchField';
+import SwitchField from '../../../../../components/fields/SwitchField';
 import type { Scale, ScaleConfig } from '../scale_configuration/scale';
 import type { AttributeConfiguration } from './entitySetting';
 import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';

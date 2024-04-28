@@ -15,7 +15,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';

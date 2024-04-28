@@ -4,7 +4,7 @@ import Slider from '@mui/material/Slider';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
-import inject18n from './i18n';
+import inject18n from '../i18n';
 
 const SliderField = ({
   form: { setFieldValue, setFieldTouched },

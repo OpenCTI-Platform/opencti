@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
 import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';

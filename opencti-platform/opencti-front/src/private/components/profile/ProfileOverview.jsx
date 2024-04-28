@@ -20,7 +20,7 @@ import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import SelectField from '../../../components/SelectField';
+import SelectField from '../../../components/fields/SelectField';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
 import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';

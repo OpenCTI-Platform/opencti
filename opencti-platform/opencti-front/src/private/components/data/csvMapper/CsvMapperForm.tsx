@@ -17,7 +17,7 @@ import { formDataToCsvMapper } from '@components/data/csvMapper/CsvMapperUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';

@@ -18,7 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';

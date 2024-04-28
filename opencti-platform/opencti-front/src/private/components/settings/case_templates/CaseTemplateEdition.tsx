@@ -6,7 +6,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';

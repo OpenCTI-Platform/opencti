@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { FeedbackDetails_case$data, FeedbackDetails_case$key } from './__generated__/FeedbackDetails_case.graphql';
-import RatingField from '../../../../components/RatingField';
+import RatingField from '../../../../components/fields/RatingField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

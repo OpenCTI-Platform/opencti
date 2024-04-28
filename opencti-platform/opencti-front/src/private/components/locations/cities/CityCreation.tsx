@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';

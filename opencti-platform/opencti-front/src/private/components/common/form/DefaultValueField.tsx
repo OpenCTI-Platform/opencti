@@ -12,9 +12,9 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../../utils/authorizedMembers';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
-import RichTextField from '../../../../components/RichTextField';
-import SwitchField from '../../../../components/SwitchField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
+import RichTextField from '../../../../components/fields/RichTextField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 

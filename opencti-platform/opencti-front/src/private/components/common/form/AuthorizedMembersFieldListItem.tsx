@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import { Delete } from '@mui/icons-material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
-import SelectField from '../../../../components/SelectField';
+import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';

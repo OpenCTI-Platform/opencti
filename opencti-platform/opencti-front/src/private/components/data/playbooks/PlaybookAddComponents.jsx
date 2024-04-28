@@ -28,7 +28,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
-import SwitchField from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
