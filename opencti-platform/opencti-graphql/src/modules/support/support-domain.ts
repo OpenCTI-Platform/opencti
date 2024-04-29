@@ -180,22 +180,6 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
   await updateAttribute(context, user, entity.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
 };
 
-const createAndUploadTelemetry = async (context: AuthContext, user: AuthUser, entity: StoreEntitySupportPackage) => {
-  const filename = `telemetry-${new Date().getTime()}.json`;
-  const newLocalFile = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, filename);
-  fs.writeFileSync(newLocalFile, '{ \'message\': \'Telemetry not implemented yet\'}', {});
-
-  const uploadDirectory = getS3UploadFolder(entity.id);
-  logApp.info(`Sending telemetry to S3 - send to ${uploadDirectory}.`);
-  await uploadToStorage(context, user, uploadDirectory, fileToReadStream(SUPPORT_LOG_RELATIVE_LOCAL_DIR, filename, filename, 'application/json'), {});
-
-  if (cleanupFiles) {
-    if (fs.existsSync(newLocalFile)) {
-      fs.rmSync(newLocalFile, { recursive: true, force: true });
-    }
-  }
-};
-
 /**
  * Prepare support package data: creates elastic entity and compute the S3 target folder.
  * @param context
@@ -204,7 +188,6 @@ const createAndUploadTelemetry = async (context: AuthContext, user: AuthUser, en
  */
 export const prepareNewSupportPackage = async (context: AuthContext, user: AuthUser, input: SupportPackageAddInput) => {
   const settings = await getSettings(context);
-  logSupport.warn('Platform settings are:', { settings });
   logApp.info(`Starting support package generation with ${settings.platform_cluster.instances_number} nodes.`);
   const instancesNumber = settings.platform_cluster.instances_number;
 
@@ -236,9 +219,6 @@ export const addSupportPackage = async (context: AuthContext, user: AuthUser, in
   // Using  logSupport.warn on purpose to have the package date and time generation in support logs
   logSupport.warn(`Support Package ${input.name} requested`);
   const supportDataCreated = await prepareNewSupportPackage(context, user, input);
-
-  // TODO add telemetry here maybe, if not too expensive in time
-  await createAndUploadTelemetry(context, user, supportDataCreated);
 
   // for listener see supportPackageListener
   await notify(BUS_TOPICS[SUPPORT_BUS].EDIT_TOPIC, supportDataCreated, user);

@@ -8,7 +8,6 @@ node_modules
 public
 config/ssl
 config/demo.json
-config/cluster.json
 config/development.json
 config/development.json.bak
 config/production.json
