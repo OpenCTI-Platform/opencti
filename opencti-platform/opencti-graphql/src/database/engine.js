@@ -3164,7 +3164,9 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
         });
       });
       const bodyUpdate = R.flatten(bodyUpdateRaw);
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+      if (bodyUpdate.length > 0) {
+        await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+      }
     }
   }
 };
