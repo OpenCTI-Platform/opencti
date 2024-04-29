@@ -25,7 +25,7 @@ const SCHEDULE_TIME = 10000; // record telemetry data period
 const EXPORT_INTERVAL = 100000; // TODO set to 1 per day
 
 const createFiligranTelemetryMeterManager = async () => {
-  // ------- Telemetry // TODO telemetry service, wrap methods in the service
+  // ------- Telemetry // TODO telemetry service, wrap methods in a service
   let resource = Resource.default();
   const filigranMetricReaders = [];
   if (ENABLED_TELEMETRY) {

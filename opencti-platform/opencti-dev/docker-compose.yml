@@ -78,7 +78,7 @@ services:
       - "4318:4318"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector:0.96.0
+    image: otel/opentelemetry-collector-contrib:0.99.0
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -87,17 +87,6 @@ services:
     ports:
       - "1010:1010"
       - "8889:8889"
-  opencti-dev-telemetry-prometheus:
-    container_name: opencti-telemetry-prometheus
-    image: prom/prometheus
-    restart: unless-stopped
-    volumes:
-      - "./prometheus-config.yml:/etc/prometheus/prometheus-config.yml"
-    command:
-      - '--config.file=/etc/prometheus/prometheus-config.yml'
-    ports:
-      - "9090:9090"
-      - "9464:9464"
 
 volumes:
   esdata:

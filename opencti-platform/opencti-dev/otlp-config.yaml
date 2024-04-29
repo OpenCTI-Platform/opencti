@@ -13,9 +13,14 @@ processors:
 exporters:
   debug:
     verbosity: detailed
-  prometheus:
-    endpoint: 0.0.0.0:8889
-    namespace: filigran
+  awss3:
+    s3uploader:
+      region: 'eu-central-1'
+      s3_bucket: 'opencti-bucket'
+      s3_prefix: 'telemetry'
+      s3_partition: 'minute'
+      file_prefix: 'telemetry'
+      endpoint: 0.0.0.0:8889
 
 service:
 
@@ -24,6 +29,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, prometheus]
+      exporters: [debug, awss3]
 
   extensions: [health_check]
