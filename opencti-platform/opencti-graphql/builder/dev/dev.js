@@ -10,7 +10,8 @@ esbuild.build({
     entryPoints: [
         'src/back.js',
         'script/script-clean-relations.js',
-        'script/script-insert-dataset.js'
+        'script/script-insert-dataset.js',
+        'script/script-wait-for-api.js',
     ],
     entryNames: "[name]",
     bundle: true,
