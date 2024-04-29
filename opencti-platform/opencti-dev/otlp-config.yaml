@@ -16,8 +16,6 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: filigran
-  file:
-    path: /etc/outputs/oltp-output.log
 
 service:
 
