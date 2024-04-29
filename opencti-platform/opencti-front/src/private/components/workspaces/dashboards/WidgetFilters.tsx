@@ -39,23 +39,29 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     });
   }, [filters, filtersDynamicFrom, filtersDynamicTo]);
 
-  let availableEntityTypes = [
-    'Stix-Domain-Object',
-    'Stix-Cyber-Observable',
-  ];
-  let searchContext = { entityTypes: ['Stix-Core-Object'] };
+  let availableEntityTypes;
+  let searchContext;
   if (perspective === 'relationships') {
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
-    searchContext = { entityTypes: ['stix-core-relationship'] };
+    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
+  } else { // perspective = 'entities'
+    availableEntityTypes = [
+      'Stix-Domain-Object',
+      'Stix-Cyber-Observable',
+    ];
+    searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
-  const availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? [])).concat('entity_type');
+  let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
+  if (perspective !== 'relationships') {
+    availableFilterKeys = availableFilterKeys.concat('entity_type');
+  }
   const entitiesFilterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
   const entitiesFilters = uniq(Array.from(entitiesFilterKeysMap.keys() ?? []));
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
@@ -135,7 +141,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filters}
             helpers={helpers}
-            entityTypes={searchContext.entityTypes}
           />
         </>
       ) }
