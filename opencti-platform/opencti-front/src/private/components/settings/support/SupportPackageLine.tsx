@@ -45,7 +45,7 @@ const useStyles = makeStyles(() => ({
     height: 20,
     float: 'left',
     borderRadius: 4,
-    width: 80,
+    width: 120,
   },
   label: {
     whiteSpace: 'nowrap',

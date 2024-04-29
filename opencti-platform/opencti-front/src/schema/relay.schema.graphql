@@ -11542,11 +11542,9 @@ enum SupportPackageOrdering {
 }
 
 input SupportPackageAddInput {
-  name: name_String_NotNull_minLength_2!
+  name: String!
 }
 
 input SupportPackageForceZipInput {
-  id: id_String_NotNull_minLength_2!
+  id: String!
 }
-
-scalar id_String_NotNull_minLength_2

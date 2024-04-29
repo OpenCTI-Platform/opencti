@@ -104,17 +104,17 @@ const SupportPackages = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '25%',
+        width: '39%',
         isSortable: true,
       },
       package_status: {
         label: 'Status',
-        width: '25%',
+        width: '19%',
         isSortable: true,
       },
       created: {
         label: 'Date',
-        width: '25%',
+        width: '20%',
         isSortable: true,
       },
     };
