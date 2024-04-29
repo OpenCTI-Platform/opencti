@@ -8,8 +8,9 @@ import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/sti
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { RELATION_CONTAINS, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const widgetsRelationshipTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
 
@@ -64,9 +65,16 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
   return stixRelationshipId;
 };
 
+const buildValidWidgetRelationshipType = (relationship_type) => {
+  const isValidRelationshipType = isStixCoreRelationship(relationship_type)
+    || isStixSightingRelationship(relationship_type)
+    || relationship_type === RELATION_CONTAINS;
+  return isValidRelationshipType ? relationship_type : widgetsRelationshipTypes;
+};
+
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const relationship_type = args.relationship_type ?? widgetsRelationshipTypes;
+  const relationship_type = buildValidWidgetRelationshipType(args.relationship_type);
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
@@ -74,7 +82,7 @@ export const stixRelationshipsDistribution = async (context, user, args) => {
   return distributionRelations(context, context.user, dynamicArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
-  const relationship_type = args.relationship_type ?? widgetsRelationshipTypes;
+  const relationship_type = buildValidWidgetRelationshipType(args.relationship_type);
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };

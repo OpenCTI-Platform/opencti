@@ -30,7 +30,10 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
   return stixRelationshipsDistribution(context, user, { ...args, relationship_type });
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
-  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], authorId } = args;
+  const {
+    relationship_type = isStixCoreRelationship(args.relationship_type) ? args.relationship_type : [ABSTRACT_STIX_CORE_RELATIONSHIP],
+    authorId
+  } = args;
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };
