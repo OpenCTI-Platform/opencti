@@ -11,6 +11,8 @@ import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 
+const widgetsRelationshipTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
+
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
   const listEntitiesWithFilters = async (filters) => listEntities(context, user, [ABSTRACT_STIX_OBJECT], {
@@ -64,7 +66,7 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const relationship_type = args.relationship_type ?? [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
+  const relationship_type = args.relationship_type ?? widgetsRelationshipTypes;
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
@@ -72,7 +74,7 @@ export const stixRelationshipsDistribution = async (context, user, args) => {
   return distributionRelations(context, context.user, dynamicArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
-  const relationship_type = args.relationship_type ?? [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
+  const relationship_type = args.relationship_type ?? widgetsRelationshipTypes;
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };
