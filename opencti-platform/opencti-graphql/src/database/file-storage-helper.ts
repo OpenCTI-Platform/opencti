@@ -54,7 +54,7 @@ export const EXPORT_STORAGE_PATH = 'export';
 export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
 
 /**
- * Delete all files in storage that a related to an element.
+ * Delete all files in storage that relates to an element.
  * @param context
  * @param user
  * @param element
