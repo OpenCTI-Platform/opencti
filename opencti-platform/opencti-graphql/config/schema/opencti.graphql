@@ -12673,9 +12673,9 @@ type Mutation {
   workDelete(connectorId: String!): Boolean @auth(for: [CONNECTORAPI, MODULES_MODMANAGE])
 
   ### TASK
-  deleteBackgroundTask(id: ID!): ID!
-  listTaskAdd(input: ListTaskAddInput!): BackgroundTask!
-  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask!
+  deleteBackgroundTask(id: ID!): ID! @auth
+  listTaskAdd(input: ListTaskAddInput!): BackgroundTask! @auth
+  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth
 
   ### RETENTION RULE
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])
@@ -12762,7 +12762,7 @@ type Mutation {
     filters: FilterGroup
     selectedIds: [String]
   ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixDomainObjectsDelete(id: [ID]!): [ID]!
+  stixDomainObjectsDelete(id: [ID]!): [ID]! @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
@@ -12865,14 +12865,14 @@ Credential: CredentialAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
+  stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   artifactImport(
     file: Upload!
     x_opencti_description: String
     createdBy: String
     objectMarking: [String]
     objectLabel: [String]
-  ): Artifact
+  ): Artifact @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX RELATIONSHIPS
   stixRelationshipEdit(id: ID!): StixRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
