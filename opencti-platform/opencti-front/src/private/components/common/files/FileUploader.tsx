@@ -12,33 +12,33 @@ import { FileUploaderGlobalMutation$data } from './__generated__/FileUploaderGlo
 import FileImportMarkingSelectionPopup from './FileImportMarkingSelectionPopup';
 
 const fileUploaderGlobalMutation = graphql`
-    mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
-        uploadImport(file: $file, fileMarkings: $fileMarkings) {
-            id
-            ...FileLine_file
-        }
+  mutation FileUploaderGlobalMutation($file: Upload!, $fileMarkings: [String]) {
+    uploadImport(file: $file, fileMarkings: $fileMarkings) {
+      id
+      ...FileLine_file
     }
+  }
 `;
 
 const fileUploaderEntityMutation = graphql`
-    mutation FileUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]) {
-        stixCoreObjectEdit(id: $id) {
-            importPush(file: $file, fileMarkings: $fileMarkings) {
-                id
-                ...FileLine_file
-                metaData {
-                    entity {
-                        ... on StixObject {
-                            id
-                        }
-                        ... on StixDomainObject {
-                            ...PictureManagementViewer_entity
-                        }
-                    }
-                }
+  mutation FileUploaderEntityMutation($id: ID!, $file: Upload!, $fileMarkings: [String]) {
+    stixCoreObjectEdit(id: $id) {
+      importPush(file: $file, fileMarkings: $fileMarkings) {
+        id
+        ...FileLine_file
+        metaData {
+          entity {
+            ... on StixObject {
+              id
             }
+            ... on StixDomainObject {
+              ...PictureManagementViewer_entity
+            }
+          }
         }
+      }
     }
+  }
 `;
 
 interface FileUploaderProps {

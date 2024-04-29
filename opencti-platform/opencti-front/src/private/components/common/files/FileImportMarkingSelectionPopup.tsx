@@ -30,7 +30,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
   };
 
   return (
-    <div>
+    <>
       <Formik
         enableReinitialize={true}
         initialValues={{
@@ -70,7 +70,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
           </Dialog>
         )}
       </Formik>
-    </div>
+    </>
   );
 };
 
