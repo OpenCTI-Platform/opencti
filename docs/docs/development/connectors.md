@@ -29,7 +29,7 @@ After you've selected your connector type make yourself familiar with STIX2 and 
 
 ### Environment Setup
 
-To develop and test your connector, you need a running OpenCTI instance with the frontend and the messaging broker accessible. If you don't plan on developing anything for the OpenCTI platform or the frontend, the easiest setup for the connector development is using the docker setup, For more details see [here](https://www.notion.so/Installation-and-upgrade-e59072a3d8d542a3a7c1439d1adfc75e?pvs=21).
+To develop and test your connector, you need a running OpenCTI instance with the frontend and the messaging broker accessible. If you don't plan on developing anything for the OpenCTI platform or the frontend, the easiest setup for the connector development is using the docker setup, For more details see [here](https://docs.opencti.io/latest/deployment/connectors/).
 
 ### Coding Setup
 
@@ -99,7 +99,12 @@ Required changes:
 - [ ]  Change `Template` or `template`mentions to your connector name e.g. `ImportCsv` or `importcsv`
 - [ ]  Change `TEMPLATE` mentions to your connector name e.g. `IMPORTCSV`
 - [ ]  Change `Template_Scope` mentions to the required scope of your connector. For processing imported files, that can be the Mime type e.g. `application/pdf` or for enriching existing information in OpenCTI, define the STIX object's name e.g. `Report`. Multiple scopes can be separated by a simple `,`
-- [ ]  Change `Template_Type` to the connector type you wish to develop. The OpenCTI types (OpenCTI flags) are defined in this [table](https://www.notion.so/6604ab4b1c3a484f9e3e545cfbad3d7a?pvs=21).
+- [ ]  Change `Template_Type` to the connector type you wish to develop. The OpenCTI types are defined hereafter:
+    - EXTERNAL_IMPORT
+    - INTERNAL_ENRICHMENT
+    - INTERNAL_EXPORT_FILE
+    - INTERNAL_IMPORT_FILE 
+    - STREAM
 
 ## Development
 
