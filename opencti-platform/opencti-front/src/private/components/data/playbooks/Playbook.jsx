@@ -105,10 +105,9 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
       />
       <PlaybookHeader playbook={playbook} />
       <ErrorBoundary
-        display={
-          <div style={{ paddingTop: 28 }}>
-            <SimpleError />
-          </div>
+        display={(errorData) => <div style={{ paddingTop: 28 }}>
+          <SimpleError errorData={errorData}/>
+        </div>
         }
       >
         <div className={classes.container} style={{ width, height }}>

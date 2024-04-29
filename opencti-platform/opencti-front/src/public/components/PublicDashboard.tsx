@@ -99,10 +99,9 @@ const PublicDashboardComponent = ({
             }}
           >
             <ErrorBoundary
-              display={
-                <div style={{ paddingTop: 28 }}>
-                  <SimpleError />
-                </div>
+              display={(errorData: unknown) => <div style={{ paddingTop: 28 }}>
+                <SimpleError errorData={errorData}/>
+              </div>
               }
             >
               {widget.perspective === 'entities' && entityWidget(widget)}

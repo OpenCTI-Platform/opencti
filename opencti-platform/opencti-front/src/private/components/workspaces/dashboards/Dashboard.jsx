@@ -808,10 +808,9 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               />
               )}
               <ErrorBoundary
-                display={
-                  <div style={{ paddingTop: 28 }}>
-                    <SimpleError/>
-                  </div>
+                display={(errorData) => <div style={{ paddingTop: 28 }}>
+                  <SimpleError errorData={errorData}/>
+                </div>
                   }
               >
                 {widget.perspective === 'entities'
