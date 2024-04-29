@@ -303,21 +303,16 @@ const auditLogger = winston.createLogger({
 // Setup support logs
 export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
 export const SUPPORT_LOG_FILE_PREFIX = 'support';
-const supportLogTransports = [];
-supportLogTransports.push(
-  new DailyRotateFile({
+const supportLogger = winston.createLogger({
+  level: 'warn',
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  transports: [new DailyRotateFile({
     filename: SUPPORT_LOG_FILE_PREFIX,
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
     level: 'warn'
-  })
-);
-
-const supportLogger = winston.createLogger({
-  level: 'warn',
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
-  transports: supportLogTransports,
+  })],
 });
 
 // Specific case to fail any test that produce an error log
