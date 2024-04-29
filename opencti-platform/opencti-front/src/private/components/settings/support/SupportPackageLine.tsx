@@ -154,12 +154,14 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
       onCompleted: () => {
         // Check if there is a valid URL and initiate download
         if (data.package_url) {
-          MESSAGING$.notifySuccess(
-            'Force zip launched. Your download will start shortly.',
-          );
+          MESSAGING$.notifySuccess(() => {
+            t_i18n('Force zip launched. Your download will start shortly.');
+          });
           window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.package_url)}`;
         } else {
-          MESSAGING$.notifyError('No download URL available.');
+          MESSAGING$.notifyError(() => {
+            t_i18n('No download URL available.');
+          });
         }
       },
     });

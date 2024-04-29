@@ -19,7 +19,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
-import { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
+import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles<Theme>(() => ({
@@ -142,12 +142,7 @@ const SupportPackages = () => {
   };
 
   return (
-    <Security
-      needs={[KNOWLEDGE]}
-      placeholder={<>{t_i18n(
-        'You do not have any access to the knowledge of this OpenCTI instance.',
-      )}</>}
-    >
+    <Security needs={[SETTINGS]} placeholder={<>{t_i18n('You do not have any access to the knowledge of this OpenCTI instance.')}</>}>
       <div className={classes.container}>
         <Breadcrumbs variant="list"
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
