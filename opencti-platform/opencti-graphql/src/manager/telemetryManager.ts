@@ -51,7 +51,7 @@ const createFiligranTelemetryMeterManager = async () => {
     const otlpUri = nconf.get('app:telemetry:filigran:exporter_otlp');
     if (isNotEmptyField(otlpUri)) {
       const OtlpExporterReader = new PeriodicExportingMetricReader({
-        exporter: new OTLPMetricExporter({ url: otlpUri }),
+        exporter: new OTLPMetricExporter({ url: otlpUri, temporalityPreference: 0 }),
         exportIntervalMillis: EXPORT_INTERVAL,
       });
       filigranMetricReaders.push(OtlpExporterReader);
