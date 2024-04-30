@@ -58,6 +58,17 @@ export const createHttpClient = (email?: string, password?: string) => {
   }));
 };
 
+export const createUnauthenticatedClient = () => {
+  const jar = new CookieJar();
+  return wrapper(axios.create({
+    jar,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  }));
+};
+
 export const executeExternalQuery = async (client: AxiosInstance, uri: string, query: unknown, variables = {}) => {
   const response = await client.post(uri, { query, variables }, { withCredentials: true });
   const { data } = response.data;
