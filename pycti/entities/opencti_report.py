@@ -466,6 +466,19 @@ class Report:
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "report--" + id
 
+    @staticmethod
+    def generate_fixed_fake_id(name, published=None):
+        name = name.lower().strip()
+        if isinstance(published, datetime.datetime):
+            published = published.isoformat()
+        if published is not None:
+            data = {"name": name, "published": published, "fake": "fake"}
+        else:
+            data = {"name": name, "fake": "fake"}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "report--" + id
+
     """
         List Report objects
 
