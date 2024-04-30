@@ -44,7 +44,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
             closePopup();
           }}
           >
-            <DialogTitle>{t_i18n('Select file marking définitions')}</DialogTitle>
+            <DialogTitle>{t_i18n('Select file marking definitions')}</DialogTitle>
             <DialogContent>
               <ObjectMarkingField
                 name="fileMarkings"
