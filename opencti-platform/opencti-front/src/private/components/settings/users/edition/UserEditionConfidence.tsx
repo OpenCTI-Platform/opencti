@@ -107,7 +107,27 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
 
   const handleSubmitOverride = (index: number, value: OverrideFormData | null) => {
     const name = `overrides[${index}]`;
-    if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
+    if (!user.user_confidence_level) {
+      // If there is no user_confidence_level defined and value is provided, initialize it with an override
+      if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
+        commitFieldPatch({
+          variables: {
+            id: user.id,
+            input: {
+              key: 'user_confidence_level',
+              value: {
+                max_confidence: null, // Initialize max_confidence as null
+                overrides: [{
+                  entity_type: value.entity_type,
+                  max_confidence: parseInt(value.max_confidence ?? '0', 10),
+                }],
+              },
+            },
+          },
+        });
+      }
+    } else if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
+      // If user_confidence_level already exists, just update or add the override
       userConfidenceValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -126,7 +146,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
           });
         })
         .catch(() => false);
-    } else {
+    } else if (!isNotEmptyField(value)) {
       commitFieldPatch({
         variables: {
           id: user.id,
