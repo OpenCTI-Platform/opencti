@@ -680,6 +680,9 @@ class OpenCTIStix2:
 
                         author = self.resolve_author(title)
                         report = self.opencti.report.create(
+                            id=self.opencti.report.generate_fixed_fake_id(
+                                title, published
+                            ),
                             name=title,
                             createdBy=author["id"] if author is not None else None,
                             objectMarking=[object_marking_ref_result["id"]],
