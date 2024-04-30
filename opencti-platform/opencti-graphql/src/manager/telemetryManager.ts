@@ -22,7 +22,7 @@ import { MetricFileExporter } from '../config/MetricFileExporter';
 
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000; // record telemetry data period
-const EXPORT_INTERVAL = 100000; // TODO set to 1 per day
+const EXPORT_INTERVAL = 100000; // export data period TODO set to 1 per day
 
 const createFiligranTelemetryMeterManager = async () => {
   // ------- Telemetry // TODO telemetry service, wrap methods in a service

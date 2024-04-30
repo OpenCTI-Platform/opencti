@@ -320,8 +320,8 @@ export const TELEMETRY_LOG_FILE_SUFFIX = 'telemetry.log';
 const telemetryLogTransports = [new DailyRotateFile({
   dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
   filename: TELEMETRY_LOG_FILE_SUFFIX,
-  maxFiles: 7,
-  maxSize: '10m',
+  maxFiles: 2,
+  maxSize: '10k',
   level: 'info',
 })];
 const telemetryLogger = winston.createLogger({
