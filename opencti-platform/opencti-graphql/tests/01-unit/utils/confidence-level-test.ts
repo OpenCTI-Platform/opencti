@@ -177,14 +177,7 @@ describe('Confidence level utilities', () => {
       groups: [groupNull, groupNull],
       capabilities: []
     };
-    expect(computeUserEffectiveConfidenceLevel(userK as unknown as AuthUser)).toEqual({
-      max_confidence: null,
-      source: null,
-      overrides: [
-        { entity_type: 'Report', max_confidence: 50 },
-        { entity_type: 'Malware', max_confidence: 35 }
-      ],
-    });
+    expect(computeUserEffectiveConfidenceLevel(userK as unknown as AuthUser)).toEqual(null);
   });
 });
 

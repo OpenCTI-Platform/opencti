@@ -96,7 +96,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
     if (isEmptyField(override.entity_type)) {
       return `${number} ${t_i18n('New override of an entity')}`;
     }
-    const label = `${t_i18n(`entity_${override.entity_type}`)}`;
+    const label = `${t_i18n(`entity_${override.entity_type}`)}: ${override.max_confidence}`;
     return `${number} ${label[0].toUpperCase()}${label.slice(1)}`;
   };
 

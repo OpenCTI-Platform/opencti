@@ -1472,6 +1472,7 @@
   "Matches all indicator main observable types if none is listed.": "Correspond à tous les types d'observables principaux des indicateurs si aucun n'est listé.",
   "Matrix view": "Vue matricielle",
   "Max Confidence": "Confiance max",
+  "Max Confidence is overridden for some entity types:": "La confiance max est surchargée pour certains types d'entités :",
   "Max Confidence Level": "Niveau de confiance maximal",
   "Max Confidence Level:": "Niveau de confiance maximum :",
   "Max file size (in MB)": "Taille maximale du fichier (en Mo)",

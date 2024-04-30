@@ -48,8 +48,8 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const { t_i18n } = useFormatter();
   const finalLabel = label || t_i18n('Confidence level');
   const classes = useStyles();
-  const { effectiveConfidenceLevel } = useConfidenceLevel();
-  const getConfidenceLevel = effectiveConfidenceLevel(entityType);
+  const { getEffectiveConfidenceLevel } = useConfidenceLevel();
+  const getConfidenceLevel = getEffectiveConfidenceLevel(entityType);
   return (
     <Alert
       classes={{ root: classes.alert, message: classes.message }}
