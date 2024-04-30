@@ -778,7 +778,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           {R.values(manifest.widgets).map((widget) => {
             let mainEntityTypes = ['Stix-Core-Object'];
             if (widget.perspective === 'relationships') {
-              mainEntityTypes = ['Stix-Core-Object', 'stix-core-relationship'];
+              mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
             } else if (widget.perspective === 'audits') {
               mainEntityTypes = ['History'];
             }

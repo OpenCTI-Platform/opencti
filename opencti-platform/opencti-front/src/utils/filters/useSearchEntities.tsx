@@ -744,7 +744,7 @@ const useSearchEntities = ({
                 ...result,
               ];
             }
-            // push the relationship types
+            // push the stix core relationships types
             if (
               !availableEntityTypes
               || availableEntityTypes.includes('stix-core-relationship')
@@ -756,10 +756,33 @@ const useSearchEntities = ({
                   type: n.label,
                 })),
                 ...result,
+              ];
+            }
+            // push the sighting relationship
+            if (
+              !availableEntityTypes
+              || availableEntityTypes.includes('stix-sighting-relationship')
+            ) {
+              result = [
+                ...result,
                 {
                   label: t_i18n('relationship_stix-sighting-relationship'),
                   value: 'stix-sighting-relationship',
                   type: 'stix-sighting-relationship',
+                },
+              ];
+            }
+            // push the 'contains' relationship
+            if (
+              !availableEntityTypes
+              || availableEntityTypes.includes('contains')
+            ) {
+              result = [
+                ...result,
+                {
+                  label: t_i18n('relationship_object'),
+                  value: 'object',
+                  type: 'stix-internal-relationship',
                 },
               ];
             }
@@ -768,26 +791,16 @@ const useSearchEntities = ({
           }
           break;
         case 'relationship_type': {
-          if (availableRelationshipTypes && !isSubKey) { // if relationship_type is the subKey of regarding_of, we always display all the relationship types
-            const relationshipsTypes = availableRelationshipTypes
+          let relationshipsTypes: { label: string, value: string, type: string }[] = [];
+          if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
+            relationshipsTypes = availableRelationshipTypes
               .map((n) => ({
                 label: t_i18n(`relationship_${n.toString()}`),
                 value: n,
                 type: n,
-              }))
-              .sort((a, b) => a.label.localeCompare(b.label));
-            unionSetEntities(filterKey, relationshipsTypes);
-          } else if (searchContext.entityTypes.length === 1 && searchContext.entityTypes[0] === 'stix-core-relationship' && !isSubKey) {
-            const relationshipsTypes = (schema.scrs ?? [])
-              .map((n) => ({
-                label: t_i18n(`relationship_${n.label}`),
-                value: n.label,
-                type: n.label,
-              }))
-              .sort((a, b) => a.label.localeCompare(b.label));
-            unionSetEntities(filterKey, relationshipsTypes);
-          } else {
-            const relationshipsTypes = (schema.scrs ?? [])
+              }));
+          } else if (isSubKey || !searchContext.entityTypes) { // if relationship_type is the subKey of regarding_of, we always display all the relationship types
+            relationshipsTypes = (schema.scrs ?? [])
               .map((n) => ({
                 label: t_i18n(`relationship_${n.label}`),
                 value: n.label,
@@ -804,10 +817,39 @@ const useSearchEntities = ({
                   value: 'object',
                   type: 'stix-internal-relationship',
                 },
-              ])
-              .sort((a, b) => a.label.localeCompare(b.label));
-            unionSetEntities(filterKey, relationshipsTypes);
+              ]);
+          } else { // display relationship types according to searchContext.entityTypes
+            const { entityTypes } = searchContext;
+            if (entityTypes.includes('stix-core-relationship')) {
+              relationshipsTypes = (schema.scrs ?? [])
+                .map((n) => ({
+                  label: t_i18n(`relationship_${n.label}`),
+                  value: n.label,
+                  type: n.label,
+                }));
+            }
+            if (entityTypes.includes('stix-sighting-relationship')) {
+              relationshipsTypes = [
+                ...relationshipsTypes,
+                {
+                  label: t_i18n('relationship_stix-sighting-relationship'),
+                  value: 'stix-sighting-relationship',
+                  type: 'stix-sighting-relationship',
+                },
+              ];
+            }
+            if (entityTypes.includes('contains')) {
+              relationshipsTypes = [
+                ...relationshipsTypes,
+                {
+                  label: t_i18n('relationship_object'),
+                  value: 'object',
+                  type: 'stix-internal-relationship',
+                },
+              ];
+            }
           }
+          unionSetEntities(filterKey, relationshipsTypes.sort((a, b) => a.label.localeCompare(b.label)));
           break;
         }
         case 'x_opencti_main_observable_type':
