@@ -39,7 +39,6 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import { convertMarking } from '../../../../utils/edition';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { ConsoleLine } from 'mdi-material-ui';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -231,7 +230,7 @@ const StixCyberObservableCreation = ({
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
-
+  // const [show, setShow] = useState(false);
   const handleOpen = () => setStatus({ open: true, type: status.type });
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
@@ -251,7 +250,6 @@ const StixCyberObservableCreation = ({
 
     if (adaptedValues) { // Verify not null for DeepScan compliance
       // Bulk Add Modal was used
-      console.log("adaptedValues " + adaptedValues.value);
       if (adaptedValues.value && adaptedValues.bulk_value_field && adaptedValues.value === bulkAddMsg) {
         const array_of_bulk_values = adaptedValues.bulk_value_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
@@ -262,40 +260,32 @@ const StixCyberObservableCreation = ({
         adaptedValues.value = [...new Set(cleaned_bulk_values)].join('\n');
       }
 
-      // Making the values from the form readable
-      // Bulk Add Dialog was used
-      console.log("bulkAddDialog: adaptedValues.bulk_hashes_field " + adaptedValues.bulk_hashes_field);
-      console.log('bulkAddDialog: adaptedValues.value ' + adaptedValues.value);
-
-      console.log(typeof hashesList);
-
       if (adaptedValues.bulk_hashes_field && adaptedValues.name === bulkAddMsg) {
         const array_of_bulk_hashes = adaptedValues.bulk_hashes_field.split(/\r?\n/);
         // Trim them just to remove any extra spacing on front or rear of string
         const trimmed_bulk_hashes = array_of_bulk_hashes.map((s) => s.trim());
         // Remove any "" or empty resulting elements
         const cleaned_bulk_hashes = trimmed_bulk_hashes.reduce((elements, i) => (i ? [...elements, i] : elements), []);
-        console.log('cleaned_bulk_hashes ' + cleaned_bulk_hashes);
         // De-duplicate by unique then rejoin
         hashesList = [...new Set(cleaned_bulk_hashes)];
-        console.log(typeof hashesList);
 
         delete adaptedValues.hashes_MD5;
         delete adaptedValues['hashes_SHA-1'];
         delete adaptedValues['hashes_SHA-256'];
         delete adaptedValues['hashes_SHA-512'];
+        delete adaptedValues.name;
+        // on failure, do we want to have the values disabled and deleted, or just disabled, or enabled and deleted?
 
-//delete string values from the adaptedValues.hashes_MD5 || adaptedValues['hashes_SHA-1'] || adaptedValues['hashes_SHA-256'] || adaptedValues['hashes_SHA-512']
+        // delete string values from the adaptedValues.hashes_MD5 || adaptedValues['hashes_SHA-1'] || adaptedValues['hashes_SHA-256'] || adaptedValues['hashes_SHA-512']
 
-        console.log('adaptedValues.value after cleaned_bulk_hashes ' + adaptedValues.value);
+        console.log(`adaptedValues.value after cleaned_bulk_hashes ${adaptedValues.value}`);
         console.log('adaptedValues.value table below');
         console.table(adaptedValues.value);
         console.log('hashesList table below');
         console.table(hashesList);
       }
 
-      //commitStixCyberObservable using stixFileMutation
-
+      // commitStixCyberObservable using stixFileMutation
 
       // Adding those readable values back into the StixFileObservables
       // Potential dicts
@@ -323,10 +313,6 @@ const StixCyberObservableCreation = ({
             algorithm: 'SHA-256',
             hash: adaptedValues['hashes_SHA-256'],
           });
-
-          console.log('adaptedValues.hashes.length ' + adaptedValues.hashes.length);
-          console.log('adaptedValues.hashes table below');
-          console.table(adaptedValues.hashes);
         }
         if (adaptedValues['hashes_SHA-512'].length > 0) {
           adaptedValues.hashes.push({
@@ -334,11 +320,6 @@ const StixCyberObservableCreation = ({
             hash: adaptedValues['hashes_SHA-512'],
           });
         }
-        // delete adaptedValues.hashes_MD5;
-        // delete adaptedValues['hashes_SHA-1'];
-        // delete adaptedValues['hashes_SHA-256'];
-        // delete adaptedValues['hashes_SHA-512'];
-        //consider removing the adaptedValues.hashes at this point
       }
       adaptedValues = pipe(
         dissoc('x_opencti_description'),
@@ -386,43 +367,33 @@ const StixCyberObservableCreation = ({
         finalValues.file = values.file;
       }
 
-      console.log('adaptedValues.hashes table below');
-      console.table(adaptedValues.hashes);
+      // Create a new stixCyberObservable for each input of the bulk_hashes_field (each line gets a new stixCyberObservable)
 
-      console.log('hashesList table below, before const commit');
-      console.table(hashesList);
+      // trim and get each individual line from the bulk_hashes_field
 
-      //Create a new stixCyberObservable for each input of the bulk_hashes_field (each line gets a new stixCyberObservable)
+      // hashes is an array of one object
 
-      //trim and get each individual line from the bulk_hashes_field
+      // key = algorithm; value = hash
 
-      //hashes is an array of one object
-
-      //key = algorithm; value = hash
-
-      //pass the form information into each of the new stixCyberObservables (things that arent the hashes+name)
+      // pass the form information into each of the new stixCyberObservables (things that arent the hashes+name)
 
       const error_array = [];
       let validObservables = 0;
       const commit = async () => {
-        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; //List of the inputs
+        const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; // List of the inputs
         const algorithm = selectedAttribute.toLowerCase();
-        //if (hashList) {
-        //do similar to valueList but with hashes
-        //add each individual line from the bulk_hashes_field into the new stixCyberObservable
-
-        console.log(typeof hashesList);
-
         if (hashesList) {
-          console.log('in hashesList if');
-          console.log('hashesList table below');
-          console.table(hashesList);
-          console.log(typeof hashesList);
           const promises = hashesList.map((hash) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
             variables: {
               ...finalValues,
-              [observableType]: { hashes: [{ algorithm, hash }] }, //StixFile
+              [observableType]: {
+                hashes: [
+                  {
+                    hash,
+                    algorithm,
+                  }],
+              },
             },
             updater: (store) => insertNode(
               store,
@@ -451,7 +422,7 @@ const StixCyberObservableCreation = ({
           });
           const totalObservables = hashesList.length;
           let closeFormWithAnySuccess = false;
-          console.log('error_array.length ' + error_array.length);
+          console.log(`error_array.length ${error_array.length}`);
           console.log('error array below');
           console.table(error_array);
           if (error_array.length > 0) {
@@ -485,12 +456,11 @@ const StixCyberObservableCreation = ({
           }
         }
         if (valueList) {
-          console.log('in valueList if');
           const promises = valueList.map((value) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
             variables: {
               ...finalValues,
-              [observableType]: { value }, //StixFile
+              [observableType]: { value }, // StixFile
             },
             updater: (store) => insertNode(
               store,
@@ -629,25 +599,21 @@ const StixCyberObservableCreation = ({
       if (hashes_MD5_field != null && hashes_MD5_field.value != null
         && hashes_MD5_field.value.length > 0 && hashes_MD5_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('bulkAddDialog: hashes_MD5');
         props.hashes.push('hashes_MD5', hashes_MD5_field.value.trim());
       }
       if (hashes_SHA1_field != null && hashes_SHA1_field.value != null
         && hashes_SHA1_field.value.length > 0 && hashes_SHA1_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('bulkAddDialog: hashes_SHA-1');
         props.hashes.push('hashes_SHA-1', hashes_SHA1_field.value.trim());
       }
       if (hashes_SHA256_field != null && hashes_SHA256_field.value != null
         && hashes_SHA256_field.value.length > 0 && hashes_SHA256_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('bulkAddDialog: hashes_SHA-256');
         props.hashes.push('hashes_SHA-256', hashes_SHA256_field.value.trim());
       }
       if (hashes_SHA512_field != null && hashes_SHA512_field.value != null
         && hashes_SHA512_field.value.length > 0 && hashes_SHA512_field.value !== bulkAddMsg) {
         // Trim the field to avoid inserting whitespace as a default population value
-        console.log('bulkAddDialog: hashes_SHA-512');
         props.hashes.push('hashes_SHA-512', hashes_SHA512_field.value.trim());
       }
       setOpenBulkAddDialog(true);
@@ -658,7 +624,6 @@ const StixCyberObservableCreation = ({
       const bulk_hashes_field = document.getElementById('bulk_hashes_field');
 
       if (bulk_hashes_field != null && bulk_hashes_field.value != null && bulk_hashes_field.value.length > 0) {
-        console.log('handleCloseBulkAddDialog: bulk_hashes_field.value ' + bulk_hashes_field.value);
         props.setValue('hashes_MD5', bulkAddMsg);
         props.setValue('hashes_SHA-1', bulkAddMsg);
         props.setValue('hashes_SHA-256', bulkAddMsg);
@@ -699,16 +664,16 @@ const StixCyberObservableCreation = ({
           onClose={handleCloseBulkAddDialog}
           fullWidth={true}
         >
-          <DialogContent style={{ marginTop: 0, paddingTop: 10 }}>
+          <DialogContent style={{ marginTop: 0, paddingTop: 10 }} closeOnEscape={false}>
             <form name="formSelectAttributes" id="formSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }} action="/action_page.php">
               {t_i18n('Create Entities from multiple')}:
               <select name="attributes" id="attributes" onSelect={getOption} onChange={handleSelectChange}>
-                <option selected disabled>Select attribute</option>
+                <option value="Selected" disabled>Select attribute</option>
                 <option value="NAME">name</option>
                 <option value="MD5">md5</option>
-                <option value="SHA1">sha1</option>
-                <option value="SHA256">sha256</option>
-                <option value="SHA512">sha512</option>
+                <option value="SHA-1">sha1</option>
+                <option value="SHA-256">sha256</option>
+                <option value="SHA-512">sha512</option>
               </select>
             </form>
             <Typography style={{ float: 'left', marginTop: 10 }}>
@@ -827,8 +792,12 @@ const StixCyberObservableCreation = ({
   BulkAddModal.propTypes = {
     setValue: PropTypes.func,
   };
-
+  let stixFileBoolean = false;
   const renderForm = () => {
+    if (status.type === 'StixFile') {
+      stixFileBoolean = true;
+      console.log('in if statement with stixFile');
+    }
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
@@ -895,7 +864,7 @@ const StixCyberObservableCreation = ({
                       margin: contextual ? '10px 0 0 0' : '20px 0 20px 0',
                     }}
                   >
-                    <div style={(divRowStyle)}>
+                    {stixFileBoolean && <div id="hiddenDiv" style={(divRowStyle)}>
                       <p>{t_i18n('Create a single observable or multiple with ')}</p>
                       <Tooltip title="Copy/paste text content">
                         <BulkAddDialog
@@ -903,6 +872,7 @@ const StixCyberObservableCreation = ({
                         />
                       </Tooltip>
                     </div>
+                    }
                     <div>
                       <Field
                         component={TextField}
