@@ -5,13 +5,13 @@ even for people that are outside of the platform. We call those visualisations: 
 
 Public dashboards are a snapshot of a custom dashboard at a specific moment of time. 
 By this way you can share a version of a custom dashboard, then modify your custom dashboard
-without worrying about that it will affect the public dashboards you have created.
+without worrying about the impact on public dashboards you have created.
 
 On the contrary, if you want that your public dashboard is updated with the last version of the
 associated custom dashboard, you can do it with few clicks by recreating a public dashboard using
 the same name of the one to update.
 
-> To be able to share custom dashboards you need to have the associated capability.
+> To be able to share custom dashboards you need to have the [Manage data sharing & ingestion](../administration/users.md) capability.
 
 ## Create a public dashboard
 

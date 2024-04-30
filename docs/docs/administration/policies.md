@@ -68,7 +68,7 @@ we allow to share data externally.
 > For now this max marking definitions is used only for Public dashboard.
 
 For example in the capture below, for the type of marking `TLP`, only data  with a marking
-definition with a level equal or below `GREEN` will be shared. And no data with marking
+definition with a level equal or below `GREEN` will be shareable through Public Dashboard. And no data with marking
 definition `statement` will be shared at all.
 
 ![Maximum marking definitions shareable](./assets/max-marking-shareable.png)
