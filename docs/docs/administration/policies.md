@@ -63,3 +63,16 @@ This configuration has two parameters:
 - Platform banner text: Field referencing the message to be displayed within the banner.
 
 ![Platform Banner](./assets/platform_banner.png)
+
+### Maximum marking definitions shareable
+
+This configuration allows to define, for each type of marking definitions, until which level
+we allow to share data externally.
+
+> For now this max marking definitions is used only for Public dashboard.
+
+For example in the capture below, for the type of marking `TLP`, only data  with a marking
+definition with a level equal or below `GREEN` will be shareable through Public Dashboard. And no data with marking
+definition `statement` will be shared at all.
+
+![Maximum marking definitions shareable](./assets/max-marking-shareable.png)
