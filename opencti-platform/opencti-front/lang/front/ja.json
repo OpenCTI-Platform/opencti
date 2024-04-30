@@ -1471,7 +1471,7 @@
   "Max marking definitions override...": "あなたが定義したマーキング定義の最大値は、管理者が設定したものよりも高くなります。それらは",
   "Max retention": "最大保持数",
   "Maximum": "最大値",
-  "Maximum marking definition allowed to be shared": "共有可能なマーキング定義の上限",
+  "Maximum marking definition allowed to be shared for public dashboard": "公開ダッシュボードで共有できるマーキング定義の最大値",
   "Maximum retention days": "最大保持日数",
   "Med": "中くらい",
   "MEDIUM": "中",

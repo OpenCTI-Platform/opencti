@@ -1471,7 +1471,7 @@
   "Max marking definitions override...": "Les définitions de marquage maximales que vous avez définies sont supérieures à celles configurées par l'administrateur. Elles seront remplacées par :",
   "Max retention": "Rétention maximum",
   "Maximum": "Maximum",
-  "Maximum marking definition allowed to be shared": "Définition de marquage maximale autorisée à être partagée",
+  "Maximum marking definition allowed to be shared for public dashboard": "Définition maximale du marquage autorisée à être partagée pour le tableau de bord public",
   "Maximum retention days": "Jours de rétention maximum",
   "Med": "Moyen",
   "MEDIUM": "MOYEN",
