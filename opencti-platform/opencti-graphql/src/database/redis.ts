@@ -445,7 +445,7 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
       && 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba' in currentStix.extensions
       && 'stix_ids' in currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba']
       && currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.length > 1000) {
-    currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000, 0);
+    currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = currentStix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000);
   }
   return {
     version: EVENT_CURRENT_VERSION,
@@ -493,7 +493,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
       && 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba' in stixCopy.extensions
       && 'stix_ids' in stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba']
       && stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.length > 1000) {
-    stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000, 0);
+    stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = stixCopy.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000);
   }
   return {
     version: EVENT_CURRENT_VERSION,
@@ -537,7 +537,7 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
       && 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba' in stix.extensions
       && 'stix_ids' in stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba']
       && stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.length > 1000) {
-    stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000, 0);
+    stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids = stix.extensions['extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba'].stix_ids.slice(-1000);
   }
   return {
     version: EVENT_CURRENT_VERSION,
