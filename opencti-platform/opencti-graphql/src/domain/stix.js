@@ -31,6 +31,7 @@ import { completeContextDataForEntity, publishUserAction } from '../listener/Use
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
 import { getExportContentMarkings } from '../utils/getExportContentMarkings';
+import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
@@ -70,6 +71,8 @@ export const askListExport = async (context, user, exportContext, format, select
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
 
+  const export_filter = await getExportFilter({ type, markingList, contentMaxMarkings, objectIdsList: selectedIds });
+
   const baseEvent = {
     format, // extension mime type
     export_type: type, // Simple or full
@@ -80,6 +83,7 @@ export const askListExport = async (context, user, exportContext, format, select
     // All the params needed to execute the export on python connector
     content_markings,
     file_markings: fileMarkings,
+    export_filter
   };
   const buildExportMessage = (work, fileName) => {
     const internal = {
@@ -143,6 +147,9 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
 
+  const export_filter = await getExportFilter({ type, markingList, contentMaxMarkings, objectIdsList: [entity.id] });
+  console.log('export_filter : ', export_filter);
+
   const baseEvent = {
     format,
     export_scope: 'single', // query or selection or single
@@ -152,6 +159,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     export_type: type, // Simple or full
     content_markings,
     file_markings: fileMarkings,
+    export_filter
   };
   const buildExportMessage = (work, fileName) => {
     return {
