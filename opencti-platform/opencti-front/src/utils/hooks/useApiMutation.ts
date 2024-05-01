@@ -19,13 +19,11 @@ const useApiMutation = <T extends MutationParameters>(
     commit({
       ...args,
       onError: (error: Error) => {
-        args.onError
-          ? args.onError(error)
-          : relayErrorHandling(error) as UseMutationConfig<T>['onError'];
+        if (args.onError) args.onError(error);
+        else relayErrorHandling(error);
         MESSAGING$.notifyError(options?.errorMessage
           ? options.errorMessage
-          : `${error}`
-        );
+          : `${error}`);
       },
       onCompleted: (response: T['response'], errors: PayloadError[] | null) => {
         if (args.onCompleted) args.onCompleted(response, errors);
