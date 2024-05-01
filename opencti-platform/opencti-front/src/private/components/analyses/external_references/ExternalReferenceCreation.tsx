@@ -16,15 +16,16 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
-import { MESSAGING$, commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import type { Theme } from '../../../../components/Theme';
-import { ExternalReferenceAddInput, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
+import { ExternalReferenceAddInput, ExternalReferenceCreationMutation, ExternalReferenceCreationMutation$data } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,6 +116,11 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     setOpen(false);
   };
 
+  const [commit] = useApiMutation<ExternalReferenceCreationMutation>(
+    externalReferenceCreationMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -125,8 +131,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       handleClose();
       return;
     }
-    commitMutation({
-      mutation: externalReferenceCreationMutation,
+    commit({
       variables: {
         input: finalValues,
       },
@@ -138,10 +143,8 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
-        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
         setSubmitting(false);
         resetForm();
@@ -149,7 +152,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         if (onCreate) {
           onCreate(response.externalReferenceAdd, true);
         }
-        MESSAGING$.notifySuccess(`${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}`);
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -165,8 +167,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       handleCloseContextual();
       return;
     }
-    commitMutation({
-      mutation: externalReferenceCreationMutation,
+    commit({
       variables: {
         input: finalValues,
       },
@@ -174,7 +175,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
         setSubmitting(false);
         resetForm();

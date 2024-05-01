@@ -167,6 +167,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const basicShape = {
     content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -253,10 +254,10 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           >
             <EditOutlined fontSize="small" />
           </IconButton>
-          {isFeatureEnable('FAB_REPLACEMENT')
+          {FAB_REPLACED
             ? <AddNotesFunctionalComponent
                 stixCoreObjectOrStixCoreRelationshipId={id}
-                stixCoreObjectOrStixCoreRelationshipNotes={notes}
+                stixCoreObjectOrStixCoreRelationshipNotes={data}
                 paginationOptions={paginationOptions}
               />
             : <AddNotes

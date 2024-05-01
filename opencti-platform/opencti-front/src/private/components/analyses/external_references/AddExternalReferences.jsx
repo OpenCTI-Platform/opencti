@@ -164,16 +164,6 @@ const AddExternalReferences = ({
           />
         </div>
       </Drawer>
-      {/* {FABMode
-        ? undefined
-        : <ExternalReferenceCreation
-          display={open}
-          contextual={true}
-          inputValue={search}
-          paginationOptions={paginationOptions}
-          onCreate={this.toggleExternalReference.bind(this)}
-        />
-      } */}
     </div>
   );
 };

@@ -23,6 +23,7 @@ const LOCAL_STORAGE_KEY = 'reports';
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -139,7 +140,7 @@ const Reports: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={isFeatureEnable('FAB_REPLACEMENT') && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ReportCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -187,7 +188,7 @@ const Reports: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
-      {!isFeatureEnable('FAB_REPLACEMENT')
+      {!FAB_REPLACED
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportCreation paginationOptions={queryPaginationOptions} />
         </Security>

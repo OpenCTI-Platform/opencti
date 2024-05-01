@@ -31,6 +31,7 @@ interface ExternalReferencesProps {
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -116,7 +117,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           entityTypes={['External-Reference']}
-          createButton={isFeatureEnable('FAB_REPLACEMENT') && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ExternalReferenceCreation
               paginationOptions={queryPaginationOptions}
               openContextual={false}
@@ -168,7 +169,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {renderLines()}
-      {!isFeatureEnable('FAB_REPLACEMENT')
+      {!FAB_REPLACED
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ExternalReferenceCreation
             paginationOptions={queryPaginationOptions}

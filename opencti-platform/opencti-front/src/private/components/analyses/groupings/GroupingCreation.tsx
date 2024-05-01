@@ -10,7 +10,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
 import useHelper from 'src/utils/hooks/useHelper';
 import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
-import { MESSAGING$, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -108,7 +108,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     GROUPING_TYPE,
     basicShape,
   );
-  const [commit] = useApiMutation<GroupingCreationMutation>(groupingMutation);
+  const [commit] = useApiMutation<GroupingCreationMutation>(
+    groupingMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -136,7 +140,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        MESSAGING$.notifyError(`${error}`);
         setSubmitting(false);
       },
       onCompleted: (response) => {
@@ -145,7 +148,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         if (onClose) {
           onClose();
         }
-        MESSAGING$.notifySuccess(`${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}`);
         if (mapAfter) {
           navigate(
             `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
@@ -288,12 +290,13 @@ const GroupingCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={isFeatureEnable('FAB_REPLACEMENT') ? undefined : DrawerVariant.create}
-      controlledDial={isFeatureEnable('FAB_REPLACEMENT') ? CreateEntityControlledDial('entity_Grouping') : undefined}
+      variant={FAB_REPLACED ? undefined : DrawerVariant.create}
+      controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Grouping') : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

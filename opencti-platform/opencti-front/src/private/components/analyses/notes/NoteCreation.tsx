@@ -12,7 +12,6 @@ import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { MESSAGING$ } from 'src/relay/environment';
 import useHelper from 'src/utils/hooks/useHelper';
 import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
@@ -144,9 +143,13 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     userIsKnowledgeEditor ? [] : ['createdBy'],
   );
 
-  const [commit] = userIsKnowledgeEditor
-    ? useApiMutation(noteCreationMutation)
-    : useApiMutation(noteCreationUserMutation);
+  const [commit] = useApiMutation(
+    userIsKnowledgeEditor
+      ? noteCreationMutation
+      : noteCreationUserMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -176,16 +179,12 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
         }
       },
-      onError: (error: Error) => {
-        MESSAGING$.notifyError(`${error}`);
-      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         if (onClose) {
           onClose();
         }
-        MESSAGING$.notifySuccess(`${t_i18n('entity_Note')} ${t_i18n('successfully created')}`);
       },
     });
   };
@@ -317,6 +316,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -326,8 +326,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a note')}
-        variant={isFeatureEnable('FAB_REPLACEMENT') ? undefined : DrawerVariant.create}
-        controlledDial={isFeatureEnable('FAB_REPLACEMENT') ? CreateEntityControlledDial('entity_Note') : undefined}
+        variant={FAB_REPLACED ? undefined : DrawerVariant.create}
+        controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Note') : undefined}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>

@@ -4,7 +4,7 @@ import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from 'src/components/i18n';
 import SearchInput from 'src/components/SearchInput';
-import { FragmentRefs, RecordSourceSelectorProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
 import { StyledCreateButton } from '@components/common/menus/CreateEntityControlledDial';
@@ -12,6 +12,7 @@ import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.graphql';
 import { NoteCreationForm } from './NoteCreation';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 
 const CreateButton = styled(IconButton)({
   float: 'right',
@@ -25,19 +26,7 @@ const StyledDrawerHeader = styled('div')({
 
 interface AddNotesFunctionalComponentProps {
   stixCoreObjectOrStixCoreRelationshipId: string,
-  stixCoreObjectOrStixCoreRelationshipNotes: readonly {
-    readonly node: {
-      readonly id: string;
-      readonly objectMarking: readonly {
-        readonly definition: string | null | undefined;
-        readonly definition_type: string | null | undefined;
-        readonly id: string;
-        readonly x_opencti_color: string | null | undefined;
-        readonly x_opencti_order: number;
-      }[] | null | undefined;
-      readonly ' $fragmentSpreads': FragmentRefs<'StixCoreObjectOrStixCoreRelationshipNoteCard_node'>;
-    };
-  }[],
+  stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
   paginationOptions: NotesLinesPaginationQuery$variables,
 }
 
@@ -121,7 +110,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                     stixCoreObjectOrStixCoreRelationshipId
                   }
                   stixCoreObjectOrStixCoreRelationshipNotes={
-                    stixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipNotes.notes?.edges ?? []
                   }
                   data={props}
                   paginationOptions={paginationOptions}
@@ -131,7 +120,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
             return (
               <List>
                 {Array.from(Array(20), (_, i) => (
-                  <ListItem key={i} divider={true} button={false}>
+                  <ListItem key={i} divider={true}>
                     <ListItemIcon>
                       <Skeleton
                         animation="wave"
