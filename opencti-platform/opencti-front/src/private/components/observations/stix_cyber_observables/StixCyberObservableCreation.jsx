@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
+import Select from '@mui/material/Select';
 import { Add, Close, TextFieldsOutlined } from '@mui/icons-material';
 import { assoc, compose, dissoc, filter, fromPairs, includes, map, pipe, pluck, prop, propOr, sortBy, toLower, toPairs } from 'ramda';
 import * as Yup from 'yup';
@@ -17,7 +18,7 @@ import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, MenuItem } from '@mui/material';
 import * as PropTypes from 'prop-types';
 import { commitMutation, handleErrorInForm, QueryRenderer, MESSAGING$, commitMutationWithPromise } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -237,6 +238,7 @@ const StixCyberObservableCreation = ({
   const [genericValueFieldDisabled, setGenericValueFieldDisabled] = useState(false);
   const [keyFieldDisabled, setKeyFieldDisabled] = useState(false);
   const [selectedAttribute, setSelectedAttribute] = useState('');
+  const [openBulkAddDialog, setOpenBulkAddDialog] = React.useState(false);
   const bulkAddMsg = t_i18n('Multiple values entered. Edit with the TT button');
   const hashes_MD5_field = document.getElementById('hashes_MD5');
   const hashes_SHA1_field = document.getElementById('hashes_SHA-1');
@@ -594,7 +596,6 @@ const StixCyberObservableCreation = ({
   };
 
   function BulkAddDialog(props) {
-    const [openBulkAddDialog, setOpenBulkAddDialog] = React.useState(false);
     const handleOpenBulkAddDialog = () => {
       if (hashes_MD5_field != null && hashes_MD5_field.value != null
         && hashes_MD5_field.value.length > 0 && hashes_MD5_field.value !== bulkAddMsg) {
@@ -620,6 +621,7 @@ const StixCyberObservableCreation = ({
     };
 
     const handleCloseBulkAddDialog = () => {
+      console.log('BulkAddDialog is closing');
       setOpenBulkAddDialog(false);
       const bulk_hashes_field = document.getElementById('bulk_hashes_field');
 
@@ -643,12 +645,6 @@ const StixCyberObservableCreation = ({
     const handleSelectChange = (event) => {
       setSelectedAttribute(event.target.value);
     };
-
-    function getOption() {
-      const selectElement = document.querySelector('#attributes');
-      const output = selectElement.value;
-      document.querySelector('.output').textContent = output;
-    }
     return (
       <React.Fragment>
         <IconButton
@@ -663,19 +659,20 @@ const StixCyberObservableCreation = ({
           open={openBulkAddDialog}
           onClose={handleCloseBulkAddDialog}
           fullWidth={true}
+          // onClick={handleChildClick}
         >
-          <DialogContent style={{ marginTop: 0, paddingTop: 10 }} closeOnEscape={false}>
-            <form name="formSelectAttributes" id="formSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }} action="/action_page.php">
-              {t_i18n('Create Entities from multiple')}:
-              <select name="attributes" id="attributes" onSelect={getOption} onChange={handleSelectChange}>
-                <option value="Selected" disabled>Select attribute</option>
-                <option value="NAME">name</option>
-                <option value="MD5">md5</option>
-                <option value="SHA-1">sha1</option>
-                <option value="SHA-256">sha256</option>
-                <option value="SHA-512">sha512</option>
-              </select>
-            </form>
+          <DialogContent style={{ marginTop: 0, paddingTop: 10 }}>
+            <div id="divSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }}>
+              {t_i18n('Create Entities from multiple: ')}
+              <Select name="attributes" id="attributes" value={selectedAttribute} onChange={handleSelectChange}>
+                <MenuItem selected disabled>Select attribute</MenuItem>
+                <MenuItem value="NAME">name</MenuItem>
+                <MenuItem value="MD5">md5</MenuItem>
+                <MenuItem value="SHA-1">sha1</MenuItem>
+                <MenuItem value="SHA-256">sha256</MenuItem>
+                <MenuItem value="SHA-512">sha512</MenuItem>
+              </Select>
+            </div>
             <Typography style={{ float: 'left', marginTop: 10 }}>
               <span style={{ fontSize: '0.7em' }}>{selectedAttribute}</span>
               <span className="output"></span>
@@ -793,6 +790,7 @@ const StixCyberObservableCreation = ({
     setValue: PropTypes.func,
   };
   let stixFileBoolean = false;
+  let nameAttributeBoolean = false;
   const renderForm = () => {
     if (status.type === 'StixFile') {
       stixFileBoolean = true;
