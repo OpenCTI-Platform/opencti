@@ -35,8 +35,6 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicD
 import { AI_BUS } from '../modules/ai/ai-types';
 import { SUPPORT_BUS } from '../modules/support/support-types';
 
-export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
-
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
   '/etc/ssl/certs/ca-certificates.crt', // Debian/Ubuntu/Gentoo etc.
@@ -231,6 +229,8 @@ export const environment = nconf.get('env') || nconf.get('node_env') || process.
 const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
+export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();
+
 let configurationFile;
 if (externalConfigurationFile) {
   configurationFile = externalConfigurationFile;

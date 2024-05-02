@@ -6,7 +6,7 @@ import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric'
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENABLED_TRACING } from './conf';
+import { ENABLED_TRACING, logApp } from './conf';
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -58,8 +58,8 @@ export const meterProvider = new MeterProvider({});
 export const meterManager = new MeterManager(meterProvider);
 
 export const telemetry = (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
-  // if tracing disabled
-  if (!ENABLED_TRACING) {
+  // if tracing disabled or context is not correctly configured.
+  if (!ENABLED_TRACING || !context) {
     return fn();
   }
   // if tracing enabled

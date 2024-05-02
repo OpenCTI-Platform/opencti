@@ -11,6 +11,7 @@
       <env name="APP__PORT" value="4000" />
       <env name="ENV" value="development" />
       <env name="NODE_ENV" value="dev" />
+      <env name="APP__NODE_IDENTIFIER" value="dev-node-1" />
     </envs>
     <method v="2" />
   </configuration>

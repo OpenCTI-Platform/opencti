@@ -256,6 +256,7 @@ export const computePackageEntityChanges = (packageEntity: BasicStoreEntitySuppo
       node_id: nodeId,
       package_status: newNodeStatus,
     });
+    logApp.info(`ANGIE - other full count:${newNodeStatusList.length}`);
 
     // Check if overall status must change now or not.
     if (packageEntity.nodes_status.length === packageEntity.nodes_count && (newNodeStatus === PackageStatus.Ready || newNodeStatus === PackageStatus.InError)) {

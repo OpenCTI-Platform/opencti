@@ -20,7 +20,7 @@ export const onSupportPackageMessage = async (event: { instance: BasicStoreEntit
   logApp.info(`[OPENCTI-MODULE] Support Package got event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`);
   try {
     if (event.instance.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
-      await wait(Math.floor(Math.random() * 100));
+      await wait(Math.floor(Math.random() * 500));
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.InProgress);
       await sendCurrentNodeSupportLogToS3(context, SYSTEM_USER, event.instance as StoreEntitySupportPackage);
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.Ready);
@@ -39,13 +39,10 @@ export const onSupportPackageMessage = async (event: { instance: BasicStoreEntit
 };
 
 const initSupportPackageListener = () => {
-  const initSupportPackage = () => {
-    context = executionContext(`support_package_manager-${NODE_INSTANCE_ID}`);
-  };
-
   return {
-    init: () => initSupportPackage(), // Use for testing
+    init: () => {}, // Use for testing
     start: async () => {
+      context = executionContext(`support_package_manager-${NODE_INSTANCE_ID}`);
       await pubSubSubscription<{ instance: StoreEntity }>(`${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`, onSupportPackageMessage);
       logApp.info('[OPENCTI-MODULE] Support Package pub sub listener initialized');
     },
