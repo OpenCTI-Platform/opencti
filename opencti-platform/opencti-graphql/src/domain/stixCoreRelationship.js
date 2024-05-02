@@ -23,18 +23,21 @@ export const findById = (context, user, stixCoreRelationshipId) => {
   return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
+const buildStixCoreRelationshipTypes = (relationshipTypes) => {
+  const isValidRelationshipTypes = relationshipTypes && relationshipTypes.length > 0 && relationshipTypes.every((type) => isStixCoreRelationship(type));
+  return isValidRelationshipTypes ? relationshipTypes : [ABSTRACT_STIX_CORE_RELATIONSHIP];
+};
+
 // region stats
 // TODO future refacto : use the more generic functions of domain/stixRelationship.js
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
-  const relationship_type = isStixCoreRelationship(args.relationship_type) ? args.relationship_type : [ABSTRACT_STIX_CORE_RELATIONSHIP];
+  const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
   return stixRelationshipsDistribution(context, user, { ...args, relationship_type });
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
-  const {
-    relationship_type = isStixCoreRelationship(args.relationship_type) ? args.relationship_type : [ABSTRACT_STIX_CORE_RELATIONSHIP],
-    authorId
-  } = args;
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  const { authorId } = args;
+  const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };
   }
