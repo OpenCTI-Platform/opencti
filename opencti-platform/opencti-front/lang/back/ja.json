@@ -614,6 +614,8 @@
   "Tool types": "道具のバージョン",
   "Tool version": "基本スコア",
   "Tracking number": "追跡番号",
+  "Trigger for assignation notifiers": "割り当て通知子のトリガー",
+  "Trigger for participation notifiers": "参加通知のトリガー",
   "Trigger IDs": "期間",
   "Trigger scope": "成果",
   "Trigger time": "トリガータイプ",

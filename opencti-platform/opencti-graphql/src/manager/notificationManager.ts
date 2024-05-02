@@ -8,9 +8,9 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
-import type { AuthContext, AuthUser } from '../types/user';
+import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, isNotEmptyField } from '../database/utils';
 import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
 import {
   type BasicStoreEntityDigestTrigger,
@@ -66,12 +66,15 @@ export interface KnowledgeNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
   data: StixObject
+  streamMessage?: string
+  origin: Partial<UserOrigin>
 }
 
 export interface ActivityNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
   data: Partial<{ id: string }>
+  origin: Partial<UserOrigin>
 }
 
 export interface DigestEvent extends StreamNotifEvent {
@@ -456,7 +459,7 @@ export const buildTargetEvents = async (
             const message = await generateNotificationMessageForInstance(context, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });
           } else if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) {
-            // Case 03. Just an update
+          // Case 03. Just an update
             const message = await generateNotificationMessageForInstance(context, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });
           }
@@ -494,6 +497,19 @@ export const buildTargetEvents = async (
   return targets;
 };
 
+export const generateDefaultTrigger = (notifiers: string[], type: string) => {
+  return {
+    name: `Default Trigger for ${type}`,
+    trigger_type: 'live',
+    trigger_scope: 'knowledge',
+    event_types: ['create', 'update', 'delete'],
+    notifiers,
+    filters: '',
+    instance_trigger: false,
+    authorized_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
 const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
@@ -501,25 +517,60 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     }
     const context = executionContext('notification_manager');
     const liveNotifications = await getLiveNotifications(context);
+    const version = EVENT_NOTIFICATION_VERSION;
+
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { data } } = streamEvent;
+      const { data: { data, message: streamMessage, origin } } = streamEvent;
+      const extensions = Object.values(data.extensions ?? {})[0] as { assignee_ids?: string[], participant_ids?: string[] };
+      if (isNotEmptyField(extensions.assignee_ids) || isNotEmptyField(extensions.participant_ids)) {
+        const users = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER) as AuthUser[];
+        const assigneesUsers = users.filter(({ id, assignee_notifiers }) => (extensions.assignee_ids ?? [])?.includes(id) && isNotEmptyField(assignee_notifiers));
+        const participantsUsers = users.filter(({ id, participant_notifiers }) => (extensions.participant_ids ?? [])?.includes(id) && isNotEmptyField(participant_notifiers));
+
+        const assigneePromises = assigneesUsers.map(async (user) => {
+          const defaultTrigger = generateDefaultTrigger(user.assignee_notifiers as string[], 'assignee');
+          const notificationEvent = {
+            version,
+            notification_id: 'default_assignee_trigger',
+            type: 'live',
+            targets: await buildTargetEvents(context, [user], streamEvent, defaultTrigger),
+            data,
+            streamMessage,
+            origin,
+          };
+          return storeNotificationEvent(context, notificationEvent);
+        });
+        const participantPromises = participantsUsers.map(async (user) => {
+          const defaultTrigger = generateDefaultTrigger(user.participant_notifiers as string[], 'participant');
+          const notificationEvent = {
+            version,
+            notification_id: 'default_participant_trigger',
+            type: 'live',
+            targets: await buildTargetEvents(context, [user], streamEvent, defaultTrigger),
+            data,
+            streamMessage,
+            origin,
+          };
+          return storeNotificationEvent(context, notificationEvent);
+        });
+        await Promise.all([...assigneePromises, ...participantPromises]);
+      }
+
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
         const targets = await buildTargetEvents(context, users, streamEvent, trigger);
         if (targets.length > 0) {
-          const version = EVENT_NOTIFICATION_VERSION;
-          const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data };
+          const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data, streamMessage, origin };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
         if (instance_trigger && trigger.event_types.includes(EVENT_TYPE_UPDATE)) {
           const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true);
           if (sideTargets.length > 0) {
-            const version = EVENT_NOTIFICATION_VERSION;
-            const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data };
+            const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data, streamMessage, origin };
             await storeNotificationEvent(context, notificationEvent);
           }
         }

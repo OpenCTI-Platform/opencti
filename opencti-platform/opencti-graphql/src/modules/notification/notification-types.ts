@@ -18,6 +18,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   trigger_ids: string[]
   authorized_members: Array<AuthorizedMember>;
   instance_trigger: boolean
+  filters: string
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {

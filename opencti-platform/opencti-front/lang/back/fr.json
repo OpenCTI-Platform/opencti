@@ -614,6 +614,8 @@
   "Tool types": "Types d'outils",
   "Tool version": "Version de l'outil",
   "Tracking number": "Numéro de suivi",
+  "Trigger for assignation notifiers": "Déclenchement des notifications d'assignation",
+  "Trigger for participation notifiers": "Déclenchement des notifications de participation",
   "Trigger IDs": "ID de déclenchement",
   "Trigger scope": "Champ d'application du déclencheur",
   "Trigger time": "Heure de déclenchement",

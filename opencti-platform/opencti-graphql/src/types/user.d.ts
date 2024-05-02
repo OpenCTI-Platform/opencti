@@ -44,6 +44,8 @@ interface AuthUser extends BasicStoreIdentifier {
   account_status: string;
   effective_confidence_level: ConfidenceLevel | null;
   user_confidence_level: ConfidenceLevel | null;
+  assignee_notifiers?: Array<string>
+  participant_notifiers?: Array<string>
 }
 
 interface AuthContext {

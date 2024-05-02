@@ -144,12 +144,15 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
   }
 };
 
+export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
+export const STATIC_NOTIFIER_EMAIL = '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822';
+
 export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   {
-    id: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-    internal_id: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
+    id: STATIC_NOTIFIER_UI,
+    internal_id: STATIC_NOTIFIER_UI,
     built_in: true,
     name: 'User interface',
     description: 'Publish notification to the user interface',
@@ -158,8 +161,8 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   {
-    id: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-    internal_id: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
+    id: STATIC_NOTIFIER_EMAIL,
+    internal_id: STATIC_NOTIFIER_EMAIL,
     built_in: true,
     name: 'Default mailer',
     description: 'Send notification to the user email',

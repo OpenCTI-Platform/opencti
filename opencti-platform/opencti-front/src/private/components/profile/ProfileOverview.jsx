@@ -18,6 +18,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
+import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
@@ -100,6 +101,8 @@ const userValidation = (t) => Yup.object().shape({
   user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
+  assignee_notifiers: Yup.array(),
+  participant_notifiers: Yup.array(),
   firstname: Yup.string().nullable(),
   lastname: Yup.string().nullable(),
   theme: Yup.string().nullable(),
@@ -226,7 +229,12 @@ const ProfileOverviewComponent = (props) => {
     'submenu_show_icons',
     'submenu_auto_collapse',
   ];
-  const initialValues = { ...pick(fieldNames, me), objectOrganization };
+  const initialValues = {
+    ...pick(fieldNames, me),
+    objectOrganization,
+    assignee_notifiers: me.assignee_notifiers?.map(({ id, name }) => ({ value: id, label: name })),
+    participant_notifiers: me.participant_notifiers?.map(({ id, name }) => ({ value: id, label: name })),
+  };
 
   const disableOtp = () => {
     commitMutation({
@@ -437,6 +445,16 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              <NotifierField
+                label={t('Assignee notifiers')}
+                name="assignee_notifiers"
+                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+              />
+              <NotifierField
+                label={t('Participant notifiers')}
+                name="participant_notifiers"
+                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+              />
             </Form>
           )}
         </Formik>
@@ -605,6 +623,14 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       unit_system
       submenu_show_icons
       submenu_auto_collapse
+      assignee_notifiers {
+        id
+        name
+      }
+      participant_notifiers {
+        id
+        name
+      }
       objectOrganization {
         edges {
           node {

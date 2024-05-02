@@ -58,6 +58,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
+import { getNotifiers } from '../modules/notifier/notifier-domain';
 
 const rolesUsersLoader = batchLoader(batchRolesForUsers);
 const creatorLoader = batchLoader(batchCreator);
@@ -85,6 +86,8 @@ const userResolvers = {
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
+    assignee_notifiers: (current, _, context) => getNotifiers(context, context.user, current.assignee_notifiers),
+    participant_notifiers: (current, _, context) => getNotifiers(context, context.user, current.participant_notifiers),
   },
   Member: {
     name: (current, _, context) => {
@@ -104,6 +107,8 @@ const userResolvers = {
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
     effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
+    assignee_notifiers: (current, _, context) => getNotifiers(context, context.user, current.assignee_notifiers),
+    participant_notifiers: (current, _, context) => getNotifiers(context, context.user, current.participant_notifiers),
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),

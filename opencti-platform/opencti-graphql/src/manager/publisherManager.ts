@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, lockResource, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -17,17 +17,24 @@ import {
   NOTIFIER_CONNECTOR_UI,
   NOTIFIER_CONNECTOR_WEBHOOK,
   type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
-  SIMPLIFIED_EMAIL_TEMPLATE,
+  SIMPLIFIED_EMAIL_TEMPLATE
 } from '../modules/notifier/notifier-statics';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
-import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
+import {
+  type ActivityNotificationEvent,
+  type DigestEvent,
+  generateDefaultTrigger,
+  getNotifications,
+  type KnowledgeNotificationEvent,
+  type NotificationUser
+} from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 
 const DOC_URI = 'https://docs.opencti.io';
@@ -52,8 +59,8 @@ export const internalProcessNotification = async (
       const { notification_id, instance, type, message } = data[index];
       const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
-      if (eventNotification) {
-        const notificationName = eventNotification.name;
+      if (eventNotification || ['default_assignee_trigger', 'default_participant_trigger'].includes(notification_id)) {
+        const notificationName = eventNotification?.name ?? notification_id;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];
         } else {
@@ -144,8 +151,10 @@ const processNotificationEvent = async (
   data: NotificationData[]
 ) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notification = notificationMap.get(notificationId);
-  if (!notification) {
+  let notification = notificationMap.get(notificationId);
+  if (['default_assignee_trigger', 'default_participant_trigger'].includes(notificationId)) {
+    notification = generateDefaultTrigger(user.notifiers, notificationId === 'default_assignee_trigger' ? 'assignee' : 'participant');
+  } else if (!notification) {
     return;
   }
   const userNotifiers = user.notifiers ?? []; // No notifier is possible for live trigger only targeting digest
@@ -162,10 +171,19 @@ const processLiveNotificationEvent = async (
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   event: KnowledgeNotificationEvent | ActivityNotificationEvent
 ) => {
-  const { targets, data: instance } = event;
+  const { targets, data: instance, origin: { user_id } } = event;
+  const streamUser = (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(user_id as string) as AuthUser;
   for (let index = 0; index < targets.length; index += 1) {
     const { user, type, message } = targets[index];
-    const data = [{ notification_id: event.notification_id, instance, type, message }];
+    let notificationMessage = message;
+    if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
+      const { streamMessage } = event as KnowledgeNotificationEvent;
+      const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
+      if (streamBuiltMessage !== notificationMessage) {
+        notificationMessage = `${message} - ${streamBuiltMessage}`;
+      }
+    }
+    const data = [{ notification_id: event.notification_id, instance, type, message: notificationMessage }];
     await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
   }
 };
