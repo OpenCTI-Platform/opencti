@@ -468,7 +468,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 
                   <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Maximum marking definition allowed to be shared')}
+                      {t_i18n('Maximum marking definition allowed to be shared for public dashboard')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field

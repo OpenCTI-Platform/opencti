@@ -1471,7 +1471,7 @@
   "Max marking definitions override...": "您定义的最大标记定义高于管理员配置的定义。它们将被替换为",
   "Max retention": "最长保留期",
   "Maximum": "最大值",
-  "Maximum marking definition allowed to be shared": "允许共享的最大标记定义",
+  "Maximum marking definition allowed to be shared for public dashboard": "公共仪表板允许共享的最大标记定义",
   "Maximum retention days": "最长保留天数",
   "Med": "中等",
   "MEDIUM": "中",
