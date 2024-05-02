@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createRelation, deleteElementById, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
@@ -13,7 +13,7 @@ import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { buildArgsFromDynamicFilters } from './stixRelationship';
+import { buildArgsFromDynamicFilters, stixRelationshipsDistribution } from './stixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -23,20 +23,21 @@ export const findById = (context, user, stixCoreRelationshipId) => {
   return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
+const buildStixCoreRelationshipTypes = (relationshipTypes) => {
+  const isValidRelationshipTypes = relationshipTypes && relationshipTypes.length > 0 && relationshipTypes.every((type) => isStixCoreRelationship(type));
+  return isValidRelationshipTypes ? relationshipTypes : [ABSTRACT_STIX_CORE_RELATIONSHIP];
+};
+
 // region stats
 // TODO future refacto : use the more generic functions of domain/stixRelationship.js
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
-  // it's not possible to have a dynamicFrom and dynamicTo in args here for the moment
-  // consider adding these fields in opencti.graphql if you want to use them
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
-  if (isEmptyDynamic) {
-    return [];
-  }
-  return distributionRelations(context, user, dynamicArgs);
+  const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
+  return stixRelationshipsDistribution(context, user, { ...args, relationship_type });
 };
 export const stixCoreRelationshipsNumber = async (context, user, args) => {
-  const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], authorId } = args;
-  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
+  const { authorId } = args;
+  const relationship_type = buildStixCoreRelationshipTypes(args.relationship_type);
+  const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };
   }
