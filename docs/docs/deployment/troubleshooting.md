@@ -33,6 +33,14 @@ The workers can have more or less verbose outputs:
 - WORKER_LOG_LEVEL=[error|warning|info|debug]
 ```
 
+## ElasticSearch / OpenSearch data
+
+!!! tip "Kibana / OpenSearch dashboard"
+
+    In case you need to troubleshoot the OpenCTI knowledge data, we recommend to install Kibana or OpenSearch dashboard.
+
+
+
 ## Common errors
 
 ### Ingestion technical errors
