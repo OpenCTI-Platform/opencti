@@ -3122,7 +3122,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     // If file directly attached
   if (!isEmptyField(input.file)) {
     const path = `import/${type}/${internalId}`;
-    const file_markings = input.objectMarking.map(({ id }) => id);
+    const file_markings = input.objectMarking?.map(({ id }) => id);
     const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: data, file_markings });
     data.x_opencti_files = [storeFileConverter(user, file)];
     // Add external references from files if necessary
