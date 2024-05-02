@@ -43,11 +43,11 @@ enum SupportPackageOrdering {
 }
 
 input SupportPackageAddInput {
-    name: String! @constraint(minLength: 2)
+    name: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 input SupportPackageForceZipInput {
-    id: String! @constraint(minLength: 2)
+    id: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 type Query {
