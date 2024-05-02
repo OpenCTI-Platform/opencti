@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ListItemButton } from '@mui/material';
+import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -30,6 +31,7 @@ import type { Theme } from '../../../../components/Theme';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { truncate } from '../../../../utils/String';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -100,6 +102,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   isArtifact,
 }) => {
   const classes = useStyles();
+  const { me } = useAuth();
   const { t_i18n, fld } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -121,6 +124,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const isFail = file?.metaData?.errors && file.metaData.errors.length > 0;
   const isProgress = file?.uploadStatus === 'progress' || file?.uploadStatus === 'wait';
   const isOutdated = file?.uploadStatus === 'timeout';
+  const file_markings = file?.metaData?.file_markings;
+  const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
+
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
   const history = [];
 
@@ -277,7 +283,8 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             }
           />
         </Tooltip>
-        <ListItemSecondaryAction>
+        <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center' }}>
+          <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
           {!disableImport && (
             <Tooltip title={t_i18n('Launch an import of this file')}>
               <span>
