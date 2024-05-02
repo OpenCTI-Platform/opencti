@@ -14,6 +14,7 @@ interface FileUploadOpts {
   meta? : any,
   noTriggerImport?: boolean,
   errorOnExisting?: boolean,
+  file_markings?: string[],
 }
 
 interface FileUploadData {
