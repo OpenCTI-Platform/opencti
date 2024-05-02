@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { SupportPackageLine_node$key } from '@components/settings/support/__generated__/SupportPackageLine_node.graphql';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileOutline } from 'mdi-material-ui';
@@ -18,18 +17,20 @@ import Dialog from '@mui/material/Dialog';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
+import { SupportPackageLineForceZipMutation$data } from '@components/settings/support/__generated__/SupportPackageLineForceZipMutation.graphql';
 import { APP_BASE_PATH, handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
 import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const useStyles = makeStyles(() => ({
+const styles = {
   bodyItem: {
     height: 20,
     fontSize: 13,
-    float: 'left',
+    float: 'left' as 'left' | 'right' | 'none' | undefined,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -43,7 +44,7 @@ const useStyles = makeStyles(() => ({
   chipInList: {
     fontSize: 12,
     height: 20,
-    float: 'left',
+    float: 'left' as 'left' | 'right' | 'none' | undefined,
     borderRadius: 4,
     width: 120,
   },
@@ -52,7 +53,7 @@ const useStyles = makeStyles(() => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-}));
+};
 
 type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | '%future added value';
 
@@ -62,6 +63,7 @@ const SupportPackageLineForceZipMutation = graphql`
   ) {
       supportPackageForceZip(input: $input) {
         id
+        package_url
       }
   }
 `;
@@ -105,13 +107,12 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   paginationOptions,
   dataColumns,
 }) => {
-  const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [commitDelete] = useMutation(SupportPackageLineDeleteMutation);
-  const [commitForceZip] = useMutation(SupportPackageLineForceZipMutation);
+  const [commitDelete] = useApiMutation(SupportPackageLineDeleteMutation);
+  const [commitForceZip] = useApiMutation(SupportPackageLineForceZipMutation);
   const isProgress = data.package_status === 'IN_PROGRESS';
 
   const handleOpenDelete = () => {
@@ -152,11 +153,12 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           id: data.id,
         },
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
+        const res = response as SupportPackageLineForceZipMutation$data;
         // Check if there is a valid URL and initiate download
-        if (data.package_url) {
+        if (res.supportPackageForceZip?.package_url) {
           MESSAGING$.notifySuccess('Force zip launched. Your download will start shortly.');
-          window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(data.package_url)}`;
+          window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(res.supportPackageForceZip.package_url)}`;
         } else {
           MESSAGING$.notifyError('No download URL available.');
         }
@@ -166,7 +168,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
 
   return (
     <>
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem divider={true} style={{ ...styles.item }}>
         <ListItemIcon>
           {isProgress && (
             <CircularProgress
@@ -185,29 +187,27 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
             <>
               <Tooltip title={data.name}>
                 <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
+                  style={{ width: dataColumns.name.width, ...styles.bodyItem }}
                 >
                   {data.name}
                 </div>
               </Tooltip>
               <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.package_status.width }}
+                style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}
               >
                 <Chip
-                  classes={{ root: classes.chipInList, label: classes.label }}
                   style={{
                     color: packageStatusColors[data.package_status],
                     borderColor: packageStatusColors[data.package_status],
                     backgroundColor: hexToRGB(packageStatusColors[data.package_status]),
+                    ...styles.chipInList,
+                    ...styles.label,
                   }}
                   label={data.package_status}
                 />
               </div>
               <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created.width, ...styles.bodyItem }}
               >
                 {fd(data.created_at)}
               </div>

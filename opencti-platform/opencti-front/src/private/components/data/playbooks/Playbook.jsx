@@ -18,7 +18,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import 'reactflow/dist/style.css';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
-import { ErrorBoundary, SimpleError } from '../../Error';
+import { ErrorBoundary } from '../../Error';
 import PlaybookHeader from './PlaybookHeader';
 import useLayout from './hooks/useLayout';
 import nodeTypes from './types/nodes';
@@ -104,12 +104,7 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
         ]}
       />
       <PlaybookHeader playbook={playbook} />
-      <ErrorBoundary
-        display={(errorData) => <div style={{ paddingTop: 28 }}>
-          <SimpleError errorData={errorData}/>
-        </div>
-        }
-      >
+      <ErrorBoundary>
         <div className={classes.container} style={{ width, height }}>
           <ReactFlowProvider>
             <Flow />

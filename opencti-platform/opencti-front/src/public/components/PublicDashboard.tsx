@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useParams, useNavigate } from 'react-router-dom';
 import RGL, { WidthProvider } from 'react-grid-layout';
-import { ErrorBoundary, SimpleError } from '@components/Error';
+import { ErrorBoundary } from '@components/Error';
 import Paper from '@mui/material/Paper';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
@@ -98,12 +98,7 @@ const PublicDashboardComponent = ({
               overflow: 'hidden',
             }}
           >
-            <ErrorBoundary
-              display={(errorData: unknown) => <div style={{ paddingTop: 28 }}>
-                <SimpleError errorData={errorData}/>
-              </div>
-              }
-            >
+            <ErrorBoundary>
               {widget.perspective === 'entities' && entityWidget(widget)}
               {widget.perspective === 'relationships' && relationshipWidget(widget)}
               {widget.perspective === 'audits' && auditWidget(widget)}

@@ -17,7 +17,7 @@ export const SimpleError = ({ errorData }) => {
     copyToClipboard(t_i18n, errorDetails);
   };
   return (
-    <>
+    <div style={{ paddingTop: 28 }}>
       <Alert severity="error">
         <AlertTitle style={{ marginBottom: 0 }}>{t_i18n('Error')}</AlertTitle>
         <span style={{ marginRight: 10 }}>
@@ -25,11 +25,11 @@ export const SimpleError = ({ errorData }) => {
         </span>
         <Tooltip title={t_i18n('Copy stack trace errors')}>
           <IconButton onClick={copyClick} size="small" color="error">
-            <ContentCopyOutlined />
+            <ContentCopyOutlined/>
           </IconButton>
         </Tooltip>
       </Alert>
-    </>
+    </div>
   );
 };
 
