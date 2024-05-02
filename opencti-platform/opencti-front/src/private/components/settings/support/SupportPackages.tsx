@@ -129,7 +129,7 @@ const SupportPackages = () => {
         />
         <Grid container={true} spacing={4}>
           <Grid item={true} xs={8} style={{ paddingTop: '24px' }}>
-            <div style={{ height: '100%' }}>
+            <div>
               <Typography variant="h4" gutterBottom={true} style={{ marginBottom: '10px' }}>
                 {t_i18n('Generated Support Package')}
               </Typography>
