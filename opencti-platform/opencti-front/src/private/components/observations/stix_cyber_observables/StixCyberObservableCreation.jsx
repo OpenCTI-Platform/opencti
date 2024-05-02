@@ -247,7 +247,6 @@ const StixCyberObservableCreation = ({
   const divRowStyle = { display: 'flex', flexWrap: 'wrap' };
   let hashesList = [];
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    console.log('onSubmit was called');
     let adaptedValues = values;
 
     if (adaptedValues) { // Verify not null for DeepScan compliance
@@ -276,20 +275,7 @@ const StixCyberObservableCreation = ({
         delete adaptedValues['hashes_SHA-256'];
         delete adaptedValues['hashes_SHA-512'];
         delete adaptedValues.name;
-        // on failure, do we want to have the values disabled and deleted, or just disabled, or enabled and deleted?
-
-        // delete string values from the adaptedValues.hashes_MD5 || adaptedValues['hashes_SHA-1'] || adaptedValues['hashes_SHA-256'] || adaptedValues['hashes_SHA-512']
-
-        console.log(`adaptedValues.value after cleaned_bulk_hashes ${adaptedValues.value}`);
-        console.log('adaptedValues.value table below');
-        console.table(adaptedValues.value);
-        console.log('hashesList table below');
-        console.table(hashesList);
       }
-
-      // commitStixCyberObservable using stixFileMutation
-
-      // Adding those readable values back into the StixFileObservables
       // Potential dicts
       if (
         adaptedValues.hashes_MD5
@@ -369,22 +355,79 @@ const StixCyberObservableCreation = ({
         finalValues.file = values.file;
       }
 
-      // Create a new stixCyberObservable for each input of the bulk_hashes_field (each line gets a new stixCyberObservable)
-
-      // trim and get each individual line from the bulk_hashes_field
-
-      // hashes is an array of one object
-
-      // key = algorithm; value = hash
-
-      // pass the form information into each of the new stixCyberObservables (things that arent the hashes+name)
-
       const error_array = [];
       let validObservables = 0;
       const commit = async () => {
         const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; // List of the inputs
         const algorithm = selectedAttribute.toLowerCase();
-        if (hashesList) {
+        if (hashesList && selectedAttribute === 'NAME') {
+          const promises = hashesList.map((hash) => commitMutationWithPromise({
+            mutation: stixCyberObservableMutation,
+            variables: {
+              ...finalValues,
+              [observableType]: {
+                name: hash,
+              },
+            },
+            updater: (store) => insertNode(
+              store,
+              paginationKey,
+              paginationOptions,
+              'stixCyberObservableAdd',
+            ),
+            onCompleted: () => {
+              setSubmitting(false);
+              resetForm();
+              localHandleClose();
+              setSelectedAttribute('');
+            },
+            onError: () => {
+              setKeyFieldDisabled(false);
+              setSubmitting(false);
+            },
+          }));
+          await Promise.allSettled(promises).then((results) => {
+            results.forEach(({ status: promiseStatus, reason }) => {
+              if (promiseStatus === 'fulfilled') {
+                validObservables += 1;
+              } else {
+                error_array.push(reason);
+              }
+            });
+          });
+          const totalObservables = hashesList.length;
+          let closeFormWithAnySuccess = false;
+          if (error_array.length > 0) {
+            const errorObservables = error_array.length;
+            let message_string = '';
+            if (validObservables > 0) {
+              message_string = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+              closeFormWithAnySuccess = true;
+            }
+            message_string += ` ${errorObservables}/${totalObservables} ${t_i18n('observables contained errors and were not added.')} `;
+            const consolidated_errors = { res: { errors: error_array[0] } };
+            // Short Error message, just has total success and failure counts with translation support
+            consolidated_errors.res.errors[0].message = message_string;
+            // Long Error message with all errors
+            // consolidated_errors.res.errors[0].message = message_string + error_messages.join('\n');
+            // Toast Error Message to Screen - Will not close the form since errors exist for correction.
+            handleErrorInForm(consolidated_errors, setErrors);
+          } else {
+            let bulk_success_message = `${validObservables}/${totalObservables} ${t_i18n('were added successfully.')}`;
+            if (totalObservables === 1) {
+              // This is for consistent messaging when adding just (1) Observable
+              bulk_success_message = t_i18n('Observable successfully added');
+            }
+            // Toast Message on Bulk Add Success
+            MESSAGING$.notifySuccess(bulk_success_message);
+            closeFormWithAnySuccess = true;
+          }
+          // Close the form if any observables were successfully added.
+          if (closeFormWithAnySuccess === true) {
+            localHandleClose();
+          }
+        }
+        if (hashesList && selectedAttribute !== 'NAME') {
           const promises = hashesList.map((hash) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
             variables: {
@@ -407,12 +450,13 @@ const StixCyberObservableCreation = ({
               setSubmitting(false);
               resetForm();
               localHandleClose();
+              setSelectedAttribute('');
             },
             onError: () => {
+              setKeyFieldDisabled(false);
               setSubmitting(false);
             },
           }));
-          console.log('before promise.allSettled');
           await Promise.allSettled(promises).then((results) => {
             results.forEach(({ status: promiseStatus, reason }) => {
               if (promiseStatus === 'fulfilled') {
@@ -424,9 +468,6 @@ const StixCyberObservableCreation = ({
           });
           const totalObservables = hashesList.length;
           let closeFormWithAnySuccess = false;
-          console.log(`error_array.length ${error_array.length}`);
-          console.log('error array below');
-          console.table(error_array);
           if (error_array.length > 0) {
             const errorObservables = error_array.length;
             let message_string = '';
@@ -621,7 +662,6 @@ const StixCyberObservableCreation = ({
     };
 
     const handleCloseBulkAddDialog = () => {
-      console.log('BulkAddDialog is closing');
       setOpenBulkAddDialog(false);
       const bulk_hashes_field = document.getElementById('bulk_hashes_field');
 
@@ -659,7 +699,6 @@ const StixCyberObservableCreation = ({
           open={openBulkAddDialog}
           onClose={handleCloseBulkAddDialog}
           fullWidth={true}
-          // onClick={handleChildClick}
         >
           <DialogContent style={{ marginTop: 0, paddingTop: 10 }}>
             <div id="divSelectAttributes" style={{ border: '2px solid #FFA500', paddingLeft: 10 }}>
@@ -790,11 +829,9 @@ const StixCyberObservableCreation = ({
     setValue: PropTypes.func,
   };
   let stixFileBoolean = false;
-  let nameAttributeBoolean = false;
   const renderForm = () => {
     if (status.type === 'StixFile') {
       stixFileBoolean = true;
-      console.log('in if statement with stixFile');
     }
     return (
       <QueryRenderer
@@ -1031,6 +1068,20 @@ const StixCyberObservableCreation = ({
                               />
                             </div>
                           );
+                        }
+                        if (attribute.value === 'name' && status.type === 'StixFile') {
+                          return (
+                            <Field
+                              id="name"
+                              disabled={keyFieldDisabled}
+                              component={TextField}
+                              variant="standard"
+                              key={attribute.value}
+                              name={attribute.value}
+                              label={attribute.value}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                            />);
                         }
                         return (
                           <Field
