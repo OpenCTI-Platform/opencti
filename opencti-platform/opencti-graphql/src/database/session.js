@@ -65,14 +65,15 @@ export const findSessions = () => {
   });
 };
 
-// return the list of users ids that have a session activ in the last maxInactivityDuration minutes
-export const usersWithActiveSession = (maxInactivityDuration = 60) => {
+// return the list of users ids that have a session activ in the last maxInactivityDuration ms
+export const usersWithActiveSession = (maxInactivityDurationInMs = 60000) => {
+  const maxInactivityDurationInMin = maxInactivityDurationInMs / 1000 / 60;
   const { store } = applicationSession;
   return new Promise((accept) => {
     store.all((_, result) => {
       const usersWithSession = uniq(result
         .filter((n) => n.user
-          && (n.cookie.originalMaxAge / 1000 - n.redis_key_ttl) / 60 < maxInactivityDuration) // the time with no activity in the session is < to 1 hour
+          && (n.cookie.originalMaxAge / 1000 - n.redis_key_ttl) / 60 < maxInactivityDurationInMin) // the time with no activity in the session is < to 1 hour
         .map((s) => s.user.id));
       accept(usersWithSession);
     });

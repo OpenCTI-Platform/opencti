@@ -86,7 +86,7 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager?: TelemetryMeter
       filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
       filigranTelemetryMeterManager.setNumberOfInstances(settings.platform_cluster.instances_number);
       // Get number of active users since fetchTelemetryData() last execution
-      const activUsers = await usersWithActiveSession(TELEMETRY_EXPORT_INTERVAL / 1000 / 60); // TODO use SCHEDULE_TIME / 1000 / 60 instead when activ users are stored in histogram
+      const activUsers = await usersWithActiveSession(TELEMETRY_EXPORT_INTERVAL); // TODO use SCHEDULE_TIME instead when activ users are stored in histogram
       // filigranTelemetryMeterManager.setActivUsersHistogram(activUsers.length);
       filigranTelemetryMeterManager.setActivUsersNumber(activUsers.length);
     } catch (e) {
