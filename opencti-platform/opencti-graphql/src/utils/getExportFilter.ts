@@ -11,10 +11,9 @@ export const getExportFilter = async ({ markingList, contentMaxMarkings, objectI
   const contentMarkings = contentMaxMarkings.length ? await getExportContentMarkings(markingList, contentMaxMarkings) : [];
 
   const filters = contentMarkings.length ? [
-    { key: 'objectMarking', mode: 'or', operator: 'eq', values: contentMarkings }, // not eq tous les autres
-    { key: 'objectMarking', mode: 'or', operator: 'nil', values: [] },
+    { key: 'objectMarking', mode: 'and', operator: 'not_eq', values: contentMarkings },
   ] : [];
-  console.log('filters : ', filters);
+
   const markingFilter = {
     mode: 'or',
     filters,

@@ -5,10 +5,11 @@ export const getExportContentMarkings = async (markingList: StoreMarkingDefiniti
 
   const contentMaxMarkingsList = markingList.filter(({ id }) => contentMaxMarkings.includes(id));
 
-  return contentMaxMarkingsList.reduce((acc: StoreMarkingDefinition[], cur) => {
-    return acc.filter((marking) => {
-      return (cur.definition_type === marking.definition_type && cur.x_opencti_order >= marking.x_opencti_order)
-        || cur.definition_type !== marking.definition_type;
-    });
-  }, markingList).map(({ id }) => id);
+  const listVide: StoreMarkingDefinition[] = [];
+
+  contentMaxMarkingsList.forEach(({ definition_type, x_opencti_order }) => {
+    listVide.push(...markingList.filter((marking) => marking.definition_type === definition_type && marking.x_opencti_order > x_opencti_order));
+  });
+
+  return listVide.map(({ id }) => id);
 };
