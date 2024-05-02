@@ -64,8 +64,6 @@ import {
   FIRST_OBSERVED,
   FIRST_SEEN,
   generateAliasesId,
-  generateAliasesIdsForInstance,
-  generateInternalId,
   generateStandardId,
   getInputIds,
   getInstanceIds,
@@ -103,7 +101,6 @@ import {
   IDS_STIX,
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INTERNAL_IDS_ALIASES,
@@ -111,20 +108,18 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { getParentTypes, isAnId } from '../schema/schemaUtils';
+import { isAnId } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
-  RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
-import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isStixCoreObject } from '../schema/stixCoreObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -141,18 +136,17 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
   isStixObjectAliased,
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, isFeatureEnabled, logApp } from '../config/conf';
-import { FROM_START, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END, UNTIL_END_STR, utcDate } from '../utils/format';
+import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
@@ -205,6 +199,7 @@ import {
   controlUpsertInputWithUserConfidence,
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
+import { buildInnerRelation, buildEntityData, buildRelationData } from './data-builder';
 import { deleteAllObjectFiles, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 
@@ -2236,113 +2231,6 @@ const validateEntityAndRelationCreation = async (context, user, input, type, ent
   }
 };
 
-// region mutation relation
-const buildRelationInput = (input) => {
-  const { from, relationship_type: relationshipType } = input;
-  // 03. Generate the ID
-  const internalId = generateInternalId();
-  const standardId = generateStandardId(relationshipType, input);
-  // 05. Prepare the relation to be created
-  const today = now();
-  const relationAttributes = {};
-  relationAttributes._index = inferIndexFromConceptType(relationshipType);
-  // basic-relationship
-  relationAttributes.internal_id = internalId;
-  relationAttributes.standard_id = standardId;
-  relationAttributes.entity_type = relationshipType;
-  relationAttributes.relationship_type = relationshipType;
-  relationAttributes.created_at = today;
-  relationAttributes.updated_at = today;
-  // stix-relationship
-  if (isStixRelationshipExceptRef(relationshipType)) {
-    const stixIds = input.x_opencti_stix_ids || [];
-    const haveStixId = isNotEmptyField(input.stix_id);
-    if (haveStixId && input.stix_id !== standardId) {
-      stixIds.push(input.stix_id.toLowerCase());
-    }
-    relationAttributes.x_opencti_stix_ids = stixIds;
-    relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
-    relationAttributes.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
-    relationAttributes.lang = R.isNil(input.lang) ? 'en' : input.lang;
-    relationAttributes.created = R.isNil(input.created) ? today : input.created;
-    relationAttributes.modified = R.isNil(input.modified) ? today : input.modified;
-  }
-  // stix-core-relationship
-  if (isStixCoreRelationship(relationshipType)) {
-    relationAttributes.description = R.isNil(input.description) ? null : input.description;
-    relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    //* v8 ignore if */
-    if (relationAttributes.start_time > relationAttributes.stop_time) {
-      throw DatabaseError('You cant create a relation with stop_time less than start_time', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  // stix-ref-relationship
-  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    relationAttributes.created = R.isNil(input.created) ? today : input.created;
-    relationAttributes.modified = R.isNil(input.modified) ? today : input.modified;
-    //* v8 ignore if */
-    if (relationAttributes.start_time > relationAttributes.stop_time) {
-      throw DatabaseError('You cant create a relation with stop_time less than start_time', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  // stix-sighting-relationship
-  if (isStixSightingRelationship(relationshipType)) {
-    relationAttributes.description = R.isNil(input.description) ? null : input.description;
-    relationAttributes.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
-    relationAttributes.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
-    relationAttributes.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
-    relationAttributes.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
-    //* v8 ignore if */
-    if (relationAttributes.first_seen > relationAttributes.last_seen) {
-      throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  return { relation: relationAttributes };
-};
-const buildInnerRelation = (from, to, type) => {
-  const targets = Array.isArray(to) ? to : [to];
-  if (!to || R.isEmpty(targets)) {
-    return [];
-  }
-  const relations = [];
-  for (let i = 0; i < targets.length; i += 1) {
-    const target = targets[i];
-    const input = { from, to: target, relationship_type: type };
-    const { relation } = buildRelationInput(input);
-    // Ignore self relationships
-    if (from.internal_id !== target.internal_id) {
-      const basicRelation = {
-        id: relation.internal_id,
-        from,
-        fromId: from.internal_id,
-        fromRole: `${type}_from`,
-        fromType: from.entity_type,
-        to: target,
-        toId: target.internal_id,
-        toRole: `${type}_to`,
-        toType: target.entity_type,
-        base_type: BASE_TYPE_RELATION,
-        parent_types: getParentTypes(relation.entity_type),
-        ...relation,
-      };
-      relations.push(basicRelation);
-    }
-  }
-  return relations;
-};
-
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
 const computeExtendedDateValues = (newValue, currentValue, mode) => {
@@ -2617,155 +2505,58 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   return { element, event: null, isCreation: false };
 };
 
-export const buildRelationData = async (context, user, input, opts = {}) => {
-  const { fromRule } = opts;
+export const getExistingRelations = async (context, user, input, opts = {}) => {
   const { from, to, relationship_type: relationshipType } = input;
-  // 01. Generate the ID
-  const internalId = generateInternalId();
-  const standardId = generateStandardId(relationshipType, input);
-  // 02. Prepare the relation to be created
-  const today = now();
-  const data = {};
-  // Default attributes
-  // basic-relationship
-  const inferred = isNotEmptyField(fromRule);
-  data._index = inferIndexFromConceptType(relationshipType, inferred);
-  if (inferred) {
-    // Simply add the rule
-    // start/stop confidence was computed by the rule directly
-    data[fromRule] = input[fromRule];
-    data.i_inference_weight = input.i_inference_weight;
+  const { fromRule } = opts;
+  const existingRelationships = [];
+  if (fromRule) {
+    // In case inferred rule, try to find the relation with basic filters
+    // Only in inferred indices.
+    const fromRuleArgs = {
+      fromId: from.internal_id,
+      toId: to.internal_id,
+      connectionFormat: false,
+      indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
+    };
+    const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
+    existingRelationships.push(...inferredRelationships);
+  } else {
+    // In case of direct relation, try to find the relation with time filters
+    // Only in standard indices.
+    const deduplicationFilters = buildRelationDeduplicationFilters(input);
+    const searchFilters = {
+      mode: 'or',
+      filters: [{ key: 'ids', values: getInputIds(relationshipType, input, false) }],
+      filterGroups: [{
+        mode: 'and',
+        filters: [
+          {
+            key: ['connections'],
+            nested: [
+              { key: 'internal_id', values: [from.internal_id] },
+              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
+            ],
+            values: []
+          },
+          {
+            key: ['connections'],
+            nested: [
+              { key: 'internal_id', values: [to.internal_id] },
+              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
+            ],
+            values: []
+          },
+          ...deduplicationFilters
+        ],
+        filterGroups: [],
+      }]
+    };
+    // inputIds
+    const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters, connectionFormat: false };
+    const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
+    existingRelationships.push(...manualRelationships);
   }
-  data.internal_id = internalId;
-  data.standard_id = standardId;
-  data.entity_type = relationshipType;
-  data.relationship_type = relationshipType;
-  data.creator_id = [user.internal_id];
-  data.created_at = today;
-  data.updated_at = today;
-  // region re-work data
-  // stix-relationship
-  if (isStixRelationshipExceptRef(relationshipType)) {
-    const stixIds = input.x_opencti_stix_ids || [];
-    const haveStixId = isNotEmptyField(input.stix_id);
-    if (haveStixId && input.stix_id !== standardId) {
-      stixIds.push(input.stix_id.toLowerCase());
-    }
-    data.x_opencti_stix_ids = stixIds;
-    data.revoked = R.isNil(input.revoked) ? false : input.revoked;
-    data.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
-    data.lang = R.isNil(input.lang) ? 'en' : input.lang;
-    data.created = R.isNil(input.created) ? today : input.created;
-    data.modified = R.isNil(input.modified) ? today : input.modified;
-    // Get statuses
-    let type = null;
-    if (isStixCoreRelationship(relationshipType)) {
-      type = 'stix-core-relationship';
-    } else if (isStixSightingRelationship(relationshipType)) {
-      type = 'stix-sighting-relationship';
-    }
-    if (type) {
-      // Get statuses
-      const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
-      const statusesForType = platformStatuses.filter((p) => p.type === type);
-      if (statusesForType.length > 0) {
-        // Check, if status is not set or not valid
-        if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
-          data[X_WORKFLOW_ID] = R.head(statusesForType).id;
-        }
-      }
-    }
-  }
-  // stix-ref-relationship
-  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
-    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    data.created = R.isNil(input.created) ? today : input.created;
-    data.modified = R.isNil(input.modified) ? today : input.modified;
-    //* v8 ignore if */
-    if (data.start_time > data.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  // stix-core-relationship
-  if (isStixCoreRelationship(relationshipType)) {
-    data.description = input.description ? input.description : '';
-    data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
-    data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    //* v8 ignore if */
-    if (data.start_time > data.stop_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  // stix-sighting-relationship
-  if (isStixSightingRelationship(relationshipType)) {
-    data.description = R.isNil(input.description) ? '' : input.description;
-    data.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
-    data.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
-    data.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
-    data.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
-    //* v8 ignore if */
-    if (data.first_seen > data.last_seen) {
-      throw DatabaseError('You cant create a relation with last_seen less than first_seen', {
-        from: input.fromId,
-        input,
-      });
-    }
-  }
-  // endregion
-  // 04. Create the relation
-  const fromRole = `${relationshipType}_from`;
-  const toRole = `${relationshipType}_to`;
-  // Build final query
-  const relToCreate = [];
-  if (isStixRelationshipExceptRef(relationshipType)) {
-    // We need to link the data to organization sharing, only for core and sightings.
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-      relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!user.inside_platform_organization) {
-      // If user is not part of the platform organization, put its own organizations
-      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
-    }
-    const markingsFiltered = await cleanMarkings(context, input.objectMarking);
-    relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
-  }
-  if (isStixCoreRelationship(relationshipType)) {
-    relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
-    relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
-  }
-  if (isStixSightingRelationship(relationshipType)) {
-    relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-  }
-  // 05. Prepare the final data
-  const created = R.pipe(
-    R.assoc('id', internalId),
-    R.assoc('from', from),
-    R.assoc('fromId', from.internal_id),
-    R.assoc('fromRole', fromRole),
-    R.assoc('fromType', from.entity_type),
-    R.assoc('to', to),
-    R.assoc('toId', to.internal_id),
-    R.assoc('toRole', toRole),
-    R.assoc('toType', to.entity_type),
-    R.assoc('entity_type', relationshipType),
-    R.assoc('parent_types', getParentTypes(relationshipType)),
-    R.assoc('base_type', BASE_TYPE_RELATION)
-  )(data);
-    // 06. Return result if no need to reverse the relations from and to
-  return {
-    element: created,
-    isCreation: true,
-    previous: null,
-    relations: relToCreate
-  };
+  return existingRelationships;
 };
 
 export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
@@ -2834,54 +2625,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // region check existing relationship
-    const existingRelationships = [];
-    if (fromRule) {
-      // In case inferred rule, try to find the relation with basic filters
-      // Only in inferred indices.
-      const fromRuleArgs = {
-        fromId: from.internal_id,
-        toId: to.internal_id,
-        connectionFormat: false,
-        indices: [READ_INDEX_INFERRED_RELATIONSHIPS]
-      };
-      const inferredRelationships = await listRelations(context, SYSTEM_USER, relationshipType, fromRuleArgs);
-      existingRelationships.push(...inferredRelationships);
-    } else {
-      // In case of direct relation, try to find the relation with time filters
-      // Only in standard indices.
-      const deduplicationFilters = buildRelationDeduplicationFilters(resolvedInput);
-      const searchFilters = {
-        mode: 'or',
-        filters: [{ key: 'ids', values: getInputIds(relationshipType, resolvedInput, false) }],
-        filterGroups: [{
-          mode: 'and',
-          filters: [
-            {
-              key: ['connections'],
-              nested: [
-                { key: 'internal_id', values: [from.internal_id] },
-                { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }
-              ],
-              values: []
-            },
-            {
-              key: ['connections'],
-              nested: [
-                { key: 'internal_id', values: [to.internal_id] },
-                { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }
-              ],
-              values: []
-            },
-            ...deduplicationFilters
-          ],
-          filterGroups: [],
-        }]
-      };
-      // inputIds
-      const manualArgs = { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, filters: searchFilters, connectionFormat: false };
-      const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
-      existingRelationships.push(...manualRelationships);
-    }
+    const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
@@ -3019,144 +2763,18 @@ export const createRelations = async (context, user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const buildEntityData = async (context, user, input, type, opts = {}) => {
-  const { fromRule } = opts;
-  const internalId = input.internal_id || generateInternalId();
-  const standardId = input.standard_id || generateStandardId(type, input);
-  // Complete with identifiers
-  const today = now();
-  const inferred = isNotEmptyField(fromRule);
-  // Default attributes
-  let data = R.pipe(
-    R.assoc('_index', inferIndexFromConceptType(type, inferred)),
-    R.assoc(ID_INTERNAL, internalId),
-    R.assoc(ID_STANDARD, standardId),
-    R.assoc('entity_type', type),
-    R.assoc('creator_id', [user.internal_id]),
-    R.dissoc('update'),
-    R.dissoc('file'),
-    R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
-  )(input);
-  if (inferred) {
-    // Simply add the rule
-    // start/stop confidence was computed by the rule directly
-    data[fromRule] = input[fromRule];
-  }
-  // Some internal objects have dates
-  if (isDatedInternalObject(type)) {
-    data = R.pipe(R.assoc('created_at', today), R.assoc('updated_at', today))(data);
-  }
-  // Stix-Object
-  if (isStixObject(type)) {
-    const stixIds = input.x_opencti_stix_ids || [];
-    const haveStixId = isNotEmptyField(input.stix_id);
-    if (haveStixId && input.stix_id !== standardId) {
-      stixIds.push(input.stix_id.toLowerCase());
-    }
-    data = R.pipe(
-      R.assoc(IDS_STIX, stixIds),
-      R.dissoc('stix_id'),
-      R.assoc('created_at', today),
-      R.assoc('updated_at', today)
-    )(data);
-  }
-  // Stix-Meta-Object
-  if (isStixMetaObject(type)) {
-    data = R.pipe(
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
-    )(data);
-  }
-  // STIX-Core-Object
-  // -- STIX-Domain-Object
-  if (isStixDomainObject(type)) {
-    data = R.pipe(
-      R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
-      R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
-      R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
-    )(data);
-    // Get statuses
-    const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
-    const statusesForType = platformStatuses.filter((p) => p.type === type);
-    if (statusesForType.length > 0) {
-      // Check, if status is not set or not valid
-      if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
-        data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
-      }
-    }
-  }
-  // -- Aliased entities
-  if (isStixObjectAliased(type)) {
-    const aliasField = resolveAliasesField(type).name;
-    if (input[aliasField]) {
-      const preparedAliases = input[aliasField].filter((a) => isNotEmptyField(a)).map((a) => a.trim());
-      const uniqAliases = R.uniqBy((e) => normalizeName(e), preparedAliases);
-      data[aliasField] = uniqAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
-    }
-    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
-  }
-  // Create the meta relationships (ref, refs)
-  const relToCreate = [];
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o));
-  const appendMetaRelationships = async (inputField, relType) => {
-    if (input[inputField] || relType === RELATION_GRANTED_TO) {
-      // For organizations management
-      if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
-        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]) {
-          relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!user.inside_platform_organization) {
-          // If user is not part of the platform organization, put its own organizations
-          relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
-        }
-      } else if (relType === RELATION_OBJECT_MARKING) {
-        const markingsFiltered = await cleanMarkings(context, input[inputField]);
-        relToCreate.push(...buildInnerRelation(data, markingsFiltered, relType));
-      } else if (input[inputField]) {
-        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
-        relToCreate.push(...buildInnerRelation(data, instancesToCreate, relType));
-      }
-    }
-  };
-    // If file directly attached
-  if (!isEmptyField(input.file)) {
-    const path = `import/${type}/${internalId}`;
-    const file_markings = input.objectMarking?.map(({ id }) => id);
-    const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: data, file_markings });
-    data.x_opencti_files = [storeFileConverter(user, file)];
-    // Add external references from files if necessary
-    const entitySetting = await getEntitySettingFromCache(context, type);
-    if (entitySetting?.platform_entity_files_ref) {
-      // Create external ref + link to current entity
-      const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
-      const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-      const newExternalRefs = [...(input[INPUT_EXTERNAL_REFS] ?? []), externalRef];
-      data = { ...data, [INPUT_EXTERNAL_REFS]: newExternalRefs };
-    }
-  }
-  // For meta stix core && meta observables
-  const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
-  for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
-    const inputField = inputFields[fieldIndex];
-    await appendMetaRelationships(inputField.name, inputField.databaseName);
-  }
 
-  // Transaction succeed, complete the result to send it back
-  const entity = R.pipe(
-    R.assoc('id', internalId),
-    R.assoc('base_type', BASE_TYPE_ENTITY),
-    R.assoc('parent_types', getParentTypes(type))
-  )(data);
-
-  // Simply return the data
-  return {
-    isCreation: true,
-    element: entity,
-    message: generateCreateMessage(entity),
-    previous: null,
-    relations: relToCreate, // Added meta relationships
-  };
+export const getExistingEntities = async (context, user, input, type) => {
+  const participantIds = getInputIds(type, input);
+  const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type });
+  let existingByHashedPromise = Promise.resolve([]);
+  if (isStixCyberObservableHashedObservable(type)) {
+    existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
+  }
+  const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
+  const existingEntities = [];
+  existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
+  return existingEntities;
 };
 
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
@@ -3201,6 +2819,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // If existing entities have been found and type is a STIX Core Object
     let dataEntity;
+    let dataMessage;
     if (existingEntities.length > 0) {
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities);
@@ -3278,6 +2897,24 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     } else {
       // Create the object
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
+      // If file directly attached
+      let additionalInputs;
+      if (!isEmptyField(resolvedInput.file)) {
+        const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
+        const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
+        const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings });
+        additionalInputs = { x_opencti_files: [storeFileConverter(user, file)] };
+        // Add external references from files if necessary
+        if (entitySetting?.platform_entity_files_ref) {
+          // Create external ref + link to current entity
+          const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
+          const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
+          const newExternalRefs = [...(resolvedInput[INPUT_EXTERNAL_REFS] ?? []), externalRef];
+          additionalInputs = { ...additionalInputs, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+        }
+      }
+      dataEntity.element = { ...dataEntity.element, ...additionalInputs };
+      dataMessage = generateCreateMessage(dataEntity.element);
     }
     // Index the created element
     lock.signal.throwIfAborted();
@@ -3290,7 +2927,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
     });
 
-    const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
+    const event = await storeCreateEntityEvent(context, user, createdElement, dataMessage, opts);
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
   } catch (err) {
@@ -3412,7 +3049,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const isTrashableElement = !isInferredIndex(element._index)
                 && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
-      if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete) {
+      if (!forceDelete) {
         // do not delete files if logical deletion enabled
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);

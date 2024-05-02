@@ -130,6 +130,7 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
         getMainRepresentative(n.to),
         20,
       )}`)
+    || n.main_entity_name
     || fallback;
   return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };

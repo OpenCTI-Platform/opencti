@@ -4,13 +4,14 @@ import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { buildRelationData, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
+import { storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixRefRelationshipAddInput, StixRefRelationshipsAddInput } from '../generated/graphql';
 import type { BasicStoreObject } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { buildRelationData } from '../database/data-builder';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 

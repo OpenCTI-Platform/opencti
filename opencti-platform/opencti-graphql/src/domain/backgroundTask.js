@@ -13,6 +13,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -21,7 +22,8 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_VOCABULARY,
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_CASE_TEMPLATE,
-  ENTITY_TYPE_LABEL
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_DELETE_OPERATION,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;
@@ -50,7 +52,7 @@ const buildQueryFilters = async (filters, search, taskPosition) => {
   return {
     types: DEFAULT_ALLOWED_TASK_ENTITY_TYPES,
     first: MAX_TASK_ELEMENTS,
-    orderMode: 'asc',
+    orderMode: 'desc',
     orderBy: 'created_at',
     after: taskPosition,
     filters: inputFilters,

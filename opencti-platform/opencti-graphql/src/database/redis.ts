@@ -308,14 +308,14 @@ export const redisAddDeletions = async (internalIds: Array<string>) => {
   await redisTx(getClientLock(), async (tx) => {
     const time = new Date().getTime();
     // remove the too old keys from the list of instances
-    await tx.zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
+    await tx.zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
     // add/update the instance with its creation date in the ordered list of instances
     await tx.zadd('platform-deletions', time, ...ids);
   });
 };
 export const redisFetchLatestDeletions = async () => {
   const time = new Date().getTime();
-  await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
+  await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
 interface LockOptions { automaticExtension?: boolean, retryCount?: number }
@@ -362,10 +362,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     }
   };
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
+  // If we do not check for that, we could update an entity even though it was just deleted, resulting in the entity being created again
   const latestDeletions = await redisFetchLatestDeletions();
   const deletedParticipantsIds = resources.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
+    await lock.release();
     throw LockTimeoutError({ participantIds: deletedParticipantsIds });
   }
   // If everything seems good, start auto extension if needed

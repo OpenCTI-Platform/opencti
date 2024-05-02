@@ -1,16 +1,19 @@
 import React from 'react';
 import DeleteOperationsLines, { deleteOperationsLinesQuery } from '@components/trash/all/DeleteOperationsLines';
 import { DeleteOperationLineDummy } from '@components/trash/all/DeleteOperationLine';
+import ToolBar from '@components/data/ToolBar';
+import { DeleteOperationLine_node$data } from './all/__generated__/DeleteOperationLine_node.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import type { DeleteOperationsLinesPaginationQuery, DeleteOperationsLinesPaginationQuery$variables } from './all/__generated__/DeleteOperationsLinesPaginationQuery.graphql';
 import { DataColumns } from '../../../components/list_lines';
 import useAuth from '../../../utils/hooks/useAuth';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 
 const LOCAL_STORAGE_KEY = 'trash';
 
@@ -37,6 +40,18 @@ const Trash: React.FC = () => {
     sortBy,
     orderAsc,
   } = viewStorage;
+
+  const {
+    numberOfSelectedElements,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+  } = useEntityToggle<DeleteOperationLine_node$data>(LOCAL_STORAGE_KEY);
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('DeleteOperation', filters);
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -89,9 +104,12 @@ const Trash: React.FC = () => {
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
           handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
           handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
           keyword={searchTerm}
           filters={filters}
           noPadding={true}
+          iconExtension={true}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           secondaryAction={true}
@@ -117,10 +135,27 @@ const Trash: React.FC = () => {
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
               />
             </React.Suspense>
           )}
         </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={contextFilters}
+          handleClearSelectedElements={handleClearSelectedElements}
+          type="DeleteOperation"
+          deleteDisable={true}
+          deleteOperationEnabled={true}
+          mergeDisable={true}
+        />
       </div>
     );
   };

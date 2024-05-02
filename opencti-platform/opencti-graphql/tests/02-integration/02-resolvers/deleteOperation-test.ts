@@ -4,6 +4,7 @@ import { editorQuery, queryAsAdmin, TEST_ORGANIZATION, USER_PARTICIPATE } from '
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { wait } from '../../../src/database/utils';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -179,8 +180,7 @@ describe('Delete operation resolver testing', () => {
     expect(queryResult.data?.deleteOperation).toBeNull();
   });
 
-  it.skip('should deleteOperation be restored', async () => {
-    // TODO Update counters when removing the skip on this test
+  it('should deleteOperation be restored', async () => {
     // Create and delete the report
     const REPORT_TO_CREATE = {
       input: {
@@ -208,15 +208,18 @@ describe('Delete operation resolver testing', () => {
           filterGroups: [],
         } } });
     expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
-    deleteOperationId = getAllDeletedOperations.data?.decayRules.edges[0].node.id;
+    deleteOperationId = getAllDeletedOperations.data?.deleteOperations.edges[0].node.id;
 
-    // Restore the report
+    // Restore the report (wait 5s for report deletion lock to expire before restoring)
+    await wait(5010);
     await queryAsAdmin({ query: DELETE_RESTORE_MUTATION, variables: { id: deleteOperationId }, });
 
     const deleteOperationQueryResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
     expect(deleteOperationQueryResult.data?.deleteOperation).toBeNull();
 
     const reportQueryAfterResult = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
-    expect(reportQueryAfterResult.data?.report).toBeDefined();
+    expect(reportQueryAfterResult.data?.report.id).toBe(reportInternalId);
+
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
   });
 });

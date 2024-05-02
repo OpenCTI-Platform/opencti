@@ -13,15 +13,19 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
+export const ACTION_TYPE_RESTORE = 'RESTORE';
+export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 
+const isDeleteRestrictedAction = (a) => { return a === ACTION_TYPE_DELETE || a === ACTION_TYPE_RESTORE || a === ACTION_TYPE_COMPLETE_DELETE; };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
 // check a user has the right to create a list or a query background task
@@ -42,25 +46,27 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     if (!isAuthorized) {
       throw ForbiddenAccess();
     }
-    const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
-    if (askForDeletion) {
-      // 1.2. If deletion action available, the user should have the capability KNOWLEDGE_DELETE
-      const isDeletionAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
-      if (!isDeletionAuthorized) {
+    const askForDeletionRelatedAction = actions.filter((a) => isDeleteRestrictedAction(a)).length > 0;
+    if (askForDeletionRelatedAction) {
+      // 1.2. If deletion related action available, the user should have the capability KNOWLEDGE_DELETE
+      const isDeletionRelatedActionAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
+      if (!isDeletionRelatedActionAuthorized) {
         throw ForbiddenAccess();
       }
     }
     // 1.3. Check the modified entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
+      const deleteOperationTypes = typeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION);
       const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
-      const isNotKnowledge = !areParentTypesKnowledge(parentTypes) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      const isNotKnowledge = (!deleteOperationTypes && !areParentTypesKnowledge(parentTypes)) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
+      const deleteOperationTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION);
       const isNotKnowledge = objects.includes(undefined)
-        || !areParentTypesKnowledge(objects.map((o) => o.parent_types))
+        || (!deleteOperationTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
         || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledge) {
         throw ForbiddenAccess('The targeted ids are not knowledge.');

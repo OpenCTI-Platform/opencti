@@ -1,7 +1,7 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
-import { completeDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
+import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock_key') || 'garbage_collection_manager_lock';
@@ -21,7 +21,7 @@ export const garbageCollectionHandler = async () => {
   for (let i = 0; i < deleteOperationsToManage.length; i += 1) {
     try {
       const deleteOperation = deleteOperationsToManage[i];
-      await completeDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
+      await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
     } catch (e) {
       logApp.warn(e, { manager: 'GARBAGE_COLLECTION_MANAGER', id: deleteOperationsToManage[i].id });
       errorCount += 1;

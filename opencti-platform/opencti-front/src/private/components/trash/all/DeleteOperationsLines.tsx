@@ -7,14 +7,22 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
+import { DeleteOperationLine_node$data } from './__generated__/DeleteOperationLine_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
 interface DeleteOperationsLinesProps {
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   dataColumns: DataColumns;
   paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<DeleteOperationsLinesPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  selectedElements: Record<string, DeleteOperationLine_node$data>;
+  deSelectedElements: Record<string, DeleteOperationLine_node$data>;
+  onToggleEntity: (
+    entity: DeleteOperationLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
 }
 
 export const deleteOperationsLinesQuery = graphql`
@@ -74,9 +82,13 @@ export const deleteOperationsLinesFragment = graphql`
 
 const DeleteOperationsLines: FunctionComponent<DeleteOperationsLinesProps> = ({
   dataColumns,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
   paginationOptions,
-  queryRef,
   setNumberOfElements,
+  queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   DeleteOperationsLinesPaginationQuery,
@@ -103,6 +115,10 @@ const DeleteOperationsLines: FunctionComponent<DeleteOperationsLinesProps> = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
     />
   );
 };

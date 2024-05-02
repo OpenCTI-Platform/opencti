@@ -38,7 +38,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, isFeatureEnabled, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, loadCert, logApp } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -53,7 +53,6 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   buildRefRelationKey,
   buildRefRelationSearchKey,
@@ -88,7 +87,7 @@ import {
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixCoreRelationship, RELATION_INDICATES, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { generateInternalId, generateStandardId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, executionContext, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, SYSTEM_USER } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
@@ -139,6 +138,7 @@ import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schem
 import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { buildEntityData } from './data-builder';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1276,6 +1276,7 @@ const computeQueryIndices = (indices, types) => {
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
+  const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1325,7 +1326,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
     const body = {
-      sort: [{ created_at: 'asc' }],
+      sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
           must: mustTerms,
@@ -3230,7 +3231,10 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
       },
       dest: {
         index: destIndex
-      }
+      },
+      script: { // remove old fields that are not mapped anymore but can be present in DB
+        source: "ctx._source.remove('fromType'); ctx._source.remove('toType'); ctx._source.remove('spec_version');"
+      },
     }
   };
   return engine.reindex(reindexParams).catch((err) => {
@@ -3250,7 +3254,7 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
   const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
   const entitiesToDelete = [...elements, ...relations];
   // store deleted objects
-  if (isFeatureEnabled('LOGICAL_DELETION') && !forceDelete && elements.length === 1) {
+  if (!forceDelete && elements.length === 1) {
     // map of index => ids to save
     const idsByIndex = new Map();
     entitiesToDelete.forEach((element) => {
@@ -3265,8 +3269,8 @@ export const elDeleteElements = async (context, user, elements, opts = {}) => {
       reindexPromises.push(elReindexElements(context, user, ids, sourceIndex, INDEX_DELETED_OBJECTS));
     });
 
-    const indexDeleteOperationPromise = createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
-    await Promise.all([...reindexPromises, indexDeleteOperationPromise]);
+    await Promise.all(reindexPromises);
+    await createDeleteOperationElement(context, user, elements[0], entitiesToDelete);
   }
   // 01. Start by clearing connections rel
   await elRemoveRelationConnection(context, user, elementsImpact);
@@ -3282,29 +3286,18 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
   // We currently only handle deleteOperations of 1 element
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
   const deleteOperationInput = {
-    created_at: now(),
-    creator_id: user.id,
+    entity_type: ENTITY_TYPE_DELETE_OPERATION,
     main_entity_type: mainElement.entity_type,
     main_entity_id: mainElement.internal_id,
     main_entity_name: extractRepresentative(mainElement).main ?? mainElement.internal_id,
     deleted_elements: deleteOperationDeletedElements,
+    confidence: mainElement.confidence ?? 100,
+    objectMarking: mainElement.objectMarking ?? [], // we retrieve resolved objectMarking if it exists
+    objectOrganization: mainElement.objectOrganization ?? [], // we retrieve resolved objectOrganization if it exists
   };
-  const internalID = generateInternalId();
-  const standardID = generateStandardId(ENTITY_TYPE_DELETE_OPERATION, deleteOperationInput);
-  const mainElementConfidence = mainElement.confidence ?? 100;
-  const deleteOperationRawElement = {
-    ...deleteOperationInput,
-    _index: INDEX_INTERNAL_OBJECTS,
-    [ID_INTERNAL]: internalID,
-    [ID_STANDARD]: standardID,
-    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: mainElement[RELATION_OBJECT_MARKING] ?? [],
-    [buildRefRelationKey(RELATION_GRANTED_TO)]: mainElement[RELATION_GRANTED_TO] ?? [],
-    confidence: mainElementConfidence,
-    entity_type: ENTITY_TYPE_DELETE_OPERATION,
-    base_type: BASE_TYPE_ENTITY,
-    parent_types: getParentTypes(ENTITY_TYPE_DELETE_OPERATION),
-  };
-  await elIndexElements(context, user, ENTITY_TYPE_DELETE_OPERATION, [deleteOperationRawElement]);
+  const { element, relations } = await buildEntityData(context, user, deleteOperationInput, ENTITY_TYPE_DELETE_OPERATION);
+
+  await elIndexElements(context, user, ENTITY_TYPE_DELETE_OPERATION, [element, ...(relations ?? [])]);
 };
 
 // TODO: get rid of this function and let elastic fail queries, so we can fix all of them by using the right type of data

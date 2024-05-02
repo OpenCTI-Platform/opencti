@@ -40,6 +40,7 @@ import {
   LinkOffOutlined,
   MergeOutlined,
   MoveToInboxOutlined,
+  RestoreOutlined,
   TransformOutlined,
 } from '@mui/icons-material';
 import { CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
@@ -204,6 +205,7 @@ const notMergableTypes = [
   'Label',
   'Case-Template',
   'Task',
+  'DeleteOperation',
 ];
 
 const Transition = React.forwardRef((props, ref) => (
@@ -497,6 +499,20 @@ class ToolBar extends Component {
         context: { field: 'container-object', values: [this.props.container] },
       },
     ];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
+
+  handleLaunchCompleteDelete() {
+    const actions = [{ type: 'COMPLETE_DELETE', context: null }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
+
+  handleLaunchRestore() {
+    const actions = [{ type: 'RESTORE', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -1218,6 +1234,8 @@ class ToolBar extends Component {
       noMarking,
       noWarning,
       deleteDisable,
+      mergeDisable,
+      deleteOperationEnabled,
       warning,
       warningMessage,
     } = this.props;
@@ -1230,7 +1248,7 @@ class ToolBar extends Component {
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
-    const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
+    const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
     const entityTypeFilterValues = findFilterFromKey(filters?.filters ?? [], 'entity_type', 'eq')?.values
       ?? [];
     const typesAreNotUpdatable = R.includes(
@@ -1243,7 +1261,7 @@ class ToolBar extends Component {
         && notUpdatableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region rules
-    const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
+    const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
     const typesAreNotScannable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1254,7 +1272,7 @@ class ToolBar extends Component {
         && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region enrich
-    const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
+    const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll
       && entityTypeFilterValues.length === 1
@@ -1269,7 +1287,8 @@ class ToolBar extends Component {
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
       notMergableTypes,
     );
-    const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template'];
+    const enableMerge = !typesAreNotMergable && !mergeDisable;
+    const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template', 'DeleteOperation'];
     const typesAreNotAddableInContainer = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1475,7 +1494,7 @@ class ToolBar extends Component {
                       </span>
                     </Tooltip>
                   )}
-                  {!typesAreNotMergable && (
+                  {enableMerge && (
                     <Tooltip title={t('Merge')}>
                       <span>
                         <IconButton
@@ -1549,6 +1568,42 @@ class ToolBar extends Component {
                           || this.state.processing
                         }
                           onClick={this.handleLaunchDelete.bind(this)}
+                          color={warning ? 'warning' : 'primary'}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Security>
+                )}
+                {deleteOperationEnabled && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Tooltip title={warningMessage || t('Restore')}>
+                      <span>
+                        <IconButton
+                          aria-label="restore"
+                          disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                          }
+                          onClick={this.handleLaunchRestore.bind(this)}
+                          color={warning ? 'warning' : 'primary'}
+                          size="small"
+                        >
+                          <RestoreOutlined fontSize="small"/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={warningMessage || t('Confirm delete')}>
+                      <span>
+                        <IconButton
+                          aria-label="completeDelete"
+                          disabled={
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                          }
+                          onClick={this.handleLaunchCompleteDelete.bind(this)}
                           color={warning ? 'warning' : 'primary'}
                           size="small"
                         >
@@ -2318,6 +2373,7 @@ ToolBar.propTypes = {
   warning: PropTypes.bool,
   warningMessage: PropTypes.string,
   rightOffset: PropTypes.number,
+  deleteOperationEnabled: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);
