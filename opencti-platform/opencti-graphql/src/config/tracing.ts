@@ -6,7 +6,7 @@ import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric'
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENABLED_TRACING, logApp } from './conf';
+import { ENABLED_TRACING } from './conf';
 
 class MeterManager {
   meterProvider: MeterProvider;
