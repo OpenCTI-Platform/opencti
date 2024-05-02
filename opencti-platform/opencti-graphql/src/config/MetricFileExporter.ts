@@ -4,6 +4,7 @@ import { InMemoryMetricExporter } from '@opentelemetry/sdk-metrics';
 import { logTelemetry } from './conf';
 
 export class MetricFileExporter extends InMemoryMetricExporter {
+  // eslint-disable-next-line class-methods-use-this
   export(metrics: ResourceMetrics, resultCallback: (callback: ExportResult) => void) {
     try {
       logTelemetry.info(metrics);

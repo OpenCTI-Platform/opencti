@@ -15,6 +15,8 @@ export class TelemetryMeterManager {
 
   private activUsersHistogram: Histogram | null = null;
 
+  private activUsersNumber = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -35,18 +37,30 @@ export class TelemetryMeterManager {
     this.activUsersHistogram?.record(activUsersNumber);
   }
 
+  setActivUsersNumber(n: number) {
+    this.activUsersNumber = n;
+  }
+
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     // - Histogram - //
     // number of activ users
-    this.activUsersHistogram = meter.createHistogram(
-      'opencti_numberOfActivUsers',
-      { description: 'Number of users activ in a session within the last hour',
-        unit: 'count',
-        valueType: ValueType.INT,
-      }
-    );
+    // this.activUsersHistogram = meter.createHistogram(
+    //   'opencti_numberOfActivUsers',
+    //   { description: 'Number of users activ in a session within the last hour',
+    //     unit: 'count',
+    //     valueType: ValueType.INT,
+    //   }
+    // );
     // - Gauges - //
+    // number of activ users
+    const numberOfActivUsers = meter.createObservableGauge(
+      'opencti_numberOfActivUsers',
+      { description: 'number of activ users', unit: 'count', valueType: ValueType.INT },
+    );
+    numberOfActivUsers.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.activUsersNumber);
+    });
     // number of instances
     const numberOfInstancesGauge = meter.createObservableGauge(
       'opencti_numberOfInstances',
