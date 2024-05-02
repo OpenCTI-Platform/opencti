@@ -3,9 +3,10 @@ import { createReadStream } from 'node:fs';
 import { elDelete, elLoadById } from '../../../src/database/engine';
 import { elIndexFiles, elSearchFiles } from '../../../src/database/file-search';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { deleteFile, getFileContent, upload } from '../../../src/database/file-storage';
+import { deleteFile, getFileContent } from '../../../src/database/file-storage';
 import { INDEX_FILES } from '../../../src/database/utils';
 import { resetFileIndexing } from '../../../src/domain/indexedFile';
+import { uploadToStorage } from '../../../src/database/file-storage-helper';
 import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../../../src/modules/managerConfiguration/managerConfiguration-domain';
 import { SYSTEM_USER } from '../../../src/utils/access';
 
@@ -16,7 +17,7 @@ const indexFile = async (fileName, mimetype, documentId) => {
     mimetype,
   };
   // upload file in minio
-  const { upload: uploadedFile } = await upload(testContext, ADMIN_USER, 'import/global', file, {});
+  const { upload: uploadedFile } = await uploadToStorage(testContext, ADMIN_USER, 'import/global', file, {});
 
   // get file content in base64
   const fileContent = await getFileContent(uploadedFile.id, 'base64');

@@ -58,8 +58,8 @@ export const meterProvider = new MeterProvider({});
 export const meterManager = new MeterManager(meterProvider);
 
 export const telemetry = (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
-  // if tracing disabled
-  if (!ENABLED_TRACING) {
+  // if tracing disabled or context is not correctly configured.
+  if (!ENABLED_TRACING || !context) {
     return fn();
   }
   // if tracing enabled

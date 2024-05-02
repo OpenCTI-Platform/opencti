@@ -1,7 +1,7 @@
 import { type BasicStoreEntityDeleteOperation, ENTITY_TYPE_DELETE_OPERATION } from './deleteOperation-types';
 import { FunctionalError } from '../../config/errors';
 import { elDeleteInstances, elFindByIds } from '../../database/engine';
-import { deleteAllObjectFiles } from '../../database/file-storage';
+import { deleteAllObjectFiles } from '../../database/file-storage-helper';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import { FilterMode, FilterOperator, OrderingMode, type QueryDeleteOperationsArgs } from '../../generated/graphql';

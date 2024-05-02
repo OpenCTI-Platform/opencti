@@ -35,6 +35,7 @@ const Configuration = lazy(() => import('./activity/configuration/Configuration'
 const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const DecayRules = lazy(() => import('./decay/DecayRules'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
+const SupportPackage = lazy(() => import('./support/SupportPackages'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -189,6 +190,10 @@ const Root = () => {
             <Route
               path="/file_indexing"
               element={ <FileIndexing />}
+            />
+            <Route
+              path="/support"
+              element={<SupportPackage />}
             />
             <Route
               path="/customization"

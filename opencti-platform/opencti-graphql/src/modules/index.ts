@@ -60,6 +60,7 @@ import './internal/csvMapper/csvMapper';
 import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './deleteOperation/deleteOperation';
+import './support/support';
 // endregion
 
 // region graphql registration
@@ -99,5 +100,6 @@ import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
 import './xtm/xtm-graphql';
 import './deleteOperation/deleteOperation-graphql';
+import './support/support-graphql';
 // import './internal/document/document-graphql'; # Not needed as document is not fully registered
 // endregion

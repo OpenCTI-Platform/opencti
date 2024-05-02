@@ -1,6 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { v4 as uuid } from 'uuid';
-import conf, { logApp } from '../config/conf';
+import { logApp, NODE_INSTANCE_ID } from '../config/conf';
 import historyManager from './historyManager';
 import ruleEngine from './ruleManager';
 import taskManager from './taskManager';
@@ -21,7 +20,6 @@ import playbookManager from './playbookManager';
 import { getAllManagersStatuses } from './managerModule';
 
 const SCHEDULE_TIME = 30000;
-const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
 
 export type ClusterConfig = {
   platform_id: string;

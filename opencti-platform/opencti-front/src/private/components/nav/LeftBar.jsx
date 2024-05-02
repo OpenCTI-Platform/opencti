@@ -904,6 +904,7 @@ const LeftBar = () => {
                   { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
                   { granted: isGrantedToSettings, link: '/dashboard/settings/activity', label: 'Activity' },
                   { granted: isGrantedToSettings, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                  { granted: isGrantedToSettings, link: '/dashboard/settings/support', label: 'Support' },
                 ],
               )}
             </Security>

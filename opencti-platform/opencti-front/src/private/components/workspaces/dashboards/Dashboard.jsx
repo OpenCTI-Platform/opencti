@@ -56,7 +56,7 @@ import AuditsRadar from '../../common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
 import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
-import { ErrorBoundary, SimpleError } from '../../Error';
+import { ErrorBoundary } from '../../Error';
 import {
   deserializeDashboardManifestForFrontend,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
@@ -807,13 +807,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 onDelete={() => handleDeleteWidget(widget.id)}
               />
               )}
-              <ErrorBoundary
-                display={
-                  <div style={{ paddingTop: 28 }}>
-                    <SimpleError/>
-                  </div>
-                  }
-              >
+              <ErrorBoundary>
                 {widget.perspective === 'entities'
                     && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'relationships'
@@ -858,13 +852,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               classes={{ root: classes.paper }}
               variant="outlined"
                    >
-              <ErrorBoundary
-                display={
-                  <div style={{ paddingTop: 28 }}>
-                    <SimpleError />
-                  </div>
-                }
-              >
+              <ErrorBoundary>
                 {widget.perspective === 'entities'
                   && renderEntitiesVisualization(removeIdFilterWidget, manifest.config)}
                 {widget.perspective === 'relationships'

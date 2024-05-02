@@ -35,6 +35,7 @@ import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
 import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
+import supportPackageListener from './listener/supportPackageListener';
 
 export const startModules = async () => {
   // region API initialization
@@ -144,6 +145,8 @@ export const startModules = async () => {
   await activityListener.start();
   await activityManager.start();
   // endregion
+
+  await supportPackageListener.start();
 };
 
 export const shutdownModules = async () => {
@@ -227,6 +230,7 @@ export const shutdownModules = async () => {
   stoppingPromises.push(activityListener.shutdown());
   stoppingPromises.push(activityManager.shutdown());
   // endregion
+  stoppingPromises.push(supportPackageListener.shutdown());
   await Promise.all(stoppingPromises);
 };
 // endregion

@@ -3,6 +3,7 @@ import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
 import { executeInternalQuery, queryAsAdmin } from './testQuery';
 import { FORBIDDEN_ACCESS } from '../../src/config/errors';
+import { downloadFile, streamConverter } from '../../src/database/file-storage';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -32,4 +33,9 @@ export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, requ
   expect(queryResult.errors, 'FORBIDDEN_ACCESS is expected.').toBeDefined();
   expect(queryResult.errors?.length, 'FORBIDDEN_ACCESS is expected.').toBe(1);
   expect(queryResult.errors[0].name, 'FORBIDDEN_ACCESS is expected.').toBe(FORBIDDEN_ACCESS);
+};
+
+export const requestFileFromStorageAsAdmin = async (storageId: string) => {
+  const stream = await downloadFile(storageId);
+  return streamConverter(stream);
 };

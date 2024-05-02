@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { logApp } from '../config/conf';
-import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-storage';
+import { deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -12,6 +12,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES } from '../database/utils';
 import { getStats } from '../database/engine';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { uploadToStorage } from '../database/file-storage-helper';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -101,7 +102,7 @@ export const askJobImport = async (context, user, args) => {
 export const uploadImport = async (context, user, args) => {
   const { file, fileMarkings: file_markings } = args;
   const path = 'import/global';
-  const { upload: up } = await upload(context, user, path, file, { file_markings });
+  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });
   const contextData = buildContextDataForFile(null, path, up.name);
   await publishUserAction({
     user,
@@ -116,7 +117,7 @@ export const uploadImport = async (context, user, args) => {
 export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
   const meta = { labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
-  const { upload: up } = await upload(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', file, { meta, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name);
   await publishUserAction({
     user,

@@ -23,7 +23,6 @@ import { addIndicator } from '../modules/indicator/indicator-domain';
 import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
-import { upload } from '../database/file-storage';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
@@ -42,6 +41,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { uploadToStorage } from '../database/file-storage-helper';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -392,7 +392,7 @@ export const artifactImport = async (context, user, args) => {
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
   const meta = { version };
-  await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
+  await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
   return artifact;
 };
 

@@ -30,7 +30,7 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, storeFileConverter, upload } from '../database/file-storage';
+import { deleteFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById } from '../modules/internal/document/document-domain';
 import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
@@ -48,6 +48,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
+import { uploadToStorage } from '../database/file-storage-helper';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -362,7 +363,7 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
 
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
   const meta = { list_filters: listFilters };
-  await upload(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta, file_markings });
+  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta });
   return true;
 };
 
@@ -372,7 +373,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
   const path = `export/${previous.entity_type}/${entityId}`;
-  const { upload: up } = await upload(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
+  const { upload: up } = await uploadToStorage(context, user, path, args.file, { entity: previous, file_markings: args.file_markings });
   const contextData = buildContextDataForFile(previous, path, up.name);
   await publishUserAction({
     user,
@@ -406,7 +407,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await upload(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings });
+    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications

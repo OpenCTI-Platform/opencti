@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { logApp, PLATFORM_VERSION } from './config/conf';
+import { environment, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
@@ -26,7 +26,7 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 
 // Check every dependency
 export const checkSystemDependencies = async () => {
-  logApp.info('[OPENCTI] Checking dependencies statuses');
+  logApp.info(`[OPENCTI] Checking dependencies statuses, starting with environment=${environment}`);
   // Check if elasticsearch is available
   await searchEngineInit();
   logApp.info('[CHECK] Search engine is alive');

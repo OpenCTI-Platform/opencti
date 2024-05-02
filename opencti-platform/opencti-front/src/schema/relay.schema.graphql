@@ -7564,6 +7564,8 @@ type Query {
   obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
+  supportPackage(id: String!): SupportPackage
+  supportPackages(first: Int, after: ID, orderBy: SupportPackageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SupportPackageConnection
 }
 
 type Subscription {
@@ -8336,6 +8338,9 @@ type Mutation {
   obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
+  supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
+  supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage
+  supportPackageDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11490,4 +11495,56 @@ type DeleteOperationConnection {
 type DeleteOperationEdge {
   cursor: String!
   node: DeleteOperation!
+}
+
+type SupportPackage implements InternalObject & BasicObject {
+  id: ID!
+  name: String!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created_at: DateTime!
+  package_status: PackageStatus!
+  package_url: String
+  package_upload_dir: String
+  nodes_status: [SupportNodeStatus]
+  nodes_count: Int!
+  createdBy: Individual
+  creators: [Creator!]
+}
+
+type SupportPackageConnection {
+  pageInfo: PageInfo!
+  edges: [SupportPackageEdge!]!
+}
+
+type SupportNodeStatus {
+  node_id: String!
+  package_status: PackageStatus!
+}
+
+type SupportPackageEdge {
+  cursor: String!
+  node: SupportPackage!
+}
+
+enum PackageStatus {
+  IN_PROGRESS
+  READY
+  IN_ERROR
+}
+
+enum SupportPackageOrdering {
+  name
+  created_at
+  created
+  package_status
+}
+
+input SupportPackageAddInput {
+  name: String!
+}
+
+input SupportPackageForceZipInput {
+  id: String!
 }
