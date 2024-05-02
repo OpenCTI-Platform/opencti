@@ -7,11 +7,7 @@ export default class ReportPage {
     return this.page.getByTestId('report-page');
   }
 
-  goToPage() {
-    return this.page.getByLabel('Analyses').click();
-  }
-
-  addNewReport() {
+  openNewReportForm() {
     return this.page.getByLabel('Add', { exact: true }).click();
   }
 
@@ -28,6 +24,10 @@ export default class ReportPage {
   }
 
   getItemFromList(name: string) {
-    return this.page.getByRole('link', { name }).first();
+    return this.page.getByRole('link', { name });
+  }
+
+  checkItemInList(name: string) {
+    return this.getItemFromList(name).getByRole('checkbox').click();
   }
 }

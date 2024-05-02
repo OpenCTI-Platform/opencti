@@ -11,8 +11,8 @@ test('Testing content customization for Report', async ({ page }) => {
 
   // Checking that creation is empty
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
-  await reportPage.addNewReport();
-  expect(await page.getByText(/^Content from customization$/)).not.toBeVisible();
+  await reportPage.openNewReportForm();
+  await expect(page.getByText(/^Content from customization$/)).toBeHidden();
   await reportPage.closeNewreport();
 
   // Opening customization in settings
@@ -32,8 +32,8 @@ test('Testing content customization for Report', async ({ page }) => {
 
   // Go back to the Report page
   await leftBarPage.clickOnMenu('Analyses', 'Reports');
-  await reportPage.addNewReport();
-  expect(await page.getByText(/^Content from customization$/)).toBeVisible();
+  await reportPage.openNewReportForm();
+  await expect(page.getByText(/^Content from customization$/)).toBeVisible();
   await reportPage.closeNewreport();
 
   // Revert changes

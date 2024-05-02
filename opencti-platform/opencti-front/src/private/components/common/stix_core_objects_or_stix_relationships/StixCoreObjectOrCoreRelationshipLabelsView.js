@@ -157,7 +157,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
           color="primary"
-          aria-label="Label"
+          aria-label={t_i18n('Add new labels')}
+          title={t_i18n('Add new labels')}
           onClick={handleOpenAdd}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
           size="large"

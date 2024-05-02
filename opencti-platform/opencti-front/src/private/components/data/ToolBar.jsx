@@ -1373,7 +1373,7 @@ class ToolBar extends Component {
                 },
               }}
             >
-              <Toolbar style={{ minHeight: 54 }}>
+              <Toolbar style={{ minHeight: 54 }} data-testid='opencti-toolbar'>
                 <Typography
                   className={classes.title}
                   color="inherit"

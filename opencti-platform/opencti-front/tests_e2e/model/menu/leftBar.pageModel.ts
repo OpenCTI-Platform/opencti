@@ -4,6 +4,10 @@ import { expect } from '../../fixtures/baseFixtures';
 export default class LeftBarPage {
   constructor(private page:Page) {}
 
+  open() {
+    return this.page.getByTestId('ChevronRightIcon').click();
+  }
+
   async clickOnMenu(menuName: string, subMenuItem?: string) {
     await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {

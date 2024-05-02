@@ -1,6 +1,6 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import GroupingsPage from '../model/grouping.pageModel';
-import GroupingFormPage from '../model/groupingForm.pageModel';
+import GroupingFormPage from '../model/form/groupingForm.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
 import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 

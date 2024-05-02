@@ -1,8 +1,8 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
-import FormExportPageModel from '../model/formExport.pageModel';
+import FormExportPageModel from '../model/form/formExport.pageModel';
 import ReportPage from '../model/report.pageModel';
-import ReportFormPage from '../model/reportForm.pageModel';
+import ReportFormPage from '../model/form/reportForm.pageModel';
 
 test.skip('Add an Export in a report and check the export is present in content', async ({ page }) => {
   const reportPage = new ReportPage(page);
@@ -10,8 +10,8 @@ test.skip('Add an Export in a report and check the export is present in content'
   const reportDetailsPage = new ReportDetailsPage(page);
   const formExportPage = new FormExportPageModel(page);
   await page.goto('/dashboard/analyses/reports');
-  await reportPage.addNewReport();
-  await reportForm.fillNameInput('test e2e object-markings');
+  await reportPage.openNewReportForm();
+  await reportForm.nameField.fill('test e2e object-markings');
   await reportPage.getCreateReportButton().click();
   await reportPage.getItemFromList('test e2e object-markings').click();
   await reportDetailsPage.getExportButton().click();

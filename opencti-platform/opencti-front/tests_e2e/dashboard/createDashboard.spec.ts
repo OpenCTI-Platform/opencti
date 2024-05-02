@@ -1,7 +1,7 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import DashboardPage from '../model/dashboard.pageModel';
 import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
-import DashboardFormPage from '../model/dashboardForm.pageModel';
+import DashboardFormPage from '../model/form/dashboardForm.pageModel';
 
 test('Create a new dashboard page', async ({ page }) => {
   const dashboardPage = new DashboardPage(page);

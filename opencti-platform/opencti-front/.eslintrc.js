@@ -66,6 +66,7 @@ module.exports = {
         ignoreTemplateLiterals: true,
       },
     ],
+    '@typescript-eslint/lines-between-class-members': 'off',
     '@typescript-eslint/naming-convention': ['error', {
       selector: 'variable',
       format: ['camelCase', 'UPPER_CASE'],

@@ -54,7 +54,7 @@ const getStartingHandler = () => {
       process.exit();
     }
   };
-  return fetch(API_URI, {}).then(() => manualStartHandler).catch(() => autoStartHandler);
+  return fetch(`${API_URI}/health`, {}).then(() => manualStartHandler).catch(() => autoStartHandler);
 };
 
 // noinspection JSIgnoredPromiseFromCall

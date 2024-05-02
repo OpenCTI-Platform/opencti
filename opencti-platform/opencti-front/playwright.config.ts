@@ -47,7 +47,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     ignoreHTTPSErrors: true,
   },
-  expect: { timeout: 200000 },
+  expect: { timeout: 60000 },
   timeout: 200000,
   /* Configure projects for major browsers */
   projects: [
