@@ -6880,7 +6880,7 @@ export enum EventsOrdering {
 export type ExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format: Scalars['String']['input'];
 };
 
@@ -14247,7 +14247,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
@@ -22291,7 +22291,7 @@ export type StixCoreObjectsExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
@@ -22561,7 +22561,7 @@ export type StixCoreRelationshipsExportAskInput = {
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22874,7 +22874,7 @@ export type StixCyberObservablesExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
@@ -34520,7 +34520,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
-  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
