@@ -24,6 +24,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import inject18n from '../../../../components/i18n';
 import FileUploader from '../files/FileUploader';
 import { FileLineDeleteMutation } from '../files/FileLine';
@@ -52,10 +53,11 @@ export const stixDomainObjectContentFilesUploadStixDomainObjectMutation = graphq
   mutation StixDomainObjectContentFilesUploadStixDomainObjectMutation(
     $id: ID!
     $file: Upload!
+    $fileMarkings: [String]
     $noTriggerImport: Boolean
   ) {
     stixDomainObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: $noTriggerImport) {
+      importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings) {
         id
         name
         uploadStatus
@@ -154,9 +156,12 @@ class StixDomainObjectContentFiles extends Component {
     const file = new File([blob], name, {
       type,
     });
+
+    const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
     commitMutation({
       mutation: stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-      variables: { file, id: stixDomainObjectId },
+      variables: { file, id: stixDomainObjectId, fileMarkings },
       setSubmitting,
       onCompleted: (result) => {
         setSubmitting(false);
@@ -289,12 +294,12 @@ class StixDomainObjectContentFiles extends Component {
         </List>
         <Formik
           enableReinitialize={true}
-          initialValues={{ name: '', type: 'text/html' }}
+          initialValues={{ name: '', type: 'text/html', fileMarkings: [] }}
           validationSchema={fileValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form>
               <Dialog
                 PaperProps={{ elevation: 1 }}
@@ -323,6 +328,13 @@ class StixDomainObjectContentFiles extends Component {
                     <MenuItem value="text/markdown">{t('Markdown')}</MenuItem>
                     <MenuItem value="text/plain">{t('Text')}</MenuItem>
                   </Field>
+                  <ObjectMarkingField
+                    label={t('File marking definition levels')}
+                    name="fileMarkings"
+                    style={fieldSpacingContainerStyle}
+                    onChange={() => {}}
+                    setFieldValue={setFieldValue}
+                  />
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={handleReset} disabled={isSubmitting}>

@@ -1073,6 +1073,7 @@ const ContainerHeader = (props) => {
                 instanceId={container.id}
                 instanceType={container.entity_type}
                 instanceName={getMainRepresentative(container)}
+                instanceMarkings={container.objectMarking.map(({ id }) => id)}
                 type="container"
               />
             )}

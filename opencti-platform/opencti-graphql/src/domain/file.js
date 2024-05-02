@@ -98,9 +98,10 @@ export const askJobImport = async (context, user, args) => {
   return file;
 };
 
-export const uploadImport = async (context, user, file) => {
+export const uploadImport = async (context, user, args) => {
+  const { file, fileMarkings: file_markings } = args;
   const path = 'import/global';
-  const { upload: up } = await upload(context, user, path, file, {});
+  const { upload: up } = await upload(context, user, path, file, { file_markings });
   const contextData = buildContextDataForFile(null, path, up.name);
   await publishUserAction({
     user,

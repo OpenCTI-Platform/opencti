@@ -122,9 +122,10 @@ const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
   mutation StixDomainObjectContentUploadExternalReferenceMutation(
     $id: ID!
     $file: Upload!
+    $fileMarkings: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: true) {
+      importPush(file: $file, noTriggerImport: true, fileMarkings: $fileMarkings) {
         id
         name
         uploadStatus
@@ -383,16 +384,18 @@ class StixDomainObjectContentComponent extends Component {
     const file = new File([blob], currentName, {
       type: currentFileType,
     });
-    return { currentId, isExternalReference, file };
+    return { currentId, isExternalReference, file, currentFile };
   }
 
   saveFile() {
-    const { currentId, isExternalReference, file } = this.prepareSaveFile();
+    const { currentId, isExternalReference, file, currentFile } = this.prepareSaveFile();
+    const { file_markings: fileMarkings } = currentFile.metaData;
+
     commitMutation({
       mutation: isExternalReference
         ? stixDomainObjectContentUploadExternalReferenceMutation
         : stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-      variables: { file, id: currentId, noTriggerImport: true },
+      variables: { file, id: currentId, noTriggerImport: true, fileMarkings },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
@@ -815,6 +818,7 @@ const StixDomainObjectContent = createRefetchContainer(
               metaData {
                 mimetype
                 list_filters
+                file_markings
                 messages {
                   timestamp
                   message
@@ -840,6 +844,7 @@ const StixDomainObjectContent = createRefetchContainer(
               lastModifiedSinceMin
               metaData {
                 mimetype
+                file_markings
               }
               ...FileLine_file
             }

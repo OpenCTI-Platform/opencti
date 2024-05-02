@@ -14511,6 +14511,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 export type MutationUploadImportArgs = {
   file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -22196,6 +22197,7 @@ export type StixCoreObjectEditMutationsExportPushArgs = {
 
 export type StixCoreObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
 };
@@ -23108,6 +23110,7 @@ export type StixDomainObjectEditMutationsFieldPatchArgs = {
 
 export type StixDomainObjectEditMutationsImportPushArgs = {
   file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   version?: InputMaybe<Scalars['DateTime']['input']>;
 };

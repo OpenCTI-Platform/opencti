@@ -28,7 +28,7 @@ const fileResolvers = {
     creator: (metadata, _, context) => creatorLoader.load(metadata.creator_id, context, context.user),
   },
   Mutation: {
-    uploadImport: (_, { file }, context) => uploadImport(context, context.user, file),
+    uploadImport: (_, args, context) => uploadImport(context, context.user, args),
     uploadPending: (_, { file, entityId, labels, errorOnExisting }, context) => {
       return uploadPending(context, context.user, file, entityId, labels, errorOnExisting);
     },
