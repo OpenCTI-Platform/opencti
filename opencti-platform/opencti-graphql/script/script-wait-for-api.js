@@ -3,7 +3,7 @@ import conf, { logApp } from '../src/config/conf';
 
 const API_URI = `http://localhost:${conf.get('app:port')}`;
 
-const MAX_ATTEMPTS = 20;
+const MAX_ATTEMPTS = 30;
 const DELAY_BETWEEN_ATTEMPTS = 5000;
 
 const checkApiAvailability = async () => {
