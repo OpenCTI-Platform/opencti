@@ -11,7 +11,7 @@ const fsExtra = require("fs-extra");
 const basePath = "";
 const clients = [];
 const buildPath = "./builder/dev/build/";
-const frontPort = process.env.FRONT_END_URL ?? 3000;
+const frontPort = process.env.FRONT_END_PORT ?? 3000;
 const debounce = (func, timeout = 500) => {
   let timer;
   return (...args) => {
