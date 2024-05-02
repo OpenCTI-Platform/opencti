@@ -139,6 +139,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
         handleCloseDelete();
       },
       onError: (error: Error) => {
+        setDeleting(false);
         handleError(error);
       },
     });
