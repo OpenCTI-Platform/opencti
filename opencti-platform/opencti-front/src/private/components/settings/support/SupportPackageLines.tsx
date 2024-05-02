@@ -6,10 +6,12 @@ import {
 } from '@components/settings/support/__generated__/SupportPackageLinesPaginationQuery.graphql';
 import { SupportPackageLines_data$key } from '@components/settings/support/__generated__/SupportPackageLines_data.graphql';
 import SupportPackageLine from '@components/settings/support/SupportPackageLine';
+import { interval } from 'rxjs';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../components/list_lines';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const nbOfRowsToLoad = 50;
 
@@ -95,11 +97,12 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
   >(supportPackageLinesFragment, queryData);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    const subscription = interval(FIVE_SECONDS).subscribe(() => {
       refetch({}, { fetchPolicy: 'store-and-network' });
-    }, 5000);
-
-    return () => clearInterval(intervalId);
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
   }, [refetch]);
 
   return (
