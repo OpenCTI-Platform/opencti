@@ -132,6 +132,15 @@ Here are the configuration keys, for both containers (environment variables) and
 
 ### Dependencies
 
+#### XTM Suite
+
+| Parameter                       | Environment variable             | Default value | Description                       |
+|:--------------------------------|:---------------------------------|:--------------|:----------------------------------|
+| xtm:openbas_url                 | XTM__OPENBAS_URL                 |               | OpenBAS URL                       |
+| xtm:openbas_token               | XTM__OPENBAS_TOKEN               |               | OpenBAS token                     |
+| xtm:openbas_reject_unauthorized | XTM__OPENBAS_REJECT_UNAUTHORIZED | false         | Enable TLS certificate check      |
+| xtm:openbas_disable_display     | XTM__OPENBAS_DISABLE_DISPLAY     | false         | Disable OpenBAS posture in the UI |
+
 #### ElasticSearch
 
 | Parameter                             | Environment variable                    | Default value         | Description                                                                                                                                                                                                                                                           |
