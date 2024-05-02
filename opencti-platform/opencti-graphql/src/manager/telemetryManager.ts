@@ -1,5 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { ConsoleMetricExporter, InstrumentType, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { InstrumentType, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
@@ -23,6 +23,7 @@ import { MetricFileExporter } from '../config/MetricFileExporter';
 const TELEMETRY_KEY = conf.get('telemetry_manager:lock_key');
 const SCHEDULE_TIME = 10000; // record telemetry data period
 const EXPORT_INTERVAL = 100000; // export data period TODO set to 1 per day
+const TEMPORALITY = 0;
 
 const createFiligranTelemetryMeterManager = async () => {
   // ------- Telemetry // TODO telemetry service, wrap methods in a service
@@ -41,24 +42,18 @@ const createFiligranTelemetryMeterManager = async () => {
     });
     resource = resource.merge(filigranResource);
     // -- Readers with exporter
-    // Console Exporter
-    const ConsoleExporterReader = new PeriodicExportingMetricReader({
-      exporter: new ConsoleMetricExporter(),
-      exportIntervalMillis: EXPORT_INTERVAL,
-    });
-    filigranMetricReaders.push(ConsoleExporterReader);
     // OTLP Exporter
     const otlpUri = nconf.get('app:telemetry:filigran:exporter_otlp');
     if (isNotEmptyField(otlpUri)) {
       const OtlpExporterReader = new PeriodicExportingMetricReader({
-        exporter: new OTLPMetricExporter({ url: otlpUri, temporalityPreference: 0 }),
+        exporter: new OTLPMetricExporter({ url: otlpUri, temporalityPreference: TEMPORALITY }),
         exportIntervalMillis: EXPORT_INTERVAL,
       });
       filigranMetricReaders.push(OtlpExporterReader);
     }
     // File exporter for air gap platforms
     const fileExporterReader = new PeriodicExportingMetricReader({
-      exporter: new MetricFileExporter(0),
+      exporter: new MetricFileExporter(TEMPORALITY),
       exportIntervalMillis: EXPORT_INTERVAL,
     });
     filigranMetricReaders.push(fileExporterReader);
