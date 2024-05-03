@@ -30047,6 +30047,10 @@ export type ConstraintDirectiveArgs = {
 
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
+export type PublicDirectiveArgs = { };
+
+export type PublicDirectiveResolver<Result, Parent, ContextType = any, Args = PublicDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export type AiBusResolvers<ContextType = any, ParentType extends ResolversParentTypes['AIBus'] = ResolversParentTypes['AIBus']> = ResolversObject<{
   bus_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39201,4 +39205,5 @@ export type Resolvers<ContextType = any> = ResolversObject<{
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
   auth?: AuthDirectiveResolver<any, any, ContextType>;
   constraint?: ConstraintDirectiveResolver<any, any, ContextType>;
+  public?: PublicDirectiveResolver<any, any, ContextType>;
 }>;

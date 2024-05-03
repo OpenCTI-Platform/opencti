@@ -23,6 +23,12 @@ export const authDirectiveBuilder = (directiveName) => {
       [MapperKind.OBJECT_FIELD]: (fieldConfig, _fieldName, typeName) => {
         const directive = getDirective(schema, fieldConfig, directiveName);
         const authDirective = directive?.[0] ?? typeDirectiveArgumentMaps[typeName];
+        if (!authDirective && (typeName === 'Query' || typeName === 'Mutation')) {
+          const publicDirective = getDirective(schema, fieldConfig, 'public')?.[0];
+          if (!publicDirective) {
+            throw new Error(`Unsecure schema: missing auth or public directive for ${_fieldName}`);
+          }
+        }
         if (authDirective) {
           const { for: requiredCapabilities, and: requiredAll } = authDirective;
           if (requiredCapabilities) {

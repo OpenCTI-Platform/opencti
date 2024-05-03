@@ -1,6 +1,7 @@
 ### DIRECTIVES
 
 directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
+directive @public on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -11045,7 +11046,7 @@ type Query {
 
   ###### INTERNAL
 
-  about: AppInfo
+  about: AppInfo @public
   logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
@@ -11129,7 +11130,7 @@ type Query {
 
   ######## INTERNAL OBJECT ENTITIES
 
-  settings: Settings!
+  settings: Settings! @public
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
@@ -11192,7 +11193,7 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): TaxiiCollectionConnection
+  ): TaxiiCollectionConnection @public
   streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feed(id: String!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feeds(
@@ -11202,7 +11203,7 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): FeedConnection
+  ): FeedConnection @public
   streamCollections(
     first: Int
     after: ID
@@ -11210,7 +11211,7 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): StreamCollectionConnection!
+  ): StreamCollectionConnection! @public
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -12670,7 +12671,7 @@ type Mutation {
   ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS])
 
   ######## INTERNAL OBJECT ENTITIES
-  token(input: UserLoginInput): String
+  token(input: UserLoginInput): String @public
   otpActivation(input: UserOTPActivationInput): MeUser @auth
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
