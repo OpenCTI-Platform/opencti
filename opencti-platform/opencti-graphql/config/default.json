@@ -50,7 +50,7 @@
       },
       "filigran": {
         "enabled": true,
-        "exporter_otlp": "http://localhost:1010/v1/metrics"
+        "exporter_otlp": ""
       }
     },
     "health_access_key": "ChangeMe",
