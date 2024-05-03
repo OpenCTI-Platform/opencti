@@ -188,7 +188,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateUpdateMessage } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
 import { confidence, creators, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -2914,7 +2914,11 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         }
       }
       dataEntity.element = { ...dataEntity.element, ...additionalInputs };
-      dataMessage = generateCreateMessage(dataEntity.element);
+      if (opts.restore === true) {
+        dataMessage = generateRestoreMessage(dataEntity.element);
+      } else {
+        dataMessage = generateCreateMessage(dataEntity.element);
+      }
     }
     // Index the created element
     lock.signal.throwIfAborted();

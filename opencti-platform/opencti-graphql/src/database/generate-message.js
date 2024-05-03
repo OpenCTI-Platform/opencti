@@ -50,6 +50,10 @@ export const generateCreateMessage = (instance) => {
 export const generateDeleteMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
 };
+export const generateRestoreMessage = (instance) => {
+  // this method is used only to generate a history message, there is no event restore in stream.
+  return generateCreateDeleteMessage('restore', instance);
+};
 
 export const generateUpdateMessage = async (context, entityType, inputs) => {
   const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);

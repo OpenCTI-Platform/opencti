@@ -22,7 +22,7 @@ import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
 import type { ExecutionEnvelop } from '../manager/playbookManager';
-import { generateCreateMessage, generateDeleteMessage, generateMergeMessage } from './generate-message';
+import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
@@ -534,8 +534,11 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
 export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
     if (isStixExportableData(instance)) {
-      const { withoutMessage = false } = opts;
-      const message = withoutMessage ? '-' : generateCreateMessage(instance);
+      const { withoutMessage = false, restore = false } = opts;
+      let message = '-';
+      if (!withoutMessage) {
+        message = restore ? generateRestoreMessage(instance) : generateCreateMessage(instance);
+      }
       const event = buildCreateEvent(user, instance, message);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
