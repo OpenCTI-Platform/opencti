@@ -20,7 +20,6 @@ exporters:
       s3_prefix: 'telemetry'
       s3_partition: 'minute'
       file_prefix: 'telemetry'
-      endpoint: 0.0.0.0:8889
 
 service:
 

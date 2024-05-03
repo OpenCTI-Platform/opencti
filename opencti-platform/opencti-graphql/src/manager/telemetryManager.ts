@@ -19,7 +19,7 @@ import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../config/MetricFileExporter';
 
-const TELEMETRY_EXPORT_INTERVAL = 100000; // export data period TODO set to 1 per day
+const TELEMETRY_EXPORT_INTERVAL = 100000; // export data period TODO set to 2 per day
 const TEMPORALITY = 0;
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', false);
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
@@ -60,12 +60,6 @@ const initTelemetryManager = async () => {
   const filigranMeterProvider = new MeterProvider(({
     resource,
     readers: filigranMetricReaders,
-    views: [{
-      aggregation: new ExplicitBucketHistogramAggregation([0, 1, 2, 3]),
-      attributesProcessor: new FilteringAttributesProcessor([]),
-      instrumentSelector: new InstrumentSelector({ type: InstrumentType.HISTOGRAM }),
-      meterSelector: new MeterSelector(),
-    }],
   }));
 
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);

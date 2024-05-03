@@ -46,7 +46,7 @@ export class TelemetryMeterManager {
     // - Histogram - //
     // number of activ users
     // this.activUsersHistogram = meter.createHistogram(
-    //   'opencti_numberOfActivUsers',
+    //   'opencti_activUsersNumber',
     //   { description: 'Number of users activ in a session within the last hour',
     //     unit: 'count',
     //     valueType: ValueType.INT,
@@ -54,11 +54,11 @@ export class TelemetryMeterManager {
     // );
     // - Gauges - //
     // number of activ users
-    const numberOfActivUsers = meter.createObservableGauge(
-      'opencti_numberOfActivUsers',
+    const activUsersNumberGauge = meter.createObservableGauge(
+      'opencti_activUsersNumber',
       { description: 'number of activ users', unit: 'count', valueType: ValueType.INT },
     );
-    numberOfActivUsers.addCallback((observableResult: ObservableResult) => {
+    activUsersNumberGauge.addCallback((observableResult: ObservableResult) => {
       observableResult.observe(this.activUsersNumber);
     });
     // number of instances
