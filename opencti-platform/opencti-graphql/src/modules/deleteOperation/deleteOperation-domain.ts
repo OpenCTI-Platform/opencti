@@ -293,9 +293,9 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
     // restore main element
     let result: any;
     if (isStixObject(mainElementToRestore.entity_type)) {
-      result = await createEntity(context, user, mainElementToRestoreInput, main_entity_type);
+      result = await createEntity(context, user, mainElementToRestoreInput, main_entity_type, { restore: true });
     } else if (isStixRelationship(mainElementToRestore.entity_type)) {
-      result = await createRelation(context, user, mainElementToRestoreInput, main_entity_type);
+      result = await createRelation(context, user, mainElementToRestoreInput, { restore: true });
     }
 
     const mainEntityRestoredId = result.id;

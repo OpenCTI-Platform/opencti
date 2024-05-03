@@ -14,6 +14,7 @@ interface EventOpts {
 
 interface CreateEventOpts extends EventOpts {
   withoutMessage?: boolean;
+  restore?: boolean;
 }
 
 interface UpdateEventOpts extends EventOpts {
