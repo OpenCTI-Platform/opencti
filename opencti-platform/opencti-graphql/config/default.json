@@ -169,7 +169,6 @@
   "telemetry_manager": {
     "enabled": true,
     "lock_key": "telemetry_manager_lock",
-    "interval": 10000
   },
   "playbook_manager": {
     "enabled": true,

@@ -13,13 +13,6 @@ processors:
 exporters:
   debug:
     verbosity: detailed
-  awss3:
-    s3uploader:
-      region: 'eu-central-1'
-      s3_bucket: 'opencti-bucket'
-      s3_prefix: 'telemetry'
-      s3_partition: 'minute'
-      file_prefix: 'telemetry'
 
 service:
 
@@ -28,6 +21,6 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, awss3]
+      exporters: [debug]
 
   extensions: [health_check]
