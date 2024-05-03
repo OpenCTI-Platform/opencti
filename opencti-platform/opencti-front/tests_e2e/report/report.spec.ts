@@ -300,6 +300,7 @@ test('Report live entities creation and relationships', async ({ page }) => {
   const labelForm = new LabelFormPageModel(page);
   const reportDetailsPage = new ReportDetailsPage(page);
   const externalReferenceForm = new ExternalReferenceFormPageModel(page);
+  const entitiesTab = new EntitiesTabPageModel(page);
 
   await page.goto('/dashboard/analyses/reports');
   await reportPage.openNewReportForm();
@@ -369,6 +370,16 @@ test('Report live entities creation and relationships', async ({ page }) => {
 
   const externalReference = reportDetailsPage.getTextForHeading('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();
+
+  // ---------
+  // endregion
+
+  // region Manipulate entities on Entities tab
+  // ------------------------------------------
+
+  await reportDetailsPage.goToEntitiesTab();
+  await entitiesTab.clickAddEntities();
+  await entitiesTab.addEntity('ANSSI');
 
   // ---------
   // endregion
