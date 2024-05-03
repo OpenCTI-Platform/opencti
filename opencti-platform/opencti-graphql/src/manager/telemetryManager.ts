@@ -2,14 +2,10 @@ import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import nconf from 'nconf';
-import { InstrumentType, MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { ExplicitBucketHistogramAggregation } from '@opentelemetry/sdk-metrics/build/src/view/Aggregation';
-import { FilteringAttributesProcessor } from '@opentelemetry/sdk-metrics/build/src/view/AttributesProcessor';
-import { InstrumentSelector } from '@opentelemetry/sdk-metrics/build/src/view/InstrumentSelector';
-import { MeterSelector } from '@opentelemetry/sdk-metrics/build/src/view/MeterSelector';
 import conf, { booleanConf, ENABLED_TELEMETRY, logApp, PLATFORM_VERSION } from '../config/conf';
-import { executionContext } from '../utils/access';
+import { executionContext, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
 import { getSettings } from '../domain/settings';
@@ -18,6 +14,8 @@ import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/Telemet
 import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../config/MetricFileExporter';
+import { getEntitiesListFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const TELEMETRY_EXPORT_INTERVAL = 100000; // export data period TODO set to 2 per day
 const TEMPORALITY = 0;
@@ -74,7 +72,8 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager?: TelemetryMeter
     try {
       const context = executionContext('telemetry_manager');
       // Fetch settings
-      const settings = await getSettings(context) as Settings;
+      const settingsArray = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+      const settings = settingsArray[0] as unknown as Settings;
       // Set filigranTelemetryManager settings telemetry data
       filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
       filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);

@@ -35,6 +35,7 @@ export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
 export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
 export const GARBAGE_COLLECTION_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c2';
+const TELEMETRY_MANAGER_USER_UUID = 'c30d12be-d5fb-4724-88e7-8a7c9a4516c3';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 
 export const MEMBER_ACCESS_ALL = 'ALL';
@@ -267,6 +268,37 @@ export const REDACTED_USER: AuthUser = {
   account_status: ACCOUNT_STATUS_ACTIVE,
   effective_confidence_level: null,
   user_confidence_level: null,
+};
+
+export const TELEMETRY_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: TELEMETRY_MANAGER_USER_UUID,
+  internal_id: TELEMETRY_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'TELEMETRY MANAGER',
+  user_email: 'TELEMETRY MANAGER',
+  inside_platform_organization: true,
+  origin: { user_id: TELEMETRY_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_organizations: [],
+  allowed_marking: [],
+  default_marking: [],
+  all_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
 };
 
 export interface AuthorizedMember { id: string, access_right: string }
