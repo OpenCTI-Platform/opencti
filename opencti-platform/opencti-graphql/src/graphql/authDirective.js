@@ -7,19 +7,6 @@ import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } fro
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 
-const PUBLIC_ENDPOINTS = [
-  'about',
-  'feeds',
-  'settings',
-  'streamCollections',
-  'taxiiCollections',
-  'token',
-];
-
-const isPublicEndpointInSchema = (fieldName) => {
-  return fieldName.startsWith('public') || PUBLIC_ENDPOINTS.includes(fieldName);
-};
-
 // eslint-disable-next-line
 export const authDirectiveBuilder = (directiveName) => {
   const typeDirectiveArgumentMaps = {};
@@ -36,9 +23,6 @@ export const authDirectiveBuilder = (directiveName) => {
       [MapperKind.OBJECT_FIELD]: (fieldConfig, _fieldName, typeName) => {
         const directive = getDirective(schema, fieldConfig, directiveName);
         const authDirective = directive?.[0] ?? typeDirectiveArgumentMaps[typeName];
-        if (!authDirective && (typeName === 'Query' || typeName === 'Mutation') && !isPublicEndpointInSchema(_fieldName)) {
-          throw new Error(`Unsecure schema: missing auth directive for ${_fieldName}`);
-        }
         if (authDirective) {
           const { for: requiredCapabilities, and: requiredAll } = authDirective;
           if (requiredCapabilities) {
