@@ -108,7 +108,7 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
       optimisticUpdater: undefined,
       updater: undefined,
       optimisticResponse: undefined,
-      onError: undefined,
+      onError: () => setIsOpen(false),
       setSubmitting: undefined,
     });
   };
