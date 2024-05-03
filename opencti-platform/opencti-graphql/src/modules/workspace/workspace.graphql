@@ -100,9 +100,9 @@ type Mutation {
     workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
     workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceContextPatch(id: ID!, input: EditContext!): Workspace
-    workspaceContextClean(id: ID!): Workspace
-    workspaceConfigurationImport(file: Upload!): String!
+    workspaceContextPatch(id: ID!, input: EditContext!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE])
     workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 

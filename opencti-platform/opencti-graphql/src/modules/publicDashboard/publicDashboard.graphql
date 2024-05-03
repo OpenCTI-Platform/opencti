@@ -52,59 +52,59 @@ type Query {
     filters: FilterGroup
     search: String
   ): PublicDashboardConnection @auth(for: [EXPLORE])
-  publicDashboardByUriKey(uri_key: String!): PublicDashboard
+  publicDashboardByUriKey(uri_key: String!): PublicDashboard @public
   publicStixCoreObjectsNumber(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): Number
+  ): Number @public
   publicStixRelationshipsNumber(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): Number
+  ): Number @public
   publicStixCoreObjectsMultiTimeSeries(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [MultiTimeSeries]
+  ): [MultiTimeSeries] @public
   publicStixRelationshipsMultiTimeSeries(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [MultiTimeSeries]
+  ): [MultiTimeSeries] @public
   publicStixCoreObjectsDistribution(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [PublicDistribution]
+  ): [PublicDistribution] @public
   publicStixRelationshipsDistribution(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): [PublicDistribution]
+  ): [PublicDistribution] @public
   publicBookmarks(
     uriKey: String!
     widgetId : String!
-  ): StixDomainObjectConnection
+  ): StixDomainObjectConnection @public
   publicStixCoreObjects(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): StixCoreObjectConnection
+  ): StixCoreObjectConnection @public
   publicStixRelationships(
     uriKey: String!
     widgetId : String!
     startDate: DateTime
     endDate: DateTime
-  ): StixRelationshipConnection
+  ): StixRelationshipConnection @public
 }
 
 type PublicDashboardEdge {
