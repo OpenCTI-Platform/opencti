@@ -11,11 +11,11 @@ export class TelemetryMeterManager {
 
   private EEActivationDate: string | undefined = undefined;
 
-  private numberOfInstances = 0;
+  private instancesCount = 0;
 
   private activUsersHistogram: Histogram | null = null;
 
-  private activUsersNumber = 0;
+  private activUsersCount = 0;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -29,16 +29,16 @@ export class TelemetryMeterManager {
     this.EEActivationDate = date ?? undefined;
   }
 
-  setNumberOfInstances(n: number) {
-    this.numberOfInstances = n;
+  setInstancesCount(n: number) {
+    this.instancesCount = n;
   }
 
-  setActivUsersHistogram(activUsersNumber: number) {
-    this.activUsersHistogram?.record(activUsersNumber);
+  setActivUsersHistogram(activUsersCount: number) {
+    this.activUsersHistogram?.record(activUsersCount);
   }
 
-  setActivUsersNumber(n: number) {
-    this.activUsersNumber = n;
+  setActivUsersCount(n: number) {
+    this.activUsersCount = n;
   }
 
   registerFiligranTelemetry() {
@@ -46,7 +46,7 @@ export class TelemetryMeterManager {
     // - Histogram - //
     // number of activ users
     // this.activUsersHistogram = meter.createHistogram(
-    //   'opencti_activUsersNumber',
+    //   'opencti_activUsersCount',
     //   { description: 'Number of users activ in a session within the last hour',
     //     unit: 'count',
     //     valueType: ValueType.INT,
@@ -54,20 +54,20 @@ export class TelemetryMeterManager {
     // );
     // - Gauges - //
     // number of activ users
-    const activUsersNumberGauge = meter.createObservableGauge(
-      'opencti_activUsersNumber',
+    const activUsersCountGauge = meter.createObservableGauge(
+      'opencti_activUsersCount',
       { description: 'number of activ users', unit: 'count', valueType: ValueType.INT },
     );
-    activUsersNumberGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.activUsersNumber);
+    activUsersCountGauge.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.activUsersCount);
     });
     // number of instances
-    const numberOfInstancesGauge = meter.createObservableGauge(
-      'opencti_numberOfInstances',
+    const instancesCountGauge = meter.createObservableGauge(
+      'opencti_instancesCount',
       { description: 'number of instances', unit: 'count', valueType: ValueType.INT },
     );
-    numberOfInstancesGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.numberOfInstances);
+    instancesCountGauge.addCallback((observableResult: ObservableResult) => {
+      observableResult.observe(this.instancesCount);
     });
     // is EE activated
     const isEEActivatedGauge = meter.createObservableGauge(
