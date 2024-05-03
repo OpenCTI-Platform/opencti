@@ -96,8 +96,8 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
       },
       updater: undefined,
       optimisticResponse: undefined,
-      onError: undefined,
-      setSubmitting: true,
+      onError: () => setUpload(null),
+      setSubmitting: undefined,
     });
   };
 

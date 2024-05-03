@@ -116,6 +116,7 @@ export const relayErrorHandling = (error, setSubmitting, onError) => {
       MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
     } else if (onError) {
       const messages = buildErrorMessages(error);
+      MESSAGING$.messages.next(messages);
       onError(error, messages);
     } else {
       const messages = buildErrorMessages(error);
