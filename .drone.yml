@@ -3,17 +3,16 @@ kind: pipeline
 name: opencti-tests
 
 steps:
-  - name: branch-definition
+  - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    environment:
+      GITHUB_TOKEN:
+          from_secret: github_token
     commands:
-      - apk add git
-      - export OPENCTI_BRANCH=$DRONE_SOURCE_BRANCH
-      - if [ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/$DRONE_SOURCE_BRANCH)")" != '' ]; then CLIENT_PYTHON_BRANCH=$DRONE_SOURCE_BRANCH; else CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$DRONE_SOURCE_BRANCH)")" != '' ]] && echo opencti/$DRONE_SOURCE_BRANCH || echo 'master'); fi
-      - if [ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/$DRONE_SOURCE_BRANCH)")" != '' ]; then CONNECTOR_BRANCH=$DRONE_SOURCE_BRANCH; else CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$DRONE_SOURCE_BRANCH)")" != '' ]] && echo opencti/$DRONE_SOURCE_BRANCH || echo 'master'); fi
-      - echo "OPENCTI_BRANCH=$DRONE_SOURCE_BRANCH" >> variables
-      - echo "CLIENT_PYTHON_BRANCH=$CLIENT_PYTHON_BRANCH" >> variables
-      - echo "CONNECTOR_BRANCH=$CONNECTOR_BRANCH" >> variables
-      - echo [INFO] Using opencti@$OPENCTI_BRANCH, client-python@$CLIENT_PYTHON_BRANCH and connectors@$CONNECTOR_BRANCH
+      - apk add git github-cli
+      - chmod 777 scripts/*
+      - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) ${DRONE_PULL_REQUEST}
+      - ls -lart
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -44,22 +43,20 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
-      - source ./variables
-      - cd opencti-platform
-      - echo [INFO] Using opencti@$OPENCTI_BRANCH, client-python@$CLIENT_PYTHON_BRANCH and connectors@$CONNECTOR_BRANCH
-      - cd ..
-      - git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
-      - cd opencti-connectors
-      - CONNECTOR_COMMIT=$(git rev-parse --short HEAD)
-      - echo [INFO] using connectors@$CONNECTOR_BRANCH:$CONNECTOR_COMMIT
-      - cd ../opencti-platform/opencti-graphql
+      - echo "DRONE_WORKSPACE=$DRONE_WORKSPACE"
+      - echo "DRONE_WORKSPACE=${DRONE_WORKSPACE}"
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
-      - echo [INFO] using package client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - echo "[INFO] using client-python on branch $(git branch --show-current)"
+      - pip3 install --upgrade --force .
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
+    depends_on:
+      - dependencies-checkout
 
   - name: api-coverage
     image: plugins/codecov
@@ -204,13 +201,15 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 10
+      - ls -lart
       - cp -a opencti-platform/* /tmp/raw-start-platform/
-      - source ./variables
       - apk add build-base git libffi-dev cargo
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/raw-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -235,12 +234,13 @@ services:
     commands:
       - sleep 10
       - cp -a opencti-platform/* /tmp/live-start-platform/
-      - source ./variables
       - apk add build-base git libffi-dev cargo
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/live-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -265,12 +265,13 @@ services:
     commands:
       - sleep 10
       - cp -a opencti-platform/* /tmp/direct-start-platform/
-      - source ./variables
       - apk add build-base git libffi-dev cargo
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/direct-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -284,12 +285,13 @@ services:
     commands:
       - sleep 10
       - cp -a opencti-worker /tmp/direct-start-worker
-      - source ./variables
       - apk add build-base git libffi-dev cargo
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/direct-start-worker
       - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -315,11 +317,12 @@ services:
       - sleep 10
       - cp -a opencti-platform/* /tmp/restore-start-platform/
       - apk add build-base git libffi-dev cargo
-      - source ./variables
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/restore-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-e2e-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -349,8 +352,9 @@ services:
       - yarn install
       - yarn install:python
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
-      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
-      - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip3 install --upgrade --force .
+      - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn build:dev
       - yarn wait-api && yarn insert:dev &
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start

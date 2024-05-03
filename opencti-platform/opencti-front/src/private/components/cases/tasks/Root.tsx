@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -98,6 +98,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             container={data}
             PopoverComponent={<TasksPopover id={data.id} />}
             enableSuggestions={false}
+            redirectToContent={true}
           />
           <Box
             sx={{
