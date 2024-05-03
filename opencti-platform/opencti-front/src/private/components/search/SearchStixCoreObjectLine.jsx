@@ -331,6 +331,11 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           description
           aliases
         }
+        ... on MalwareAnalysis {
+          representative {
+            main
+          }
+        }
         ... on Narrative {
           name
           description
