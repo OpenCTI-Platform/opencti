@@ -616,18 +616,19 @@ class OpenCTIApiClient:
         """upload a file to OpenCTI API
 
         :param `**kwargs`: arguments for file upload (required: `file_name` and `data`)
-        :return: returns the query respons for the file upload
+        :return: returns the query response for the file upload
         :rtype: dict
         """
 
         file_name = kwargs.get("file_name", None)
+        file_markings = kwargs.get("file_markings", None)
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
         if file_name is not None:
             self.app_logger.info("Uploading a file.")
             query = """
-                mutation UploadImport($file: Upload!) {
-                    uploadImport(file: $file) {
+                mutation UploadImport($file: Upload!, $fileMarkings: [String]) {
+                    uploadImport(file: $file, fileMarkings: $fileMarkings) {
                         id
                         name
                     }
@@ -639,8 +640,11 @@ class OpenCTIApiClient:
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
-
-            return self.query(query, {"file": (File(file_name, data, mime_type))})
+            query_vars = {"file": (File(file_name, data, mime_type))}
+            # optional file markings
+            if file_markings is not None:
+                query_vars["fileMarkings"] = file_markings
+            return self.query(query, query_vars)
         else:
             self.app_logger.error("[upload] Missing parameter: file_name")
             return None
