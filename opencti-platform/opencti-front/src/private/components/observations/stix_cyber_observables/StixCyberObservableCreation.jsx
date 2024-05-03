@@ -246,6 +246,7 @@ const StixCyberObservableCreation = ({
   const hashes_SHA512_field = document.getElementById('hashes_SHA-512');
   const divRowStyle = { display: 'flex', flexWrap: 'wrap' };
   let hashesList = [];
+  const algorithm = selectedAttribute.toLowerCase();
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = values;
 
@@ -275,6 +276,7 @@ const StixCyberObservableCreation = ({
         delete adaptedValues['hashes_SHA-256'];
         delete adaptedValues['hashes_SHA-512'];
         delete adaptedValues.name;
+        delete adaptedValues.bulk_hashes_field;
       }
       // Potential dicts
       if (
@@ -321,6 +323,7 @@ const StixCyberObservableCreation = ({
         dissoc('hashes_SHA-1'),
         dissoc('hashes_SHA-256'),
         dissoc('hashes_SHA-512'),
+        dissoc('bulk_hashes_field'),
         toPairs,
         map((n) => (includes(n[0], dateAttributes)
           ? [n[0], n[1] ? parse(n[1]).format() : null]
@@ -359,7 +362,6 @@ const StixCyberObservableCreation = ({
       let validObservables = 0;
       const commit = async () => {
         const valueList = values?.value !== '' ? values?.value?.split('\n') || values?.value : undefined; // List of the inputs
-        const algorithm = selectedAttribute.toLowerCase();
         if (hashesList && selectedAttribute === 'NAME') {
           const promises = hashesList.map((hash) => commitMutationWithPromise({
             mutation: stixCyberObservableMutation,
