@@ -8,7 +8,7 @@ import conf, { booleanConf, ENABLED_TELEMETRY, logApp, PLATFORM_VERSION } from '
 import { executionContext, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
-import { getSettings } from '../domain/settings';
+import { getClusterInformation, getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../config/TelemetryMeterManager';
 import type { ManagerDefinition } from './managerModule';
@@ -74,10 +74,11 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager?: TelemetryMeter
       // Fetch settings
       const settingsArray = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
       const settings = settingsArray[0] as unknown as Settings;
+      const clusterInfo = await getClusterInformation();
       // Set filigranTelemetryManager settings telemetry data
       filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
       filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
-      filigranTelemetryMeterManager.setInstancesCount(settings.platform_cluster.instances_number);
+      filigranTelemetryMeterManager.setInstancesCount(clusterInfo.info.instances_number);
       // Get number of active users since fetchTelemetryData() last execution
       const activUsers = await usersWithActiveSession(TELEMETRY_EXPORT_INTERVAL / 1000 / 60); // TODO use SCHEDULE_TIME instead when active users are stored in histogram
       // filigranTelemetryMeterManager.setActivUsersHistogram(activUsers.length);

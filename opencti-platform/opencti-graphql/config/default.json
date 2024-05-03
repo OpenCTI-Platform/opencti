@@ -50,7 +50,7 @@
       },
       "filigran": {
         "enabled": true,
-        "exporter_otlp": "https://otlp.filigran.io/v1/metrics"
+        "exporter_otlp": "https://telemetry.filigran.io/v1/metrics"
       }
     },
     "health_access_key": "ChangeMe",

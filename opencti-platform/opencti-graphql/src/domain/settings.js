@@ -23,7 +23,7 @@ export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
 
-const getClusterInformation = async () => {
+export const getClusterInformation = async () => {
   const clusterConfig = await getClusterInstances();
   const info = { instances_number: clusterConfig.length };
   const allManagers = clusterConfig.map((i) => i.managers).flat();
