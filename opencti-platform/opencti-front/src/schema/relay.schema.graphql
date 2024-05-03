@@ -7262,7 +7262,6 @@ type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
   about: AppInfo
-  aiEndpoints: [String]
   logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics

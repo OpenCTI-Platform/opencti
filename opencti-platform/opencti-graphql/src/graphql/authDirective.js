@@ -9,11 +9,7 @@ import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../ut
 
 const PUBLIC_ENDPOINTS = [
   'about',
-  'aiEndpoints',
   'feeds',
-  'filterKeysSchema',
-  'schemaRelationsRefTypesMapping',
-  'schemaRelationsTypesMapping',
   'settings',
   'streamCollections',
   'taxiiCollections',

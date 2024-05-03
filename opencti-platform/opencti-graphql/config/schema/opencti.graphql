@@ -11046,7 +11046,6 @@ type Query {
   ###### INTERNAL
 
   about: AppInfo
-  aiEndpoints: [String]
   logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
@@ -11956,9 +11955,9 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
-  schemaRelationsTypesMapping: [StixRelationshipSchema!]!
-  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]!
-  filterKeysSchema: [FilterKeysSchema!]!
+  schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth
+  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]! @auth
+  filterKeysSchema: [FilterKeysSchema!]! @auth
 
   ######## STIX CORE RELATIONSHIPS
 
