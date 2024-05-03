@@ -27,8 +27,12 @@ export default class ReportFormPage {
 
   constructor(private page: Page) {}
 
-  getTitle() {
+  getCreateTitle() {
     return this.page.getByRole('heading', { name: 'Create a report' });
+  }
+
+  getUpdateTitle() {
+    return this.page.getByRole('heading', { name: 'Update a report' });
   }
 
   getCreateButton() {
