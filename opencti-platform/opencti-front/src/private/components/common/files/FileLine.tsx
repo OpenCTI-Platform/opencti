@@ -284,7 +284,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           />
         </Tooltip>
         <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center' }}>
-          {!directDownload && !isProgress && !isFail && !isOutdated && (
+          {!isProgress && !isFail && !isOutdated && (
             <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
           )}
           {!disableImport && (
