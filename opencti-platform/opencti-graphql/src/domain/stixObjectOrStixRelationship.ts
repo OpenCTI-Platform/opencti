@@ -4,7 +4,12 @@ import { type EntityOptions, storeLoadById } from '../database/middleware-loader
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { listThings, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
+import {
+ listThings, storeLoadByIdWithRefs,
+  transformPatchToInput,
+  updateAttributeFromLoadedWithRefs,
+  validateCreatedBy,
+} from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
