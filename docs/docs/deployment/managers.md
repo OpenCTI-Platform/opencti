@@ -76,3 +76,9 @@ More information can be found [here](../administration/file-indexing.md).
 The indicator decay manager allows to update indicators score automatically based on configured decay rules.
 
 More information can be found [here](../administration/decay-rules.md).
+
+## Filigran telemetry manager
+
+The telemetry manager collects periodically statistical data about platform usage.
+
+More information about data collection can be found [here](../overview.md).
