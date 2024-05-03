@@ -1,5 +1,5 @@
 import { includes } from 'ramda';
-import { findById } from '../domain/stixObjectOrStixRelationship';
+import { findById, findAll } from '../domain/stixObjectOrStixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { onlyStableStixIds } from '../database/stix';
 import { isInferredIndex } from '../database/utils';
@@ -9,6 +9,7 @@ import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 const stixObjectOrStixRelationshipResolvers = {
   Query: {
     stixObjectOrStixRelationship: (_, { id }, context) => findById(context, context.user, id),
+    stixObjectOrStixRelationships: (_, args, context) => findAll(context, context.user, args),
     stixCoreObjectOrStixCoreRelationship: (_, { id }, context) => findById(context, context.user, id),
   },
   StixObject: {

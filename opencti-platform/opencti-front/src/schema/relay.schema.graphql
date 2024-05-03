@@ -7460,6 +7460,7 @@ type Query {
   stixRefRelationshipsDistribution(field: String!, operation: StatsOperation!, relationship_type: [String], isTo: Boolean, toRole: String, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
   stixRefRelationshipsNumber(types: [String!], fromId: StixRef, endDate: DateTime): Number
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
+  stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection

@@ -12194,6 +12194,12 @@ type Query {
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
+  stixObjectOrStixRelationships(
+    first: Int
+    after: ID
+    search: String
+    filters: FilterGroup
+  ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   @auth(for: [KNOWLEDGE, EXPLORE])
 }
