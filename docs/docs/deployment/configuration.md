@@ -302,7 +302,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | indicator_decay_manager:batch_size                   | INDICATOR_DECAY_MANAGER__BATCH_SIZE          | 10000                            | Number of indicators handled by the manager         |
 | -                                                    | -                                            | -                                | -                                                   |
 | telemetry_manager:enabled                            | TELEMETRY_MANAGER__ENABLED                   | `true`                           | Enable/disable the Filigran telemetry manager       |
-| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_LOCK                 | indicator_decay_manager_lock     | Lock key for the manager in Redis                   |
+| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_LOCK                 | telemetry_manager_lock     | Lock key for the manager in Redis                   |
 
 
 !!! note "Manager's duties"

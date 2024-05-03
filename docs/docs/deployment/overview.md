@@ -65,8 +65,8 @@ roles on the platform:
 
 The Application collects statistical data related to its usage, including but not limited to:
 
-- The edition of OpenCTI that is used, either Community or Enterprise edition
-- Number of active users accros time
+- The edition of OpenCTI that is used: either Community or Enterprise edition
+- Number of active users (periodically count)
 - Number of nodes in the platform
 
 ### Purpose of Data Collection:
