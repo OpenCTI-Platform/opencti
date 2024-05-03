@@ -60,3 +60,23 @@ roles on the platform:
 !!! note "Clustering"
     
     To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
+
+## Data collection
+
+The Application collects statistical data related to its usage, including but not limited to:
+
+- The edition of OpenCTI that is used, either Community or Enterprise edition
+- Number of active users accros time
+- Number of nodes in the platform
+
+### Purpose of Data Collection:
+
+The collected data is used for the following purposes:
+
+- Improving the functionality and performance of the Application.
+- Analyzing user behavior to enhance user experience.
+- Generating aggregated and anonymized statistics for internal and external reporting.
+
+### Data Anonymization:
+
+Personally identifiable information is not collected by the Application. All data collected is anonymized and aggregated to protect the privacy of individual users.
