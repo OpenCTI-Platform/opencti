@@ -10,7 +10,7 @@ import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { RELATION_CONTAINS, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const defaultRelationshipTypesForWidgets = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
