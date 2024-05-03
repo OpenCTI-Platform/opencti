@@ -22,6 +22,10 @@ export default class ReportDetailsPage {
     return this.page.getByRole('tab', { name: 'Overview' }).click();
   }
 
+  goToEntitiesTab() {
+    return this.page.getByRole('tab', { name: 'Entities' }).click();
+  }
+
   goToContentTab() {
     return this.page.getByRole('tab', { name: 'Content' }).click();
   }

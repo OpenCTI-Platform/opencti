@@ -105,7 +105,6 @@ const ListFilters = ({
       ) : (
         <>
           <MUIAutocomplete
-            id="list-filters-combo-box"
             options={options}
             groupBy={isNotUniqEntityTypes ? (option) => option.groupLabel : undefined}
             sx={{ width: 200 }}

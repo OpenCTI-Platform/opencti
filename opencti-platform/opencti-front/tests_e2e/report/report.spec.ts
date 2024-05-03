@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { format } from 'date-fns';
+import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
@@ -10,6 +11,7 @@ import LabelFormPageModel from '../model/form/labelForm.pageModel';
 import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ToolbarPageModel from '../model/toolbar.pageModel';
+import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 
 /**
  * Content of the test
@@ -284,10 +286,12 @@ test('Report CRUD', async ({ page }) => {
  * Create external reference from report creation form.
  * Create report.
  * Check creation for author label and ext ref.
+ * Manipulate entities tab.
+ * Manipulate observables tab.
  * Delete report by background task.
  * Check deletion.
  */
-test('Report creation with entities created from the report creation form', async ({ page }) => {
+test('Report live entities creation and relationships', async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);
@@ -300,7 +304,8 @@ test('Report creation with entities created from the report creation form', asyn
   await page.goto('/dashboard/analyses/reports');
   await reportPage.openNewReportForm();
 
-  await reportForm.nameField.fill('Report with created entities');
+  const reportName = `Report with created entities - ${uuid()}`;
+  await reportForm.nameField.fill(reportName);
 
   // region Check author labels and external references creation forms
   // ------------------------------
@@ -347,7 +352,7 @@ test('Report creation with entities created from the report creation form', asyn
 
   // Create report
   await reportForm.getCreateButton().click();
-  await reportPage.getItemFromList('Report with created entities').click();
+  await reportPage.getItemFromList(reportName).click();
   await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
 
   // ---------
