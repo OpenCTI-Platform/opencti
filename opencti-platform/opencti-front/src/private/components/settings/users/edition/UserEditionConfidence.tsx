@@ -10,7 +10,7 @@ import { userMutationFieldPatch } from '@components/settings/users/edition/UserE
 import UserConfidenceOverrideField from '@components/settings/users/edition/UserConfidenceOverrideField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
-import { isNotEmptyField } from '../../../../../utils/utils';
+import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 export interface OverrideFormData {
@@ -73,61 +73,63 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
     userConfidenceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
-        if (name === 'user_confidence_level') {
-          let finalValue;
-          if (user.user_confidence_level && isNotEmptyField(value)) {
-            // We edit an existing value inside the object: use object_path
-            finalValue = parseInt(value, 10);
-          } else if (!user.user_confidence_level && value) {
-            // We have no user_confidence_level, and we add one: push a complete object
-            finalValue = {
-              max_confidence: parseInt(value, 10),
-              overrides: [],
-            };
-          } else if (user.user_confidence_level && !value) {
-            // we have an existing value, but we want to remove it: push [null] (and not null!)
-            finalValue = [null];
-          }
-          if (finalValue) {
-            commitFieldPatch({
-              variables: {
-                id: user.id,
-                input: {
-                  key: 'user_confidence_level',
-                  object_path: '/user_confidence_level/max_confidence',
-                  value: finalValue,
-                },
+        let finalValue;
+        let object_path;
+        if (user.user_confidence_level && isNotEmptyField(value)) {
+          // we are updating the value
+          object_path = '/user_confidence_level/max_confidence';
+          finalValue = parseInt(value, 10);
+        } else if (!user.user_confidence_level && value) {
+          // We have no user_confidence_level, and we add one: push a complete object
+          object_path = '/user_confidence_level';
+          finalValue = {
+            max_confidence: parseInt(value, 10),
+            overrides: [],
+          };
+        } else if (user.user_confidence_level && !value) {
+          // we have an existing value, but we want to remove it: push [null] (and not null!)
+          object_path = '/user_confidence_level/max_confidence';
+          finalValue = [null];
+        }
+        if (finalValue) {
+          commitFieldPatch({
+            variables: {
+              id: user.id,
+              input: {
+                key: 'user_confidence_level',
+                object_path,
+                value: finalValue,
               },
-            });
-          }
+            },
+          });
         }
       })
       .catch(() => false);
   };
 
   const handleSubmitOverride = (index: number, value: OverrideFormData | null) => {
-    const name = `overrides[${index}]`;
-    if (!user.user_confidence_level) {
+    if (isNotEmptyField(value?.entity_type) && isNotEmptyField(value?.max_confidence)) {
+      let object_path = '';
+      let finalValue;
       // If there is no user_confidence_level defined and value is provided, initialize it with an override
-      if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
-        commitFieldPatch({
-          variables: {
-            id: user.id,
-            input: {
-              key: 'user_confidence_level',
-              value: {
-                max_confidence: null, // Initialize max_confidence as null
-                overrides: [{
-                  entity_type: value.entity_type,
-                  max_confidence: parseInt(value.max_confidence ?? '0', 10),
-                }],
-              },
-            },
-          },
-        });
+      if (!user.user_confidence_level) {
+        object_path = 'user_confidence_level';
+        finalValue = {
+          max_confidence: null, // Initialize global max_confidence as null
+          overrides: [{
+            entity_type: value.entity_type,
+            max_confidence: parseInt(value.max_confidence ?? '0', 10),
+          }],
+        };
+      } else {
+        // If user_confidence_level already exists, just update or add the override
+        object_path = `/user_confidence_level/overrides/${index}`;
+        finalValue = [{
+          entity_type: value.entity_type,
+          max_confidence: parseInt(value.max_confidence ?? '0', 10),
+        }];
       }
-    } else if (isNotEmptyField(value) && value.entity_type && isNotEmptyField(value.max_confidence)) {
-      // If user_confidence_level already exists, just update or add the override
+      const name = `overrides[${index}]`;
       userConfidenceValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -136,17 +138,14 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
               id: user.id,
               input: {
                 key: 'user_confidence_level',
-                object_path: `/user_confidence_level/overrides/${index}`,
-                value: [{
-                  entity_type: value.entity_type,
-                  max_confidence: parseInt(value.max_confidence ?? '0', 10),
-                }],
+                object_path,
+                value: finalValue,
               },
             },
           });
         })
         .catch(() => false);
-    } else if (!isNotEmptyField(value)) {
+    } else if (isEmptyField(value)) {
       commitFieldPatch({
         variables: {
           id: user.id,
@@ -191,6 +190,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                     onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: 0 })}
                     style={{ marginTop: '5px' }}
                     size="large"
+                    disabled={user.effective_confidence_level === null}
                   >
                     <Add fontSize="small" />
                   </IconButton>

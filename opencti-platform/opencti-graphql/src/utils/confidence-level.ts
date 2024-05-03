@@ -67,12 +67,13 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   const overrides = Array.from(overridesMap.entries())
     .map(([key, value]) => ({ entity_type: key, max_confidence: value }));
 
-  if (isEmptyField(maxLevel) && overrides.length === 0) {
+  // note that a user cannot have only overrides
+  if (isEmptyField(maxLevel)) {
     return null;
   }
 
   return {
-    max_confidence: isNotEmptyField(maxLevel) ? cropNumber(maxLevel as number, 0, 100) : null,
+    max_confidence: cropNumber(maxLevel as number, 0, 100),
     overrides,
     source,
   };

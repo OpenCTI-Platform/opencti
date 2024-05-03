@@ -19,15 +19,17 @@ type OverridesProps = {
 };
 
 const Overrides: React.FC<OverridesProps> = ({ overrides }) => {
-  return (
-    <>
-      {overrides?.map((override, index) => (
-        <div key={index} style={{ marginTop: '5px' }}>
-          {`${override.entity_type}: ${override.max_confidence}`}
+  const { t_i18n } = useFormatter();
+  return overrides?.length ? (
+    <div style={{ marginTop: '5px' }}>
+      <div>{t_i18n('Max Confidence is overridden for some entity types:')}</div>
+      {overrides.map((override, index) => (
+        <div key={index}>
+          {`- ${t_i18n(`entity_${override.entity_type}`)}: ${override.max_confidence}`}
         </div>
       ))}
-    </>
-  );
+    </div>
+  ) : null;
 };
 
 const ConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {

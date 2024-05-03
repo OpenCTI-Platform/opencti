@@ -1472,6 +1472,7 @@
   "Matches all indicator main observable types if none is listed.": "Matches all indicator main observable types if none is listed.",
   "Matrix view": "Matrix view",
   "Max Confidence": "Max Confidence",
+  "Max Confidence is overridden for some entity types:": "Max Confidence is overridden for some entity types:",
   "Max Confidence Level": "Max Confidence Level",
   "Max Confidence Level:": "Max Confidence Level:",
   "Max file size (in MB)": "Max file size (in MB)",
