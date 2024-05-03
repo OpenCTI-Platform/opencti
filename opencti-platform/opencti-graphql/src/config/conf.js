@@ -401,8 +401,8 @@ export const logSupport = {
 
 const LOG_TELEMETRY = 'TELEMETRY';
 export const logTelemetry = {
-  _log: (level, message, error, meta = {}) => {
-    telemetryLogger.log(level, message, addBasicMetaInformation(LOG_TELEMETRY, error, meta));
+  _log: (level, message, meta = {}) => {
+    telemetryLogger.log(level, message, addBasicMetaInformation(LOG_TELEMETRY, null, meta));
   },
   info: (message, meta = {}) => logTelemetry._log('info', message, null, meta),
   warn: (message, meta = {}) => logTelemetry._log('warn', message, null, meta),

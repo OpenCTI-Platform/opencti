@@ -65,9 +65,8 @@ export const findSessions = () => {
   });
 };
 
-// return the list of users ids that have a session activ in the last maxInactivityDuration ms
-export const usersWithActiveSession = (maxInactivityDurationInMs = 60000) => {
-  const maxInactivityDurationInMin = maxInactivityDurationInMs / 1000 / 60;
+// return the list of users ids that have a session activ in the last maxInactivityDuration min
+export const usersWithActiveSession = (maxInactivityDurationInMin = 1) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
     store.all((_, result) => {

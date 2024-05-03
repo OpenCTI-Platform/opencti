@@ -17,11 +17,11 @@ import { MetricFileExporter } from '../config/MetricFileExporter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
-const TELEMETRY_EXPORT_INTERVAL = 100000; // export data period TODO set to 2 per day
+const TELEMETRY_EXPORT_INTERVAL = 12 * 60 * 60 * 1000; // export data period in ms (correspond to 12h)
 const TEMPORALITY = 0;
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', false);
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
-const SCHEDULE_TIME = 10000; // telemetry manager period
+const SCHEDULE_TIME = 300000; // telemetry manager period in ms (correspond to 5min)
 
 const initTelemetryManager = async () => {
   let resource = Resource.default();
@@ -79,7 +79,7 @@ const fetchTelemetryData = async (filigranTelemetryMeterManager?: TelemetryMeter
       filigranTelemetryMeterManager.setEEActivationDate(settings.enterprise_edition);
       filigranTelemetryMeterManager.setInstancesCount(settings.platform_cluster.instances_number);
       // Get number of active users since fetchTelemetryData() last execution
-      const activUsers = await usersWithActiveSession(TELEMETRY_EXPORT_INTERVAL); // TODO use SCHEDULE_TIME instead when activ users are stored in histogram
+      const activUsers = await usersWithActiveSession(TELEMETRY_EXPORT_INTERVAL / 1000 / 60); // TODO use SCHEDULE_TIME instead when active users are stored in histogram
       // filigranTelemetryMeterManager.setActivUsersHistogram(activUsers.length);
       filigranTelemetryMeterManager.setActivUsersCount(activUsers.length);
     } catch (e) {
