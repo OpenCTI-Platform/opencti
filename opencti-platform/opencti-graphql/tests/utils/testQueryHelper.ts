@@ -1,9 +1,10 @@
 import { expect } from 'vitest';
 import { print } from 'graphql/index';
 import type { AxiosInstance } from 'axios';
-import { executeInternalQuery, queryAsAdmin } from './testQuery';
+import { createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
+import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.

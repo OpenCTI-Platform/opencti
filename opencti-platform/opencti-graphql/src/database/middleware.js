@@ -199,7 +199,7 @@ import {
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
-import { deleteAllObjectFiles, uploadToStorage } from './file-storage-helper';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 
 // region global variables
@@ -1249,9 +1249,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   );
 
   // TODO Manage files on S3...
-  const entitiesWithFile = sourceEntities.map((entity) => {
+  const entitiesWithFile = sourceEntities.map(async (entity) => {
     if (entity.x_opencti_files) {
       if (entity.x_opencti_files.length > 0) {
+        await moveAllFilesFromEntityToAnother(context, user, entity, targetEntity);
         return entity.id;
       }
     }

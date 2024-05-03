@@ -7,6 +7,7 @@ import { mergeEntities, storeLoadByIdWithRefs } from '../../../src/database/midd
 import type { BasicStoreCommon } from '../../../src/types/store';
 import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
+import {logApp} from '../../../src/config/conf';
 
 describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'stixCyberObservableDomain-test', otp_mandatory: false };
@@ -47,13 +48,13 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
     const artifact2 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact2);
 
     // WHEN merge of 2 into 1 is called (via taskManager executeMerge)
+    logApp.info(`Merging ${artifact2.internal_id} into ${artifact1.internal_id}`);
     await mergeEntities(testContext, ADMIN_USER, artifact1.internal_id, [
       artifact2.internal_id,
     ]);
 
     // THEN all file can be found on Artifact merged
     const mergedArtifact = await storeLoadByIdWithRefs(testContext, ADMIN_USER, artifact1.id) as BasicStoreCommon;
-    console.log('mergedArtifact:', mergedArtifact);
 
     // All files should be listed in x_opencti_files
     expect(mergedArtifact.x_opencti_files?.length).toBe(2);
@@ -64,16 +65,14 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         expect(file.name).oneOf(['testing-merge-artifact-2.json', 'testing-merge-artifact-1.txt']);
 
         // All files should be downloadable from S3
-        // FIXME await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
+        // FIXME  - x_opencti_file is wrong await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
       }
     }
 
     // The query that is used on frontend should give the right files too
     const fileListForUI = await paginatedForPathWithEnrichment(testContext, ADMIN_USER, `import/${mergedArtifact.entity_type}/${mergedArtifact.id}`, mergedArtifact.id, {});
-    console.log('fileListForUI:', fileListForUI);
 
     const listOfFiles = fileListForUI.edges;
-    console.log('listOfFiles:', listOfFiles);
     // FIXME expect(listOfFiles.length).toBe(2);
 
     for (let i = 0; i < listOfFiles.length; i += 1) {

@@ -25,7 +25,7 @@ const importFileId = `import/global/${exportFileName}`;
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
+    const importOpts = [API_URI, ADMIN_API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
     // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();

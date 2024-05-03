@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { join } from 'node:path';
 import fs from 'node:fs';
-import { deleteFiles, loadedFilesListing, upload } from './file-storage';
+import { copyFile, deleteFile, deleteFiles, loadedFilesListing, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
@@ -113,4 +113,41 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
 
   // Once all files are deleted, then bucket can be removed.
   // await deleteBucket();
+};
+
+/**
+ * Move all file from source to target and then delete source directory on S3.
+ * @param context
+ * @param user
+ * @param sourceEntity
+ * @param targetEntity
+ */
+export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user: AuthUser, sourceEntity: BasicStoreBase, targetEntity: BasicStoreBase) => {
+  try {
+    const sourceImportPath = `${IMPORT_STORAGE_PATH}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
+    const sourceExportPath = `${EXPORT_STORAGE_PATH}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
+    const targetImportPath = `${IMPORT_STORAGE_PATH}/${targetEntity.entity_type}/${targetEntity.internal_id}`;
+    const targetExportPath = `${EXPORT_STORAGE_PATH}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
+
+    const importFilesToMove = await allFilesForPaths(context, user, [sourceImportPath]);
+    for (let fileI = 0; fileI < importFilesToMove.length; fileI += 1) {
+      const fileToMove = importFilesToMove[fileI];
+      logApp.info(`Moving from ${sourceImportPath}/${fileToMove.name} to :${targetImportPath}/${fileToMove.name}`);
+      await copyFile(`${sourceImportPath}/${fileToMove.name}`, `${targetImportPath}/${fileToMove.name}`);
+      await deleteFile(context, user, `${sourceImportPath}/${fileToMove.name}`);
+    }
+
+    const exportFilesToMove = await allFilesForPaths(context, user, [sourceExportPath]);
+    for (let fileI = 0; fileI < exportFilesToMove.length; fileI += 1) {
+      const fileToMove = exportFilesToMove[fileI];
+      logApp.info(`Moving from ${sourceExportPath}/${fileToMove.name} to :${targetExportPath}/${fileToMove.name}`);
+      await copyFile(`${sourceExportPath}/${fileToMove.name}`, `${targetExportPath}/${fileToMove.name}`);
+      await deleteFile(context, user, `${sourceExportPath}/${fileToMove.name}`);
+    }
+
+    await deleteFile(context, user, sourceImportPath);
+    await deleteFile(context, user, sourceExportPath);
+  } catch (err) {
+    logApp.error('[FILE STORAGE] Merge of files failed', { cause: err, user_id: user.id, sourceEntity, targetEntity });
+  }
 };
