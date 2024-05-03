@@ -36,6 +36,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
+import useXTM from '../../../../utils/hooks/useXTM';
 
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
@@ -112,6 +113,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [open, setOpen] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+  const { disableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(5);
@@ -497,6 +499,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   };
   return (
     <>
+      {!disableDisplay && (
       <div className={classes.simulationResults}>
         <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
           <Button
@@ -510,11 +513,12 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             onClick={() => setOpen(true)}
           >
             <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
-            {t_i18n('OBAS security posture')}
+            {t_i18n('Simulate')}
           </Button>
         </Tooltip>
         {renderCharts()}
       </div>
+      )}
       <Drawer
         title={t_i18n('Generate a simulation scenario')}
         open={open}

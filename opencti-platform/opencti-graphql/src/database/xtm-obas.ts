@@ -71,7 +71,7 @@ export const createInjectInScenario = async (scenarioId: string, injectorType: s
     const { data: inject } = await httpClient.post(
       `/scenarios/${scenarioId}/injects`,
       {
-        inject_contract: contractId,
+        inject_injector_contract: contractId,
         inject_type: injectorType,
         inject_title: title,
         inject_depends_duration: dependsDuration,

@@ -113,6 +113,7 @@
     "openbas_url": "",
     "openbas_token": "",
     "openbas_reject_unauthorized": false,
+    "openbas_disable_display": false,
     "openerm_url": "",
     "openrm_token": "",
     "openmtd_url": "",
