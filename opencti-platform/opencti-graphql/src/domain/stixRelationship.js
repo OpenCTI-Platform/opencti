@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { UserInputError } from 'apollo-server-express';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, listEntities, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
@@ -12,7 +13,7 @@ import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schem
 import { RELATION_CONTAINS, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
-const widgetsRelationshipTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
+const defaultRelationshipTypesForWidgets = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
@@ -65,17 +66,24 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
   return stixRelationshipId;
 };
 
-const buildValidWidgetRelationshipTypes = (relationshipTypes) => {
-  const isValidRelationshipTypes = relationshipTypes && relationshipTypes.length > 0 && (relationshipTypes.every((type) => (
+const buildRelationshipTypes = (relationshipTypes) => {
+  if (isEmptyField(relationshipTypes)) {
+    return defaultRelationshipTypesForWidgets;
+  }
+  const isValidRelationshipTypes = (relationshipTypes.every((type) => (
     isStixCoreRelationship(type)
     || isStixSightingRelationship(type)
-    || type === RELATION_CONTAINS)));
-  return isValidRelationshipTypes ? relationshipTypes : widgetsRelationshipTypes;
+    || type === RELATION_OBJECT)));
+
+  if (!isValidRelationshipTypes) {
+    throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship, stix-sighting-relationship or object');
+  }
+  return relationshipTypes;
 };
 
 // region stats
 export const stixRelationshipsDistribution = async (context, user, args) => {
-  const relationship_type = buildValidWidgetRelationshipTypes(args.relationship_type);
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, { ...args, relationship_type });
   if (isEmptyDynamic) {
     return [];
@@ -83,7 +91,7 @@ export const stixRelationshipsDistribution = async (context, user, args) => {
   return distributionRelations(context, context.user, dynamicArgs);
 };
 export const stixRelationshipsNumber = async (context, user, args) => {
-  const relationship_type = buildValidWidgetRelationshipTypes(args.relationship_type);
+  const relationship_type = buildRelationshipTypes(args.relationship_type);
   const { dynamicArgs, isEmptyDynamic } = await buildArgsFromDynamicFilters(context, user, args);
   if (isEmptyDynamic) {
     return { count: 0, total: 0 };

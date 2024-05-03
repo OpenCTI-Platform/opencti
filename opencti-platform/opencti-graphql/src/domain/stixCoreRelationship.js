@@ -4,7 +4,7 @@ import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeri
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
-import { fillTimeSeries, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import { fillTimeSeries, isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
@@ -24,8 +24,16 @@ export const findById = (context, user, stixCoreRelationshipId) => {
 };
 
 const buildStixCoreRelationshipTypes = (relationshipTypes) => {
-  const isValidRelationshipTypes = relationshipTypes && relationshipTypes.length > 0 && relationshipTypes.every((type) => isStixCoreRelationship(type));
-  return isValidRelationshipTypes ? relationshipTypes : [ABSTRACT_STIX_CORE_RELATIONSHIP];
+  if (isEmptyField(relationshipTypes)) {
+    return [ABSTRACT_STIX_CORE_RELATIONSHIP];
+  }
+  const isValidRelationshipTypes = relationshipTypes.every((type) => isStixCoreRelationship(type));
+  if (!isValidRelationshipTypes) {
+    // TODO: we disable this error because query stixCoreRelationshipsDistribution is used
+    // in widgets that should call stixRelationshipsDistribution instead
+    // throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship');
+  }
+  return relationshipTypes;
 };
 
 // region stats
