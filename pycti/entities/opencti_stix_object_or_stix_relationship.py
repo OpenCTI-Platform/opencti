@@ -1,3 +1,6 @@
+import json
+
+
 class StixObjectOrStixRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -329,11 +332,15 @@ class StixObjectOrStixRelationship:
             }
             ... on Case {
                 name
-            }            
+            }
             ... on StixCyberObservable {
                 observable_value
             }
             ... on StixCoreRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
                 createdBy {
                     ... on Identity {
                         id
@@ -396,6 +403,10 @@ class StixObjectOrStixRelationship:
                 stop_time
             }
             ... on StixSightingRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
                 createdBy {
                     ... on Identity {
                         id
@@ -476,9 +487,9 @@ class StixObjectOrStixRelationship:
             )
             query = (
                 """
-                query StixObjectOrStixRelationship($id: String!) {
-                    stixObjectOrStixRelationship(id: $id) {
-                        """
+                    query StixObjectOrStixRelationship($id: String!) {
+                        stixObjectOrStixRelationship(id: $id) {
+                            """
                 + (
                     custom_attributes
                     if custom_attributes is not None
@@ -496,3 +507,51 @@ class StixObjectOrStixRelationship:
         else:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
+
+    def list(self, **kwargs):
+        filters = kwargs.get("filters", None)
+        search = kwargs.get("search", None)
+        first = kwargs.get("first", 100)
+        after = kwargs.get("after", None)
+        with_pagination = kwargs.get("with_pagination", False)
+        custom_attributes = kwargs.get("customAttributes", None)
+
+        self.opencti.app_logger.info(
+            "Listing StixObjectOrStixRelationships with filters",
+            {"filters": json.dumps(filters)},
+        )
+        query = (
+            """
+                        query StixObjectOrStixRelationships($filters: FilterGroup, $search: String, $first: Int, $after: ID) {
+                            stixObjectOrStixRelationships(filters: $filters, search: $search, first: $first, after: $after) {
+                                edges {
+                                    node {
+                                        """
+            + (custom_attributes if custom_attributes is not None else self.properties)
+            + """
+                                }
+                            }
+                            pageInfo {
+                                startCursor
+                                endCursor
+                                hasNextPage
+                                hasPreviousPage
+                                globalCount
+                            }
+                        }
+                    }
+                """
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "filters": filters,
+                "search": search,
+                "first": first,
+                "after": after,
+            },
+        )
+
+        return self.opencti.process_multiple(
+            result["data"]["stixObjectOrStixRelationships"], with_pagination
+        )
