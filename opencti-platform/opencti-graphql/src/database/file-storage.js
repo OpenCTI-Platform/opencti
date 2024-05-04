@@ -17,12 +17,13 @@ import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { resolveSecret } from '../config/credentials';
+import { enrichWithRemoteCredentials } from '../config/credentials';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
 const clientPort = conf.get('minio:port') || 9000;
 const clientAccessKey = conf.get('minio:access_key');
+const clientSecretKey = conf.get('minio:secret_key');
 const clientSessionToken = conf.get('minio:session_token');
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -45,14 +46,10 @@ const credentialProvider = async () => {
     });
   }
   // Build the engine auth option
-  let clientSecretKey = conf.get('minio:secret_key');
-  const engineSecret = await resolveSecret('minio');
-  if (engineSecret) {
-    clientSecretKey = engineSecret.secret;
-  }
+  const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
+  const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
   return {
-    accessKeyId: clientAccessKey,
-    secretAccessKey: clientSecretKey,
+    ...userPasswordAuth,
     ...(clientSessionToken && { sessionToken: clientSessionToken })
   };
 };

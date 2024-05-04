@@ -25,7 +25,7 @@ import type { ActivityStreamEvent } from '../manager/activityListener';
 import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
-import { resolveSecret } from '../config/credentials';
+import { enrichWithRemoteCredentials } from '../config/credentials';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -39,15 +39,11 @@ const isStreamPublishable = (opts: EventOpts) => {
 };
 
 const redisOptions = async (autoReconnect = false): Promise<RedisOptions> => {
-  let password = conf.get('redis:password');
-  const engineSecret = await resolveSecret('redis');
-  if (engineSecret) {
-    password = engineSecret.secret;
-  }
+  const baseAuth = { username: conf.get('redis:username'), password: conf.get('redis:password') };
+  const userPasswordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
     keyPrefix: REDIS_PREFIX,
-    username: conf.get('redis:username'),
-    password,
+    ...userPasswordAuth,
     tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
     retryStrategy: /* v8 ignore next */ (times) => {
       if (getStoppingState()) {
@@ -101,13 +97,10 @@ const clusterOptions = async (): Promise<ClusterOptions> => {
 };
 
 const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions> => {
-  let sentinelPassword = conf.get('redis:sentinel_password');
-  const engineSecret = await resolveSecret('redis');
-  if (engineSecret) {
-    sentinelPassword = engineSecret.secret;
-  }
+  const baseAuth = { sentinelPassword: conf.get('redis:sentinel_password') };
+  const passwordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
-    sentinelPassword,
+    ...passwordAuth,
     name: conf.get('redis:sentinel_master_name'),
     role: conf.get('redis:sentinel_role'),
     preferredSlaves: conf.get('redis:sentinel_preferred_slaves'),

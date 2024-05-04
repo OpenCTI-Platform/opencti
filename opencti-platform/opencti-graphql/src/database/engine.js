@@ -139,7 +139,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { resolveSecret } from '../config/credentials';
+import { enrichWithRemoteCredentials } from '../config/credentials';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -229,6 +229,7 @@ export const isEngineAlive = async () => {
 };
 
 export const searchEngineInit = async () => {
+  // Build the engine configuration
   const ca = conf.get('elasticsearch:ssl:ca')
     ? loadCert(conf.get('elasticsearch:ssl:ca'))
     : conf.get('elasticsearch:ssl:ca_plain') || null;
@@ -252,11 +253,7 @@ export const searchEngineInit = async () => {
       rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
     },
   };
-  // Build the engine auth option
-  const engineSecret = await resolveSecret('elasticsearch');
-  if (engineSecret) {
-    searchConfiguration.auth[engineSecret.field] = engineSecret.secret;
-  }
+  searchConfiguration.auth = await enrichWithRemoteCredentials('elasticsearch', searchConfiguration.auth);
   // Select the correct engine
   let engineVersion;
   let enginePlatform;
