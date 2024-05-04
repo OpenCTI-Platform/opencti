@@ -32,7 +32,8 @@ export const getExportFilter = async ({ markingList, contentMaxMarkings, objectI
     mainFilter.filterGroups.push({
       mode: 'or',
       filters: [{
-        key: 'id', values: objectIdsList,
+        key: 'id',
+        values: objectIdsList,
         mode: 'or',
         operator: 'eq'
       }],
