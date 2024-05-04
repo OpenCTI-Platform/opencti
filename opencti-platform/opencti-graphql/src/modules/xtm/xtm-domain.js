@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { distributionEntities } from '../../database/middleware';
@@ -14,7 +14,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import conf from '../../config/conf';
-import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getResultsForAttackPatterns } from '../../database/xtm-obas';
+import { createInjectInScenario, createScenario, getAttackPatterns, getInjectorContracts, getKillChainPhases, getScenarioResult } from '../../database/xtm-obas';
 import { isNotEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../utils/ee';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
@@ -38,58 +38,10 @@ const getShuffledArr = (arr) => {
   return newArr;
 };
 
-export const stixCoreObjectSimulationsResult = async (context, user, args) => {
+export const stixCoreObjectSimulationsResult = async (_, __, args) => {
   const { id } = args;
-  const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_CORE_OBJECT);
-  let attackPatterns = [];
-  if (stixCoreObject.parent_types.includes(ENTITY_TYPE_CONTAINER)) {
-    attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
-  } else if (
-    [
-      ENTITY_TYPE_THREAT_ACTOR_GROUP,
-      ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
-      ENTITY_TYPE_INTRUSION_SET,
-      ENTITY_TYPE_CAMPAIGN,
-      ENTITY_TYPE_INCIDENT
-    ].includes(stixCoreObject.entity_type)) {
-    attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  } else {
-    const threats = await listAllToEntitiesThroughRelations(
-      context,
-      user,
-      id,
-      RELATION_TARGETS,
-      [
-        ENTITY_TYPE_THREAT_ACTOR_GROUP,
-        ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
-        ENTITY_TYPE_INTRUSION_SET,
-        ENTITY_TYPE_CAMPAIGN,
-        ENTITY_TYPE_INCIDENT
-      ]
-    );
-    const threatsIds = threats.map((n) => n.id);
-    attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
-  }
-  const attackPatternsExternalIds = attackPatterns.filter((n) => isNotEmptyField(n.x_mitre_id)).map((n) => n.x_mitre_id);
-  await getResultsForAttackPatterns(attackPatternsExternalIds);
-  // TODO, temporary results, waiting for API on OpenBAS
-  return {
-    prevention: {
-      unknown: 100,
-      success: 0,
-      failure: 0,
-    },
-    detection: {
-      unknown: 100,
-      success: 0,
-      failure: 0,
-    },
-    human: {
-      unknown: 100,
-      success: 0,
-      failure: 0,
-    }
-  };
+  const result = await getScenarioResult(id);
+  return result;
 };
 
 export const scenarioElementsDistribution = async (context, user, args) => {
@@ -244,7 +196,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
   const description = extractRepresentativeDescription(stixCoreObject);
   const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
-  const obasScenario = await createScenario(name, subtitle, description, labels);
+  const obasScenario = await createScenario(name, subtitle, description, labels, stixCoreObject.id, simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario');
 
   // Get attack patterns
   const obasAttackPatterns = await getAttackPatterns();
