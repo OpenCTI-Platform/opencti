@@ -1,11 +1,12 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
-import Redis, { Cluster, type RedisOptions } from 'ioredis';
+import Redis, { Cluster, type RedisOptions, type SentinelAddress } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
+import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp } from '../config/conf';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
@@ -24,6 +25,7 @@ import type { ActivityStreamEvent } from '../manager/activityListener';
 import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
+import { resolveSecret } from '../config/credentials';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -36,26 +38,33 @@ const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
-const redisOptions = (autoReconnect = false): RedisOptions => ({
-  keyPrefix: REDIS_PREFIX,
-  username: conf.get('redis:username'),
-  password: conf.get('redis:password'),
-  tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
-  retryStrategy: /* v8 ignore next */ (times) => {
-    if (getStoppingState()) {
+const redisOptions = async (autoReconnect = false): Promise<RedisOptions> => {
+  let password = conf.get('redis:password');
+  const engineSecret = await resolveSecret('redis');
+  if (engineSecret) {
+    password = engineSecret.secret;
+  }
+  return {
+    keyPrefix: REDIS_PREFIX,
+    username: conf.get('redis:username'),
+    password,
+    tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
+    retryStrategy: /* v8 ignore next */ (times) => {
+      if (getStoppingState()) {
+        return null;
+      }
+      if (autoReconnect) {
+        return Math.min(times * 50, 2000);
+      }
       return null;
-    }
-    if (autoReconnect) {
-      return Math.min(times * 50, 2000);
-    }
-    return null;
-  },
-  lazyConnect: true,
-  enableAutoPipelining: false,
-  enableOfflineQueue: true,
-  maxRetriesPerRequest: autoReconnect ? null : 1,
-  showFriendlyErrorStack: DEV_MODE,
-});
+    },
+    lazyConnect: true,
+    enableAutoPipelining: false,
+    enableOfflineQueue: true,
+    maxRetriesPerRequest: autoReconnect ? null : 1,
+    showFriendlyErrorStack: DEV_MODE,
+  };
+};
 
 // From "HOST:PORT" to { host, port }
 export const generateClusterNodes = (nodes: string[]): { host: string; port: number; }[] => {
@@ -77,33 +86,48 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
   return natMap;
 };
 
-const clusterOptions = (): ClusterOptions => ({
-  keyPrefix: REDIS_PREFIX,
-  lazyConnect: true,
-  enableAutoPipelining: false,
-  enableOfflineQueue: true,
-  redisOptions: redisOptions(),
-  scaleReads: conf.get('redis:scale_reads') ?? 'all',
-  natMap: generateNatMap(conf.get('redis:nat_map') ?? []),
-  showFriendlyErrorStack: DEV_MODE,
-});
+const clusterOptions = async (): Promise<ClusterOptions> => {
+  const redisOpts = await redisOptions();
+  return {
+    keyPrefix: REDIS_PREFIX,
+    lazyConnect: true,
+    enableAutoPipelining: false,
+    enableOfflineQueue: true,
+    redisOptions: redisOpts,
+    scaleReads: conf.get('redis:scale_reads') ?? 'all',
+    natMap: generateNatMap(conf.get('redis:nat_map') ?? []),
+    showFriendlyErrorStack: DEV_MODE,
+  };
+};
 
-export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
+const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions> => {
+  let sentinelPassword = conf.get('redis:sentinel_password');
+  const engineSecret = await resolveSecret('redis');
+  if (engineSecret) {
+    sentinelPassword = engineSecret.secret;
+  }
+  return {
+    sentinelPassword,
+    name: conf.get('redis:sentinel_master_name'),
+    role: conf.get('redis:sentinel_role'),
+    preferredSlaves: conf.get('redis:sentinel_preferred_slaves'),
+    sentinels: clusterNodes,
+    enableTLSForSentinelMode: conf.get('redis:sentinel_tls') ?? false,
+  };
+};
+
+export const createRedisClient = async (provider: string, autoReconnect = false): Promise<Cluster | Redis> => {
   let client: Cluster | Redis;
   const redisMode: string = conf.get('redis:mode');
   const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
-
   if (redisMode === 'cluster') {
-    client = new Redis.Cluster(clusterNodes, clusterOptions());
+    const clusterOpts = await clusterOptions();
+    client = new Redis.Cluster(clusterNodes, clusterOpts);
   } else if (redisMode === 'sentinel') {
-    const sentinelConfiguration: RedisOptions = {
-      sentinels: clusterNodes,
-      name: conf.get('redis:sentinel_master_name'),
-    };
-
-    client = new Redis(sentinelConfiguration);
+    const sentinelOpts = await sentinelOptions(clusterNodes);
+    client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = redisOptions(autoReconnect);
+    const singleOptions = await redisOptions(autoReconnect);
     client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
@@ -117,16 +141,24 @@ export const createRedisClient = (provider: string, autoReconnect = false): Clus
 // region Initialization of clients
 type RedisConnection = Cluster | Redis ;
 interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
-const redisClients: RedisClients = {
-  base: createRedisClient('base', true),
-  lock: createRedisClient('lock', true),
-  pubsub: new RedisPubSub({
-    publisher: createRedisClient('publisher', true),
-    subscriber: createRedisClient('subscriber', true),
-    connectionListener: (err) => {
-      logApp.info('[REDIS] Redis pubsub client closed', { error: err });
-    }
-  })
+
+let redisClients: RedisClients;
+export const initializeRedisClients = async () => {
+  const base = await createRedisClient('base', true);
+  const lock = await createRedisClient('lock', true);
+  const publisher = await createRedisClient('publisher', true);
+  const subscriber = await createRedisClient('subscriber', true);
+  redisClients = {
+    base,
+    lock,
+    pubsub: new RedisPubSub({
+      publisher,
+      subscriber,
+      connectionListener: (err) => {
+        logApp.info('[REDIS] Redis pubsub client closed', { error: err });
+      }
+    })
+  };
 };
 export const shutdownRedisClients = async () => {
   await redisClients.base?.quit().catch(() => { /* Dont care */ });
@@ -253,10 +285,18 @@ export const extendSession = async (sessionId: string, extension: number) => {
   return sessionExtension;
 };
 // endregion
-
 export const redisIsAlive = async () => {
   try {
     await getClientBase().get('test-key');
+    return true;
+  } catch {
+    throw DatabaseError('Redis seems down');
+  }
+};
+export const redisInit = async () => {
+  try {
+    await initializeRedisClients();
+    await redisIsAlive();
     const redisMode: string = conf.get('redis:mode');
     logApp.info(`[REDIS] Clients initialized in ${redisMode} mode`);
     return true;

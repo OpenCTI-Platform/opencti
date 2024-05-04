@@ -139,6 +139,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
+import { resolveSecret } from '../config/credentials';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -186,39 +187,13 @@ export const isImpactedTypeAndSide = (type, side) => {
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
-const ca = conf.get('elasticsearch:ssl:ca')
-  ? loadCert(conf.get('elasticsearch:ssl:ca'))
-  : conf.get('elasticsearch:ssl:ca_plain') || null;
-
-const searchConfiguration = {
-  node: conf.get('elasticsearch:url'),
-  proxy: conf.get('elasticsearch:proxy') || null,
-  auth: {
-    username: conf.get('elasticsearch:username') || null,
-    password: conf.get('elasticsearch:password') || null,
-    apiKey: conf.get('elasticsearch:api_key') || null,
-  },
-  maxRetries: conf.get('elasticsearch:max_retries') || 3,
-  requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
-  sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
-  ssl: { // For Opensearch 2+ and Elastic 7
-    ca,
-    rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-  },
-  tls: { // For Elastic 8+
-    ca,
-    rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-  },
-};
-
-const elasticSearchClient = new ElkClient(searchConfiguration);
-const openSearchClient = new OpenClient(searchConfiguration);
+let engine;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
+
 export const isAttachmentProcessorEnabled = () => {
   return attachmentProcessorEnabled === true;
 };
-let engine = openSearchClient;
 
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
@@ -241,8 +216,7 @@ export const searchEngineVersion = async () => {
     );
   const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
   const searchVersion = searchInfo.number;
-  const localEngine = searchPlatform === ELK_ENGINE ? elasticSearchClient : openSearchClient;
-  return { platform: searchPlatform, version: searchVersion, engine: localEngine };
+  return { platform: searchPlatform, version: searchVersion };
 };
 
 export const isEngineAlive = async () => {
@@ -253,12 +227,43 @@ export const isEngineAlive = async () => {
     throw DatabaseError('Invalid database content, missing migration schema');
   }
 };
+
 export const searchEngineInit = async () => {
+  const ca = conf.get('elasticsearch:ssl:ca')
+    ? loadCert(conf.get('elasticsearch:ssl:ca'))
+    : conf.get('elasticsearch:ssl:ca_plain') || null;
+  const searchConfiguration = {
+    node: conf.get('elasticsearch:url'),
+    proxy: conf.get('elasticsearch:proxy') || null,
+    auth: {
+      username: conf.get('elasticsearch:username') || null,
+      password: conf.get('elasticsearch:password') || null,
+      apiKey: conf.get('elasticsearch:api_key') || null,
+    },
+    maxRetries: conf.get('elasticsearch:max_retries') || 3,
+    requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
+    sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
+    ssl: { // For Opensearch 2+ and Elastic 7
+      ca,
+      rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
+    },
+    tls: { // For Elastic 8+
+      ca,
+      rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
+    },
+  };
+  // Build the engine auth option
+  const engineSecret = await resolveSecret('elasticsearch');
+  if (engineSecret) {
+    searchConfiguration.auth[engineSecret.field] = engineSecret.secret;
+  }
   // Select the correct engine
   let engineVersion;
   let enginePlatform;
   const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
   const engineCheck = booleanConf('elasticsearch:engine_check', true);
+  const elasticSearchClient = new ElkClient(searchConfiguration);
+  const openSearchClient = new OpenClient(searchConfiguration);
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
     engine = elasticSearchClient;
@@ -283,8 +288,8 @@ export const searchEngineInit = async () => {
     const searchVersion = await searchEngineVersion();
     enginePlatform = searchVersion.platform;
     logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
-    engine = searchVersion.engine;
     engineVersion = searchVersion.version;
+    engine = enginePlatform === ELK_ENGINE ? elasticSearchClient : openSearchClient;
   }
   // Setup the platform runtime field option
   isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');

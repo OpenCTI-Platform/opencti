@@ -8,7 +8,7 @@ import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
-import { lockResource, redisIsAlive } from './database/redis';
+import { lockResource, redisInit } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
@@ -37,7 +37,7 @@ export const checkSystemDependencies = async () => {
   await rabbitMQIsAlive();
   logApp.info('[CHECK] RabbitMQ is alive');
   // Check if redis is here
-  await redisIsAlive();
+  await redisInit();
   logApp.info('[CHECK] Redis is alive');
   // Check if SMTP is here
   await smtpIsAlive();

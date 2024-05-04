@@ -87,7 +87,7 @@ const platformClean = async () => {
   const indices = await elPlatformIndices();
   await elDeleteIndices(indices.map((i: { index: number }) => i.index));
   // Delete redis streams
-  const testRedisClient = createRedisClient('reset');
+  const testRedisClient = await createRedisClient('reset');
   await testRedisClient.del('stream.opencti');
   testRedisClient.disconnect();
   logApp.info(`[vitest-global-setup] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);

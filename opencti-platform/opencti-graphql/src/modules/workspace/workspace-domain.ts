@@ -231,7 +231,7 @@ export const workspaceDelete = async (
           }
         }
       }
-    }).catch((err) => {
+    }).catch((err: Error) => {
       throw DatabaseError(
         '[DELETE] Error deleting public dashboard for workspace ',
         { cause: err, workspace_id: workspaceId, }
