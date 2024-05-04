@@ -1,5 +1,6 @@
 import type { StoreMarkingDefinition } from '../types/store';
 import { getExportContentMarkings } from './getExportContentMarkings';
+import { isNotEmptyField } from '../database/utils';
 
 type GetExportFilterType = {
   markingList: StoreMarkingDefinition[];
@@ -24,14 +25,20 @@ export const getExportFilter = async ({ markingList, contentMaxMarkings, objectI
     mode: 'and',
     filters: [],
     filterGroups: [
-      {
-        mode: 'or',
-        filters: [{ key: 'id', values: objectIdsList }],
-        filterGroups: [],
-      },
       markingFilter
     ]
   };
+  if (isNotEmptyField(objectIdsList)) {
+    mainFilter.filterGroups.push({
+      mode: 'or',
+      filters: [{
+        key: 'id', values: objectIdsList,
+        mode: 'or',
+        operator: 'eq'
+      }],
+      filterGroups: [],
+    });
+  }
 
   return { markingFilter, mainFilter };
 };
