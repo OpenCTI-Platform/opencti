@@ -8,7 +8,7 @@ import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
-import { createRedisClient, shutdownRedisClients } from '../../src/database/redis';
+import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
@@ -47,8 +47,6 @@ const testPlatformStart = async () => {
   const stopTime = new Date().getTime();
   logApp.info('[vitest-global-setup] Starting platform');
   try {
-    // Check all dependencies access
-    await searchEngineInit();
     // Init the cache manager
     await cacheManager.start();
     // Init the platform default if it was cleaned up
@@ -87,7 +85,7 @@ const platformClean = async () => {
   const indices = await elPlatformIndices();
   await elDeleteIndices(indices.map((i: { index: number }) => i.index));
   // Delete redis streams
-  const testRedisClient = createRedisClient('reset');
+  const testRedisClient = await createRedisClient('reset');
   await testRedisClient.del('stream.opencti');
   testRedisClient.disconnect();
   logApp.info(`[vitest-global-setup] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);
@@ -105,6 +103,8 @@ const waitPlatformIsAlive = async (): Promise<true> => {
 };
 
 export async function setup() {
+  await initializeRedisClients();
+  await searchEngineInit();
   // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');

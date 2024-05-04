@@ -16,6 +16,7 @@ import conf, { getPlatformHttpProxyAgent, logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError, UnsupportedError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE } from '../utils/access';
+import { enrichWithRemoteCredentials } from './credentials';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
@@ -283,102 +284,104 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       // All config of openid lib use snake case.
       const openIdClient = config.use_proxy ? getPlatformHttpProxyAgent(config.issuer) : undefined;
       OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
-      OpenIDIssuer.discover(config.issuer).then((issuer) => {
-        const { Client } = issuer;
-        const client = new Client(config);
-        // region scopes generation
-        const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
-        const openIdScopes = [...defaultScopes];
-        const groupsScope = mappedConfig.groups_management?.groups_scope;
-        if (groupsScope) {
-          openIdScopes.push(groupsScope);
-        }
-        const organizationsScope = mappedConfig.organizations_management?.organizations_scope;
-        if (organizationsScope) {
-          openIdScopes.push(organizationsScope);
-        }
-        // endregion
-        const openIdScope = R.uniq(openIdScopes).join(' ');
-        const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
-        const debugCallback = (message, meta) => logApp.info(message, meta);
-        const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
-          logApp.info('[OPENID] Successfully logged', { userinfo });
-          const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
-          logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
-          // region groups mapping
-          const computeGroupsMapping = () => {
-            const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
-            const token = mappedConfig.groups_management?.token_reference || 'access_token';
-            const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
-            const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
-            const decodedUser = jwtDecode(tokenset[token]);
-            if (!readUserinfo) {
-              logApp.info(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
-            }
-            const availableGroups = R.flatten(groupsPath.map((path) => {
-              const userClaims = (readUserinfo) ? userinfo : decodedUser;
-              const value = R.path(path.split('.'), userClaims) || [];
-              return Array.isArray(value) ? value : [value];
-            }));
-            const groupsMapper = genConfigMapper(groupsMapping);
-            return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-          };
-          const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
-          const groupsToAssociate = R.uniq(mappedGroups);
+      enrichWithRemoteCredentials(`providers:${providerIdent}`, config).then((clientConfig) => {
+        OpenIDIssuer.discover(config.issuer).then((issuer) => {
+          const { Client } = issuer;
+          const client = new Client(clientConfig);
+          // region scopes generation
+          const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
+          const openIdScopes = [...defaultScopes];
+          const groupsScope = mappedConfig.groups_management?.groups_scope;
+          if (groupsScope) {
+            openIdScopes.push(groupsScope);
+          }
+          const organizationsScope = mappedConfig.organizations_management?.organizations_scope;
+          if (organizationsScope) {
+            openIdScopes.push(organizationsScope);
+          }
           // endregion
-          // region organizations mapping
-          const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
-          const computeOrganizationsMapping = () => {
-            const orgaDefault = mappedConfig.organizations_default ?? [];
-            const readUserinfo = mappedConfig.organizations_management?.read_userinfo || false;
-            const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-            const token = mappedConfig.organizations_management?.token_reference || 'access_token';
-            const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
-            const decodedUser = jwtDecode(tokenset[token]);
-            const availableOrgas = R.flatten(orgaPath.map((path) => {
-              const userClaims = (readUserinfo) ? userinfo : decodedUser;
-              const value = R.path(path.split('.'), userClaims) || [];
-              return Array.isArray(value) ? value : [value];
-            }));
-            const orgasMapper = genConfigMapper(orgasMapping);
-            return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-          };
-          const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-          // endregion
-          if (!isGroupMapping || groupsToAssociate.length > 0) {
-            const nameAttribute = mappedConfig.name_attribute ?? 'name';
-            const emailAttribute = mappedConfig.email_attribute ?? 'email';
-            const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
-            const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
-            const name = userinfo[nameAttribute];
-            const email = userinfo[emailAttribute];
-            const firstname = userinfo[firstnameAttribute];
-            const lastname = userinfo[lastnameAttribute];
-            const opts = {
-              providerGroups: groupsToAssociate,
-              providerOrganizations: organizationsToAssociate,
-              autoCreateGroup: mappedConfig.auto_create_group ?? false,
+          const openIdScope = R.uniq(openIdScopes).join(' ');
+          const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
+          const debugCallback = (message, meta) => logApp.info(message, meta);
+          const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+            logApp.info('[OPENID] Successfully logged', { userinfo });
+            const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
+            logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
+            // region groups mapping
+            const computeGroupsMapping = () => {
+              const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
+              const token = mappedConfig.groups_management?.token_reference || 'access_token';
+              const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
+              const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+              const decodedUser = jwtDecode(tokenset[token]);
+              if (!readUserinfo) {
+                logApp.info(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
+              }
+              const availableGroups = R.flatten(groupsPath.map((path) => {
+                const userClaims = (readUserinfo) ? userinfo : decodedUser;
+                const value = R.path(path.split('.'), userClaims) || [];
+                return Array.isArray(value) ? value : [value];
+              }));
+              const groupsMapper = genConfigMapper(groupsMapping);
+              return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
             };
-            providerLoginHandler({ email, name, firstname, lastname }, done, opts);
-          } else {
-            done({ message: 'Restricted access, ask your administrator' });
-          }
+            const mappedGroups = isGroupMapping ? computeGroupsMapping() : [];
+            const groupsToAssociate = R.uniq(mappedGroups);
+            // endregion
+            // region organizations mapping
+            const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+            const computeOrganizationsMapping = () => {
+              const orgaDefault = mappedConfig.organizations_default ?? [];
+              const readUserinfo = mappedConfig.organizations_management?.read_userinfo || false;
+              const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
+              const token = mappedConfig.organizations_management?.token_reference || 'access_token';
+              const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+              const decodedUser = jwtDecode(tokenset[token]);
+              const availableOrgas = R.flatten(orgaPath.map((path) => {
+                const userClaims = (readUserinfo) ? userinfo : decodedUser;
+                const value = R.path(path.split('.'), userClaims) || [];
+                return Array.isArray(value) ? value : [value];
+              }));
+              const orgasMapper = genConfigMapper(orgasMapping);
+              return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+            };
+            const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+            // endregion
+            if (!isGroupMapping || groupsToAssociate.length > 0) {
+              const nameAttribute = mappedConfig.name_attribute ?? 'name';
+              const emailAttribute = mappedConfig.email_attribute ?? 'email';
+              const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
+              const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
+              const name = userinfo[nameAttribute];
+              const email = userinfo[emailAttribute];
+              const firstname = userinfo[firstnameAttribute];
+              const lastname = userinfo[lastnameAttribute];
+              const opts = {
+                providerGroups: groupsToAssociate,
+                providerOrganizations: organizationsToAssociate,
+                autoCreateGroup: mappedConfig.auto_create_group ?? false,
+              };
+              providerLoginHandler({ email, name, firstname, lastname }, done, opts);
+            } else {
+              done({ message: 'Restricted access, ask your administrator' });
+            }
+          });
+          openIDStrategy.logout_remote = options.logout_remote;
+          openIDStrategy.logout = (_, callback) => {
+            const isSpecificUri = isNotEmptyField(config.logout_callback_url);
+            const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
+            if (isSpecificUri) {
+              const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
+              callback(null, logoutUri);
+            } else {
+              callback(null, endpointUri);
+            }
+          };
+          passport.use(providerRef, openIDStrategy);
+          providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+        }).catch((err) => {
+          logApp.error(UnsupportedError('Error initializing authentication provider', { cause: err, provider: providerRef }));
         });
-        openIDStrategy.logout_remote = options.logout_remote;
-        openIDStrategy.logout = (_, callback) => {
-          const isSpecificUri = isNotEmptyField(config.logout_callback_url);
-          const endpointUri = issuer.end_session_endpoint ? issuer.end_session_endpoint : `${config.issuer}/oidc/logout`;
-          if (isSpecificUri) {
-            const logoutUri = `${endpointUri}?post_logout_redirect_uri=${config.logout_callback_url}`;
-            callback(null, logoutUri);
-          } else {
-            callback(null, endpointUri);
-          }
-        };
-        passport.use(providerRef, openIDStrategy);
-        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
-      }).catch((err) => {
-        logApp.error(UnsupportedError('Error initializing authentication provider', { cause: err, provider: providerRef }));
       });
     }
     if (strategy === STRATEGY_FACEBOOK) {

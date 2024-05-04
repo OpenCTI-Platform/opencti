@@ -17,6 +17,7 @@ import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { enrichWithRemoteCredentials } from '../config/credentials';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -35,7 +36,7 @@ export const specialTypesExtensions = {
   'application/vnd.mitre.navigator+json': 'json',
 };
 
-const credentialProvider = () => {
+const credentialProvider = async () => {
   if (useAwsRole) {
     return defaultProvider({
       roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
@@ -44,9 +45,11 @@ const credentialProvider = () => {
       })
     });
   }
+  // Build the engine auth option
+  const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
+  const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
   return {
-    accessKeyId: clientAccessKey,
-    secretAccessKey: clientSecretKey,
+    ...userPasswordAuth,
     ...(clientSessionToken && { sessionToken: clientSessionToken })
   };
 };
