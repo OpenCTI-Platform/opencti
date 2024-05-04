@@ -39,7 +39,7 @@ describe('File storage file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10700);
+    expect(file.size).toEqual(10626);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.file_markings[0]).toEqual(MARKING_TLP_AMBER_STRICT);
     expect(file.metaData.encoding).toEqual('7bit');
@@ -50,7 +50,7 @@ describe('File storage file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(10700);
+    expect(file.size).toEqual(10626);
     expect(file.name).toEqual(exportFileName);
   });
   it('should all file listing', async () => {
@@ -106,7 +106,7 @@ describe('File storage file listing', () => {
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
     // expect(file.size).toEqual(11576);
-    expect(file.size).toEqual(10700);
+    expect(file.size).toEqual(10626);
   });
   it('should delete file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');

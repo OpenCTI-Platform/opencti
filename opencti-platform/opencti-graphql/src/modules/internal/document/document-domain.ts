@@ -141,7 +141,7 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
     userFileInstance,
     systemFileInstance,
   ] = await Promise.all([userInstancePromise, systemInstancePromise, userFileInstancePromise, systemFileInstancePromise]);
-  if ((isEmptyField(instance) && isNotEmptyField(systemInstance)) || (isEmptyField(userFileInstance) && isNotEmptyField(systemFileInstance))) {
+  if ((isEmptyField(instance) && isNotEmptyField(systemInstance)) || (isEmptyField(userFileInstance) && isNotEmptyField(systemFileInstance) && isNotEmptyField(filename))) {
     const data = buildContextDataForFile(systemInstance as BasicStoreObject, id, filename);
     await publishUserAction({
       user,
