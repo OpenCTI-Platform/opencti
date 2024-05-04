@@ -286,9 +286,33 @@ class IntrusionSet:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["intrusionSets"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["intrusionSets"])
+            final_data = final_data + data
+            while result["data"]["intrusionSets"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["intrusionSets"]["pageInfo"]["endCursor"]
+                self.opencti.app_logger.info(
+                    "Listing Intrusion-Sets", {"after": after}
+                )
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["intrusionSets"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["intrusionSets"], with_pagination
+            )
 
     """
         Read a Intrusion-Set object
