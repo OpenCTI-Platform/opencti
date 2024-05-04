@@ -1515,7 +1515,7 @@ class OpenCTIStix2:
         if "tasks" in entity:
             del entity["tasks"]
 
-        if "status" in entity:
+        if "status" in entity and entity["status"] is not None:
             entity["x_opencti_workflow_id"] = entity["status"].get("id")
         if "status" in entity:
             del entity["status"]
