@@ -2342,12 +2342,13 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
   const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
-
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
-    const compareIds = isConfidenceMatch ? [element.standard_id, generateStandardId(type, basePatch)] : [element.standard_id];
+    const possibleNewStandardId = generateStandardId(type, basePatch);
+    const isStandardWillChange = element.standard_id !== possibleNewStandardId;
+    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [element.standard_id, possibleNewStandardId] : [element.standard_id];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !compareIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
+    if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
       ids.push(basePatch.stix_id);
     }
     if (ids.length > 0) {
