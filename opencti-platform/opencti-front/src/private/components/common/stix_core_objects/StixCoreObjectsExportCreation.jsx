@@ -45,8 +45,6 @@ export const StixCoreObjectsExportCreationMutation = graphql`
 
 const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().trim().required(t_i18n('This field is required')),
-  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
-  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {

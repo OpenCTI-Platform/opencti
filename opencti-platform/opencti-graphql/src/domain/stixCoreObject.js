@@ -363,7 +363,7 @@ export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, i
 
 export const stixCoreObjectsExportPush = async (context, user, entity_id, entity_type, file, file_markings, listFilters) => {
   const meta = { list_filters: listFilters };
-  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta });
+  await uploadToStorage(context, user, `export/${entity_type}${entity_id ? `/${entity_id}` : ''}`, file, { meta, file_markings });
   return true;
 };
 

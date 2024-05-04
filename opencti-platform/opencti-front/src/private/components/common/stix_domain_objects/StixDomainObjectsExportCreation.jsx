@@ -50,7 +50,7 @@ export const StixDomainObjectsExportCreationMutation = graphql`
     $format: String!
     $exportType: String!
     $contentMaxMarkings: [String]
-    $fileMarkings: [String]!
+    $fileMarkings: [String]
     $exportContext: ExportContext
     $search: String
     $orderBy: StixDomainObjectsOrdering
@@ -80,8 +80,6 @@ export const StixDomainObjectsExportCreationMutation = graphql`
 const exportValidation = (t) => Yup.object().shape({
   format: Yup.string().required(t('This field is required')),
   type: Yup.string().required(t('This field is required')),
-  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
-  fileMarkings: Yup.array().min(1, 'This field is required').required(t('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {

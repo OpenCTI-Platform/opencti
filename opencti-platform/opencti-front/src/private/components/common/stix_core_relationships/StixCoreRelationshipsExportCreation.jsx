@@ -61,8 +61,6 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
 
 const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().required(t_i18n('This field is required')),
-  contentMaxMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
-  fileMarkings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
 });
 
 export const scopesConn = (exportConnectors) => {
@@ -142,7 +140,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('Stix-Core-Object')?.keys() ?? []).concat(['entity_type']);
+          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('stix-core-relationship')?.keys() ?? []).concat(['entity_type']);
           return (
             <ExportContext.Consumer>
               {({ selectedIds }) => {

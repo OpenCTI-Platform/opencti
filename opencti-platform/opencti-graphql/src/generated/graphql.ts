@@ -6880,7 +6880,7 @@ export enum EventsOrdering {
 export type ExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   format: Scalars['String']['input'];
 };
 
@@ -14247,7 +14247,7 @@ export type MutationStixDomainObjectsExportAskArgs = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixDomainObjectsOrdering>;
@@ -17957,6 +17957,7 @@ export type Query = {
   stixMetaObjects?: Maybe<StixMetaObjectConnection>;
   stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
+  stixObjectOrStixRelationships?: Maybe<StixObjectOrStixRelationshipConnection>;
   stixRefRelationship?: Maybe<StixRefRelationship>;
   stixRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixRefRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -19898,6 +19899,14 @@ export type QueryStixNestedRefRelationshipsArgs = {
 
 export type QueryStixObjectOrStixRelationshipArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryStixObjectOrStixRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22291,7 +22300,7 @@ export type StixCoreObjectsExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixCoreObjectsOrdering>;
@@ -22561,7 +22570,7 @@ export type StixCoreRelationshipsExportAskInput = {
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22874,7 +22883,7 @@ export type StixCyberObservablesExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportContext?: InputMaybe<ExportContext>;
   exportType: Scalars['String']['input'];
-  fileMarkings: Array<InputMaybe<Scalars['String']['input']>>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filters?: InputMaybe<FilterGroup>;
   format: Scalars['String']['input'];
   orderBy?: InputMaybe<StixCyberObservablesOrdering>;
@@ -34520,7 +34529,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
-  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'fileMarkings' | 'format'>>;
+  stixDomainObjectsExportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'entity_type' | 'file' | 'file_markings'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
@@ -35859,6 +35868,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixMetaObjects?: Resolver<Maybe<ResolversTypes['StixMetaObjectConnection']>, ParentType, ContextType, Partial<QueryStixMetaObjectsArgs>>;
   stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;
+  stixObjectOrStixRelationships?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixObjectOrStixRelationshipsArgs>>;
   stixRefRelationship?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<QueryStixRefRelationshipArgs>>;
   stixRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRefRelationshipsArgs>>;
   stixRefRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixRefRelationshipsDistributionArgs, 'field' | 'operation'>>;

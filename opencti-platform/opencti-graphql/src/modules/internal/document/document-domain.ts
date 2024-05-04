@@ -133,19 +133,24 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
   }
   const userInstancePromise = internalLoadById(context, user, entity_id);
   const systemInstancePromise = internalLoadById(context, SYSTEM_USER, entity_id);
-  const [instance, systemInstance] = await Promise.all([userInstancePromise, systemInstancePromise]);
-  if (isEmptyField(instance)) {
-    if (isNotEmptyField(systemInstance)) {
-      const data = buildContextDataForFile(systemInstance as BasicStoreObject, id, filename);
-      await publishUserAction({
-        user,
-        event_type: 'file',
-        event_scope: scope,
-        event_access: 'extended',
-        status: 'error',
-        context_data: data
-      } as UserAction);
-    }
+  const userFileInstancePromise = internalLoadById(context, user, id);
+  const systemFileInstancePromise = internalLoadById(context, SYSTEM_USER, id);
+  const [
+    instance,
+    systemInstance,
+    userFileInstance,
+    systemFileInstance,
+  ] = await Promise.all([userInstancePromise, systemInstancePromise, userFileInstancePromise, systemFileInstancePromise]);
+  if ((isEmptyField(instance) && isNotEmptyField(systemInstance)) || (isEmptyField(userFileInstance) && isNotEmptyField(systemFileInstance) && isNotEmptyField(filename))) {
+    const data = buildContextDataForFile(systemInstance as BasicStoreObject, id, filename);
+    await publishUserAction({
+      user,
+      event_type: 'file',
+      event_scope: scope,
+      event_access: 'extended',
+      status: 'error',
+      context_data: data
+    } as UserAction);
     throw ForbiddenAccess('Access to this file is restricted', { id: entity_id, file: id });
   }
   return true;

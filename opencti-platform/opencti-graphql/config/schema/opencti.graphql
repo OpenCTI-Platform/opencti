@@ -1570,14 +1570,14 @@ input ExportAskInput {
   format: String!
   exportType: String!
   contentMaxMarkings: [String]
-  fileMarkings: [String]!
+  fileMarkings: [String]
 }
 
 input StixCoreObjectsExportAskInput {
   format: String!
   exportType: String!
   contentMaxMarkings: [String]
-  fileMarkings: [String]!
+  fileMarkings: [String]
   search: String
   exportContext: ExportContext
   orderBy: StixCoreObjectsOrdering
@@ -1590,7 +1590,7 @@ input StixCoreRelationshipsExportAskInput {
   format: String!
   exportType: String!
   contentMaxMarkings: [String]
-  fileMarkings: [String]!
+  fileMarkings: [String]
   exportContext: ExportContext
   search: String
   orderBy: StixCoreRelationshipsOrdering
@@ -1613,7 +1613,7 @@ input StixCyberObservablesExportAskInput {
   exportType: String!
   exportContext: ExportContext
   contentMaxMarkings: [String]
-  fileMarkings: [String]!
+  fileMarkings: [String]
   search: String
   orderBy: StixCyberObservablesOrdering
   orderMode: OrderingMode
@@ -12194,6 +12194,12 @@ type Query {
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
+  stixObjectOrStixRelationships(
+    first: Int
+    after: ID
+    search: String
+    filters: FilterGroup
+  ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   @auth(for: [KNOWLEDGE, EXPLORE])
 }
@@ -12737,7 +12743,7 @@ type Mutation {
     format: String!
     exportType: String!
     contentMaxMarkings: [String],
-    fileMarkings: [String]!
+    fileMarkings: [String]
     search: String
     exportContext: ExportContext
     relationship_type: [String]

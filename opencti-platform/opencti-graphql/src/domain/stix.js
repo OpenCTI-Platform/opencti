@@ -30,6 +30,10 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
+import { getExportContentMarkings } from '../utils/getExportContentMarkings';
+import { getExportFilter } from '../utils/getExportFilter';
+import { getEntitiesListFromCache } from '../database/cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -51,14 +55,24 @@ export const askListExport = async (context, user, exportContext, format, select
   if (!exportContext || !exportContext?.entity_type) throw new Error('entity_type is missing from askListExport');
 
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevel = contentMaxMarkings[0] ? await findMarkingDefinitionById(context, user, contentMaxMarkings[0]) : null;
+  const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
+    return await findMarkingDefinitionById(context, user, id);
+  }));
+  const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
+
   const entity = exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
   const { entity_type } = exportContext;
 
   const toFileName = (connector) => {
     const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
-    return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
+    return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
+
+  const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
+
+  const { markingFilter, mainFilter } = await getExportFilter({ markingList, contentMaxMarkings, objectIdsList: selectedIds });
+
   const baseEvent = {
     format, // extension mime type
     export_type: type, // Simple or full
@@ -67,8 +81,10 @@ export const askListExport = async (context, user, exportContext, format, select
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type, // Exported entity type
     // All the params needed to execute the export on python connector
-    content_max_markings: contentMaxMarkings,
+    content_markings,
     file_markings: fileMarkings,
+    main_filter: mainFilter,
+    access_filter: markingFilter
   };
   const buildExportMessage = (work, fileName) => {
     const internal = {
@@ -128,6 +144,12 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
+
+  const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
+  const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
+
+  const { markingFilter, mainFilter } = await getExportFilter({ markingList, contentMaxMarkings, objectIdsList: [entity.id] });
+
   const baseEvent = {
     format,
     export_scope: 'single', // query or selection or single
@@ -135,8 +157,10 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type
     export_type: type, // Simple or full
-    content_max_markings: contentMaxMarkings,
+    content_markings,
     file_markings: fileMarkings,
+    main_filter: mainFilter,
+    access_filter: markingFilter
   };
   const buildExportMessage = (work, fileName) => {
     return {
@@ -151,6 +175,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       },
     };
   };
+
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
     map(async (connector) => { // can be refactored to native map
