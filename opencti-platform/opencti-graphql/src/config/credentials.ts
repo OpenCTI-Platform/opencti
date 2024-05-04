@@ -7,7 +7,7 @@ const CYBERARK_PROVIDER = 'cyberark';
 export const enrichWithRemoteCredentials = async (prefix: string, baseConfiguration: any) => {
   const provider = conf.get(`${prefix}:credentials_provider:selector`);
   if (provider) {
-    logApp.info('[OPENCTI] Resolve secret configuration detected', { provider, source: prefix });
+    logApp.info('[OPENCTI] Remote credentials configuration detected', { provider, source: prefix });
     if (provider === CYBERARK_PROVIDER) {
       const uri = conf.get(`${prefix}:credentials_provider:${provider}:uri`);
       const appId = conf.get(`${prefix}:credentials_provider:${provider}:app_id`);
@@ -32,19 +32,20 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
         if (result.status === 200 && isNotEmptyField(result.data.Content)) {
           const defaultSplitter = conf.get(`${prefix}:credentials_provider:${provider}:default_splitter`) ?? ':';
           const contentValues = result.data.Content.split(defaultSplitter);
-          const fields = conf.get(`${prefix}:credentials_provider:${provider}:field_targets`);
+          const fields = conf.get(`${prefix}:credentials_provider:field_targets`);
           for (let index = 0; index < fields.length; index += 1) {
             const field = fields[index];
             secretResult[field] = contentValues[index];
           }
+          logApp.info('[OPENCTI] Remote credentials successfully fetched', { provider, source: prefix });
           return secretResult;
         }
       } catch (e: any) {
-        logApp.error('[OPENCTI] Credential data fail to fetch, fallback', { error: e.code, provider, object });
+        logApp.error('[OPENCTI] Remote credentials data fail to fetch, fallback', { error: e, provider, source: prefix });
       }
     }
     // No compatible provider available
-    logApp.error('[OPENCTI] Credential provider is not supported, fallback', { provider });
+    logApp.error('[OPENCTI] Remote credentials provider is not supported, fallback', { provider, source: prefix });
   }
   return baseConfiguration;
 };
