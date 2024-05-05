@@ -1,5 +1,5 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import type { Histogram, ObservableResult } from '@opentelemetry/api-metrics';
+import type { ObservableResult } from '@opentelemetry/api-metrics';
 import { ValueType } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
@@ -9,11 +9,7 @@ export class TelemetryMeterManager {
 
   private isEEActivated = 0;
 
-  private EEActivationDate: string | undefined = undefined;
-
   private instancesCount = 0;
-
-  private activUsersHistogram: Histogram | null = null;
 
   private activUsersCount = 0;
 
@@ -25,16 +21,8 @@ export class TelemetryMeterManager {
     this.isEEActivated = EE;
   }
 
-  setEEActivationDate(date: string | null | undefined) {
-    this.EEActivationDate = date ?? undefined;
-  }
-
   setInstancesCount(n: number) {
     this.instancesCount = n;
-  }
-
-  setActivUsersHistogram(activUsersCount: number) {
-    this.activUsersHistogram?.record(activUsersCount);
   }
 
   setActivUsersCount(n: number) {
@@ -44,15 +32,8 @@ export class TelemetryMeterManager {
   registerFiligranTelemetry() {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     // - Histogram - //
-    // number of active users
-    // this.activUsersHistogram = meter.createHistogram(
-    //   'opencti_activUsersCount',
-    //   { description: 'Number of users activ in a session within the last hour',
-    //     unit: 'count',
-    //     valueType: ValueType.INT,
-    //   }
-    // );
     // - Gauges - //
+    // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     // number of active users
     const activUsersCountGauge = meter.createObservableGauge(
       'opencti_activUsersCount',
@@ -75,7 +56,7 @@ export class TelemetryMeterManager {
       { description: 'if Enterprise Edition is activated', unit: 'boolean', valueType: ValueType.INT },
     );
     isEEActivatedGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.isEEActivated, { EEActivationDate: this.EEActivationDate });
+      observableResult.observe(this.isEEActivated/* , { EEActivationDate: this.EEActivationDate } */);
     });
   }
 }

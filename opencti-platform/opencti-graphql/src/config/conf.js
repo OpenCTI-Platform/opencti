@@ -326,7 +326,7 @@ const telemetryLogTransports = [new DailyRotateFile({
 })];
 const telemetryLogger = winston.createLogger({
   level: 'info',
-  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
+  format: format.printf((info) => { return `${info.message}`; }),
   transports: telemetryLogTransports,
 });
 
@@ -399,13 +399,10 @@ export const logSupport = {
   warn: (message, meta = {}) => logSupport._log('warn', message, null, meta),
 };
 
-const LOG_TELEMETRY = 'TELEMETRY';
 export const logTelemetry = {
-  _log: (level, message, meta = {}) => {
-    telemetryLogger.log(level, message, addBasicMetaInformation(LOG_TELEMETRY, null, meta));
-  },
-  info: (message, meta = {}) => logTelemetry._log('info', message, null, meta),
-  warn: (message, meta = {}) => logTelemetry._log('warn', message, null, meta),
+  log: (message) => {
+    telemetryLogger.log('info', message);
+  }
 };
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
