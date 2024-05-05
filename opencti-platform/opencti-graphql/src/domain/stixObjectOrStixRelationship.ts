@@ -3,12 +3,12 @@ import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } 
 import { type EntityOptions, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { isStixRefRelationship } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { listThings, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { StixRefRelationshipAddInput, StixRefRelationshipsAddInput } from '../generated/graphql';
+import { type StixRefRelationshipAddInput, type StixRefRelationshipsAddInput } from '../generated/graphql';
 import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
@@ -53,7 +53,7 @@ export const stixObjectOrRelationshipAddRefRelation = async (
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   const to = await findById(context, user, input.toId);
 
-  if (input.relationship_type === 'created-by') {
+  if (input.relationship_type === RELATION_CREATED_BY) {
     await validateCreatedBy(context, user, input.toId);
   }
 

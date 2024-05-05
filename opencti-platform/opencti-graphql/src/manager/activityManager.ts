@@ -70,7 +70,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
           const user = users[indexUser];
           targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
         }
-        const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data };
+        const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data, origin };
         await storeNotificationEvent(context, notificationEvent);
       }
     }

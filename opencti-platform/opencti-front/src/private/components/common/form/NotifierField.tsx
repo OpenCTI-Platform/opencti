@@ -28,6 +28,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface NotifierFieldProps {
+  label?: string
   name: string;
   style?: { marginTop: number };
   helpertext?: string;
@@ -48,6 +49,7 @@ export const NotifierFieldQuery = graphql`
 `;
 
 const NotifierField: FunctionComponent<NotifierFieldProps> = ({
+  label,
   name,
   style,
   helpertext,
@@ -84,7 +86,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         style={fieldSpacingContainerStyle ?? style}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('Notifiers'),
+          label: label ?? t_i18n('Notifiers'),
           helperText: helpertext,
           onFocus: searchNotifiers,
         }}

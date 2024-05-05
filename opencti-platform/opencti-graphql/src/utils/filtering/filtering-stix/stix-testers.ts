@@ -18,6 +18,7 @@ import {
   MAIN_OBSERVABLE_TYPE_FILTER,
   MARKING_FILTER,
   OBJECT_CONTAINS_FILTER,
+  PARTICIPANT_FILTER,
   PATTERN_FILTER,
   PRIORITY_FILTER,
   RELATION_FROM_FILTER,
@@ -28,7 +29,7 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER,
+  WORKFLOW_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -101,6 +102,15 @@ export const testCreator = (stix: any, filter: Filter) => {
  */
 export const testAssignee = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.assignee_ids ?? [];
+  return testStringFilter(filter, stixValues);
+};
+
+/**
+ * ASSIGNEES
+ * - participantTo is participant_ids in stix (in extension)
+ */
+export const testParticipant = (stix: any, filter: Filter) => {
+  const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.participant_ids ?? [];
   return testStringFilter(filter, stixValues);
 };
 
@@ -313,6 +323,7 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter) => {
 export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // basic keys
   [ASSIGNEE_FILTER]: testAssignee,
+  [PARTICIPANT_FILTER]: testParticipant,
   [CONFIDENCE_FILTER]: testConfidence,
   [CREATED_BY_FILTER]: testCreatedBy,
   [CREATOR_FILTER]: testCreator,

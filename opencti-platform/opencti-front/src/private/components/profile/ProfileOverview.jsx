@@ -18,6 +18,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
+import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
@@ -100,6 +101,7 @@ const userValidation = (t) => Yup.object().shape({
   user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
+  personal_notifiers: Yup.array(),
   firstname: Yup.string().nullable(),
   lastname: Yup.string().nullable(),
   theme: Yup.string().nullable(),
@@ -226,7 +228,12 @@ const ProfileOverviewComponent = (props) => {
     'submenu_show_icons',
     'submenu_auto_collapse',
   ];
-  const initialValues = { ...pick(fieldNames, me), objectOrganization };
+
+  const initialValues = {
+    ...pick(fieldNames, me),
+    objectOrganization,
+    personal_notifiers: (me.personal_notifiers ?? []).map(({ id, name }) => ({ value: id, label: name })),
+  };
 
   const disableOtp = () => {
     commitMutation({
@@ -437,6 +444,12 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
+              <NotifierField
+                label={t('Personal notifiers')}
+                name="personal_notifiers"
+                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+              />
             </Form>
           )}
         </Formik>
@@ -605,6 +618,10 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       unit_system
       submenu_show_icons
       submenu_auto_collapse
+      personal_notifiers {
+        id
+        name
+      }
       objectOrganization {
         edges {
           node {

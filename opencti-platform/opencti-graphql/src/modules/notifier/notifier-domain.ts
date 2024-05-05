@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 import { BUS_TOPICS } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import { getEntityFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById, } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
@@ -96,10 +96,16 @@ export const notifiersFind = (context: AuthContext, user: AuthUser, opts: QueryN
   return listEntitiesPaginated<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { ...opts, includeAuthorities: true });
 };
 
-export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: string[]) => {
-  const notifiers = await internalFindByIds(context, user, ids, { type: ENTITY_TYPE_NOTIFIER });
-  const staticNotifiers = STATIC_NOTIFIERS.filter(({ id }) => ids.includes(id));
-  return [...notifiers, ...staticNotifiers] as BasicStoreEntityNotifier[];
+export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: string[] = []) => {
+  const cacheNotifiers = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_NOTIFIER);
+  const missingIds = ids.filter((id) => !cacheNotifiers.has(id));
+  const notifiers = await internalFindByIds(context, user, missingIds, { type: ENTITY_TYPE_NOTIFIER });
+  const staticNotifiers = STATIC_NOTIFIERS.filter(({ id }) => missingIds.includes(id));
+  return [
+    ...(ids.filter((id) => cacheNotifiers.has(id)).map((id) => cacheNotifiers.get(id) as BasicStoreEntityNotifier)),
+    ...notifiers,
+    ...staticNotifiers,
+  ] as BasicStoreEntityNotifier[];
 };
 
 export const usableNotifiers = async (context: AuthContext, user: AuthUser) => {
