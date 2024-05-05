@@ -7,11 +7,20 @@ export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
 export class TelemetryMeterManager {
   meterProvider: MeterProvider;
 
-  private isEEActivated = 0;
+  // Is enterprise Edition is activated
+  isEEActivated = 0;
 
-  private instancesCount = 0;
+  // Cluster number of instances
+  instancesCount = 0;
 
-  private activUsersCount = 0;
+  // Number of users in the platform
+  usersCount = 0;
+
+  // Number of active users
+  activeUsersCount = 0;
+
+  // Number of active connectors
+  activeConnectorsCount = 0;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -25,38 +34,36 @@ export class TelemetryMeterManager {
     this.instancesCount = n;
   }
 
-  setActivUsersCount(n: number) {
-    this.activUsersCount = n;
+  setActiveUsersCount(n: number) {
+    this.activeUsersCount = n;
+  }
+
+  setUsersCount(n: number) {
+    this.usersCount = n;
+  }
+
+  setActiveConnectorsCount(n: number) {
+    this.activeConnectorsCount = n;
+  }
+
+  registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
+    const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
+    const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
+    const activUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions,);
+    activUsersCountGauge.addCallback((observableResult: ObservableResult) => {
+      /* eslint-disable @typescript-eslint/ban-ts-comment */
+      // @ts-ignore
+      observableResult.observe(this[observer]);
+    });
   }
 
   registerFiligranTelemetry() {
-    const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
-    // - Histogram - //
-    // - Gauges - //
+    // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
-    // number of active users
-    const activUsersCountGauge = meter.createObservableGauge(
-      'opencti_activUsersCount',
-      { description: 'number of active users', unit: 'count', valueType: ValueType.INT },
-    );
-    activUsersCountGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.activUsersCount);
-    });
-    // number of instances
-    const instancesCountGauge = meter.createObservableGauge(
-      'opencti_instancesCount',
-      { description: 'number of instances', unit: 'count', valueType: ValueType.INT },
-    );
-    instancesCountGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.instancesCount);
-    });
-    // is EE activated
-    const isEEActivatedGauge = meter.createObservableGauge(
-      'opencti_isEEActivated',
-      { description: 'if Enterprise Edition is activated', unit: 'boolean', valueType: ValueType.INT },
-    );
-    isEEActivatedGauge.addCallback((observableResult: ObservableResult) => {
-      observableResult.observe(this.isEEActivated/* , { EEActivationDate: this.EEActivationDate } */);
-    });
+    this.registerGauge('total_users_count', 'number of users', 'usersCount');
+    this.registerGauge('active_users_count', 'number of active users', 'activUsersCount');
+    this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
+    this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
+    this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
   }
 }

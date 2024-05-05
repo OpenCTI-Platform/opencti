@@ -1,10 +1,10 @@
 import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
-import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
-import conf, { logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { isNotEmptyField } from '../database/utils';
 import type { Settings } from '../generated/graphql';
@@ -14,39 +14,44 @@ import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/Tele
 import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
-import { getEntitiesListFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
+import type { BasicStoreSettings } from '../types/settings';
+import { getHttpClient } from '../utils/http-client';
+import type { StoreConnector } from '../types/connector';
 
-const TELEMETRY_COLLECT_INTERVAL = 5000; // 60 * 60 * 1000; // export data period in ms (correspond to 1 h)
-const TELEMETRY_EXPORT_INTERVAL = 15000; // 6 * 60 * 60 * 1000; // export data period in ms (correspond to 6 h)
-const SCHEDULE_TIME = 1000; // 30 * 60 * 1000; // telemetry manager period in ms (correspond to 30 min)
+const TELEMETRY_DEV_DEBUG = false;
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
-const FILIGRAN_TELEMETRY = 'https://telemetry.staging.filigran.io/v1/metrics';
+const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
+  ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
+
+const ONE_MINUTE = 60 * 1000;
+const FIVE_MINUTE = 5 * ONE_MINUTE;
+const ONE_HOUR = 60 * ONE_MINUTE;
+const SIX_HOUR = 6 * ONE_HOUR;
+// Collect data period, corresponds to data point collection
+const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
+// Export data period, sending information to files, console and otlp
+const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? FIVE_MINUTE : SIX_HOUR;
+// Manager schedule, data point generation
+const SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 const telemetryHandler = async () => {
-  let resource = Resource.default();
+  // Build readers
   const filigranMetricReaders = [];
-  // Fetch settings
-  const context = executionContext('telemetry_manager');
-  const settings = await getSettings(context) as Settings;
-  const platformId = settings.id;
-  // -- Resource
-  const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
-  });
-  resource = resource.merge(filigranResource);
-  // File exporter
+  // region File exporter
   const fileExporterReader = new BatchExportingMetricReader({
     exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
   });
   filigranMetricReaders.push(fileExporterReader);
-  /* Console Exporter
+  logApp.info('[TELEMETRY] File exporter activated');
+  // endregion
   if (DEV_MODE) {
+    // region Console Exporter
+    logApp.info('[TELEMETRY] Console exporter activated');
     const consoleMetric = new BatchExportingMetricReader({
       exporter: new ConsoleMetricExporter({ temporalitySelector: (instrumentType: InstrumentType) => {
         if (instrumentType === InstrumentType.OBSERVABLE_UP_DOWN_COUNTER) {
@@ -57,41 +62,75 @@ const telemetryHandler = async () => {
       collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
       exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
     });
-    filigranMetricReaders.push(consoleMetric);
-  } */
-  // OTLP Exporter
-  const OtlpExporterReader = new BatchExportingMetricReader({
-    exporter: new OTLPMetricExporter({ url: FILIGRAN_TELEMETRY, temporalityPreference: AggregationTemporality.DELTA }),
-    collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
-    exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
-  });
-  filigranMetricReaders.push(OtlpExporterReader);
+    if (TELEMETRY_DEV_DEBUG) {
+      filigranMetricReaders.push(consoleMetric);
+    }
+    // endregion
+  } else {
+    // region OTLP Exporter, only enable in production
+    // OtlpExporterReader can be deactivated if connectivity fail at manager start.
+    try {
+      const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
+      if (connectivityQuery.status === 200) {
+        logApp.info('[TELEMETRY] Otlp exporter activated');
+        const OtlpExporterReader = new BatchExportingMetricReader({
+          exporter: new OTLPMetricExporter({
+            url: FILIGRAN_OTLP_TELEMETRY,
+            temporalityPreference: AggregationTemporality.DELTA
+          }),
+          collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
+          exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
+        });
+        filigranMetricReaders.push(OtlpExporterReader);
+      } else {
+        logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
+      }
+    } catch {
+      logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
+    }
+    // endregion
+  }
   // Meter Provider creation
+  const context = executionContext('telemetry_manager');
+  const settings = await getSettings(context) as Settings;
+  const platformId = settings.id;
+  const filigranResource = new Resource({
+    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
+    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
+    'service.instance.creation': settings.created_at
+  });
+  const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();
   return filigranTelemetryMeterManager;
 };
 
-const fetchTelemetryData = async (filigranTelemetryMeterManager?: TelemetryMeterManager) => {
-  if (!filigranTelemetryMeterManager) {
-    logApp.error('Filigran telemetry meter manager not provided', { manager: 'TELEMETRY_MANAGER' });
-  } else {
-    try {
-      const context = executionContext('telemetry_manager');
-      // Fetch settings
-      const settingsArray = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-      const settings = settingsArray[0] as unknown as Settings;
-      const clusterInfo = await getClusterInformation();
-      // Set filigranTelemetryManager settings telemetry data
-      filigranTelemetryMeterManager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
-      filigranTelemetryMeterManager.setInstancesCount(clusterInfo.info.instances_number);
-      // Get number of active users since fetchTelemetryData() last execution
-      const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
-      filigranTelemetryMeterManager.setActivUsersCount(activUsers.length);
-    } catch (e) {
-      logApp.error(e, { manager: 'TELEMETRY_MANAGER' });
-    }
+const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
+  try {
+    const context = executionContext('telemetry_manager');
+    // region Settings information
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+    manager.setIsEEActivated(isNotEmptyField(settings.enterprise_edition) ? 1 : 0);
+    // endregion
+    // region Cluster information
+    const clusterInfo = await getClusterInformation();
+    manager.setInstancesCount(clusterInfo.info.instances_number);
+    // endregion
+    // region Users information
+    const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
+    manager.setActiveUsersCount(activUsers.length);
+    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
+    manager.setUsersCount(users.length);
+    // endregion
+    // region Connectors information
+    const connectors = await getEntitiesListFromCache<StoreConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    const activeConnectors = connectors.filter((c) => c.active);
+    manager.setActiveConnectorsCount(activeConnectors.length);
+    // endregion
+  } catch (e) {
+    logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }
 };
 

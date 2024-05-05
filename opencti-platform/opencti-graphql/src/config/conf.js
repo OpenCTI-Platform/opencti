@@ -316,12 +316,12 @@ const supportLogger = winston.createLogger({
 
 // Setup telemetry logs
 export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = './telemetry';
-export const TELEMETRY_LOG_FILE_SUFFIX = 'telemetry.log';
+export const TELEMETRY_LOG_FILE_PREFIX = 'telemetry';
 const telemetryLogTransports = [new DailyRotateFile({
   dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
-  filename: TELEMETRY_LOG_FILE_SUFFIX,
-  maxFiles: 2,
-  maxSize: '10k',
+  filename: TELEMETRY_LOG_FILE_PREFIX,
+  maxFiles: 3,
+  maxSize: '1m',
   level: 'info',
 })];
 const telemetryLogger = winston.createLogger({

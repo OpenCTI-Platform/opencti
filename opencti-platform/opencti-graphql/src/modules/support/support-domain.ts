@@ -5,7 +5,16 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { type BasicStoreEntitySupportPackage, ENTITY_TYPE_SUPPORT_PACKAGE, type StoreEntitySupportPackage, SUPPORT_BUS } from './support-types';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, logApp, logSupport, NODE_INSTANCE_ID, SUPPORT_LOG_FILE_PREFIX, SUPPORT_LOG_RELATIVE_LOCAL_DIR } from '../../config/conf';
+import {
+  BUS_TOPICS,
+  logApp,
+  logSupport,
+  NODE_INSTANCE_ID,
+  SUPPORT_LOG_FILE_PREFIX,
+  SUPPORT_LOG_RELATIVE_LOCAL_DIR,
+  TELEMETRY_LOG_FILE_PREFIX,
+  TELEMETRY_LOG_RELATIVE_LOCAL_DIR
+} from '../../config/conf';
 import { downloadFile, loadedFilesListing, streamConverter } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportNodeStatus, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
@@ -23,7 +32,7 @@ const ZIP_MIME_TYPE = 'application/zip';
 const cleanupFiles: boolean = true;
 
 export const getS3UploadFolder = (entityId: string) => {
-  // Be carefull to NOT use join, on S3 we need a / and not an OS dependent separator.
+  // Be careful to NOT use join, on S3 we need a / and not an OS dependent separator.
   return `${SUPPORT_STORAGE_PATH}/${entityId}`;
 };
 
@@ -43,14 +52,15 @@ export const deleteSupportPackage = async (context: AuthContext, user: AuthUser,
 /**
  * Find all files from a filename list with format support.*
  * @param files
+ * @param prefix
  */
-export const findAllSupportFiles = (files: string[]): string[] => {
+export const findAllSupportFiles = (files: string[], prefix: string): string[] => {
   if (files.length === 0) {
     return [];
   }
   const allSupportFiles: string[] = [];
   files.forEach((file) => {
-    if (file.startsWith(SUPPORT_LOG_FILE_PREFIX)) {
+    if (file.startsWith(prefix)) {
       allSupportFiles.push(file);
     }
   });
@@ -91,15 +101,21 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
 export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: AuthUser, entity: StoreEntitySupportPackage) => {
   logSupport.warn(`Generating support package on node ${NODE_INSTANCE_ID}`);
   logApp.info(`getLatestSupportLogFile - Looking inside ${SUPPORT_LOG_RELATIVE_LOCAL_DIR} !`);
-
-  const allSupportFiles = findAllSupportFiles(fs.readdirSync(SUPPORT_LOG_RELATIVE_LOCAL_DIR));
-
-  // Upload all files
+  const supportFiles = findAllSupportFiles(fs.readdirSync(SUPPORT_LOG_RELATIVE_LOCAL_DIR), SUPPORT_LOG_FILE_PREFIX);
+  const telemetryFiles = findAllSupportFiles(fs.readdirSync(TELEMETRY_LOG_RELATIVE_LOCAL_DIR), TELEMETRY_LOG_FILE_PREFIX);
   const uploadDir = getS3UploadFolder(entity.id);
-  for (let i = 0; i < allSupportFiles.length; i += 1) {
-    logApp.info(`sendSupportLogToS3 - I have a support file ${allSupportFiles[i]} to send to ${uploadDir}.`);
-    const s3Filename = `${allSupportFiles[i]}-${NODE_INSTANCE_ID}.log`;
-    const file = fileToReadStream(SUPPORT_LOG_RELATIVE_LOCAL_DIR, allSupportFiles[i], s3Filename, 'text/plain');
+  // Upload support files
+  for (let i = 0; i < supportFiles.length; i += 1) {
+    logApp.info(`sendSupportLogToS3 - I have a support file ${supportFiles[i]} to send to ${uploadDir}.`);
+    const s3Filename = `${supportFiles[i]}-${NODE_INSTANCE_ID}.log`;
+    const file = fileToReadStream(SUPPORT_LOG_RELATIVE_LOCAL_DIR, supportFiles[i], s3Filename, 'text/plain');
+    await uploadToStorage(context, user, uploadDir, file, {});
+  }
+  // Upload telemetry files
+  for (let i = 0; i < telemetryFiles.length; i += 1) {
+    logApp.info(`sendTelemetryLogToS3 - I have a telemetry file ${telemetryFiles[i]} to send to ${uploadDir}.`);
+    const s3Filename = `${telemetryFiles[i]}-${NODE_INSTANCE_ID}.log`;
+    const file = fileToReadStream(TELEMETRY_LOG_RELATIVE_LOCAL_DIR, telemetryFiles[i], s3Filename, 'text/plain');
     await uploadToStorage(context, user, uploadDir, file, {});
   }
 };

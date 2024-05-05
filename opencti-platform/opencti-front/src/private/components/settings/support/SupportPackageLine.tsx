@@ -107,7 +107,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   paginationOptions,
   dataColumns,
 }) => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -185,16 +185,10 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
         <ListItemText
           primary={
             <>
-              <Tooltip title={data.name}>
-                <div
-                  style={{ width: dataColumns.name.width, ...styles.bodyItem }}
-                >
-                  {data.name}
-                </div>
-              </Tooltip>
-              <div
-                style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}
-              >
+              <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
+                {data.name}
+              </div>
+              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}>
                 <Chip
                   style={{
                     color: packageStatusColors[data.package_status],
@@ -207,9 +201,9 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 />
               </div>
               <div
-                style={{ width: dataColumns.created.width, ...styles.bodyItem }}
+                style={{ width: dataColumns.created_at.width, ...styles.bodyItem }}
               >
-                {fd(data.created_at)}
+                {fndt(data.created_at)}
               </div>
             </>
           }
@@ -217,9 +211,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
         <ListItemSecondaryAction>
           <Tooltip title={t_i18n('Force download on this support package')}>
             <span>
-              <IconButton
-                onClick={handleForceZip}
-              >
+              <IconButton onClick={handleForceZip}>
                 <DownloadingOutlined fontSize="small" />
               </IconButton>
             </span>

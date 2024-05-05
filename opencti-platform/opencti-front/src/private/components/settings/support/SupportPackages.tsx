@@ -43,8 +43,8 @@ const SupportPackages = () => {
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
+      sortBy: 'created_at',
+      orderAsc: false,
     },
   );
 
@@ -90,9 +90,9 @@ const SupportPackages = () => {
       package_status: {
         label: 'Status',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
-      created: {
+      created_at: {
         label: 'Date',
         width: '15%',
         isSortable: true,
@@ -128,7 +128,7 @@ const SupportPackages = () => {
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}
         />
         <Grid container={true} spacing={4}>
-          <Grid item={true} xs={8} style={{ paddingTop: '24px' }}>
+          <Grid item={true} xs={12} style={{ paddingTop: '24px' }}>
             <div>
               <Typography variant="h4" gutterBottom={true} style={{ marginBottom: '10px' }}>
                 {t_i18n('Generated Support Package')}
