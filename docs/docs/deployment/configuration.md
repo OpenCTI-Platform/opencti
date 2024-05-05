@@ -297,9 +297,12 @@ Here are the configuration keys, for both containers (environment variables) and
 | file_index_manager:interval                          | FILE_INDEX_MANAGER__INTERVAL                 | 60000                            | Interval to check for new files                     |
 | -                                                    | -                                            | -                                | -                                                   |
 | indicator_decay_manager:enabled                      | INDICATOR_DECAY_MANAGER__ENABLED             | `true`                           | Enable/disable the file indexing manager            |
-| indicator_decay_manager:lock_key                     | INDICATOR_DECAY_MANAGER__LOCK_LOCK           | indicator_decay_manager_lock     | Lock key for the manager in Redis                   |
+| indicator_decay_manager:lock_key                     | INDICATOR_DECAY_MANAGER__LOCK_KEY            | indicator_decay_manager_lock     | Lock key for the manager in Redis                   |
 | indicator_decay_manager:interval                     | INDICATOR_DECAY_MANAGER__INTERVAL            | 60000                            | Interval to check for indicators to update          |
 | indicator_decay_manager:batch_size                   | INDICATOR_DECAY_MANAGER__BATCH_SIZE          | 10000                            | Number of indicators handled by the manager         |
+| -                                                    | -                                            | -                                | -                                                   |
+| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_LOCK                 | telemetry_manager_lock     | Lock key for the manager in Redis                   |
+
 
 !!! note "Manager's duties"
     

@@ -206,6 +206,7 @@ nav:
     - Data:
       - Data model: reference/data-model.md
       - Data Intelligence: reference/data-intelligence.md
+      - Data telemetry: reference/data-telemetry.md
       - Taxonomy: reference/taxonomy.md
     - APIs and feeds:
       - GraphQL API: reference/api.md
