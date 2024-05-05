@@ -1,8 +1,9 @@
 import useAuth from './useAuth';
+import { isNotEmptyField } from '../utils';
 
-const useXTM = (): { disableDisplay: boolean } => {
+const useXTM = (): { oBasDisableDisplay: boolean, oBasConfigured: boolean } => {
   const { settings } = useAuth();
-  return { disableDisplay: settings.platform_openbas_disable_display ?? false };
+  return { oBasDisableDisplay: settings.platform_openbas_disable_display ?? false, oBasConfigured: isNotEmptyField(settings.platform_openbas_url) };
 };
 
 export default useXTM;

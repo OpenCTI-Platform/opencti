@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { makeStyles, useTheme } from '@mui/styles';
-import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined, ErrorOutlined } from '@mui/icons-material';
+import { CheckOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined, ErrorOutlined, LaunchOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -14,16 +14,15 @@ import Box from '@mui/material/Box';
 import { graphql } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import Drawer, { DrawerVariant } from '../drawer/Drawer';
+import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isEmptyField } from '../../../../utils/utils';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { extractSimpleError, fileUri, QueryRenderer } from '../../../../relay/environment';
 import obasDark from '../../../../static/images/xtm/obas_dark.png';
@@ -111,9 +110,10 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const theme = useTheme();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [openCallToAction, setOpenCallToAction] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
-  const { disableDisplay } = useXTM();
+  const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(5);
@@ -123,8 +123,8 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const [resultError, setResultError] = useState(null);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const { t_i18n } = useFormatter();
-  const { settings: { platform_openbas_url: openBASUrl } } = useAuth();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+
   const handleClose = () => {
     setSimulationType('technical');
     setInterval(5);
@@ -499,7 +499,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   };
   return (
     <>
-      {!disableDisplay && (
+      {!oBasDisableDisplay && (
       <div className={classes.simulationResults}>
         <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
           <Button
@@ -507,10 +507,10 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
             size="small"
             style={{
               fontSize: 12,
-              color: isEmptyField(openBASUrl) || !isGrantedToUpdate ? theme.palette.text.disabled : theme.palette.text.primary,
+              color: (!isGrantedToUpdate && oBasConfigured) ? theme.palette.text.disabled : theme.palette.text.primary,
             }}
-            disabled={isEmptyField(openBASUrl) || !isGrantedToUpdate}
-            onClick={() => setOpen(true)}
+            disabled={!isGrantedToUpdate && oBasConfigured}
+            onClick={() => (oBasConfigured ? setOpen(true) : setOpenCallToAction(true))}
           >
             <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
             {t_i18n('Simulate')}
@@ -523,7 +523,6 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
         title={t_i18n('Generate a simulation scenario')}
         open={open}
         onClose={handleClose}
-        variant={DrawerVariant.create}
       >
         {renderForm()}
       </Drawer>
@@ -544,7 +543,32 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
           <Button onClick={handleCloseFinal} disabled={isSubmitting}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
-
+      <Dialog
+        open={openCallToAction}
+        PaperProps={{ elevation: 1 }}
+        TransitionComponent={Transition}
+        onClose={() => setOpenCallToAction(false)}
+        maxWidth="md"
+        fullWidth={true}
+      >
+        <DialogTitle>{t_i18n('Install the OpenBAS platform')}</DialogTitle>
+        <DialogContent>
+          <p>{t_i18n('You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.')}</p>
+          <p>{t_i18n('To be able to generate a scenario, whether technical or strategic, you need a working OpenBAS installation. Alternatively, your administrator can completely disable the integration in the parameters of this platform.')}</p>
+          <Button
+            variant="text"
+            endIcon={<LaunchOutlined />}
+            component="a"
+            href="https://docs.openbas.io/latest/deployment/installation/"
+            target="_blank"
+          >
+            {t_i18n('OpenBAS installation documentation')}
+          </Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCallToAction(false)}>{t_i18n('Close')}</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

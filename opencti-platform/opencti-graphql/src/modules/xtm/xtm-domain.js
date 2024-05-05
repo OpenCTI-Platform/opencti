@@ -40,8 +40,7 @@ const getShuffledArr = (arr) => {
 
 export const stixCoreObjectSimulationsResult = async (_, __, args) => {
   const { id } = args;
-  const result = await getScenarioResult(id);
-  return result;
+  return getScenarioResult(id);
 };
 
 export const scenarioElementsDistribution = async (context, user, args) => {

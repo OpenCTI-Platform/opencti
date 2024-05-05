@@ -3,6 +3,7 @@ import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
 import { DatabaseError } from '../config/errors';
 import { utcDate } from '../utils/format';
+import { isEmptyField } from './utils';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const XTM_OPENBAS_TOKEN = conf.get('xtm:openbas_token');
@@ -95,7 +96,6 @@ export const createInjectInScenario = async (scenarioId: string, injectorType: s
 };
 
 export const getScenarioResult = async (id: string) => {
-  const httpClient = buildXTmOpenBasHttpClient();
   const noResult = {
     prevention: {
       unknown: 1,
@@ -113,6 +113,11 @@ export const getScenarioResult = async (id: string) => {
       failure: 0,
     }
   };
+  // OpenBAS not configured
+  if (isEmptyField(XTM_OPENBAS_URL) || isEmptyField(XTM_OPENBAS_TOKEN)) {
+    return noResult;
+  }
+  const httpClient = buildXTmOpenBasHttpClient();
   try {
     const { data: scenario } = await httpClient.get(`/scenarios/external_reference/${id}`);
     if (!scenario || !scenario.scenario_id) {
