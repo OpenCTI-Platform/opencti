@@ -111,6 +111,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Instructions
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
             - Order of kill chain phases is ${killChainPhasesListOfNames}
             - We are in the kill chain phase ${killChainPhaseName}
             - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
@@ -152,6 +153,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Instructions
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
             - Order of kill chain phases is ${killChainPhasesListOfNames}
             - We are in the kill chain phase ${killChainPhaseName}
             - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
@@ -226,6 +228,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Instructions
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
             - Order of kill chain phases is ${killChainPhasesListOfNames}
             - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
             - You should take into account the context about the attack
@@ -256,6 +259,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             # Instructions
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
+            - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
             - Order of kill chain phases is ${killChainPhasesListOfNames}
             - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
             - You should write an email message representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
