@@ -2,6 +2,7 @@ import conf, { logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
 import { DatabaseError } from '../config/errors';
+import { utcDate } from '../utils/format';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const XTM_OPENBAS_TOKEN = conf.get('xtm:openbas_token');
@@ -49,7 +50,7 @@ export const getInjectorContracts = async (attackPatternId: string) => {
   }
 };
 
-export const createScenario = async (name: string, subtitle: string, description: string, tags: Label[]) => {
+export const createScenario = async (name: string, subtitle: string, description: string, tags: Label[], id: string, category: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
     const obasTagsIds = [];
@@ -58,7 +59,16 @@ export const createScenario = async (name: string, subtitle: string, description
       const { data: obasTag } = await httpClient.post('/tags/upsert', { tag_name: tag.value, tag_color: tag.color });
       obasTagsIds.push(obasTag.tag_id);
     }
-    const { data: scenario } = await httpClient.post('/scenarios', { scenario_name: name, scenario_subtitle: subtitle, scenario_description: description, scenario_tags: obasTagsIds });
+    const { data: scenario } = await httpClient.post('/scenarios', {
+      scenario_name: name,
+      scenario_subtitle: subtitle,
+      scenario_description: description,
+      scenario_tags: obasTagsIds,
+      scenario_external_reference: id,
+      scenario_category: category,
+      scenario_main_focus: 'incident-response',
+      scenario_severity: 'high',
+    });
     return scenario;
   } catch (err) {
     throw DatabaseError('Error querying OpenBAS', { cause: err });
@@ -75,7 +85,7 @@ export const createInjectInScenario = async (scenarioId: string, injectorType: s
         inject_type: injectorType,
         inject_title: title,
         inject_depends_duration: dependsDuration,
-        inject_content: content
+        inject_content: content,
       }
     );
     return inject;
@@ -84,7 +94,75 @@ export const createInjectInScenario = async (scenarioId: string, injectorType: s
   }
 };
 
-export const getResultsForAttackPatterns = async (attackPatternExternalIds: string[]) => {
-  // TODO
-  logApp.info(attackPatternExternalIds);
+export const getScenarioResult = async (id: string) => {
+  const httpClient = buildXTmOpenBasHttpClient();
+  const noResult = {
+    prevention: {
+      unknown: 1,
+      success: 0,
+      failure: 0,
+    },
+    detection: {
+      unknown: 1,
+      success: 0,
+      failure: 0,
+    },
+    human: {
+      unknown: 1,
+      success: 0,
+      failure: 0,
+    }
+  };
+  try {
+    const { data: scenario } = await httpClient.get(`/scenarios/external_reference/${id}`);
+    if (!scenario || !scenario.scenario_id) {
+      return noResult;
+    }
+    const { data: exercises } = await httpClient.get(`/scenarios/${scenario.scenario_id}/exercises`);
+    if (exercises.length === 0) {
+      return noResult;
+    }
+    const sortedExercises = exercises.sort(
+      (a: { exercise_start_date: string; }, b: { exercise_start_date: string; }) => utcDate(b.exercise_start_date).diff(utcDate(a.exercise_start_date))
+    );
+    const latestExercise = sortedExercises.at(0);
+    const prevention = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'PREVENTION').at(0);
+    const preventionResult = prevention.avgResult === 'UNKNOWN' ? {
+      unknown: 1,
+      success: 0,
+      failure: 0
+    } : {
+      unknown: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
+      success: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
+      failure: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+    };
+    const detection = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'DETECTION').at(0);
+    const detectionResult = detection.avgResult === 'UNKNOWN' ? {
+      unknown: 1,
+      success: 0,
+      failure: 0
+    } : {
+      unknown: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
+      success: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
+      failure: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+    };
+    const humanResponse = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'HUMAN_RESPONSE').at(0);
+    const humanResponseResult = humanResponse.avgResult === 'UNKNOWN' ? {
+      unknown: 1,
+      success: 0,
+      failure: 0
+    } : {
+      unknown: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Pending').at(0).value,
+      success: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
+      failure: humanResponse.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
+    };
+    return {
+      prevention: preventionResult,
+      detection: detectionResult,
+      human: humanResponseResult
+    };
+  } catch (err) {
+    logApp.info('Scenario not found in OpenBAS', { err });
+    return noResult;
+  }
 };

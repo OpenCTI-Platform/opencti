@@ -24,6 +24,7 @@ logs
 yarn-error.log
 graphql.schema.json
 __pycache__
+telemetry
 
 # Yarn
 .yarn/*
