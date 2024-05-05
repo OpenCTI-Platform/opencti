@@ -314,6 +314,22 @@ const supportLogger = winston.createLogger({
   })],
 });
 
+// Setup telemetry logs
+export const TELEMETRY_LOG_RELATIVE_LOCAL_DIR = './telemetry';
+export const TELEMETRY_LOG_FILE_PREFIX = 'telemetry';
+const telemetryLogTransports = [new DailyRotateFile({
+  dirname: TELEMETRY_LOG_RELATIVE_LOCAL_DIR,
+  filename: TELEMETRY_LOG_FILE_PREFIX,
+  maxFiles: 3,
+  maxSize: '1m',
+  level: 'info',
+})];
+const telemetryLogger = winston.createLogger({
+  level: 'info',
+  format: format.printf((info) => { return `${info.message}`; }),
+  transports: telemetryLogTransports,
+});
+
 // Specific case to fail any test that produce an error log
 const LOG_APP = 'APP';
 const buildMetaErrors = (error) => {
@@ -381,6 +397,12 @@ export const logSupport = {
     supportLogger.log(level, message, addBasicMetaInformation(LOG_SUPPORT, error, meta));
   },
   warn: (message, meta = {}) => logSupport._log('warn', message, null, meta),
+};
+
+export const logTelemetry = {
+  log: (message) => {
+    telemetryLogger.log('info', message);
+  }
 };
 
 const BasePathConfig = nconf.get('app:base_path')?.trim() ?? '';
@@ -536,10 +558,12 @@ export const GRAPHQL_ARMOR_ENABLED = booleanConf('app:graphql:armor_enabled', tr
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
 export const ENABLED_METRICS = booleanConf('app:telemetry:metrics:enabled', false);
+export const ENABLED_TELEMETRY = booleanConf('app:telemetry:filigran:enabled', false);
 export const ENABLED_EVENT_LOOP_MONITORING = booleanConf('app:event_loop_logs:enabled', false);
 export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled', true);
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
 export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
+export const ENABLED_TELEMETRY_MANAGER = booleanConf('telemetry_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
 export const ENABLED_FILE_INDEX_MANAGER = booleanConf('file_index_manager:enabled', true);
 

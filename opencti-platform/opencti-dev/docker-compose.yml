@@ -74,8 +74,21 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: true
     ports:
-      - 16686:16686
-      - 4318:4318
+      - "16686:16686"
+      - "4318:4318"
+  opencti-dev-telemetry-otlp: ## docker compose --profile telemetry up -d (launch everything + telemetry)
+    container_name: opencti-telemetry-otlp
+    image: otel/opentelemetry-collector-contrib:0.99.0
+    restart: unless-stopped
+    volumes:
+      - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
+    command:
+      - '--config=/etc/config/otlp-config.yaml'
+    ports:
+      - "1010:1010"
+      - "8889:8889"
+    profiles:
+      - "telemetry"
 
 volumes:
   esdata:

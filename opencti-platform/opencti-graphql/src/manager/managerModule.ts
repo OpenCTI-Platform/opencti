@@ -9,9 +9,10 @@ import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
 
 export interface ManagerCronScheduler {
-  handler: () => void;
+  handler: (input?: any) => void;
   interval: number;
   lockKey: string;
+  createHandlerInput?: () => Promise<any>;
 }
 
 export interface ManagerStreamScheduler {
@@ -43,7 +44,7 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
-  const cronHandler = async () => {
+  const cronHandler = async (cronInput?: any) => {
     if (manager.cronSchedulerHandler) {
       let lock;
       const startDate = utcDate();
@@ -52,7 +53,11 @@ const initManager = (manager: ManagerDefinition) => {
         // Lock the manager
         lock = await lockResource([manager.cronSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
-        await manager.cronSchedulerHandler.handler();
+        if (cronInput) {
+          await manager.cronSchedulerHandler.handler(cronInput);
+        } else {
+          await manager.cronSchedulerHandler.handler();
+        }
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} already started by another API`);
@@ -103,9 +108,13 @@ const initManager = (manager: ManagerDefinition) => {
     manager,
     start: async () => {
       logApp.info(`[OPENCTI-MODULE] Starting ${manager.label}`);
+      let cronInput: any;
+      if (manager.cronSchedulerHandler?.createHandlerInput) {
+        cronInput = await manager.cronSchedulerHandler.createHandlerInput();
+      }
       if (manager.cronSchedulerHandler) {
         scheduler = setIntervalAsync(async () => {
-          await cronHandler();
+          await cronHandler(cronInput);
         }, manager.cronSchedulerHandler.interval);
       }
       if (manager.streamSchedulerHandler) {

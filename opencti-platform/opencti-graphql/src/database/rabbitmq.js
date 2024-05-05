@@ -249,7 +249,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
         if (err) {
           reject(err);
         } else { // Connection success
-          logApp.info('Starting connector queue consuming');
+          logApp.info('[QUEUEING] Starting connector queue consuming', { connectorId });
           conn.on('close', (onConnectError) => {
             if (onConnectError) {
               reject(onConnectError);
@@ -272,7 +272,7 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                 }
               }, { noAck: true }, (consumeError) => {
                 if (consumeError) {
-                  logApp.error(DatabaseError('Queueing consumption fail', { cause: consumeError }));
+                  logApp.error(DatabaseError('[QUEUEING] Consumption fail', { connectorId, cause: consumeError }));
                 }
               });
             }

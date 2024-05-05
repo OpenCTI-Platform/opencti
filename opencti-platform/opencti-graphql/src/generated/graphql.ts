@@ -24276,7 +24276,6 @@ export type SupportPackageForceZipInput = {
 };
 
 export enum SupportPackageOrdering {
-  Created = 'created',
   CreatedAt = 'created_at',
   Name = 'name',
   PackageStatus = 'package_status'

@@ -47,8 +47,8 @@ const supportPackageLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "SupportPackageOrdering", defaultValue: name }
-    orderMode: { type: "OrderingMode", defaultValue: asc } 
+    orderBy: { type: "SupportPackageOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: desc } 
   ) @refetchable(queryName: "SupportPackageLinesRefetchQuery") {
     supportPackages(
       search: $search

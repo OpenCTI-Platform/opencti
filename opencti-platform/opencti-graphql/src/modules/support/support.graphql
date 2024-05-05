@@ -38,7 +38,6 @@ enum PackageStatus {
 enum SupportPackageOrdering {
     name
     created_at
-    created
     package_status
 }
 
