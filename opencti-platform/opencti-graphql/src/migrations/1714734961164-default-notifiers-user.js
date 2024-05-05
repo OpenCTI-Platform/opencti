@@ -7,7 +7,7 @@ export const up = async (next) => {
   const updateQuery = {
     script: {
       params: { notifiers: [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL] },
-      source: 'ctx._source.assignee_notifiers = params.notifiers; ctx._source.participant_notifiers = params.notifiers',
+      source: 'ctx._source.personal_notifiers = params.notifiers',
     },
     query: {
       bool: {
@@ -15,8 +15,7 @@ export const up = async (next) => {
           { term: { 'entity_type.keyword': { value: 'User' } } },
         ],
         must_not: [
-          { exists: { field: 'assignee_notifiers' } },
-          { exists: { field: 'participant_notifiers' } }
+          { exists: { field: 'personal_notifiers' } }
         ]
       },
     },

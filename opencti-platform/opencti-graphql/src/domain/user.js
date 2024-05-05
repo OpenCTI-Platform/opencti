@@ -518,8 +518,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.assoc('unit_system', newUser.unit_system),
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
-    R.assoc('assignee_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
-    R.assoc('participant_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
+    R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
     R.dissoc('roles'),
     R.dissoc('groups')
   )(newUser);
@@ -1186,8 +1185,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     })),
     session_version: PLATFORM_VERSION,
     effective_confidence_level: user.effective_confidence_level,
-    assignee_notifiers: user.assignee_notifiers,
-    participant_notifiers: user.participant_notifiers,
+    personal_notifiers: user.personal_notifiers,
     ...user.provider_metadata
   };
 };

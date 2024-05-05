@@ -10,7 +10,7 @@ import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCan
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, isNotEmptyField } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
 import {
   type BasicStoreEntityDigestTrigger,
@@ -141,10 +141,32 @@ export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
   return n.trigger.trigger_type === 'digest';
 };
 
+const generateAssigneeTrigger = (user: AuthUser) => {
+  const filters = {
+    mode: 'or',
+    filters: [
+      { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
+      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' }
+    ],
+    filterGroups: []
+  };
+  return {
+    name: 'Default Trigger for Assignee/Participant',
+    trigger_type: 'live',
+    trigger_scope: 'knowledge',
+    event_types: ['create', 'update', 'delete'],
+    notifiers: user.personal_notifiers,
+    filters: JSON.stringify(filters),
+    instance_trigger: false,
+    authorized_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return triggers.map((trigger) => {
+  const nativeTriggers = platformUsers.map((user) => ({ users: [user], trigger: generateAssigneeTrigger(user) }));
+  const definedTriggers = triggers.map((trigger) => {
     const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
@@ -156,6 +178,7 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
     return { users, trigger };
   });
+  return [...nativeTriggers, ...definedTriggers];
 };
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
@@ -522,41 +545,6 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;
-      const extensions = Object.values(data.extensions ?? {})[0] as { assignee_ids?: string[], participant_ids?: string[] };
-      if (isNotEmptyField(extensions.assignee_ids) || isNotEmptyField(extensions.participant_ids)) {
-        const users = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER) as AuthUser[];
-        const assigneesUsers = users.filter(({ id, assignee_notifiers }) => (extensions.assignee_ids ?? [])?.includes(id) && isNotEmptyField(assignee_notifiers));
-        const participantsUsers = users.filter(({ id, participant_notifiers }) => (extensions.participant_ids ?? [])?.includes(id) && isNotEmptyField(participant_notifiers));
-
-        const assigneePromises = assigneesUsers.map(async (user) => {
-          const defaultTrigger = generateDefaultTrigger(user.assignee_notifiers as string[], 'assignee');
-          const notificationEvent = {
-            version,
-            notification_id: 'default_assignee_trigger',
-            type: 'live',
-            targets: await buildTargetEvents(context, [user], streamEvent, defaultTrigger),
-            data,
-            streamMessage,
-            origin,
-          };
-          return storeNotificationEvent(context, notificationEvent);
-        });
-        const participantPromises = participantsUsers.map(async (user) => {
-          const defaultTrigger = generateDefaultTrigger(user.participant_notifiers as string[], 'participant');
-          const notificationEvent = {
-            version,
-            notification_id: 'default_participant_trigger',
-            type: 'live',
-            targets: await buildTargetEvents(context, [user], streamEvent, defaultTrigger),
-            data,
-            streamMessage,
-            origin,
-          };
-          return storeNotificationEvent(context, notificationEvent);
-        });
-        await Promise.all([...assigneePromises, ...participantPromises]);
-      }
-
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];

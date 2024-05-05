@@ -131,6 +131,10 @@ const rootPrivateQuery = graphql`
         x_opencti_color
         x_opencti_order
       }
+      personal_notifiers {
+        id
+        name
+      }
     }
     settings {
       ...RootSettings

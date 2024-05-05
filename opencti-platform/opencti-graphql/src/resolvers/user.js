@@ -86,8 +86,7 @@ const userResolvers = {
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
-    assignee_notifiers: (current, _, context) => getNotifiers(context, context.user, current.assignee_notifiers),
-    participant_notifiers: (current, _, context) => getNotifiers(context, context.user, current.participant_notifiers),
+    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   Member: {
     name: (current, _, context) => {
@@ -107,8 +106,7 @@ const userResolvers = {
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
     default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
     effective_confidence_level: (current, args, context) => getUserEffectiveConfidenceLevel(current, context),
-    assignee_notifiers: (current, _, context) => getNotifiers(context, context.user, current.assignee_notifiers),
-    participant_notifiers: (current, _, context) => getNotifiers(context, context.user, current.participant_notifiers),
+    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),

@@ -101,8 +101,7 @@ const userValidation = (t) => Yup.object().shape({
   user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
-  assignee_notifiers: Yup.array(),
-  participant_notifiers: Yup.array(),
+  personal_notifiers: Yup.array(),
   firstname: Yup.string().nullable(),
   lastname: Yup.string().nullable(),
   theme: Yup.string().nullable(),
@@ -229,11 +228,11 @@ const ProfileOverviewComponent = (props) => {
     'submenu_show_icons',
     'submenu_auto_collapse',
   ];
+
   const initialValues = {
     ...pick(fieldNames, me),
     objectOrganization,
-    assignee_notifiers: me.assignee_notifiers?.map(({ id, name }) => ({ value: id, label: name })),
-    participant_notifiers: me.participant_notifiers?.map(({ id, name }) => ({ value: id, label: name })),
+    personal_notifiers: (me.personal_notifiers ?? []).map(({ id, name }) => ({ value: id, label: name })),
   };
 
   const disableOtp = () => {
@@ -445,14 +444,10 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
               <NotifierField
-                label={t('Assignee notifiers')}
-                name="assignee_notifiers"
-                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
-              />
-              <NotifierField
-                label={t('Participant notifiers')}
-                name="participant_notifiers"
+                label={t('Personal notifiers')}
+                name="personal_notifiers"
                 onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
               />
             </Form>
@@ -623,11 +618,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       unit_system
       submenu_show_icons
       submenu_auto_collapse
-      assignee_notifiers {
-        id
-        name
-      }
-      participant_notifiers {
+      personal_notifiers {
         id
         name
       }

@@ -27,14 +27,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
-import {
-  type ActivityNotificationEvent,
-  type DigestEvent,
-  generateDefaultTrigger,
-  getNotifications,
-  type KnowledgeNotificationEvent,
-  type NotificationUser
-} from './notificationManager';
+import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 
 const DOC_URI = 'https://docs.opencti.io';
@@ -59,8 +52,8 @@ export const internalProcessNotification = async (
       const { notification_id, instance, type, message } = data[index];
       const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
-      if (eventNotification || ['default_assignee_trigger', 'default_participant_trigger'].includes(notification_id)) {
-        const notificationName = eventNotification?.name ?? notification_id;
+      if (eventNotification) {
+        const notificationName = eventNotification.name;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];
         } else {
@@ -151,10 +144,8 @@ const processNotificationEvent = async (
   data: NotificationData[]
 ) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  let notification = notificationMap.get(notificationId);
-  if (['default_assignee_trigger', 'default_participant_trigger'].includes(notificationId)) {
-    notification = generateDefaultTrigger(user.notifiers, notificationId === 'default_assignee_trigger' ? 'assignee' : 'participant');
-  } else if (!notification) {
+  const notification = notificationMap.get(notificationId);
+  if (!notification) {
     return;
   }
   const userNotifiers = user.notifiers ?? []; // No notifier is possible for live trigger only targeting digest

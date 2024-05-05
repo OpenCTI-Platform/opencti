@@ -22,30 +22,29 @@ interface UserOrigin {
 }
 
 interface AuthUser extends BasicStoreIdentifier {
-  entity_type: string;
-  id: string;
-  internal_id: string;
-  individual_id: string | undefined;
-  name: string;
-  user_email: string;
-  account_lock_after_date: Date | undefined;
-  inside_platform_organization: boolean;
-  origin: Partial<UserOrigin>;
-  roles: Array<UserRole>;
-  groups: Array<Group>;
-  organizations: Array<BasicStoreCommon>;
-  allowed_organizations: Array<BasicStoreCommon>;
-  administrated_organizations: Array<BasicStoreCommon>;
-  capabilities: Array<UserCapability>;
-  allowed_marking: Array<StoreMarkingDefinition>;
-  default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>;
-  all_marking: Array<StoreMarkingDefinition>;
-  api_token: string;
-  account_status: string;
-  effective_confidence_level: ConfidenceLevel | null;
-  user_confidence_level: ConfidenceLevel | null;
-  assignee_notifiers?: Array<string>
-  participant_notifiers?: Array<string>
+  entity_type: string
+  id: string
+  internal_id: string
+  individual_id: string | undefined
+  name: string
+  user_email: string
+  account_lock_after_date: Date | undefined
+  inside_platform_organization: boolean
+  origin: Partial<UserOrigin>
+  roles: Array<UserRole>
+  groups: Array<Group>
+  organizations: Array<BasicStoreCommon>
+  allowed_organizations: Array<BasicStoreCommon>
+  administrated_organizations: Array<BasicStoreCommon>
+  capabilities: Array<UserCapability>
+  allowed_marking: Array<StoreMarkingDefinition>
+  default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>
+  all_marking: Array<StoreMarkingDefinition>
+  api_token: string
+  account_status: string
+  effective_confidence_level: ConfidenceLevel | null
+  user_confidence_level: ConfidenceLevel | null
+  personal_notifiers?: Array<string>
 }
 
 interface AuthContext {
