@@ -22,11 +22,13 @@ The metric push is done every 6 hours if OpenCTI was able to communicate with th
 
 Metrics are also written in specific logs files in order to be included in support package
 
-
 ## Telemetry metrics
 
 The Application collects statistical data related to its usage, including exactly:
 
+- The current platform version
+- The platform uuid identifier
+- The platform creation date
 - The number of active users
 - The number of total users
 - The number of nodes in the platform
