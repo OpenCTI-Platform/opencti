@@ -81,4 +81,4 @@ More information can be found [here](../administration/decay-rules.md).
 
 The telemetry manager collects periodically statistical data about platform usage.
 
-More information about data collection can be found [here](../overview.md).
+More information about data telemetry can be found [here](../reference/data-telemetry.md).
