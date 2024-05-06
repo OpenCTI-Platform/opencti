@@ -202,12 +202,9 @@ nav:
         - Activity triggers: administration/audit/triggers.md
       - File indexing:  administration/file-indexing.md
   - Reference:
-    - Deployment:
-        - FIPS 140-2 installation: reference/fips.md
     - Data:
       - Data model: reference/data-model.md
       - Data Intelligence: reference/data-intelligence.md
-      - Data telemetry: reference/data-telemetry.md
       - Taxonomy: reference/taxonomy.md
     - APIs and feeds:
       - GraphQL API: reference/api.md
@@ -215,6 +212,9 @@ nav:
         - Filters knowledge: reference/filters.md
         - Filter migration for 5.12: reference/filters-migration.md
       - Data Streaming: reference/streaming.md
+    - Deployment and stack:
+        - Usage telemetry: reference/usage-telemetry.md
+        - FIPS 140-2 installation: reference/fips.md
   - Development:
     - Prerequisites:
       - Ubuntu: development/environment_ubuntu.md
