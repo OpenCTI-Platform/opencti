@@ -77,6 +77,7 @@ import { externalReferencesQueriesSearchQuery } from '../analyses/external_refer
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
 import { findFilterFromKey, serializeFilterGroupForBackend, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import PromoteDrawer from './drawers/PromoteDrawer';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -1344,6 +1345,9 @@ class ToolBar extends Component {
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator', 'Stix-Cyber-Observable']);
           const observablesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
+          const promoteType = entityTypeFilterValues.length === 1 && ['Indicator', 'Stix-Cyber-Observable'].includes(entityTypeFilterValues[0])
+            ? entityTypeFilterValues[0]
+            : undefined;
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
           const isManualPromoteSelect = !selectAll
@@ -2113,73 +2117,13 @@ class ToolBar extends Component {
                   </div>
                 </div>
               </Drawer>
-              <Drawer
-                open={this.state.displayPromote}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
+              <PromoteDrawer
+                isOpen={this.state.displayPromote}
                 onClose={this.handleClosePromote.bind(this)}
-              >
-                <div className={classes.header}>
-                  <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={this.handleClosePromote.bind(this)}
-                    size="large"
-                    color="primary"
-                  >
-                    <CloseOutlined fontSize="small" color="primary"/>
-                  </IconButton>
-                  <Typography variant="h6">
-                    {t('Observables and indicators conversion')}
-                  </Typography>
-                </div>
-                <div className={classes.container}>
-                  {!observablesFiltered && (
-                    <div>
-                      <Typography
-                        variant="h4"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Indicators')}
-                      </Typography>
-                      <Alert severity="warning" style={{ marginTop: 20 }}>
-                        {t(
-                          'This action will generate observables from the selected indicators.',
-                        )}
-                      </Alert>
-                    </div>
-                  )}
-                  {observablesFiltered && (
-                    <div>
-                      <Typography
-                        variant="h4"
-                        gutterBottom={true}
-                        style={{ marginTop: 20 }}
-                      >
-                        {t('Observables')}
-                      </Typography>
-                      <Alert severity="warning" style={{ marginTop: 20 }}>
-                        {t(
-                          'This action will generate STIX patterns indicators from the selected observables.',
-                        )}
-                      </Alert>
-                    </div>
-                  )}
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={this.handleLaunchPromote.bind(this)}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Generate')}
-                    </Button>
-                  </div>
-                </div>
-              </Drawer>
+                observablesFiltered={observablesFiltered}
+                onSubmit={this.handleLaunchPromote.bind(this)}
+                promoteType={promoteType}
+              />
               <Drawer
                 open={this.state.displayRescan}
                 anchor="right"

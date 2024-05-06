@@ -2383,6 +2383,7 @@
   "There are not any configurations set yet": "Es sind noch keine Konfigurationen eingestellt",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "Es gibt zwei eingebaute Melder in der Plattform: Benutzeroberfläche und Standard-Mailer. Sie sind nicht konfigurierbar und Sie können hier Ihre eigenen erstellen.",
   "Third-party analytics": "Drittanbieter-Analytik",
+  "This action will generate indicators from the selected observables.": "Diese Aktion generiert Indikatoren aus den ausgewählten Beobachtungswerten.",
   "This action will generate observables from the selected indicators.": "Diese Aktion erzeugt Beobachtungswerte aus den ausgewählten Indikatoren.",
   "This action will generate STIX patterns indicators from the selected observables.": "Diese Aktion generiert STIX-Muster-Indikatoren aus den ausgewählten Beobachtungen.",
   "this blogpost": "dieser Blogpost",
