@@ -11,7 +11,7 @@ import type { Settings } from '../generated/graphql';
 import { getClusterInformation, getSettings } from '../domain/settings';
 import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
-import type { ManagerDefinition } from './managerModule';
+import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -21,23 +21,23 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { StoreConnector } from '../types/connector';
 
-const TELEMETRY_DEV_DEBUG = false;
+const TELEMETRY_DEV_DEBUG = conf.get('telemetry_manager:debug') ?? false;
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
 
 const ONE_MINUTE = 60 * 1000;
-const FIVE_MINUTE = 5 * ONE_MINUTE;
+const TWO_MINUTE = 2 * ONE_MINUTE;
 const ONE_HOUR = 60 * ONE_MINUTE;
 const SIX_HOUR = 6 * ONE_HOUR;
 // Collect data period, corresponds to data point collection
 const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
 // Export data period, sending information to files, console and otlp
-const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? FIVE_MINUTE : SIX_HOUR;
+const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-const telemetryHandler = async () => {
+const telemetryInitializer = async (): Promise<HandlerInput> => {
   // Build readers
   const filigranMetricReaders = [];
   // region File exporter
@@ -140,9 +140,10 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'telemetry_manager',
   cronSchedulerHandler: {
     handler: fetchTelemetryData,
+    handlerInitializer: telemetryInitializer, // Init meter manager is required
+    handlerInfinite: true, // Lock needs to be kept, inner scheduler will be done.
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
-    createHandlerInput: telemetryHandler,
   },
   enabledByConfig: true,
   enabledToStart(): boolean {

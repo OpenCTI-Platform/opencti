@@ -8,11 +8,16 @@ import { SYSTEM_USER } from '../utils/access';
 import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
 
+export interface HandlerInput {
+  shutdown?: () => Promise<void>
+}
+
 export interface ManagerCronScheduler {
-  handler: (input?: any) => void;
-  interval: number;
-  lockKey: string;
-  createHandlerInput?: () => Promise<any>;
+  handler: (input?: any) => Promise<void>
+  interval: number
+  lockKey: string
+  handlerInfinite?: boolean
+  handlerInitializer?: () => Promise<HandlerInput>
 }
 
 export interface ManagerStreamScheduler {
@@ -44,19 +49,25 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
-  const cronHandler = async (cronInput?: any) => {
+  const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
       let lock;
+      let cronInput;
       const startDate = utcDate();
       try {
         // date
         // Lock the manager
         lock = await lockResource([manager.cronSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
-        if (cronInput) {
-          await manager.cronSchedulerHandler.handler(cronInput);
+        cronInput = cronInputFn ? await cronInputFn() : undefined;
+        if (manager.cronSchedulerHandler.handlerInfinite) {
+          logApp.info(`[OPENCTI-MODULE] Running ${manager.label} infinite cron handler`);
+          while (!shutdown) {
+            await manager.cronSchedulerHandler.handler(cronInput);
+            await wait(manager.cronSchedulerHandler.interval);
+          }
         } else {
-          await manager.cronSchedulerHandler.handler();
+          await manager.cronSchedulerHandler.handler(cronInput);
         }
       } catch (e: any) {
         if (e.name === TYPE_LOCK_ERROR) {
@@ -67,6 +78,7 @@ const initManager = (manager: ManagerDefinition) => {
       } finally {
         running = false;
         if (lock) await lock.unlock();
+        if (cronInput && cronInput.shutdown) await cronInput.shutdown();
         if (startDate) {
           const duration = moment.duration(utcDate().diff(startDate)).asMilliseconds();
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} done in ${duration}ms`);
@@ -108,13 +120,10 @@ const initManager = (manager: ManagerDefinition) => {
     manager,
     start: async () => {
       logApp.info(`[OPENCTI-MODULE] Starting ${manager.label}`);
-      let cronInput: any;
-      if (manager.cronSchedulerHandler?.createHandlerInput) {
-        cronInput = await manager.cronSchedulerHandler.createHandlerInput();
-      }
       if (manager.cronSchedulerHandler) {
+        const { handlerInitializer } = manager.cronSchedulerHandler;
         scheduler = setIntervalAsync(async () => {
-          await cronHandler(cronInput);
+          await cronHandler(handlerInitializer);
         }, manager.cronSchedulerHandler.interval);
       }
       if (manager.streamSchedulerHandler) {

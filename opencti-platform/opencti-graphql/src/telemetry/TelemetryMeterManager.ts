@@ -26,6 +26,10 @@ export class TelemetryMeterManager {
     this.meterProvider = meterProvider;
   }
 
+  async shutdown() {
+    return this.meterProvider.shutdown();
+  }
+
   setIsEEActivated(EE: number) {
     this.isEEActivated = EE;
   }
