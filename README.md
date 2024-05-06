@@ -90,7 +90,15 @@ OpenCTI is a product designed and developed by the company [Filigran](https://fi
 
 <a href="https://filigran.io" alt="Filigran"><img src="./.github/img/logo_filigran.png" width="300" /></a>
 
-### GDPR and the OpenCTI OpenStreetMap server
+### GDPR and the OpenCTI 
+
+#### Filigran data telemetry
+
+In order to improve the functionality and performance of OpenCTI, the Application collects anonymous statistical data related to its usage,
+
+Details on collected data and usage can be found at [https://docs.opencti.io/latest/reference/data-telemetry/](https://docs.opencti.io/latest/reference/data-telemetry/).
+
+#### OpenStreetMap server
 
 In order to provide OpenCTI users with cartography features, the platform uses a dedicated OpenStreetMap server (https://map.opencti.io). To monitor usage and adapt services performances, Filigran collects access log to this server (including IP addresses).
 
