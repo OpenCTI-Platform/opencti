@@ -216,11 +216,6 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/reference/data-telemetry/</loc>
-         <lastmod>2024-05-06</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
          <loc>https://docs.opencti.io/latest/reference/filters-migration/</loc>
          <lastmod>2024-05-06</lastmod>
          <changefreq>daily</changefreq>
@@ -242,6 +237,11 @@
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/taxonomy/</loc>
+         <lastmod>2024-05-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/latest/reference/usage-telemetry/</loc>
          <lastmod>2024-05-06</lastmod>
          <changefreq>daily</changefreq>
     </url>
