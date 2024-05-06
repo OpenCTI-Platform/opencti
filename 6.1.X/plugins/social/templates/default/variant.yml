@@ -27,7 +27,7 @@ definitions:
 
   # Background image
   - &background_image >-
-    {{ layout.background_image or "" }}
+    {{ layout.background_image | x }}
 
   # Background color (default: indigo)
   - &background_color >-
@@ -117,7 +117,11 @@ definitions:
 
   # Page title
   - &page_title >-
-    {{ page.meta.get("title", page.title) }}
+    {%- if layout.title -%}
+      {{ layout.title }}
+    {%- else -%}
+      {{ page.meta.get("title", page.title) }}
+    {%- endif -%}
 
   # Page title with site name
   - &page_title_with_site_name >-
@@ -129,17 +133,27 @@ definitions:
 
   # Page description
   - &page_description >-
-    {{ page.meta.get("description", config.site_description) or "" }}
+    {%- if layout.description -%}
+      {{ layout.description }}
+    {%- else -%}
+      {{ page.meta.get("description", config.site_description) | x }}
+    {%- endif -%}
+
+  # Page icon
+  - &page_icon >-
+    {{ page.meta.icon | x }}
 
   # Logo
   - &logo >-
-    {%- if config.theme.logo -%}
+    {%- if layout.logo -%}
+      {{ layout.logo }}
+    {%- elif config.theme.logo -%}
       {{ config.docs_dir }}/{{ config.theme.logo }}
     {%- endif -%}
 
   # Logo (icon)
   - &logo_icon >-
-    {{ config.theme.icon.logo or "" }}
+    {{ config.theme.icon.logo | x }}
 
 # Meta tags
 tags:
@@ -173,9 +187,16 @@ layers:
       image: *background_image
       color: *background_color
 
+  # Page icon
+  - size: { width: 630, height: 630 }
+    offset: { x: 800, y: 0 }
+    icon:
+      value: *page_icon
+      color: "#00000033"
+
   # Logo
-  - size: { width: 144, height: 144 }
-    offset: { x: 992, y: 64 }
+  - size: { width: 64, height: 64 }
+    offset: { x: 64, y: 64 }
     background:
       image: *logo
     icon:
@@ -183,8 +204,8 @@ layers:
       color: *color
 
   # Site name
-  - size: { width: 832, height: 42 }
-    offset: { x: 64, y: 64 }
+  - size: { width: 768, height: 42 }
+    offset: { x: 160, y: 74 }
     typography:
       content: *site_name
       color: *color
@@ -193,8 +214,8 @@ layers:
         style: Bold
 
   # Page title
-  - size: { width: 832, height: 310 }
-    offset: { x: 62, y: 160 }
+  - size: { width: 864, height: 256 }
+    offset: { x: 62, y: 192 }
     typography:
       content: *page_title
       align: start
@@ -207,7 +228,7 @@ layers:
         style: Bold
 
   # Page description
-  - size: { width: 832, height: 64 }
+  - size: { width: 864, height: 64 }
     offset: { x: 64, y: 512 }
     typography:
       content: *page_description
