@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Platform segregation by organization is available under the "Filigran entreprise edition" license. Please read the [dedicated page](../enterprise.md) to have all the information.
+    Platform segregation by organization is available under the "OpenCTI Enterprise Edition" license. Please read the [dedicated page](enterprise.md) to have all the information.
 
 ## Files search requirements
 

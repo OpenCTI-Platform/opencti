@@ -33,7 +33,7 @@ Also, using the `Advanced search` button, it is possible to directly put filters
 
 !!! tip "Enterprise edition"
 
-    Full text search in files content is available under the "Filigran entreprise edition" license.
+    Full text search in files content is available under the "OpenCTI Enterprise Edition" license.
 
     [Please read the dedicated page to have all information](../administration/enterprise.md)
 

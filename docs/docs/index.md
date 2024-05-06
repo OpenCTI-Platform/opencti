@@ -98,7 +98,7 @@ List of available connectors and integrations to expand platform usage.
 [**:material-school-outline:{ .middle } Training Courses**](https://training.filigran.io)<br />
 Training courses for analysts and administrators in the Filigran training center.
 
-[**:material-video-youtube:{ .middle } Video materials**](https://www.youtube.com/@Filigran/videos)<br />
+[**:material-youtube:{ .middle } Video materials**](https://www.youtube.com/@Filigran/videos)<br />
 Set of video illustrating the implementation of use cases and platform capabilities.
 
 </div>

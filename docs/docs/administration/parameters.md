@@ -48,7 +48,7 @@ This option can be deactivated to have a permanent announcement.
 
 !!! tip "Enterprise edition"
 
-    Analytics is available under the "Filigran entreprise edition" license.
+    Analytics is available under the "OpenCTI Enterprise Edition" license.
 
     [Please read the dedicated page to have more information](enterprise.md)
 

@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Ask AI is available under the "Filigran Entreprise Edition" license.
+    Ask AI is available under the "OpenCTI Enterprise Edition" license.
 
     [Please read the dedicated page to have all information](../administration/enterprise.md)
     

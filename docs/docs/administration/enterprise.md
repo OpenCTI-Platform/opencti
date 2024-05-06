@@ -1,6 +1,6 @@
 !!! tip "Filigran"
 
-    [Filigran](https://filigran.io) is providing an [Enterprise Edition](https://filigran.io/offering/subscribe) of the platform, whether [on-premise](https://filigran.io/offering/subscribe) or in the [SaaS](https://filigran.io/offering/subscribe-to-cloud).
+    [Filigran](https://filigran.io) is providing an [Enterprise Edition](https://filigran.io/offerings/opencti-enterprise-edition) of the platform, whether [on-premise](https://filigran.io/offerings/professional-support-packages) or in the [SaaS](https://filigran.io/offerings/software-as-a-service).
 
 ## What is OpenCTI EE?
 OpenCTI Enterprise Edition is based on the open core concept. This means that the source code of OCTI EE remains open source and included in the main GitHub repository of the platform but is published under a specific license. As specified in the GitHub license file:

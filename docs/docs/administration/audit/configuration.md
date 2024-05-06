@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Activity unified interface and logging are available under the "Filigran entreprise edition" license.
+    Activity unified interface and logging are available under the "OpenCTI Enterprise Edition" license.
 
     [Please read the dedicated page to have all information](../enterprise.md)
 

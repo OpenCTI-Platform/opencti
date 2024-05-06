@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Playbooks automation is available under the "Filigran Entreprise Edition" license. Please read the [dedicated page](../administration/enterprise.md) to have all information.
+    Playbooks automation is available under the "OpenCTI Enterprise Edition" license. Please read the [dedicated page](../administration/enterprise.md) to have all information.
 
 
 OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. 
