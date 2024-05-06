@@ -45,7 +45,7 @@ Ask AI can assist you for writing better textual content, for example better tit
 
 - Fix spelling & grammar: try to improve the text from a formulation and grammar perspective.  
 - Make it shorter/longer: try to shorten or lengthen the text.
-- Change tone: try to change the tone of the text. You can select if you want the text to be written for Strategic (Management, decision makers), Operational (for team leaders) or Tactital (for technical CTI analysts) audiences.
+- Change tone: try to change the tone of the text. You can select if you want the text to be written for Strategic (Management, decision makers), Tactical (for team leaders) or Operational (for technical CTI analysts) audiences.
 - Summarize: try to summarize the text in bullet points.
 - Explain: try to explain the context of the subject's text based on what is available to the LLM.
 
