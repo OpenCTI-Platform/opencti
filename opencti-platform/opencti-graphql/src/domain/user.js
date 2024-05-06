@@ -1089,6 +1089,10 @@ export const userAddIndividual = async (context, user) => {
 };
 
 export const otpUserActivation = async (context, user, { secret, code }) => {
+  // User activation can only be done if otp is not already activated
+  if (user.otp_activated) {
+    throw UnsupportedError('You need to deactivate your current 2FA before generating a new one');
+  }
   const isValidated = authenticator.check(code, secret);
   if (isValidated) {
     const uri = authenticator.keyuri(user.user_email, 'OpenCTI', secret);
