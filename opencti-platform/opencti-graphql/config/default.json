@@ -34,7 +34,7 @@
       "armor_enabled": false,
       "playground": {
         "enabled": true,
-        "force_disabled_introspection": false
+        "force_disabled_introspection": true
       }
     },
     "telemetry": {
