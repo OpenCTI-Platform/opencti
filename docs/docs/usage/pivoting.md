@@ -26,12 +26,23 @@ On each node, we'll notice a bullet with a number inside, serving as a visual in
 
 ![Investigation workspace](assets/investigation-workspace.png)
 
+### Expansion
 To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, or double-click on the entity directly. This action opens a new window where we can choose the types of entities and relationships we wish to expand.
 
 ![Investigation expand entity](assets/investigation-expand-entity.png)
 
 For instance, in the image above, selecting the target _Malware_ and the relationship _Uses_ implies expanding in my investigation graph all _Malware_ linked to this node with a relationship of type _Uses_.
 
+### Roll back expansion
+
+Expanding a graph can add a lot of entities and relations, making it not only difficult to read but sometimes counterproductive since it brings entities and relations that are not useful to your investigations.
+To solve this problem, there is a button to undo the last expansion.
+
+When clicking on this button, we will retrieve the state in which your graph was before your expansion. As a result, please note that all add or remove actions made since the last expansion will be lost: in other words, if you have expanded your graph, and then have added some entities in your graph, when clicking on rollback button, the entities that you have added will not be in your graph.
+
+![Investigation rollback popup](assets/investigation-rollback-popup.png)
+
+You can roll back your investigation graph up to the last 10 expand actions.
 
 ### Manipulate relationship
 
