@@ -90,7 +90,7 @@ OpenCTI is a product designed and developed by the company [Filigran](https://fi
 
 <a href="https://filigran.io" alt="Filigran"><img src="./.github/img/logo_filigran.png" width="300" /></a>
 
-### GDPR and the OpenCTI 
+### OpenCTI GDPR 
 
 #### Filigran data telemetry
 
