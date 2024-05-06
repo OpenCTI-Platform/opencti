@@ -24233,12 +24233,6 @@ export type SubscriptionWorkspaceArgs = {
   id: Scalars['ID']['input'];
 };
 
-export type SupportNodeStatus = {
-  __typename?: 'SupportNodeStatus';
-  node_id: Scalars['String']['output'];
-  package_status: PackageStatus;
-};
-
 export type SupportPackage = BasicObject & InternalObject & {
   __typename?: 'SupportPackage';
   createdBy?: Maybe<Individual>;
@@ -24248,7 +24242,6 @@ export type SupportPackage = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   nodes_count: Scalars['Int']['output'];
-  nodes_status?: Maybe<Array<Maybe<SupportNodeStatus>>>;
   package_status: PackageStatus;
   package_upload_dir?: Maybe<Scalars['String']['output']>;
   package_url?: Maybe<Scalars['String']['output']>;
@@ -29213,7 +29206,6 @@ export type ResolversTypes = ResolversObject<{
   SubTypeEditMutations: ResolverTypeWrapper<Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversTypes['SubType']>, statusDelete?: Maybe<ResolversTypes['SubType']>, statusFieldPatch?: Maybe<ResolversTypes['SubType']> }>;
   SubTypesOrdering: SubTypesOrdering;
   Subscription: ResolverTypeWrapper<{}>;
-  SupportNodeStatus: ResolverTypeWrapper<SupportNodeStatus>;
   SupportPackage: ResolverTypeWrapper<BasicStoreEntitySupportPackage>;
   SupportPackageAddInput: SupportPackageAddInput;
   SupportPackageConnection: ResolverTypeWrapper<Omit<SupportPackageConnection, 'edges'> & { edges: Array<ResolversTypes['SupportPackageEdge']> }>;
@@ -29925,7 +29917,6 @@ export type ResolversParentTypes = ResolversObject<{
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
   SubTypeEditMutations: Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversParentTypes['SubType']>, statusDelete?: Maybe<ResolversParentTypes['SubType']>, statusFieldPatch?: Maybe<ResolversParentTypes['SubType']> };
   Subscription: {};
-  SupportNodeStatus: SupportNodeStatus;
   SupportPackage: BasicStoreEntitySupportPackage;
   SupportPackageAddInput: SupportPackageAddInput;
   SupportPackageConnection: Omit<SupportPackageConnection, 'edges'> & { edges: Array<ResolversParentTypes['SupportPackageEdge']> };
@@ -37327,12 +37318,6 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   workspace?: SubscriptionResolver<Maybe<ResolversTypes['Workspace']>, "workspace", ParentType, ContextType, RequireFields<SubscriptionWorkspaceArgs, 'id'>>;
 }>;
 
-export type SupportNodeStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportNodeStatus'] = ResolversParentTypes['SupportNodeStatus']> = ResolversObject<{
-  node_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  package_status?: Resolver<ResolversTypes['PackageStatus'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type SupportPackageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackage'] = ResolversParentTypes['SupportPackage']> = ResolversObject<{
   createdBy?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -37341,7 +37326,6 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodes_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  nodes_status?: Resolver<Maybe<Array<Maybe<ResolversTypes['SupportNodeStatus']>>>, ParentType, ContextType>;
   package_status?: Resolver<ResolversTypes['PackageStatus'], ParentType, ContextType>;
   package_upload_dir?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   package_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39139,7 +39123,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SubTypeEdge?: SubTypeEdgeResolvers<ContextType>;
   SubTypeEditMutations?: SubTypeEditMutationsResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
-  SupportNodeStatus?: SupportNodeStatusResolvers<ContextType>;
   SupportPackage?: SupportPackageResolvers<ContextType>;
   SupportPackageConnection?: SupportPackageConnectionResolvers<ContextType>;
   SupportPackageEdge?: SupportPackageEdgeResolvers<ContextType>;

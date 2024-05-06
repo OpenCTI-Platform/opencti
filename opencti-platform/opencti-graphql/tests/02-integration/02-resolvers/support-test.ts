@@ -50,7 +50,7 @@ describe('SupportPackage resolver standard behavior', () => {
 
   it('should support package be force zipped', async () => {
     // Wait for pub/sub magic to happens
-    await wait(3000);
+    await wait(1000);
 
     const FORCE_ZIP_QUERY = gql`
       mutation supportPackageForceZip($input: SupportPackageForceZipInput!) {

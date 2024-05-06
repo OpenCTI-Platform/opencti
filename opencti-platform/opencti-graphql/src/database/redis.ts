@@ -850,3 +850,26 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
   });
 };
 // endregion
+
+// region - support package handling
+export const redisStoreSupportPackageNodeStatus = (supportPackageId:string, nodeId: string, score: number) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().zadd(setKeyId, score, nodeId);
+};
+
+export const redisCountInProgressNodes = (supportPackageId: string) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().zcount(setKeyId, 0, 1);
+};
+
+export const redisCountInErrorNodes = (supportPackageId: string) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().zcount(setKeyId, 100, 100);
+};
+
+export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().del(setKeyId);
+};
+
+// endregion - support package handling

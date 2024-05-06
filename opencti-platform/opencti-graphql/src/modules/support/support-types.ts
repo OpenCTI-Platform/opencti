@@ -10,7 +10,6 @@ export interface BasicStoreEntitySupportPackage extends BasicStoreEntity {
   package_status: string
   package_url: string
   package_upload_dir: string
-  nodes_status: Array<SupportNodeStatus>
   nodes_count: number
 }
 
@@ -19,7 +18,6 @@ export interface StoreEntitySupportPackage extends StoreEntity {
   package_status: string
   package_url: string
   package_upload_dir: string
-  nodes_status: Array<SupportNodeStatus>
   nodes_count: number
 }
 
@@ -28,7 +26,6 @@ export interface StixSupportPackage extends StixObject {
   package_status: string
   package_url: string
   package_upload_dir: string
-  nodes_status: Array<SupportNodeStatus>
   nodes_count: number
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

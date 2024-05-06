@@ -16,13 +16,20 @@ import {
   TELEMETRY_LOG_RELATIVE_LOCAL_DIR
 } from '../../config/conf';
 import { downloadFile, loadedFilesListing, streamConverter } from '../../database/file-storage';
-import type { EditInput, QuerySupportPackagesArgs, SupportNodeStatus, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
+import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
 import { fileToReadStream, SUPPORT_STORAGE_PATH, uploadToStorage } from '../../database/file-storage-helper';
 import { wait } from '../../database/utils';
-import { notify } from '../../database/redis';
-import { FilesystemError } from '../../config/errors';
+import {
+  lockResource,
+  notify,
+  redisCountInErrorNodes,
+  redisCountInProgressNodes,
+  redisDeleteSupportPackageNodeStatus,
+  redisStoreSupportPackageNodeStatus
+} from '../../database/redis';
+import { FilesystemError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { getSettings } from '../../domain/settings';
 
 const ZIP_TIMEOUT_MS = 15000; // Max time to archive all files
@@ -46,6 +53,7 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QuerySupport
 
 export const deleteSupportPackage = async (context: AuthContext, user: AuthUser, supportPackageId: string) => {
   logApp.info(`[OPENCTI-MODULE] - DELETE support package ${supportPackageId}.`);
+  await redisDeleteSupportPackageNodeStatus(supportPackageId);
   return deleteInternalObject(context, user, supportPackageId, ENTITY_TYPE_SUPPORT_PACKAGE);
 };
 
@@ -162,6 +170,7 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
  * @param entity
  */
 export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, entity: BasicStoreEntitySupportPackage) => {
+  logApp.info(`[OPENCTI-MODULE] creating zip on node ${NODE_INSTANCE_ID}`);
   const zipLocalRootFolder = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id);
   const zipLocalFullFolder: string = join(zipLocalRootFolder, NODE_INSTANCE_ID);
 
@@ -190,8 +199,7 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
   }
 
   const updateInput = [
-    { key: 'package_url', value: [updatedEntity2.package_url], operation: EditOperation.Replace },
-    { key: 'package_status', value: [PackageStatus.Ready], operation: EditOperation.Replace }
+    { key: 'package_url', value: [updatedEntity2.package_url], operation: EditOperation.Replace }
   ];
   await updateAttribute(context, user, entity.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
 };
@@ -210,7 +218,6 @@ export const prepareNewSupportPackage = async (context: AuthContext, user: AuthU
   const defaultOps = {
     package_status: PackageStatus.InProgress,
     created_at: new Date(),
-    nodes_status: [],
     nodes_count: instancesNumber,
   };
   const supportInput = { ...input, ...defaultOps };
@@ -253,63 +260,6 @@ export const requestZipPackage = async (context: AuthContext, user: AuthUser, su
   return findById(context, user, supportPackage.id);
 };
 
-export const computePackageEntityChanges = (packageEntity: BasicStoreEntitySupportPackage, newNodeStatus: PackageStatus, nodeId: string) => {
-  const newNodeStatusList: SupportNodeStatus[] = [];
-
-  const updateInput: EditInput[] = [];
-  let editOp = EditOperation.Replace;
-  if (packageEntity.nodes_status) {
-    const allNodesStatusList: SupportNodeStatus[] = packageEntity.nodes_status;
-    // first keep all other nodes
-    for (let i = 0; i < allNodesStatusList.length; i += 1) {
-      if (allNodesStatusList[i].node_id !== nodeId) {
-        newNodeStatusList.push(allNodesStatusList[i]);
-      }
-    }
-
-    // Change node status
-    newNodeStatusList.push({
-      node_id: nodeId,
-      package_status: newNodeStatus,
-    });
-    logApp.info(`ANGIE - other full count:${newNodeStatusList.length}`);
-
-    // Check if overall status must change now or not.
-    if (packageEntity.nodes_status.length === packageEntity.nodes_count && (newNodeStatus === PackageStatus.Ready || newNodeStatus === PackageStatus.InError)) {
-      if (!allNodesStatusList.some((oneStatus) => oneStatus.node_id !== nodeId && oneStatus.package_status === PackageStatus.InProgress)) {
-        // All is ready or error, so it's finished.
-        if (allNodesStatusList.some((oneStatus) => oneStatus.package_status === PackageStatus.InError) || newNodeStatus === PackageStatus.InError) {
-          updateInput.push({
-            key: 'package_status',
-            value: [PackageStatus.InError],
-            operation: EditOperation.Replace
-          });
-        } else {
-          updateInput.push({
-            key: 'package_status',
-            value: [PackageStatus.Ready],
-            operation: EditOperation.Replace
-          });
-        }
-      }
-    }
-  } else {
-    // Nothing in list yet, add current node.
-    newNodeStatusList.push({
-      node_id: nodeId,
-      package_status: newNodeStatus,
-    });
-    editOp = EditOperation.Replace; // to remove ?
-  }
-
-  updateInput.push({
-    key: 'nodes_status',
-    value: newNodeStatusList,
-    operation: editOp,
-  });
-  return updateInput;
-};
-
 /**
  * Register the current node status on sending logs for support package.
  * @param context
@@ -321,12 +271,56 @@ export const registerNodeInSupportPackage = async (context: AuthContext, user: A
   logApp.info(`[OPENCTI-MODULE] Updating Support Package ${packageId} on node ${NODE_INSTANCE_ID} with status ${newStatus}`);
   const actualPackage = await findById(context, user, packageId);
 
-  const updateInput: EditInput[] = computePackageEntityChanges(actualPackage, newStatus, NODE_INSTANCE_ID);
-  if (updateInput.some((entityChange) => entityChange.key === 'package_status'
-      && (entityChange.value[0] === PackageStatus.Ready || entityChange.value[0] === PackageStatus.InError)
-  && !actualPackage.package_url)) {
-    await zipAllSupportFiles(context, user, actualPackage);
+  let redisScore;
+  switch (newStatus) {
+    case
+      PackageStatus.InError:
+      redisScore = 100;
+      break;
+    case
+      PackageStatus.Ready:
+      redisScore = 10;
+      break;
+    default:
+      redisScore = 0;
   }
 
-  await updateAttribute(context, user, packageId, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
+  await redisStoreSupportPackageNodeStatus(actualPackage.id, NODE_INSTANCE_ID, redisScore);
+
+  if (newStatus === PackageStatus.Ready || newStatus === PackageStatus.InError) {
+    const lockId = `support-lock:${packageId}:${NODE_INSTANCE_ID}`;
+    let lock; // We don't want zip to be generated by 2 nodes in parallel.
+    try {
+      lock = await lockResource([lockId], { retryCount: 0 });
+      const inProgressNodes = await redisCountInProgressNodes(actualPackage.id);
+      if (inProgressNodes === 0) {
+        await zipAllSupportFiles(context, user, actualPackage);
+
+        const nodeInErrorCount = await redisCountInErrorNodes(actualPackage.id);
+        if (nodeInErrorCount > 0) {
+          const updateInput: EditInput[] = [{
+            key: 'package_status',
+            value: [PackageStatus.InError],
+            operation: EditOperation.Replace
+          }];
+          await updateAttribute(context, user, packageId, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
+        } else {
+          const updateInput: EditInput[] = [{
+            key: 'package_status',
+            value: [PackageStatus.Ready],
+            operation: EditOperation.Replace
+          }];
+          await updateAttribute(context, user, packageId, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
+        }
+      }
+    } catch (e: any) {
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.debug('[OPENCTI-MODULE] Support package already started by another node');
+      } else {
+        logApp.error(e);
+      }
+    } finally {
+      if (lock) await lock.unlock();
+    }
+  }
 };
