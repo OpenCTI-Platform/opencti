@@ -2,6 +2,4 @@
 
 !!! tip "Under construction"
 
-    We are doing our best to complete this page. 
-    If you want to participate, don't hesitate to join the [Filigran Community on Slack](https://community.filigran.io) 
-    or submit your pull request on the [Github doc repository](https://github.com/OpenCTI-Platform/docs).
+    This page will be automatically generated to reference the platform's data model. We are doing our best to implement this automatic generation as quickly as possible.

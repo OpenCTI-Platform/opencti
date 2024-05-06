@@ -2,20 +2,17 @@
 
 ## Presentation
 
-In order to provide a real time way to consume STIX CTI information, OpenCTI provides data events in a stream that can be consume to react on creation, update, deletion and merge.
-This way of getting information out of OpenCTI is highly efficient and already use by some connectors.
+In order to provide a real time way to consume STIX CTI information, OpenCTI provides data events in a stream that can be consumed to react on creation, update, deletion and merge. This way of getting information out of OpenCTI is highly efficient and already use by some connectors.
 
 ## Technology
 
 ### Redis stream
 
-OpenCTI is currently using REDIS Stream (See [https://redis.io/topics/streams-intro](https://redis.io/topics/streams-intro)) as the technical layer.
-Each time something is modified in the OpenCTI database, a specific event is added in the stream.
+OpenCTI is currently using [REDIS Stream](https://redis.io/topics/streams-intro) as the technical layer. Each time something is modified in the OpenCTI database, a specific event is added in the stream.
 
 ### SSE protocol
 
-In order to provides a really easy consuming protocol we decide to provide a SSE ([https://fr.wikipedia.org/wiki/Server-sent_events](https://fr.wikipedia.org/wiki/Server-sent_events)) http URL linked to the standard login system of OpenCTI.
-Any user with the correct access rights can open and access http://opencti_instance/stream and open an SSE connection to start receiving live events. You can of course consume directly the stream in Redis but you will have to manage access and rights directly.
+In order to provide a really easy consuming protocol we decide to provide a SSE ([https://fr.wikipedia.org/wiki/Server-sent_events](https://fr.wikipedia.org/wiki/Server-sent_events)) HTTP URL linked to the standard login system of OpenCTI. Any user with the correct access rights can open and access http://opencti_instance/stream, and open an SSE connection to start receiving live events. You can of course consume directly the stream in Redis, but you will have to manage access and rights directly.
 
 ## Events format
 
@@ -33,21 +30,19 @@ data: { -> The complete event data
 }
 ```
 
-Id can be used to consume the stream from this specific point.
+It can be used to consume the stream from this specific point.
 
 ## STIX data
 
-The current stix data representation is based on the STIX 2.1 format using extension mechanism.
-Please take a look to [https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html) for more information.
+The current stix data representation is based on the STIX 2.1 format using extension mechanism. Please take a look to the [STIX documentation](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html) for more information.
 
 ### Create
 
-Its simply the data created in STIX format.
+It's simply the data created in STIX format.
 
 ### Delete
 
-Its simply the data in STIX format **just before his deletion**.
-You will also find the automated deletions in context due to automatic dependency management.
+It's simply the data in STIX format **just before his deletion**. You will also find the automated deletions in context due to automatic dependency management.
 
 ```json
 {
@@ -59,9 +54,9 @@ You will also find the automated deletions in context due to automatic dependenc
 
 ### Update
 
-This event type publish the complete STIX data information along with patches information.
-Thanks to the patches, its possible to rebuild the previous version and easily understand that happens in the update.
-patch and reverse_patch follow the official jsonpatch specification. You can find more information at [https://jsonpatch.com/](https://jsonpatch.com/)
+This event type publish the complete STIX data information along with patches information. Thanks to the patches, it's possible to rebuild the previous version and easily understand what happens in the update.
+
+Patch and reverse_patch follow the official jsonpatch specification. You can find more information on the [jsonpatch page](https://jsonpatch.com/)
 
 ```json
 {
@@ -74,8 +69,7 @@ patch and reverse_patch follow the official jsonpatch specification. You can fin
 
 ### Merge
 
-Merge is a mix of an update of the merge targets and deletions of the sources.
-In this event you will find the same patch and reverse_patch as an update and the list of elements merged into the target in the "sources" attribute.
+Merge is a combination of an update of the merge targets and deletions of the sources. In this event you will find the same patch and reverse_patch as an update and the list of elements merged into the target in the "sources" attribute.
 
 ```json
 {
@@ -93,24 +87,19 @@ In OpenCTI we propose 2 types of streams.
 
 ### Base stream
 
-The stream hosted in /stream url contains all the raw events of the platform, **always** filtered by the user rights (marking based).
-It's a technical stream a bit complex to used but very useful for internal processing or some specific connectors like backup/restore.
-This stream is live by default but if you want to catchup you can simply add the from parameter to your query.
-This parameter accept a timestamp in millisecond and also an event id.
-Like http://localhost/stream?from=1620249512599
+The stream hosted in /stream url contains all the raw events of the platform, **always** filtered by the user rights (marking based). It's a technical stream a bit complex to used but very useful for internal processing or some specific connectors like backup/restore.
+
+This stream is live by default but if, you want to catchup, you can simply add the `from` parameter to your query. This parameter accept a timestamp in millisecond and also an event id, e.g. `http://localhost/stream?from=1620249512599`
 
 !!! tip "Stream size?"
 
-    The raw stream is really important in the platform and needs te be sized according to the period of retention you want to ensure.
-    More retention you will have, more security about reprocessing the past information you will get.
-    We usually recommand 1 month of retention, that usually match 2 000 000 of events.
-    This limit can be configured with redis:trimming option, please check [deployment configuration page](../deployment/configuration.md#redis).
+    The raw stream is really important in the platform and needs te be sized according to the period of retention you want to ensure. More retention you will have, more security about reprocessing the past information you will get.
+    We usually recommand 1 month of retention, that usually match 2 000 000 of events. This limit can be configured with `redis:trimming` option, please check [deployment configuration page](../deployment/configuration.md#redis).
 
 
 ### Live stream
 
-This stream aims to simplify your usage of the stream through the connectors, providing a way to create stream with specific filters through the UI.
-After creating this stream, is simply accessible from /stream/{STREAM_ID}.
+This stream aims to simplify your usage of the stream through the connectors, providing a way to create stream with specific filters through the UI. After creating this stream, is simply accessible from `/stream/{STREAM_ID}`.
 
 It's very useful for various cases of data externalization, synchronization, like SPLUNK, TANIUM...
 
@@ -134,14 +123,10 @@ This stream provides different interesting mechanics:
 
 From and recover are 2 different options that need to be explains.
 
-- **from** (query parameter) is always the parameter that describe the initial date/event_id you want to start from.
-Can also be setup with request header **from** or **last-event-id** 
+- **from** (query parameter) is always the parameter that describe the initial date/event_id you want to start from. Can also be setup with request header **from** or **last-event-id**
+- **recover** (query parameter) is an option that let you consume the initial event from the database and not from the stream. Can also be setup with request header **recover** or **recover-date** 
 
-- **recover** (query parameter) is an option that let you consume the initial event from the database and not from the stream. 
-Can also be setup with request header **recover** or **recover-date** 
-
-This difference will be transparent for the consumer but very important to get old information as an initial snapshot.
-This also let you consume information that is no longer in the stream retention period.
+This difference will be transparent for the consumer but very important to get old information as an initial snapshot. This also let you consume information that is no longer in the stream retention period.
 
 **The next diagram will help you to understand the concept:**
 

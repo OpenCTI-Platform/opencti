@@ -4,7 +4,7 @@ One of the core concept of the OpenCTI knowledge graph is all underlying mechani
 
 ## Creation behavior
 
-When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, [in some cases](), update it as well.
+When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, in some cases, update it as well.
 
 Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between `name` and `aliases` leading to not have entities with overlapping aliases or an alias already used in the name of another entity.
 

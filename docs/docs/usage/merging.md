@@ -4,7 +4,7 @@
 
 OpenCTI’s merge capability stands as a pivotal tool for optimizing threat intelligence data, allowing to consolidate multiple entities of the same type. This mechanism serves as a powerful cleanup tool, harmonizing the platform and unifying scattered information. In this section, we explore the significance of this feature, the process of merging entities, and the strategic considerations involved.
 
-
+<a id="data-streamlining-section"></a>
 ## Data streamlining
 
 In the ever-expanding landscape of threat intelligence and the multitude of names chosen by different data sources, data cleanliness is essential. Duplicates and fragmented information hinder efficient analysis. The merge capability is a strategic solution for amalgamating related entities into a cohesive unit. Central to the merging process is the selection of a main entity. This primary entity becomes the anchor, retaining crucial attributes such as name and description. Other entities, while losing specific fields like descriptions, are aliased under the primary entity. This strategic decision preserves vital data while eliminating redundancy.

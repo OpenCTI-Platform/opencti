@@ -117,7 +117,7 @@ When managing a group, you can define the members and all above configurations.
 <a id="organizations-section"></a>
 ## Organizations
 
-Users can belong to organizations, which is an additional layer of [data segregation](segregation.md) and customization.
+Users can belong to organizations, which is an additional layer of [data segregation](segregation.md) and customization. To find out more about this part, please refer to the page on [organization segregation](organization-segregation.md).
 
 ## Organization administration
 

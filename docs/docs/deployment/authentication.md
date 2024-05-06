@@ -6,16 +6,16 @@ OpenCTI supports several authentication providers. If you configure multiple str
 
 !!! note "Activation"
 
-    You need to configure/activate only the strategy that you really want to propose to your users in term of authentication
+    You need to configure/activate only the authentication strategy that you really want to propose to your users.
 
 The product proposes two kinds of authentication strategies:
 
-- Form (asking user for a user/password)
-- Buttons (click with authentication on an external system)
+- Form (asking user for a user/password),
+- Buttons (click with authentication on an external system).
 
 ## Supported Strategies
 
-Under the hood we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
+Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
 
 ### Local users (form)
 
@@ -32,7 +32,7 @@ OpenCTI use this strategy as the default but its not the one we recommend for se
 }
 ```
 
-!!! note "Production deployment"
+!!! tip "Production deployment"
 
     Please use the LDAP/Auth0/OpenID/SAML strategy for production deployment.
 
@@ -271,7 +271,7 @@ Alternatively, you can request OpenCTI to use claims from the `userinfo` endpoin
 
 ### Facebook (button)
 
-This strategy can authenticate your users with Facebook and is based on [Passport - Facebook](http://www.passportjs.org/packages/passport-facebook)
+This strategy can authenticate your users with Facebook and is based on [Passport - Facebook](http://www.passportjs.org/packages/passport-facebook).
 
 ```json
 "facebook": {
@@ -288,7 +288,7 @@ This strategy can authenticate your users with Facebook and is based on [Passpor
 
 ### Google (button)
 
-This strategy can authenticate your users with Google and is based on [Passport - Google](http://www.passportjs.org/packages/passport-google-oauth)
+This strategy can authenticate your users with Google and is based on [Passport - Google](http://www.passportjs.org/packages/passport-google-oauth).
 
 ```json
 "google": {
@@ -305,7 +305,7 @@ This strategy can authenticate your users with Google and is based on [Passport 
 
 ### GitHub (button)
 
-This strategy can authenticate your users with GitHub and is based on [Passport - GitHub](http://www.passportjs.org/packages/passport-github)
+This strategy can authenticate your users with GitHub and is based on [Passport - GitHub](http://www.passportjs.org/packages/passport-github).
 
 ```json
 "github": {
@@ -322,7 +322,7 @@ This strategy can authenticate your users with GitHub and is based on [Passport 
 
 ### Client certificate (button)
 
-This strategy can authenticate a user based on SSL client certificates. For this you need to configure your OCTI to start in HTTPS, for example:
+This strategy can authenticate a user based on SSL client certificates. For this, you need to configure OpenCTI to start in HTTPS, for example:
 
 ```json
 "port": 443,
@@ -344,11 +344,11 @@ And then add the `ClientCertStrategy`:
 }
 ```
 
-Then when accessing for the first time OCTI, the browser will ask for the certificate you want to use.
+Afterwards, when accessing for the first time OpenCTI, the browser will ask for the certificate you want to use.
 
 ### Proxy headers (automatic)
 
-This strategy can authenticate your users with directly from trusted headers
+This strategy can authenticate the users directly from trusted headers.
 
 ```json
 {
@@ -376,8 +376,7 @@ This strategy can authenticate your users with directly from trusted headers
 }
 ```
 
-If this mode is activated and the headers are available the user will be automatically logged without any action or notice.
-The logout uri will remove the session and redirect the configured uri. If not specified the redirect will be done to the request referer and so the header authentication will be done again.
+If this mode is activated and the headers are available, the user will be automatically logged without any action or notice. The logout uri will remove the session and redirect to the configured uri. If not specified, the redirect will be done to the request referer and so the header authentication will be done again.
 
 ## Automatically create group on SSO
 
@@ -388,9 +387,9 @@ More precisely, if the user that tries to authenticate has groups that don’t e
 - if *auto_create_group= true* in the SSO configuration: the groups are created at the platform initialization and the user will be mapped on them.
 - else: an error is raised.
 
-### Example
+**Example**
 
-We assum that *Group1* exists in the platform, and *newGroup* doesn’t exist. The user that tries to log in has the group *newGroup*. If *auto_create_group = true* in the SSO configuration, the group named *newGroup* will be created at the platform initialization and the user will be mapped on it. If *auto_create_group = false* or is undefined, the user can’t login and an error is raised.
+We assume that *Group1* exists in the platform, and *newGroup* doesn’t exist. The user that tries to log in has the group *newGroup*. If *auto_create_group = true* in the SSO configuration, the group named *newGroup* will be created at the platform initialization and the user will be mapped on it. If *auto_create_group = false* or is undefined, the user can’t log in and an error is raised.
 
 ```json
 "groups_management": {
@@ -404,7 +403,7 @@ We assum that *Group1* exists in the platform, and *newGroup* doesn’t exist. T
 
 ### LDAP then fallback to local
 
-In this example the users have a login form and need to enter login and password. The authentication is done on LDAP first, then locally if user failed to authenticate and finally fail if none of them succeded. Here is an example for the `production.json` file:
+In this example the users have a login form and need to enter login and password. The authentication is done on LDAP first, then locally if user failed to authenticate and finally fail if none of them succeeded. Here is an example for the `production.json` file:
 
 ```json
 "providers": {

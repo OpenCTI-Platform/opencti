@@ -14,7 +14,7 @@ To ease integrations with other products, OpenCTI has built-in capabilities to d
 
 ### CSV Feeds
 
-It is possible to create as many CSV feeds as needed, based on filters and accessible in HTTP. CSV feeds are available in Data > Data sharing > Feeds (CSV).
+It is possible to create as many CSV feeds as needed, based on filters and accessible in HTTP. CSV feeds are available in Data > Data sharing > CSV deeds.
 
 When creating a CSV feed, you need to select one or multiple types of entities to make available. Then, you must assign a field (of an entity type) to each column in the CSV:
 
@@ -22,7 +22,7 @@ When creating a CSV feed, you need to select one or multiple types of entities t
 
 !!! note "Details"
     
-    For more information about CSV feeds, filters and configuration, please check the [Export in structured format](../usage/export.md#export-in-structured-or-document-format) section.
+    For more information about CSV feeds, filters and configuration, please check the [Native feeds](../usage/feeds.md#csv-feeds-section) page.
 
 ### TAXII collections
 
@@ -41,7 +41,7 @@ After implementing CSV feeds and TAXII collections, we figured out that those 2 
 * Partial update for huge entities such as report (i.e. just having the *update* event).
 * Delete events when necessary (i.e. to handle indicators expiration in third party systems for instance).
 
-Live streams are available in Data > Data sharing > Live streams. As TAXII collections, it is possible to create as many streams as needed using filters.
+That's why we've developed the live streams. They are available in Data > Data sharing > Live streams. As TAXII collections, it is possible to create as many streams as needed using filters.
 
 ![Streams](assets/streams.png)
 
@@ -105,6 +105,10 @@ If you already logged to OpenCTI with the same browser you should be able to dir
 Example of configuration (bottom left of the playground):
 
 ![Playground authentication](assets/playground-auth.png)
+
+!!! note "Additional GraphQL documentation"
+
+	To find out more about GraphQL and the playground, you can find two additional documentation pages: the [GraphQL API](../reference/api.md) page and the [GraphQL playground](../development/api-usage.md) page.
 
 ### Python library
 

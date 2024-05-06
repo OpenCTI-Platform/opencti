@@ -4,7 +4,7 @@ Depending on your [installation mode](installation.md), upgrade path may change.
 
 !!! note "Migrations"
     
-    The platform is taking care of all necessary underlying migrations in the databases if any, you can upgrade OpenCTI from any version to the latest one, including skipping multiple major releases.
+    The platform is taking care of all necessary underlying migrations in the databases if any. You can upgrade OpenCTI from any version to the latest one, including skipping multiple major releases.
 
 ## Using Docker
 

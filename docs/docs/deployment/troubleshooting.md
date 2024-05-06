@@ -1,10 +1,10 @@
 # Troubleshooting
 
-This page aims to explains the typical errors you can have with your OpenCTI platform.
+This page aims to explain the typical errors you can have with your OpenCTI platform.
 
 ## Finding the relevant logs
 
-It is highly recommended to monitor the error logs of the platforms, workers and connectors. All the components have log outputs in an understandable JSON format. It necessary, it is always possible to increase the log level. In production, it is recommended to have the log level set to `error`.
+It is highly recommended to monitor the error logs of the platforms, workers and connectors. All the components have log outputs in an understandable JSON format. If necessary, it is always possible to increase the log level. In production, it is recommended to have the log level set to `error`.
 
 ### Platform
 
@@ -52,7 +52,7 @@ The workers can have more or less verbose outputs:
 
 !!! warning "Cant upsert entity. Too many entities resolved"
     
-    OpenCTI received an entity which is matching too many other entities in the platform. In this condition we cannot take a decision. We need to dig into the data bundle to identify why he match too much entities and fix the data in the bundle / or the platform according to what you expect.
+    OpenCTI received an entity which is matching too many other entities in the platform. In this condition we cannot take a decision. We need to dig into the data bundle to identify why it matches too much entities and fix the data in the bundle / or the platform according to what you expect.
 
 
 !!! warning "Execution timeout, too many concurrent call on the same entities"
@@ -75,7 +75,7 @@ The workers can have more or less verbose outputs:
 
 !!! warning "Observable of type IPv4-Addr is not correctly formatted"
     
-    OpenCTI check the validity of the oversable value.
+    OpenCTI check the validity of the observable value.
 
 ### Dependencies errors
 

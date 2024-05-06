@@ -13,7 +13,7 @@ Feeds are configured in the "Data > Data sharing" window. Configuration for all 
 
 By carefully configuring filters and access controls, you can tailor the behavior of Live streams, TAXII collections, and CSV feeds to align with your specific data-sharing needs.
 
-
+<a id="live-stream-section"></a>
 ## Live streams
 
 ### Introduction
@@ -66,8 +66,13 @@ After creating a new collection, every system with a proper access token can con
 
 As when using the GraphQL API, TAXII 2.1 collections have a classic pagination system that should be handled by the consumer. Also, it's important to understand that element dependencies (nested IDs) inside the collection are not always contained/resolved in the bundle, so consistency needs to be handled at the client level.
 
+<a id="csv-feeds-section"></a>
 ## CSV feeds
 
-The CSV feed facilitates the automatic generation of a CSV file, accessible via a URL. The CSV file is regenerated and updated at user-defined intervals, providing flexibility.
+The CSV feed facilitates the automatic generation of a CSV file, accessible via a URL. The CSV file is regenerated and updated at user-defined intervals, providing flexibility. The entries in the file correspond to the information that matches the filters applied and that were created or modified in the platform during the time interval (between the last generation of the CSV and the new one).
 
 ![CSV feed](assets/csv-feed.png)
+
+!!! note "CSV size limit"
+
+    The CSV file generated has a limit of 5 000 entries. If more than 5 000 entities are retrieved by the platform, only the most recent 5 000 will be shared in the file.

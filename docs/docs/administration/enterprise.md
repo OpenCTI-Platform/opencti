@@ -40,7 +40,7 @@ OpenCTI playbooks are flexible automation scenarios which can be fully customize
 
 ### Organizations management and segregation
 
-Organizations segregation is a way to segregate your data considering the organization associated to the users. Useful when your platform aims to share data to multiple organizations that have access to the same OpenCTI platform. Please read [Organizations RBAC](../administration/users.md#organization-section) to get more information.
+Organizations segregation is a way to segregate your data considering the organization associated to the users. Useful when your platform aims to share data to multiple organizations that have access to the same OpenCTI platform. Please read [Organizations RBAC](../administration/organization-segregation.md) to get more information.
 
 ### Full text indexing
 

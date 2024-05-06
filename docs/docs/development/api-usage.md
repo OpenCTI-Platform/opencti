@@ -45,3 +45,11 @@ To access the GraphQL playground, navigate to the GraphQL endpoint of your OpenC
 3. Query history: View and execute previously executed queries from the "History" tab on the top. Reuse queries and experiment with variations without retyping.
 4. Response pane: Visualize query responses in the response pane. Expand and collapse sections to navigate complex data structures and inspect individual fields.
 5. Schema viewer: Explore the GraphQL schema interactively using the "Schema" tab on the right. Navigate types, fields, and relationships to understand the data model and plan queries.
+
+### External Resources
+
+For a more in-depth understanding of GraphQL and its usage, consider exploring the following external resources:
+
+- [GraphQL Official Documentation](https://graphql.org/learn/)
+- [GraphQL query documentation](https://graphql.org/learn/queries/)
+- [How to GraphQL](https://www.howtographql.com/)

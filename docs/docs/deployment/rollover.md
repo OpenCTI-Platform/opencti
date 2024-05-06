@@ -6,7 +6,7 @@
 
 ## Introduction
 
-ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so support very well index lifeycle policies. Thus, by default OpenCTI initialized indices with a suffix `-00001` and use wildcard to query indices. When rollover policies are implemented (default starting OCTI 5.9.X if you initialized your platform at this version), indices are splitted to keep a reasonable volume of data in shards.
+ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so support very well index lifecycle policies. Thus, by default OpenCTI initialized indices with a suffix `-00001` and use wildcard to query indices. When rollover policies are implemented (default starting OCTI 5.9.X if you initialized your platform at this version), indices are splitted to keep a reasonable volume of data in shards.
 
 ![Indices](assets/indices.png)
 
@@ -30,7 +30,7 @@ ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been 
     - `indices:data/read/scroll`
     - `indices:data/write/bulk`
 
-!!! warning "About`indices:*` in _Cluster Permissions_"
+!!! warning "About `indices:*` in _Cluster Permissions_"
 
     It is crucial to include `indices:*` permissions in **Cluster Permissions** for the proper functioning of the OpenCTI integration. Removing these, even if already present in **Index Permissions**, may result in startup issues for the OpenCTI Platform.
 
@@ -60,7 +60,7 @@ For your information, the indices which can grow rapidly are:
 * Index `opencti_stix_cyber_observables`: it contains all observables stored in the platform.
 * Index `opencti_stix_core_relationships`: it contains all main STIX relationships stored in the platform.
 
-### Default implemented licecycle policy
+### Default implemented lifecycle policy
 
 Here is the recommended policy (initialized starting 5.9.X):
 
@@ -171,7 +171,7 @@ curl -X POST "localhost:9200/_reindex?pretty" -H 'Content-Type: application/json
 '
 ```
 
-You will see the rollover policy to be applied and the new indices are automatically rolled-over during reindexation.
+You will see the rollover policy to be applied and the new indices are automatically rolled-over during re-indexation.
 
 #### Delete all old indices
 

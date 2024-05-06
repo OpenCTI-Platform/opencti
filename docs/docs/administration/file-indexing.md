@@ -1,5 +1,9 @@
 # File indexing
 
+!!! tip "Enterprise edition"
+
+    Platform segregation by organization is available under the "Filigran entreprise edition" license. Please read the [dedicated page](../enterprise.md) to have all the information.
+
 ## Files search requirements
 
 In order to [search in files](../usage/search.md#full-text-search-in-files-content), we need to extract and index files text content, which requires to have one of these database configurations :

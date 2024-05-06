@@ -33,19 +33,19 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Basic parameters
 
-| Parameter                | Environment variable      | Default value         | Description                                                                                                                                                     |
-|:-------------------------|:--------------------------|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| app:port                 | APP__PORT                 | 4000                  | Listen port of the application                                                                                                                                  |
-| app:base_path            | APP__BASE_PATH            |                       | Specific URI (ie. /opencti)                                                                                                                                     |
-| app:base_url             | APP__BASE_URL             | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any)                                                                                                |
-| app:request_timeout      | APP__REQUEST_TIMEOUT      | 1200000               | Request timeout, in ms (default 20 minutes)                                                                                                                     |
-| app:session_timeout      | APP__SESSION_TIMEOUT      | 1200000               | Session timeout, in ms (default 20 minutes)                                                                                                                     |
-| app:session_idle_timeout | APP__SESSION_IDLE_TIMEOUT | 0                     | Idle timeout (locking the screen), in ms (default 0 minute - disabled)                                                                                          |
-| app:session_cookie       | APP__SESSION_COOKIE       | false                 | Use memory/session cookie instead of persistent one                                                                                                             |
-| app:admin:email          | APP__ADMIN__EMAIL         | admin@opencti.io      | Default login email of the admin user                                                                                                                           |
-| app:admin:password       | APP__ADMIN__PASSWORD      | ChangeMe              | Default password of the admin user                                                                                                                              |
-| app:admin:token          | APP__ADMIN__TOKEN         | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                                          |
-| app:health_access_key    | APP__HEALTH_ACCESS_KEY    | ChangeMe              | Access key that enables access to the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe` |
+| Parameter                | Environment variable      | Default value         | Description                                                                                                                                  |
+|:-------------------------|:--------------------------|:----------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| app:port                 | APP__PORT                 | 4000                  | Listen port of the application                                                                                                               |
+| app:base_path            | APP__BASE_PATH            |                       | Specific URI (ie. /opencti)                                                                                                                  |
+| app:base_url             | APP__BASE_URL             | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any)                                                                             |
+| app:request_timeout      | APP__REQUEST_TIMEOUT      | 1200000               | Request timeout, in ms (default 20 minutes)                                                                                                  |
+| app:session_timeout      | APP__SESSION_TIMEOUT      | 1200000               | Session timeout, in ms (default 20 minutes)                                                                                                  |
+| app:session_idle_timeout | APP__SESSION_IDLE_TIMEOUT | 0                     | Idle timeout (locking the screen), in ms (default 0 minute - disabled)                                                                       |
+| app:session_cookie       | APP__SESSION_COOKIE       | false                 | Use memory/session cookie instead of persistent one                                                                                          |
+| app:admin:email          | APP__ADMIN__EMAIL         | admin@opencti.io      | Default login email of the admin user                                                                                                        |
+| app:admin:password       | APP__ADMIN__PASSWORD      | ChangeMe              | Default password of the admin user                                                                                                           |
+| app:admin:token          | APP__ADMIN__TOKEN         | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                       |
+| app:health_access_key    | APP__HEALTH_ACCESS_KEY    | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe` |
 
 #### Network and security
 
@@ -88,7 +88,6 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:telemetry:metrics:enabled             | APP__TELEMETRY__METRICS__ENABLED             | `false`       | Enable the metrics collection.          |
 | app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint.       |
 | app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint. |
-| app:health_access_key                     | APP__HEALTH_ACCESS_KEY                       | ChangeMe      | Access key for the `/health` endpoint.  |
 
 
 #### Maps & references
@@ -109,15 +108,6 @@ Here are the configuration keys, for both containers (environment variables) and
 | relations_deduplication:types_overrides:*relationship_type*:past_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__PAST_DAYS         |               | Override the past days for a specific type of relationship (ex. *targets*)               |
 | relations_deduplication:types_overrides:*relationship_type*:next_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS         |               | Override the next days for a specific type of relationship (ex. *targets*)               |
 | relations_deduplication:types_overrides:*relationship_type*:created_by_based    | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED  |               | Override the author duplication for a specific type of relationship (ex. *targets*)      |
-
-| Parameter                                           | Environment variable                                  | Default value | Description                                                                 |
-|:----------------------------------------------------|:------------------------------------------------------|:--------------|:----------------------------------------------------------------------------|
-| app:graphql:playground:enabled                      | APP__GRAPHQL__PLAYGROUND__ENABLED                     | `true`        | Enable the playground on /graphql                                           |
-| app:graphql:playground:force_disabled_introspection | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION | `false`       | Introspection is allowed to auth users but can be disabled in needed        |
-| app:concurrency:retry_count                         | APP__CONCURRENCY__RETRY_COUNT                         | 200           | Number of try to get the lock to work an element (create/update/merge, ...) |
-| app:concurrency:retry_delay                         | APP__CONCURRENCY__RETRY_DELAY                         | 100           | Delay between 2 lock retry (in milliseconds)                                |
-| app:concurrency:retry_jitter                        | APP__CONCURRENCY__RETRY_JITTER                        | 50            | Random jitter to prevent concurrent retry  (in milliseconds)                |
-| app:concurrency:max_ttl                             | APP__CONCURRENCY__MAX_TTL                             | 30000         | Global maximum time for lock retry (in milliseconds)                        |
 
 #### Technical customization
 
@@ -197,16 +187,16 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### S3 Bucket
 
-| Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                     |
-|:--------------------|:---------------------|:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Minio as an S3 Bucket Service.       |
-| minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                                |
-| minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                     |
-| minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                                  |
-| minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                                  |
-| minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                                |
-| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                     |
-| minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                              |
+| Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                 |
+|:--------------------|:---------------------|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Minio as an S3 Bucket Service. |
+| minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                          |
+| minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                 |
+| minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                              |
+| minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                              |
+| minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
+| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                 |
+| minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
 
 #### SMTP Service
 
@@ -318,7 +308,7 @@ Can be configured manually using the configuration file `config.yml` or through 
 | opencti:token                  | OPENCTI_TOKEN                  |               | A token of an administrator account with bypass capability |
 | -                              | -                              | -             | -                                                          |
 | mq:use_ssl                     | /                              | /             | Depending of the API configuration (fetch from API)        |
-| mq:use_ssl_ca                  | MQ_USE_SSL_CA                  |               | Path or cacert content                                     |
+| mq:use_ssl_ca                  | MQ_USE_SSL_CA                  |               | Path or ca content                                         |
 | mq:use_ssl_cert                | MQ_USE_SSL_CERT                |               | Path or cert content                                       |
 | mq:use_ssl_key                 | MQ_USE_SSL_KEY                 |               | Path or key content                                        |
 | mq:use_ssl_passphrase          | MQ_USE_SSL_PASSPHRASE          |               | Passphrase for the key certificate                         |

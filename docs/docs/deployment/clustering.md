@@ -61,7 +61,7 @@ As showed on the schema, best practices for cluster mode and to avoid any conges
 
 * Deploy platform(s) dedicated to end users and connectors registration
 * Deploy platform(s) dedicated to workers / ingestion process
-	* We recommend 3 to 4 workers maxiumum by OpenCTI instance.
+	* We recommend 3 to 4 workers maximum by OpenCTI instance.
 	* The ingestion platforms will never be accessed directly by end users.
 
 When enabling clustering, the number of nodes is displayed in Settings > Parameters.
@@ -70,4 +70,6 @@ When enabling clustering, the number of nodes is displayed in Settings > Paramet
 
 ### Managers and schedulers
 
-Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitely [disabled in the configuration](configuration.md#schedules-engines).
+Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly [disabled in the configuration](configuration.md#schedules-engines).
+
+![Managers](assets/managers.png)

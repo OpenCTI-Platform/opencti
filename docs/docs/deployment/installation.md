@@ -3,7 +3,7 @@
 All components of OpenCTI are shipped both as [Docker images](https://hub.docker.com/u/opencti) and manual [installation packages](https://github.com/OpenCTI-Platform/opencti/releases).
 
 !!! note "Production deployment"
-    
+
     For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
 
     To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
@@ -31,13 +31,11 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
 
 ## Using Docker
 
+OpenCTI can be deployed using the *docker-compose* command.
+
 !!! note "Deploy FIPS 140-2 compliant components"
 
     We are providing FIPS 140-2 compliant images, please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
-
-### Introduction
-
-OpenCTI can be deployed using the *docker-compose* command.
 
 ### Pre-requisites
 
@@ -78,7 +76,7 @@ Before running the `docker-compose` command, the `docker-compose.yml` file shoul
 You can either rename the file `.env.sample` in `.env` and put the expected values or just fill directly the `docker-compose.yml` with the values corresponding to your environment.
 
 !!! note "Configuration static parameters"
-    
+
     The complete list of available static parameters is available in the [configuration](configuration.md) section.
 
 Here is an example to quickly generate the `.env` file under Linux, especially all the default UUIDv4:
@@ -124,7 +122,7 @@ To make this parameter persistent, add the following to the end of your `/etc/sy
 ```bash
 vm.max_map_count=1048575
 ```
-    
+
 
 ### Persist data
 
@@ -171,14 +169,12 @@ sudo docker stack deploy --compose-file docker-compose.yml opencti
 ```
 
 !!! success "Installation done"
-    
+
     You can now go to [http://localhost:8080](http://localhost:8080/) and log in with the credentials configured in your environment variables.
 
 ## Manual installation
 
 ### Prerequisites
-
-### Prepare the installation
 
 #### Installation of dependencies
 
@@ -274,10 +270,8 @@ python3 worker.py &
 ```
 
 !!! success "Installation done"
-    
-    You can now go to [http://localhost:4000](http://localhost:4000) and log in with the credentials configured in your `production.json` file.
 
-## Appendix
+    You can now go to [http://localhost:4000](http://localhost:4000) and log in with the credentials configured in your `production.json` file.
 
 ## Community contributions
 

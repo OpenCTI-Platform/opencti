@@ -100,11 +100,12 @@ It is always possible to modify an existing template to define a custom scale ad
 
     If you use the Admiralty code setting for both reliability and Confidence, you will find yourself with the equivalent of NATO confidence notation in the Overview of your different entities (A1, B2, C3, etc.)
 
+<a id="confidence-level-section"></a>
 ### Max confidence level
 
 #### Overview
 
-We know that in organizations, different users do not always have the same expertise or seniority.  As a result, some specific users can be more "trusted" when creating or updating knowledge than others. Additionnaly, because connectors, TAXII feeds and streams are all linked to respectively one user, it is important to be able to differentiate which connector, stream or TAXII feed is more trustable than others.
+We know that in organizations, different users do not always have the same expertise or seniority.  As a result, some specific users can be more "trusted" when creating or updating knowledge than others. Additionally, because connectors, TAXII feeds and streams are all linked to respectively one user, it is important to be able to differentiate which connector, stream or TAXII feed is more trustable than others.
 
 This is why we have introduced the concept of max confidence level to tackle this use case.
 
