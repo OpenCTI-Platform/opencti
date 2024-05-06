@@ -31,6 +31,11 @@ export interface CsvMapperSchemaAttributes {
   attributes: CsvMapperSchemaAttribute[]
 }
 
+const validateCsvMapperRepresentation = (object: any): object is CsvMapperRepresentation => {
+  // this is a basic validation; TODO: json validation
+  return object.id && (object.type === CsvMapperRepresentationType.Entity || object.type === CsvMapperRepresentationType.Relationship);
+};
+
 const representationLabel = (idx: number, representation: CsvMapperRepresentation) => {
   const number = `#${idx + 1}`;
   if (isEmptyField(representation.target.entity_type)) {
@@ -39,19 +44,30 @@ const representationLabel = (idx: number, representation: CsvMapperRepresentatio
   return `${number} ${representation.target.entity_type}`;
 };
 
-export const parseCsvMapper = (entity: any): CsvMapperParsed => {
+export const parseCsvMapper = (mapper: any): CsvMapperParsed => {
+  let representations: CsvMapperRepresentation[] = mapper.representations ?? [];
+  if (typeof mapper.representations === 'string') {
+    try {
+      representations = JSON.parse(mapper.representations);
+    } catch (error) {
+      throw FunctionalError('Could not parse CSV mapper: representations is not a valid JSON', { name: mapper?.name, error });
+    }
+  }
+  if (!Array.isArray(representations) || representations.some((rep) => !validateCsvMapperRepresentation(rep))) {
+    throw FunctionalError('Could not parse CSV mapper: representations is not an array of CsvMapperRepresentation', { name: mapper?.name });
+  }
   return {
-    ...entity,
-    representations: typeof entity.representations === 'string' ? JSON.parse(entity.representations) : entity.representations,
+    ...mapper,
+    representations,
   };
 };
 
-export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user: AuthUser, entity: any): Promise<CsvMapperResolved> => {
-  if (typeof entity?.representations !== 'string') {
-    return entity;
+export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user: AuthUser, mapper: any): Promise<CsvMapperResolved> => {
+  if (typeof mapper?.representations !== 'string') {
+    return mapper;
   }
 
-  const parsedRepresentations: CsvMapperRepresentation[] = JSON.parse(entity.representations);
+  const { representations: parsedRepresentations } = parseCsvMapper(mapper);
   const refAttributesIndexes: string[] = [];
   const refDefaultValues = parsedRepresentations.flatMap((representation, i) => {
     const refsDefinition = schemaRelationsRefDefinition
@@ -72,7 +88,7 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
 
   const entities = await internalFindByIds<BasicStoreEntity>(context, user, refDefaultValues);
   return {
-    ...entity,
+    ...mapper,
     representations: parsedRepresentations.map((representation, i) => ({
       ...representation,
       attributes: representation.attributes.map((attribute, j) => ({

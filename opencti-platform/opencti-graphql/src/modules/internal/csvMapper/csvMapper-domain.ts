@@ -40,6 +40,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMapp
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
+  // attempt to parse the mapper representations ; this throws validation errors
+  parseCsvMapper(csvMapperInput);
   return createInternalObject<StoreEntityCsvMapper>(context, user, csvMapperInput, ENTITY_TYPE_CSV_MAPPER);
 };
 
