@@ -3,11 +3,12 @@ import { ApolloServerPluginLandingPageGraphQLPlayground, ApolloServerPluginLandi
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
+import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import createSchema from './schema';
-import { basePath, DEV_MODE, PLAYGROUND_INTROSPECTION_DISABLED, ENABLED_TRACING, PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED, logApp } from '../config/conf';
+import conf, { basePath, DEV_MODE, PLAYGROUND_INTROSPECTION_DISABLED, ENABLED_TRACING, PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED, logApp } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -28,27 +29,38 @@ const createApolloServer = () => {
   };
   const constraintPlugin = createApolloQueryValidationPlugin({ schema }, { formats });
   schema = constraintDirectiveDocumentation()(schema);
-
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
-  const apolloValidationRules = [];
-
+  // Protect batch graphql through alias usage
+  const batchPermissions = {
+    Query: {
+      '*': conf.get('app:graphql:batching_protection:query_default') ?? 2, // default value for all queries
+      subTypes: conf.get('app:graphql:batching_protection:query_subtypes') ?? 4 // subTypes are used multiple times for schema fetching
+    },
+    Mutation: {
+      '*': conf.get('app:graphql:batching_protection:mutation_default') ?? 1, // default value for all mutations
+      token: 1 // force default value for login mutation
+    }
+  };
+  const { validation: batchValidationRule } = createAliasBatch({ permissions: batchPermissions });
+  const apolloValidationRules = [batchValidationRule];
   // optional graphql-armor plugin configuration
+  // Still disable by default for now as required more testing
   if (GRAPHQL_ARMOR_ENABLED) {
     const armor = new ApolloArmor({
-      costLimit: { // Blocking too expensive requests (DoS attack attempts).
-        maxCost: 10000
-      },
       blockFieldSuggestion: { // It will prevent suggesting fields in case of an erroneous request.
         enabled: true,
       },
-      maxAliases: { // Limit the number of aliases in a document.
-        n: 15,
+      costLimit: { // Blocking too expensive requests (DoS attack attempts).
+        maxCost: 10000
       },
-      maxDirectives: { // Limit the number of directives in a document.
-        n: 50,
+      maxAliases: { // Limit the number of aliases in a document.
+        enabled: false, // Handled by graphql-no-alias
       },
       maxDepth: { // maxDepth: Limit the depth of a document.
         n: 20,
+      },
+      maxDirectives: { // Limit the number of directives in a document.
+        n: 50,
       },
       maxTokens: { // Limit the number of GraphQL tokens in a document.
         n: 2000,

@@ -32,6 +32,11 @@
     },
     "graphql": {
       "armor_enabled": false,
+      "batching_protection": {
+        "mutation_default": 1,
+        "query_default": 2,
+        "query_subtypes": 4
+      },
       "playground": {
         "enabled": true,
         "force_disabled_introspection": true
