@@ -78,6 +78,46 @@ Additional configuration options:
 ![RSS feed configuration](assets/rss-feed-configuration.png)
 
 
+### CSV feeds
+
+The CSV feeds ingester integrates new entities to the platform.
+![CSV feeds interface](assets/csv-feeds.png)
+
+Create a CSV feeds ingester by clicking on the "+" button
+Fill the URL field up to retrieve the CSV file.
+
+![CSV feeds creation](csv-feeds-creation.png)
+
+Note that a CSV mapper is required.
+
+![CSV feeds creation: CSV mapper](csv-feeds-creation-csv-mapper.png)
+
+![CSV feeds creation: prior CSV mapper test](csv-feeds-creation-prior-test.png)
+
+To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper.
+A valid URL-CSV mapper combination results in the identification of up to 50 entities.
+
+![CSV feeds creation: csv mapper test](csv-feeds-creation-test.png)
+
+Once, the test is successful, the "Create" button can be clicked.
+
+![CSV feeds creation: after CSV mapper test](csv-feeds-creation-after-test.png)
+
+![CSV feeds creation: list](csv-feeds-creation-list.png)
+
+To start your new ingester, click on "Start", in the burger menu.
+
+![CSV feeds creation: start](csv-feeds-creation-start.png)
+
+CSV feed ingestion is made possible thanks to the connector "ImportCSV".
+So you can track the progress in the Connectors page.
+On a regular basis, the ingestion is updated when new data is added to the CSV feed. 
+
+![CSV feeds creation: connectors](csv-feeds-connectors.png)
+
+![CSV feeds creation: tracking](csv-feeds-importCSV-connector-tracking.png)
+
+
 <a id="best-practices-section"></a>
 ### Best practices for feed import
 
