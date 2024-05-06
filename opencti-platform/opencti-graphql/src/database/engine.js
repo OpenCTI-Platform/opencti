@@ -300,7 +300,9 @@ export const searchEngineInit = async () => {
 export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 
 export const elRawSearch = (context, user, types, query) => {
-  const elRawSearchFn = async () => engine.search(query).then((r) => {
+  // Add signal to prevent unwanted warning
+  // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
+  const elRawSearchFn = async () => engine.search(query, { signal: new AbortController().signal }).then((r) => {
     const parsedSearch = oebp(r);
     if (parsedSearch._shards.failed > 0) {
       // We do not support response with shards failure.
