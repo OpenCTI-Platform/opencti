@@ -38,7 +38,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
         }}
         onSubmit={handleSubmit}
       >
-        {({ resetForm, submitForm }) => (
+        {({ resetForm, submitForm, setFieldValue }) => (
           <Dialog open={isOpen} fullWidth={true} PaperProps={{ elevation: 1 }} onClose={() => {
             resetForm();
             closePopup();
@@ -50,6 +50,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
                 name="fileMarkings"
                 label={t_i18n('File marking definition levels')}
                 style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
               />
             </DialogContent>
             <DialogActions>
