@@ -22,6 +22,7 @@ if (AI_ENABLED && AI_TOKEN) {
     case 'openai':
       client = new OpenAI({
         apiKey: AI_TOKEN,
+        ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
       });
       break;
     default:
