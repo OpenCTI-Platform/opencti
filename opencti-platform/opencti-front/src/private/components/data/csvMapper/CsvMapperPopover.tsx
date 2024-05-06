@@ -93,7 +93,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         </React.Suspense>
       )}
       <DeleteDialog
-        title={t_i18n('Do you want to delete this CSV mapper ?')}
+        title={t_i18n('Do you want to delete this CSV mapper?')}
         deletion={deletion}
         submitDelete={submitDelete}
       />

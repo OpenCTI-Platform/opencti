@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { internalFindByIdsMapped, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
-import type { CsvMapperAddInput, EditInput, QueryCsvMappersArgs } from '../../../generated/graphql';
+import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { bundleProcess } from '../../../parser/csv-bundler';
 import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues } from './csvMapper-utils';
@@ -15,6 +15,8 @@ import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../../schema/stixSightingRelationship';
 import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
+import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
+import { FunctionalError } from '../../../config/errors';
 
 // -- UTILS --
 
@@ -48,6 +50,20 @@ export const fieldPatchCsvMapper = async (context: AuthContext, user: AuthUser, 
 };
 
 export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperId: string) => {
+  // detect if ingesters are using this mapper
+  const opts = {
+    filters: {
+      mode: FilterMode.Or,
+      filterGroups: [],
+      filters: [{ key: ['csv_mapper_id'], values: [csvMapperId] }]
+    }
+  };
+  const ingesters = await listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+  // prevent deletion if an ingester uses the mapper
+  if (ingesters.length > 0) {
+    throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)', { id: csvMapperId });
+  }
+
   return deleteInternalObject(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 

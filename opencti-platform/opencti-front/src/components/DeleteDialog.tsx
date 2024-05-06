@@ -8,14 +8,16 @@ import Transition from './Transition';
 import { useFormatter } from './i18n';
 import { Deletion } from '../utils/hooks/useDeletion';
 
-const DeleteDialog = ({
+type DeleteDialogProps = {
+  title: React.ReactNode
+  deletion: Deletion
+  submitDelete: () => void
+};
+
+const DeleteDialog: React.FC<DeleteDialogProps> = ({
   title,
   deletion,
   submitDelete,
-}: {
-  title: string
-  deletion: Deletion
-  submitDelete: () => void
 }) => {
   const { t_i18n } = useFormatter();
   return (
