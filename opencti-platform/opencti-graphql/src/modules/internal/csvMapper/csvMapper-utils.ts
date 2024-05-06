@@ -55,7 +55,7 @@ export const parseCsvMapper = (mapper: any): CsvMapperParsed => {
     }
   }
   if (!Array.isArray(representations) || representations.some((rep) => !isCsvMapperRepresentation(rep))) {
-    throw FunctionalError('Could not parse CSV mapper: representations is not an array of CsvMapperRepresentation', { name: mapper?.name });
+    throw FunctionalError('Could not parse CSV mapper: representations is not an array of CsvMapperRepresentation objects', { name: mapper?.name });
   }
   return {
     ...mapper,
