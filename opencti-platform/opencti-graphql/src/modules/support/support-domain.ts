@@ -193,8 +193,8 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
       fs.rmSync(zipLocalRootFolder, { recursive: true, force: true });
     }
 
-    if (fs.existsSync(zipFullpath)) {
-      fs.rmSync(zipFullpath, { recursive: true, force: true });
+    if (fs.existsSync(zipLocalFullFolder)) {
+      fs.rmSync(zipLocalFullFolder, { recursive: true, force: true });
     }
   }
 
