@@ -1,19 +1,18 @@
 import { Page } from '@playwright/test';
 
-export default class EntitiesTabPageModel {
+export default class ObservablesTabPageModel {
   constructor(private page: Page) {}
 
-  clickAddEntities() {
+  clickAddObservables() {
     return this.page.getByLabel('Add', { exact: true }).click();
   }
 
-  addEntity(name: string) {
+  addObservable(name: string) {
     const parent = this.page.getByRole('heading', { name: 'Add entities' }).locator('../..');
-    // return parent.getByText(name, { exact: true }).click();
     return parent.getByRole('button', { name }).click();
   }
 
-  closeAddEntity() {
+  closeAddObservable() {
     const parent = this.page.getByRole('heading', { name: 'Add entities' }).locator('../..');
     return parent.getByLabel('Close').click();
   }

@@ -12,6 +12,7 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
+import ObservablesTabPageModel from '../model/ObservablesTab.pageModel';
 
 /**
  * Content of the test
@@ -301,6 +302,7 @@ test('Report live entities creation and relationships', async ({ page }) => {
   const reportDetailsPage = new ReportDetailsPage(page);
   const externalReferenceForm = new ExternalReferenceFormPageModel(page);
   const entitiesTab = new EntitiesTabPageModel(page);
+  const observablesTab = new ObservablesTabPageModel(page);
 
   await page.goto('/dashboard/analyses/reports');
   await reportPage.openNewReportForm();
@@ -379,7 +381,25 @@ test('Report live entities creation and relationships', async ({ page }) => {
 
   await reportDetailsPage.goToEntitiesTab();
   await entitiesTab.clickAddEntities();
-  await entitiesTab.addEntity('ANSSI');
+  await entitiesTab.addEntity('Organization ANSSI identity');
+  await entitiesTab.closeAddEntity();
+
+  const entity = reportDetailsPage.getTextForHeading(reportName, 'Organization ANSSI identity');
+  await expect(entity).toBeVisible();
+
+  // ---------
+  // endregion
+
+  // region Manipulate entities on Entities tab
+  // ------------------------------------------
+
+  await reportDetailsPage.goToObservablesTab();
+  await observablesTab.clickAddObservables();
+  await observablesTab.addObservable('fedora');
+  await observablesTab.closeAddObservable();
+
+  const observable = reportDetailsPage.getTextForHeading(reportName, 'fedora');
+  await expect(observable).toBeVisible();
 
   // ---------
   // endregion
