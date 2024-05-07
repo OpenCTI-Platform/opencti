@@ -36,7 +36,10 @@ const withCancel = (asyncIterator, onCancel) => {
 export const subscribeToUserEvents = async (context, topics) => {
   const asyncIterator = pubSubAsyncIterator(topics);
   const filtering = withFilter(() => asyncIterator, (payload) => {
-    if (!payload) return false; // When disconnected, an empty payload is dispatched.
+    if (!payload) {
+      // When disconnected, an empty payload is dispatched.
+      return false;
+    }
     return payload.instance.user_id === context.user.id;
   })();
   return {
@@ -52,8 +55,11 @@ export const subscribeToUserEvents = async (context, topics) => {
 export const subscribeToAiEvents = async (context, id, topics) => {
   const asyncIterator = pubSubAsyncIterator(topics);
   const filtering = withFilter(() => asyncIterator, (payload) => {
-    if (!payload) return false; // When disconnected, an empty payload is dispatched.
-    return payload && payload.user.id === context.user.id && payload.instance.bus_id === id;
+    if (!payload) {
+      // When disconnected, an empty payload is dispatched.
+      return false;
+    }
+    return payload.user.id === context.user.id && payload.instance.bus_id === id;
   })();
   return {
     [Symbol.asyncIterator]() {
