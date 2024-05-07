@@ -201,6 +201,7 @@ nav:
         - Configuration: administration/audit/configuration.md
         - Activity triggers: administration/audit/triggers.md
       - File indexing:  administration/file-indexing.md
+      - Support package:  administration/support-package.md
   - Reference:
     - Data:
       - Data model: reference/data-model.md
