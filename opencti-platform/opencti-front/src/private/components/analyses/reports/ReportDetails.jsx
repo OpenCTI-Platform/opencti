@@ -14,9 +14,9 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import StixRelationshipsHorizontalBars from '@components/common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -122,6 +122,41 @@ const ReportDetailsComponent = (props) => {
   ).filter(
     (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
   );
+
+  const dataSelection = [
+    {
+      label: '',
+      attribute: 'entity_type',
+      date_attribute: 'first_seen',
+      perspective: 'relationships',
+      isTo: true,
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: 'relationship_type',
+            values: [
+              'object',
+            ],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      },
+      dynamicFrom: {
+        mode: 'and',
+        filters: [],
+        filterGroups: [],
+      },
+      dynamicTo: {
+        mode: 'and',
+        filters: [],
+        filterGroups: [],
+      },
+    },
+  ];
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -164,15 +199,17 @@ const ReportDetailsComponent = (props) => {
             xs={6}
             style={{ minHeight: 200, maxHeight: height }}
           >
-            <EntityStixCoreRelationshipsHorizontalBars
-              title={t('Entities distribution')}
-              variant="inEntity"
+            <StixRelationshipsHorizontalBars
+              isWidget={false}
               fromId={report.id}
-              toTypes={['Stix-Core-Object']}
+              startDate={null}
+              endDate={null}
               relationshipType="object"
-              field="entity_type"
-              seriesName={t('Number of entities')}
-              isTo={true}
+              dataSelection={dataSelection}
+              parameters={'Entities distribution'}
+              variant="inLine"
+              withExportPopover={true}
+              isReadOnly={true}
             />
           </Grid>
         </Grid>

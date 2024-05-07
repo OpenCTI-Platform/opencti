@@ -9,7 +9,7 @@ import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 
-const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
+export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
@@ -108,10 +108,13 @@ const StixRelationshipsHorizontalBars = ({
   withoutTitle,
   height,
   field,
+  isWidget = true,
   startDate,
   endDate,
   dateAttribute,
   dataSelection,
+  fromId,
+  relationshipType,
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
@@ -136,6 +139,9 @@ const StixRelationshipsHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
+      fromId,
+      toTypes: !isWidget ? ['Stix-Core-Object'] : null,
+      relationship_type: !isWidget ? relationshipType : null,
       dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
