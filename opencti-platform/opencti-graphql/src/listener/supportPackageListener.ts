@@ -21,7 +21,7 @@ export const onSupportPackageMessage = async (event: { instance: BasicStoreEntit
   try {
     if (event.instance.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.InProgress);
-      await wait(500); // Wait for all nodes to register in Redis
+      await wait(5000); // Wait for all nodes to register in Redis
       await sendCurrentNodeSupportLogToS3(context, SYSTEM_USER, event.instance as StoreEntitySupportPackage);
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.Ready);
     } else {
