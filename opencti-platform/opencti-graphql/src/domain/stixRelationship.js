@@ -9,9 +9,9 @@ import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/sti
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixRelationship } from '../schema/stixRelationship';
 
 const defaultRelationshipTypesForWidgets = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
 
@@ -70,10 +70,8 @@ const buildRelationshipTypes = (relationshipTypes) => {
   if (isEmptyField(relationshipTypes)) {
     return defaultRelationshipTypesForWidgets;
   }
-  const isValidRelationshipTypes = (relationshipTypes.every((type) => (
-    isStixCoreRelationship(type)
-    || isStixSightingRelationship(type)
-    || type === RELATION_OBJECT)));
+
+  const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
     throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship, stix-sighting-relationship or object');
