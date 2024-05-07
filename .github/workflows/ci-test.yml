@@ -19,16 +19,8 @@ jobs:
     defaults:
       run:
         working-directory: ./opencti-platform/opencti-front
-        shell: alpine.sh --root {0}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Alpine
-        uses: jirutka/setup-alpine@v1
-        with:
-          branch: v3.18
-          packages: >
-            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
       - name: Setup NodeJS and cache dependencies
         uses: actions/setup-node@v4
@@ -51,7 +43,7 @@ jobs:
       - name: Check Python version
         run:  python -V
 
-      - name: Install and build frontend dependencies into Alpine
+      - name: Install and build frontend dependencies
         run: |
           yarn install
           yarn build
@@ -66,8 +58,13 @@ jobs:
           yarn test
 
       - name: Run test e2e
+        env:
+          BACK_END_URL: http://opencti-e2e-start:4500
+          E2E_TEST: true
         run: |
-          yarn playwright install --with-deps
+          apt-get update
+          apt-get -y install netcat-traditional
+          npx playwright install --with-deps chromium
           yarn test:e2e
 
 #  backend:
