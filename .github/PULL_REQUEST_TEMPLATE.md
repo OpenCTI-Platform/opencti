@@ -34,4 +34,6 @@ By doing this, you are actively helping us to improve the quality of the entire 
 
 ### Further comments
 
+<!--
 If this is a relatively large or complex change, kick off the discussion by explaining why you chose the solution you did and what alternatives you considered, etc...
+-->
