@@ -48,17 +48,11 @@ type DrawerContainerPropsType = {
   observablesFiltered: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  promoteType: 'Indicator' | 'Stix-Cyber-Observable' | undefined;
+  isIndicator: boolean;
 };
-const PromoteDrawer = ({ isOpen, onClose, observablesFiltered, onSubmit, promoteType }: DrawerContainerPropsType) => {
+const PromoteDrawer = ({ isOpen, onClose, observablesFiltered, onSubmit, isIndicator }: DrawerContainerPropsType) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-
-  if (!observablesFiltered && !promoteType) return null;
-
-  const alertContent = promoteType === 'Indicator'
-    ? t_i18n('This action will generate observables from the selected indicators.')
-    : t_i18n('This action will generate indicators from the selected observables.');
 
   return (
     <Drawer
@@ -87,7 +81,10 @@ const PromoteDrawer = ({ isOpen, onClose, observablesFiltered, onSubmit, promote
         {!observablesFiltered && (
         <div>
           <Alert severity="warning" style={{ marginTop: 20 }}>
-            {alertContent}
+            {isIndicator
+              ? t_i18n('This action will generate observables from the selected indicators.')
+              : t_i18n('This action will generate indicators from the selected observables.')
+            }
           </Alert>
         </div>
         )}

@@ -1345,15 +1345,17 @@ class ToolBar extends Component {
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator', 'Stix-Cyber-Observable']);
           const observablesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
-          const promoteType = entityTypeFilterValues.length === 1 && ['Indicator', 'Stix-Cyber-Observable'].includes(entityTypeFilterValues[0])
-            ? entityTypeFilterValues[0]
-            : undefined;
+
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
+
           const isManualPromoteSelect = !selectAll
             && selectedTypes.length > 0
             && selectedTypes.every((type) => promotionTypes.includes(type));
+
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
+          const isIndicator = promoteEnabled && selectedTypes.every((type) => type === 'Indicator');
+
           const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
           entityTypes.forEach((entityType) => {
@@ -2122,7 +2124,7 @@ class ToolBar extends Component {
                 onClose={this.handleClosePromote.bind(this)}
                 observablesFiltered={observablesFiltered}
                 onSubmit={this.handleLaunchPromote.bind(this)}
-                promoteType={promoteType}
+                isIndicator={isIndicator}
               />
               <Drawer
                 open={this.state.displayRescan}
