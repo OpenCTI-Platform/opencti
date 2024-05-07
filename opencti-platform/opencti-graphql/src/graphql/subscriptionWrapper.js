@@ -77,7 +77,7 @@ export const subscribeToInstanceEvents = async (parent, context, id, topics, opt
         // When disconnected, an empty payload is dispatched.
         return false;
       }
-      if (notifySelf) {
+      if (!notifySelf) {
         return payload.user.id !== context.user.id && payload.instance.id === id;
       }
       return payload.instance.id === id;
