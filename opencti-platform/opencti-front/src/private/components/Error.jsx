@@ -3,19 +3,13 @@ import { includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { IconButton, Tooltip } from '@mui/material';
-import { ContentCopyOutlined } from '@mui/icons-material';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
-import { copyToClipboard } from '../../utils/utils';
 
 // Really simple error display
-export const SimpleError = ({ errorData }) => {
+export const SimpleError = () => {
   const { t_i18n } = useFormatter();
-  const errorDetails = JSON.stringify(errorData, null, 2);
-  const copyClick = () => {
-    copyToClipboard(t_i18n, errorDetails);
-  };
+
   return (
     <div style={{ paddingTop: 28 }}>
       <Alert severity="error">
@@ -23,11 +17,6 @@ export const SimpleError = ({ errorData }) => {
         <span style={{ marginRight: 10 }}>
           {t_i18n('An unknown error occurred. Please contact your administrator or the OpenCTI maintainers.')}
         </span>
-        <Tooltip title={t_i18n('Copy stack trace errors')}>
-          <IconButton onClick={copyClick} size="small" color="error">
-            <ContentCopyOutlined/>
-          </IconButton>
-        </Tooltip>
       </Alert>
     </div>
   );
@@ -63,7 +52,7 @@ class ErrorBoundaryComponent extends React.Component {
         throw this.state.error;
       }
       const DisplayComponent = this.props.display || SimpleError;
-      return <DisplayComponent errorData={retroErrors} />;
+      return <DisplayComponent />;
     }
     return this.props.children;
   }
