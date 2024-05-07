@@ -30,11 +30,11 @@ export const dataComponentsPaginated = async <T extends BasicStoreCommon> (conte
 };
 
 export const dataSourceDataComponentAdd = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {
-  await stixDomainObjectEditField(context, user, dataComponentId, { key: INPUT_DATA_SOURCE, value: [dataSourceId] });
+  await stixDomainObjectEditField(context, user, dataComponentId, [{ key: INPUT_DATA_SOURCE, value: [dataSourceId] }]);
   return findById(context, user, dataSourceId);
 };
 
 export const dataSourceDataComponentDelete = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {
-  await stixDomainObjectEditField(context, user, dataComponentId, { key: INPUT_DATA_SOURCE, value: [null] });
+  await stixDomainObjectEditField(context, user, dataComponentId, [{ key: INPUT_DATA_SOURCE, value: [null] }]);
   return findById(context, user, dataSourceId);
 };
