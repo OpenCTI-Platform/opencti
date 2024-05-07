@@ -13,12 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
 import { changeTone, convertFilesToStix, explain, fixSpelling, generateContainerReport, makeLonger, makeShorter, summarize, summarizeFiles } from './ai-domain';
-import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
+import { subscribeToAiEvents } from '../../graphql/subscriptionWrapper';
 
 const aiResolvers: Resolvers = {
   Mutation: {
@@ -36,15 +35,8 @@ const aiResolvers: Resolvers = {
     aiBus: {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[AI_BUS].EDIT_TOPIC);
-        const filtering = withFilter(() => asyncIterator, (payload) => {
-          return payload && payload.user.id === context.user.id && payload.instance.bus_id === id;
-        })();
-        return {
-          [Symbol.asyncIterator]() {
-            return filtering;
-          }
-        };
+        const bus = BUS_TOPICS[AI_BUS];
+        return subscribeToAiEvents(context, id, [bus.EDIT_TOPIC]);
       },
     },
   },

@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
@@ -23,8 +22,7 @@ import {
   stixFileObsArtifact,
   vulnerabilitiesPaginated
 } from '../domain/stixCyberObservable';
-import { pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationships } from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
@@ -126,17 +124,10 @@ const stixCyberObservableResolvers = {
     stixCyberObservable: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        stixCyberObservableEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          stixCyberObservableCleanContext(context, context.user, id);
-        });
+        const preFn = () => stixCyberObservableEditContext(context, context.user, id);
+        const cleanFn = () => stixCyberObservableCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },

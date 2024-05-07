@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import {
   askElementEnrichmentForConnector,
   batchMarkingDefinitions,
@@ -35,12 +34,12 @@ import {
   stixCoreObjectsTimeSeriesByAuthor,
   stixCoreRelationships
 } from '../domain/stixCoreObject';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { fetchEditContext } from '../database/redis';
 import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
@@ -155,17 +154,10 @@ const stixCoreObjectResolvers = {
     stixCoreObject: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        stixCoreObjectEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          stixCoreObjectCleanContext(context, context.user, id);
-        });
+        const preFn = () => stixCoreObjectEditContext(context, context.user, id);
+        const cleanFn = () => stixCoreObjectCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },

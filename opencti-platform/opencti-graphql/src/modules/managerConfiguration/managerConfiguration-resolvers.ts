@@ -1,10 +1,9 @@
-import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
 import { findById, findByManagerId, managerConfigurationEditField } from './managerConfiguration-domain';
-import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
 import { supportedMimeTypes } from './managerConfiguration-utils';
+import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 
 const managerConfigurationResolvers: Resolvers = {
   Query: {
@@ -33,12 +32,9 @@ const managerConfigurationResolvers: Resolvers = {
       resolve: /* v8 ignore next */ (payload: any) => {
         return payload.instance;
       },
-      subscribe: /* v8 ignore next */ (_, { id }, __) => {
-        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC);
-        const filtering = withFilter(() => asyncIterator, (payload) => {
-          return payload.instance.id === id;
-        })();
-        return { [Symbol.asyncIterator]() { return filtering; } };
+      subscribe: /* v8 ignore next */ (_, { id }, context) => {
+        const bus = BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { notifySelf: true });
       },
     },
   }

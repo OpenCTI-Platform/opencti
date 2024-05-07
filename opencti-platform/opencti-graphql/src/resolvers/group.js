@@ -1,8 +1,7 @@
-import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import { elBatchIds } from '../database/engine';
 import { batchLoader } from '../database/middleware';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { fetchEditContext } from '../database/redis';
 import { addGroup } from '../domain/grant';
 import {
   defaultMarkingDefinitions,
@@ -19,7 +18,7 @@ import {
   membersPaginated,
   rolesPaginated
 } from '../domain/group';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
@@ -54,17 +53,10 @@ const groupResolvers = {
     group: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        groupEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          groupCleanContext(context, context.user, id);
-        });
+        const preFn = () => groupEditContext(context, context.user, id);
+        const cleanFn = () => groupCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ENTITY_TYPE_GROUP];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },

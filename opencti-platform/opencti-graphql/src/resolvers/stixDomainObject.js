@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainObject,
@@ -21,8 +20,7 @@ import {
   stixDomainObjectsTimeSeriesByAuthor
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
-import { pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_ASSIGNEE } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
@@ -92,18 +90,10 @@ const stixDomainObjectResolvers = {
     stixDomainObject: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        stixDomainObjectEditContext(context, context.user, id);
+        const preFn = () => stixDomainObjectEditContext(context, context.user, id);
+        const cleanFn = () => stixDomainObjectCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT];
-        const filtering = withFilter(
-          () => pubSubAsyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          stixDomainObjectCleanContext(context, context.user, id);
-        });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },

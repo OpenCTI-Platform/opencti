@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import {
   addStixRefRelationship,
   findAll,
@@ -12,10 +11,10 @@ import {
   stixRefRelationshipEditField,
   stixRefRelationshipsNumber
 } from '../domain/stixRefRelationship';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { fetchEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { batchLoader, distributionRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
 import { batchCreators } from '../domain/user';
@@ -61,17 +60,10 @@ const stixRefRelationshipResolvers = {
     stixRefRelationship: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        stixRefRelationshipEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          stixRefRelationshipCleanContext(context, context.user, id);
-        });
+        const preFn = () => stixRefRelationshipEditContext(context, context.user, id);
+        const cleanFn = () => stixRefRelationshipCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       }
     }
   },

@@ -1,23 +1,22 @@
-import { withFilter } from 'graphql-subscriptions';
 import {
   addWorkspace,
+  duplicateWorkspace,
   editAuthorizedMembers,
   findAll,
   findById,
+  generateWidgetExportConfiguration,
+  generateWorkspaceExportConfiguration,
   getCurrentUserAccessRight,
   getOwnerId,
-  duplicateWorkspace,
   objects,
   workspaceCleanContext,
   workspaceDelete,
   workspaceEditContext,
   workspaceEditField,
   workspaceImportConfiguration,
-  workspaceImportWidgetConfiguration,
-  generateWorkspaceExportConfiguration,
-  generateWidgetExportConfiguration
+  workspaceImportWidgetConfiguration
 } from './workspace-domain';
-import { fetchEditContext, pubSubAsyncIterator } from '../../database/redis';
+import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import type { Resolvers } from '../../generated/graphql';
@@ -25,6 +24,7 @@ import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { toStixReportBundle } from './investigation-domain';
+import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -76,11 +76,8 @@ const workspaceResolvers: Resolvers = {
     workspace: {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC);
-        const filtering = withFilter(() => asyncIterator, (payload) => {
-          return payload.user.id !== context.user.id && payload.instance.id === id;
-        })();
-        return { [Symbol.asyncIterator]() { return filtering; } };
+        const bus = BUS_TOPICS[ENTITY_TYPE_WORKSPACE];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC]);
       },
     },
   },

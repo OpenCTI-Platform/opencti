@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
@@ -13,8 +12,8 @@ import {
   stixSightingRelationshipEditField,
   stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
+import { fetchEditContext } from '../database/redis';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elBatchIds } from '../database/engine';
@@ -99,17 +98,10 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationship: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        stixSightingRelationshipEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          stixSightingRelationshipCleanContext(context, context.user, id);
-        });
+        const preFn = () => stixSightingRelationshipEditContext(context, context.user, id);
+        const cleanFn = () => stixSightingRelationshipCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },
