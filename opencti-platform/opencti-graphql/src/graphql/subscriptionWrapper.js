@@ -49,15 +49,38 @@ export const subscribeToUserEvents = async (context, topics) => {
 /**
  * @returns {Promise<AsyncIterable<any>>}
  */
-export const subscribeToInstanceEvents = async (parent, context, id, topics, preFn, cleanFn) => {
+export const subscribeToAiEvents = async (context, id, topics) => {
+  const asyncIterator = pubSubAsyncIterator(topics);
+  const filtering = withFilter(() => asyncIterator, (payload) => {
+    if (!payload) return false; // When disconnected, an empty payload is dispatched.
+    return payload && payload.user.id === context.user.id && payload.instance.bus_id === id;
+  })();
+  return {
+    [Symbol.asyncIterator]() {
+      return filtering;
+    }
+  };
+};
+
+/**
+ * @returns {Promise<AsyncIterable<any>>}
+ */
+export const subscribeToInstanceEvents = async (parent, context, id, topics, opts = {}) => {
+  const { preFn, cleanFn, notifySelf = false } = opts;
   if (preFn) preFn();
   const item = await internalLoadById(context, context.user, id, { baseData: true });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
   const filtering = withFilter(
     () => pubSubAsyncIterator(topics),
     (payload) => {
-      if (!payload) return false; // When disconnected, an empty payload is dispatched.
-      return payload.user.id !== context.user.id && payload.instance.id === id;
+      if (!payload) {
+        // When disconnected, an empty payload is dispatched.
+        return false;
+      }
+      if (notifySelf) {
+        return payload.user.id !== context.user.id && payload.instance.id === id;
+      }
+      return payload.instance.id === id;
     }
   )(parent, { id }, context);
   if (cleanFn) {

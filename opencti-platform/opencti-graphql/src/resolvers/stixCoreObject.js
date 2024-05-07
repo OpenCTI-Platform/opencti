@@ -157,7 +157,7 @@ const stixCoreObjectResolvers = {
         const preFn = () => stixCoreObjectEditContext(context, context.user, id);
         const cleanFn = () => stixCoreObjectCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], preFn, cleanFn);
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { preFn, cleanFn });
       },
     },
   },

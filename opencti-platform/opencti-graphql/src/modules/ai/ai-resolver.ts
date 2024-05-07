@@ -17,7 +17,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { changeTone, convertFilesToStix, explain, fixSpelling, generateContainerReport, makeLonger, makeShorter, summarize, summarizeFiles } from './ai-domain';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
-import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { subscribeToAiEvents } from '../../graphql/subscriptionWrapper';
 
 const aiResolvers: Resolvers = {
   Mutation: {
@@ -36,7 +36,7 @@ const aiResolvers: Resolvers = {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[AI_BUS];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC]);
+        return subscribeToAiEvents(context, id, [bus.EDIT_TOPIC]);
       },
     },
   },

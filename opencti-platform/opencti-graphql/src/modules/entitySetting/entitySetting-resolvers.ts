@@ -39,7 +39,7 @@ const entitySettingResolvers: Resolvers = {
       },
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC]);
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { notifySelf: true });
       },
     },
   }
