@@ -21,8 +21,9 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { StoreConnector } from '../types/connector';
 
-const TELEMETRY_DEV_DEBUG = conf.get('telemetry_manager:debug') ?? false;
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
+const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
+const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
   ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
 
@@ -35,10 +36,10 @@ const TELEMETRY_COLLECT_INTERVAL = DEV_MODE ? ONE_MINUTE : ONE_HOUR;
 // Export data period, sending information to files, console and otlp
 const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
-const SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
+const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
-  // Build readers
+  const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
   // region File exporter
   const fileExporterReader = new BatchExportingMetricReader({
@@ -49,9 +50,30 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
   // endregion
-  if (DEV_MODE) {
-    // region Console Exporter
-    logApp.info('[TELEMETRY] Console exporter activated');
+  // region OTLP Exporter
+  try {
+    const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
+    if (connectivityQuery.status === 200) {
+      // OtlpExporterReader can be deactivated if connectivity fail at manager start.
+      const OtlpExporterReader = new BatchExportingMetricReader({
+        exporter: new OTLPMetricExporter({
+          url: FILIGRAN_OTLP_TELEMETRY,
+          temporalityPreference: AggregationTemporality.DELTA
+        }),
+        collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
+        exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
+      });
+      filigranMetricReaders.push(OtlpExporterReader);
+      logApp.info('[TELEMETRY] Otlp exporter activated');
+    } else {
+      logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
+    }
+  } catch {
+    logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
+  }
+  // endregion
+  // region Console Exporter only if debug activated
+  if (TELEMETRY_CONSOLE_DEBUG) {
     const consoleMetric = new BatchExportingMetricReader({
       exporter: new ConsoleMetricExporter({ temporalitySelector: (instrumentType: InstrumentType) => {
         if (instrumentType === InstrumentType.OBSERVABLE_UP_DOWN_COUNTER) {
@@ -62,36 +84,11 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
       collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
       exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
     });
-    if (TELEMETRY_DEV_DEBUG) {
-      filigranMetricReaders.push(consoleMetric);
-    }
-    // endregion
-  } else {
-    // region OTLP Exporter, only enable in production
-    // OtlpExporterReader can be deactivated if connectivity fail at manager start.
-    try {
-      const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
-      if (connectivityQuery.status === 200) {
-        logApp.info('[TELEMETRY] Otlp exporter activated');
-        const OtlpExporterReader = new BatchExportingMetricReader({
-          exporter: new OTLPMetricExporter({
-            url: FILIGRAN_OTLP_TELEMETRY,
-            temporalityPreference: AggregationTemporality.DELTA
-          }),
-          collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
-          exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
-        });
-        filigranMetricReaders.push(OtlpExporterReader);
-      } else {
-        logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
-      }
-    } catch {
-      logApp.info('[TELEMETRY] Otlp exporter is deactivated for connectivity issue');
-    }
-    // endregion
+    filigranMetricReaders.push(consoleMetric);
+    logApp.info('[TELEMETRY] Console exporter activated');
   }
+  // endregion
   // Meter Provider creation
-  const context = executionContext('telemetry_manager');
   const settings = await getSettings(context) as Settings;
   const platformId = settings.id;
   const filigranResource = new Resource({
@@ -141,7 +138,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
   cronSchedulerHandler: {
     handler: fetchTelemetryData,
     handlerInitializer: telemetryInitializer, // Init meter manager is required
-    handlerInfinite: true, // Lock needs to be kept, inner scheduler will be done.
+    infiniteInterval: COMPUTE_SCHEDULE_TIME, // Lock needs to be kept, inner scheduler will be done.
     interval: SCHEDULE_TIME,
     lockKey: TELEMETRY_MANAGER_KEY,
   },

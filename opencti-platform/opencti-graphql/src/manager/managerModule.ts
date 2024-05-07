@@ -16,7 +16,7 @@ export interface ManagerCronScheduler {
   handler: (input?: any) => Promise<void>
   interval: number
   lockKey: string
-  handlerInfinite?: boolean
+  infiniteInterval?: number
   handlerInitializer?: () => Promise<HandlerInput>
 }
 
@@ -60,11 +60,11 @@ const initManager = (manager: ManagerDefinition) => {
         lock = await lockResource([manager.cronSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         cronInput = cronInputFn ? await cronInputFn() : undefined;
-        if (manager.cronSchedulerHandler.handlerInfinite) {
+        if (manager.cronSchedulerHandler.infiniteInterval) {
           logApp.info(`[OPENCTI-MODULE] Running ${manager.label} infinite cron handler`);
           while (!shutdown) {
             await manager.cronSchedulerHandler.handler(cronInput);
-            await wait(manager.cronSchedulerHandler.interval);
+            await wait(manager.cronSchedulerHandler.infiniteInterval);
           }
         } else {
           await manager.cronSchedulerHandler.handler(cronInput);

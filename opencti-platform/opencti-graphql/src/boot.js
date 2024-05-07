@@ -1,4 +1,4 @@
-import { getStoppingState, logApp, setStoppingState } from './config/conf';
+import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
 import platformInit, { checkSystemDependencies } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
@@ -7,7 +7,7 @@ import { shutdownModules, startModules } from './managers';
 
 // region platform start and stop
 export const platformStart = async () => {
-  logApp.info('[OPENCTI] Starting platform');
+  logApp.info('[OPENCTI] Starting platform', { environment });
   try {
     // Check all dependencies access
     try {
