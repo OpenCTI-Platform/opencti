@@ -360,7 +360,6 @@
   "copy": "复制",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "复制已关闭：选取元素过多（复制的最大元素数：",
   "Copy link": "复制链接",
-  "Copy stack trace errors": "复制堆栈跟踪错误",
   "Copy uri to clipboard for your csv client": "将 uri 复制到剪贴板，供 csv 客户端使用",
   "Copy uri to clipboard for your Taxii client": "为 Taxii 客户端复制 uri 到剪贴板",
   "Copy/paste text content": "复制/粘贴文本内容",

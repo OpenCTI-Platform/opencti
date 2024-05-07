@@ -360,7 +360,6 @@
   "copy": "copia",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "Copia deshabilitada: demasiados elementos seleccionados (número máximo de elementos para una copia: ",
   "Copy link": "Copiar enlace",
-  "Copy stack trace errors": "Copiar errores de seguimiento de pila",
   "Copy uri to clipboard for your csv client": "Copiar uri al portapapeles para su cliente csv",
   "Copy uri to clipboard for your Taxii client": "Copiar uri al portapapeles para su cliente Taxii",
   "Copy/paste text content": "Copiar o pegar contenido textual",

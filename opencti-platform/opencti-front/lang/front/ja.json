@@ -360,7 +360,6 @@
   "copy": "コピー",
   "Copy disabled: too many selected elements (maximum number of elements for a copy: ": "コピー無効:選択した要素が多すぎます(コピーの要素の最大数:",
   "Copy link": "リンクをコピー",
-  "Copy stack trace errors": "スタックトレースエラーのコピー",
   "Copy uri to clipboard for your csv client": "csvクライアント用にuriをクリップボードにコピーする",
   "Copy uri to clipboard for your Taxii client": "TaxiiクライアントのURIをクリップボードにコピーする",
   "Copy/paste text content": "コンテンツのコピー/ペースト",
