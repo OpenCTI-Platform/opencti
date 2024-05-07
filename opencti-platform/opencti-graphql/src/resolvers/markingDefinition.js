@@ -1,4 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addMarkingDefinition,
@@ -9,9 +8,10 @@ import {
   markingDefinitionEditContext,
   markingDefinitionEditField,
 } from '../domain/markingDefinition';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
+import { fetchEditContext } from '../database/redis';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { stixLoadByIdStringify } from '../database/middleware';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const markingDefinitionResolvers = {
   Query: {
@@ -35,17 +35,10 @@ const markingDefinitionResolvers = {
     markingDefinition: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        markingDefinitionEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          markingDefinitionCleanContext(context, context.user, id);
-        });
+        const preFn = () => markingDefinitionEditContext(context, context.user, id);
+        const cleanFn = () => markingDefinitionCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], preFn, cleanFn);
       },
     },
   },

@@ -1,5 +1,3 @@
-import { withFilter } from 'graphql-subscriptions';
-import * as R from 'ramda';
 import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -16,15 +14,13 @@ import {
   settingsEditContext,
   settingsEditField
 } from '../domain/settings';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
+import { fetchEditContext } from '../database/redis';
+import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
-import { getEntityFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
 
 const settingsResolvers = {
   Query: {
@@ -74,47 +70,16 @@ const settingsResolvers = {
     settings: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        settingsEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          settingsCleanContext(context, context.user, id);
-        });
+        const preFn = () => settingsEditContext(context, context.user, id);
+        const cleanFn = () => settingsCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ENTITY_TYPE_SETTINGS];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], preFn, cleanFn);
       },
     },
     settingsMessages: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ async (_, __, context) => {
-        const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
-        const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-        const filtering = withFilter(() => asyncIterator, (payload) => {
-          const oldMessages = getMessagesFilteredByRecipients(context.user, settings);
-          const newMessages = getMessagesFilteredByRecipients(context.user, payload.instance);
-          // If removed and was activated
-          const removedMessage = R.difference(oldMessages, newMessages);
-          if (removedMessage.length === 1 && removedMessage[0].activated) {
-            return true;
-          }
-          return newMessages.some((nm) => {
-            const find = oldMessages.find((om) => nm.id === om.id);
-            // If existing, change when property activated change OR when message change and status is activated
-            if (find) {
-              return (nm.activated !== find.activated) || (nm.activated && nm.message !== find.message);
-            }
-            // If new, change when message is activated
-            return nm.activated;
-          });
-        })();
-        return {
-          [Symbol.asyncIterator]() {
-            return filtering;
-          }
-        };
+        return subscribeToPlatformSettingsEvents(context);
       },
     }
   },

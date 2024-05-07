@@ -1,11 +1,10 @@
-import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import passport, { PROVIDERS } from '../config/providers';
 import { batchLoader } from '../database/middleware';
 import { internalLoadById } from '../database/middleware-loader';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { fetchEditContext } from '../database/redis';
 import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
 import {
@@ -53,7 +52,7 @@ import {
   userRenewToken,
   userWithOrigin
 } from '../domain/user';
-import withCancel from '../graphql/subscriptionWrapper';
+import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -236,17 +235,10 @@ const userResolvers = {
     user: {
       resolve: /* v8 ignore next */ (payload) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
-        userEditContext(context, context.user, id);
-        const filtering = withFilter(
-          () => pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
-          (payload) => {
-            if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
-          }
-        )(_, { id }, context);
-        return withCancel(filtering, () => {
-          userCleanContext(context, context.user, id);
-        });
+        const preFn = () => userEditContext(context, context.user, id);
+        const cleanFn = () => userCleanContext(context, context.user, id);
+        const bus = BUS_TOPICS[ENTITY_TYPE_USER];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], preFn, cleanFn);
       },
     },
   },
