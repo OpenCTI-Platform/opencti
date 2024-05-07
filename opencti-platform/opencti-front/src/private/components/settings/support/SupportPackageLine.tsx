@@ -25,6 +25,7 @@ import { deleteNode } from '../../../../utils/store';
 import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { minutesBetweenDates, now } from '../../../../utils/Time';
 
 const styles = {
   bodyItem: {
@@ -55,7 +56,7 @@ const styles = {
   },
 };
 
-type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | '%future added value';
+type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | 'TIMEOUT' | '%future added value';
 
 const SupportPackageLineForceZipMutation = graphql`
   mutation SupportPackageLineForceZipMutation(    
@@ -93,6 +94,7 @@ const packageStatusColors: { [key in PackageStatus]: string } = {
   IN_PROGRESS: '#303f9f',
   READY: '#4caf50',
   IN_ERROR: '#f44336',
+  TIMEOUT: '#f44336',
   '%future added value': '#9e9e9e',
 };
 
@@ -114,6 +116,10 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   const [commitDelete] = useApiMutation(SupportPackageLineDeleteMutation);
   const [commitForceZip] = useApiMutation(SupportPackageLineForceZipMutation);
   const isProgress = data.package_status === 'IN_PROGRESS';
+  const isReady = data.package_status === 'READY';
+  const isTooLong = minutesBetweenDates(data.created_at, now()) > 1;
+  const isTimeout = !isReady && minutesBetweenDates(data.created_at, now()) > 5;
+  const finalStatus = isTimeout ? 'TIMEOUT' : data.package_status;
 
   const handleOpenDelete = () => {
     setDisplayDelete(true);
@@ -170,11 +176,16 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
     <>
       <ListItem divider={true} style={{ ...styles.item }}>
         <ListItemIcon>
-          {isProgress && (
+          {isProgress && !isTimeout && (
             <CircularProgress
               size={20}
               color='inherit'
             />
+          )}
+          {isProgress && isTimeout && (
+          <FileOutline
+            color='inherit'
+          />
           )}
           {!isProgress && (
             <FileOutline
@@ -191,13 +202,13 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}>
                 <Chip
                   style={{
-                    color: packageStatusColors[data.package_status],
-                    borderColor: packageStatusColors[data.package_status],
-                    backgroundColor: hexToRGB(packageStatusColors[data.package_status]),
+                    color: packageStatusColors[finalStatus],
+                    borderColor: packageStatusColors[finalStatus],
+                    backgroundColor: hexToRGB(packageStatusColors[finalStatus]),
                     ...styles.chipInList,
                     ...styles.label,
                   }}
-                  label={data.package_status}
+                  label={t_i18n(finalStatus)}
                 />
               </div>
               <div
@@ -209,17 +220,17 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           }
         />
         <ListItemSecondaryAction>
-          <Tooltip title={t_i18n('Force download on this support package')}>
+          {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
             <span>
-              <IconButton onClick={handleForceZip}>
+              <IconButton disabled={!isTooLong} onClick={handleForceZip}>
                 <DownloadingOutlined fontSize="small" />
               </IconButton>
             </span>
-          </Tooltip>
-          <Tooltip title={t_i18n('Download this support package')}>
+          </Tooltip>}
+          {isReady && <Tooltip title={t_i18n('Download this support package')}>
             <span>
               <IconButton
-                disabled={isProgress || !data.package_url}
+                disabled={!data.package_url}
                 href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
                   data.package_url || '',
                 )}`}
@@ -227,11 +238,11 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 <GetAppOutlined fontSize="small" />
               </IconButton>
             </span>
-          </Tooltip>
+          </Tooltip>}
           <Tooltip title={t_i18n('Delete this support package')}>
             <span>
               <IconButton
-                disabled={false}
+                disabled={!isReady && !isTooLong}
                 color='inherit'
                 onClick={handleOpenDelete}
                 size="small"

@@ -300,7 +300,6 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
     overrides: [],
   },
 };
-
 export interface AuthorizedMember { id: string, access_right: string }
 
 class TracingContext {

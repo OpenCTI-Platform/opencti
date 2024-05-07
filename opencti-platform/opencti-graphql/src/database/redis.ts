@@ -850,3 +850,38 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
   });
 };
 // endregion
+
+// region - support package handling
+export const SUPPORT_NODE_STATUS_IN_PROGRESS = 0;
+export const SUPPORT_NODE_STATUS_READY = 10;
+export const SUPPORT_NODE_STATUS_IN_ERROR = 100;
+
+/**
+ * Add or update for a given support package, one node status.
+ * @param supportPackageId
+ * @param nodeId
+ * @param nodeStatus one of SUPPORT_NODE_STATUS_IN_PROGRESS, SUPPORT_NODE_STATUS_READY, SUPPORT_NODE_STATUS_IN_ERROR
+ */
+export const redisStoreSupportPackageNodeStatus = (supportPackageId:string, nodeId: string, nodeStatus: number) => {
+  const setKeyId = `support:${supportPackageId}`;
+  // redis score =  nodeStatus
+  // redis member = nodeId
+  return getClientBase().zadd(setKeyId, nodeStatus, nodeId);
+};
+
+/**
+ * Count for a support package the number of node with a status.
+ * @param supportPackageId
+ * @param nodeStatus
+ */
+export const redisCountSupportPackageNodeWithStatus = (supportPackageId: string, nodeStatus: number) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().zcount(setKeyId, nodeStatus, nodeStatus);
+};
+
+export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) => {
+  const setKeyId = `support:${supportPackageId}`;
+  return getClientBase().del(setKeyId);
+};
+
+// endregion - support package handling

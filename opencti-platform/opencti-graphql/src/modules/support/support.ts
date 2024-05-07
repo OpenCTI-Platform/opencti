@@ -55,17 +55,6 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
       upsert: false,
       isFilterable: false },
     {
-      name: 'nodes_status',
-      label: 'Package upload status on each node',
-      type: 'object',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: true,
-      isFilterable: false,
-      format: 'flat'
-    },
-    {
       name: 'nodes_count',
       label: 'Number of nodes in cluster',
       type: 'numeric',

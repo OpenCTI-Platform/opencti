@@ -20,8 +20,8 @@ export const onSupportPackageMessage = async (event: { instance: BasicStoreEntit
   logApp.info(`[OPENCTI-MODULE] Support Package got event. ${event.instance.id} on node ${NODE_INSTANCE_ID}`);
   try {
     if (event.instance.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
-      await wait(Math.floor(Math.random() * 500));
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.InProgress);
+      await wait(5000); // Wait for all nodes to register in Redis
       await sendCurrentNodeSupportLogToS3(context, SYSTEM_USER, event.instance as StoreEntitySupportPackage);
       await registerNodeInSupportPackage(context, SYSTEM_USER, event.instance.id, PackageStatus.Ready);
     } else {

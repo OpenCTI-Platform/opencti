@@ -5,6 +5,7 @@ import { ADMIN_USER } from '../../utils/testQuery';
 import type { AuthContext } from '../../../src/types/user';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import type { BasicStoreEntityDecayRule } from '../../../src/modules/decayRule/decayRule-types';
+import { PackageStatus } from '../../../src/generated/graphql';
 
 const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'supportPackageListener-test', otp_mandatory: false };
 describe('SupportPackage listener standard behavior', () => {
@@ -14,7 +15,7 @@ describe('SupportPackage listener standard behavior', () => {
     await onSupportPackageMessage({ instance: supportPackage });
 
     const supportPackageEntity = await findPackageById(adminContext, ADMIN_USER, supportPackage.id);
-    expect(supportPackageEntity.nodes_status.length).toBe(1);
+    expect(supportPackageEntity.package_status).toBe(PackageStatus.Ready);
   });
 });
 

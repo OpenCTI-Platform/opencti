@@ -8,7 +8,6 @@ type SupportPackage implements InternalObject & BasicObject {
     package_status: PackageStatus!
     package_url: String
     package_upload_dir: String
-    nodes_status: [SupportNodeStatus]
     nodes_count: Int!
     createdBy: Individual
     creators: [Creator!]
@@ -17,11 +16,6 @@ type SupportPackage implements InternalObject & BasicObject {
 type SupportPackageConnection {
     pageInfo: PageInfo!
     edges: [SupportPackageEdge!]!
-}
-
-type SupportNodeStatus {
-    node_id: String!
-    package_status: PackageStatus!
 }
 
 type SupportPackageEdge {

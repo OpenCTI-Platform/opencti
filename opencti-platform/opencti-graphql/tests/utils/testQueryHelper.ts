@@ -4,6 +4,7 @@ import type { AxiosInstance } from 'axios';
 import { createUnauthenticatedClient, executeInternalQuery, queryAsAdmin } from './testQuery';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { downloadFile, streamConverter } from '../../src/database/file-storage';
+import { logApp } from '../../src/config/conf';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -45,6 +46,7 @@ export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
+  logApp.info(`[TEST] request on storage file ${storageId}`);
   const stream = await downloadFile(storageId);
   return streamConverter(stream);
 };
