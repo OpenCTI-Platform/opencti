@@ -62,8 +62,8 @@ jobs:
           BACK_END_URL: http://opencti-e2e-start:4500
           E2E_TEST: true
         run: |
-          apt-get update
-          apt-get -y install netcat-traditional
+          sudo apt-get update
+          sudo apt-get -y install netcat-traditional
           npx playwright install --with-deps chromium
           yarn test:e2e
 
