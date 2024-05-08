@@ -174,33 +174,29 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
   logApp.info(`[OPENCTI-MODULE] creating zip on node ${NODE_INSTANCE_ID}`);
   const zipLocalRootFolder = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id);
   const zipLocalFullFolder: string = join(zipLocalRootFolder, NODE_INSTANCE_ID);
-
   if (!fs.existsSync(zipLocalFullFolder)) {
     fs.mkdirSync(zipLocalFullFolder, { recursive: true });
   }
-
+  // Get all support files
   await downloadAllLogFiles(user, `${entity.package_upload_dir}/`, zipLocalFullFolder);
-
+  // Build the zip
   const zipName = `${entity.id}.zip`;
   const zipFullpath = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName);
-  // FIXME I'm quite sure that we can generate a zip steam without writing on filesystem.
-  await archiveFolderToZip(zipLocalFullFolder, zipFullpath);
-
-  const updatedEntity2 = await uploadArchivedSupportPackageToS3(context, user, SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName, entity);
-
+  await archiveFolderToZip(zipLocalFullFolder, zipFullpath); // Check if zip steam can be created without writing on filesystem.
+  // Upload the support package
+  const updatedArchive = await uploadArchivedSupportPackageToS3(context, user, SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName, entity);
   // Cleaning zip folder and zip file locally
   if (cleanupFiles) {
     if (fs.existsSync(zipLocalRootFolder)) {
       fs.rmSync(zipLocalRootFolder, { recursive: true, force: true });
     }
-
-    if (fs.existsSync(zipLocalFullFolder)) {
-      fs.rmSync(zipLocalFullFolder, { recursive: true, force: true });
+    if (fs.existsSync(zipFullpath)) {
+      fs.rmSync(zipFullpath, { recursive: true, force: true });
     }
   }
-
+  // Update the support package link
   const updateInput = [
-    { key: 'package_url', value: [updatedEntity2.package_url], operation: EditOperation.Replace }
+    { key: 'package_url', value: [updatedArchive.package_url], operation: EditOperation.Replace }
   ];
   await updateAttribute(context, user, entity.id, ENTITY_TYPE_SUPPORT_PACKAGE, updateInput);
 };
