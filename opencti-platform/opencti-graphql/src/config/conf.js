@@ -204,11 +204,10 @@ const addBasicMetaInformation = (category, error, meta) => {
   return { category, version: PLATFORM_VERSION, ...logMeta };
 };
 
-// {"category":"APP", genre:"TECHNICAL", "level":"info","message":"xxxx","timestamp":"date","version":"5.12.9", "attributes": {}}
 export const logApp = {
   _log: (level, message, error, meta = {}) => {
     if (appLogTransports.length > 0) {
-      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, meta));
+      appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
     }
   },
   _logWithError: (level, messageOrError, meta = {}) => {
@@ -220,7 +219,7 @@ export const logApp = {
       message = 'Platform unmanaged direct error';
     }
     logApp._log(level, message, error, meta);
-    logSupport._log(level, message, error, meta);
+    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
   },
   debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
   info: (message, meta = {}) => logApp._log('info', message, null, meta),
@@ -242,12 +241,13 @@ export const logAudit = {
   error: (user, operation, meta = {}) => logAudit._log('error', user, operation, meta),
 };
 
-const LOG_SUPPORT = 'SUPPORT';
-export const logSupport = {
+export const logFrontend = {
   _log: (level, message, error, meta = {}) => {
-    supportLogger.log(level, message, addBasicMetaInformation(LOG_SUPPORT, error, meta));
+    const info = { ...meta, source: 'frontend' };
+    appLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, info));
+    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, info));
   },
-  warn: (message, meta = {}) => logSupport._log('warn', message, null, meta),
+  error: (message, meta = {}) => logFrontend._log('error', message, null, meta),
 };
 
 export const logTelemetry = {

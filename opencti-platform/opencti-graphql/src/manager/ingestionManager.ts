@@ -341,7 +341,7 @@ const csvExecutor = async (context: AuthContext) => {
     const ingestion = ingestions[i];
     const ingestionPromise = csvDataHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] execution error for ${ingestion.name} : ${e}`, { error: e });
+        logApp.error('[OPENCTI-MODULE] Ingestion manager execution error', { error: e, name: ingestion.name });
       });
     ingestionPromises.push(ingestionPromise);
   }

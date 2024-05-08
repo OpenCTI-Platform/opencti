@@ -1,8 +1,6 @@
-import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
-// eslint-disable-next-line import/extensions
-import { stripIgnoredCharacters } from 'graphql/index.js';
+import { filter, head, includes, isEmpty, isNil } from 'ramda';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { ALREADY_DELETED_ERROR, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR, VALIDATION_ERROR } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -11,39 +9,52 @@ const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
 };
 
-const resolveKeyPromises = async (object) => {
-  const resolvedObject = {};
-  const entries = Object.entries(object).filter(([, value]) => value && typeof value.then === 'function');
-  const values = await Promise.all(entries.map(([, value]) => value));
-  entries.forEach(([key], index) => {
-    resolvedObject[key] = values[index];
-  });
-  return { ...object, ...resolvedObject };
-};
-
-const tryResolveKeyPromises = async (data) => {
-  try {
-    return [await resolveKeyPromises(data), undefined];
-  } catch (e) {
-    return [data, e];
-  }
-};
-
 const API_CALL_MESSAGE = 'GRAPHQL_API'; // If you touch this, you need to change the performance agent
 const perfLog = booleanConf('app:performance_logger', false);
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
+
+const graphQLNodeParser = (node) => {
+  const result = [];
+  try {
+    if (node.kind === 'Field') {
+      const data = { name: node.name?.value, alias: node.alias?.value };
+      data.arguments = (node.arguments ?? []).map((arg) => graphQLNodeParser(arg));
+      result.push(data);
+    }
+    if (node.kind === 'Argument') {
+      const data = { name: node.name.value, alias: node.alias?.value };
+      if (node.value.kind === 'ObjectValue' || node.value.kind === 'ObjectField') {
+        data.value = graphQLNodeParser(node.value);
+      } else { // Direct value
+        data.type = node.value.kind;
+        data.is_empty = data.type === 'ListValue' ? isEmptyField(node.value.values) : isEmptyField(node.value.value);
+      }
+      result.push(data);
+    }
+    if (node.kind === 'ObjectField') {
+      const data = { name: node.name.value, alias: node.alias?.value };
+      data.type = node.value.kind;
+      data.is_empty = data.type === 'ListValue' ? isEmptyField(node.value.values) : isEmptyField(node.value.value);
+      result.push(data);
+    }
+    if (node.kind === 'ObjectValue') {
+      const data = { values: (node.fields ?? []).map((arg) => graphQLNodeParser(arg)) };
+      result.push(data);
+    }
+  } catch {
+    // Node fail to be parsed
+  }
+  return result;
+};
+
 export default {
   requestDidStart: /* v8 ignore next */ () => {
     const start = Date.now();
-    let op;
     return {
-      didResolveOperation: (context) => {
-        op = context.operationName;
-      },
       willSendResponse: async (context) => {
-        const isCallError = context.errors && context.errors.length > 0;
         const stop = Date.now();
         const elapsed = stop - start;
+        const isCallError = context.errors && context.errors.length > 0;
         if (!isCallError && !perfLog) {
           return;
         }
@@ -52,7 +63,6 @@ export default {
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
         const origin = contextUser ? contextUser.origin : undefined;
-        const [variables] = await tryResolveKeyPromises(contextVariables);
         // Compute inner relations
         let innerRelationCount = 0;
         if (isWrite) {
@@ -78,15 +88,14 @@ export default {
         const callMetaData = {
           user: origin,
           type: operationType + (isCallError ? '_ERROR' : ''),
-          operation_query: stripIgnoredCharacters(context.request.query),
           inner_relation_creation: innerRelationCount,
-          operation: op || 'Unspecified',
+          operation: context.request.operationName ?? 'Unspecified',
           time: elapsed,
-          variables,
           size,
         };
         if (isCallError) {
           const currentError = head(context.errors);
+          callMetaData.query_attributes = (currentError.nodes ?? []).map((node) => graphQLNodeParser(node));
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && ![
             UNSUPPORTED_ERROR,
@@ -101,7 +110,7 @@ export default {
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall) {
-            logApp.warn(callError, dissoc('variables', callMetaData));
+            logApp.warn(callError, callMetaData);
           } else if (callError.name === FORBIDDEN_ACCESS) {
             await publishUserAction({
               user: contextUser,

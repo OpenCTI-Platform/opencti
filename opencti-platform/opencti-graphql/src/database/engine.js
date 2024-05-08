@@ -3038,21 +3038,22 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
     indexParams = { ...indexParams, pipeline };
   }
   await engine.index(indexParams).catch((err) => {
-    throw DatabaseError('Simple indexing fail', { cause: err, body: documentBody });
+    throw DatabaseError('Simple indexing fail', { cause: err, internalId, entityType });
   });
   return documentBody;
 };
 /* v8 ignore next */
-export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
+export const elUpdate = (indexName, internalId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
+  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   return engine.update({
-    id: documentId,
+    id: internalId,
     index: indexName,
     retry_on_conflict: retry,
     timeout: BULK_TIMEOUT,
     refresh: true,
     body: documentBody,
   }).catch((err) => {
-    throw DatabaseError('Update indexing fail', { cause: err, documentId, body: documentBody });
+    throw DatabaseError('Update indexing fail', { cause: err, internalId, entityType });
   });
 };
 export const elReplace = (indexName, documentId, documentBody) => {
@@ -3073,14 +3074,14 @@ export const elReplace = (indexName, documentId, documentBody) => {
     script: { source, params: doc },
   });
 };
-export const elDelete = (indexName, documentId) => {
+export const elDelete = (indexName, internalId) => {
   return engine.delete({
-    id: documentId,
+    id: internalId,
     index: indexName,
     timeout: BULK_TIMEOUT,
     refresh: true,
   }).catch((err) => {
-    throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
+    throw DatabaseError('Deleting indexing fail', { cause: err, internalId });
   });
 };
 
@@ -3342,7 +3343,11 @@ export const prepareElementForIndexing = (element) => {
 };
 const prepareRelation = (thing) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
-    throw DatabaseError('Cant index relation connections without from or to', { relation: thing });
+    throw DatabaseError('Cant index relation connections without from or to', {
+      id: thing.internal_id,
+      fromId: thing.fromId,
+      toId: thing.toId,
+    });
   }
   const connections = [];
   if (!thing.from || !thing.to) {

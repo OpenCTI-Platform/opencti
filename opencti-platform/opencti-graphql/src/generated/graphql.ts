@@ -12499,6 +12499,7 @@ export type Mutation = {
   feedbackAdd?: Maybe<Feedback>;
   feedbackDelete?: Maybe<Scalars['ID']['output']>;
   feedbackEditAuthorizedMembers?: Maybe<Feedback>;
+  frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -13317,6 +13318,13 @@ export type MutationFeedbackDeleteArgs = {
 export type MutationFeedbackEditAuthorizedMembersArgs = {
   id: Scalars['ID']['input'];
   input?: InputMaybe<Array<MemberAccessInput>>;
+};
+
+
+export type MutationFrontendErrorLogArgs = {
+  codeStack?: InputMaybe<Scalars['String']['input']>;
+  componentStack?: InputMaybe<Scalars['String']['input']>;
+  message: Scalars['String']['input'];
 };
 
 
@@ -34364,6 +34372,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedbackAdd?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackAddArgs, 'input'>>;
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
   feedbackEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackEditAuthorizedMembersArgs, 'id'>>;
+  frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;

@@ -182,7 +182,7 @@ export const createObservablesFromIndicator = async (
       const createdObservable = await createEntity(context, user, observableInput, observable.type);
       observablesToLink.push(createdObservable.id);
     } catch (err) {
-      logApp.error(err, { input: observableInput });
+      logApp.error('[API] Create observable from indicator fail', { index, cause: err });
     }
   }
   await Promise.all(

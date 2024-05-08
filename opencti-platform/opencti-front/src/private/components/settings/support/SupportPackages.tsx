@@ -10,6 +10,7 @@ import {
 } from '@components/settings/support/__generated__/SupportPackageLinesPaginationQuery.graphql';
 import SupportPackageLines, { supportPackageLinesQuery } from '@components/settings/support/SupportPackageLines';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
@@ -143,6 +144,14 @@ const SupportPackages = () => {
                 {t_i18n('Generate Support Package')}
               </Button>
               <div className="clearfix"/>
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+              >
+                {t_i18n('Even if we do our best to prevent logging any data, the support package may contains some sensitive information that you may not want to share with everyone.')}<br/>
+                {t_i18n('Before creating a ticket with your support package takes some time to check if you can safely share the content depending of your security policy.')}
+              </Alert>
               <Paper variant="outlined" style={{
                 height: '100%',
                 minHeight: '100%',

@@ -12680,6 +12680,7 @@ type Mutation {
   ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS])
 
   ######## INTERNAL OBJECT ENTITIES
+  frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
   token(input: UserLoginInput): String @public # Use for login
   otpActivation(input: UserOTPActivationInput): MeUser @auth
   otpDeactivation: MeUser @auth

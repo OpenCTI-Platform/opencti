@@ -1347,7 +1347,7 @@ export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.Sti
 const convertToStix = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
-    throw UnsupportedError('Type cannot be converted to Stix', { type, instance });
+    throw UnsupportedError('Type cannot be converted to Stix', { type });
   }
   // SRO: relations and sightings
   if (isBasicRelationship(type)) {
@@ -1565,7 +1565,7 @@ export const convertStoreToStix = (instance: StoreCommon): S.StixObject => {
   const converted = convertToStix(instance);
   const stix = cleanObject(converted);
   if (!isValidStix(stix)) {
-    throw FunctionalError('Invalid stix data conversion', { data: instance });
+    throw FunctionalError('Invalid stix data conversion', { id: instance.standard_id, type: instance.entity_type });
   }
   return stix;
 };

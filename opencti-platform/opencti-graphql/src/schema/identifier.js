@@ -268,7 +268,7 @@ export const idGen = (type, raw, data, namespace) => {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
     const missingKeys = properties.map((p) => p.src).join(' - ');
-    throw UnsupportedError(`Missing required elements for ${type} creation (${missingKeys})`, { data: raw, properties });
+    throw UnsupportedError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
   // In some cases like TLP, standard id are fixed by the community
   const findStaticId = getStaticIdFromData(data);

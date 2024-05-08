@@ -730,7 +730,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     // In case of missing from / to, fail directly
     const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
-      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds });
     }
     // In case of missing reference NOT from or to, we reject twice before accepting
     // TODO this retry must be removed in favor of reworking the workers synchronization
@@ -740,7 +740,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber <= 2) {
-      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIdsNotDefault });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault });
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
@@ -767,16 +767,14 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw MissingReferenceError({ context: 'Missing markings', input });
+        throw MissingReferenceError('User trying to create the data has missing markings');
       }
     }
     // Check if available created_by is a correct identity
     const inputCreatedBy = inputResolved[INPUT_CREATED_BY];
     if (inputCreatedBy) {
       if (!isStixDomainObjectIdentity(inputCreatedBy.entity_type)) {
-        throw FunctionalError('CreatedBy relation must be an Identity entity.', {
-          createdBy: inputCreatedBy
-        });
+        throw FunctionalError('CreatedBy relation must be an Identity entity');
       }
     }
     return inputResolved;
@@ -1547,7 +1545,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
   const fromVal = R.head(R.find((e) => e.key === from, inputs)?.value || [instance[from]]);
   const toVal = R.head(R.find((e) => e.key === to, inputs)?.value || [instance[to]]);
   if (utcDate(fromVal) > utcDate(toVal)) {
-    const data = { inputs, [from]: fromVal, [to]: toVal };
+    const data = { [from]: fromVal, [to]: toVal };
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
@@ -2638,7 +2636,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
         // If relation already exist, we fail
         throw UnsupportedError('Relation cant be created (single cardinality)', {
-          relationshipType,
+          type: relationshipType,
           fromId: from.internal_id,
         });
       }

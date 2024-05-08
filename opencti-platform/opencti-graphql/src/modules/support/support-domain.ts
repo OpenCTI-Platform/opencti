@@ -8,7 +8,6 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import {
   BUS_TOPICS,
   logApp,
-  logSupport,
   NODE_INSTANCE_ID,
   SUPPORT_LOG_FILE_PREFIX,
   SUPPORT_LOG_RELATIVE_LOCAL_DIR,
@@ -53,7 +52,7 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QuerySupport
 };
 
 export const deleteSupportPackage = async (context: AuthContext, user: AuthUser, supportPackageId: string) => {
-  logApp.info(`[OPENCTI-MODULE] - DELETE support package ${supportPackageId}.`);
+  logApp.info('[OPENCTI-MODULE] - DELETE support package', { id: supportPackageId });
   await redisDeleteSupportPackageNodeStatus(supportPackageId);
   return deleteInternalObject(context, user, supportPackageId, ENTITY_TYPE_SUPPORT_PACKAGE);
 };
@@ -108,21 +107,21 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
  * @param entity
  */
 export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: AuthUser, entity: StoreEntitySupportPackage) => {
-  logSupport.warn(`Generating support package on node ${NODE_INSTANCE_ID}`);
-  logApp.info(`getLatestSupportLogFile - Looking inside ${SUPPORT_LOG_RELATIVE_LOCAL_DIR} !`);
+  logApp.info('Generating support package', { node: NODE_INSTANCE_ID });
+  logApp.info('getLatestSupportLogFile', { dir: SUPPORT_LOG_RELATIVE_LOCAL_DIR });
   const supportFiles = findAllSupportFiles(fs.readdirSync(SUPPORT_LOG_RELATIVE_LOCAL_DIR), SUPPORT_LOG_FILE_PREFIX);
   const telemetryFiles = findAllSupportFiles(fs.readdirSync(TELEMETRY_LOG_RELATIVE_LOCAL_DIR), TELEMETRY_LOG_FILE_PREFIX);
   const uploadDir = getS3UploadFolder(entity.id);
   // Upload support files
   for (let i = 0; i < supportFiles.length; i += 1) {
-    logApp.info(`sendSupportLogToS3 - I have a support file ${supportFiles[i]} to send to ${uploadDir}.`);
+    logApp.info('sendSupportLogToS3', { file: supportFiles[i], dir: uploadDir });
     const s3Filename = `${supportFiles[i]}-${NODE_INSTANCE_ID}.log`;
     const file = fileToReadStream(SUPPORT_LOG_RELATIVE_LOCAL_DIR, supportFiles[i], s3Filename, 'text/plain');
     await uploadToStorage(context, user, uploadDir, file, {});
   }
   // Upload telemetry files
   for (let i = 0; i < telemetryFiles.length; i += 1) {
-    logApp.info(`sendTelemetryLogToS3 - I have a telemetry file ${telemetryFiles[i]} to send to ${uploadDir}.`);
+    logApp.info('sendTelemetryLogToS3', { file: supportFiles[i], dir: uploadDir });
     const s3Filename = `${telemetryFiles[i]}-${NODE_INSTANCE_ID}.log`;
     const file = fileToReadStream(TELEMETRY_LOG_RELATIVE_LOCAL_DIR, telemetryFiles[i], s3Filename, 'text/plain');
     await uploadToStorage(context, user, uploadDir, file, {});
@@ -131,17 +130,16 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
 
 const downloadAllLogFiles = async (user: AuthUser, s3Directory: string, localDirectory: string) => {
   const allSupportFiles = await loadedFilesListing(user, s3Directory, {});
-  logApp.info('All support files:', { allSupportFiles });
+  logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];
-    logApp.info(`Found ${supportFile?.name}`);
     if (supportFile && supportFile.name.substring(supportFile.name.length - 4, supportFile.name.length) !== '.zip') {
       const newLocalFile = join(localDirectory, `${supportFile.name}`);
       fs.closeSync(fs.openSync(newLocalFile, 'w'));
       const stream = await downloadFile(supportFile.id);
       const data = await streamConverter(stream);
       fs.writeFileSync(newLocalFile, data, {});
-      logApp.info(`OK - Writing ${supportFile?.name} in ${localDirectory}`);
+      logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
     }
   }
 };
@@ -153,12 +151,11 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
   if (fs.existsSync(zipFullpath)) {
     logApp.debug('Zip exists on filesystem, all good.');
     const uploadDirectory = getS3UploadFolder(entity.id);
-    logApp.info(`sendSupportLogToS3 - I have a support zip file ${zipPathAndName} to send to ${uploadDirectory}.`);
+    logApp.info('sendSupportLogToS3 for zip file', { file: zipPathAndName, dir: uploadDirectory });
     const { upload } = await uploadToStorage(context, user, uploadDirectory, fileToReadStream(zipFullpath, zipFileName, zipFileName, ZIP_MIME_TYPE), {});
     entityUpdated.package_url = upload.id;
-    logApp.info(`sendSupportLogToS3 - upload id: ${upload.id}`);
   } else {
-    logApp.warn(`An issue occurs when trying to archive the support package ${zipPathAndName}`);
+    logApp.warn('An issue occurs when trying to archive the support package', { zipPathAndName });
   }
   return entityUpdated;
 };
@@ -171,7 +168,7 @@ const uploadArchivedSupportPackageToS3 = async (context: AuthContext, user: Auth
  * @param entity
  */
 export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, entity: BasicStoreEntitySupportPackage) => {
-  logApp.info(`[OPENCTI-MODULE] creating zip on node ${NODE_INSTANCE_ID}`);
+  logApp.info('[OPENCTI-MODULE] creating zip', { node: NODE_INSTANCE_ID });
   const zipLocalRootFolder = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, entity.id);
   const zipLocalFullFolder: string = join(zipLocalRootFolder, NODE_INSTANCE_ID);
   if (!fs.existsSync(zipLocalFullFolder)) {
@@ -209,7 +206,7 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
  */
 export const prepareNewSupportPackage = async (context: AuthContext, user: AuthUser, input: SupportPackageAddInput) => {
   const settings = await getSettings(context);
-  logApp.info(`Starting support package generation with ${settings.platform_cluster.instances_number} nodes.`);
+  logApp.info('Starting support package generation', { number_of_nodes: settings.platform_cluster.instances_number });
   const instancesNumber = settings.platform_cluster.instances_number;
 
   const defaultOps = {
@@ -237,7 +234,7 @@ export const prepareNewSupportPackage = async (context: AuthContext, user: AuthU
  */
 export const addSupportPackage = async (context: AuthContext, user: AuthUser, input: SupportPackageAddInput) => {
   // Using  logSupport.warn on purpose to have the package date and time generation in support logs
-  logSupport.warn(`Support Package ${input.name} requested`);
+  logApp.info('Support Package requested', { name: input.name });
   const supportDataCreated = await prepareNewSupportPackage(context, user, input);
 
   // for listener see supportPackageListener
@@ -266,7 +263,7 @@ export const requestZipPackage = async (context: AuthContext, user: AuthUser, su
  * @param newStatus
  */
 export const registerNodeInSupportPackage = async (context: AuthContext, user: AuthUser, packageId: string, newStatus: PackageStatus) => {
-  logApp.info(`[OPENCTI-MODULE] Updating Support Package ${packageId} on node ${NODE_INSTANCE_ID} with status ${newStatus}`);
+  logApp.info('[OPENCTI-MODULE] Updating Support Package', { packageId, node: NODE_INSTANCE_ID, status: newStatus });
   const actualPackage = await findById(context, user, packageId);
   if (actualPackage) {
     let redisScore;
