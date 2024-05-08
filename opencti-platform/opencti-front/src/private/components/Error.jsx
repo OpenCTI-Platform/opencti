@@ -3,19 +3,23 @@ import { includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import { graphql } from 'react-relay';
+import { Link } from 'react-router-dom';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
+import { commitMutation } from '../../relay/environment';
 
 // Really simple error display
 export const SimpleError = () => {
   const { t_i18n } = useFormatter();
 
   return (
-    <div style={{ paddingTop: 28 }}>
+    <div style={{ paddingTop: 10 }}>
       <Alert severity="error">
-        <AlertTitle style={{ marginBottom: 0 }}>{t_i18n('Error')}</AlertTitle>
         <span style={{ marginRight: 10 }}>
-          {t_i18n('An unknown error occurred. Please contact your administrator or the OpenCTI maintainers.')}
+          {t_i18n('An unknown error occurred. Please provide a ')}
+          <Link to="/dashboard/settings/support">{t_i18n('support package')}</Link>
+          {t_i18n(' to your administrator or OpenCTI maintainers')}
         </span>
       </Alert>
     </div>
@@ -29,12 +33,38 @@ export const DedicatedWarning = ({ title, description }) => (
   </Alert>
 );
 
+const frontendErrorLogMutation = graphql`
+  mutation ErrorFrontendLogMutation($message: String!, $codeStack: String, $componentStack: String) {
+    frontendErrorLog(message: $message, codeStack: $codeStack, componentStack: $componentStack)
+  }
+`;
+
 class ErrorBoundaryComponent extends React.Component {
   state = { error: null };
 
   static getDerivedStateFromError(error) {
     // Update state so the next render will show the fallback UI.
     return { error };
+  }
+
+  // eslint-disable-next-line
+  componentDidCatch(error, errorInfo) {
+    try {
+      const isNetworkError = this.state.error.res;
+      if (!isNetworkError) {
+        // If direct javascript error, sent the error for back logging
+        commitMutation({
+          mutation: frontendErrorLogMutation,
+          variables: {
+            message: String(error),
+            codeStack: error.stack,
+            componentStack: errorInfo.componentStack,
+          },
+        });
+      }
+    } catch {
+      // If error fail to be reported, do nothing
+    }
   }
 
   render() {

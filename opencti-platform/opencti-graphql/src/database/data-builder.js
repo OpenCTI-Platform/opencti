@@ -219,7 +219,8 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }
@@ -232,7 +233,8 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }
@@ -247,7 +249,8 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     if (data.first_seen > data.last_seen) {
       throw DatabaseError('You cant create a relation with last_seen less than first_seen', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }
@@ -339,7 +342,8 @@ const buildRelationInput = (input) => {
     if (relationAttributes.start_time > relationAttributes.stop_time) {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }
@@ -353,7 +357,8 @@ const buildRelationInput = (input) => {
     if (relationAttributes.start_time > relationAttributes.stop_time) {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }
@@ -368,7 +373,8 @@ const buildRelationInput = (input) => {
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
       throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
         from: input.fromId,
-        input,
+        to: input.toId,
+        type: relationshipType
       });
     }
   }

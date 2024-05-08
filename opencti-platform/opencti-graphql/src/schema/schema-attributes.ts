@@ -284,7 +284,7 @@ export const isMultipleAttribute = (entityType: string, k: string): boolean => (
 const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
   const isMandatory = isMandatoryAttributeDefinition(schemaDef);
   if (isMandatory && R.isNil(input)) {
-    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`, { value: input });
+    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`);
   }
 
   if (isNonFlatObjectAttributeDefinition(schemaDef)) {
@@ -293,10 +293,10 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
     // check 'multiple' constraint
     if (schemaDef.multiple && !Array.isArray(input)) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`, { value: input });
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`);
     }
     if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`, { value: input });
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`);
     }
 
     const inputValues = Array.isArray(input) ? input : [input];
@@ -306,7 +306,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
       schemaDef.mappings.forEach((mapping) => {
         // mandatory fields: the value must have a field with this name
         if (isMandatoryAttributeDefinition(mapping) && !valueKeys.includes(mapping.name)) {
-          throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`, { value });
+          throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`);
         }
         // ...we might add more constraints such as a numeric range.
 
@@ -320,7 +320,7 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
 
 export const validateDataBeforeIndexing = (element: any) => {
   if (!element.entity_type) {
-    throw FunctionalError('Validation against schema failed: element has no entity_type', { value: element });
+    throw FunctionalError('Validation against schema failed: element has no entity_type');
   }
 
   // just check the given entity_type is in schema ; this call would throw a DatabaseError
@@ -328,7 +328,7 @@ export const validateDataBeforeIndexing = (element: any) => {
     schemaAttributesDefinition.getAttributes(element.entity_type);
   } catch (e: any) {
     if (e.name === 'DATABASE_ERROR') {
-      throw FunctionalError('Validation against schema failed: this entity_type is not supported', { value: element });
+      throw FunctionalError('Validation against schema failed: this entity_type is not supported', { type: element.entity_type });
     }
     throw e;
   }

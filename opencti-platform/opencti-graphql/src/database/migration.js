@@ -94,7 +94,7 @@ export const applyMigration = (context) => {
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
       if (err) {
-        throw DatabaseError('[MIGRATION] Error applying migration', err);
+        throw DatabaseError('[MIGRATION] Error applying migration', { cause: err });
       }
       // Set last run date on the set
       set.lastRun = state.lastRun;

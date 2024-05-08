@@ -62,7 +62,7 @@ export const parseCsvBufferContent = (buffer: Buffer, delimiter: string, skipLin
                 parsingResult.push(parsing[0]);
               }
             } catch (err) {
-              logApp.error('Error parsing CSV line', { line, cause: err });
+              logApp.error('[CSV-PARSER] Error parsing CSV line', { cause: err });
             }
           }
           resolve(parsingResult);
