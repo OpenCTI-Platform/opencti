@@ -3,6 +3,12 @@
 Support packages are useful for troubleshooting issue that occurs on OpenCTI platform.
 Administrators can request to create and download a support package that contains recent platform error logs and usage statistics.
 
+!!! warning "Support package content"
+
+	Even if we do our best to prevent logging any data, the support package may contains some sensitive information that you may not want to share with everyone.
+    Before creating a ticket with your support package takes some time to check if you can safely share the content depending of your security policy.
+
+
 Support Package can be requested from "Settings > Support" menu.
 
 ![Support package overview](./assets/support-package-overview.png)
