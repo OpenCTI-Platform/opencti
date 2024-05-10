@@ -15,7 +15,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -192,29 +192,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 gap: 1 }}
               >
                 <Filters
-                  availableFilterKeys={[
-                    'entity_type',
-                    'workflow_id',
-                    'objectAssignee',
-                    'objects',
-                    'objectMarking',
-                    'objectLabel',
-                    'creator_id',
-                    'createdBy',
-                    'priority',
-                    'severity',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence',
-                    'indicator_types',
-                    'pattern_type',
-                    'x_opencti_main_observable_type',
-                    'fromId',
-                    'toId',
-                    'fromTypes',
-                    'toTypes',
-                  ]}
+                  availableFilterKeys={stixFilters}
                   helpers={helpers}
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />

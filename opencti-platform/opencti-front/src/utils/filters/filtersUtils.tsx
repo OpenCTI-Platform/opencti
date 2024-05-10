@@ -79,6 +79,32 @@ export const contextFilters = [
   'contextObjectMarking',
 ];
 
+// filters available in stix filtering (streams, playbooks, triggers)
+export const stixFilters = [
+  'entity_type',
+  'workflow_id',
+  'objectAssignee',
+  'objects',
+  'objectMarking',
+  'objectLabel',
+  'creator_id',
+  'createdBy',
+  'priority',
+  'severity',
+  'x_opencti_score',
+  'x_opencti_detection',
+  'revoked',
+  'confidence',
+  'indicator_types',
+  'pattern_type',
+  'x_opencti_main_observable_type',
+  'fromId',
+  'toId',
+  'fromTypes',
+  'toTypes',
+  'representative',
+];
+
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 

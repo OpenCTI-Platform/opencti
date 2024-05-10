@@ -25,7 +25,12 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+  stixFilters
+} from '../../../../utils/filters/filtersUtils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -451,29 +456,7 @@ const PlaybookAddComponentsContent = ({
                         >
                           <Filters
                             helpers={helpers}
-                            availableFilterKeys={[
-                              'entity_type',
-                              'workflow_id',
-                              'objectAssignee',
-                              'objects',
-                              'objectMarking',
-                              'objectLabel',
-                              'creator_id',
-                              'createdBy',
-                              'priority',
-                              'severity',
-                              'x_opencti_score',
-                              'x_opencti_detection',
-                              'revoked',
-                              'confidence',
-                              'indicator_types',
-                              'pattern_type',
-                              'x_opencti_main_observable_type',
-                              'fromId',
-                              'toId',
-                              'fromTypes',
-                              'toTypes',
-                            ]}
+                            availableFilterKeys={stixFilters}
                             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                           />
                         </Box>

@@ -16,7 +16,7 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
@@ -423,29 +423,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 {(!trigger.instance_trigger
                 && (
                   <Filters
-                    availableFilterKeys={[
-                      'entity_type',
-                      'workflow_id',
-                      'objectAssignee',
-                      'objects',
-                      'objectMarking',
-                      'objectLabel',
-                      'creator_id',
-                      'createdBy',
-                      'priority',
-                      'severity',
-                      'x_opencti_score',
-                      'x_opencti_detection',
-                      'revoked',
-                      'confidence',
-                      'indicator_types',
-                      'x_opencti_main_observable_type',
-                      'pattern_type',
-                      'fromId',
-                      'toId',
-                      'fromTypes',
-                      'toTypes',
-                    ]}
+                    availableFilterKeys={stixFilters}
                     helpers={helpers}
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />

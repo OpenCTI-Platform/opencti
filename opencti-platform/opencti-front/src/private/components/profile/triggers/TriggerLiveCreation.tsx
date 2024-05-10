@@ -24,7 +24,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
@@ -246,29 +246,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         >
           {(!instance_trigger
             && <Filters
-              availableFilterKeys={[
-                'entity_type',
-                'workflow_id',
-                'objectAssignee',
-                'objects',
-                'objectMarking',
-                'objectLabel',
-                'creator_id',
-                'createdBy',
-                'priority',
-                'severity',
-                'x_opencti_score',
-                'x_opencti_detection',
-                'revoked',
-                'confidence',
-                'indicator_types',
-                'x_opencti_main_observable_type',
-                'pattern_type',
-                'fromId',
-                'toId',
-                'fromTypes',
-                'toTypes',
-              ]}
+              availableFilterKeys={stixFilters}
               helpers={helpers}
               searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                />
