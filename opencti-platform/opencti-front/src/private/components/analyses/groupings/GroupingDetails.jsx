@@ -14,7 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import StixRelationshipsHorizontalBars from '@components/common/stix_relationships/StixRelationshipsHorizontalBars';
+import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -112,7 +112,7 @@ const GroupingDetailsComponent = (props) => {
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
 
-  const dataSelection = [
+  const entitiesDidstributionDataSelection = [
     {
       label: '',
       attribute: 'entity_type',
@@ -174,9 +174,9 @@ const GroupingDetailsComponent = (props) => {
               startDate={null}
               endDate={null}
               relationshipType="object"
-              dataSelection={dataSelection}
+              dataSelection={entitiesDidstributionDataSelection}
               parameters={'Entities distribution'}
-              variant="inLine"
+              variant="inEntity"
               withExportPopover={true}
               isReadOnly={true}
             />
