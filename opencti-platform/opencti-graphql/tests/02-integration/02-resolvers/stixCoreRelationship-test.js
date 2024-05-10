@@ -75,7 +75,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
       variables: { relationship_type: ['uses'], fromId: [campaign.internal_id] },
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
-    const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { relationship_type: 'stix-relationship' } });
+    const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { relationship_type: 'stix-core-relationship' } });
     expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(25);
   });
   it('should update stixCoreRelationship', async () => {
