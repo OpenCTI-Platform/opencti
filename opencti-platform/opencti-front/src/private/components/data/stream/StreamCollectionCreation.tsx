@@ -194,7 +194,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 <Filters
                   availableFilterKeys={stixFilters}
                   helpers={helpers}
-                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
                 />
               </Box>
               <FilterIconButton
@@ -203,6 +203,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 styleNumber={2}
                 redirection
                 searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
               />
               <div className={classes.buttons}>
                 <Button

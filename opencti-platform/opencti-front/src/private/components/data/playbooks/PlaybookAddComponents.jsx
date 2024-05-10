@@ -457,14 +457,14 @@ const PlaybookAddComponentsContent = ({
                           <Filters
                             helpers={helpers}
                             availableFilterKeys={stixFilters}
-                            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
                           />
                         </Box>
                         <div className="clearfix" />
                         <FilterIconButton
                           filters={filters}
                           helpers={helpers}
-                          entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
+                          entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
                           styleNumber={2}
                           redirection
                         />

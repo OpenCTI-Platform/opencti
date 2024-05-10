@@ -27,7 +27,7 @@ import {
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
-  OBJECT_CONTAINS_FILTER,
+  OBJECT_CONTAINS_FILTER, REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
 } from '../utils/filtering/filtering-constants';
@@ -376,7 +376,7 @@ export const generateFilterKeysSchema = async () => {
   const context = executionContext('filterKeysSchema');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isNotEnterpriseEdition = isEmptyField(settings.enterprise_edition);
-  // A. build filterKeysSchema map
+  // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   registeredTypes.forEach((type) => {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
@@ -384,7 +384,8 @@ export const generateFilterKeysSchema = async () => {
     handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
   });
-  // B. add connectedToId special key (for instance triggers)
+  // B. add special types
+  // connectedToId special key (for instance triggers)
   filterKeysSchema.set('Instance', new Map([[CONNECTED_TO_INSTANCE_FILTER, {
     filterKey: CONNECTED_TO_INSTANCE_FILTER,
     type: 'id',
@@ -392,6 +393,15 @@ export const generateFilterKeysSchema = async () => {
     multiple: true,
     subEntityTypes: [],
     elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
+  }]]));
+  // representative (for streams, triggers, playbooks)
+  filterKeysSchema.set('Stix-Filtering', new Map([[REPRESENTATIVE_FILTER, {
+    filterKey: REPRESENTATIVE_FILTER,
+    type: 'string',
+    label: 'Representative',
+    multiple: true,
+    subEntityTypes: [],
+    elementsForFilterValuesSearch: [],
   }]]));
   // C. transform the filterKeysSchema map in { key, values }[]
   const flattenFilterKeysSchema: { entity_type: string, filters_schema: { filterDefinition: FilterDefinition, filterKey: string }[] }[] = [];
