@@ -22,7 +22,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
