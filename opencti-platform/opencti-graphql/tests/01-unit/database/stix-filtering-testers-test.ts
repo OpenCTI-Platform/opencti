@@ -12,6 +12,7 @@ import stixIncidents from '../../data/stream-events/stream-event-stix2-incidents
 import stixRfis from '../../data/stream-events/stream-event-stix2-rfis.json';
 import stixSightings from '../../data/stream-events/stream-event-stix2-sightings.json';
 import stixRelationships from '../../data/stream-events/stream-event-stix2-relationships.json';
+import stixObservables from '../../data/stream-events/stream-event-stix2-observables.json';
 
 import * as testers from '../../../src/utils/filtering/filtering-stix/stix-testers';
 import type { Filter } from '../../../src/generated/graphql';
@@ -693,6 +694,85 @@ describe('Stix filter testers', () => {
       } as Filter;
       expect(testers.testConnectedToSideEvents(stixRelationship, filter)).toEqual(false);
       expect(testers.testConnectedToSideEvents(stixSighting, filter)).toEqual(false);
+    });
+  });
+
+  describe('by Representative (key=representative)', () => {
+    const reportContainingTest = stixReports[0];
+    const rfiEndingWithTest = stixRfis[0];
+    const indicator = stixIndicators[1];
+    const observableEqualTest = stixObservables[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['www.xolod-teplo.ru']
+      } as Filter;
+      expect(testers.testRepresentative(indicator, filter)).toEqual(true);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['www.xolod-teplo.ru', 'test']
+      } as Filter;
+      expect(testers.testRepresentative(indicator, filter)).toEqual(false);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'eq',
+        values: ['www.xolod-teplo.ru', 'test']
+      } as Filter;
+      expect(testers.testRepresentative(indicator, filter)).toEqual(true);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(true);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'contains',
+        values: ['test']
+      } as Filter;
+      expect(testers.testRepresentative(reportContainingTest, filter)).toEqual(true);
+      expect(testers.testRepresentative(rfiEndingWithTest, filter)).toEqual(true);
+      expect(testers.testRepresentative(indicator, filter)).toEqual(false);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(true);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'ends_with',
+        values: ['test']
+      } as Filter;
+      expect(testers.testRepresentative(reportContainingTest, filter)).toEqual(false);
+      expect(testers.testRepresentative(rfiEndingWithTest, filter)).toEqual(true);
+      expect(testers.testRepresentative(indicator, filter)).toEqual(false);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(true);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'not_ends_with',
+        values: ['test']
+      } as Filter;
+      expect(testers.testRepresentative(reportContainingTest, filter)).toEqual(true);
+      expect(testers.testRepresentative(rfiEndingWithTest, filter)).toEqual(false);
+      expect(testers.testRepresentative(indicator, filter)).toEqual(true);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
+
+      filter = {
+        key: ['representative'],
+        mode: 'and',
+        operator: 'starts_with',
+        values: ['Disco Team']
+      } as Filter;
+      expect(testers.testRepresentative(stixRelationships[0], filter)).toEqual(true);
+      expect(testers.testRepresentative(rfiEndingWithTest, filter)).toEqual(false);
+      expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
     });
   });
 });
