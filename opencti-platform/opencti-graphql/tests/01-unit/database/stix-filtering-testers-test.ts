@@ -700,7 +700,7 @@ describe('Stix filter testers', () => {
   describe('by Representative (key=representative)', () => {
     const reportContainingTest = stixReports[0];
     const rfiEndingWithTest = stixRfis[0];
-    const indicator = stixIndicators[1];
+    const indicator = stixIndicators[0];
     const observableEqualTest = stixObservables[0];
 
     it('should test positive for a stix object with matching filter', () => {
@@ -724,7 +724,7 @@ describe('Stix filter testers', () => {
 
       filter = {
         key: ['representative'],
-        mode: 'and',
+        mode: 'or',
         operator: 'eq',
         values: ['www.xolod-teplo.ru', 'test']
       } as Filter;
