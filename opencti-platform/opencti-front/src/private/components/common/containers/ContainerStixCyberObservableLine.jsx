@@ -21,6 +21,8 @@ import { renderObservableValue } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -215,17 +217,19 @@ const ContainerStixCyberObservableLineComponent = (props) => {
             <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
           </Tooltip>
         ) : (
-          <ContainerStixCoreObjectPopover
-            containerId={containerId}
-            toId={node.id}
-            toStandardId={node.standard_id}
-            menuDisable={isOnlyThroughInference}
-            relationshipType="object"
-            paginationKey="Pagination_objects"
-            paginationOptions={paginationOptions}
-            selectedElements={selectedElements}
-            setSelectedElements={setSelectedElements}
-          />
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ContainerStixCoreObjectPopover
+              containerId={containerId}
+              toId={node.id}
+              toStandardId={node.standard_id}
+              menuDisable={isOnlyThroughInference}
+              relationshipType="object"
+              paginationKey="Pagination_objects"
+              paginationOptions={paginationOptions}
+              selectedElements={selectedElements}
+              setSelectedElements={setSelectedElements}
+            />
+          </Security>
         )}
       </ListItemSecondaryAction>
     </ListItem>
