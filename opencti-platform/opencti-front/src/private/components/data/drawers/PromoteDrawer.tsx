@@ -22,13 +22,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 type DrawerContainerPropsType = {
   isOpen: boolean;
-  observablesFiltered: boolean;
+  isOnlyStixCyberObservablesTypes: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  isIndicator: boolean;
+  isOnlyIndicator: boolean;
 };
 
-const PromoteDrawer = ({ isOpen, onClose, observablesFiltered, onSubmit, isIndicator }: DrawerContainerPropsType) => {
+const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit, isOnlyIndicator }: DrawerContainerPropsType) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -40,29 +40,21 @@ const PromoteDrawer = ({ isOpen, onClose, observablesFiltered, onSubmit, isIndic
     >
       <>
         <div className={classes.container}>
-          {!observablesFiltered && (
+          {isOnlyStixCyberObservablesTypes ? (
             <div>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {isIndicator
-                  ? t_i18n('This action will generate observables from the selected indicators.')
-                  : t_i18n('This action will generate indicators from the selected observables.')
-                }
-              </Alert>
-            </div>
-          )}
-          {observablesFiltered && (
-            <div>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t_i18n('Observables')}
-              </Typography>
               <Alert severity="warning" style={{ marginTop: 20 }}>
                 {t_i18n(
                   'This action will generate STIX patterns indicators from the selected observables.',
                 )}
+              </Alert>
+            </div>
+          ) : (
+            <div>
+              <Alert severity="warning" style={{ marginTop: 20 }}>
+                {isOnlyIndicator
+                  ? t_i18n('This action will generate observables from the selected indicators.')
+                  : t_i18n('This action will generate indicators from the selected observables.')
+                }
               </Alert>
             </div>
           )}

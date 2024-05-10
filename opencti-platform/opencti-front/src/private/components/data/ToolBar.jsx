@@ -1343,7 +1343,8 @@ class ToolBar extends Component {
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id);
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator', 'Stix-Cyber-Observable']);
-          const observablesFiltered = entityTypeFilterValues.length > 0
+
+          const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
 
           const promotionTypesFiltered = entityTypeFilterValues.length > 0
@@ -1354,7 +1355,7 @@ class ToolBar extends Component {
             && selectedTypes.every((type) => promotionTypes.includes(type));
 
           const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
-          const isIndicator = promoteEnabled && selectedTypes.every((type) => type === 'Indicator');
+          const isOnlyIndicator = promoteEnabled && selectedTypes.every((type) => type === 'Indicator');
 
           const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
           const filterKeysMap = new Map();
@@ -2122,9 +2123,9 @@ class ToolBar extends Component {
               <PromoteDrawer
                 isOpen={this.state.displayPromote}
                 onClose={this.handleClosePromote.bind(this)}
-                observablesFiltered={observablesFiltered}
+                isOnlyStixCyberObservablesTypes={isOnlyStixCyberObservablesTypes}
                 onSubmit={this.handleLaunchPromote.bind(this)}
-                isIndicator={isIndicator}
+                isOnlyIndicator={isOnlyIndicator}
               />
               <Drawer
                 open={this.state.displayRescan}
