@@ -2030,7 +2030,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const uniqImpactKey = uniqImpactKeys[i];
         attributesMap.set(uniqImpactKey, {
           name: uniqImpactKey,
-          updated_at: context.executionDate,
+          updated_at: now(),
           confidence: confidenceLevelToApply,
           user_id: user.internal_id,
         });
