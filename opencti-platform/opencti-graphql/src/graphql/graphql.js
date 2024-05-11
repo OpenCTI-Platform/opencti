@@ -105,9 +105,11 @@ const createApolloServer = () => {
       const executeContext = executionContext('api');
       executeContext.req = req;
       executeContext.res = res;
-      executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true';
-      executeContext.previousStandard = req.headers['previous-standard'];
-      executeContext.workId = req.headers['opencti-work-id'];
+      // Building context from request headers
+      executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
+      executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
+      executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
+      executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
       try {
         const user = await authenticateUserFromRequest(executeContext, req, res);
         if (user) {

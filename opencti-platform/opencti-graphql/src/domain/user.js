@@ -117,6 +117,7 @@ export const userWithOrigin = (req, user) => {
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
+    playbook_id: req?.headers['opencti-playbook-id']
   };
   return { ...user, origin };
 };

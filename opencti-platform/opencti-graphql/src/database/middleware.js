@@ -188,7 +188,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateRestoreMessage, generateUpdateMessage } from './generate-message';
-import { confidence, creators, xOpenctiStixIds } from '../schema/attribute-definition';
+import { confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -1918,13 +1918,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         throw FunctionalError('Observable of is not correctly formatted', { id: initial.internal_id, type: initial.entity_type });
       }
     }
-    lock.signal.throwIfAborted();
-    if (impactedInputs.length > 0) {
-      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
-    }
     // endregion
-    // region metas
+    // region handle metas
     const relationsToCreate = [];
     const relationsToDelete = [];
     const buildInstanceRelTo = (to, relType) => buildInnerRelation(initial, to, relType);
@@ -2016,13 +2011,45 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         }
       }
     }
+    // endregion
+    // region build attributes inner information
+    lock.signal.throwIfAborted();
+    const impactedKeys = impactedInputs.map((input) => input.key);
+    impactedKeys.push(...[...relationsToCreate, ...relationsToDelete].map((rel) => {
+      return schemaRelationsRefDefinition.convertDatabaseNameToInputName(updatedInstance.entity_type, rel.relationship_type);
+    }));
+    const preventAttributeFollow = [updatedAt.name, modified.name, iAliasedIds.name];
+    const uniqImpactKeys = R.uniq(impactedKeys.filter((key) => !preventAttributeFollow.includes(key)));
+    if (uniqImpactKeys.length > 0) {
+      // Impact the updated_at only if stix data is impacted
+      const updatePatch = mergeInstanceWithInputs(initial, impactedInputs);
+      const { confidenceLevelToApply } = controlUpsertInputWithUserConfidence(user, updatePatch, initial);
+      const currentAttributes = initial[iAttributes.name] ?? [];
+      const attributesMap = new Map(currentAttributes.map((obj) => [obj.name, obj]));
+      for (let i = 0; i < uniqImpactKeys.length; i += 1) {
+        const uniqImpactKey = uniqImpactKeys[i];
+        attributesMap.set(uniqImpactKey, {
+          name: uniqImpactKey,
+          updated_at: context.executionDate,
+          confidence: confidenceLevelToApply,
+          user_id: user.internal_id,
+        });
+      }
+      const attributesAtInput = { key: iAttributes.name, value: Array.from(attributesMap.values()) };
+      impactedInputs.push(attributesAtInput);
+    }
+    // endregion
+    // Impacting information
+    if (impactedInputs.length > 0) {
+      const updateAsInstance = partialInstanceWithInputs(updatedInstance, impactedInputs);
+      await elUpdateElement(updateAsInstance);
+    }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
     }
     if (relationsToCreate.length > 0) {
       await elIndexElements(context, user, initial.entity_type, relationsToCreate);
     }
-    // endregion
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
       const args = {
@@ -2334,6 +2361,20 @@ const buildRelationDeduplicationFilters = (input) => {
   return filters;
 };
 
+const isOutdatedUpdate = (context, element, attributeKey) => {
+  const attributesMap = new Map((element[iAttributes.name] ?? []).map((obj) => [obj.name, obj]));
+  const { updated_at: lastAttributeUpdateDate } = attributesMap.get(attributeKey) ?? {};
+  if (context.eventId) {
+    try {
+      const eventDate = utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
+      return lastAttributeUpdateDate && context.eventId && utcDate(lastAttributeUpdateDate).isAfter(eventDate);
+    } catch (e) {
+      logApp.error('Error evaluating event id', { attributeKey, eventId: context.eventId });
+    }
+  }
+  return false;
+};
+
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2425,6 +2466,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
+      const isOutDatedModification = isOutdatedUpdate(context, element, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const isInputWithData = isNotEmptyField(inputData);
@@ -2435,8 +2477,12 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       // 3. Data from the inputs is not empty to prevent any data cleaning
       const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
-      if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-        inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
+      if (!isOutDatedModification) {
+        if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
+          inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
+        }
+      } else {
+        logApp.warn('Discarding outdated attribute update mutation', { key: attributeKey });
       }
     }
   }
@@ -2450,44 +2496,49 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = context.synchronizedUpsert;
-      if (relDef.multiple) {
-        const currentData = element[relDef.databaseName] ?? [];
-        const isCurrentWithData = isNotEmptyField(currentData);
-        const targetData = (patchInputData ?? []).map((n) => n.internal_id);
-        // Specific case for organization restriction, has EE must be activated.
-        // If not supported, upsert of organization is not applied
-        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
-        const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
-        // If expected data is different from current data
-        if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {
-          const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
-          // In full synchro, just replace everything
-          if (isUpsertSynchro) {
-            inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-          } else if ((isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
-            || (isInputWithData && !isCurrentWithData)
-          ) {
-            // If data is provided, different from existing data, and of higher confidence
-            // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
-            // --> apply an add operation
-            inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
+      const isOutDatedModification = isOutdatedUpdate(context, element, inputField);
+      if (!isOutDatedModification) {
+        if (relDef.multiple) {
+          const currentData = element[relDef.databaseName] ?? [];
+          const isCurrentWithData = isNotEmptyField(currentData);
+          const targetData = (patchInputData ?? []).map((n) => n.internal_id);
+          // Specific case for organization restriction, has EE must be activated.
+          // If not supported, upsert of organization is not applied
+          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isNotEmptyField(settings.enterprise_edition);
+          const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
+          // If expected data is different from current data
+          if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {
+            const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
+            // In full synchro, just replace everything
+            if (isUpsertSynchro) {
+              inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
+            } else if ((isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
+                || (isInputWithData && !isCurrentWithData)
+            ) {
+              // If data is provided, different from existing data, and of higher confidence
+              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+              // --> apply an add operation
+              inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
+            }
+          }
+        } else { // not multiple
+          // If expected data is different from current data...
+          const currentData = element[relDef.databaseName];
+          const isCurrentEmptyData = isEmptyField(currentData);
+          const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
+          // ... and data can be updated:
+          // forced synchro
+          // OR the field is currently null (auto consolidation)
+          // OR the confidence matches
+          // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
+          const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
+          const updatable = isUpsertSynchro || (isInputWithData && isCurrentEmptyData) || isConfidenceMatch;
+          if (isInputDifferentFromCurrent && updatable && !isProtectedCreatedBy) {
+            inputs.push({ key: inputField, value: [patchInputData] });
           }
         }
-      } else { // not multiple
-        // If expected data is different from current data...
-        const currentData = element[relDef.databaseName];
-        const isCurrentEmptyData = isEmptyField(currentData);
-        const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
-        // ... and data can be updated:
-        // forced synchro
-        // OR the field is currently null (auto consolidation)
-        // OR the confidence matches
-        // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
-        const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-        const updatable = isUpsertSynchro || (isInputWithData && isCurrentEmptyData) || isConfidenceMatch;
-        if (isInputDifferentFromCurrent && updatable && !isProtectedCreatedBy) {
-          inputs.push({ key: inputField, value: [patchInputData] });
-        }
+      } else {
+        logApp.warn('Discarding outdated attribute update mutation', { key: inputField });
       }
     }
   }

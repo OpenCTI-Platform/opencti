@@ -13954,6 +13954,7 @@ export type MutationPlaybookReplaceNodeArgs = {
 export type MutationPlaybookStepExecutionArgs = {
   bundle: Scalars['String']['input'];
   data_instance_id: Scalars['ID']['input'];
+  event_id: Scalars['ID']['input'];
   execution_id: Scalars['ID']['input'];
   execution_start: Scalars['DateTime']['input'];
   playbook_id: Scalars['ID']['input'];
@@ -34484,7 +34485,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
-  playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
+  playbookStepExecution?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationPlaybookStepExecutionArgs, 'bundle' | 'data_instance_id' | 'event_id' | 'execution_id' | 'execution_start' | 'playbook_id' | 'previous_bundle' | 'previous_step_id' | 'step_id'>>;
   playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;

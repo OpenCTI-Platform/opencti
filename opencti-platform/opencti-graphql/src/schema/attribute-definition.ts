@@ -94,6 +94,25 @@ export const id: AttributeDefinition = {
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
 };
 
+export const iAttributes: AttributeDefinition = {
+  name: 'i_attributes',
+  label: 'Attributes',
+  type: 'object',
+  format: 'standard',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'name', label: 'Attribute name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
+    { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'user_id', label: 'Last modifier', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+  ]
+};
+
 export const internalId: AttributeDefinition = {
   name: 'internal_id',
   label: 'Internal id',

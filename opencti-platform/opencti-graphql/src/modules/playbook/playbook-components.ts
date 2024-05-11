@@ -163,9 +163,16 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   ports: [],
   configuration_schema: undefined,
   schema: async () => undefined,
-  executor: async ({ bundle }) => {
+  executor: async ({ eventId, bundle, playbookId }) => {
     const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-    await pushToPlaybook({ type: 'bundle', applicant_id: AUTOMATION_MANAGER_USER_UUID, content, update: true });
+    await pushToPlaybook({
+      type: 'bundle',
+      event_id: eventId,
+      playbook_id: playbookId,
+      applicant_id: AUTOMATION_MANAGER_USER_UUID,
+      content,
+      update: true
+    });
     return { output_port: undefined, bundle, forceBundleTracking: true };
   }
 };
@@ -276,12 +283,14 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     const schemaElement = { properties: { connector: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
-  notify: async ({ executionId, playbookId, playbookNode, previousPlaybookNodeId, dataInstanceId, bundle }) => {
+  notify: async ({ executionId, eventId, playbookId, playbookNode,
+    previousPlaybookNodeId, dataInstanceId, bundle }) => {
     if (playbookNode.configuration.connector) {
       const message = {
         internal: {
           work_id: null, // No work id associated
           playbook: {
+            event_id: eventId,
             execution_id: executionId,
             playbook_id: playbookId,
             data_instance_id: dataInstanceId,
