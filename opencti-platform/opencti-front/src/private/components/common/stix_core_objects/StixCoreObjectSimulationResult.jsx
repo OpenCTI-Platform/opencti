@@ -116,7 +116,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
   const { oBasConfigured, oBasDisableDisplay } = useXTM();
   const [simulationType, setSimulationType] = useState('technical');
   const [selection, setSelection] = useState('random');
-  const [interval, setInterval] = useState(5);
+  const [interval, setInterval] = useState(2);
   const [useGenAI, setUseGenAI] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
@@ -127,7 +127,7 @@ const StixCoreObjectSimulationResult = ({ id, type }) => {
 
   const handleClose = () => {
     setSimulationType('technical');
-    setInterval(5);
+    setInterval(2);
     setUseGenAI(false);
     helpers.handleClearAllFilters();
     setOpen(false);
