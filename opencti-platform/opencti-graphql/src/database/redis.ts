@@ -419,7 +419,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
           // between the extension and release.
         });
       }
-      // Second, clear the auto extends
+      // Second, clear the auto extends possibly starts by the first step
       clearTimeout(timeout);
       // Last, unlock in redis
       try {
