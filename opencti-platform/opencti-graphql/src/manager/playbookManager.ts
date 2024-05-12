@@ -102,6 +102,7 @@ const registerStepObservation = async (data: ObservationFn) => {
 };
 
 type ExecutorFn = {
+  eventId: string,
   executionId: string,
   playbookId: string,
   dataInstanceId: string,
@@ -115,6 +116,7 @@ type ExecutorFn = {
   }
 };
 export const playbookExecutor = async ({
+  eventId,
   executionId,
   playbookId,
   dataInstanceId,
@@ -133,6 +135,7 @@ export const playbookExecutor = async ({
     const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
     try {
       execution = await nextStep.component.executor({
+        eventId,
         executionId,
         dataInstanceId,
         playbookId,
@@ -200,6 +203,7 @@ export const playbookExecutor = async ({
         const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
         const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
         await playbookExecutor({
+          eventId,
           executionId,
           playbookId,
           dataInstanceId,
@@ -219,6 +223,7 @@ export const playbookExecutor = async ({
     // Execution will be continued through an external API call
     try {
       await nextStep.component.notify({
+        eventId,
         executionId,
         dataInstanceId,
         playbookId,
@@ -242,42 +247,53 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
     const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { data, type } } = streamEvent;
+      const { id: eventId, data: { data, type, origin } } = streamEvent;
       // For each event we need to check ifs
       for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
         const playbook = playbooks[playbookIndex];
+        // Execute only of definition is available
         if (playbook.playbook_definition) {
-          const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
-          // 01. Find the starting point of the playbook
-          const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-          if (!instance) {
-            throw UnsupportedError('Invalid playbook, entry point needed');
-          }
-          const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-          const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
-          const jsonFilters = filters ? JSON.parse(filters) : null;
-          let validEventType = false;
-          if (type === 'create' && create === true) validEventType = true;
-          if (type === 'update' && update === true) validEventType = true;
-          if (type === 'delete' && deletion === true) validEventType = true;
-          const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
-          // 02. Execute the component
-          if (validEventType && isMatch) {
-            const nextStep = { component: connector, instance };
-            const bundle: StixBundle = { id: uuidv4(), spec_version: STIX_SPEC_VERSION, type: 'bundle', objects: [data] };
-            await playbookExecutor({
-              // Basic
-              executionId: uuidv4(),
-              playbookId: playbook.id,
-              dataInstanceId: data.id,
-              definition: def,
-              // Steps
-              previousStep: null,
-              nextStep,
-              // Data
-              previousStepBundle: null,
-              bundle,
-            });
+          // Execute only if event coming from different playbook
+          if (origin.playbook_id !== playbook.internal_id) {
+            const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+            // 01. Find the starting point of the playbook
+            const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
+            if (instance) {
+              const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+              const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+              const jsonFilters = filters ? JSON.parse(filters) : null;
+              let validEventType = false;
+              if (type === 'create' && create === true) validEventType = true;
+              if (type === 'update' && update === true) validEventType = true;
+              if (type === 'delete' && deletion === true) validEventType = true;
+              const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
+              // 02. Execute the component
+              if (validEventType && isMatch) {
+                const nextStep = { component: connector, instance };
+                const bundle: StixBundle = {
+                  id: uuidv4(),
+                  spec_version: STIX_SPEC_VERSION,
+                  type: 'bundle',
+                  objects: [data]
+                };
+                await playbookExecutor({
+                  eventId,
+                  // Basic
+                  executionId: uuidv4(),
+                  playbookId: playbook.id,
+                  dataInstanceId: data.id,
+                  definition: def,
+                  // Steps
+                  previousStep: null,
+                  nextStep,
+                  // Data
+                  previousStepBundle: null,
+                  bundle,
+                });
+              }
+            } else {
+              logApp.error('Invalid playbook, entry point needed', { playbook_id: playbook.internal_id });
+            }
           }
         }
       }
@@ -363,6 +379,7 @@ export const playbookStepExecution = async (context: AuthContext, user: AuthUser
   // const previousData = JSON.parse(args.previous_data);
   const bundle = JSON.parse(args.bundle) as StixBundle;
   return playbookExecutor({
+    eventId: args.event_id,
     executionId: args.execution_id,
     playbookId: args.playbook_id,
     dataInstanceId: args.data_instance_id,

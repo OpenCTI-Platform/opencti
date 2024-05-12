@@ -57,6 +57,7 @@ export interface PlaybookExecutionStep<T extends object> {
 }
 
 export interface ExecutorParameters<T extends object> {
+  eventId: string
   executionId: string
   playbookId: string
   dataInstanceId: string

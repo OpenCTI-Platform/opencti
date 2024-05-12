@@ -17,6 +17,7 @@ interface UserOrigin {
   group_ids?: string[];
   organization_ids?: string[];
   applicant_id?: string;
+  playbook_id?: string;
   referer?: string;
   user_metadata?: object;
 }
