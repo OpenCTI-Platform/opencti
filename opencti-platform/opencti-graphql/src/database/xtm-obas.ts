@@ -118,9 +118,23 @@ export const createScenario = async (name: string, subtitle: string, description
   }
 };
 
-export const createInjectInScenario = async (scenarioId: string, injectorType: string, contractId: string, title: string, dependsDuration: number, content: string | null) => {
+export const createInjectInScenario = async (
+  scenarioId: string,
+  injectorType: string,
+  contractId: string,
+  title: string,
+  dependsDuration: number,
+  content: string | null,
+  tags: Label[]
+) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
+    const obasTagsIds = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const tag of tags) {
+      const { data: obasTag } = await httpClient.post('/tags/upsert', { tag_name: tag.value, tag_color: tag.color });
+      obasTagsIds.push(obasTag.tag_id);
+    }
     const { data: inject } = await httpClient.post(
       `/scenarios/${scenarioId}/injects`,
       {
@@ -129,6 +143,7 @@ export const createInjectInScenario = async (scenarioId: string, injectorType: s
         inject_title: title,
         inject_depends_duration: dependsDuration,
         inject_content: content,
+        inject_tags: obasTagsIds,
       }
     );
     return inject;

@@ -144,7 +144,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
           expectations: [],
           subject: `[${killChainPhaseName}] ${responseIncidentResponseSubject}`,
           body: responseIncidentResponse
-        }
+        },
+        [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
       );
       dependsOnDuration += (interval * 60);
       // Mail to CISO
@@ -186,7 +187,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
           expectations: [],
           subject: `[${killChainPhaseName}] ${responseCisoSubject}`,
           body: responseCiso
-        }
+        },
+        [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
       dependsOnDuration += (interval * 60);
     }
@@ -197,7 +199,15 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
   const description = extractRepresentativeDescription(stixCoreObject);
   const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
-  const obasScenario = await createScenario(name, subtitle, description, [...labels, { value: 'opencti', color: '#001bda' }], stixCoreObject.id, stixCoreObject.entity_type, simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario');
+  const obasScenario = await createScenario(
+    name,
+    subtitle,
+    description,
+    [...labels, { value: 'opencti', color: '#001bda' }],
+    stixCoreObject.id,
+    stixCoreObject.entity_type,
+    simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
+  );
 
   // Get attack patterns
   const obasAttackPatterns = await getAttackPatterns();
@@ -251,7 +261,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
         titleIncidentResponse,
         dependsOnDuration,
-        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseIncidentResponse }
+        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseIncidentResponse },
+        [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
       );
       dependsOnDuration += (interval * 60);
       const promptCiso = `
@@ -282,7 +293,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
         titleCiso,
         dependsOnDuration,
-        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseCiso }
+        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseCiso },
+        [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
       dependsOnDuration += (interval * 60);
     } else {
@@ -301,7 +313,9 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             obasInjectorContractContent.config.type,
             finalObasInjectorContract.injector_contract_id,
             title,
-            dependsOnDuration
+            dependsOnDuration,
+            null,
+            [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }]
           );
           dependsOnDuration += (interval * 60);
         }
