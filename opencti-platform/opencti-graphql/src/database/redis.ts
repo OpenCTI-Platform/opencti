@@ -382,7 +382,6 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     );
   };
   const extend = async () => {
-    timeout = undefined;
     try {
       if (opts.retryCount !== 0) {
         logApp.warn('Extending resources for long processing task', { locks, stack: initialCallStack });
@@ -411,15 +410,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     signal,
     extend,
     unlock: async () => {
-      // First clear the auto extends if needed
-      try {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = undefined;
-        }
-      } catch (timeoutError) {
-        // Nothing to do here
-      }
+      // First clear the auto extends
+      clearTimeout(timeout);
       // Wait for an in-flight extension to finish.
       if (extension) {
         await extension.catch(() => {
