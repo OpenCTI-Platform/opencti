@@ -382,7 +382,6 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     );
   };
   const extend = async () => {
-    timeout = undefined;
     try {
       if (opts.retryCount !== 0) {
         logApp.warn('Extending resources for long processing task', { locks, stack: initialCallStack });
@@ -411,16 +410,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     signal,
     extend,
     unlock: async () => {
-      // First clear the auto extends if needed
-      try {
-        if (timeout) {
-          clearTimeout(timeout);
-          timeout = undefined;
-        }
-      } catch (timeoutError) {
-        // Nothing to do here
-      }
-      // Wait for an in-flight extension to finish.
+      // First, wait for an in-flight extension to finish.
       if (extension) {
         await extension.catch(() => {
           // An error here doesn't matter at all, because the routine has
@@ -429,7 +419,9 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
           // between the extension and release.
         });
       }
-      // Then unlock in redis
+      // Second, clear the auto extends possibly starts by the first step
+      clearTimeout(timeout);
+      // Last, unlock in redis
       try {
         // Finally try to unlock
         await lock.release();
