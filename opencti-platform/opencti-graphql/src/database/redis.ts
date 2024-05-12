@@ -410,9 +410,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     signal,
     extend,
     unlock: async () => {
-      // First clear the auto extends
-      clearTimeout(timeout);
-      // Wait for an in-flight extension to finish.
+      // First, wait for an in-flight extension to finish.
       if (extension) {
         await extension.catch(() => {
           // An error here doesn't matter at all, because the routine has
@@ -421,7 +419,9 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
           // between the extension and release.
         });
       }
-      // Then unlock in redis
+      // Second, clear the auto extends
+      clearTimeout(timeout);
+      // Last, unlock in redis
       try {
         // Finally try to unlock
         await lock.release();
