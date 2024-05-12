@@ -197,7 +197,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
   const description = extractRepresentativeDescription(stixCoreObject);
   const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
-  const obasScenario = await createScenario(name, subtitle, description, labels, stixCoreObject.id, simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario');
+  const obasScenario = await createScenario(name, subtitle, description, [...labels, { value: 'opencti', color: '#001bda' }], stixCoreObject.id, stixCoreObject.entity_type, simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario');
 
   // Get attack patterns
   const obasAttackPatterns = await getAttackPatterns();

@@ -1,9 +1,15 @@
-import conf, { logApp } from '../config/conf';
+import conf, { getBaseUrl, logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
 import { DatabaseError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { isEmptyField } from './utils';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
 const XTM_OPENBAS_TOKEN = conf.get('xtm:openbas_token');
@@ -51,7 +57,7 @@ export const getInjectorContracts = async (attackPatternId: string) => {
   }
 };
 
-export const createScenario = async (name: string, subtitle: string, description: string, tags: Label[], id: string, category: string) => {
+export const createScenario = async (name: string, subtitle: string, description: string, tags: Label[], id: string, type: string, category: string) => {
   const httpClient = buildXTmOpenBasHttpClient();
   try {
     const obasTagsIds = [];
@@ -60,12 +66,48 @@ export const createScenario = async (name: string, subtitle: string, description
       const { data: obasTag } = await httpClient.post('/tags/upsert', { tag_name: tag.value, tag_color: tag.color });
       obasTagsIds.push(obasTag.tag_id);
     }
+    let uri;
+    switch (type) {
+      case ENTITY_TYPE_CONTAINER_REPORT:
+        uri = 'analyses/reports';
+        break;
+      case ENTITY_TYPE_CONTAINER_GROUPING:
+        uri = 'analyses/groupings';
+        break;
+      case ENTITY_TYPE_CONTAINER_CASE_INCIDENT:
+        uri = 'cases/incidents';
+        break;
+      case ENTITY_TYPE_CONTAINER_CASE_RFI:
+        uri = 'cases/rfis';
+        break;
+      case ENTITY_TYPE_CONTAINER_CASE_RFT:
+        uri = 'cases/rfts';
+        break;
+      case ENTITY_TYPE_INCIDENT:
+        uri = 'events/incidents';
+        break;
+      case ENTITY_TYPE_CAMPAIGN:
+        uri = 'threats/campaigns';
+        break;
+      case ENTITY_TYPE_INTRUSION_SET:
+        uri = 'threats/intrusion_sets';
+        break;
+      case ENTITY_TYPE_THREAT_ACTOR_GROUP:
+        uri = 'threats/threat_actors_group';
+        break;
+      case ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL:
+        uri = 'threats/threat_actors_individual';
+        break;
+      default:
+        uri = null;
+    }
     const { data: scenario } = await httpClient.post('/scenarios', {
       scenario_name: name,
       scenario_subtitle: subtitle,
       scenario_description: description,
       scenario_tags: obasTagsIds,
       scenario_external_reference: id,
+      scenario_external_url: uri ? `${getBaseUrl()}/dashboard/${uri}/${id}` : null,
       scenario_category: category,
       scenario_main_focus: 'incident-response',
       scenario_severity: 'high',
