@@ -2364,12 +2364,12 @@ const buildRelationDeduplicationFilters = (input) => {
 const isOutdatedUpdate = (context, element, attributeKey) => {
   const attributesMap = new Map((element[iAttributes.name] ?? []).map((obj) => [obj.name, obj]));
   const { updated_at: lastAttributeUpdateDate } = attributesMap.get(attributeKey) ?? {};
-  if (context.eventId) {
+  if (lastAttributeUpdateDate && context.eventId) {
     try {
       const eventDate = utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
-      return lastAttributeUpdateDate && context.eventId && utcDate(lastAttributeUpdateDate).isAfter(eventDate);
+      return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
     } catch (e) {
-      logApp.error('Error evaluating event id', { attributeKey, eventId: context.eventId });
+      logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
     }
   }
   return false;
