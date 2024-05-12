@@ -219,7 +219,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         previous_standard = data.get("previous_standard")
         self.api.set_previous_standard_header(previous_standard)
         # Execute the import
-        imported_items = 0
+        imported_items = []
         event_type = data["type"] if "type" in data else "bundle"
         types = (
             data["entities_types"]
