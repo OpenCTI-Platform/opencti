@@ -282,18 +282,20 @@ class ListenQueue(threading.Thread):
                 is_playbook = "playbook" in json_data["internal"]
                 # If playbook, compute object on data bundle
                 if is_playbook:
-                    execution_id = json_data["internal"]["playbook"]["execution_id"]
                     execution_start = self.helper.date_now()
-                    playbook_id = json_data["internal"]["playbook"]["playbook_id"]
-                    data_instance_id = json_data["internal"]["playbook"][
+                    event_id = json_data["internal"]["playbook"].get("event_id")
+                    execution_id = json_data["internal"]["playbook"].get("execution_id")
+                    playbook_id = json_data["internal"]["playbook"].get("playbook_id")
+                    data_instance_id = json_data["internal"]["playbook"].get(
                         "data_instance_id"
-                    ]
+                    )
                     previous_bundle = json.dumps((json_data["event"]["bundle"]))
                     step_id = json_data["internal"]["playbook"]["step_id"]
                     previous_step_id = json_data["internal"]["playbook"][
                         "previous_step_id"
                     ]
                     playbook_data = {
+                        "event_id": event_id,
                         "execution_id": execution_id,
                         "execution_start": execution_start,
                         "playbook_id": playbook_id,

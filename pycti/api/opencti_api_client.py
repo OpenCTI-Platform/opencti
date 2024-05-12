@@ -207,6 +207,12 @@ class OpenCTIApiClient:
     def set_applicant_id_header(self, applicant_id):
         self.request_headers["opencti-applicant-id"] = applicant_id
 
+    def set_playbook_id_header(self, playbook_id):
+        self.request_headers["opencti-playbook-id"] = playbook_id
+
+    def set_event_id(self, event_id):
+        self.request_headers["opencti-event-id"] = event_id
+
     def set_synchronized_upsert_header(self, synchronized):
         self.request_headers["synchronized-upsert"] = (
             "true" if synchronized is True else "false"
