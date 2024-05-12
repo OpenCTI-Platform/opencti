@@ -1292,6 +1292,7 @@ describe('Elements upsert behaviors', () => {
     expect(malware).not.toBeNull();
     expect(malware.name).toEqual('TO_UPSERT');
     expect(malware.confidence).toEqual(10);
+    expect(malware.is_family).toEqual(false);
     expect(malware.description).toEqual(undefined);
     expect(malware.objectMarking).toEqual(undefined);
     // Testing empty value with lower confidence
@@ -1306,7 +1307,7 @@ describe('Elements upsert behaviors', () => {
     });
     expect(malware.confidence).toEqual(10);
     expect(malware.description).toEqual('TO DESC');
-    expect(malware.is_family).toEqual(true);
+    expect(malware.is_family).toEqual(false);
     expect(malware.revoked).toEqual(false);
     expect(malware.first_seen).toEqual('1970-01-01T00:00:00.000Z');
     expect(malware.malware_types).toEqual(['downloader', 'trojan']);
