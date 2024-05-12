@@ -31,7 +31,7 @@ import {
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
-import { generateInternalId, generateStandardId } from '../../schema/identifier';
+import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
 import { getParentTypes } from '../../schema/schemaUtils';
@@ -925,12 +925,16 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           if (wrap_in_container && isBaseDataAContainer) {
             (baseData as StixContainer).object_refs.push(indicator.id);
           }
-          const relationship = {
-            id: `relationship--${generateInternalId()}`,
-            type: 'relationship',
+          const relationBaseData = {
             source_ref: indicator.id,
             target_ref: observable.id,
             relationship_type: RELATION_BASED_ON,
+          };
+          const relationStandardId = idGenFromData('relationship', relationBaseData);
+          const relationship = {
+            id: relationStandardId,
+            type: 'relationship',
+            ...relationBaseData,
             object_marking_refs: observable.object_marking_refs ?? [],
             created: now(),
             modified: now(),
@@ -1035,12 +1039,16 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           if (wrap_in_container && isBaseDataAContainer) {
             (baseData as StixContainer).object_refs.push(stixObservable.id);
           }
-          const relationship = {
-            id: `relationship--${generateInternalId()}`,
-            type: 'relationship',
+          const relationBaseData = {
             source_ref: indicator.id,
             target_ref: stixObservable.id,
             relationship_type: RELATION_BASED_ON,
+          };
+          const relationStandardId = idGenFromData('relationship', relationBaseData);
+          const relationship = {
+            id: relationStandardId,
+            type: 'relationship',
+            ...relationBaseData,
             object_marking_refs: indicator.object_marking_refs ?? [],
             created: now(),
             modified: now(),
