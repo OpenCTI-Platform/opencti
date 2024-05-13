@@ -218,6 +218,7 @@ test('Report CRUD', async ({ page }) => {
   await reportForm.statusAutocomplete.selectOption('IN_PROGRESS');
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
+
   await reportDetailsPage.openLabelsSelect();
   await reportDetailsPage.labelsSelect.selectOption('covid-19');
   await reportDetailsPage.addLabels();
