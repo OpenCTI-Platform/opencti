@@ -2383,7 +2383,6 @@
   "There are not any configurations set yet": "まだ設定がありません",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "プラットフォームには、ユーザーインターフェイスとデフォルトメーラーの2つの組み込み通知機能があります。これらは構成できず、ここでカスタムのものを作成できます。",
   "Third-party analytics": "サードパーティ分析",
-  "This action will generate indicators from the selected observables.": "このアクションは、選択された観測値から指標を生成します。",
   "This action will generate observables from the selected indicators.": "この操作によって選択されたインジケータから観測結果が生成されます。",
   "This action will generate STIX patterns indicators from the selected observables.": "この操作によって選択された観測結果からSTIXパターンインジケータを生成します。",
   "this blogpost": "このブログ記事",

@@ -24,10 +24,9 @@ type DrawerContainerPropsType = {
   isOnlyStixCyberObservablesTypes: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  isOnlyIndicator: boolean;
 };
 
-const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit, isOnlyIndicator }: DrawerContainerPropsType) => {
+const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit }: DrawerContainerPropsType) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -50,10 +49,7 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
           ) : (
             <div>
               <Alert severity="warning" style={{ marginTop: 20 }}>
-                {isOnlyIndicator
-                  ? t_i18n('This action will generate observables from the selected indicators.')
-                  : t_i18n('This action will generate indicators from the selected observables.')
-                }
+                {t_i18n('This action will generate observables from the selected indicators.')}
               </Alert>
             </div>
           )}

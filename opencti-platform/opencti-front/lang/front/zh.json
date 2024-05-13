@@ -2383,7 +2383,6 @@
   "There are not any configurations set yet": "目前尚未设置任何配置",
   "There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.": "平台中有两个内置通知器：用户界面和默认邮件发送器。它们不可配置，您可以在这里创建您的自定义通知器。",
   "Third-party analytics": "第三方分析",
-  "This action will generate indicators from the selected observables.": "该操作将根据所选观测指标生成指标。",
   "This action will generate observables from the selected indicators.": "此操作将从选定的指标生成可观测数据。",
   "This action will generate STIX patterns indicators from the selected observables.": "此操作将从选定的可观测数据生成 STIX 模式指标。",
   "this blogpost": "本博文",
