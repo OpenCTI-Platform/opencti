@@ -38,9 +38,9 @@ export type Filter = {
 };
 
 export type FiltersRestrictions = {
-  preventEditionFor?: string[], // filter keys whose values can't be changed
   preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
   preventRemoveFor?: string[], // filter keys whose filter can't be removed
+  preventFilterValuesRemoveFor?: Map<string, string[]>, // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
 export const emptyFilterGroup = {

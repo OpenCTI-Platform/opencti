@@ -299,7 +299,6 @@ FilterIconButtonContainerProps
                   currentFilter={currentFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   filtersRepresentativesMap={filtersRepresentativesMap}
-                  helpers={helpers}
                   redirection={redirection}
                   entityTypes={entityTypes}
                   filtersRestrictions={filtersRestrictions}
@@ -330,7 +329,6 @@ FilterIconButtonContainerProps
                       handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       redirection={redirection}
-                      helpers={helpers}
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
@@ -390,6 +388,7 @@ FilterIconButtonContainerProps
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
+            preventFilterValuesRemoveFor={filtersRestrictions?.preventFilterValuesRemoveFor}
           />
         </Box>
       )}

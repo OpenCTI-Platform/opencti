@@ -561,7 +561,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   entityTypes={virtualEntityTypes}
                   additionalFilterKeys={{
                     filterKeys: ['entity_type'],
-                    filtersRestrictions: { preventRemoveFor: ['entity_type'], preventLocalModeSwitchingFor: ['entity_type'], preventEditionFor: ['entity_type'] } }
+                    filtersRestrictions: { preventRemoveFor: ['entity_type'], preventLocalModeSwitchingFor: ['entity_type'], preventFilterValuesRemoveFor: new Map([['entity_type', actualTypeFilterValues]]) } }
                   }
                 >
                   <QueryRenderer

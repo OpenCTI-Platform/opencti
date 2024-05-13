@@ -39,6 +39,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  preventFilterValuesRemoveFor?: Map<string, string[]>;
 }
 
 export interface FilterChipsParameter {
@@ -153,6 +154,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
+  preventFilterValuesRemoveFor,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -204,10 +206,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       const alreadySelectedValues = childFilter?.values ?? [];
       let representationToAdd;
       if (checked) {
-        representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] }; // the representation to add = the former values + the added value
+        // the representation to add = the former values + the added value
+        representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] };
       } else {
         const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
-        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined; // the representation to add = the former values - the removed value
+        // the representation to add = the former values - the removed value
+        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
       }
       helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
     } else if (checked) {
@@ -299,6 +303,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const checked = subKey
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
+          const notEditable = preventFilterValuesRemoveFor && filter?.key && preventFilterValuesRemoveFor.get(filter.key)?.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label} followCursor>
               <li
@@ -308,7 +313,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     e.stopPropagation();
                   }
                 }}
-                onClick={() => handleChange(!checked, option.value, subKey)}
+                onClick={notEditable ? undefined : () => handleChange(!checked, option.value, subKey)}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -317,7 +322,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   margin: 0,
                 }}
               >
-                <Checkbox checked={checked} />
+                <Checkbox checked={checked} color={notEditable ? 'default' : undefined} />
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}

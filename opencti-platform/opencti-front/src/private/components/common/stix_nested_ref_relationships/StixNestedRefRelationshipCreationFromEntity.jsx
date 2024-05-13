@@ -346,21 +346,21 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const actualTypeFilter = [
     ...(targetStixCoreObjectTypes ?? []),
   ];
-  const [filters, helpers] = useFiltersState(
-    actualTypeFilter.length > 0
-      ? {
-        mode: 'and',
-        filterGroups: [],
-        filters: [{
-          id: uuid(),
-          key: 'entity_type',
-          values: actualTypeFilter,
-          operator: 'eq',
-          mode: 'or',
-        }],
-      }
-      : emptyFilterGroup,
-  );
+  const initialFilters = actualTypeFilter.length > 0
+    ? {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{
+        id: uuid(),
+        key: 'entity_type',
+        values: actualTypeFilter,
+        operator: 'eq',
+        mode: 'or',
+      }],
+    }
+    : emptyFilterGroup;
+  const [filters, helpers] = useFiltersState(initialFilters);
+  const virtualEntityTypes = (actualTypeFilter && actualTypeFilter.length > 0) ? actualTypeFilter : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   const stixNestedRefRelationshipValidation = () => Yup.object().shape({
     relationship_type: Yup.string().required(t_i18n('This field is required')),
     start_time: Yup.date()
@@ -546,28 +546,23 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               orderAsc={orderAsc}
               dataColumns={dataColumns}
               keyword={searchTerm}
+              helpers={helpers}
               disableCards={true}
               handleSearch={setSearchTerm}
+              filters={filters}
               disableExport={true}
-              helpers={helpers}
               handleSort={handleSort}
               numberOfElements={numberOfElements}
               paginationOptions={searchPaginationOptions}
               iconExtension={true}
-              filters={filters}
               parametersWithPadding={true}
               handleToggleSelectAll="no"
-              availableFilterKeys={[
-                'entity_type',
-                'objectMarking',
-                'objectLabel',
-                'createdBy',
-                'confidence',
-                'x_opencti_organization_type',
-                'created',
-                'created_at',
-                'creator_id',
-              ]}
+              entityTypes={virtualEntityTypes}
+              availableEntityTypes={virtualEntityTypes}
+              additionalFilterKeys={{
+                filterKeys: ['entity_type'],
+                filtersRestrictions: { preventRemoveFor: ['entity_type'], preventLocalModeSwitchingFor: ['entity_type'], preventFilterValuesRemoveFor: new Map([['entity_type', actualTypeFilter]]) } }
+              }
             >
               <QueryRenderer
                 query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
