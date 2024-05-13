@@ -74,7 +74,7 @@ const buildRelationshipTypes = (relationshipTypes) => {
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
-    throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship, stix-sighting-relationship or object');
+    throw new UserInputError('Invalid argument: relationship_type is not a stix-relationship');
   }
   return relationshipTypes;
 };
