@@ -84,8 +84,6 @@ test('Report CRUD', async ({ page }) => {
 
   await reportForm.confidenceLevelField.fillInput('75');
   await expect(reportForm.confidenceLevelField.getSelect().getByText('2 - Probably True')).toBeVisible();
-  // await reportForm.confidenceLevelField.selectOption('- Possibly True');
-  // await expect(reportForm.confidenceLevelField.getInput().getByText('40')).toBeVisible();
 
   await reportForm.descriptionField.fill('Test e2e Description');
   await expect(reportForm.descriptionField.get()).toHaveValue('Test e2e Description');
