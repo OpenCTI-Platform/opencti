@@ -19,6 +19,7 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   paper: {
@@ -112,7 +113,7 @@ const GroupingDetailsComponent = (props) => {
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
 
-  const entitiesDidstributionDataSelection = [
+  const entitiesDistributionDataSelection = [
     {
       label: '',
       attribute: 'entity_type',
@@ -133,16 +134,8 @@ const GroupingDetailsComponent = (props) => {
         ],
         filterGroups: [],
       },
-      dynamicFrom: {
-        mode: 'and',
-        filters: [],
-        filterGroups: [],
-      },
-      dynamicTo: {
-        mode: 'and',
-        filters: [],
-        filterGroups: [],
-      },
+      dynamicFrom: emptyFilterGroup,
+      dynamicTo: emptyFilterGroup,
     },
   ];
 
@@ -174,8 +167,8 @@ const GroupingDetailsComponent = (props) => {
               startDate={null}
               endDate={null}
               relationshipType="object"
-              dataSelection={entitiesDidstributionDataSelection}
-              parameters={'Entities distribution'}
+              dataSelection={entitiesDistributionDataSelection}
+              parameters={{ title: 'Entities distribution' }}
               variant="inEntity"
               withExportPopover={true}
               isReadOnly={true}
