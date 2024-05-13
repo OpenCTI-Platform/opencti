@@ -120,7 +120,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis(sentinelOpts);
   } else {
     const singleOptions = await redisOptions(autoReconnect);
-    client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
+    client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname'), family: conf.get('redis:host_ip_family') ?? 4} });
   }
 
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
