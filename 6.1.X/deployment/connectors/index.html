@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21+insiders-4.53.8">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22+insiders-4.53.8">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.d5b5f0fd.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.46e89654.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -3762,6 +3762,33 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/support-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Support package
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4976,9 +5003,7 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_TYPE=EXTERNAL_IMPORT</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_NAME=MITRE ATT&amp;CK</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_SCOPE=identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_CONFIDENCE_LEVEL=3</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_UPDATE_EXISTING_DATA=true</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_LOG_LEVEL=info</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_LOG_LEVEL=info</span>
 </span></code></pre></div></p>
 <p>Here is an example in a connector <code>config.yml</code> file:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">connector</span><span class="p">:</span>
@@ -4986,9 +5011,7 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;EXTERNAL_IMPORT&#39;</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;MITRE</span><span class="nv"> </span><span class="s">ATT&amp;CK&#39;</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">scope</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report&#39;</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">confidence_level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">update_existing_data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">log_level</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;info&#39;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">log_level</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;info&#39;</span>
 </span></code></pre></div>
 <h2 id="networking">Networking</h2>
 <p>Be aware that all connectors are reaching RabbitMQ based the RabbitMQ configuration provided by the OpenCTI platform. The connector must be able to reach RabbitMQ on the specified hostname and port. If you have a specific Docker network configuration, please be sure to adapt your <code>docker-compose.yml</code> file in such way that the connector container gets attached to the OpenCTI Network, e.g.:</p>
@@ -5021,18 +5044,16 @@
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_TYPE</span><span class="o">=</span>EXTERNAL_IMPORT
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_NAME</span><span class="o">=</span>MISP
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_SCOPE</span><span class="o">=</span>misp
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_CONFIDENCE_LEVEL</span><span class="o">=</span><span class="m">3</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_UPDATE_EXISTING_DATA</span><span class="o">=</span>false
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_LOG_LEVEL</span><span class="o">=</span>info
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_URL</span><span class="o">=</span>http://localhost<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_KEY</span><span class="o">=</span>ChangeMe<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_SSL_VERIFY</span><span class="o">=</span>False<span class="w"> </span>#<span class="w"> </span>Required
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_CREATE_REPORTS</span><span class="o">=</span>True<span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span>create<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>MISP<span class="w"> </span>event
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_REPORT_CLASS</span><span class="o">=</span>MISP<span class="w"> </span>event<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>report_class<span class="w"> </span><span class="k">if</span><span class="w"> </span>creating<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>event
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_FROM_DATE</span><span class="o">=</span><span class="m">2000</span>-01-01<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>import<span class="w"> </span>all<span class="w"> </span>event<span class="w"> </span>from<span class="w"> </span>this<span class="w"> </span>date
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_TAGS</span><span class="o">=</span>opencti:import,type:osint<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>tags<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>import<span class="w"> </span>events
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_INTERVAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span><span class="k">in</span><span class="w"> </span>minutes
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span>restart:<span class="w"> </span>always
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_LOG_LEVEL</span><span class="o">=</span>info
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_URL</span><span class="o">=</span>http://localhost<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_KEY</span><span class="o">=</span>ChangeMe<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_SSL_VERIFY</span><span class="o">=</span>False<span class="w"> </span>#<span class="w"> </span>Required
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_CREATE_REPORTS</span><span class="o">=</span>True<span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span>create<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>MISP<span class="w"> </span>event
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_REPORT_CLASS</span><span class="o">=</span>MISP<span class="w"> </span>event<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>report_class<span class="w"> </span><span class="k">if</span><span class="w"> </span>creating<span class="w"> </span>report<span class="w"> </span><span class="k">for</span><span class="w"> </span>event
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_FROM_DATE</span><span class="o">=</span><span class="m">2000</span>-01-01<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>import<span class="w"> </span>all<span class="w"> </span>event<span class="w"> </span>from<span class="w"> </span>this<span class="w"> </span>date
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_IMPORT_TAGS</span><span class="o">=</span>opencti:import,type:osint<span class="w"> </span>#<span class="w"> </span>Optional,<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>tags<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>import<span class="w"> </span>events
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span>-<span class="w"> </span><span class="nv">MISP_INTERVAL</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>#<span class="w"> </span>Required,<span class="w"> </span><span class="k">in</span><span class="w"> </span>minutes
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span>restart:<span class="w"> </span>always
 </span></code></pre></div>
 <h3 id="launch-a-standalone-connector">Launch a standalone connector</h3>
 <p>To launch standalone connector, you can use the <code>docker-compose.yml</code> file of the connector itself. Just download the latest <a href="https://github.com/OpenCTI-Platform/connectors/releases">release</a> and start the connector:</p>
@@ -5088,7 +5109,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-06T02:56:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-13T08:12:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-13</span>
   </span>
 
     
@@ -5103,6 +5124,44 @@
 
     
     
+    
+      
+  <span class="md-source-file__fact">
+    
+      
+  <span class="md-icon" title="Contributors">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/></svg>
+  </span>
+  <span>GitHub</span>
+
+    
+    <nav>
+      
+        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+          
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
+        </a>
+      
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+          
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
+        <a href="https://github.com/yassine-ouaamou" class="md-author" title="@yassine-ouaamou">
+          
+          <img src="https://avatars.githubusercontent.com/u/7083405?v=4&size=72" alt="yassine-ouaamou">
+        </a>
+      
+        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
+          
+          <img src="https://avatars.githubusercontent.com/u/285555?v=4&size=72" alt="richard-julien">
+        </a>
+      
+      
+      
+    </nav>
+  </span>
+
     
   </aside>
 
@@ -5258,12 +5317,14 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.1e90e0fb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.10eaffea.min.js"></script>
+      <script src="../../assets/javascripts/bundle.13690f9d.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       
         <script src="../../js/timeago_mkdocs_material.js"></script>
       
     
-  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
 </html>
