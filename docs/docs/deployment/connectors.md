@@ -55,8 +55,6 @@ Here is an example of a connector `docker-compose.yml` file:
 - CONNECTOR_TYPE=EXTERNAL_IMPORT
 - CONNECTOR_NAME=MITRE ATT&CK
 - CONNECTOR_SCOPE=identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report
-- CONNECTOR_CONFIDENCE_LEVEL=3
-- CONNECTOR_UPDATE_EXISTING_DATA=true
 - CONNECTOR_LOG_LEVEL=info
 ```
 
@@ -68,8 +66,6 @@ connector:
   type: 'EXTERNAL_IMPORT'
   name: 'MITRE ATT&CK'
   scope: 'identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report'
-  confidence_level: 3
-  update_existing_data: true
   log_level: 'info'
 ```
 
@@ -123,8 +119,6 @@ For instance, to enable the MISP connector, you can add a new service to your `d
       - CONNECTOR_TYPE=EXTERNAL_IMPORT
       - CONNECTOR_NAME=MISP
       - CONNECTOR_SCOPE=misp
-      - CONNECTOR_CONFIDENCE_LEVEL=3
-      - CONNECTOR_UPDATE_EXISTING_DATA=false
       - CONNECTOR_LOG_LEVEL=info
       - MISP_URL=http://localhost # Required
       - MISP_KEY=ChangeMe # Required

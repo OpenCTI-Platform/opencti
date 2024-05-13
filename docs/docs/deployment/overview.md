@@ -35,7 +35,7 @@ roles on the platform:
 
 !!! note "List of connectors"
     
-    You can find all currently available connector in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+    You can find all currently available connectors in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
 
 ## Infrastructure requirements
 
