@@ -118,9 +118,8 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
       const targetsFromTrash = await elFindByIds(context, user, missingIds, { baseFields: ['internal_id', 'entity_type'], indices: READ_INDEX_DELETED_OBJECTS }) as BasicStoreObject[];
       if (targetsFromTrash.length > 0) {
         // only hint the first 3 ones
-        let name = extractRepresentative(targetsFromTrash[0]).main;
-        if (targetsFromTrash.length > 1) name = `${name},${extractRepresentative(targetsFromTrash[1]).main}`;
-        if (targetsFromTrash.length > 2) name = `${name},${extractRepresentative(targetsFromTrash[2]).main}`;
+        let name = targetsFromTrash.slice(0, 3).map((t) => extractRepresentative(t).main).join(',');
+        if (targetsFromTrash.length > 3) name = `${name}, ... and ${targetsFromTrash.length - 3} more`;
         throw FunctionalError(`Cannot restore: a relationship targets deleted elements [${name}], restore them before retrying`);
       }
       // in this last case, the DeleteOperation is actually irrecoverable
