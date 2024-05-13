@@ -167,7 +167,7 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.2.4
+    image: redislabs/redis:7.4.2-129
   - name: elastic
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
     environment:
