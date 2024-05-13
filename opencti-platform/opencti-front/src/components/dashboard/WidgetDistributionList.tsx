@@ -68,6 +68,7 @@ const WidgetDistributionList = ({
             <ListItemButton
               key={entry.id ?? entry.label}
               dense={true}
+              className="noDrag"
               divider={true}
               disableRipple={publicWidget}
               {...linkProps}
