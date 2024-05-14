@@ -34,6 +34,7 @@ interface ObjectLabelFieldProps {
   name: string;
   helpertext?: string;
   dryrun?: boolean;
+  required?: boolean;
   setFieldValue?: (name: string, value: Option[]) => void;
   values?: Option[];
   onChange?: (name: string, value: Option[]) => void;
@@ -44,6 +45,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   name,
   helpertext,
   dryrun = false,
+  required = false,
   setFieldValue,
   values,
   onChange,
@@ -81,6 +83,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         multiple={true}
         textfieldprops={{
           variant: 'standard',
@@ -109,6 +112,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
       <LabelCreation
         contextual={true}
         inputValue={labelInput}
+        required={required}
         open={labelCreation}
         handleClose={() => setLabelCreation(false)}
         dryrun={dryrun}

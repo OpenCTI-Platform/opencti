@@ -107,6 +107,7 @@ class CreatedByField extends Component {
       helpertext,
       disabled,
       dryrun,
+      required = false,
     } = this.props;
     return (
       <>
@@ -114,12 +115,14 @@ class CreatedByField extends Component {
           component={AutocompleteField}
           style={style}
           name={name}
+          required={required}
           disabled={disabled}
           textfieldprops={{
             variant: 'standard',
             label: label ?? t('Author'),
             helperText: helpertext,
             onFocus: this.searchIdentities.bind(this),
+            required,
           }}
           noOptionsText={t('No available options')}
           options={this.state.identities.sort((a, b) => a.label.localeCompare(b.label))}

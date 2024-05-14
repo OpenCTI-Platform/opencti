@@ -101,6 +101,8 @@ ExternalReferenceEditionOverviewComponentProps
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={externalReferenceValidation(t_i18n)}
+      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
+      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
       onSubmit={() => {}}
     >
       {() => (

@@ -19,10 +19,10 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -84,23 +84,28 @@ const reportMutationRelationDelete = graphql`
   }
 `;
 
+const REPORT_TYPE = 'Report';
+
 const ReportEditionOverviewComponent = (props) => {
   const { report, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    published: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
+    published: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     report_types: Yup.array().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const reportValidator = useSchemaEditionValidation('Report', basicShape);
+    objectAssignee: Yup.array().nullable(),
+    objectParticipant: Yup.array().nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const reportValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: reportMutationFieldPatch,
@@ -199,6 +204,8 @@ const ReportEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={reportValidator}
+      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
+      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
       onSubmit={onSubmit}
     >
       {({
@@ -215,6 +222,7 @@ const ReportEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -230,6 +238,7 @@ const ReportEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Publication date'),
+              required: mandatoryAttributes.includes('published'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -242,6 +251,7 @@ const ReportEditionOverviewComponent = (props) => {
             label={t_i18n('Report types')}
             type="report_types_ov"
             name="report_types"
+            required={mandatoryAttributes.includes('report_types')}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -273,6 +283,7 @@ const ReportEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -288,6 +299,7 @@ const ReportEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
             onChange={editor.changeAssignee}
+            required={mandatoryAttributes.includes('objectAssignee')}
           />
           <ObjectParticipantField
             name="objectParticipant"
@@ -296,10 +308,12 @@ const ReportEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldname="objectParticipant" />
             }
             onChange={editor.changeParticipant}
+            required={mandatoryAttributes.includes('objectParticipant')}
           />
           {report.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
+              required={true} // Workflow status is always required; Initialized on create of the report
               type="Report"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
@@ -321,6 +335,7 @@ const ReportEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeCreated}
             setFieldValue={setFieldValue}
+            required={mandatoryAttributes.includes('createdBy')}
           />
           <ObjectMarkingField
             name="objectMarking"
@@ -330,6 +345,7 @@ const ReportEditionOverviewComponent = (props) => {
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+            required={mandatoryAttributes.includes('objectMarking')}
           />
           {enableReferences && (
             <CommitMessage

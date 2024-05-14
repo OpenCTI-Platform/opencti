@@ -158,6 +158,7 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
                 onChange={() => {
                 }}
                 setFieldValue={setFieldValue}
+                required={false}
               />
             </DialogContent>
             <DialogActions>

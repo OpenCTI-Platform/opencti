@@ -34,6 +34,7 @@ interface NotifierConnectorFieldProps {
     name: string,
     value: { label: string; value: string; schema: string },
   ) => void;
+  required?: boolean;
 }
 
 const NotifierConnectorFieldQuery = graphql`
@@ -49,7 +50,7 @@ const NotifierConnectorFieldQuery = graphql`
 
 const NotifierConnectorField: FunctionComponent<
 NotifierConnectorFieldProps
-> = ({ name, style, onChange, disabled, helpertext }) => {
+> = ({ name, style, onChange, disabled, helpertext, required = false }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -92,6 +93,7 @@ NotifierConnectorFieldProps
           label: t_i18n('Notification connector'),
           helperText: helpertext,
           onFocus: searchNotifierConnectors,
+          required,
         }}
         noOptionsText={t_i18n('No available options')}
         options={connectors}

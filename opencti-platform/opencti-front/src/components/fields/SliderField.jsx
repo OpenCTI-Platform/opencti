@@ -14,6 +14,7 @@ const SliderField = ({
   label,
   style,
   disabled,
+  required = false,
 }) => {
   const [field, meta] = useField(name);
   const internalOnFocus = (event) => {
@@ -40,7 +41,7 @@ const SliderField = ({
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel id="input-slider" shrink={true}>
+      <InputLabel id="input-slider" shrink={true} required={required}>
         {label}
       </InputLabel>
       <Slider
@@ -49,6 +50,7 @@ const SliderField = ({
         onChange={(_, value) => setFieldValue(name, String(value))}
         aria-labelledby="input-slider"
         marks={true}
+        required={required}
       />
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
