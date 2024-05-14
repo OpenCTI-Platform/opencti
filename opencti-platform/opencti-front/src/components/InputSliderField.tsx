@@ -61,6 +61,8 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
 
   const [initialValue] = useState(value);
   if (variant === 'edit') {
+    // disabled prop is "forced", be it true or false
+    const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
     return (
       <>
         <Grid container={true} spacing={3} >
@@ -73,7 +75,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               label={label}
               onSubmit={onSubmit}
               onFocus={onFocus}
-              disabled={disabled || initialValue > max}
+              disabled={finalDisabled}
               helpertext={
                 <SubscriptionFocus context={editContext} fieldName={name} />
               }
@@ -85,7 +87,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               labelId={name}
               value={currentLevel.level.value?.toString() ?? ''}
               onChange={updateFromSelect}
-              disabled={disabled || initialValue > max}
+              disabled={finalDisabled}
               sx={{ marginTop: 2 }} // to align field with the number input, that has a label
             >
               {marks.map((mark, i: number) => {
@@ -112,7 +114,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
-          disabled={disabled || initialValue > max}
+          disabled={finalDisabled}
         />
       </>
     );
