@@ -84,8 +84,8 @@ const RootIncidentComponent = ({ queryRef }) => {
   const { incident, connectorsForImport, connectorsForExport } = data;
   const isOverview = location.pathname === `/dashboard/events/incidents/${incident.id}`;
   const paddingRightValue = () => {
-    if (location.pathname.includes(`/knowledge`)) return 200;
-    if (location.pathname.includes(`/content`)) return 350;
+    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/knowledge`)) return 200;
+    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content`)) return 350;
     return 0;
   };
   return (
