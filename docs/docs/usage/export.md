@@ -20,18 +20,21 @@ With the OpenCTI platform, you can manually export your intelligence content in 
 To export one or more entities you have two possibilities. First you can click on the button "Open export panel". The list of pre-existing exports will open, and in the bottom right-hand corner you can configure and generate a new export.
 
 ![open export panel](assets/open_export_panel.png)
-
 This opens the export settings panel, where you can customize your export according to three fields:
 
 - desired export format (text/csv, application/pdf, application/vnd.oasis.stix+json, text/plain)
 - export type (simple or full),
-- the max marking definition level of the elements in the entity to be exported (a TLP level, for instance).
+- the max marking definition levels of the elements in the entity to be exported (a TLP level, for instance).
+- the file marking definition levels of the export (a TLP level, for instance). This restrains the access to the file to the corresponding markings owner.
 
 ![customize your export](assets/customize_your_export.png)
 
 The second way is to click directly on the "Generate an Export" button to export the content of an entity in the desired format. The same settings panel will open.
 
 ![Export entity content](assets/export_entity_content.png)
+
+Both ways add your export in the Exported files list in the Data tab.
+![Exported files list](assets/exported-files-list.png)
 
 ### Export possibilities
 
