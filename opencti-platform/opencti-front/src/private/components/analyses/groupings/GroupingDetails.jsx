@@ -14,11 +14,12 @@ import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
   paper: {
@@ -111,6 +112,33 @@ const GroupingDetailsComponent = (props) => {
     setHeight(ref.current.clientHeight);
   });
   const expandable = grouping.relatedContainers.edges.length > 5;
+
+  const entitiesDistributionDataSelection = [
+    {
+      label: '',
+      attribute: 'entity_type',
+      date_attribute: 'first_seen',
+      perspective: 'relationships',
+      isTo: true,
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: 'relationship_type',
+            values: [
+              'object',
+            ],
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      },
+      dynamicFrom: emptyFilterGroup,
+      dynamicTo: emptyFilterGroup,
+    },
+  ];
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -133,15 +161,16 @@ const GroupingDetailsComponent = (props) => {
             <Chip classes={{ root: classes.chip }} label={grouping.context} />
           </Grid>
           <Grid item={true} xs={6} style={{ minHeight: 200, maxHeight: height }}>
-            <EntityStixCoreRelationshipsHorizontalBars
-              title={t('Entities distribution')}
-              variant="inEntity"
+            <StixRelationshipsHorizontalBars
+              isWidget={false}
               fromId={grouping.id}
-              toTypes={['Stix-Core-Object']}
+              startDate={null}
+              endDate={null}
               relationshipType="object"
-              field="entity_type"
-              seriesName={t('Number of entities')}
-              isTo={true}
+              dataSelection={entitiesDistributionDataSelection}
+              parameters={{ title: 'Entities distribution' }}
+              variant="inEntity"
+              isReadOnly={true}
             />
           </Grid>
         </Grid>
