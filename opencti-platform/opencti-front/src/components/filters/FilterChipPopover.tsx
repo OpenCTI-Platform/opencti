@@ -9,21 +9,24 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import type { Option } from '@components/common/form/ReferenceField';
 import {
-  isNumericFilter,
-  isBasicTextFilter,
-  useFilterDefinition,
   Filter,
+  FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
+  isBasicTextFilter,
+  isNumericFilter,
   isStixObjectTypes,
+  useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptionsFromEntities, getUseSearch } from '../../utils/filters/SearchEntitiesUtil';
+import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
+import useSearchEntities from '../../utils/filters/useSearchEntities';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -34,6 +37,9 @@ interface FilterChipMenuProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   entityTypes?: string[];
+  searchContext?: FilterSearchContext
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
 }
 
 export interface FilterChipsParameter {
@@ -68,6 +74,7 @@ interface BasicNumberInputProps {
   filterValues: string[];
   label: string;
 }
+
 const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
   filter,
   filterKey,
@@ -142,8 +149,11 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filters,
   helpers,
   availableRelationFilterTypes,
+  availableEntityTypes,
+  availableRelationshipTypes,
   filtersRepresentativesMap,
   entityTypes,
+  searchContext,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -152,23 +162,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterValues = filter?.values ?? [];
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
-  const [inputValues, setInputValues] = useState<
-  {
+  const [inputValues, setInputValues] = useState<{
     key: string;
     values: string[];
     operator?: string;
-  }[]
-  >(filter ? [filter] : []);
-  const [cacheEntities, setCacheEntities] = useState<
-  Record<
-  string,
-  {
-    label: string;
-    value: string;
-    type: string;
-  }[]
-  >
-  >({});
+  }[]>(filter ? [filter] : []);
+  const [cacheEntities, setCacheEntities] = useState<Record<string, Option[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
       targets: [
@@ -186,7 +185,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
-  const [entities, searchEntities] = getUseSearch(searchScope, entityTypes);
+  const [entities, searchEntities] = useSearchEntities({
+    availableEntityTypes,
+    availableRelationshipTypes,
+    setInputValues,
+    searchContext: { ...searchContext, entityTypes: [...(searchContext?.entityTypes ?? []), ...(entityTypes ?? [])] },
+    searchScope,
+  });
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];

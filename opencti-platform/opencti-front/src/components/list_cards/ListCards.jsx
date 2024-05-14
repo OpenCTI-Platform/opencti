@@ -219,6 +219,9 @@ class ListCards extends Component {
                 handleSwitchLocalMode={handleSwitchLocalMode}
                 redirection
                 entityTypes={entityType ? [entityType] : undefined}
+                searchContext={{
+                  entityTypes: entityType ? [entityType] : [],
+                }}
               />
               {typeof handleToggleExports === 'function' && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT]}>

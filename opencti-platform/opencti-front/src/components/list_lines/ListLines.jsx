@@ -439,6 +439,9 @@ class ListLines extends Component {
           redirection
           entityTypes={entityTypes}
           filtersRestrictions={additionalFilterKeys?.filtersRestrictions ?? undefined}
+          searchContext={searchContextFinal}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationshipTypes={availableRelationshipTypes}
         />
         <ErrorBoundary key={keyword}>
           {message && (

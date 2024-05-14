@@ -221,6 +221,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             helpers={helpers}
             styleNumber={2}
             redirection
+            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           />
         </Form>
       )}

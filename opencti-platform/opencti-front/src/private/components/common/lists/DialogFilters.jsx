@@ -23,6 +23,9 @@ const DialogFilters = ({
   handleSwitchLocalMode,
   handleSearch,
   filterElement,
+  searchContext,
+  availableEntityTypes,
+  availableRelationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -51,6 +54,9 @@ const DialogFilters = ({
             handleSwitchGlobalMode={handleSwitchGlobalMode}
             handleSwitchLocalMode={handleSwitchLocalMode}
             styleNumber={2}
+            searchContext={searchContext}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationshipTypes={availableRelationshipTypes}
           />
           {filterElement}
         </DialogContent>

@@ -1,14 +1,7 @@
-import { Dispatch, SyntheticEvent } from 'react';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import useSearchEntities, { SearchEntitiesProps } from './useSearchEntities';
 import { isStixObjectTypes } from './filtersUtils';
 
-let searchEntitiesScope: SearchEntitiesProps | undefined;
-
-export const setSearchEntitiesScope = (searchEntities: SearchEntitiesProps) => {
-  searchEntitiesScope = searchEntities;
-};
-
+// eslint-disable-next-line import/prefer-default-export
 export const getOptionsFromEntities = (
   entities: Record<string, OptionValue[]>,
   searchScope: Record<string, string[]>,
@@ -44,25 +37,4 @@ export const getOptionsFromEntities = (
       }
       return a.label.localeCompare(b.label);
     });
-};
-
-export const getUseSearch = (searchScope?: Record<string, string[]>, entityTypes?: string[]) => {
-  if (!searchEntitiesScope) {
-    return [];
-  }
-  const searchEntitiesScopeWithContext = { ...searchEntitiesScope };
-  if (entityTypes) {
-    searchEntitiesScopeWithContext.searchContext.entityTypes = entityTypes;
-  }
-  const searchEntitiesParams = searchScope ? { ...searchEntitiesScopeWithContext, searchScope } : searchEntitiesScopeWithContext;
-  return useSearchEntities(searchEntitiesParams) as [
-    Record<string, OptionValue[]>,
-    (
-      filterKey: string,
-      cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
-      setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
-      event: SyntheticEvent,
-      isSubKey?: boolean,
-    ) => Record<string, OptionValue[]>,
-  ];
 };
