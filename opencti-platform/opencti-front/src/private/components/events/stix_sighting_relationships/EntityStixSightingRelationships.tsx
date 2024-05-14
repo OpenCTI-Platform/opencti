@@ -12,7 +12,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -60,15 +60,27 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     filters,
     numberOfElements,
   } = viewStorage;
+
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
+
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: isTo ? 'toId' : 'fromId', values: [entityId], operator: 'eq' },
+      {
+        key: 'entity_type',
+        values: ['stix-sighting-relationship'],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
   const finalPaginationOptions = {
     ...paginationOptions,
-    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(paginationOptions.filters as unknown as FilterGroup, ['stix-core-relationship']),
-  } as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
-  if (isTo) {
-    finalPaginationOptions.toId = entityId;
-  } else {
-    finalPaginationOptions.fromId = entityId;
-  }
+    filters: contextFilters,
+  } as unknown as EntityStixSightingRelationshipsLinesPaginationQuery$variables;
+
   const queryRef = useQueryLoading<EntityStixSightingRelationshipsLinesPaginationQuery>(
     entityStixSightingRelationshipsLinesQuery,
     finalPaginationOptions,
@@ -136,7 +148,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
             'x_opencti_negative',
           ]}
           openExports={openExports}
-          exportContext={{ entity_type: 'stix-sighting-relationship' }}
+          exportContext={{ entity_type: 'stix-sighting-relationship', entity_id: entityId }}
           availableEntityTypes={stixCoreObjectTypes}
           displayImport={true}
           secondaryAction={true}
