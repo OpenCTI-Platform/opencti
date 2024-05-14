@@ -11,7 +11,6 @@ import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import IconButton from '@mui/material/IconButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
