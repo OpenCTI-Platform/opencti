@@ -102,7 +102,6 @@ const StixRelationshipsDistributionList = ({
   field,
   startDate,
   endDate,
-  dateAttribute,
   dataSelection,
   parameters = {},
 }) => {
@@ -122,7 +121,7 @@ const StixRelationshipsDistributionList = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute,
+      dateAttribute: selection.date_attribute ?? 'created_at',
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
       isTo: selection.isTo,

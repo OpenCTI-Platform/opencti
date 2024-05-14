@@ -353,7 +353,6 @@ const StixRelationshipsMultiHorizontalBars = ({
   field,
   startDate,
   endDate,
-  dateAttribute,
   dataSelection,
   parameters = {},
   withExportPopover = false,
@@ -362,7 +361,6 @@ const StixRelationshipsMultiHorizontalBars = ({
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     let selection = {};
-    let dataSelectionDateAttribute = null;
     let filtersAndOptions;
     let subDistributionFiltersAndOptions;
     let subSelection = {};
@@ -370,9 +368,6 @@ const StixRelationshipsMultiHorizontalBars = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
       if (dataSelection.length > 1) {
         // eslint-disable-next-line prefer-destructuring
@@ -389,7 +384,7 @@ const StixRelationshipsMultiHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute: dateAttribute || dataSelectionDateAttribute,
+      dateAttribute: selection.date_attribute ?? 'created_at',
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
       isTo: selection.isTo,
