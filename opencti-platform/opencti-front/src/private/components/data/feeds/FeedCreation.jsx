@@ -147,11 +147,11 @@ const feedCreationMutation = graphql`
     }
 `;
 
-const feedCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  separator: Yup.string().required(t('This field is required')),
-  rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().required(t('This field is required')),
+const feedCreationValidation = (t_i18n) => Yup.object().shape({
+  name: Yup.string().required(t_i18n('This field is required')),
+  separator: Yup.string().required(t_i18n('This field is required')),
+  rolling_time: Yup.number().required(t_i18n('This field is required')),
+  feed_types: Yup.array().required(t_i18n('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
@@ -167,7 +167,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 };
 
 const FeedCreation = (props) => {
-  const { t, classes } = props;
+  const { classes } = props;
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
@@ -351,7 +351,7 @@ const FeedCreation = (props) => {
                     feed_date_attribute: 'created_at',
                     feed_public: false,
                   }}
-                  validationSchema={feedCreationValidation(t)}
+                  validationSchema={feedCreationValidation(t_i18n)}
                   onSubmit={onSubmit}
                   onReset={onClose}
                 >
