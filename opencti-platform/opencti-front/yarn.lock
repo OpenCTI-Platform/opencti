@@ -2029,18 +2029,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:6.1.0":
-  version: 6.1.0
-  resolution: "@ckeditor/ckeditor5-react@npm:6.1.0"
+"@ckeditor/ckeditor5-react@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "@ckeditor/ckeditor5-react@npm:6.3.0"
   dependencies:
     prop-types: "npm:^15.7.2"
   peerDependencies:
-    "@ckeditor/ckeditor5-core": ">=37.0.0"
-    "@ckeditor/ckeditor5-engine": ">=37.0.0"
-    "@ckeditor/ckeditor5-utils": ">=37.0.0"
-    "@ckeditor/ckeditor5-watchdog": ">=37.0.0"
+    "@ckeditor/ckeditor5-core": ">=41.3.1"
+    "@ckeditor/ckeditor5-editor-multi-root": ">=41.3.1"
+    "@ckeditor/ckeditor5-engine": ">=41.3.1"
+    "@ckeditor/ckeditor5-utils": ">=41.3.1"
+    "@ckeditor/ckeditor5-watchdog": ">=41.3.1"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10/181965902f5745f268030ee86c4239df5e7975adfeb479bd21906861e473f6cf5fc7e4135bd03922e90575481b64bb27b7ff826ad7eabd9c46d69288d9cbe9b6
+  checksum: 10/ce1a8d905078e5038d55efebafadaa9277149d4a990dc33b54a9c6bfdcfa982d89f5aa4d6331199d09cb3782e665805a408ba265a8b095c9a8138cbfae376d78
   languageName: node
   linkType: hard
 
@@ -15050,7 +15051,7 @@ __metadata:
   resolution: "opencti-front@workspace:."
   dependencies:
     "@analytics/google-analytics": "npm:1.0.7"
-    "@ckeditor/ckeditor5-react": "npm:6.1.0"
+    "@ckeditor/ckeditor5-react": "npm:^6.3.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.0.0"
     "@emotion/react": "npm:11.11.4"
