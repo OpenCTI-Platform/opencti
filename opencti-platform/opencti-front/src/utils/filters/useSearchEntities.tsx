@@ -36,6 +36,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters } from './filtersUtils';
+import { isEmptyField } from '../utils';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -819,8 +820,8 @@ const useSearchEntities = ({
                 },
               ]);
           } else { // display relationship types according to searchContext.entityTypes
-            const { entityTypes } = searchContext;
-            if (entityTypes.includes('stix-core-relationship')) {
+            const entityTypes = searchContext.entityTypes.filter((f) => ['stix-core-relationship', 'stix-sighting-relationship', 'contains'].includes(f));
+            if (isEmptyField(entityTypes) || entityTypes.includes('stix-core-relationship')) {
               relationshipsTypes = (schema.scrs ?? [])
                 .map((n) => ({
                   label: t_i18n(`relationship_${n.label}`),
@@ -828,7 +829,7 @@ const useSearchEntities = ({
                   type: n.label,
                 }));
             }
-            if (entityTypes.includes('stix-sighting-relationship')) {
+            if (isEmptyField(entityTypes) || entityTypes.includes('stix-sighting-relationship')) {
               relationshipsTypes = [
                 ...relationshipsTypes,
                 {
@@ -838,7 +839,7 @@ const useSearchEntities = ({
                 },
               ];
             }
-            if (entityTypes.includes('contains')) {
+            if (isEmptyField(entityTypes) || entityTypes.includes('contains')) {
               relationshipsTypes = [
                 ...relationshipsTypes,
                 {

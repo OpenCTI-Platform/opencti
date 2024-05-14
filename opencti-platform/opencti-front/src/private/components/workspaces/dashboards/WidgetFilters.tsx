@@ -41,26 +41,32 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   let availableEntityTypes;
   let searchContext;
+  let entityTypes;
   if (perspective === 'relationships') {
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
-    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
+    entityTypes = ['stix-core-relationship', 'stix-sighting-relationship', 'contains'];
+    searchContext = { entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
+    entityTypes = ['History'];
     searchContext = { entityTypes: ['History'] };
   } else { // perspective = 'entities'
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
     ];
+    entityTypes = ['Stix-Core-Object'];
     searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
   if (perspective !== 'relationships') {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
+  } else {
+    availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter
   }
   const entitiesFilterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
   const entitiesFilters = uniq(Array.from(entitiesFilterKeysMap.keys() ?? []));
@@ -84,7 +90,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicFrom}
           type="from"
-          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+          searchContext={searchContext}
         />
       </Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -96,7 +102,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           ]}
           helpers={helpersDynamicTo}
           type="to"
-          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+          searchContext={searchContext}
         />
       </Box>
     </>)}
