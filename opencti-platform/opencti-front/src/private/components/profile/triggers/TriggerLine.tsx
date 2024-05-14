@@ -126,9 +126,9 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
         {data.trigger_type === 'live' ? (
-          <AlarmOnOutlined color="secondary" />
+          <AlarmOnOutlined color="warning" />
         ) : (
-          <BackupTableOutlined color="info" />
+          <BackupTableOutlined color="secondary" />
         )}
       </ListItemIcon>
       <ListItemText
