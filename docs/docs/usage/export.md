@@ -20,7 +20,7 @@ With the OpenCTI platform, you can manually export your intelligence content in 
 To export one or more entities you have two possibilities. First you can click on the button "Open export panel". The list of pre-existing exports will open, and in the bottom right-hand corner you can configure and generate a new export.
 
 ![open export panel](assets/open_export_panel.png)
-This opens the export settings panel, where you can customize your export according to three fields:
+This opens the export settings panel, where you can customize your export according to four fields:
 
 - desired export format (text/csv, application/pdf, application/vnd.oasis.stix+json, text/plain)
 - export type (simple or full),
