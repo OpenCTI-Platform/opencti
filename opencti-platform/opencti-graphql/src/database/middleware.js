@@ -1250,7 +1250,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
 
   // Merge files on S3 and update x_opencti_files
   const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
-  let newXOpenctiFiles = [...targetEntity.x_opencti_files] || [];
+  let newXOpenctiFiles = [...targetEntity.x_opencti_files];
 
   for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
     if (sourceEntitiesWithFiles[i].x_opencti_files) {

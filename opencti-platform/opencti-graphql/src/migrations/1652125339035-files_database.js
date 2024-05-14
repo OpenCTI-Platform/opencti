@@ -17,7 +17,7 @@ export const up = async (next) => {
     const [id, groupFiles] = entry;
     return internalLoadById(context, SYSTEM_USER, id).then((element) => {
       if (element) {
-        const eventFiles = groupFiles.map((f) => storeFileConverter(SYSTEM_USER, f));
+        const eventFiles = groupFiles.map((f) => storeFileConverter(f));
         const source = 'ctx._source.x_opencti_files = params.files;';
         return elUpdate(element._index, element.internal_id, {
           script: { source, lang: 'painless', params: { files: eventFiles } },
