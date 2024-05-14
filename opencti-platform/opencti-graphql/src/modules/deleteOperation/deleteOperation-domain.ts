@@ -117,8 +117,10 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
       const missingIds = [...targetIdsToFind].filter((id) => !availableIds.includes(id));
       const targetsFromTrash = await elFindByIds(context, user, missingIds, { baseFields: ['internal_id', 'entity_type'], indices: READ_INDEX_DELETED_OBJECTS }) as BasicStoreObject[];
       if (targetsFromTrash.length > 0) {
-        const name = extractRepresentative(targetsFromTrash[0]); // only hint the first one
-        throw FunctionalError(`Cannot restore: a relationship targets a deleted element [${name.main}], restore it before retrying`);
+        // only hint the first 3 ones
+        let name = targetsFromTrash.slice(0, 3).map((t) => extractRepresentative(t).main).join(',');
+        if (targetsFromTrash.length > 3) name = `${name}, ... and ${targetsFromTrash.length - 3} more`;
+        throw FunctionalError(`Cannot restore: a relationship targets deleted elements [${name}], restore them before retrying`);
       }
       // in this last case, the DeleteOperation is actually irrecoverable
       throw FunctionalError('Cannot restore: a target element of a relationship has been permanently deleted and cannot be recovered');

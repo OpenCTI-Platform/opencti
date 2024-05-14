@@ -39,6 +39,9 @@ export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
   if (element) {
     if (isStixObject(element.entity_type) || isStixRelationship(element.entity_type)) {
+      // To handle delete synchronization events, we force the forceDelete flag to true, because we don't want delete events to create trash entries on synchronized platforms
+      // THIS IS NOT IDEAL: we ideally would need to add the forceDelete flag to all delete related methods on the API,
+      // and let the worker call this method with the flag set to true in case of synchronization
       await deleteElementById(context, user, element.id, element.entity_type, { forceDelete: true });
       return element.id;
     }
