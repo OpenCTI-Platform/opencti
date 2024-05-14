@@ -24,7 +24,7 @@ import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -168,6 +168,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const FeedCreation = (props) => {
   const { t, classes } = props;
+  const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
@@ -301,7 +302,7 @@ const FeedCreation = (props) => {
 
   return (
     <Drawer
-      title={t('Create a feed')}
+      title={t_i18n('Create a feed')}
       variant={DrawerVariant.createWithPanel}
       onClose={handleClose}
     >
@@ -315,7 +316,7 @@ const FeedCreation = (props) => {
                 ...R.pipe(
                   R.pathOr([], ['scoTypes', 'edges']),
                   R.map((n) => ({
-                    label: t(`entity_${n.node.label}`),
+                    label: t_i18n(`entity_${n.node.label}`),
                     value: n.node.label,
                     type: n.node.label,
                   })),
@@ -326,7 +327,7 @@ const FeedCreation = (props) => {
                 ...R.pipe(
                   R.pathOr([], ['sdoTypes', 'edges']),
                   R.map((n) => ({
-                    label: t(`entity_${n.node.label}`),
+                    label: t_i18n(`entity_${n.node.label}`),
                     value: n.node.label,
                     type: n.node.label,
                   })),
@@ -360,14 +361,14 @@ const FeedCreation = (props) => {
                         component={TextField}
                         variant="standard"
                         name="name"
-                        label={t('Name')}
+                        label={t_i18n('Name')}
                         fullWidth={true}
                       />
                       <Field
                         component={TextField}
                         variant="standard"
                         name="description"
-                        label={t('Description')}
+                        label={t_i18n('Description')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -379,14 +380,14 @@ const FeedCreation = (props) => {
                         style={{ position: 'relative' }}
                       >
                         <AlertTitle>
-                          {t('Make this feed public and available to anyone')}
+                          {t_i18n('Make this feed public and available to anyone')}
                         </AlertTitle>
                         <FormControlLabel
                           control={<Switch />}
                           style={{ marginLeft: 1 }}
                           name="feed_public"
                           onChange={(_, checked) => setFieldValue('feed_public', checked)}
-                          label={t('Public feed')}
+                          label={t_i18n('Public feed')}
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
@@ -394,7 +395,7 @@ const FeedCreation = (props) => {
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
-                            helpertext={t('Let the field empty to grant all authenticated users')}
+                            helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                             name="authorized_members"
                           />
                         )}
@@ -403,7 +404,7 @@ const FeedCreation = (props) => {
                         component={TextField}
                         variant="standard"
                         name="separator"
-                        label={t('Separator')}
+                        label={t_i18n('Separator')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -412,14 +413,14 @@ const FeedCreation = (props) => {
                         variant="standard"
                         type="number"
                         name="rolling_time"
-                        label={t('Rolling time (in minutes)')}
+                        label={t_i18n('Rolling time (in minutes)')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
                               <Tooltip
-                                title={t(
+                                title={t_i18n(
                                   'Return all objects matching the filters that have been updated since this amount of minutes',
                                 )}
                               >
@@ -437,19 +438,19 @@ const FeedCreation = (props) => {
                         component={SelectField}
                         variant="standard"
                         name="feed_date_attribute"
-                        label={t('Base attribute')}
+                        label={t_i18n('Base attribute')}
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
-                      ><MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
-                        <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                      ><MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
+                        <MenuItem key={'updated_at'} value={'updated_at'}>{t_i18n('Update date')}</MenuItem>
                       </Field>
                       <Field
                         component={SelectField}
                         variant="standard"
                         name="feed_types"
                         onChange={(_, value) => handleSelectTypes(value)}
-                        label={t('Entity types')}
+                        label={t_i18n('Entity types')}
                         fullWidth={true}
                         multiple={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
@@ -464,7 +465,7 @@ const FeedCreation = (props) => {
                         component={SwitchField}
                         type="checkbox"
                         name="include_header"
-                        label={t('Include headers in the feed')}
+                        label={t_i18n('Include headers in the feed')}
                         containerstyle={{ marginTop: 20 }}
                       />
                       <Box sx={{ paddingTop: 4,
@@ -522,7 +523,7 @@ const FeedCreation = (props) => {
                                   <MuiTextField
                                     variant="standard"
                                     name="attribute"
-                                    label={t('Column')}
+                                    label={t_i18n('Column')}
                                     fullWidth={true}
                                     value={feedAttributes[i].attribute}
                                     onChange={(event) => handleChangeField(i, event.target.value)
@@ -539,7 +540,7 @@ const FeedCreation = (props) => {
                                       className={classes.formControl}
                                     >
                                       <InputLabel>
-                                        {t(`entity_${selectedType}`)}
+                                        {t_i18n(`entity_${selectedType}`)}
                                       </InputLabel>
                                       <QueryRenderer
                                         query={
@@ -645,7 +646,7 @@ const FeedCreation = (props) => {
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
                         >
-                          {t('Cancel')}
+                          {t_i18n('Cancel')}
                         </Button>
                         <Button
                           variant="contained"
@@ -654,7 +655,7 @@ const FeedCreation = (props) => {
                           disabled={isSubmitting || !areAttributesValid()}
                           classes={{ root: classes.button }}
                         >
-                          {t('Create')}
+                          {t_i18n('Create')}
                         </Button>
                       </div>
                     </Form>

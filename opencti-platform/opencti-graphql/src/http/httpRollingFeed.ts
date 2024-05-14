@@ -73,7 +73,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const paginateElements = await listAllThings(context, user, feed.feed_types, args);
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       if (feed.include_header) {
-        res.write(`${feed.feed_attributes.map((a) => a.attribute).join(',')}\r\n`);
+        res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
       }
       for (let index = 0; index < elements.length; index += 1) {
         const element = elements[index];
