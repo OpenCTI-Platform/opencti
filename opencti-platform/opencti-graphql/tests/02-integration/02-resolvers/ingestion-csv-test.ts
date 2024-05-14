@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import {ADMIN_USER, participantQuery, queryAsAdmin, USER_PARTICIPATE} from '../../utils/testQuery';
-import {FORBIDDEN_ACCESS} from '../../../src/config/errors';
+import { ADMIN_USER, participantQuery, queryAsAdmin, USER_PARTICIPATE } from '../../utils/testQuery';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -149,6 +149,20 @@ describe('CSV ingestion resolver standard behavior', () => {
       variables: CSV_FEED_INGESTER_TO_UPDATE
     });
     expect(stopSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.name).toBe('Single column CSV feed ingester');
+  });
+
+  it('should fail to delete the mapper used by the ingester', async () => {
+    const deleteResult = await queryAsAdmin({
+      query: gql`
+        mutation CsvMapperDelete($id: ID!) {
+          csvMapperDelete(id: $id)
+        }
+      `,
+      variables: { id: singleColumnCsvMapperId },
+    });
+    const { errors } = deleteResult;
+    expect(errors).toBeDefined();
+    expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)');
   });
 
   it('should delete the CSV feeds ingester', async () => {

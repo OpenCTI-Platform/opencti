@@ -74,7 +74,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
 
   const ingestionCsvCreationValidation = () => Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     uri: Yup.string().required(t_i18n('This field is required')),
     authentication_type: Yup.string().required(t_i18n('This field is required')),
@@ -126,6 +126,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       },
       onCompleted: () => {
         setSubmitting(false);
+        setIsCreateDisabled(true);
         resetForm();
       },
     });
