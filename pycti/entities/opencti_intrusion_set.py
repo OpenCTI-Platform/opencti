@@ -275,17 +275,15 @@ class IntrusionSet:
             }
         """
         )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
+        variables = {
+            "filters": filters,
+            "search": search,
+            "first": first,
+            "after": after,
+            "orderBy": order_by,
+            "orderMode": order_mode,
+        }
+        result = self.opencti.query(query, variables)
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["intrusionSets"])

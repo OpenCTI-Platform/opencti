@@ -1355,8 +1355,10 @@ class StixDomainObject:
         )
 
     def push_entity_export(
-        self, entity_id, file_name, data, file_markings, mime_type=None
+        self, entity_id, file_name, data, file_markings=None, mime_type=None
     ):
+        if file_markings is None:
+            file_markings = []
         query = """
             mutation StixDomainObjectEdit(
                 $id: ID!, $file: Upload!,

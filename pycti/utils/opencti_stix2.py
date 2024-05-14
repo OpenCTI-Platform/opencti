@@ -135,43 +135,6 @@ class OpenCTIStix2:
             return stix_object["aliases"]
         return None
 
-    def check_max_marking_definition(
-        self, max_marking_definition_entity: Dict, entity_marking_definitions: List
-    ) -> bool:
-        """checks if a list of marking definitions conforms with a given max level
-
-        :param max_marking_definition_entity: the maximum allowed marking definition level
-        :type max_marking_definition_entity: str, optional
-        :param entity_marking_definitions: list of entities to check
-        :type entity_marking_definitions: list
-        :return: `True` if the list conforms with max marking definition
-        :rtype: bool
-        """
-
-        # Max is not set, return True
-        if max_marking_definition_entity is None:
-            return True
-        # Filter entity markings definition to the max_marking_definition type
-        typed_entity_marking_definitions = []
-        for entity_marking_definition in entity_marking_definitions:
-            if (
-                entity_marking_definition["definition_type"]
-                == max_marking_definition_entity["definition_type"]
-            ):
-                typed_entity_marking_definitions.append(entity_marking_definition)
-        # No entity marking defintions of the max_marking_definition type
-        if len(typed_entity_marking_definitions) == 0:
-            return True
-
-        # Check if level is less or equal to max
-        for typed_entity_marking_definition in typed_entity_marking_definitions:
-            if (
-                typed_entity_marking_definition["x_opencti_order"]
-                <= max_marking_definition_entity["x_opencti_order"]
-            ):
-                return True
-        return False
-
     def import_bundle_from_file(
         self, file_path: str, update: bool = False, types: List = None
     ) -> Optional[List]:
@@ -1659,7 +1622,10 @@ class OpenCTIStix2:
 
         return {k: v for k, v in entity.items() if self.opencti.not_empty(v)}
 
-    def prepare_filters_export(self, id: str, access_filter: Dict = None) -> Dict:
+    @staticmethod
+    def prepare_id_filters_export(
+        id: Union[str, List[str]], access_filter: Dict = None
+    ) -> Dict:
         if access_filter is not None:
             return {
                 "mode": "and",
@@ -1668,8 +1634,8 @@ class OpenCTIStix2:
                         "mode": "or",
                         "filters": [
                             {
-                                "key": "id",
-                                "values": [id],
+                                "key": "ids",
+                                "values": id if isinstance(id, list) else [id],
                             }
                         ],
                         "filterGroups": [],
@@ -1681,27 +1647,20 @@ class OpenCTIStix2:
         else:
             return {
                 "mode": "and",
-                "filterGroups": [
+                "filterGroups": [],
+                "filters": [
                     {
+                        "key": "ids",
                         "mode": "or",
-                        "filters": [
-                            {
-                                "key": "id",
-                                "values": [id],
-                            }
-                        ],
-                        "filterGroups": [],
-                    },
+                        "values": id if isinstance(id, list) else [id],
+                    }
                 ],
-                "filters": [],
             }
 
     def prepare_export(
         self,
         entity: Dict,
         mode: str = "simple",
-        max_marking_definition_entity: Dict = None,
-        main_filter: Dict = None,
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
     ) -> List:
@@ -1711,37 +1670,16 @@ class OpenCTIStix2:
 
         # Container
         if "objects" in entity and len(entity["objects"]) > 0:
-            del entity["objects"]
-            regarding_of_filter = {
-                "mode": "and",
-                "filterGroups": [],
-                "filters": [
-                    {
-                        "key": "regardingOf",
-                        "mode": "and",
-                        "operator": "eq",
-                        "values": [
-                            {"key": "id", "values": [entity["x_opencti_id"]]},
-                            {"key": "relationship_type", "values": ["object"]},
-                        ],
-                    }
-                ],
-            }
-            filter_groups = []
-            if regarding_of_filter is not None:
-                filter_groups.append(regarding_of_filter)
-            if access_filter is not None:
-                filter_groups.append(access_filter)
-            export_query_filter = {
-                "mode": "and",
-                "filterGroups": filter_groups,
-                "filters": [],
-            }
-            entity["objects"] = (
+            object_ids = list(map(lambda e: e["standard_id"], entity["objects"]))
+            export_query_filter = self.prepare_id_filters_export(
+                id=object_ids, access_filter=access_filter
+            )
+            filtered_objects = (
                 self.opencti.opencti_stix_object_or_stix_relationship.list(
-                    filters=export_query_filter
+                    filters=export_query_filter, getAll=True
                 )
             )
+            entity["objects"] = filtered_objects
 
         # CreatedByRef
         if (
@@ -1749,7 +1687,7 @@ class OpenCTIStix2:
             and "createdBy" in entity
             and entity["createdBy"] is not None
         ):
-            created_by = self.generate_export(entity["createdBy"])
+            created_by = self.generate_export(entity=entity["createdBy"])
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
                 entity["x_opencti_created_by_ref"] = created_by["id"]
             else:
@@ -1927,7 +1865,7 @@ class OpenCTIStix2:
             entity["count"] = entity["attribute_count"]
             del entity["attribute_count"]
             from_to_check = entity["from"]["id"]
-            relationships_from_filter = self.prepare_filters_export(
+            relationships_from_filter = self.prepare_id_filters_export(
                 id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
@@ -1941,7 +1879,7 @@ class OpenCTIStix2:
                 )  # what happen with unauthorized objects ?
 
             to_to_check = [entity["to"]["id"]]
-            relationships_to_filter = self.prepare_filters_export(
+            relationships_to_filter = self.prepare_id_filters_export(
                 id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
@@ -1958,7 +1896,7 @@ class OpenCTIStix2:
             entity["type"] = "relationship"
         if "from" in entity:
             from_to_check = entity["from"]["id"]
-            relationships_from_filter = self.prepare_filters_export(
+            relationships_from_filter = self.prepare_id_filters_export(
                 id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
@@ -1973,7 +1911,7 @@ class OpenCTIStix2:
             del entity["from"]
         if "to" in entity:
             to_to_check = [entity["to"]["id"]]
-            relationships_to_filter = self.prepare_filters_export(
+            relationships_to_filter = self.prepare_id_filters_export(
                 id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
@@ -2114,84 +2052,47 @@ class OpenCTIStix2:
                 fromOrToId=entity["x_opencti_id"], getAll=True, filters=access_filter
             )
             for stix_core_relationship in stix_core_relationships:
-                if self.check_max_marking_definition(
-                    max_marking_definition_entity,
-                    (
-                        stix_core_relationship["objectMarking"]
-                        if "objectMarking" in stix_core_relationship
-                        else None
-                    ),
-                ):
-                    objects_to_get.append(
-                        stix_core_relationship["to"]
-                        if stix_core_relationship["to"]["id"] != entity["x_opencti_id"]
-                        else stix_core_relationship["from"]
+                objects_to_get.append(
+                    stix_core_relationship["to"]
+                    if stix_core_relationship["to"]["id"] != entity["x_opencti_id"]
+                    else stix_core_relationship["from"]
+                )
+                relation_object_data = (
+                    self.prepare_export(  # ICI -> remove max marking ?
+                        entity=self.generate_export(stix_core_relationship),
+                        mode="simple",
+                        access_filter=access_filter,
                     )
-                    relation_object_data = (
-                        self.prepare_export(  # ICI -> remove max marking ?
-                            self.generate_export(stix_core_relationship),
-                            "simple",
-                            max_marking_definition_entity,
-                            main_filter,
-                            access_filter,
-                        )
-                    )
-                    relation_object_bundle = self.filter_objects(
-                        uuids, relation_object_data
-                    )
-                    uuids = uuids + [x["id"] for x in relation_object_bundle]
-                    result = result + relation_object_bundle
-                else:
-                    self.opencti.app_logger.info(
-                        "Marking definitions are less than max definition, "
-                        "not exporting the relation AND the target entity.",
-                        {
-                            "type": stix_core_relationship["entity_type"],
-                            "id": stix_core_relationship["id"],
-                        },
-                    )
+                )
+                relation_object_bundle = self.filter_objects(
+                    uuids, relation_object_data
+                )
+                uuids = uuids + [x["id"] for x in relation_object_bundle]
+                result = result + relation_object_bundle
+
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
                 fromOrToId=entity["x_opencti_id"], getAll=True, filters=access_filter
             )
             for stix_sighting_relationship in stix_sighting_relationships:
-                if self.check_max_marking_definition(
-                    max_marking_definition_entity,
-                    (
-                        stix_sighting_relationship["objectMarking"]
-                        if "objectMarking" in stix_sighting_relationship
-                        else None
-                    ),
-                ):
-                    objects_to_get.append(
-                        stix_sighting_relationship["to"]
-                        if stix_sighting_relationship["to"]["id"]
-                        != entity["x_opencti_id"]
-                        else stix_sighting_relationship["from"]
+                objects_to_get.append(
+                    stix_sighting_relationship["to"]
+                    if stix_sighting_relationship["to"]["id"] != entity["x_opencti_id"]
+                    else stix_sighting_relationship["from"]
+                )
+                relation_object_data = (
+                    self.prepare_export(  # ICI -> remove max marking ?
+                        entity=self.generate_export(stix_sighting_relationship),
+                        mode="simple",
+                        access_filter=access_filter,
                     )
-                    relation_object_data = (
-                        self.prepare_export(  # ICI -> remove max marking ?
-                            self.generate_export(stix_sighting_relationship),
-                            "simple",
-                            max_marking_definition_entity,
-                            main_filter,
-                            access_filter,
-                        )
-                    )
-                    relation_object_bundle = self.filter_objects(
-                        uuids, relation_object_data
-                    )
-                    uuids = uuids + [x["id"] for x in relation_object_bundle]
-                    result = result + relation_object_bundle
-                else:
-                    self.opencti.app_logger.info(
-                        "Marking definitions are less than max definition, "
-                        "not exporting the relation AND the target entity.",
-                        {
-                            "type": stix_sighting_relationship["entity_type"],
-                            "id": stix_sighting_relationship["id"],
-                        },
-                    )
+                )
+                relation_object_bundle = self.filter_objects(
+                    uuids, relation_object_data
+                )
+                uuids = uuids + [x["id"] for x in relation_object_bundle]
+                result = result + relation_object_bundle
+
             if no_custom_attributes:
                 del entity["x_opencti_id"]
             # Export
@@ -2219,16 +2120,16 @@ class OpenCTIStix2:
                         {"type": entity_object["entity_type"]}
                     ),
                 )
-                entity_object_data = do_read(
-                    id=entity_object["id"], filters=access_filter
+
+                query_filters = self.prepare_id_filters_export(
+                    entity_object["id"], access_filter
                 )
+                entity_object_data = do_read(filters=query_filters)
                 if entity_object_data is not None:
                     stix_entity_object = self.prepare_export(
-                        self.generate_export(entity_object_data),
-                        "simple",
-                        max_marking_definition_entity,
-                        main_filter,
-                        access_filter,
+                        entity=self.generate_export(entity_object_data),
+                        mode="simple",
+                        access_filter=access_filter,
                     )
                     # Add to result
                     entity_object_bundle = self.filter_objects(
@@ -2244,7 +2145,7 @@ class OpenCTIStix2:
                     return current_relation_object.id == relation_object["id"]
 
                 relation_object_data = self.prepare_export(
-                    filter(
+                    entity=filter(
                         find_relation_object_data,
                         self.opencti.stix_core_relationship.list(filters=access_filter),
                     )
@@ -2264,7 +2165,6 @@ class OpenCTIStix2:
                         report_object_data = self.opencti.report.to_stix2(
                             entity=report,
                             mode="simple",
-                            max_marking_definition_entity=max_marking_definition_entity,
                         )
                         report_object_bundle = self.filter_objects(
                             uuids, report_object_data
@@ -2283,7 +2183,6 @@ class OpenCTIStix2:
             #            note_object_data = self.opencti.note.to_stix2(
             #                entity=note,
             #                mode="simple",
-            #                max_marking_definition_entity=max_marking_definition_entity,
             #            )
             #            note_object_bundle = self.filter_objects(
             #                uuids, note_object_data
@@ -2312,14 +2211,12 @@ class OpenCTIStix2:
         else:
             return []
 
-    def export_entity(
+    def get_stix_bundle_or_object_from_entity_id(
         self,
         entity_type: str,
         entity_id: str,
         mode: str = "simple",
-        main_filter: Dict = None,
         access_filter: Dict = None,
-        max_marking_definition: Dict = None,
         no_custom_attributes: bool = False,
         only_entity: bool = False,
     ) -> Dict:
@@ -2338,12 +2235,11 @@ class OpenCTIStix2:
         if LocationTypes.has_value(entity_type):
             entity_type = "Location"
 
-        # Lister
-        listers = self.get_listers()
-        do_list = listers.get(
+        readers = self.get_readers()
+        do_read = readers.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
         )
-        entity = do_list(filters=main_filter)[0]
+        entity = do_read(id=entity_id)
         if entity is None:
             self.opencti.app_logger.error(
                 "Cannot export entity (not found)", {"id": entity_id}
@@ -2351,12 +2247,10 @@ class OpenCTIStix2:
             return bundle
         entity_standard_id = entity["standard_id"]
         stix_objects = self.prepare_export(
-            self.generate_export(entity, no_custom_attributes),
-            mode,
-            None,
-            main_filter,
-            access_filter,
-            no_custom_attributes,
+            entity=self.generate_export(entity, no_custom_attributes),
+            mode=mode,
+            access_filter=access_filter,
+            no_custom_attributes=no_custom_attributes,
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
@@ -2366,6 +2260,26 @@ class OpenCTIStix2:
             ]
         return bundle
 
+    # Please use get_stix_bundle_or_object_from_entity_id instead
+    @DeprecationWarning
+    def export_entity(
+        self,
+        entity_type: str,
+        entity_id: str,
+        mode: str = "simple",
+        access_filter: Dict = None,
+        no_custom_attributes: bool = False,
+        only_entity: bool = False,
+    ) -> Dict:
+        return self.get_stix_bundle_or_object_from_entity_id(
+            entity_type=entity_type,
+            entity_id=entity_id,
+            mode=mode,
+            access_filter=access_filter,
+            no_custom_attributes=no_custom_attributes,
+            only_entity=only_entity,
+        )
+
     def export_entities_list(
         self,
         entity_type: str,
@@ -2374,7 +2288,7 @@ class OpenCTIStix2:
         orderBy: str = None,
         orderMode: str = None,
         getAll: bool = True,
-    ) -> Dict:
+    ) -> [Dict]:
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
 
@@ -2447,7 +2361,6 @@ class OpenCTIStix2:
         order_by: str = None,
         order_mode: str = None,
         mode: str = "simple",
-        main_filter: Dict = None,
         access_filter: Dict = None,
     ) -> Dict:
         bundle = {
@@ -2455,14 +2368,14 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
-        filterGroups = []
+        filter_groups = []
         if filters is not None:
-            filterGroups.append(filters)
+            filter_groups.append(filters)
         if access_filter is not None:
-            filterGroups.append(access_filter)
+            filter_groups.append(access_filter)
         export_query_filter = {
             "mode": "and",
-            "filterGroups": filterGroups,
+            "filterGroups": filter_groups,
             "filters": [],
         }
         entities_list = self.export_entities_list(
@@ -2477,11 +2390,9 @@ class OpenCTIStix2:
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
-                    self.generate_export(entity),
-                    mode,
-                    None,
-                    main_filter,
-                    access_filter,
+                    entity=self.generate_export(entity),
+                    mode=mode,
+                    access_filter=access_filter,
                 )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
@@ -2492,45 +2403,31 @@ class OpenCTIStix2:
 
     def export_selected(
         self,
-        entities_list: [str],
+        entities_list: [dict],
         mode: str = "simple",
-        main_filter: Dict = None,
         access_filter: Dict = None,
     ) -> Dict:
 
-        entity_data_sdo = self.opencti.stix_domain_object.list(filters=main_filter)
-        entity_data_sco = self.opencti.stix_cyber_observable.list(filters=main_filter)
-        entity_data_scr = self.opencti.stix_core_relationship.list(filters=main_filter)
-        entity_data_ssr = self.opencti.stix_sighting_relationship.list(
-            filters=main_filter
-        )
-
-        entities_list = (
-            entity_data_sdo + entity_data_sco + entity_data_scr + entity_data_ssr
-        )
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
 
-        if entities_list is not None:
-            uuids = []
-            for entity in entities_list:
-                entity_bundle = self.prepare_export(
-                    self.generate_export(entity),
-                    mode,
-                    None,
-                    main_filter,
-                    access_filter,
-                )
-                if entity_bundle is not None:
-                    entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
-                    for x in entity_bundle_filtered:
-                        uuids.append(x["id"])
-                    bundle["objects"] = (
-                        bundle["objects"] + entity_bundle_filtered
-                    )  # unsupported operand type(s) for +: 'dict' and 'list'
+        uuids = []
+        for entity in entities_list:
+            entity_bundle = self.prepare_export(
+                entity=self.generate_export(entity),
+                mode=mode,
+                access_filter=access_filter,
+            )
+            if entity_bundle is not None:
+                entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
+                for x in entity_bundle_filtered:
+                    uuids.append(x["id"])
+                bundle["objects"] = (
+                    bundle["objects"] + entity_bundle_filtered
+                )  # unsupported operand type(s) for +: 'dict' and 'list'
 
         return bundle
 
