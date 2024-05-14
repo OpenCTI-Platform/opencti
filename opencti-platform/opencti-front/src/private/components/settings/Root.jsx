@@ -63,7 +63,7 @@ const Root = () => {
                         </Security>
                       }
                     />
-                }
+                  }
                 >
                   <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
                 </Security>
@@ -171,9 +171,9 @@ const Root = () => {
             />
             <Route
               path="/activity"
-              element={
-                <Navigate to="/dashboard/settings/activity/audit" />
-                  }
+              element={(
+                <Navigate to="/dashboard/settings/activity/audit" replace={true} />
+              )}
             />
             <Route
               path="activity/audit"
@@ -181,15 +181,15 @@ const Root = () => {
             />
             <Route
               path="activity/configuration"
-              Component={ boundaryWrapper(Configuration)}
+              Component={boundaryWrapper(Configuration)}
             />
             <Route
               path="activity/alerting"
-              Component={ boundaryWrapper(Alerting)}
+              Component={boundaryWrapper(Alerting)}
             />
             <Route
               path="/file_indexing"
-              element={ <FileIndexing />}
+              element={<FileIndexing />}
             />
             <Route
               path="/support"
@@ -198,7 +198,7 @@ const Root = () => {
             <Route
               path="/customization"
               element={
-                <Navigate to="/dashboard/settings/customization/entity_types" />
+                <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
               }
             />
             <Route
@@ -211,7 +211,7 @@ const Root = () => {
             />
             <Route
               path="/customization/entity_types/:subTypeId/*"
-              element={ <RootSubType />}
+              element={<RootSubType />}
             />
             <Route
               path="/customization/rules"
@@ -258,7 +258,7 @@ const Root = () => {
                 >
                   <KillChainPhases />
                 </Security>
-                  }
+              }
             />
             <Route
               path="/vocabularies/status_templates"

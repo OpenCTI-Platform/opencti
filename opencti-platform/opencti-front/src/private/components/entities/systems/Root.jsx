@@ -238,6 +238,7 @@ class RootSystem extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                           />
                         }

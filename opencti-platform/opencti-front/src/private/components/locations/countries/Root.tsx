@@ -166,7 +166,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             <Route
               path="/knowledge"
               element={
-                <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} />
+                <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
               }
             />
             <Route

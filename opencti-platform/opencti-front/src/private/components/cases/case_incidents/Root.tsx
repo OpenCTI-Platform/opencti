@@ -208,6 +208,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               path="/knowledge"
               element={
                 <Navigate
+                  replace={true}
                   to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
                 />}
             />

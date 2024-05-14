@@ -244,6 +244,7 @@ class RootOrganization extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
                           />
                         }

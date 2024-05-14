@@ -25,7 +25,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/events/${redirect}`} />}
+          element={<Navigate to={`/dashboard/events/${redirect}`} replace={true} />}
         />
         <Route
           path="/incidents"

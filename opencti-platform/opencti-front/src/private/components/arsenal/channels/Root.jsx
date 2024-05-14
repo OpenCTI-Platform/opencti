@@ -194,6 +194,7 @@ class RootChannel extends Component {
                         path="/knowledge"
                         element={(
                           <Navigate
+                            replace={true}
                             to={`/dashboard/arsenal/channels/${channelId}/knowledge/overview`}
                           />
                         )}

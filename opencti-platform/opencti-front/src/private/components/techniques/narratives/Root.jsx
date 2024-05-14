@@ -192,7 +192,7 @@ class RootNarrative extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route

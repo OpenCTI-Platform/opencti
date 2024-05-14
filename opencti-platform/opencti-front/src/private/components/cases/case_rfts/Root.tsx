@@ -211,6 +211,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               path="/knowledge"
               element={
                 <Navigate
+                  replace={true}
                   to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
                 />
                 }

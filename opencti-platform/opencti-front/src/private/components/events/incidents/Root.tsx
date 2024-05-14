@@ -70,9 +70,7 @@ const incidentQuery = graphql`
 
 const RootIncidentComponent = ({ queryRef }) => {
   const { incidentId } = useParams() as { incidentId: string };
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootIncidentSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
       subscription,
       variables: { id: incidentId },
@@ -163,9 +161,12 @@ const RootIncidentComponent = ({ queryRef }) => {
             />
             <Route
               path="/knowledge"
-              element={<Navigate
-                to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
-                       />}
+              element={(
+                <Navigate
+                  replace={true}
+                  to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
+                />
+              )}
             />
             <Route
               path="/knowledge/*"

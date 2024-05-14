@@ -224,6 +224,7 @@ const RootGrouping = () => {
                       path="/knowledge"
                       element={
                         <Navigate
+                          replace={true}
                           to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
                         />}
                     />

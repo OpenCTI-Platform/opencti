@@ -202,6 +202,7 @@ class RootSector extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                           />
                         }

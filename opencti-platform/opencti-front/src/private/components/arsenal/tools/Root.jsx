@@ -195,6 +195,7 @@ class RootTool extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                           />
                         }

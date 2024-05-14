@@ -199,6 +199,7 @@ class RootEvent extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
                           />
                         }

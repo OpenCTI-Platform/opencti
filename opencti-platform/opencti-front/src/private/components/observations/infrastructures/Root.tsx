@@ -64,9 +64,7 @@ const infrastructureQuery = graphql`
 `;
 
 const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootInfrastructureSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootInfrastructureSubscription>>(
     () => ({
       subscription,
       variables: { id: infrastructureId },
@@ -154,9 +152,12 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             />
             <Route
               path="/knowledge"
-              element={<Navigate
-                to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                       />}
+              element={(
+                <Navigate
+                  replace={true}
+                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
+                />
+              )}
             />
             <Route
               path="/knowledge/*"

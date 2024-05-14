@@ -174,7 +174,7 @@ const RootAdministrativeAreaComponent = ({
             <Route
               path="/knowledge"
               element={
-                <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} />
+                <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
               }
             />
             <Route

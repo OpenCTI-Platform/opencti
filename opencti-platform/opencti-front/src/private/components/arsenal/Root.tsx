@@ -33,7 +33,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/arsenal/${redirect}`} />}
+          element={<Navigate to={`/dashboard/arsenal/${redirect}`} replace={true} />}
         />
         <Route
           path="/malwares"

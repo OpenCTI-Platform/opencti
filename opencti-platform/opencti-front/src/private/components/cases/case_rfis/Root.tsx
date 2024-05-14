@@ -203,7 +203,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             <Route
               path="/knowledge"
               element={
-                <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}/>
+                <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`} replace={true} />
               }
             />
             <Route

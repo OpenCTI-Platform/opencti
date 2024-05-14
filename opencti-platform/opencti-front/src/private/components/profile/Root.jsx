@@ -9,7 +9,7 @@ const Root = () => (
   <Routes>
     <Route
       path="/"
-      element={<Navigate to="/dashboard/profile/me" />}
+      element={<Navigate to="/dashboard/profile/me" replace={true} />}
     />
     <Route
       path="/me"
