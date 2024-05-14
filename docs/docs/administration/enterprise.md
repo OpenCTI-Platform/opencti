@@ -3,12 +3,13 @@
     [Filigran](https://filigran.io) is providing an [Enterprise Edition](https://filigran.io/offerings/opencti-enterprise-edition) of the platform, whether [on-premise](https://filigran.io/offerings/professional-support-packages) or in the [SaaS](https://filigran.io/offerings/software-as-a-service).
 
 ## What is OpenCTI EE?
+
 OpenCTI Enterprise Edition is based on the open core concept. This means that the source code of OCTI EE remains open source and included in the main GitHub repository of the platform but is published under a specific license. As specified in the GitHub license file:
 
-The OpenCTI Community Edition is licensed under the Apache License, Version 2.0 (the “Apache License”).
-The OpenCTI Enterprise Edition is licensed under the OpenCTI
-Non-Commercial License (the “Non-Commercial License”).
-The source files in this repository have a header indicating which license they are under. If no such header is provided, this means that the file is belonging to the Community Edition under the Apache License, Version 2.0.
+- The OpenCTI Community Edition is licensed under the Apache License, Version 2.0 (the “Apache License”).
+- The OpenCTI Enterprise Edition is licensed under the OpenCTI Enterprise Edition License (the “Enterprise Edition Licensee”).
+
+The source files in this repository have a header indicating which license they are under. If no such header is provided, this means that the file belongs to the Community Edition under the Apache License, Version 2.0.
 
 We wrote a complete article to explain the enterprise edition, [feel free to read it to have more information](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)
 

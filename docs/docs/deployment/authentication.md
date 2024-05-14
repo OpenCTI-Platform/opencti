@@ -21,7 +21,7 @@ Under the hood, we technically use the strategies provided by [PassportJS](http:
 
 This strategy uses the OpenCTI database as a user management.
 
-OpenCTI use this strategy as the default but its not the one we recommend for security reasons.
+OpenCTI use this strategy as the default, but it's not the one we recommend for security reasons.
 
 ```json
 "local": {

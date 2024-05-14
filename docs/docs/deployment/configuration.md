@@ -165,25 +165,25 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### RabbitMQ
 
-| Parameter                                   | Environment variable              | Default value  | Description                                 |
-|:--------------------------------------------|:----------------------------------|:---------------|:--------------------------------------------|
-| rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost      | Hostname of the RabbitMQ server             |
-| rabbitmq:port                               | RABBITMQ__PORT                    | 5672           | Port of the RabbitMQ server                 |
-| rabbitmq:port_management                    | RABBITMQ__PORT_MANAGEMENT         | 15672          | Port of the RabbitMQ Management Plugin      |
-| rabbitmq:username                           | RABBITMQ__USERNAME                | guest          | RabbitMQ user                               |
-| rabbitmq:password                           | RABBITMQ__PASSWORD                | guest          | RabbitMQ password                           |
-| rabbitmq:queue_type                         | RABBITMQ__QUEUE_TYPE              | "classic"      | RabbitMQ Queue Type ("classic" or "quorum") |
-| -                                           | -                                 | -              | -                                           |
-| rabbitmq:use_ssl                            | RABBITMQ__USE_SSL                 | `false`        | Use TLS connection                          |                                                |                               |                                                                                     |
-| rabbitmq:use_ssl_cert                       | RABBITMQ__USE_SSL_CERT            |                | Path or cert content                        |
-| rabbitmq:use_ssl_key                        | RABBITMQ__USE_SSL_KEY             |                | Path or key content                         |
-| rabbitmq:use_ssl_pfx                        | RABBITMQ__USE_SSL_PFX             |                | Path or pfx content                         |
-| rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              | []             | List of path(s) of the CA certificate(s)    |
-| rabbitmq:use_ssl_passphrase                 | RABBITMQ__SSL_PASSPHRASE          |                | Passphrase for the key certificate          |
-| rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `false`        | Reject rabbit self signed certificate       |
-| -                                           | -                                 | -              | -                                           |
-| rabbitmq:management_ssl                     | RABBITMQ__MANAGEMENT_SSL          | `false`        | Is the Management Plugin has TLS enabled    |                                                |                               |                                                                                     |
-| rabbitmq:management_ssl_reject_unauthorized | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `true`         | Reject management self signed certificate   |
+| Parameter                                   | Environment variable              | Default value | Description                                 |
+|:--------------------------------------------|:----------------------------------|:--------------|:--------------------------------------------|
+| rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost 7   | Hostname of the RabbitMQ server             |
+| rabbitmq:port                               | RABBITMQ__PORT                    | 5672          | Port of the RabbitMQ server                 |
+| rabbitmq:port_management                    | RABBITMQ__PORT_MANAGEMENT         | 15672         | Port of the RabbitMQ Management Plugin      |
+| rabbitmq:username                           | RABBITMQ__USERNAME                | guest         | RabbitMQ user                               |
+| rabbitmq:password                           | RABBITMQ__PASSWORD                | guest         | RabbitMQ password                           |
+| rabbitmq:queue_type                         | RABBITMQ__QUEUE_TYPE              | "classic"     | RabbitMQ Queue Type ("classic" or "quorum") |
+| -                                           | -                                 | -             | -                                           |
+| rabbitmq:use_ssl                            | RABBITMQ__USE_SSL                 | `false`       | Use TLS connection                          |
+| rabbitmq:use_ssl_cert                       | RABBITMQ__USE_SSL_CERT            |               | Path or cert content                        |
+| rabbitmq:use_ssl_key                        | RABBITMQ__USE_SSL_KEY             |               | Path or key content                         |
+| rabbitmq:use_ssl_pfx                        | RABBITMQ__USE_SSL_PFX             |               | Path or pfx content                         |
+| rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              | []            | List of path(s) of the CA certificate(s)    |
+| rabbitmq:use_ssl_passphrase                 | RABBITMQ__SSL_PASSPHRASE          |               | Passphrase for the key certificate          |
+| rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `false`       | Reject rabbit self signed certificate       |
+| -                                           | -                                 | -             | -                                           |
+| rabbitmq:management_ssl                     | RABBITMQ__MANAGEMENT_SSL          | `false`       | Is the Management Plugin has TLS enabled    |
+| rabbitmq:management_ssl_reject_unauthorized | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `true`        | Reject management self signed certificate   |
 
 #### S3 Bucket
 
@@ -203,7 +203,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | Parameter                | Environment variable      | Default value | Description                               |
 |:-------------------------|:--------------------------|:--------------|:------------------------------------------|
 | smtp:hostname            | SMTP__HOSTNAME            |               | SMTP Server hostname                      |
-| smtp:port                | SMTP__PORT                | 9000          | SMTP Port (25 or 465 for TLS)             |
+| smtp:port                | SMTP__PORT                | 465           | SMTP Port (25 or 465 for TLS)             |
 | smtp:use_ssl             | SMTP__USE_SSL             | `false`       | SMTP over TLS                             |
 | smtp:reject_unauthorized | SMTP__REJECT_UNAUTHORIZED | `false`       | Enable TLS certificate check              |
 | smtp:username            | SMTP__USERNAME            |               | SMTP Username if authentication is needed |

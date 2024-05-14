@@ -128,7 +128,7 @@ vm.max_map_count=1048575
 
 The default for OpenCTI data is to be persistent.
 
-In the `docker-compose.yml`, you will find at the end the list of necessary persitent volumes for the dependencies:
+In the `docker-compose.yml`, you will find at the end the list of necessary persistent volumes for the dependencies:
 
 ```yaml
 volumes:
