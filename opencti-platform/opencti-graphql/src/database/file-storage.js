@@ -158,7 +158,16 @@ export const downloadFile = async (id) => {
   }
 };
 
-export const copyFile = async (sourceId, targetId) => {
+/**
+ * - Copy file from a place to another in S3
+ * - Store file in documents
+ * @param sourceId
+ * @param targetId
+ * @param sourceDocument
+ * @param targetEntityId
+ * @returns {Promise<null|void>} the document entity on success, null on errors.
+ */
+export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityId) => {
   try {
     const input = {
       Bucket: bucketName,
@@ -167,7 +176,21 @@ export const copyFile = async (sourceId, targetId) => {
     };
     const command = new CopyObjectCommand(input);
     await s3Client.send(command);
-    return null;
+    // Register in elastic
+    const targetMetadata = { ...sourceDocument.metaData, entity_id: targetEntityId };
+
+    const file = {
+      id: targetId,
+      name: sourceDocument.name,
+      size: sourceDocument.size,
+      information: '',
+      lastModified: new Date(),
+      lastModifiedSinceMin: sinceNowInMinutes(new Date()),
+      metaData: targetMetadata,
+      uploadStatus: 'complete',
+    };
+    await indexFileToDocument(file);
+    return file;
   } catch (err) {
     logApp.error(`[FILE STORAGE] Cannot copy file ${sourceId} to ${targetId} in S3`, { error: err });
     return null;
@@ -191,7 +214,10 @@ export const getFileContent = async (id, encoding = 'utf8') => {
   return streamToString(object.Body, encoding);
 };
 
-export const storeFileConverter = (user, file) => {
+/**
+ * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
+ */
+export const storeFileConverter = (file) => {
   return {
     id: file.id,
     name: file.name,

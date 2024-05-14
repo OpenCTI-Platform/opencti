@@ -365,6 +365,8 @@ export const artifactImport = async (context, user, args) => {
   const { createReadStream, filename, mimetype } = resolvedFile;
   const targetId = uuidv4();
   const filePath = `import/${ENTITY_HASHED_OBSERVABLE_ARTIFACT}/${targetId}`;
+  logApp.info(`ANGIE - artifactImport - file path ${filePath}`);
+  logApp.info(`ANGIE - internal_id at start => ${targetId}`);
   const version = now();
   const artifactData = {
     internal_id: targetId,
@@ -391,6 +393,7 @@ export const artifactImport = async (context, user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
+  logApp.info(`ANGIE - internal_id at the end => ${artifact.internal_id}`); // FIXME this is not the same than at start....
   const meta = { version };
   await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
   return artifact;

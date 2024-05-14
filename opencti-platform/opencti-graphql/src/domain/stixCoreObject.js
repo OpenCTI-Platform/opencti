@@ -427,7 +427,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       addedExternalRef = externalRef;
     }
     // Patch the updated_at to force live stream evolution
-    const eventFile = storeFileConverter(user, up);
+    const eventFile = storeFileConverter(up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     await elUpdateElement({
       _index: previous._index,

@@ -7,13 +7,15 @@ import { mergeEntities, storeLoadByIdWithRefs } from '../../../src/database/midd
 import type { BasicStoreCommon } from '../../../src/types/store';
 import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
-import {logApp} from '../../../src/config/conf';
+import { logApp } from '../../../src/config/conf';
 
 describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'stixCyberObservableDomain-test', otp_mandatory: false };
   let artifact1Id = '';
+  let artifact1: any;
+  let artifact2: any;
 
-  it('should files from both artifact be on the final merged artifact', async () => {
+  it('should create artifacts for test purpose', async () => {
     // GIVEN a first Artifact with one file
     const inputArtifact1 = {
       type: 'Artifact',
@@ -28,7 +30,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         hashes: [],
       }
     };
-    const artifact1 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact1);
+    artifact1 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact1);
     artifact1Id = artifact1.id;
 
     // AND a second Artifact with one another file
@@ -45,8 +47,10 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         hashes: [],
       }
     };
-    const artifact2 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact2);
+    artifact2 = await addStixCyberObservable(adminContext, ADMIN_USER, inputArtifact2);
+  });
 
+  it('should merge and files from both artifact be on the final merged artifact', async () => {
     // WHEN merge of 2 into 1 is called (via taskManager executeMerge)
     logApp.info(`Merging ${artifact2.internal_id} into ${artifact1.internal_id}`);
     await mergeEntities(testContext, ADMIN_USER, artifact1.internal_id, [
@@ -61,11 +65,10 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
     if (mergedArtifact.x_opencti_files) {
       for (let i = 0; i < mergedArtifact.x_opencti_files?.length; i += 1) {
         const file = mergedArtifact.x_opencti_files[i];
-
         expect(file.name).oneOf(['testing-merge-artifact-2.json', 'testing-merge-artifact-1.txt']);
-
         // All files should be downloadable from S3
-        // FIXME  - x_opencti_file is wrong await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
+        // FIXME no the opencti_files for testing-merge-artifact-1.txt is not accurate, so not downloable...
+        // await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
       }
     }
 
@@ -73,7 +76,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
     const fileListForUI = await paginatedForPathWithEnrichment(testContext, ADMIN_USER, `import/${mergedArtifact.entity_type}/${mergedArtifact.id}`, mergedArtifact.id, {});
 
     const listOfFiles = fileListForUI.edges;
-    // FIXME expect(listOfFiles.length).toBe(2);
+    expect(listOfFiles.length).toBe(2);
 
     for (let i = 0; i < listOfFiles.length; i += 1) {
       const file = listOfFiles[i].node;
