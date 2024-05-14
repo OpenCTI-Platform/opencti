@@ -209,7 +209,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const StixCoreObjectsField = (props) => {
-  const { name, style, helpertext } = props;
+  const { name, style, helpertext, required = false } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
@@ -262,6 +262,7 @@ const StixCoreObjectsField = (props) => {
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         multiple={true}
         textfieldprops={{
           variant: 'standard',

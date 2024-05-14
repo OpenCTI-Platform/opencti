@@ -41,6 +41,7 @@ const RichTextField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name, value },
+    required = false,
     meta = {},
     onFocus,
     onChange,
@@ -116,7 +117,7 @@ const RichTextField = (props) => {
 
   return (
     <div style={{ ...style, position: 'relative' }} className={!R.isNil(meta.error) ? 'error' : 'main'}>
-      <InputLabel shrink={true} style={{ float: 'left' }}>
+      <InputLabel shrink={true} required={required} style={{ float: 'left' }}>
         {label}
       </InputLabel>
       <IconButton

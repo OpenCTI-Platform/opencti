@@ -44,6 +44,19 @@ export const useIsEnforceReference = (id: string): boolean => {
   );
 };
 
+export const useIsMandatoryAttribute = (id: string) => {
+  const entitySettings = useEntitySettings(id).at(0);
+  if (!entitySettings) {
+    throw Error(`Invalid type for setting: ${id}`);
+  }
+  const mandatoryAttributes = [...entitySettings.mandatoryAttributes];
+  // In creation, if enforce_reference is activated, externalReferences is required
+  if (entitySettings.enforce_reference === true) {
+    mandatoryAttributes.push('externalReferences');
+  }
+  return { entitySettings, mandatoryAttributes };
+};
+
 export const useYupSchemaBuilder = (
   id: string,
   existingShape: ObjectShape,
@@ -57,30 +70,35 @@ export const useYupSchemaBuilder = (
 
   // we're in creation mode, let's find if all mandatory fields are set
   const { t_i18n } = useFormatter();
-  const entitySettings = useEntitySettings(id).at(0);
-  if (!entitySettings) {
-    throw Error(`Invalid type for setting: ${id}`);
-  }
-  const mandatoryAttributes = [...entitySettings.mandatoryAttributes];
-  // In creation, if enforce_reference is activated, externalReferences is required
-  if (entitySettings.enforce_reference === true) {
-    mandatoryAttributes.push('externalReferences');
-  }
+  const { mandatoryAttributes } = useIsMandatoryAttribute(id);
   const existingKeys = Object.keys(existingShape);
 
   const newShape: ObjectShape = Object.fromEntries(
     mandatoryAttributes
       .filter((attr) => !(exclusions ?? []).includes(attr))
       .map((attrName: string) => {
+        let validator: Schema;
+
         if (existingKeys.includes(attrName)) {
-          const validator: Schema = (existingShape[attrName] as Schema)
+          if ((existingShape[attrName] as Schema).type === 'date') {
+            // DateTimePickerField will default an empty date to 'null'
+            // Yup has issues with validating 'null' dates as required, so we will swap it
+            // to 'undefined' to get the validator to identify the missing required field
+            validator = (existingShape[attrName] as Schema)
+              .transform((v) => ((v === null) ? undefined : v))
+              .required(t_i18n('This field is required'))
+              .nullable(false);
+          } else {
+            validator = (existingShape[attrName] as Schema)
+              .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+              .required(t_i18n('This field is required'))
+              .nullable(false);
+          }
+        } else {
+          validator = Yup.mixed()
             .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
             .required(t_i18n('This field is required'));
-          return [attrName, validator];
         }
-        const validator = Yup.mixed()
-          .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
-          .required(t_i18n('This field is required'));
         return [attrName, validator];
       }),
   );
@@ -101,6 +119,108 @@ export const useSchemaEditionValidation = (
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
   return useYupSchemaBuilder(id, existingShape, false, exclusions);
+};
+
+/**
+ * Builds a Yup Schema where each key is conditionally required. If a key is in
+ * the provided mandatoryTypes, it is required in the resulting schema.
+ *
+ * @param shape Original Yup Schema
+ * @param mandatoryTypes List of keys that are required in the final schema
+ * @returns Final Yup Schema with required fields
+ */
+export const yupShapeConditionalRequired = (
+  shape: Record<string, Yup.Schema>,
+  mandatoryTypes: string[],
+): Record<string, Yup.Schema> => {
+  const { t_i18n } = useFormatter();
+  const requiredMsg = t_i18n('This field is required');
+
+  return Object.entries(shape).reduce((result, [key, value]) => {
+    let updatedValue = value;
+
+    if (mandatoryTypes.includes(key)) {
+      if (value.type === 'array') {
+        // If the value is an array, ensure it's not empty and not null
+        updatedValue = Yup.array().min(1, requiredMsg);
+      } else {
+        updatedValue = value.required(requiredMsg);
+      }
+    }
+
+    return { ...result, [key]: updatedValue };
+  }, {});
+};
+
+const useYupDynamicSchemaBuilder = (
+  mandatoryAttributes: string[],
+  existingShape: ObjectShape,
+  isCreation: boolean,
+  exclusions?: string[],
+): ObjectSchema<{ [p: string]: unknown }> => {
+  // simplest case: we're in update mode, so we do not need all mandatory fields
+  if (!isCreation) {
+    return Yup.object().shape(existingShape);
+  }
+  // we're in creation mode, let's find if all mandatory fields are set
+  const { t_i18n } = useFormatter();
+  const existingKeys = Object.keys(existingShape);
+  const newShape: ObjectShape = Object.fromEntries(
+    mandatoryAttributes
+      .filter((attr) => !(exclusions ?? []).includes(attr))
+      .map((attrName: string) => {
+        let validator: Schema;
+        if (existingKeys.includes(attrName)) {
+          if ((existingShape[attrName] as Schema).type === 'date') {
+            // DateTimePickerField will default an empty date to 'null'
+            // Yup has issues with validating 'null' dates as required, so we will swap it
+            // to 'undefined' to get the validator to identify the missing required field
+            validator = (existingShape[attrName] as Schema)
+              .transform((v) => ((v === null) ? undefined : v))
+              .required(t_i18n('This field is required'))
+              .nullable(false);
+          } else {
+            validator = (existingShape[attrName] as Schema)
+              .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+              .required(t_i18n('This field is required'))
+              .nullable(false);
+          }
+        } else {
+          validator = Yup.mixed()
+            .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+            .required(t_i18n('This field is required'));
+        }
+        return [attrName, validator];
+      }),
+  );
+
+  return Yup.object().shape({ ...existingShape, ...newShape });
+};
+
+export const useDynamicSchemaCreationValidation = (
+  mandatoryAttributes: string[],
+  existingShape: ObjectShape,
+  exclusions?: string[],
+): ObjectSchema<{ [p: string]: unknown }> => {
+  return useYupDynamicSchemaBuilder(
+    mandatoryAttributes,
+    existingShape,
+    true,
+    exclusions,
+  );
+};
+
+export const useDynamicSchemaEditionValidation = (
+  mandatoryAttributes: string[],
+  existingShape: ObjectShape,
+  exclusions?: string[],
+): ObjectSchema<{ [p: string]: unknown }> => {
+  return useYupDynamicSchemaBuilder(
+    mandatoryAttributes,
+    existingShape,
+    false,
+    exclusions,
+  );
 };
 
 export default useEntitySettings;
