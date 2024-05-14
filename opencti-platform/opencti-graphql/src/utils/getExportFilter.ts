@@ -11,33 +11,27 @@ type GetExportFilterType = {
 export const getExportFilter = async ({ markingList, contentMaxMarkings, objectIdsList }: GetExportFilterType) => {
   const contentMarkings = contentMaxMarkings.length ? await getExportContentMarkings(markingList, contentMaxMarkings) : [];
 
-  const filters = contentMarkings.length ? [
+  const access_filters = contentMarkings.length ? [
     { key: 'objectMarking', mode: 'and', operator: 'not_eq', values: contentMarkings },
   ] : [];
 
   const markingFilter = {
-    mode: 'or',
-    filters,
+    mode: 'and',
+    filters: access_filters,
     filterGroups: [],
   };
 
   const mainFilter = {
     mode: 'and',
-    filters: [],
-    filterGroups: [
-      markingFilter
-    ]
+    filters: [...access_filters],
+    filterGroups: []
   };
   if (isNotEmptyField(objectIdsList)) {
-    mainFilter.filterGroups.push({
+    mainFilter.filters.push({
+      key: 'ids',
+      values: objectIdsList,
       mode: 'or',
-      filters: [{
-        key: 'id',
-        values: objectIdsList,
-        mode: 'or',
-        operator: 'eq'
-      }],
-      filterGroups: [],
+      operator: 'eq'
     });
   }
 

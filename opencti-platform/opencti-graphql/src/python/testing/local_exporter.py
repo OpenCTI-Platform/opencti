@@ -16,8 +16,8 @@ class TestLocalExporter:
     def upload(self):
         opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
         # Generate a json bundle from openCTI
-        bundle = opencti_api_client.stix2.export_entity(
-            "Malware", self.entity_id, "full"
+        bundle = opencti_api_client.stix2.get_stix_bundle_or_object_from_entity_id(
+            entity_type="Malware", entity_id=self.entity_id, mode="full"
         )
         json_bundle = json.dumps(bundle, indent=4)
         # Upload the export inside the entity to ack like an import

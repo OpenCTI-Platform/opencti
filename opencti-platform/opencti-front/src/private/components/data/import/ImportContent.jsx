@@ -571,7 +571,7 @@ class ImportContentComponent extends Component {
                       </Field>
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
-                    {this.state.selectedConnector?.connector_scope?.includes('text/csv')
+                    {this.state.selectedConnector?.name === 'ImportCsv'
                       && (
                         <>
                           <ObjectMarkingField

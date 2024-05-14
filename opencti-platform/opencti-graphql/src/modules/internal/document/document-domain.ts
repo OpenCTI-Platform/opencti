@@ -72,6 +72,7 @@ interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   isPending?: boolean
   excludedPaths?: string[]
   orderBy?: string
+  exact_path?: boolean
   orderMode?: OrderingMode
 }
 
@@ -92,6 +93,8 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
   }
   if (opts?.entity_id) {
     filters.filters.push({ key: ['metaData.entity_id'], values: [opts.entity_id] });
+  } else if (opts?.exact_path) {
+    filters.filters.push({ key: ['metaData.entity_id'], operator: FilterOperator.Nil, values: [] });
   }
   if (opts?.maxFileSize) {
     filters.filters.push({ key: ['size'], values: [String(opts.maxFileSize)], operator: FilterOperator.Lte });
@@ -160,8 +163,9 @@ export const checkFileAccess = async (context: AuthContext, user: AuthUser, scop
 // Images metadata for users
 // In progress virtual files from export
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
+  const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
-    filters: buildFileFilters([path], opts),
+    filters: buildFileFilters([path], filterOpts),
     noFiltersChecking: true // No associated model
   };
   const orderOptions: any = {};
