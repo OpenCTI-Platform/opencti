@@ -11350,6 +11350,8 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
+  schemaAttributes(entityType: String!) : [TypeAttribute!]! @auth(for: [KNOWLEDGE])
+  schemaAttributesAll(entityType: String!) : [TypeAttribute!]! @auth(for: [KNOWLEDGE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRules(
     first: Int,

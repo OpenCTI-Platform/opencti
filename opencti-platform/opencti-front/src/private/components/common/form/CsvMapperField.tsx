@@ -32,6 +32,7 @@ interface CsvMapperFieldComponentProps {
   isOptionEqualToValue: (option: Option, value: Option) => boolean;
   onChange?: (name: string, value: CsvMapperFieldOption) => void;
   queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
+  required?: boolean;
 }
 
 export const csvMapperQuery = graphql`
@@ -60,6 +61,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   isOptionEqualToValue,
   name,
   queryRef,
+  required = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -80,6 +82,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
           variant: 'standard',
           label: t_i18n('CSV Mappers'),
         }}
+        required={required}
         noOptionsText={t_i18n('No available options')}
         options={csvMappersPreloaded}
         isOptionEqualToValue={isOptionEqualToValue}

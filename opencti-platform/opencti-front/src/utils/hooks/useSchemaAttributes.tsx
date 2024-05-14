@@ -1,14 +1,26 @@
-import { useFragment } from 'react-relay';
+import { graphql, useLazyLoadQuery, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectSchema, ObjectShape, Schema } from 'yup';
 import {
   EntitySettingSettings_entitySetting$data,
   EntitySettingSettings_entitySetting$key,
 } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
-import { entitySettingFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingSettings';
-import useAuth from './useAuth';
+import { useSchemaAttributesQuery } from './__generated__/useSchemaAttributesQuery.graphql';
 import { useFormatter } from '../../components/i18n';
+import useAuth from './useAuth';
+import { entitySettingFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingSettings';
 
+export const SchemaAttributesQuery = graphql`
+  query useSchemaAttributesQuery($entityType: String!) {
+    schemaAttributes(entityType: $entityType) {
+      name
+      mandatory
+      multiple
+      label
+      type
+    }
+  }
+`;
 export type EntitySetting = EntitySettingSettings_entitySetting$data;
 
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
@@ -19,46 +31,28 @@ const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
     .filter(({ target_type }: EntitySetting) => (entityType ? entityTypes.includes(target_type) : true));
 };
 
-export const useHiddenEntities = () => {
-  const { me } = useAuth();
-  const platformHiddenTypes = useEntitySettings().filter((n) => n.platform_hidden_type === true).map((n) => n.target_type);
-  return [...platformHiddenTypes, ...me.default_hidden_types];
-};
-
-export const useIsHiddenEntities = (...types: string[]): boolean => {
-  const { me } = useAuth();
-  return useEntitySettings(types)
-    .filter((node) => node.platform_hidden_type !== null)
-    .every((node) => node.platform_hidden_type || me.default_hidden_types.includes(node.target_type));
-};
-
-export const useIsHiddenEntity = (id: string): boolean => {
-  const { me } = useAuth();
-  return useEntitySettings(id).some((node) => node.platform_hidden_type !== null
-    && (node.platform_hidden_type || me.default_hidden_types.includes(node.target_type)));
-};
-
-export const useIsEnforceReference = (id: string): boolean => {
+export const useDynamicIsEnforceReference = (id: string): boolean => {
   return useEntitySettings(id).some(
     (node) => node.enforce_reference !== null && node.enforce_reference,
   );
 };
 
-export const useIsMandatoryAttribute = (id: string) => {
-  const entitySettings = useEntitySettings(id).at(0);
-  if (!entitySettings) {
-    throw Error(`Invalid type for setting: ${id}`);
-  }
-  const mandatoryAttributes = [...entitySettings.mandatoryAttributes];
-  // In creation, if enforce_reference is activated, externalReferences is required
-  if (entitySettings.enforce_reference === true) {
-    mandatoryAttributes.push('externalReferences');
-  }
-  return { entitySettings, mandatoryAttributes };
+export const useDynamicMandatorySchemaAttributes = (
+  entityType: string,
+):string[] => {
+  const data = useLazyLoadQuery<useSchemaAttributesQuery>(
+    SchemaAttributesQuery,
+    { entityType },
+    {
+      fetchPolicy: 'store-and-network',
+    },
+  );
+  const mandatoryAttributes = data.schemaAttributes.filter((item) => item.mandatory).map((ele) => ele.name);
+  return mandatoryAttributes;
 };
 
-export const useYupSchemaBuilder = (
-  id: string,
+export const useYupDynamicSchemaBuilder = (
+  entityType: string,
   existingShape: ObjectShape,
   isCreation: boolean,
   exclusions?: string[],
@@ -67,18 +61,15 @@ export const useYupSchemaBuilder = (
   if (!isCreation) {
     return Yup.object().shape(existingShape);
   }
-
   // we're in creation mode, let's find if all mandatory fields are set
   const { t_i18n } = useFormatter();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(id);
+  const mandatoryAttributes = useDynamicMandatorySchemaAttributes(entityType);
   const existingKeys = Object.keys(existingShape);
-
   const newShape: ObjectShape = Object.fromEntries(
     mandatoryAttributes
       .filter((attr) => !(exclusions ?? []).includes(attr))
       .map((attrName: string) => {
         let validator: Schema;
-
         if (existingKeys.includes(attrName)) {
           if ((existingShape[attrName] as Schema).type === 'date') {
             // DateTimePickerField will default an empty date to 'null'
@@ -102,23 +93,22 @@ export const useYupSchemaBuilder = (
         return [attrName, validator];
       }),
   );
+
   return Yup.object().shape({ ...existingShape, ...newShape });
 };
 
-export const useSchemaCreationValidation = (
-  id: string,
+export const useDynamicSchemaCreationValidation = (
+  entityType: string,
   existingShape: ObjectShape,
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
-  return useYupSchemaBuilder(id, existingShape, true, exclusions);
+  return useYupDynamicSchemaBuilder(entityType, existingShape, true, exclusions);
 };
 
-export const useSchemaEditionValidation = (
-  id: string,
+export const useDynamicSchemaEditionValidation = (
+  entityType: string,
   existingShape: ObjectShape,
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
-  return useYupSchemaBuilder(id, existingShape, false, exclusions);
+  return useYupDynamicSchemaBuilder(entityType, existingShape, false, exclusions);
 };
-
-export default useEntitySettings;

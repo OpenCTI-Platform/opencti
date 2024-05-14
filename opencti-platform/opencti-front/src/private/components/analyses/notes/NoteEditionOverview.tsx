@@ -20,7 +20,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/fields/SliderField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useDynamicMandatorySchemaAttributes } from '../../../../utils/hooks/useSchemaAttributes';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -83,17 +83,22 @@ interface NoteEditionOverviewProps {
   handleClose: () => void;
 }
 
+export const NOTE_TYPE = 'Note';
+
 const NoteEditionOverviewComponent: FunctionComponent<
 NoteEditionOverviewProps
 > = ({ note, context }) => {
   const { t_i18n } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+
+  const mandatoryAttributes = useDynamicMandatorySchemaAttributes(
+    NOTE_TYPE,
+  );
   const basicShape = {
-    content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    content: Yup.string().trim().min(2),
     created: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     attribute_abstract: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     note_types: Yup.array().nullable(),
@@ -104,7 +109,7 @@ NoteEditionOverviewProps
       .nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const noteValidator = useSchemaEditionValidation('Note', basicShape);
+  const noteValidator = useDynamicSchemaEditionValidation(NOTE_TYPE, basicShape);
 
   const queries = {
     fieldPatch: noteMutationFieldPatch,
@@ -175,6 +180,7 @@ NoteEditionOverviewProps
             component={TextField}
             name="attribute_abstract"
             label={t_i18n('Abstract')}
+            required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -191,6 +197,7 @@ NoteEditionOverviewProps
             component={MarkdownField}
             name="content"
             label={t_i18n('Content')}
+            required={(mandatoryAttributes.includes('content'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -206,6 +213,7 @@ NoteEditionOverviewProps
             label={t_i18n('Note types')}
             type="note_types_ov"
             name="note_types"
+            required={(mandatoryAttributes.includes('note_types'))}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -237,6 +245,7 @@ NoteEditionOverviewProps
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={{ marginTop: 10, width: '100%' }}
               setFieldValue={setFieldValue}
               onChange={editor.changeCreated}
@@ -260,6 +269,7 @@ NoteEditionOverviewProps
           )}
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={{
               marginTop:
                 note.workflowEnabled || userIsKnowledgeEditor ? 20 : 10,
