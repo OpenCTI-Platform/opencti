@@ -106,7 +106,8 @@ export const getWidgetArguments = async (
     ...platformUser,
     origin: { user_id: platformUser.id, referer: 'public-dashboard' },
     allowed_marking: allowedMaxMarkings,
-    capabilities: [accessKnowledgeCapability]
+    capabilities: [accessKnowledgeCapability],
+    inside_platform_organization: platformUser.inside_platform_organization,
   };
 
   // Get widget query configuration
