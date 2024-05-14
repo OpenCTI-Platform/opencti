@@ -23,7 +23,9 @@ incident = opencti_api_client.incident.read(
 )
 
 # Create the bundle
-bundle = opencti_api_client.stix2.export_entity("Incident", incident["id"], "full")
+bundle = opencti_api_client.stix2.get_stix_bundle_or_object_from_entity_id(
+    entity_type="Incident", entity_id=incident["id"], mode="full"
+)
 json_bundle = json.dumps(bundle, indent=4)
 
 # Write the bundle

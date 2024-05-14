@@ -314,7 +314,9 @@ class ListenQueue(threading.Thread):
                     # If not playbook but enrichment, compute object on enrichment_entity
                     opencti_entity = event_data["enrichment_entity"]
                     stix_objects = self.helper.api.stix2.prepare_export(
-                        self.helper.api.stix2.generate_export(copy.copy(opencti_entity))
+                        entity=self.helper.api.stix2.generate_export(
+                            copy.copy(opencti_entity)
+                        )
                     )
                     stix_entity = [
                         e
@@ -1567,7 +1569,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         if bundle is None:
             # Generate bundle
             stix_objects = self.api.stix2.prepare_export(
-                self.api.stix2.generate_export(copy.copy(opencti_entity))
+                entity=self.api.stix2.generate_export(copy.copy(opencti_entity))
             )
         else:
             stix_objects = bundle["objects"]

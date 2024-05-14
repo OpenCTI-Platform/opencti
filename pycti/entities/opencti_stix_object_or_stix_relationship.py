@@ -513,6 +513,7 @@ class StixObjectOrStixRelationship:
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
+        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("with_pagination", False)
         custom_attributes = kwargs.get("customAttributes", None)
 
@@ -542,16 +543,40 @@ class StixObjectOrStixRelationship:
                     }
                 """
         )
+        variables = {
+            "filters": filters,
+            "search": search,
+            "first": first,
+            "after": after,
+        }
         result = self.opencti.query(
             query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-            },
+            variables,
         )
 
-        return self.opencti.process_multiple(
-            result["data"]["stixObjectOrStixRelationships"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(
+                result["data"]["stixObjectOrStixRelationships"]
+            )
+            final_data = final_data + data
+            while result["data"]["stixObjectOrStixRelationships"]["pageInfo"][
+                "hasNextPage"
+            ]:
+                after = result["data"]["stixObjectOrStixRelationships"]["pageInfo"][
+                    "endCursor"
+                ]
+                self.opencti.app_logger.info(
+                    "Listing stixObjectOrStixRelationships", {"after": after}
+                )
+                after_variables = {**variables, **{"after": after}}
+                result = self.opencti.query(query, after_variables)
+                data = self.opencti.process_multiple(
+                    result["data"]["stixObjectOrStixRelationships"]
+                )
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["stixObjectOrStixRelationships"], with_pagination
+            )
