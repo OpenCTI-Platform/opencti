@@ -136,11 +136,11 @@ const buildReportDeleteElementsFilter = (reportId) => {
   };
 };
 export const reportDeleteWithElements = async (context, user, reportId) => {
-  // Load all report objects
+  // Load all entities & relationships contained only in this report (orphans)
   const args = { filters: buildReportDeleteElementsFilter(reportId) };
-  const reportObjects = await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
+  const reportOrphanObjects = await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
   // Filter out relationships that will already be deleted with the deletion of the source or target element
-  const objectsToDelete = reportObjects.filter((filterObject) => !reportObjects.some((o) => filterObject.fromId === o.internal_id || filterObject.toId === o.internal_id));
+  const objectsToDelete = reportOrphanObjects.filter((fo) => !reportOrphanObjects.some((o) => fo.fromId === o.internal_id || fo.toId === o.internal_id));
   await BluePromise.map(objectsToDelete, (object) => {
     return internalDeleteElementById(context, context.user, object.id);
   }, { concurrency: ES_MAX_CONCURRENCY });
