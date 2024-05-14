@@ -318,7 +318,7 @@ const AuthorizedMembersField = ({
                   </Field>
                   <IconButton
                     color="secondary"
-                    aria-tag="More"
+                    aria-label="More"
                     onClick={() => handleSubmit()}
                     disabled={
                       !dirty

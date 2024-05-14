@@ -179,28 +179,21 @@ class ExportButtons extends Component {
           {handleDashboardDuplication && variant === 'dashboard' && (
             <Tooltip title={t('Duplicate the dashboard')}>
               <ToggleButton
-                sx={{ padding: '2px' }}
                 size="small"
                 value="duplicate-dashboard"
+                onClick={handleDashboardDuplication.bind(this)}
               >
-                <IconButton
-                  aria-label="copy"
-                  onClick={handleDashboardDuplication.bind(this)}
-                  color="primary"
-                  size="small"
-                >
-                  <ContentCopyOutlined fontSize="small" />
-                </IconButton>
+                <ContentCopyOutlined fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
           )}
           <Tooltip title={t('Export to image')}>
-            <ToggleButton onClick={this.handleOpenImage.bind(this)}>
+            <ToggleButton onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} >
               <ImageOutlined fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
           <Tooltip title={t('Export to PDF')}>
-            <ToggleButton onClick={this.handleOpenPdf.bind(this)}>
+            <ToggleButton onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} >
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
@@ -217,6 +210,7 @@ class ExportButtons extends Component {
           {investigationAddFromContainer && (
             <Tooltip title={t('Start an investigation')}>
               <ToggleButton
+                value={'Start-an-investigation'}
                 onClick={investigationAddFromContainer.bind(
                   this,
                   containerId,
@@ -229,14 +223,14 @@ class ExportButtons extends Component {
           )}
           {type === 'investigation' && (
             <Tooltip title={t('Download as STIX report')}>
-              <ToggleButton onClick={handleDownloadAsStixReport.bind(this)}>
+              <ToggleButton onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'}>
                 <GetAppOutlined fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
           )}
           {csvData && (
             <Tooltip title={t('Export to CSV')}>
-              <ToggleButton onClick={() => this.csvLink.current.link.click()}>
+              <ToggleButton onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'}>
                 <FileDelimitedOutline fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>

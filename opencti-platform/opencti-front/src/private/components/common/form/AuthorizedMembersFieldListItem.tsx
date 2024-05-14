@@ -118,7 +118,7 @@ const AuthorizedMembersFieldListItem = ({
       ) ? (
         <IconButton
           color="primary"
-          aria-tag="delete"
+          aria-label="delete"
           onClick={() => onRemove?.()}
         >
           <Delete fontSize="small" />

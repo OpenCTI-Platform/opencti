@@ -237,8 +237,7 @@ const WorkspaceHeader = ({
                   <Select
                     labelId="relative"
                     value={relativeDate ?? ''}
-                    onChange={(value) => handleDateChange('relativeDate', value)
-                    }
+                    onChange={(value) => handleDateChange('relativeDate', value)}
                     disabled={true}
                     variant="outlined"
                   >
@@ -301,7 +300,7 @@ const WorkspaceHeader = ({
                 </InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate ?? relativeDate}
+                  value={relativeDate ?? ''}
                   onChange={(value) => handleDateChange('relativeDate', value)}
                   label={t_i18n('Relative time')}
                   variant="outlined"
@@ -431,7 +430,7 @@ const WorkspaceHeader = ({
             {tags.length > 1 ? (
               <IconButton
                 color="primary"
-                aria-tag="More"
+                aria-label="More"
                 onClick={handleToggleOpenTags}
                 size="large"
                 style={{ fontSize: 14, marginRight: '7px', marginTop: '-4px' }}
@@ -443,7 +442,7 @@ const WorkspaceHeader = ({
                 <IconButton
                   style={{ float: 'left', marginTop: '-5px', marginRight: '3px' }}
                   color="primary"
-                  aria-tag="Tag"
+                  aria-label="Tag"
                   onClick={handleOpenTag}
                   size="large"
                 >

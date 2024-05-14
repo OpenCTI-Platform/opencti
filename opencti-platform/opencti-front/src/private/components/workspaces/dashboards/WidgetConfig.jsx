@@ -594,7 +594,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         {visualizationTypes.map((visualizationType) => (
-          <Grid key={visualizationType.key} item={true} xs="4">
+          <Grid key={visualizationType.key} item={true} xs={4}>
             <Card variant="outlined" className={classes.card3}>
               <CardActionArea
                 onClick={() => handleSelectType(visualizationType.key)}
