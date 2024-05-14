@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
 import Popover from '@mui/material/Popover';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
@@ -9,7 +9,6 @@ import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import type { Option } from '@components/common/form/ReferenceField';
 import {
   Filter,
   FilterSearchContext,
@@ -167,7 +166,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     values: string[];
     operator?: string;
   }[]>(filter ? [filter] : []);
-  const [cacheEntities, setCacheEntities] = useState<Record<string, Option[]>>({});
+  const [cacheEntities, setCacheEntities] = useState<Record<string, OptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
       targets: [
@@ -191,7 +190,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     setInputValues,
     searchContext: { ...searchContext, entityTypes: [...(searchContext?.entityTypes ?? []), ...(entityTypes ?? [])] },
     searchScope,
-  });
+  }) as [Record<string, OptionValue[]>, (
+    filterKey: string,
+    cacheEntities: Record<string, OptionValue[]>,
+    setCacheEntities: Dispatch<Record<string, OptionValue[]>>,
+    event: SyntheticEvent
+  ) => Record<string, OptionValue[]>,
+  ];
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -266,7 +271,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={[...selectedOptions, ...entitiesOptions]}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
+        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event)}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
@@ -286,7 +291,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               cacheEntities,
               setCacheEntities,
               event,
-              !!subKey,
             )
             }
           />

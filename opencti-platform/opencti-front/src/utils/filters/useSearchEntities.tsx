@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Dispatch, SyntheticEvent, useState } from 'react';
+import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { markingDefinitionsLinesSearchQuery } from '@components/settings/marking_definitions/MarkingDefinitionsLines';
@@ -946,12 +946,7 @@ const useSearchEntities = ({
       }
     }
   };
-  return [entities, searchEntities as (
-    filterKey: string,
-    cacheEntities: Record<string, EntityValue[]>,
-    setCacheEntities: Dispatch<Record<string, EntityValue[]>>,
-    event: SyntheticEvent
-  ) => Record<string, EntityValue[]>];
+  return [entities, searchEntities];
 };
 
 export default useSearchEntities;
