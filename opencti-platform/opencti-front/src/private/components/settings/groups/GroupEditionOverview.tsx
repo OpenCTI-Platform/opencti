@@ -238,6 +238,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                   containerStyle={fieldSpacingContainerStyle}
                   editContext={context}
                   variant="edit"
+                  disabled={false}
                 />
               )
             }

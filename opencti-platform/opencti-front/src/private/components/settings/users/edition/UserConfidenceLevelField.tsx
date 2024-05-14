@@ -128,7 +128,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         onFocus={onFocus}
         onSubmit={onSubmit}
         editContext={editContext}
-        disabled={!switchValue || disabled}
+        disabled={Boolean(!switchValue || disabled)}
         variant="edit"
       />
     </Alert>
