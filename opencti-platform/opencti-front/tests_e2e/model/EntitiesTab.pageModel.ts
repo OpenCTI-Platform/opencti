@@ -1,6 +1,10 @@
 import { Page } from '@playwright/test';
+import TextFieldPageModel from './field/TextField.pageModel';
 
 export default class EntitiesTabPageModel {
+  private entireTab = this.page.getByRole('heading', { name: 'Add entities' }).locator('../..');
+  private searchField = new TextFieldPageModel(this.page, 'Search', 'text-no-label', this.entireTab);
+
   constructor(private page: Page) {}
 
   clickAddEntities() {
@@ -8,13 +12,15 @@ export default class EntitiesTabPageModel {
   }
 
   addEntity(name: string) {
-    const parent = this.page.getByRole('heading', { name: 'Add entities' }).locator('../..');
-    // return parent.getByText(name, { exact: true }).click();
-    return parent.getByRole('button', { name }).click();
+    return this.entireTab.getByRole('button', { name }).click();
   }
 
   closeAddEntity() {
-    const parent = this.page.getByRole('heading', { name: 'Add entities' }).locator('../..');
-    return parent.getByLabel('Close').click();
+    return this.entireTab.getByLabel('Close').click();
+  }
+
+  async search(search: string) {
+    await this.searchField.fill(search);
+    return this.page.keyboard.press('Enter');
   }
 }

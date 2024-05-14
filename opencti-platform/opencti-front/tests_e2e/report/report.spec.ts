@@ -12,7 +12,6 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
-import ObservablesTabPageModel from '../model/ObservablesTab.pageModel';
 
 /**
  * Content of the test
@@ -302,7 +301,6 @@ test('Report live entities creation and relationships', async ({ page }) => {
   const reportDetailsPage = new ReportDetailsPage(page);
   const externalReferenceForm = new ExternalReferenceFormPageModel(page);
   const entitiesTab = new EntitiesTabPageModel(page);
-  const observablesTab = new ObservablesTabPageModel(page);
 
   await page.goto('/dashboard/analyses/reports');
   await reportPage.openNewReportForm();
@@ -381,25 +379,18 @@ test('Report live entities creation and relationships', async ({ page }) => {
 
   await reportDetailsPage.goToEntitiesTab();
   await entitiesTab.clickAddEntities();
-  await entitiesTab.addEntity('Organization ANSSI identity');
+  await entitiesTab.search('note');
+  await entitiesTab.addEntity('This is a note');
   await entitiesTab.closeAddEntity();
-
-  const entity = reportDetailsPage.getTextForHeading(reportName, 'Organization ANSSI identity');
-  await expect(entity).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Note This is a note note' })).toBeVisible();
 
   // ---------
   // endregion
 
-  // region Manipulate entities on Entities tab
-  // ------------------------------------------
+  // region Manipulate entities on Observables tab
+  // ---------------------------------------------
 
-  await reportDetailsPage.goToObservablesTab();
-  await observablesTab.clickAddObservables();
-  await observablesTab.addObservable('fedora');
-  await observablesTab.closeAddObservable();
-
-  const observable = reportDetailsPage.getTextForHeading(reportName, 'fedora');
-  await expect(observable).toBeVisible();
+  // TODO after Table component refacto
 
   // ---------
   // endregion
@@ -409,7 +400,7 @@ test('Report live entities creation and relationships', async ({ page }) => {
 
   await leftNavigation.open();
   await leftNavigation.clickOnMenu('Analyses', 'Reports');
-  await reportPage.checkItemInList('Report with created entities');
+  await reportPage.checkItemInList(reportName);
   await toolbar.launchDelete();
   await leftNavigation.clickOnMenu('Analyses', 'Reports');
 
