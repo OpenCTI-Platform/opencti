@@ -24,7 +24,7 @@ import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -679,6 +679,5 @@ FeedCreation.propTypes = {
 };
 
 export default R.compose(
-  inject18n,
   withStyles(styles, { withTheme: true }),
 )(FeedCreation);
