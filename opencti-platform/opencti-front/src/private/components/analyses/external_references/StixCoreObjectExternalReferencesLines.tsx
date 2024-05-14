@@ -101,7 +101,7 @@ interface Connector {
   readonly connector_scope: ReadonlyArray<string> | null | undefined;
   readonly id: string;
   readonly name: string;
-  readonly updated_at: any | null | undefined;
+  readonly updated_at: null | undefined;
   readonly configurations: ReadonlyArray<{
     readonly configuration: string;
     readonly id: string;
