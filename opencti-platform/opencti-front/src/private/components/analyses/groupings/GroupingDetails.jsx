@@ -170,7 +170,6 @@ const GroupingDetailsComponent = (props) => {
               dataSelection={entitiesDistributionDataSelection}
               parameters={{ title: 'Entities distribution' }}
               variant="inEntity"
-              withExportPopover={true}
               isReadOnly={true}
             />
           </Grid>
