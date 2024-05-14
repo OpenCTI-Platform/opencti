@@ -225,7 +225,7 @@ class ImportContentComponent extends Component {
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
-    const isCsvConnector = !!this.state.selectedConnector?.connector_scope?.includes('text/csv');
+    const isCsvConnector = this.state.selectedConnector?.name === 'ImportCsv';
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
@@ -317,6 +317,8 @@ class ImportContentComponent extends Component {
     const handleSelectConnector = (_, value) => {
       this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
     };
+    const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
+        && this.state.selectedConnector?.configurations?.length === 0;
     return (
       <>
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Import'), current: true }]} />
@@ -511,13 +513,13 @@ class ImportContentComponent extends Component {
             onSubmit={this.onSubmitImport.bind(this)}
             onReset={this.handleCloseImport.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+            {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToImport}
                   PaperProps={{ elevation: 1 }}
                   keepMounted={true}
-                  onClose={this.handleCloseImport.bind(this)}
+                  onClose={() => handleReset()}
                   fullWidth={true}
                 >
                   <DialogTitle>{t('Launch an import')}</DialogTitle>
@@ -571,7 +573,7 @@ class ImportContentComponent extends Component {
                       </Field>
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
-                    {this.state.selectedConnector?.connector_scope?.includes('text/csv')
+                    {this.state.selectedConnector?.name === 'ImportCsv'
                       && (
                         <>
                           <ObjectMarkingField
@@ -593,7 +595,7 @@ class ImportContentComponent extends Component {
                     <Button
                       color="secondary"
                       onClick={submitForm}
-                      disabled={isSubmitting || !this.state.selectedConnector}
+                      disabled={isSubmitting || !isValid || invalidCsvMapper || !this.state.selectedConnector}
                     >
                       {t('Create')}
                     </Button>

@@ -156,7 +156,7 @@ const FileManager = ({
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
-    const isCsvConnector = !!selectedConnector?.connector_scope?.includes('text/csv');
+    const isCsvConnector = selectedConnector?.name === 'ImportCsv';
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
@@ -346,7 +346,7 @@ const FileManager = ({
                       })}
                     </Field>
                   )}
-                  {selectedConnector?.connector_scope?.includes('text/csv')
+                  {selectedConnector?.name === 'ImportCsv'
                     && (
                       <>
                         <ObjectMarkingField

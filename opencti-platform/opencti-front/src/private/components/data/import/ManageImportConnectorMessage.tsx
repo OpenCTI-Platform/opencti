@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { TAXIIAPI_SETCSVMAPPERS } from '../../../../utils/hooks/useGranted';
 
 interface ManageImportConnectorMessageProps {
-  name: string
+  name: string | undefined
 }
 const WarningText = styled('span')(({ theme }) => ({
   color: theme.palette.error.main,
@@ -17,7 +17,7 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
   switch (name) {
     case 'ImportCsv':
-      return <Box sx={{ paddingTop: '8px' }}>
+      return <Box sx={{ paddingTop: '18px' }}>
         <WarningText >{t_i18n('There are not any configurations set yet')}</WarningText>
         <div>
           {
