@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
@@ -15,6 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
+import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
@@ -147,7 +147,10 @@ const StixCoreObjectFilesAndHistory = ({
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenImport = (file) => setFileToImport(file);
-  const handleCloseImport = () => setFileToImport(null);
+  const handleCloseImport = () => {
+    setFileToImport(null);
+    setSelectedConnector(null);
+  };
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
@@ -155,7 +158,7 @@ const StixCoreObjectFilesAndHistory = ({
     const { connector_id, configuration, objectMarking } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
-    const isCsvConnector = !!selectedConnector?.connector_scope?.includes('text/csv');
+    const isCsvConnector = selectedConnector?.name === 'ImportCsv';
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
@@ -179,7 +182,6 @@ const StixCoreObjectFilesAndHistory = ({
       },
     });
   };
-
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
@@ -228,13 +230,15 @@ const StixCoreObjectFilesAndHistory = ({
     });
   };
 
-  const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations));
+  const connectors = connectorsImport.filter((n) => !n.only_contextual);
   const importConnsPerFormat = scopesConn(connectors);
 
   const handleSelectConnector = (_, value) => {
     setSelectedConnector(connectors.find((c) => c.id === value));
   };
 
+  const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
+      && selectedConnector?.configurations?.length === 0;
   return (
     <div className={classes.container} data-testid="StixCoreObjectFilesAndHistory">
       <Grid
@@ -275,13 +279,13 @@ const StixCoreObjectFilesAndHistory = ({
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
-        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               PaperProps={{ elevation: 1 }}
               open={fileToImport}
               keepMounted={true}
-              onClose={handleCloseImport}
+              onClose={() => handleReset()}
               fullWidth={true}
             >
               <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
@@ -314,27 +318,27 @@ const StixCoreObjectFilesAndHistory = ({
                   })}
                 </Field>
                 {selectedConnector?.configurations?.length > 0
-                      && <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t_i18n('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                         >
-                          {selectedConnector.configurations.map((config) => {
-                            return (
-                              <MenuItem
-                                key={config.id}
-                                value={config.configuration}
-                              >
-                                {config.name}
-                              </MenuItem>
-                            );
-                          })}
-                      </Field>
+                  ? <Field
+                      component={SelectField}
+                      variant="standard"
+                      name="configuration"
+                      label={t_i18n('Configuration')}
+                      fullWidth={true}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                    {selectedConnector.configurations.map((config) => {
+                      return (
+                        <MenuItem
+                          key={config.id}
+                          value={config.configuration}
+                        >
+                          {config.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                   }
-                {selectedConnector?.connector_scope?.includes('text/csv')
+                {selectedConnector?.name === 'ImportCsv'
                   && (
                     <>
                       <ObjectMarkingField
@@ -356,7 +360,7 @@ const StixCoreObjectFilesAndHistory = ({
                 <Button
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
                 >
                   {t_i18n('Create')}
                 </Button>
@@ -488,6 +492,7 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
         id
         name
         active
+        only_contextual
         connector_scope
         updated_at
         configurations {
