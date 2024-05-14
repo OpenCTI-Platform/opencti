@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import BluePromise from 'bluebird';
+import { Promise as BluePromise } from 'bluebird';
 import { createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
 import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
