@@ -84,7 +84,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
-  const isOverview = location.pathname === `/dashboard/events/incidents/${incident.id}`;
+  const isOverview = location.pathname === `/dashboard/events/incidents/${incident?.id}`;
   return (
     <>
       {incident ? (
