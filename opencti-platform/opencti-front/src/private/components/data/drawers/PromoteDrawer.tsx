@@ -1,23 +1,10 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
 
 type DrawerContainerPropsType = {
   isOpen: boolean;
@@ -27,8 +14,8 @@ type DrawerContainerPropsType = {
 };
 
 const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit }: DrawerContainerPropsType) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   return (
     <Drawer
@@ -36,35 +23,38 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
       onClose={onClose}
       open={isOpen}
     >
-      <>
-        <div className={classes.container}>
-          {isOnlyStixCyberObservablesTypes ? (
-            <div>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t_i18n(
-                  'This action will generate STIX patterns indicators from the selected observables.',
-                )}
-              </Alert>
-            </div>
-          ) : (
-            <div>
-              <Alert severity="warning" style={{ marginTop: 20 }}>
-                {t_i18n('This action will generate observables from the selected indicators.')}
-              </Alert>
-            </div>
-          )}
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={onSubmit}
-              classes={{ root: classes.button }}
-            >
-              {t_i18n('Generate')}
-            </Button>
+
+      <div style={{ padding: '10px 20px 20px 20px' }}>
+        {isOnlyStixCyberObservablesTypes ? (
+          <div>
+            <Alert severity="warning" style={{ marginTop: 20 }}>
+              {t_i18n(
+                'This action will generate STIX patterns indicators from the selected observables.',
+              )}
+            </Alert>
           </div>
+        ) : (
+          <div>
+            <Alert severity="warning" style={{ marginTop: 20 }}>
+              {t_i18n('This action will generate observables from the selected indicators.')}
+            </Alert>
+          </div>
+        )}
+        <div style={{
+          marginTop: 20,
+          textAlign: 'right',
+        }}
+        >
+          <Button
+            sx={{ marginLeft: theme.spacing(2) }}
+            variant="contained"
+            color="secondary"
+            onClick={onSubmit}
+          >
+            {t_i18n('Generate')}
+          </Button>
         </div>
-      </>
+      </div>
     </Drawer>
   );
 };
