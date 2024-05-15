@@ -17,9 +17,7 @@ const fakeDate = async (page: Page, dateString: string) => {
       }
     }
     // Override Date.now() to start from fakeNow
-    const __DateNowOffset = ${fakeNow} - Date.now();
-    const __DateNow = Date.now;
-    Date.now = () => __DateNow() + __DateNowOffset;
+    Date.now = () => ${fakeNow};
   }`);
 };
 
