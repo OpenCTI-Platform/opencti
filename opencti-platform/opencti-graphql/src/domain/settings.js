@@ -212,7 +212,7 @@ export const getDataSharingMaxMarkings = async (context, user, settings = undefi
   const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const dataSharingMaxMarkings = platform_data_sharing_max_markings ?? [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return dataSharingMaxMarkings.map((m) => allMarkingsMap.get(m) ?? m);
+  return dataSharingMaxMarkings.map((m) => allMarkingsMap.get(m)).filter((m) => !!m);
 };
 
 // Retrieves all available markings than can be shared.
