@@ -105,6 +105,7 @@ const waitPlatformIsAlive = async (): Promise<true> => {
 export async function setup() {
   await initializeRedisClients();
   await searchEngineInit();
+  await initializeRedisClients();
   // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');
