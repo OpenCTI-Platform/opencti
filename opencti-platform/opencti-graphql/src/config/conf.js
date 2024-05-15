@@ -204,6 +204,12 @@ const addBasicMetaInformation = (category, error, meta) => {
   return { category, version: PLATFORM_VERSION, ...logMeta };
 };
 
+export const logS3Debug = {
+  debug: (message, detail) => {
+    logApp._log('info', message, null, { detail });
+  },
+};
+
 export const logApp = {
   _log: (level, message, error, meta = {}) => {
     if (appLogTransports.length > 0) {

@@ -6,7 +6,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
-import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -30,27 +30,35 @@ const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
+const useAwsLogs = booleanConf('minio:use_aws_logs', false);
+
+let s3Client; // Client reference
 
 export const specialTypesExtensions = {
   'application/vnd.oasis.stix+json': 'json',
   'application/vnd.mitre.navigator+json': 'json',
 };
 
-const credentialProvider = async () => {
+const buildCredentialProvider = async () => {
+  // If aws role must be used
   if (useAwsRole) {
-    return defaultProvider({
-      roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
-        // You must explicitly pass a region if you are not using us-east-1
-        region: bucketRegion
-      })
-    });
+    return () => {
+      return defaultProvider({
+        roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
+          // You must explicitly pass a region if you are not using us-east-1
+          region: bucketRegion
+        })
+      });
+    };
   }
-  // Build the engine auth option
+  // If direct configuration
   const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
   const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
-  return {
-    ...userPasswordAuth,
-    ...(clientSessionToken && { sessionToken: clientSessionToken })
+  return () => {
+    return {
+      ...userPasswordAuth,
+      ...(clientSessionToken && { sessionToken: clientSessionToken })
+    };
   };
 };
 
@@ -62,13 +70,16 @@ const getEndpoint = () => {
   return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
 };
 
-const s3Client = new s3.S3Client({
-  region: bucketRegion,
-  endpoint: getEndpoint(),
-  forcePathStyle: true,
-  credentialDefaultProvider: credentialProvider,
-  tls: useSslConnection
-});
+export const initializeFileStorageClient = async () => {
+  s3Client = new s3.S3Client({
+    region: bucketRegion,
+    endpoint: getEndpoint(),
+    forcePathStyle: true,
+    credentialDefaultProvider: await buildCredentialProvider(),
+    logger: useAwsLogs ? logS3Debug : undefined,
+    tls: useSslConnection
+  });
+};
 
 export const initializeBucket = async () => {
   try {
@@ -91,6 +102,11 @@ export const deleteBucket = async () => {
     // Dont care
     logApp.info('[FILE STORAGE] Bucket cannot be deleted.', { err });
   }
+};
+
+export const storageInit = async () => {
+  await initializeFileStorageClient();
+  await initializeBucket();
 };
 
 export const isStorageAlive = () => initializeBucket();

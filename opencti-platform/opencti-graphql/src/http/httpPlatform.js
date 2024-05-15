@@ -15,7 +15,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
+import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
