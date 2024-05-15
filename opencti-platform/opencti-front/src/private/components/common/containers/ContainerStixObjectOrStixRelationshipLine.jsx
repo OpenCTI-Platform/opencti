@@ -19,6 +19,8 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -148,14 +150,16 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
         }
       />
       <ListItemSecondaryAction>
-        <ContainerStixCoreObjectPopover
-          containerId={containerId}
-          toId={node.id}
-          toStandardId={node.standard_id}
-          relationshipType="object"
-          paginationKey="Pagination_objects"
-          paginationOptions={paginationOptions}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerStixCoreObjectPopover
+            containerId={containerId}
+            toId={node.id}
+            toStandardId={node.standard_id}
+            relationshipType="object"
+            paginationKey="Pagination_objects"
+            paginationOptions={paginationOptions}
+          />
+        </Security>
       </ListItemSecondaryAction>
     </ListItem>
   );
