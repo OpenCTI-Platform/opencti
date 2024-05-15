@@ -4,7 +4,7 @@ import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
-import { initializeBucket, isStorageAlive } from './database/file-storage';
+import { initializeBucket, storageInit } from './database/file-storage';
 import { initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
@@ -31,14 +31,14 @@ export const checkSystemDependencies = async () => {
   await searchEngineInit();
   logApp.info('[CHECK] Search engine is alive');
   // Check if minio is here
-  await isStorageAlive();
-  logApp.info('[CHECK] Minio is alive');
+  await storageInit();
+  logApp.info('[CHECK] File engine is alive');
   // Check if RabbitMQ is here and create the logs exchange/queue
   await rabbitMQIsAlive();
-  logApp.info('[CHECK] RabbitMQ is alive');
+  logApp.info('[CHECK] RabbitMQ engine is alive');
   // Check if redis is here
   await redisInit();
-  logApp.info('[CHECK] Redis is alive');
+  logApp.info('[CHECK] Redis engine is alive');
   // Check if SMTP is here
   await smtpIsAlive();
   // Check if Python is available
