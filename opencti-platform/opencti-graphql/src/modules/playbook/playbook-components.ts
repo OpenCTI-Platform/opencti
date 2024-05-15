@@ -75,6 +75,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { EditOperation } from '../../generated/graphql';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -586,20 +587,31 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           // Unrecognized attributes must be filtered
           .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
           // Map actions to data patches
-          .map(({ action, path, multiple, numeric }) => ({
-            op: action.op,
-            path,
-            // eslint-disable-next-line no-nested-ternary,max-len
-            value: multiple ? action.value.map((o) => (numeric ? Number(o.patch_value) : o.patch_value)) : numeric ? Number(R.head(action.value)?.patch_value) : R.head(action.value)?.patch_value
-          }));
+          .map(({ action, path, multiple, numeric }) => {
+            if (multiple) {
+              const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
+              const actionValues = action.value.map((o) => (numeric ? Number(o.patch_value) : o.patch_value));
+              if (action.op === EditOperation.Add) {
+                return { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionValues]) };
+              }
+              if (action.op === EditOperation.Replace) {
+                return { op: EditOperation.Replace, path, value: actionValues };
+              }
+              if (action.op === EditOperation.Remove) {
+                return { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) };
+              }
+            }
+            const currentValue = R.head(action.value)?.patch_value;
+            return { op: action.op, path, value: numeric ? Number(currentValue) : currentValue };
+          });
         // Enlist operations to execute
         patchOperations.push(...elementOperations);
       }
     }
     // Apply operations if needed
     if (patchOperations.length > 0) {
-      jsonpatch.applyPatch(bundle, patchOperations);
-      return { output_port: 'out', bundle };
+      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      return { output_port: 'out', bundle: patchedBundle };
     }
     return { output_port: 'unmodified', bundle };
   }
@@ -892,6 +904,8 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             pattern_type: STIX_PATTERN_TYPE,
             extensions: {
               [STIX_EXT_OCTI]: {
+                extension_type: 'property-extension',
+                type: ENTITY_TYPE_INDICATOR,
                 main_observable_type: type,
                 score,
               }
@@ -939,7 +953,10 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             created: now(),
             modified: now(),
             extensions: {
-              [STIX_EXT_OCTI]: {}
+              [STIX_EXT_OCTI]: {
+                extension_type: 'property-extension',
+                type: RELATION_BASED_ON
+              }
             }
           } as StixRelation;
           if (granted_refs) {
@@ -1004,8 +1021,12 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             x_opencti_score: score,
             x_opencti_description: description,
             extensions: {
-              [STIX_EXT_OCTI]: {},
+              [STIX_EXT_OCTI]: {
+                extension_type: 'property-extension',
+                type: observable.type,
+              },
               [STIX_EXT_OCTI_SCO]: {
+                extension_type: 'property-extension',
                 score,
                 description,
               }
@@ -1053,7 +1074,10 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             created: now(),
             modified: now(),
             extensions: {
-              [STIX_EXT_OCTI]: {}
+              [STIX_EXT_OCTI]: {
+                extension_type: 'property-extension',
+                type: RELATION_BASED_ON
+              }
             }
           } as StixRelation;
           if (granted_refs) {

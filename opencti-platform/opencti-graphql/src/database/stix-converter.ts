@@ -161,18 +161,6 @@ export const cleanObject = <T>(data: T): T => {
   for (const key in data) {
     if (isEmptyField(obj[key])) {
       delete obj[key];
-    } else if (key === 'extensions') {
-      // Extensions can be generated with only the extension_type
-      // If it's the case and the type is property-extension, no need to keep the extension
-      const extensionDefinitions = Object.entries(obj[key] as Record<string, unknown>);
-      for (let i = 0; i < extensionDefinitions.length; i += 1) {
-        const [extKey, extObject] = extensionDefinitions[i];
-        const extRecord = extObject as Record<string, unknown>;
-        if (extRecord.extension_type === 'property-extension' && Object.entries(extRecord).length === 1) {
-          const ext = obj[key] as any;
-          delete ext[extKey];
-        }
-      }
     }
   }
   return obj;
