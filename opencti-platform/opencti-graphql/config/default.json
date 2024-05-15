@@ -221,6 +221,7 @@
     "use_ssl": false,
     "ca": [],
     "port": 6379,
+    "host_ip_family": 4,
     "trimming": 2000000
   },
   "elasticsearch": {
