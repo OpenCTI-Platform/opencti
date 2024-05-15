@@ -30,7 +30,7 @@ import {
   INPUT_MARKINGS
 } from '../../schema/general';
 import { convertStoreToStix } from '../../database/stix-converter';
-import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
@@ -42,7 +42,7 @@ import { connectorsForPlaybook } from '../../database/repository';
 import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityOrganization } from '../organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesListFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -76,6 +76,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types'
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { EditOperation } from '../../generated/graphql';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -544,6 +545,8 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
   configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+    const context = executionContext('playbook_components');
+    const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, all } = playbookNode.configuration;
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType:string, attribute: string) => {
@@ -590,7 +593,14 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map(({ action, path, multiple, numeric }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
-              const actionValues = action.value.map((o) => (numeric ? Number(o.patch_value) : o.patch_value));
+              const actionValues = action.value.map((o) => {
+                // If numeric, return the converter number
+                if (numeric) return Number(o.patch_value);
+                // If value is an id, must be converted to standard_id has we work on stix bundle
+                if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
+                // Else, just return the value
+                return o.patch_value;
+              });
               if (action.op === EditOperation.Add) {
                 return { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionValues]) };
               }
