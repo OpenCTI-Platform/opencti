@@ -205,7 +205,7 @@ class RootPosition extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route

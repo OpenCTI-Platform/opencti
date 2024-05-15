@@ -195,7 +195,7 @@ class RootAttackPattern extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route

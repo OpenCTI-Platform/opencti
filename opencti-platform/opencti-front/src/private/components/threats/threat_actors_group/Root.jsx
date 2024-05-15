@@ -207,7 +207,7 @@ class RootThreatActorGroup extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route

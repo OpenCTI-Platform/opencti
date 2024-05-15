@@ -28,7 +28,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to="/dashboard/data/entities" />}
+          element={<Navigate to="/dashboard/data/entities" replace={true} />}
         />
         <Route
           path="/entities"
@@ -88,7 +88,7 @@ const Root = () => {
         />
         <Route
           path="/sharing"
-          element={<Navigate to="/dashboard/data/sharing/streams" />}
+          element={<Navigate to="/dashboard/data/sharing/streams" replace={true} />}
         />
         <Route
           path="/sharing/streams"

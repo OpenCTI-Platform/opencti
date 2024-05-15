@@ -75,9 +75,7 @@ const reportQuery = graphql`
 
 const RootReport = () => {
   const { reportId } = useParams() as { reportId: string };
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootReportSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootReportSubscription>>(
     () => ({
       subscription,
       variables: { id: reportId },
@@ -103,9 +101,9 @@ const RootReport = () => {
                 location.pathname.includes(
                   `/dashboard/analyses/reports/${report.id}/entities`,
                 )
-                      || location.pathname.includes(
-                        `/dashboard/analyses/reports/${report.id}/observables`,
-                      )
+                || location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/observables`,
+                )
               ) {
                 paddingRight = 250;
               }
@@ -143,12 +141,12 @@ const RootReport = () => {
                   >
                     <Tabs
                       value={
-                                location.pathname.includes(
-                                  `/dashboard/analyses/reports/${report.id}/knowledge`,
-                                )
-                                  ? `/dashboard/analyses/reports/${report.id}/knowledge`
-                                  : location.pathname
-                              }
+                        location.pathname.includes(
+                          `/dashboard/analyses/reports/${report.id}/knowledge`,
+                        )
+                          ? `/dashboard/analyses/reports/${report.id}/knowledge`
+                          : location.pathname
+                      }
                     >
                       <Tab
                         component={Link}
@@ -218,9 +216,12 @@ const RootReport = () => {
                     />
                     <Route
                       path="/knowledge"
-                      element={<Navigate
-                        to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
-                               />}
+                      element={(
+                        <Navigate
+                          replace={true}
+                          to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
+                        />
+                      )}
                     />
                     <Route
                       path="/content"

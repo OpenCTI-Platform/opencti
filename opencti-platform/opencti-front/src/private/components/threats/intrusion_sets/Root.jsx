@@ -211,7 +211,7 @@ class RootIntrusionSet extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route

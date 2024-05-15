@@ -241,6 +241,7 @@ class RootIndividual extends Component {
                         path="/knowledge"
                         element={
                           <Navigate
+                            replace={true}
                             to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
                           />
                         }

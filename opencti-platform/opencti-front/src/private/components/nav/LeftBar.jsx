@@ -377,14 +377,16 @@ const LeftBar = () => {
         onClose={handleSelectedMenuClose}
         disableRestoreFocus={true}
         disableScrollLock={true}
-        slotProps={{ paper: {
-          elevation: 1,
-          onMouseEnter: () => handleSelectedMenuOpen(menu),
-          onMouseLeave: handleSelectedMenuClose,
-          sx: {
-            pointerEvents: 'auto',
+        slotProps={{
+          paper: {
+            elevation: 1,
+            onMouseEnter: () => handleSelectedMenuOpen(menu),
+            onMouseLeave: handleSelectedMenuClose,
+            sx: {
+              pointerEvents: 'auto',
+            },
           },
-        } }}
+        }}
       >
         <MenuList component="nav">
           {entries.filter((entry) => entry.granted !== false && !hiddenEntities.includes(entry.type)).map((entry) => {
@@ -444,10 +446,10 @@ const LeftBar = () => {
                 <DashboardOutlined />
               </ListItemIcon>
               {navOpen && (
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t_i18n('Home')}
-              />
+                <ListItemText
+                  classes={{ primary: classes.menuItemText }}
+                  primary={t_i18n('Home')}
+                />
               )}
             </MenuItem>
           </StyledTooltip>
@@ -456,26 +458,34 @@ const LeftBar = () => {
         <Security needs={[KNOWLEDGE]}>
           <MenuList component="nav">
             {!hideAnalyses && (
-            <MenuItem
-              ref={anchors.analyses}
-              selected={!navOpen && location.pathname.includes('/dashboard/analyses')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('analyses') : handleGoToPage('/dashboard/analyses'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('analyses')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <AssignmentOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Analyses')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('analyses') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.analyses}
+                selected={!navOpen && location.pathname.includes('/dashboard/analyses')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (isMobile || navOpen) {
+                    handleSelectedMenuToggle('analyses');
+                  } else {
+                    handleGoToPage('/dashboard/analyses');
+                  }
+                }}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('analyses')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <AssignmentOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Analyses')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('analyses') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideAnalyses && generateSubMenu(
               'analyses',
@@ -488,26 +498,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideCases && (
-            <MenuItem
-              ref={anchors.cases}
-              selected={!navOpen && location.pathname.includes('/dashboard/cases')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('cases') : handleGoToPage('/dashboard/cases'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('cases')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <CasesOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Cases')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('cases') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.cases}
+                selected={!navOpen && location.pathname.includes('/dashboard/cases')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('cases') : handleGoToPage('/dashboard/cases'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('cases')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <CasesOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Cases')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('cases') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideCases && generateSubMenu(
               'cases',
@@ -520,26 +530,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideEvents && (
-            <MenuItem
-              ref={anchors.events}
-              selected={!navOpen && location.pathname.includes('/dashboard/events')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/events'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <Timetable />
-              </ListItemIcon>
-              {navOpen && (
-              <ListItemText
-                classes={{ primary: classes.menuItemText }}
-                primary={t_i18n('Events')}
-              />
-              )}
-              {navOpen && (selectedMenu.includes('events') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.events}
+                selected={!navOpen && location.pathname.includes('/dashboard/events')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/events'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <Timetable />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Events')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('events') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideEvents && generateSubMenu(
               'events',
@@ -550,26 +560,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideObservations && (
-            <MenuItem
-              ref={anchors.observations}
-              selected={!navOpen && location.pathname.includes('/dashboard/observations')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('observations') : handleGoToPage('/dashboard/observations'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('observations')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <Binoculars />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Observations')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('observations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.observations}
+                selected={!navOpen && location.pathname.includes('/dashboard/observations')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('observations') : handleGoToPage('/dashboard/observations'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('observations')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <Binoculars />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Observations')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('observations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideObservations && generateSubMenu(
               'observations',
@@ -584,57 +594,62 @@ const LeftBar = () => {
           <Divider />
           <MenuList component="nav">
             {!hideThreats && (
-            <MenuItem
-              ref={anchors.threats}
-              selected={!navOpen && location.pathname.includes('/dashboard/threats')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('threats') : handleGoToPage('/dashboard/threats'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('threats')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <FlaskOutline />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Threats')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('threats') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.threats}
+                selected={!navOpen && location.pathname.includes('/dashboard/threats')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('threats') : handleGoToPage('/dashboard/threats'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('threats')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <FlaskOutline />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Threats')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('threats') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideThreats && generateSubMenu(
               'threats',
               [
                 { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)', icon: <AccountMultipleOutline fontSize="small" /> },
-                { type: 'Threat-Actor-Individual', link: '/dashboard/threats/threat_actors_individual', label: 'Threat actors (individual)', icon: <LaptopAccount fontSize="small" /> },
+                {
+                  type: 'Threat-Actor-Individual',
+                  link: '/dashboard/threats/threat_actors_individual',
+                  label: 'Threat actors (individual)',
+                  icon: <LaptopAccount fontSize="small" />,
+                },
                 { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: 'Intrusion sets', icon: <DiamondOutlined fontSize="small" /> },
                 { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns', icon: <ChessKnight fontSize="small" /> },
               ],
             )}
             {!hideArsenal && (
-            <MenuItem
-              ref={anchors.arsenal}
-              selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('arsenal') : handleGoToPage('/dashboard/arsenal'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('arsenal')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <LayersOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Arsenal')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('arsenal') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.arsenal}
+                selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('arsenal') : handleGoToPage('/dashboard/arsenal'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('arsenal')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <LayersOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Arsenal')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('arsenal') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideArsenal && generateSubMenu(
               'arsenal',
@@ -646,26 +661,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideTechniques && (
-            <MenuItem
-              ref={anchors.techniques}
-              selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('techniques') : handleGoToPage('/dashboard/techniques'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('techniques')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <ConstructionOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Techniques')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('techniques') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.techniques}
+                selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('techniques') : handleGoToPage('/dashboard/techniques'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('techniques')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <ConstructionOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Techniques')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('techniques') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideTechniques && generateSubMenu(
               'techniques',
@@ -678,26 +693,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideEntities && (
-            <MenuItem
-              ref={anchors.entities}
-              selected={!navOpen && location.pathname.includes('/dashboard/entities')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('entities') : handleGoToPage('/dashboard/entities'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('entities')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <FolderTableOutline />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Entities')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('entities') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.entities}
+                selected={!navOpen && location.pathname.includes('/dashboard/entities')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('entities') : handleGoToPage('/dashboard/entities'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('entities')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <FolderTableOutline />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Entities')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('entities') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideEntities && generateSubMenu(
               'entities',
@@ -710,26 +725,26 @@ const LeftBar = () => {
               ],
             )}
             {!hideLocations && (
-            <MenuItem
-              ref={anchors.locations}
-              selected={!navOpen && location.pathname.includes('/dashboard/locations')}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-              onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('locations') : handleGoToPage('/dashboard/locations'))}
-              onMouseEnter={() => !navOpen && handleSelectedMenuOpen('locations')}
-              onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <GlobeModel />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Locations')}
-                />
-              )}
-              {navOpen && (selectedMenu.includes('locations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-            </MenuItem>
+              <MenuItem
+                ref={anchors.locations}
+                selected={!navOpen && location.pathname.includes('/dashboard/locations')}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('locations') : handleGoToPage('/dashboard/locations'))}
+                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('locations')}
+                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <GlobeModel />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Locations')}
+                  />
+                )}
+                {navOpen && (selectedMenu.includes('locations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+              </MenuItem>
             )}
             {!hideLocations && generateSubMenu(
               'locations',
@@ -759,10 +774,10 @@ const LeftBar = () => {
                     <InsertChartOutlinedOutlined />
                   </ListItemIcon>
                   {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Dashboards')}
-                  />
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Dashboards')}
+                    />
                   )}
                 </MenuItem>
               </StyledTooltip>
@@ -778,10 +793,10 @@ const LeftBar = () => {
                     <ExploreOutlined />
                   </ListItemIcon>
                   {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Investigations')}
-                  />
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Investigations')}
+                    />
                   )}
                 </MenuItem>
               </StyledTooltip>
@@ -800,10 +815,10 @@ const LeftBar = () => {
                   <Database />
                 </ListItemIcon>
                 {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Data')}
-                />
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Data')}
+                  />
                 )}
                 {navOpen && (selectedMenu.includes('data') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
               </MenuItem>
@@ -862,10 +877,10 @@ const LeftBar = () => {
                       <CogOutline />
                     </ListItemIcon>
                     {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Settings')}
-                    />
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Settings')}
+                      />
                     )}
                   </MenuItem>
                 </StyledTooltip>
@@ -883,10 +898,10 @@ const LeftBar = () => {
                     <CogOutline />
                   </ListItemIcon>
                   {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Settings')}
-                  />
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Settings')}
+                    />
                   )}
                   {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                 </MenuItem>
@@ -910,32 +925,32 @@ const LeftBar = () => {
       <div style={{ marginTop: 'auto' }}>
         <MenuList component="nav">
           {(!platform_whitemark || !isEnterpriseEdition) && (
-          <MenuItem
-            dense={true}
-            classes={{
-              root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
-            }}
-            onClick={() => window.open('https://filigran.io/', '_blank')}
-          >
-            <Tooltip title={'By Filigran'}>
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <img
-                  src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
-                  alt="logo"
-                  width={20}
-                />
-              </ListItemIcon>
-            </Tooltip>
-            {navOpen && (
-            <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 15px' }}>
-              <img
-                src={fileUri(theme.palette.mode === 'dark' ? logoFiligranTextDark : logoFiligranTextLight)}
-                alt="logo"
-                width={50}
-              />
-            </ListItemIcon>
-            )}
-          </MenuItem>
+            <MenuItem
+              dense={true}
+              classes={{
+                root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
+              }}
+              onClick={() => window.open('https://filigran.io/', '_blank')}
+            >
+              <Tooltip title={'By Filigran'}>
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <img
+                    src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
+                    alt="logo"
+                    width={20}
+                  />
+                </ListItemIcon>
+              </Tooltip>
+              {navOpen && (
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 15px' }}>
+                  <img
+                    src={fileUri(theme.palette.mode === 'dark' ? logoFiligranTextDark : logoFiligranTextLight)}
+                    alt="logo"
+                    width={50}
+                  />
+                </ListItemIcon>
+              )}
+            </MenuItem>
           )}
           <MenuItem
             dense={true}
@@ -949,10 +964,10 @@ const LeftBar = () => {
               {navOpen ? <ChevronLeft /> : <ChevronRight />}
             </ListItemIcon>
             {navOpen && (
-            <ListItemText
-              classes={{ primary: classes.menuItemText }}
-              primary={t_i18n('Collapse')}
-            />
+              <ListItemText
+                classes={{ primary: classes.menuItemText }}
+                primary={t_i18n('Collapse')}
+              />
             )}
           </MenuItem>
         </MenuList>

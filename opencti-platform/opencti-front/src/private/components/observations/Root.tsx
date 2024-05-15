@@ -34,7 +34,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/observations/${redirect}`}/>}
+          element={<Navigate to={`/dashboard/observations/${redirect}`} replace={true} />}
         />
         <Route
           path="/observables"

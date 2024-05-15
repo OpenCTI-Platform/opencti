@@ -206,7 +206,7 @@ const RootThreatActorIndividualComponent = ({
               <Route
                 path="/knowledge"
                 element={
-                  <Navigate to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`} />
+                  <Navigate to={`/dashboard/threats/threat_actors_individual/${data.id}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

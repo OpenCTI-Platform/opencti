@@ -198,6 +198,7 @@ class RootVulnerability extends Component {
                         path="/knowledge"
                         element={(
                           <Navigate
+                            replace={true}
                             to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
                           />
                         )}

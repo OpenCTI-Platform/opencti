@@ -203,7 +203,7 @@ class RootCampaign extends Component {
                       <Route
                         path="/knowledge"
                         element={
-                          <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} />
+                          <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
                         }
                       />
                       <Route
