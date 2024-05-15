@@ -42,10 +42,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   let availableEntityTypes;
   let searchContext;
   if (perspective === 'relationships') {
-    availableEntityTypes = [
-      'Stix-Domain-Object',
-      'Stix-Cyber-Observable',
-    ];
     searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
@@ -61,9 +57,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
   if (perspective !== 'relationships') {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
+  } else {
+    availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter
   }
   const entitiesFilterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
   const entitiesFilters = uniq(Array.from(entitiesFilterKeysMap.keys() ?? []));
+
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
     <Box sx={{ display: 'flex', gap: 1 }}>
       <Filters
@@ -114,6 +113,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             helpers={helpersDynamicFrom}
             chipColor={'warning'}
             entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
           />
         </>
       )}
@@ -129,6 +133,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             helpers={helpersDynamicTo}
             chipColor={'success'}
             entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
           />
         </>
       )}
@@ -141,6 +150,8 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            searchContext={searchContext}
+            availableEntityTypes={availableEntityTypes}
           />
         </>
       ) }

@@ -223,6 +223,7 @@ const RetentionCreation = (props) => {
                 filters={filters}
                 helpers={helpers}
                 redirection
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
               <div className={classes.buttons}>
                 <Button

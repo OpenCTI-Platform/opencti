@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, Filter, FilterGroup, FiltersRestrictions, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, Filter, FilterGroup, FilterSearchContext, FiltersRestrictions, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -122,6 +122,9 @@ interface FilterIconButtonContainerProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
+  searchContext?: FilterSearchContext
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -142,6 +145,9 @@ FilterIconButtonContainerProps
   availableRelationFilterTypes,
   entityTypes,
   filtersRestrictions,
+  searchContext,
+  availableEntityTypes,
+  availableRelationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -381,6 +387,9 @@ FilterIconButtonContainerProps
             filtersRepresentativesMap={filtersRepresentativesMap}
             availableRelationFilterTypes={availableRelationFilterTypes}
             entityTypes={entityTypes}
+            searchContext={searchContext}
+            availableEntityTypes={availableEntityTypes}
+            availableRelationshipTypes={availableRelationshipTypes}
           />
         </Box>
       )}

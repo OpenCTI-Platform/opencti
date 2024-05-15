@@ -84,9 +84,7 @@ interface TriggerEditionFormValues {
   period: string;
 }
 
-const TriggerEditionOverview: FunctionComponent<
-TriggerEditionOverviewProps
-> = ({ data, handleClose, paginationOptions }) => {
+const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
@@ -123,29 +121,29 @@ TriggerEditionOverviewProps
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     event_types:
-        trigger.trigger_type === 'live'
-          ? Yup.array()
-            .min(1, t_i18n('Minimum one event type'))
-            .required(t_i18n('This field is required'))
-          : Yup.array().nullable(),
+      trigger.trigger_type === 'live'
+        ? Yup.array()
+          .min(1, t_i18n('Minimum one event type'))
+          .required(t_i18n('This field is required'))
+        : Yup.array().nullable(),
     notifiers:
-        trigger.trigger_type === 'digest'
-          ? Yup.array()
-            .min(1, t_i18n('Minimum one notifier'))
-            .required(t_i18n('This field is required'))
-          : Yup.array().nullable(),
+      trigger.trigger_type === 'digest'
+        ? Yup.array()
+          .min(1, t_i18n('Minimum one notifier'))
+          .required(t_i18n('This field is required'))
+        : Yup.array().nullable(),
     period:
-        trigger.trigger_type === 'digest'
-          ? Yup.string().required(t_i18n('This field is required'))
-          : Yup.string().nullable(),
+      trigger.trigger_type === 'digest'
+        ? Yup.string().required(t_i18n('This field is required'))
+        : Yup.string().nullable(),
     day: Yup.string().nullable(),
     time: Yup.string().nullable(),
     trigger_ids:
-        trigger.trigger_type === 'digest'
-          ? Yup.array()
-            .min(1, t_i18n('Minimum one trigger'))
-            .required(t_i18n('This field is required'))
-          : Yup.array().nullable(),
+      trigger.trigger_type === 'digest'
+        ? Yup.array()
+          .min(1, t_i18n('Minimum one trigger'))
+          .required(t_i18n('This field is required'))
+        : Yup.array().nullable(),
   });
   const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
     .validateAt(name, { [name]: value })
@@ -261,9 +259,9 @@ TriggerEditionOverviewProps
     period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
     time:
-        currentTime.length > 1
-          ? formatTimeForToday(currentTime[1])
-          : formatTimeForToday(currentTime[0]),
+      currentTime.length > 1
+        ? formatTimeForToday(currentTime[1])
+        : formatTimeForToday(currentTime[0]),
   };
   return (
     <Formik
@@ -293,118 +291,118 @@ TriggerEditionOverviewProps
             style={{ marginTop: 20 }}
           />
           {trigger.trigger_type === 'live' && (
-          <Field
-            component={AutocompleteField}
-            name="event_types"
-            style={fieldSpacingContainerStyle}
-            multiple={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t_i18n('Triggering on'),
-            }}
-            options={
-              trigger.instance_trigger
-                ? instanceEventTypesOptions
-                : filterEventTypesOptions
-            }
-            onChange={(
-              name: string,
-              value: { value: string; label: string }[],
-            ) => handleSubmitField(
-              name,
-              value.map((n) => n.value),
-            )
-                      }
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: { value: TriggerEventType; label: string },
-            ) => (
-              <MenuItem value={option.value} {...props}>
-                <Checkbox
-                  checked={values.event_types
-                    .map((n) => n.value)
-                    .includes(option.value)}
-                />
-                <ListItemText primary={option.label} />
-              </MenuItem>
-            )}
-          />
+            <Field
+              component={AutocompleteField}
+              name="event_types"
+              style={fieldSpacingContainerStyle}
+              multiple={true}
+              textfieldprops={{
+                variant: 'standard',
+                label: t_i18n('Triggering on'),
+              }}
+              options={
+                trigger.instance_trigger
+                  ? instanceEventTypesOptions
+                  : filterEventTypesOptions
+              }
+              onChange={(
+                name: string,
+                value: { value: string; label: string }[],
+              ) => handleSubmitField(
+                name,
+                value.map((n) => n.value),
+              )
+              }
+              renderOption={(
+                props: React.HTMLAttributes<HTMLLIElement>,
+                option: { value: TriggerEventType; label: string },
+              ) => (
+                <MenuItem value={option.value} {...props}>
+                  <Checkbox
+                    checked={values.event_types
+                      .map((n) => n.value)
+                      .includes(option.value)}
+                  />
+                  <ListItemText primary={option.label} />
+                </MenuItem>
+              )}
+            />
           )}
           {trigger.trigger_type === 'digest' && (
-          <TriggersField
-            name="trigger_ids"
-            setFieldValue={setFieldValue}
-            values={values.trigger_ids}
-            style={fieldSpacingContainerStyle}
-            onChange={handleSubmitTriggers}
-            paginationOptions={paginationOptions}
-          />
+            <TriggersField
+              name="trigger_ids"
+              setFieldValue={setFieldValue}
+              values={values.trigger_ids}
+              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitTriggers}
+              paginationOptions={paginationOptions}
+            />
           )}
           {trigger.trigger_type === 'digest' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="period"
-            label={t_i18n('Period')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitField}
-          >
-            <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-            <MenuItem value="day">{t_i18n('day')}</MenuItem>
-            <MenuItem value="week">{t_i18n('week')}</MenuItem>
-            <MenuItem value="month">{t_i18n('month')}</MenuItem>
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="period"
+              label={t_i18n('Period')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
+            >
+              <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
+              <MenuItem value="day">{t_i18n('day')}</MenuItem>
+              <MenuItem value="week">{t_i18n('week')}</MenuItem>
+              <MenuItem value="month">{t_i18n('month')}</MenuItem>
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'week' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="day"
-            label={t_i18n('Week day')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitDay}
-          >
-            <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
-            <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
-            <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
-            <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
-            <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
-            <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
-            <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t_i18n('Week day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
+              <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
+              <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
+              <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
+              <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
+              <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
+              <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period === 'month' && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="day"
-            label={t_i18n('Month day')}
-            fullWidth={true}
-            containerstyle={fieldSpacingContainerStyle}
-            onChange={handleSubmitDay}
-          >
-            {Array.from(Array(31).keys()).map((idx) => (
-              <MenuItem key={idx} value={(idx + 1).toString()}>
-                {(idx + 1).toString()}
-              </MenuItem>
-            ))}
-          </Field>
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="day"
+              label={t_i18n('Month day')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={handleSubmitDay}
+            >
+              {Array.from(Array(31).keys()).map((idx) => (
+                <MenuItem key={idx} value={(idx + 1).toString()}>
+                  {(idx + 1).toString()}
+                </MenuItem>
+              ))}
+            </Field>
           )}
           {trigger.trigger_type === 'digest' && values.period !== 'hour' && (
-          <Field
-            component={TimePickerField}
-            name="time"
-            withMinutes={true}
-            onSubmit={handleSubmitTime}
-            textFieldProps={{
-              label: t_i18n('Time'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
-          />
+            <Field
+              component={TimePickerField}
+              name="time"
+              withMinutes={true}
+              onSubmit={handleSubmitTime}
+              textFieldProps={{
+                label: t_i18n('Time'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+            />
           )}
           <NotifierField
             name="notifiers"
@@ -412,60 +410,68 @@ TriggerEditionOverviewProps
               name,
               options.map(({ value }) => value),
             )
-                  }
+            }
           />
           {trigger.trigger_type === 'live' && (
-          <span>
-            <Box sx={{ paddingTop: 4,
-              display: 'flex',
-              gap: 1 }}
-            >
-              {(!trigger.instance_trigger
-                && <Filters
-                  availableFilterKeys={[
-                    'entity_type',
-                    'workflow_id',
-                    'objectAssignee',
-                    'objects',
-                    'objectMarking',
-                    'objectLabel',
-                    'creator_id',
-                    'createdBy',
-                    'priority',
-                    'severity',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence',
-                    'indicator_types',
-                    'x_opencti_main_observable_type',
-                    'pattern_type',
-                    'fromId',
-                    'toId',
-                    'fromTypes',
-                    'toTypes',
-                  ]}
-                  helpers={helpers}
-                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                   />)}
-            </Box>
+            <span>
+              <Box sx={{
+                paddingTop: 4,
+                display: 'flex',
+                gap: 1,
+              }}
+              >
+                {(!trigger.instance_trigger
+                && (
+                  <Filters
+                    availableFilterKeys={[
+                      'entity_type',
+                      'workflow_id',
+                      'objectAssignee',
+                      'objects',
+                      'objectMarking',
+                      'objectLabel',
+                      'creator_id',
+                      'createdBy',
+                      'priority',
+                      'severity',
+                      'x_opencti_score',
+                      'x_opencti_detection',
+                      'revoked',
+                      'confidence',
+                      'indicator_types',
+                      'x_opencti_main_observable_type',
+                      'pattern_type',
+                      'fromId',
+                      'toId',
+                      'fromTypes',
+                      'toTypes',
+                    ]}
+                    helpers={helpers}
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  />
+                ))}
+              </Box>
 
-            {trigger.instance_trigger
-              ? <FilterIconButton
-                  filters={filters}
-                  helpers={{
-                    ...helpers,
-                    handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-                  }}
-                  redirection
-                  entityTypes={['Instance']}
-                  filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-                />
-              : <FilterIconButton
-                  filters={filters}
-                  helpers={helpers}
-                  redirection
-                />}
+              {trigger.instance_trigger
+                ? (
+                  <FilterIconButton
+                    filters={filters}
+                    helpers={{
+                      ...helpers,
+                      handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
+                    }}
+                    redirection
+                    entityTypes={['Instance']}
+                    filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+                  />
+                ) : (
+                  <FilterIconButton
+                    filters={filters}
+                    helpers={helpers}
+                    redirection
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  />
+                )}
             </span>
           )}
         </Form>

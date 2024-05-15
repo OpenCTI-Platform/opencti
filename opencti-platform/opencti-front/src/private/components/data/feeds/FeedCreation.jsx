@@ -499,6 +499,7 @@ const FeedCreation = (props) => {
                         helpers={helpers}
                         styleNumber={2}
                         redirection
+                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       />
                       {selectedTypes.length > 0 && (
                         <div

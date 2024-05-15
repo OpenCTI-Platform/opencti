@@ -217,6 +217,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             styleNumber={2}
             helpers={helpers}
             redirection
+            searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           />
         </Form>
       )}

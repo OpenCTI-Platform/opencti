@@ -171,6 +171,10 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                   handleSwitchLocalMode={handleSwitchFilterLocalMode}
                   handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
                   redirection
+                  availableEntityTypes={[
+                    'Stix-Domain-Object',
+                    'Stix-Cyber-Observable',
+                  ]}
                 />
               </div>
             </div>

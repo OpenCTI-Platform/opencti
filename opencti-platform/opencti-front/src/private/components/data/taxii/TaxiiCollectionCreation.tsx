@@ -217,6 +217,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 helpers={helpers}
                 styleNumber={2}
                 redirection
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
               />
               <div className={classes.buttons}>
                 <Button

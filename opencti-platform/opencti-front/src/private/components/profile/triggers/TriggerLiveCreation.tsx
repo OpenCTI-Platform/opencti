@@ -304,23 +304,25 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       {renderKnowledgeTrigger(values, setFieldValue)}
-      {instance_trigger
-        ? <FilterIconButton
-            filters={instanceTriggerFilters}
-            redirection
-            entityTypes={['Instance']}
-            helpers={{
-              ...instanceTriggerFiltersHelpers,
-              handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-            }}
-            filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-          />
-        : <FilterIconButton
-            filters={filters}
-            helpers={helpers}
-            redirection
-          />
-      }
+      {instance_trigger ? (
+        <FilterIconButton
+          filters={instanceTriggerFilters}
+          redirection
+          entityTypes={['Instance']}
+          helpers={{
+            ...instanceTriggerFiltersHelpers,
+            handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
+          }}
+          filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+        />
+      ) : (
+        <FilterIconButton
+          filters={filters}
+          helpers={helpers}
+          redirection
+          searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+        />
+      )}
 
     </React.Fragment>
   );
