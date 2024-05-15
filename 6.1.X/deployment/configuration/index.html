@@ -904,6 +904,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#using-a-credentials-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using a credentials provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using a credentials provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cyberark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CyberArk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4990,6 +5029,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#using-a-credentials-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using a credentials provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using a credentials provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cyberark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CyberArk
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -6074,6 +6152,170 @@
 </tr>
 </tbody>
 </table>
+<h4 id="using-a-credentials-provider">Using a credentials provider</h4>
+<p>In some cases, it may not be possible to put directly dependencies credentials directly in environment variables or static configuration. The platform can then retrieve them from a credentials provider. Here is the list of supported providers:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Credentials provider</th>
+<th style="text-align: left;">Provider key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">CyberArk</td>
+<td style="text-align: left;"><code>cyberark</code></td>
+</tr>
+</tbody>
+</table>
+<p>For each dependency, special configuration keys are available to ensure the platform retrieves credentials during start process. Not all dependencies support this mechanism, here is the exhaustive list:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dependency</th>
+<th style="text-align: left;">Prefix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ElasticSearch</td>
+<td style="text-align: left;"><code>elasticsearch</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">S3 Storage</td>
+<td style="text-align: left;"><code>minio</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Redis</td>
+<td style="text-align: left;"><code>redis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenID secrets</td>
+<td style="text-align: left;"><code>oic</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="common-configurations">Common configurations</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Default value</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:https_cert:reject_unauthorized</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__HTTPS_CERT__REJECT_UNAUTHORIZED</td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Reject unauthorized TLS connection</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:https_cert:crt</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Path to the HTTPS certificate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:https_cert:key</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Path to the HTTPS key</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:https_cert:ca</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__HTTPS_CERT__CA</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Path to the HTTPS CA certificate</td>
+</tr>
+</tbody>
+</table>
+<h5 id="cyberark">CyberArk</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Default value</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:uri</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__URI</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The URL of the CyberArk endpoint for credentials retrieval (GET request)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:app_id</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__APP_ID</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The used application ID for the dependency within CyberArk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:safe</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__SAFE</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The used safe key for the dependency within CyberArk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:object</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__OBJECT</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">The used object key for the dependency within CyberArk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:default_splitter</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER</td>
+<td style="text-align: left;">:</td>
+<td style="text-align: left;">Default splitter of the credentials results, for "username:password", default is ":"</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>{prefix}</code>:credentials_provider:cyberark:field_targets</td>
+<td style="text-align: left;"><code>{PREFIX}</code>__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS</td>
+<td style="text-align: left;">[]</td>
+<td style="text-align: left;">Fields targets in the data content response after splitting</td>
+</tr>
+</tbody>
+</table>
+<p>Here is an example for ElasticSearch:</p>
+<p>Environment variables:
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-elastic</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:&quot;</span><span class="w"> </span><span class="c1"># As default is already &quot;:&quot;, may not be necessary</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\&quot;username\&quot;,\&quot;password\&quot;]&quot;</span>
+</span></code></pre></div></p>
+<p>JSON version:
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">&quot;elasticsearch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="nt">&quot;credentials_provider&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">        </span><span class="nt">&quot;cyberark&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">            </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://my.cyberark.com/AIMWebService/api/Accounts&quot;</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">            </span><span class="nt">&quot;app_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opencti-elastic&quot;</span><span class="p">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">            </span><span class="nt">&quot;safe&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mysafe-key&quot;</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">            </span><span class="nt">&quot;object&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;myobject-key&quot;</span><span class="p">,</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">            </span><span class="nt">&quot;default_splitter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;:&quot;</span><span class="p">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">            </span><span class="nt">&quot;field_targets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;username&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;password&quot;</span><span class="p">]</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<p>Another example for MinIo (S3) using certificate:</p>
+<p>Environment variables:
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT=/cert_volume/mycert.crt</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY=/cert_volume/mycert.key</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CA=/cert_volume/ca.crt</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-s3</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MINIO__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;MINIO__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:&quot;</span><span class="w"> </span><span class="c1"># As default is already &quot;:&quot;, may not be necessary</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\&quot;access_key\&quot;,\&quot;secret_key\&quot;]&quot;</span>
+</span></code></pre></div></p>
 <h3 id="engines-schedules-and-managers">Engines, Schedules and Managers</h3>
 <table>
 <thead>
@@ -6574,8 +6816,8 @@
 <p>For specific connector configuration, you need to check each connector behavior.</p>
 <h2 id="elasticsearch_1">ElasticSearch</h2>
 <p>If you want to adapt the memory consumption of ElasticSearch, you can use these options:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Add the following environment variable:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s2">&quot;ES_JAVA_OPTS=-Xms8g -Xmx8g&quot;</span>
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Add the following environment variable:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="s2">&quot;ES_JAVA_OPTS=-Xms8g -Xmx8g&quot;</span>
 </span></code></pre></div>
 <p>This can be done in configuration file in the <code>jvm.conf</code> file.</p>
 
@@ -6600,7 +6842,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-14T14:56:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-15T05:47:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-15</span>
   </span>
 
     
