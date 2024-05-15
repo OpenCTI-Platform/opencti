@@ -148,6 +148,7 @@ const Search = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          availableEntityTypes={['Stix-Core-Object']}
         >
           {queryRef && (
           <React.Suspense
