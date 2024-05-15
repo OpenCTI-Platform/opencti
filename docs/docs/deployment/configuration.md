@@ -228,6 +228,86 @@ Here are the configuration keys, for both containers (environment variables) and
 | ai:model        | AI__MODEL            |               | Model to be used for text generation (depending on type)  |
 | ai:model_images | AI__MODEL_IMAGES     |               | Model to be used for image generation (depending on type) |
 
+#### Using a credentials provider
+
+In some cases, it may not be possible to put directly dependencies credentials directly in environment variables or static configuration. The platform can then retrieve them from a credentials provider. Here is the list of supported providers:
+
+| Credentials provider | Provider key |
+|:---------------------|:-------------|
+| CyberArk             | `cyberark`   | 
+
+For each dependency, special configuration keys are available to ensure the platform retrieves credentials during start process. Not all dependencies support this mechanism, here is the exhaustive list:
+
+| Dependency     | Prefix          |
+|:---------------|:----------------|
+| ElasticSearch  | `elasticsearch` | 
+| S3 Storage     | `minio`         |
+| Redis          | `redis`         |
+| OpenID secrets | `oic`           |
+
+##### Common configurations
+
+| Parameter                                                       | Environment variable                                              | Default value | Description                         |
+|:----------------------------------------------------------------|:------------------------------------------------------------------|:--------------|:------------------------------------|
+| `{prefix}`:credentials_provider:https_cert:reject_unauthorized  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__REJECT_UNAUTHORIZED | `false`       | Reject unauthorized TLS connection  |
+| `{prefix}`:credentials_provider:https_cert:crt                  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT                 |               | Path to the HTTPS certificate       |
+| `{prefix}`:credentials_provider:https_cert:key                  | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY                 |               | Path to the HTTPS key               |
+| `{prefix}`:credentials_provider:https_cert:ca                   | `{PREFIX}`__CREDENTIALS_PROVIDER__HTTPS_CERT__CA                  |               | Path to the HTTPS CA certificate    |
+
+##### CyberArk
+
+| Parameter                                                 | Environment variable                                         | Default value | Description                                                                          |
+|:----------------------------------------------------------|:-------------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------------|
+| `{prefix}`:credentials_provider:cyberark:uri              | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__URI              |               | The URL of the CyberArk endpoint for credentials retrieval (GET request)             |
+| `{prefix}`:credentials_provider:cyberark:app_id           | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__APP_ID           |               | The used application ID for the dependency within CyberArk                           |
+| `{prefix}`:credentials_provider:cyberark:safe             | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__SAFE             |               | The used safe key for the dependency within CyberArk                                 |
+| `{prefix}`:credentials_provider:cyberark:object           | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__OBJECT           |               | The used object key for the dependency within CyberArk                               |
+| `{prefix}`:credentials_provider:cyberark:default_splitter | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER | :             | Default splitter of the credentials results, for "username:password", default is ":" |
+| `{prefix}`:credentials_provider:cyberark:field_targets    | `{PREFIX}`__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS    | []            | Fields targets in the data content response after splitting                          |
+
+Here is an example for ElasticSearch:
+
+Environment variables:
+```yaml
+- ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts
+- ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-elastic
+- ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key
+- ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key
+- "ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:" # As default is already ":", may not be necessary
+- "ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\"username\",\"password\"]"
+```
+
+JSON version:
+```json
+"elasticsearch": {
+    "credentials_provider": {
+        "cyberark": {
+            "uri": "http://my.cyberark.com/AIMWebService/api/Accounts",
+            "app_id": "opencti-elastic",
+            "safe": "mysafe-key",
+            "object": "myobject-key",
+            "default_splitter": ":",
+            "field_targets": ["username", "password"]
+      }
+    }
+}
+```
+
+Another example for MinIo (S3) using certificate:
+
+Environment variables:
+```yaml
+- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CRT=/cert_volume/mycert.crt
+- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__KEY=/cert_volume/mycert.key
+- MINIO__CREDENTIALS_PROVIDER__HTTPS_CERT__CA=/cert_volume/ca.crt
+- MINIO__CREDENTIALS_PROVIDER__CYBERARK__URI=http://my.cyberark.com/AIMWebService/api/Accounts
+- MINIO__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=opencti-s3
+- MINIO__CREDENTIALS_PROVIDER__CYBERARK__SAFE=mysafe-key
+- MINIO__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=myobject-key
+- "MINIO__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:" # As default is already ":", may not be necessary
+- "MINIO__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=[\"access_key\",\"secret_key\"]"
+```
+
 ### Engines, Schedules and Managers
 
 | Parameter                                            | Environment variable                         | Default value                    | Description                                         |
