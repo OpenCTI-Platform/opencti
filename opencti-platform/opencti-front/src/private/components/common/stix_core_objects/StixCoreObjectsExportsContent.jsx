@@ -17,6 +17,7 @@ const StixCoreObjectsExportsContentComponent = ({
   data,
   exportContext,
   paginationOptions,
+  exportType,
 }) => {
   const { t_i18n } = useFormatter();
   useEffect(() => {
@@ -65,6 +66,7 @@ const StixCoreObjectsExportsContentComponent = ({
           data={data}
           exportContext={exportContext}
           paginationOptions={paginationOptions}
+          exportType={exportType}
           onExportAsk={() => relay.refetch({ count: 25, exportContext })}
         />
       </Security>

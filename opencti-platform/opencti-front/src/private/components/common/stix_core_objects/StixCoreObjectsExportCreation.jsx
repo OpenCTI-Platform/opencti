@@ -69,6 +69,7 @@ const StixCoreObjectsExportCreationComponent = ({
   paginationOptions,
   exportContext,
   onExportAsk,
+  exportType,
   data,
 }) => {
   const { t_i18n } = useFormatter();
@@ -86,7 +87,7 @@ const StixCoreObjectsExportCreationComponent = ({
         input: {
           exportContext,
           format: values.format,
-          exportType: 'full',
+          exportType: exportType ?? 'full',
           selectedIds,
           orderBy,
           filters,

@@ -335,6 +335,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixCoreObjectsExports
               open={openExports}
+              exportType='simple'
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={newPaginationOptions}
               exportContext={newExportContext}
