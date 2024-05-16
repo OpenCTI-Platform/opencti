@@ -126,7 +126,7 @@ export const isValidRepresentationType = (representation: CsvMapperRepresentatio
 
 export const validateCsvMapper = async (context: AuthContext, user: AuthUser, mapper: CsvMapperParsed) => {
   if (!Array.isArray(mapper.representations) || mapper.representations.some((rep) => !isCsvMapperRepresentation(rep))) {
-    throw FunctionalError('CSV mapper representations is not an array of CsvMapperRepresentation objects', { mapper_name: mapper?.name });
+    throw FunctionalError('CSV mapper representations is not an array of CsvMapperRepresentation objects', { mapper_name: mapper.name });
   }
 
   // consider empty csv mapper as invalid to avoid being used in the importer
