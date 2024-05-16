@@ -557,10 +557,9 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       return undefined;
     };
     // Compute if attribute is defined as numeric
-    const isAttributeNumeric = (entityType:string, attribute: string) => {
+    const getAttributeType = (entityType:string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
-      if (baseAttribute) return baseAttribute.type === 'numeric';
-      return false;
+      return baseAttribute?.type ?? 'string';
     };
     // Compute the access path for the attribute in the static matrix
     const computeAttributePath = (entityType:string, attribute: string) => {
@@ -575,6 +574,11 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       }
       return undefined;
     };
+    const convertValue = (attributeType: string, value: any) => {
+      if (attributeType === 'numeric') return Number(value);
+      if (attributeType === 'boolean') return Boolean(value);
+      return value;
+    };
     const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
@@ -584,22 +588,20 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
-            const numeric = isAttributeNumeric(type, action.attribute);
-            return ({ action, multiple, numeric, attrPath, path: `/objects/${index}${attrPath}` });
+            const attributeType = getAttributeType(type, action.attribute);
+            return ({ action, multiple, attributeType, attrPath, path: `/objects/${index}${attrPath}` });
           })
           // Unrecognized attributes must be filtered
           .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
           // Map actions to data patches
-          .map(({ action, path, multiple, numeric }) => {
+          .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
               const actionValues = action.value.map((o) => {
-                // If numeric, return the converter number
-                if (numeric) return Number(o.patch_value);
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
-                return o.patch_value;
+                return convertValue(attributeType, o.patch_value);
               });
               if (action.op === EditOperation.Add) {
                 return { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionValues]) };
@@ -612,7 +614,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
               }
             }
             const currentValue = R.head(action.value)?.patch_value;
-            return { op: action.op, path, value: numeric ? Number(currentValue) : currentValue };
+            return { op: action.op, path, value: convertValue(attributeType, currentValue) };
           });
         // Enlist operations to execute
         patchOperations.push(...elementOperations);

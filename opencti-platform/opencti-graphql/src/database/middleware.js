@@ -657,8 +657,8 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
           const category = getVocabularyCategoryForField(destKey, type);
-          const elements = ids.map((i) => idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }))
-            .map((lid) => ({ id: lid, destKey, multiple: isListing }));
+          const elements = ids.map((i) => ({ id: generateStandardId(ENTITY_TYPE_VOCABULARY, { name: i, category }), destKey, multiple: isListing }));
+          elements.push(...ids.map((i) => ({ id: idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }), destKey, multiple: isListing })));
           fetchingIds.push(...elements);
           forceAliases = true;
         } else if (isListing) {
