@@ -111,7 +111,6 @@ const StixRelationshipsHorizontalBars = ({
   isWidget = true,
   startDate,
   endDate,
-  dateAttribute,
   dataSelection,
   fromId,
   relationshipType,
@@ -124,14 +123,10 @@ const StixRelationshipsHorizontalBars = ({
   const renderContent = () => {
     let selection = {};
     let filtersAndOptions;
-    let dataSelectionDateAttribute = 'created_at';
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
-      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {
@@ -142,7 +137,7 @@ const StixRelationshipsHorizontalBars = ({
       fromId,
       toTypes: !isWidget ? ['Stix-Core-Object'] : null,
       relationship_type: !isWidget ? relationshipType : null,
-      dateAttribute: dateAttribute || dataSelectionDateAttribute,
+      dateAttribute: selection.date_attribute ?? 'created_at',
       limit: selection.number ?? 10,
       filters: filtersAndOptions?.filters,
       isTo: selection.isTo,

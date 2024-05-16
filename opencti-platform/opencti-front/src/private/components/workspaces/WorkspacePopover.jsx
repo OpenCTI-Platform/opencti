@@ -122,12 +122,10 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        {workspace.type === 'dashboard' && (
-        <>
-          <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>
-          <MenuItem onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>
-        </>
-        )}
+        {workspace.type === 'dashboard' && [
+          <MenuItem key="menu_duplicate" onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>,
+          <MenuItem key="menu_export" onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>,
+        ]}
         <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
