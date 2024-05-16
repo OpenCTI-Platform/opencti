@@ -61,12 +61,13 @@ test('Report CRUD', async ({ page }) => {
   // region Check fields validation
   // ------------------------------
 
+  const reportName = `Report - ${uuid()}`;
   await reportForm.nameField.fill('');
   await reportForm.getCreateButton().click();
   await expect(page.getByText('This field is required')).toBeVisible();
   await reportForm.nameField.fill('t');
   await expect(page.getByText('Name must be at least 2 characters')).toBeVisible();
-  await reportForm.nameField.fill('Test e2e');
+  await reportForm.nameField.fill(reportName);
   await expect(page.getByText('Name must be at least 2 characters')).toBeHidden();
 
   await reportForm.publicationDateField.clear();
@@ -116,7 +117,7 @@ test('Report CRUD', async ({ page }) => {
   await expect(reportForm.associatedFileField.getByText('report.test.md')).toBeVisible();
 
   await reportForm.getCreateButton().click();
-  await reportPage.getItemFromList('Test e2e').click();
+  await reportPage.getItemFromList(reportName).click();
   await expect(reportDetailsPage.getReportDetailsPage()).toBeVisible();
 
   // ---------
@@ -179,7 +180,7 @@ test('Report CRUD', async ({ page }) => {
   const updateDate = reportDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = reportDetailsPage.getTextForHeading('Most recent history', 'admin creates a Report Test e2e');
+  const historyDescription = reportDetailsPage.getTextForHeading('Most recent history', `admin creates a Report ${reportName}`);
   await expect(historyDescription).toBeVisible();
   const historyDate = reportDetailsPage.getTextForHeading('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();
@@ -195,45 +196,64 @@ test('Report CRUD', async ({ page }) => {
   // ------------------------
 
   await reportDetailsPage.goToOverviewTab();
-  await reportDetailsPage.getEditButton().click();
 
-  await reportForm.nameField.fill('Updated test e2e');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.reportTypesAutocomplete.selectOption('threat-report');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.reliabilityAutocomplete.selectOption('B - Usually reliable');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.confidenceLevelField.fillInput('50');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.descriptionField.fill('Updated test e2e Description');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.authorAutocomplete.selectOption('ANSSI');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.markingsAutocomplete.selectOption('PAP:CLEAR');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.markingsAutocomplete.selectOption('PAP:GREEN');
-  await reportForm.getUpdateTitle().click();
-  await reportForm.statusAutocomplete.selectOption('IN_PROGRESS');
+  const reportNameUpdate = `Report updated - ${uuid()}`;
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.nameField.fill(reportNameUpdate);
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
 
-  await reportDetailsPage.openLabelsSelect();
-  await reportDetailsPage.labelsSelect.selectOption('covid-19');
-  await reportDetailsPage.addLabels();
-
-  description = reportDetailsPage.getTextForHeading('Description', 'Updated test e2e Description');
-  await expect(description).toBeVisible();
-
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
   publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');
   await expect(publicationDate).toBeVisible();
+  originalCreationDate = reportDetailsPage.getTextForHeading('Original creation date', 'December 5, 2023');
+  await expect(originalCreationDate).toBeVisible();
 
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.reportTypesAutocomplete.selectOption('threat-report');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
   reportTypeThreat = reportDetailsPage.getTextForHeading('Report types', 'THREAT-REPORT');
   await expect(reportTypeThreat).toBeHidden();
   reportTypeMalware = reportDetailsPage.getTextForHeading('Report types', 'MALWARE');
   await expect(reportTypeMalware).toBeVisible();
 
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.reliabilityAutocomplete.selectOption('B - Usually reliable');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  reliability = reportDetailsPage.getTextForHeading('Reliability', 'B - Usually reliable');
+  await expect(reliability).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.confidenceLevelField.fillInput('50');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  confidenceLevel = reportDetailsPage.getTextForHeading('Confidence level', '3 - Possibly True');
+  await expect(confidenceLevel).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.descriptionField.fill('Updated test e2e Description');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  description = reportDetailsPage.getTextForHeading('Description', 'Updated test e2e Description');
+  await expect(description).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.authorAutocomplete.selectOption('ANSSI');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
+  author = reportDetailsPage.getTextForHeading('Author', 'ANSSI');
+  await expect(author).toBeVisible();
+
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.markingsAutocomplete.selectOption('PAP:CLEAR');
+  await reportForm.markingsAutocomplete.selectOption('PAP:GREEN');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
   markingClear = reportDetailsPage.getTextForHeading('Marking', 'PAP:CLEAR');
   await expect(markingClear).toBeHidden();
   const markingPapGreen = reportDetailsPage.getTextForHeading('Marking', 'PAP:GREEN');
@@ -241,21 +261,16 @@ test('Report CRUD', async ({ page }) => {
   markingGreen = reportDetailsPage.getTextForHeading('Marking', 'TLP:GREEN');
   await expect(markingGreen).toBeVisible();
 
-  author = reportDetailsPage.getTextForHeading('Author', 'ANSSI');
-  await expect(author).toBeVisible();
-
-  reliability = reportDetailsPage.getTextForHeading('Reliability', 'B - Usually reliable');
-  await expect(reliability).toBeVisible();
-
-  confidenceLevel = reportDetailsPage.getTextForHeading('Confidence level', '3 - Possibly True');
-  await expect(confidenceLevel).toBeVisible();
-
-  originalCreationDate = reportDetailsPage.getTextForHeading('Original creation date', 'December 5, 2023');
-  await expect(originalCreationDate).toBeVisible();
-
+  await reportDetailsPage.getEditButton().click();
+  await reportForm.statusAutocomplete.selectOption('IN_PROGRESS');
+  await reportForm.getUpdateTitle().click();
+  await reportForm.getCloseButton().click();
   processingStatus = reportDetailsPage.getTextForHeading('Processing status', 'IN_PROGRESS');
   await expect(processingStatus).toBeVisible();
 
+  await reportDetailsPage.openLabelsSelect();
+  await reportDetailsPage.labelsSelect.selectOption('covid-19');
+  await reportDetailsPage.addLabels();
   labelCampaign = reportDetailsPage.getTextForHeading('Labels', 'campaign');
   await expect(labelCampaign).toBeVisible();
   labelReport = reportDetailsPage.getTextForHeading('Labels', 'report');
