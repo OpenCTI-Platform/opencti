@@ -1,12 +1,11 @@
-import { test } from '@playwright/test';
-import { expect } from 'playwright/test';
+import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 test('Check EE activation', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
 
   await page.goto('/');
-  await page.getByTestId('ChevronRightIcon').click();
+  await leftBarPage.open();
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   await page.getByRole('button', { name: 'Enable Enterprise Edition' }).click();
@@ -21,7 +20,7 @@ test('Check Logo replacement', async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
 
   await page.goto('/');
-  await page.getByTestId('ChevronRightIcon').click();
+  await leftBarPage.open();
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');

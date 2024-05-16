@@ -2,10 +2,14 @@ import { Page } from '@playwright/test';
 import { expect } from '../../fixtures/baseFixtures';
 
 export default class LeftBarPage {
-  constructor(private page:Page) {}
+  constructor(private page: Page) {}
 
-  open() {
-    return this.page.getByTestId('ChevronRightIcon').click();
+  async open() {
+    await this.page.getByLabel('Main navigation', { exact: true }).hover();
+    const isOpenButtonVisible = await this.page.getByTestId('ChevronRightIcon').isVisible();
+    if (isOpenButtonVisible) {
+      await this.page.getByTestId('ChevronRightIcon').click();
+    }
   }
 
   async clickOnMenu(menuName: string, subMenuItem?: string) {

@@ -1,13 +1,13 @@
-import { test } from '@playwright/test';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
-import { expect } from '../fixtures/baseFixtures';
+import { expect, test } from '../fixtures/baseFixtures';
 
 test('Testing content customization for Report', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('ChevronRightIcon').click();
   const leftBarPage = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
+
+  await leftBarPage.open();
 
   // Checking that creation is empty
   await leftBarPage.clickOnMenu('Analyses', 'Reports');

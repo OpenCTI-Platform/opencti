@@ -442,7 +442,7 @@ const LeftBar = () => {
       }}
     >
       <Toolbar />
-      <div ref={ref}>
+      <div ref={ref} aria-label="Main navigation">
         <MenuList
           component="nav"
           style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}

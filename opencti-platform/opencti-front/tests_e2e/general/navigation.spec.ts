@@ -3,9 +3,9 @@ import LeftBarPage from '../model/menu/leftBar.pageModel';
 
 test('Check navigation on all pages', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('ChevronRightIcon').click();
 
   const leftBarPage = new LeftBarPage(page);
+  await leftBarPage.open();
 
   // Checking Analyses menu
   await leftBarPage.clickOnMenu('Analyses');

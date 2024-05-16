@@ -8,7 +8,7 @@ export default class DashboardPage {
   }
 
   getPageTitle() {
-    return this.page.getByLabel('Workspace');
+    return this.page.getByText('Dashboards', { exact: true });
   }
 
   getCreateMenuButton() {
