@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
@@ -23,6 +22,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -60,7 +60,7 @@ export const feedCreationAllTypesQuery = graphql`
     }
 `;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -68,26 +68,8 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
   step: {
     position: 'relative',
@@ -102,28 +84,10 @@ const styles = (theme) => ({
   formControl: {
     width: '100%',
   },
-  stepType: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepField: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepValues: {
-    paddingRight: 20,
-    margin: 0,
-  },
   stepCloseButton: {
     position: 'absolute',
     top: -20,
     right: -20,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
   },
   buttonAdd: {
     width: '100%',
@@ -137,7 +101,7 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
 const feedCreationMutation = graphql`
     mutation FeedCreationMutation($input: FeedAddInput!) {
@@ -166,8 +130,8 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-const FeedCreation = (props) => {
-  const { classes } = props;
+const FeedCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
@@ -230,7 +194,7 @@ const FeedCreation = (props) => {
         sharedUpdater(
           store,
           container.getDataID(),
-          props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
       },
@@ -673,11 +637,6 @@ const FeedCreation = (props) => {
 
 FeedCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
 };
 
-export default R.compose(
-  withStyles(styles, { withTheme: true }),
-)(FeedCreation);
+export default FeedCreation;
