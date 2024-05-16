@@ -169,7 +169,9 @@ export const addStixCyberObservable = async (context, user, input) => {
     throw FunctionalError(`Observable type ${input.type} is not supported.`);
   }
   // If type is ok, get the correct data that represent the observable
+  // If called from artifactImport - internal_id must be kept.
   const {
+    internal_id,
     stix_id,
     x_opencti_score,
     x_opencti_description,
@@ -192,6 +194,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     return artifactImport(context, user, { ...input, ...input[graphQLType] });
   }
   const observableInput = {
+    internal_id,
     stix_id,
     x_opencti_score,
     x_opencti_description,

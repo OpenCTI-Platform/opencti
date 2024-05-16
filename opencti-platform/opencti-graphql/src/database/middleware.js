@@ -2985,16 +2985,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
     } else {
       // Create the object
-      logApp.info('createEntityRaw - ADDING FILE ?');
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
       // If file directly attached
       let additionalInputs;
       if (!isEmptyField(resolvedInput.file)) {
-        logApp.info('createEntityRaw - ADDING FILE:');
         const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
         const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings });
-        logApp.info('createEntityRaw - file:', { file });
         additionalInputs = { x_opencti_files: [storeFileConverter(file)] };
         // Add external references from files if necessary
         if (entitySetting?.platform_entity_files_ref) {

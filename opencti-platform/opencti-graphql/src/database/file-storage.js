@@ -418,8 +418,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     params: {
       Bucket: bucketName,
       Key: key,
-      Body: readStream,
-      Metadata: fullMetadata
+      Body: readStream
     }
   });
   await s3Upload.done();

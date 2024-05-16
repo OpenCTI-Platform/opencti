@@ -67,8 +67,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         const file = mergedArtifact.x_opencti_files[i];
         expect(file.name).oneOf(['testing-merge-artifact-2.json', 'testing-merge-artifact-1.txt']);
         // All files should be downloadable from S3
-        // FIXME no the opencti_files for testing-merge-artifact-1.txt is not accurate, so not downloable...
-        // await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
+        await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
       }
     }
 
