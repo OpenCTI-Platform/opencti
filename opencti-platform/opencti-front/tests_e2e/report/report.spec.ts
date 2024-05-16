@@ -35,6 +35,8 @@ test('Report CRUD', async ({ page }) => {
   const reportForm = new ReportFormPage(page);
 
   await page.goto('/dashboard/analyses/reports');
+  // open nav bar once and for all
+  await leftNavigation.open();
 
   // region Check is displayed
   // -------------------------
@@ -285,7 +287,6 @@ test('Report CRUD', async ({ page }) => {
   // ------------------------
 
   await reportDetailsPage.delete();
-  await leftNavigation.open();
   await leftNavigation.clickOnMenu('Analyses', 'Reports');
   await expect(reportPage.getItemFromList('Updated test e2e')).toBeHidden();
 
@@ -318,8 +319,10 @@ test('Report live entities creation and relationships', async ({ page }) => {
   const entitiesTab = new EntitiesTabPageModel(page);
 
   await page.goto('/dashboard/analyses/reports');
-  await reportPage.openNewReportForm();
+  // open nav bar once and for all
+  await leftNavigation.open();
 
+  await reportPage.openNewReportForm();
   const reportName = `Report with created entities - ${uuid()}`;
   await reportForm.nameField.fill(reportName);
 
@@ -412,8 +415,6 @@ test('Report live entities creation and relationships', async ({ page }) => {
 
   // region Delete report
   // --------------------
-
-  await leftNavigation.open();
   await leftNavigation.clickOnMenu('Analyses', 'Reports');
   await reportPage.checkItemInList(reportName);
   await toolbar.launchDelete();
