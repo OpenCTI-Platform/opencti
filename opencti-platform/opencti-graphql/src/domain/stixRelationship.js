@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { UserInputError } from 'apollo-server-express';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, listEntities, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { fillTimeSeries, isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { elCount, MAX_RUNTIME_RESOLUTION_SIZE } from '../database/engine';
@@ -9,11 +9,7 @@ import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/sti
 import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { isStixRelationship } from '../schema/stixRelationship';
-
-const defaultRelationshipTypesForWidgets = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT];
 
 export const buildArgsFromDynamicFilters = async (context, user, args) => {
   const { dynamicFrom, dynamicTo } = args;
@@ -68,7 +64,7 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
 
 const buildRelationshipTypes = (relationshipTypes) => {
   if (isEmptyField(relationshipTypes)) {
-    return defaultRelationshipTypesForWidgets;
+    return [ABSTRACT_STIX_RELATIONSHIP];
   }
 
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
