@@ -89,8 +89,6 @@ const DashboardSettings = () => {
   const [open, setOpen] = useState(false);
   const [updateDashboard] = useApiMutation(dashboardSettingsMutation);
   const handleUpdate = (name, newValue) => {
-
-    console.log('name:', name, 'newValue:', newValue);
     updateDashboard({ variables: { input: [{ key: name, value: newValue }] } });
   };
   const handleOpen = () => setOpen(true);
@@ -181,23 +179,16 @@ const DashboardSettings = () => {
                         </InputLabel>
                         <Select
                           labelId="dashboard"
-                          value={dashboard?.id ?? ''}
+                          value={dashboard?.id ?? 'default'}
                           onChange={(event) => handleUpdate(
                             'default_dashboard',
                             event.target.value,
-                          )
-                          }
+                          )}
                           fullWidth={true}
                           classes={{
                             select: classes.muiSelect,
                           }}
                         >
-                          <MenuItem value="">
-                            <em>{t_i18n('Automatic')}</em>
-                          </MenuItem>
-                          <ListSubheader>
-                            {t_i18n('Recommended dashboards')}
-                          </ListSubheader>
                           <MenuItem value="default">
                             <ListItemIcon classes={{
                               root: classes.muiSelectIcon,
@@ -205,8 +196,11 @@ const DashboardSettings = () => {
                             >
                               <ItemIcon type="Dashboard" />
                             </ListItemIcon>
-                            <ListItemText>{t_i18n('Default Dashboard')}</ListItemText>
+                            <ListItemText>{t_i18n('Default Platform Dashboard')}</ListItemText>
                           </MenuItem>
+                          <ListSubheader>
+                            {t_i18n('Recommended dashboards (from Groups settings)')}
+                          </ListSubheader>
                           {dashboards?.map(({ id, name }) => (
                             <MenuItem key={id} value={id}>
                               <ListItemIcon classes={{
