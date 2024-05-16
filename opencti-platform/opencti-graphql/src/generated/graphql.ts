@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { BasicStoreEntityFeed } from '../types/store.d';
+import type { BasicStoreEntityFeed } from '../types/store';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -1724,6 +1724,8 @@ export enum Capabilities {
   Modules = 'MODULES',
   ModulesModmanage = 'MODULES_MODMANAGE',
   Settings = 'SETTINGS',
+  SettingsKnowledgeactivity = 'SETTINGS_KNOWLEDGEACTIVITY',
+  SettingsSecurityactivity = 'SETTINGS_SECURITYACTIVITY',
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',

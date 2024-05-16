@@ -59,6 +59,8 @@ enum Capabilities {
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
+  SETTINGS_SECURITYACTIVITY
+  SETTINGS_KNOWLEDGEACTIVITY
   TAXIIAPI_SETCOLLECTIONS
   TAXIIAPI_SETCSVMAPPERS
   VIRTUAL_ORGANIZATION_ADMIN
@@ -11118,7 +11120,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [SETTINGS])
+  ): LogConnection @auth(for: [SETTINGS, SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY])
   auditsNumber(
     dateAttribute: String
     types: [String]

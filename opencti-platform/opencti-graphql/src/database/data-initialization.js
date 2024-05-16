@@ -62,6 +62,8 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
+    { name: 'SECURITYACTIVITY', description: 'Security Activity', attribute_order: 3500 },
+    { name: 'KNOWLEDGEACTIVITY', description: 'Knowledge Activity', attribute_order: 3600 },
   ],
 };
 export const CAPABILITIES = [
