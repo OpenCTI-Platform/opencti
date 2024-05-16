@@ -18,7 +18,7 @@ describe('CSV Mapper', () => {
       ...mapper,
       name: 'Invalid Mapper',
       representations: [], // cannot have 0 representations
-    })).rejects.toThrowError('CSV Mapper \'Invalid Mapper\' has no representation');
+    })).rejects.toThrowError('CSV Mapper has no representation');
 
     await expect(() => validateCsvMapper(testContext, ADMIN_USER, {
       ...mapper,
