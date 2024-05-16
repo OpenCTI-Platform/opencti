@@ -93,6 +93,7 @@ const DashboardSettings = () => {
     if (value === 'default') {
       value = '';
     }
+    console.log('name:', name, 'newValue:', newValue);
     updateDashboard({ variables: { input: [{ key: name, value }] } });
   };
   const handleOpen = () => setOpen(true);
@@ -213,6 +214,15 @@ const DashboardSettings = () => {
                               <ListItemText>{name}</ListItemText>
                             </MenuItem>
                           ))}
+                          <MenuItem value="default">
+                            <ListItemIcon classes={{
+                              root: classes.muiSelectIcon,
+                            }}
+                            >
+                              <ItemIcon type="Dashboard" />
+                            </ListItemIcon>
+                            <ListItemText>{t_i18n('Default Dashboard')}</ListItemText>
+                          </MenuItem>
                           {workspaces?.length > 0 && (
                             <ListSubheader>{t_i18n('Dashboards')}</ListSubheader>
                           )}

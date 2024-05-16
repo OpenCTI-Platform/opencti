@@ -587,13 +587,19 @@ const DashboardComponent = ({ queryRef }) => {
   const { me: currentMe, ...context } = useAuth();
   const data = usePreloadedQuery(dashboardQuery, queryRef);
   const me = useFragment(dashboardMeFragment, data.me);
+  console.log('me', me);
+
   const { default_dashboards: dashboards } = currentMe;
+  console.log('currentMe', currentMe);
   const { default_time_field, default_dashboard } = me;
   const { viewStorage: localTimeFieldPreferences } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {},
   );
   const { dashboard } = localTimeFieldPreferences;
+  console.log('dashboardS', dashboards);
+  console.log('default_dashboard.id', default_dashboard?.id);
+  console.log('dashboard', dashboard);
   let defaultDashboard = default_dashboard?.id;
   if (!defaultDashboard) {
     defaultDashboard = dashboards[0]?.id;
