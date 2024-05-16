@@ -4,7 +4,10 @@ import DashboardPage from '../model/dashboard.pageModel';
 import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import DashboardFormPage from '../model/form/dashboardForm.pageModel';
 import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
+import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
+import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
+import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 import MalwareDetailsPage from '../model/malwareDetails.pageModel';
 
 /**
@@ -200,4 +203,173 @@ test('Dashboard CRUD', async ({ page }) => {
 
   // ---------
   // endregion
+});
+
+test('TMP DASHBOARD WIDGETS', async ({ page }) => {
+  const dashboardPage = new DashboardPage(page);
+  const dashboardForm = new DashboardFormPage(page);
+  const widgetsPage = new DashboardWidgetsPageModel(page);
+
+  await page.goto('/dashboard/workspaces/dashboards');
+
+  await dashboardPage.getCreateMenuButton().hover();
+  await dashboardPage.getAddNewButton().click();
+  const dashboardName = `Dashboard - ${uuid()}`;
+  await dashboardForm.nameField.fill(dashboardName);
+  await dashboardForm.getCreateButton().click();
+  await dashboardPage.getItemFromList(dashboardName).click();
+
+  await widgetsPage.createNumberOfMalwaresWidget();
+});
+
+/**
+ * Content of the test
+ * -------------------
+ * Create a new dashboard as admin
+ * Set a user the access can view (can view but not edit)
+ * Set a user the access can edit (can view, edit, duplicate, export but not delete)
+ * Set a user no access (cannot view)
+ * Set a user the access can manage (can delete)
+ */
+test('Dashboard restriction access', async ({ page }) => {
+  const leftBar = new LeftBarPage(page);
+  const topBar = new TopMenuProfilePage(page);
+  const dashboardPage = new DashboardPage(page);
+  const loginForm = new LoginFormPageModel(page);
+  const dashboardForm = new DashboardFormPage(page);
+  const widgetsPage = new DashboardWidgetsPageModel(page);
+  const dashboardDetailsPage = new DashboardDetailsPage(page);
+  const accessRestriction = new AccessRestrictionPageModel(page);
+
+  // Helper function to go to as dashboard as user jean Michel
+  const goToDashboardAsJeanMichel = async (dashboardName: string) => {
+    await topBar.logout();
+    await loginForm.login('jean.michel@filigran.test', 'jeanmichel');
+    await leftBar.clickOnMenu('Dashboards');
+    await dashboardPage.getItemFromList(dashboardName).click();
+  };
+
+  // Helper function to go to as dashboard as user admin
+  const goToDashboardAsAdmin = async (dashboardName: string) => {
+    await topBar.logout();
+    await loginForm.login();
+    await leftBar.clickOnMenu('Dashboards');
+    await dashboardPage.getItemFromList(dashboardName).click();
+  };
+
+  // region Prepare dashboard for tests
+  // ----------------------------------
+
+  await page.goto('/dashboard/workspaces/dashboards');
+  await leftBar.open();
+
+  const dashboardName = 'Dashboard - restriction';
+  await dashboardPage.getCreateMenuButton().hover();
+  await dashboardPage.getAddNewButton().click();
+  await dashboardForm.nameField.fill(dashboardName);
+  await dashboardForm.getCreateButton().click();
+
+  // ---------
+  // endregion
+
+  // region Access restriction - view
+  // --------------------------------
+
+  await dashboardPage.getItemFromList(dashboardName).click();
+  await accessRestriction.openForm();
+  await accessRestriction.addAccess('Jean Michel', 'can view');
+  await accessRestriction.save();
+
+  await goToDashboardAsJeanMichel(dashboardName);
+  await expect(dashboardDetailsPage.getActionsPopover()).toBeHidden();
+  await expect(widgetsPage.getCreateWidgetButton()).toBeHidden();
+
+  // ---------
+  // endregion
+
+  // region Access restriction - edit
+  // --------------------------------
+
+  await goToDashboardAsAdmin(dashboardName);
+  await accessRestriction.openForm();
+  await accessRestriction.editAccess('Jean Michel', 'can edit');
+  await accessRestriction.save();
+
+  await goToDashboardAsJeanMichel(dashboardName);
+  await dashboardDetailsPage.getActionsPopover().click();
+  await expect(dashboardDetailsPage.getActionButton('Update')).toBeVisible();
+  await expect(dashboardDetailsPage.getActionButton('Duplicate')).toBeVisible();
+  await expect(dashboardDetailsPage.getActionButton('Export')).toBeVisible();
+  await expect(dashboardDetailsPage.getActionButton('Delete')).toBeHidden();
+
+  // Try to update
+  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardForm.nameField.fill('restriction updated');
+  await dashboardForm.getCloseButton().click();
+  await expect(dashboardDetailsPage.getTitle('restriction updated')).toBeVisible();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionButton('Update').click();
+  await dashboardForm.nameField.fill(dashboardName);
+  await dashboardForm.getCloseButton().click();
+  await expect(dashboardDetailsPage.getTitle(dashboardName)).toBeVisible();
+
+  // Try to duplicate
+  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionButton('Duplicate').click();
+  await dashboardDetailsPage.getDuplicateButton().click();
+  await leftBar.clickOnMenu('Dashboards');
+  await expect(dashboardPage.getItemFromList(`${dashboardName} - copy`)).toBeVisible();
+  await dashboardPage.getItemFromList(`${dashboardName} - copy`).click();
+  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getDeleteButton().click();
+
+  // Try to export
+  await dashboardPage.getItemFromList(dashboardName).click();
+  await dashboardDetailsPage.getActionsPopover().click();
+  const downloadPromise = page.waitForEvent('download');
+  await dashboardDetailsPage.getActionButton('Export').click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename().endsWith(`${dashboardName}.json`)).toBe(true);
+  await page.mouse.click(10, 10); // To close action menu
+
+  // ---------
+  // endregion
+
+  // region Access restriction - no access
+  // -------------------------------------
+
+  await goToDashboardAsAdmin(dashboardName);
+  await accessRestriction.openForm();
+  await accessRestriction.deleteAccess('Jean Michel');
+  await accessRestriction.save();
+
+  await topBar.logout();
+  await loginForm.login('jean.michel@filigran.test', 'jeanmichel');
+  await leftBar.clickOnMenu('Dashboards');
+  await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
+
+  // ---------
+  // endregion
+
+  // region Access restriction - manage
+  // ----------------------------------
+
+  await goToDashboardAsAdmin(dashboardName);
+  await accessRestriction.openForm();
+  await accessRestriction.addAccess('Jean Michel', 'can manage');
+  await accessRestriction.save();
+  await goToDashboardAsJeanMichel(dashboardName);
+  await dashboardDetailsPage.getActionsPopover().click();
+  await dashboardDetailsPage.getActionButton('Delete').click();
+  await dashboardDetailsPage.getDeleteButton().click();
+  await expect(dashboardPage.getItemFromList(dashboardName)).toBeHidden();
+
+  // ---------
+  // endregion
+
+  // To reset the token with an admin token
+  await topBar.logout();
+  await loginForm.login();
+  await leftBar.clickOnMenu('Dashboards');
 });
