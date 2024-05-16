@@ -580,7 +580,6 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       if (relationRef) return relationRef.multiple;
       return undefined;
     };
-    // Compute if attribute is defined as numeric
     const getAttributeType = (entityType:string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
       return baseAttribute?.type ?? 'string';
