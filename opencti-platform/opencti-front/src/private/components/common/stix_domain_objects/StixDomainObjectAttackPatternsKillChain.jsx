@@ -9,7 +9,7 @@ import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
-import StixCoreObjectsExports from '@components/common/stix_core_objects/StixCoreObjectsExports';
+import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -18,7 +18,6 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
 import ExportButtons from '../../../../components/ExportButtons';
-import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
