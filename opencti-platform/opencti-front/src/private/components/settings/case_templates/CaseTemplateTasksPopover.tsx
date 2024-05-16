@@ -122,8 +122,8 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
     setUnlinking(true);
     commitUnlink({
       variables: {
-        id: task.id,
-        toId: caseTemplateId,
+        id: caseTemplateId,
+        toId: task.id,
       },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
         store,

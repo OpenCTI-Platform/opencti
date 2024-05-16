@@ -39,6 +39,7 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'created', label: 'Original creation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   relationsRefs: [CaseTemplateToTaskTemplateRelation],
