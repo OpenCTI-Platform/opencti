@@ -598,7 +598,7 @@ const DashboardComponent = ({ queryRef }) => {
   );
   const { dashboard } = localTimeFieldPreferences;
   console.log('dashboardS', dashboards);
-  console.log('default_dashboard.id', default_dashboard?.id);
+  console.log('defaultDashboard', default_dashboard?.id);
   console.log('dashboard', dashboard);
   let defaultDashboard = default_dashboard?.id;
   if (!defaultDashboard) {

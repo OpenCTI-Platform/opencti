@@ -89,12 +89,9 @@ const DashboardSettings = () => {
   const [open, setOpen] = useState(false);
   const [updateDashboard] = useApiMutation(dashboardSettingsMutation);
   const handleUpdate = (name, newValue) => {
-    let value = newValue;
-    if (value === 'default') {
-      value = '';
-    }
+
     console.log('name:', name, 'newValue:', newValue);
-    updateDashboard({ variables: { input: [{ key: name, value }] } });
+    updateDashboard({ variables: { input: [{ key: name, value: newValue }] } });
   };
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -184,7 +181,7 @@ const DashboardSettings = () => {
                         </InputLabel>
                         <Select
                           labelId="dashboard"
-                          value={dashboard?.id ?? 'default'}
+                          value={dashboard?.id ?? ''}
                           onChange={(event) => handleUpdate(
                             'default_dashboard',
                             event.target.value,
@@ -195,14 +192,21 @@ const DashboardSettings = () => {
                             select: classes.muiSelect,
                           }}
                         >
-                          <MenuItem value="default">
+                          <MenuItem value="">
                             <em>{t_i18n('Automatic')}</em>
                           </MenuItem>
-                          {dashboards?.length > 0 && (
-                            <ListSubheader>
-                              {t_i18n('Recommended dashboards')}
-                            </ListSubheader>
-                          )}
+                          <ListSubheader>
+                            {t_i18n('Recommended dashboards')}
+                          </ListSubheader>
+                          <MenuItem value="default">
+                            <ListItemIcon classes={{
+                              root: classes.muiSelectIcon,
+                            }}
+                            >
+                              <ItemIcon type="Dashboard" />
+                            </ListItemIcon>
+                            <ListItemText>{t_i18n('Default Dashboard')}</ListItemText>
+                          </MenuItem>
                           {dashboards?.map(({ id, name }) => (
                             <MenuItem key={id} value={id}>
                               <ListItemIcon classes={{
@@ -214,15 +218,6 @@ const DashboardSettings = () => {
                               <ListItemText>{name}</ListItemText>
                             </MenuItem>
                           ))}
-                          <MenuItem value="default">
-                            <ListItemIcon classes={{
-                              root: classes.muiSelectIcon,
-                            }}
-                            >
-                              <ItemIcon type="Dashboard" />
-                            </ListItemIcon>
-                            <ListItemText>{t_i18n('Default Dashboard')}</ListItemText>
-                          </MenuItem>
                           {workspaces?.length > 0 && (
                             <ListSubheader>{t_i18n('Dashboards')}</ListSubheader>
                           )}
