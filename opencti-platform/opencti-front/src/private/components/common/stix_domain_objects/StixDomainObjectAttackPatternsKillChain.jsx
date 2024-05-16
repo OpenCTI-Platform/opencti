@@ -118,8 +118,26 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       )(data.stixCoreRelationships.edges);
     }
     const exportDisabled = targetEntities.length > export_max_size;
-    console.log('exportContext : ', exportContext);
-    const newExportContext = { ...exportContext, entity_type: 'Stix-Core-Objects' };
+
+    const newExportContext = { ...exportContext, entity_type: 'Attack-Pattern' };
+    const newPaginationOptions = {
+      orderBy: 'name',
+      orderMode: 'desc',
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: 'regardingOf',
+            values: [{
+              key: 'id',
+              values: [stixDomainObjectId],
+            }],
+          },
+        ],
+        filterGroups: [],
+      },
+    };
+
     return (
       <>
         <div
@@ -155,10 +173,10 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             </Tooltip>
             <Tooltip
               title={
-                                currentColorsReversed
-                                  ? t('Disable invert colors')
-                                  : t('Enable invert colors')
-                            }
+                    currentColorsReversed
+                      ? t('Disable invert colors')
+                      : t('Enable invert colors')
+                }
             >
               <span>
                 <IconButton
@@ -316,16 +334,10 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             />
           </Security>
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            {/* <StixCoreRelationshipsExports */}
-            {/*  open={openExports} */}
-            {/*  handleToggle={handleToggleExports.bind(this)} */}
-            {/*  paginationOptions={paginationOptions} */}
-            {/*  exportContext={exportContext} */}
-            {/* /> */}
             <StixCoreObjectsExports
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
-              paginationOptions={paginationOptions}
+              paginationOptions={newPaginationOptions}
               exportContext={newExportContext}
             />
           </Security>
