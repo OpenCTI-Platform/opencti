@@ -126,8 +126,10 @@ const initTaxiiApi = (app) => {
       const context = executionContext('taxii');
       const { user, collection } = await extractUserAndCollection(context, req, res, id);
       const manifest = await restCollectionManifest(context, user, collection, req.query);
-      res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.version);
-      res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.version);
+      if (manifest.objects.length > 0) {
+        res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.version);
+        res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.version);
+      }
       sendJsonResponse(res, manifest);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -140,8 +142,10 @@ const initTaxiiApi = (app) => {
       const context = executionContext('taxii');
       const { user, collection } = await extractUserAndCollection(context, req, res, id);
       const stix = await restCollectionStix(context, user, collection, req.query);
-      res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
-      res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
+      if (stix.objects.length > 0) {
+        res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
+        res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
+      }
       sendJsonResponse(res, stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -155,8 +159,10 @@ const initTaxiiApi = (app) => {
       const { user, collection } = await extractUserAndCollection(context, req, res, id);
       const args = rebuildParamsForObject(object_id, req);
       const stix = await restCollectionStix(context, user, collection, args);
-      res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
-      res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
+      if (stix.objects.length > 0) {
+        res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
+        res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
+      }
       sendJsonResponse(res, stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
