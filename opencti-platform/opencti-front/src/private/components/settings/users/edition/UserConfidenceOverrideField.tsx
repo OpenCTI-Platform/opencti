@@ -38,6 +38,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
+  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => entity_type.type !== 'entity_Stix-Meta-Objects');
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const { value, name } = field;
@@ -82,7 +83,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   const searchType = (event: React.SyntheticEvent) => {
     const selectChangeEvent = event as SelectChangeEvent;
     const val = selectChangeEvent?.target.value ?? '';
-    return availableEntityTypes.filter(
+    return entityTypesToOverride.filter(
       (type) => type.value.includes(val)
         || t_i18n(`entity_${type.label}`).includes(val),
     );
@@ -127,9 +128,9 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
               autoHighlight
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
-              options={availableEntityTypes}
+              options={entityTypesToOverride}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
-              value={availableEntityTypes.find((e) => e.id === value.entity_type) || null}
+              value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
               onInputChange={(event) => searchType(event)}
               onChange={(_, selectedValue) => handleSubmitEntityType(selectedValue)}
               renderInput={(params) => (

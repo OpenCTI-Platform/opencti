@@ -45,7 +45,7 @@ interface GroupEditionConfidenceProps {
   | null | undefined;
 }
 
-const userConfidenceValidation = (t: (value: string) => string) => {
+const groupConfidenceValidation = (t: (value: string) => string) => {
   const maxConfidenceValidator = Yup.number()
     .min(0, t('The value must be greater than or equal to 0'))
     .max(100, t('The value must be less than or equal to 100'));
@@ -74,7 +74,7 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
   const [commitFieldPatch] = useApiMutation(groupConfidenceMutationFieldPatch);
 
   const handleSubmitMaxConfidence = (name: string, value: string) => {
-    userConfidenceValidation(t_i18n)
+    groupConfidenceValidation(t_i18n)
       .validateAt(name, { [name]: value })
       .then(() => {
         if (name === 'group_confidence_level') {
@@ -116,7 +116,7 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
         max_confidence: parseInt(value.max_confidence ?? '0', 10),
       }];
       const name = `overrides[${index}]`;
-      userConfidenceValidation(t_i18n)
+      groupConfidenceValidation(t_i18n)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitFieldPatch({
