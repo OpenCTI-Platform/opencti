@@ -9,6 +9,7 @@ import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
+import StixCoreObjectsExports from '@components/common/stix_core_objects/StixCoreObjectsExports';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -117,6 +118,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       )(data.stixCoreRelationships.edges);
     }
     const exportDisabled = targetEntities.length > export_max_size;
+    console.log('exportContext : ', exportContext);
+    const newExportContext = { ...exportContext, entity_type: 'Stix-Core-Objects' };
     return (
       <>
         <div
@@ -313,11 +316,17 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             />
           </Security>
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixCoreRelationshipsExports
+            {/* <StixCoreRelationshipsExports */}
+            {/*  open={openExports} */}
+            {/*  handleToggle={handleToggleExports.bind(this)} */}
+            {/*  paginationOptions={paginationOptions} */}
+            {/*  exportContext={exportContext} */}
+            {/* /> */}
+            <StixCoreObjectsExports
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
-              exportContext={exportContext}
+              exportContext={newExportContext}
             />
           </Security>
         </div>
