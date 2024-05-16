@@ -13,7 +13,7 @@ import { parseCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils
 import type { ConnectorConfig } from '../connector';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { internalLoadById } from '../../database/middleware-loader';
-import { DatabaseError } from '../../config/errors';
+import { DatabaseError, FunctionalError } from '../../config/errors';
 import { uploadToStorage } from '../../database/file-storage-helper';
 
 const RETRY_CONNECTION_PERIOD = 10000;
@@ -44,9 +44,15 @@ const initImportCsvConnector = () => {
     const applicantUser = await resolveUserByIdFromCache(context, applicantId) as AuthUser;
     const entityId = messageParsed.event.entity_id;
     const entity = entityId ? await internalLoadById(context, applicantUser, entityId) : undefined;
+    let parsedConfiguration;
+    try {
+      parsedConfiguration = JSON.parse(messageParsed.configuration);
+    } catch (error) {
+      throw FunctionalError('Could not parse CSV mapper configuration', { error });
+    }
 
     try {
-      const csvMapper = parseCsvMapper(JSON.parse(messageParsed.configuration));
+      const csvMapper = parseCsvMapper(parsedConfiguration);
       const stream: SdkStream<Readable> | null | undefined = await downloadFile(fileId) as SdkStream<Readable> | null | undefined;
       await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
       if (stream) {

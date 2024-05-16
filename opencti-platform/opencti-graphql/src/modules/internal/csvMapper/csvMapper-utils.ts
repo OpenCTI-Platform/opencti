@@ -46,17 +46,17 @@ const representationLabel = (idx: number, representation: CsvMapperRepresentatio
 };
 
 export const parseCsvMapper = (mapper: any): CsvMapperParsed => {
-  let representations: CsvMapperRepresentation[] = mapper?.representations ?? [];
+  let representations: CsvMapperRepresentation[] = [];
   if (typeof mapper?.representations === 'string') {
     try {
       representations = JSON.parse(mapper.representations);
     } catch (error) {
       throw FunctionalError('Could not parse CSV mapper: representations is not a valid JSON', { name: mapper?.name, error });
     }
+  } else {
+    representations = mapper?.representations ?? [];
   }
-  if (!Array.isArray(representations) || representations.some((rep) => !isCsvMapperRepresentation(rep))) {
-    throw FunctionalError('Could not parse CSV mapper: representations is not an array of CsvMapperRepresentation objects', { name: mapper?.name });
-  }
+
   return {
     ...mapper,
     representations,
@@ -110,7 +110,7 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
   };
 };
 
-export const isValidTargetType = (representation: CsvMapperRepresentation) => {
+export const isValidRepresentationType = (representation: CsvMapperRepresentation) => {
   if (representation.type === CsvMapperRepresentationType.Relationship) {
     if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
       throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
@@ -119,18 +119,24 @@ export const isValidTargetType = (representation: CsvMapperRepresentation) => {
     if (!isStixObject(representation.target.entity_type)) {
       throw FunctionalError('Unknown entity', { type: representation.target.entity_type });
     }
+  } else {
+    throw FunctionalError('Unknown representation type', { type: representation.type });
   }
 };
 
-export const validate = async (context: AuthContext, user: AuthUser, mapper: CsvMapperParsed) => {
+export const validateCsvMapper = async (context: AuthContext, user: AuthUser, mapper: CsvMapperParsed) => {
+  if (!Array.isArray(mapper.representations) || mapper.representations.some((rep) => !isCsvMapperRepresentation(rep))) {
+    throw FunctionalError('CSV mapper representations is not an array of CsvMapperRepresentation objects', { mapper_name: mapper?.name });
+  }
+
   // consider empty csv mapper as invalid to avoid being used in the importer
   if (mapper.representations.length === 0) {
-    throw Error(`CSV Mapper '${mapper.name}' has no representation`);
+    throw FunctionalError('CSV Mapper has no representation', { mapper_name: mapper.name });
   }
 
   await Promise.all(Array.from(mapper.representations.entries()).map(async ([idx, representation]) => {
     // Validate target type
-    isValidTargetType(representation);
+    isValidRepresentationType(representation);
 
     // Validate required attributes
     const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
@@ -188,10 +194,11 @@ export const validate = async (context: AuthContext, user: AuthUser, mapper: Csv
   }));
 };
 
-export const errors = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
+export const getCsvMapperErrorMessage = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
   try {
-    await validate(context, user, parseCsvMapper(csvMapper));
-    return null;
+    const parsedMapper = parseCsvMapper(csvMapper); // can throw JSON parsing errors
+    await validateCsvMapper(context, user, parsedMapper); // can throw model validation error
+    return null; // no error
   } catch (error) {
     if (error instanceof Error) {
       return error.message;

@@ -315,7 +315,7 @@ describe('CSV Mapper Resolver', () => {
       },
     });
     expect(errors).toBeDefined();
-    expect(errors[0].message).toBe('Could not parse CSV mapper: representations is not an array of CsvMapperRepresentation objects');
+    expect(errors[0].message).toBe('CSV mapper representations is not an array of CsvMapperRepresentation objects');
   });
 
   it('should retrieve a mapper by internal id', async () => {
