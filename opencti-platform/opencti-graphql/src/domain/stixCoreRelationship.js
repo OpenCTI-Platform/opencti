@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { UserInputError } from 'apollo-server-express';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -29,10 +30,7 @@ const buildStixCoreRelationshipTypes = (relationshipTypes) => {
   }
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixCoreRelationship(type));
   if (!isValidRelationshipTypes) {
-    // TODO: we disable this error because query stixCoreRelationshipsDistribution is used
-    // WARNING, WE NEED TO CHECK ALL USAGE BEFORE REMOVING THIS
-    // in widgets that should call stixRelationshipsDistribution instead
-    // throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship');
+    throw new UserInputError('Invalid argument: relationship_type is not a stix-core-relationship');
   }
   return relationshipTypes;
 };
