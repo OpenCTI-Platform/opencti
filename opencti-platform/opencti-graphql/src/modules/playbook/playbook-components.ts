@@ -179,28 +179,28 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
   }
 };
 
-interface FilterConfiguration {
+interface MatchConfiguration {
   all: boolean
   filters: string
 }
-const PLAYBOOK_FILTERING_COMPONENT_SCHEMA: JSONSchemaType<FilterConfiguration> = {
+const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
   type: 'object',
   properties: {
-    all: { type: 'boolean', $ref: 'Filter on elements included in the bundle', default: false },
+    all: { type: 'boolean', $ref: 'Match on any elements included in the bundle', default: false },
     filters: { type: 'string' },
   },
   required: ['filters'],
 };
-const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
+const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
-  name: 'Filter knowledge',
-  description: 'Filter STIX data',
+  name: 'Match knowledge',
+  description: 'Match STIX data according to filter (pass if match)',
   icon: 'filter',
   is_entry_point: false,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
-  configuration_schema: PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_FILTERING_COMPONENT_SCHEMA,
+  configuration_schema: PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
+  schema: async () => PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
@@ -1116,7 +1116,7 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,
-  [PLAYBOOK_FILTERING_COMPONENT.id]: PLAYBOOK_FILTERING_COMPONENT,
+  [PLAYBOOK_MATCHING_COMPONENT.id]: PLAYBOOK_MATCHING_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
