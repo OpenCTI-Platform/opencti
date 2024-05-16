@@ -4,7 +4,7 @@ import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntit
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { bundleProcess } from '../../../parser/csv-bundler';
-import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues } from './csvMapper-utils';
+import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -22,7 +22,13 @@ import { FunctionalError } from '../../../config/errors';
 
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
   const limitedTestingText = content.split(/\r?\n/).slice(0, 100).join('\n'); // Get 100 lines max
-  const csvMapper = parseCsvMapper(JSON.parse(configuration));
+  let parsedConfiguration;
+  try {
+    parsedConfiguration = JSON.parse(configuration);
+  } catch (error) {
+    throw FunctionalError('Could not parse CSV mapper configuration', { error });
+  }
+  const csvMapper = parseCsvMapper(parsedConfiguration);
   const bundle = await bundleProcess(context, user, Buffer.from(limitedTestingText), csvMapper);
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
@@ -42,6 +48,10 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMapp
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
+  // attempt to parse and validate the mapper representations ; this can throw errors
+  const parsedMapper = parseCsvMapper(csvMapperInput);
+  await validateCsvMapper(context, user, parsedMapper);
+
   return createInternalObject<StoreEntityCsvMapper>(context, user, csvMapperInput, ENTITY_TYPE_CSV_MAPPER);
 };
 

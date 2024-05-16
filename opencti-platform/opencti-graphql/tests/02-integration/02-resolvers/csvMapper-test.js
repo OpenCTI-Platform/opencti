@@ -290,6 +290,34 @@ describe('CSV Mapper Resolver', () => {
     addedMapper = csvMapperAdd;
   });
 
+  it('should fail to create a mapper with malformed JSON representations', async () => {
+    const { errors } = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          ...MAPPER_INPUT,
+          representations: '{ invalid // json --',
+        }
+      },
+    });
+    expect(errors).toBeDefined();
+    expect(errors[0].message).toBe('Could not parse CSV mapper: representations is not a valid JSON');
+  });
+
+  it('should fail to create a mapper with invalid representations', async () => {
+    const { errors } = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          ...MAPPER_INPUT,
+          representations: JSON.stringify('{ "id": "test", "type": "InvalidType" }'),
+        }
+      },
+    });
+    expect(errors).toBeDefined();
+    expect(errors[0].message).toBe('CSV mapper representations is not an array of CsvMapperRepresentation objects');
+  });
+
   it('should retrieve a mapper by internal id', async () => {
     const { data } = await queryAsAdmin({
       query: READ_QUERY,
