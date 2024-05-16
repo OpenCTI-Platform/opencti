@@ -4,7 +4,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import ConfidenceField from '@components/common/form/ConfidenceField';
 import FormHelperText from '@mui/material/FormHelperText';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -15,9 +14,6 @@ import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -82,8 +78,6 @@ interface GroupEditionOverviewComponentProps {
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t_i18n } = useFormatter();
-  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const [commitFieldPatch] = useApiMutation(groupMutationFieldPatch);
 
   const basicShape: ObjectShape = {
     name: Yup.string().required(t_i18n('This field is required')),
@@ -106,40 +100,6 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
 
   const editor = useFormEditor(group as unknown as GenericData, false, queries, groupValidator);
 
-  const handleSubmitField = (name: string, value: string) => {
-    groupValidator
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        if (name === 'group_confidence_level') {
-          if (group.group_confidence_level) {
-            commitFieldPatch({
-              variables: {
-                id: group.id,
-                input: {
-                  key: 'group_confidence_level',
-                  object_path: '/group_confidence_level/max_confidence',
-                  value: parseInt(value, 10),
-                },
-              },
-            });
-          } else {
-            commitFieldPatch({
-              variables: {
-                id: group.id,
-                input: {
-                  key: 'group_confidence_level',
-                  value: {
-                    max_confidence: parseInt(value, 10),
-                    overrides: [],
-                  },
-                },
-              },
-            });
-          }
-        }
-      })
-      .catch(() => false);
-  };
   const initialValues = {
     name: group.name,
     description: group.description,
@@ -149,7 +109,6 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
     } : null,
-    group_confidence_level: group.group_confidence_level?.max_confidence,
   };
 
   return (
@@ -227,21 +186,6 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               />
             </FormHelperText>
             <GroupHiddenTypesField groupData={group} />
-            {
-              hasSetAccess && (
-                <ConfidenceField
-                  name="group_confidence_level"
-                  label={t_i18n('Max Confidence Level')}
-                  onFocus={editor.changeFocus}
-                  onSubmit={handleSubmitField}
-                  entityType="Group"
-                  containerStyle={fieldSpacingContainerStyle}
-                  editContext={context}
-                  variant="edit"
-                  disabled={false}
-                />
-              )
-            }
           </Form>
         )}
       </Formik>
@@ -265,9 +209,6 @@ const GroupEditionOverview = createFragmentContainer(
           authorizedMembers {
             id
           }
-        }
-        group_confidence_level {
-          max_confidence
         }
         ...GroupHiddenTypesField_group
       }
