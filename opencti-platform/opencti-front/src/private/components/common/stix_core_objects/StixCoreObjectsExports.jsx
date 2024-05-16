@@ -10,6 +10,7 @@ const StixCoreObjectsExports = ({
   paginationOptions,
   open,
   handleToggle,
+  exportType,
 }) => {
   const { t_i18n } = useFormatter();
   return (
@@ -25,6 +26,7 @@ const StixCoreObjectsExports = ({
           <StixCoreObjectsExportsContent
             handleToggle={handleToggle}
             data={props}
+            exportType={exportType}
             paginationOptions={paginationOptions}
             exportContext={exportContext}
             isOpen={open}

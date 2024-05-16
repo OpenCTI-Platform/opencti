@@ -9,6 +9,7 @@ import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
+import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -17,7 +18,6 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import StixDomainObjectAttackPatternsKillChainMatrix from './StixDomainObjectAttackPatternsKillChainMatrix';
 import StixDomainObjectAttackPatternsKillChainLines from './StixDomainObjectAttackPatternsKillChainLines';
 import ExportButtons from '../../../../components/ExportButtons';
-import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
@@ -117,6 +117,26 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       )(data.stixCoreRelationships.edges);
     }
     const exportDisabled = targetEntities.length > export_max_size;
+
+    const newExportContext = { ...exportContext, entity_type: 'Attack-Pattern' };
+    const newPaginationOptions = {
+      orderBy: 'name',
+      orderMode: 'desc',
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: 'regardingOf',
+            values: [{
+              key: 'id',
+              values: [stixDomainObjectId],
+            }],
+          },
+        ],
+        filterGroups: [],
+      },
+    };
+
     return (
       <>
         <div
@@ -152,10 +172,10 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             </Tooltip>
             <Tooltip
               title={
-                                currentColorsReversed
-                                  ? t('Disable invert colors')
-                                  : t('Enable invert colors')
-                            }
+                    currentColorsReversed
+                      ? t('Disable invert colors')
+                      : t('Enable invert colors')
+                }
             >
               <span>
                 <IconButton
@@ -313,11 +333,12 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             />
           </Security>
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixCoreRelationshipsExports
+            <StixCoreObjectsExports
               open={openExports}
+              exportType='simple'
               handleToggle={handleToggleExports.bind(this)}
-              paginationOptions={paginationOptions}
-              exportContext={exportContext}
+              paginationOptions={newPaginationOptions}
+              exportContext={newExportContext}
             />
           </Security>
         </div>
