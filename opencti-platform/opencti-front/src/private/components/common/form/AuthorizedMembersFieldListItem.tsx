@@ -118,7 +118,7 @@ const AuthorizedMembersFieldListItem = ({
       ) ? (
         <IconButton
           color="primary"
-          aria-label="delete"
+          aria-label={t_i18n('Delete')}
           onClick={() => onRemove?.()}
         >
           <Delete fontSize="small" />

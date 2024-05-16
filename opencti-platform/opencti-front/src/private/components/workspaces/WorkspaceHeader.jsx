@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { AddOutlined, CloseOutlined, MoveToInboxOutlined, LockPersonOutlined, Delete } from '@mui/icons-material';
+import { AddOutlined, CloseOutlined, Delete, LockPersonOutlined, MoveToInboxOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
@@ -240,6 +240,7 @@ const WorkspaceHeader = ({
                     onChange={(value) => handleDateChange('relativeDate', value)}
                     disabled={true}
                     variant="outlined"
+                    aria-label="date"
                   >
                     <MenuItem value="none">{t_i18n('None')}</MenuItem>
                     <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
@@ -258,6 +259,7 @@ const WorkspaceHeader = ({
                   clearable={true}
                   disableFuture={true}
                   disabled={true}
+                  aria-label="start picker"
                   onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
                   slotProps={{
                     textField: {
@@ -275,6 +277,7 @@ const WorkspaceHeader = ({
                   clearable={true}
                   disabled={true}
                   disableFuture={true}
+                  aria-label="end picker"
                   onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
                   slotProps={{
                     textField: {
@@ -397,7 +400,7 @@ const WorkspaceHeader = ({
             <Tooltip title={t_i18n('Manage access restriction')}>
               <ToggleButtonGroup size="small" color="warning" exclusive={true}>
                 <ToggleButton
-                  aria-label="Label"
+                  aria-label={t_i18n('Manage access restriction')}
                   onClick={handleOpenManageAccess}
                   size="small"
                   value="manage-access"
@@ -470,6 +473,7 @@ const WorkspaceHeader = ({
                       component={TextField}
                       variant="standard"
                       name="new_tag"
+                      aria-label="tag field"
                       autoFocus={true}
                       placeholder={t_i18n('New tag')}
                       onChange={handleChangeNewTags}

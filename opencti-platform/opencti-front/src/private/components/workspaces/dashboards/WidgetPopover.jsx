@@ -62,6 +62,7 @@ const WidgetPopover = ({
         size="small"
         className="noDrag"
         color="primary"
+        aria-label={t_i18n('Widget popover of actions')}
       >
         <MoreVert fontSize="small" />
       </IconButton>

@@ -599,6 +599,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               <CardActionArea
                 onClick={() => handleSelectType(visualizationType.key)}
                 style={{ height: '100%' }}
+                aria-label={t_i18n(visualizationType.name)}
               >
                 <CardContent>
                   {renderIcon(visualizationType.key)}
@@ -640,6 +641,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             <CardActionArea
               onClick={() => handleSelectPerspective('entities')}
               style={{ height: '100%' }}
+              aria-label={t_i18n('Entities')}
             >
               <CardContent>
                 <DatabaseOutline style={{ fontSize: 40 }} color="primary"/>
@@ -665,6 +667,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             <CardActionArea
               onClick={() => handleSelectPerspective('relationships')}
               style={{ height: '100%' }}
+              aria-label={t_i18n('Knowledge graph')}
             >
               <CardContent>
                 <FlaskOutline style={{ fontSize: 40 }} color="primary"/>
@@ -692,6 +695,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
             <CardActionArea
               onClick={() => handleSelectPerspective('audits')}
               style={{ height: '100%' }}
+              aria-label={t_i18n('Activity & history')}
             >
               <CardContent>
                 <LibraryBooksOutlined
