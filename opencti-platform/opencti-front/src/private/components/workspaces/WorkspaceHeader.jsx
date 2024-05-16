@@ -442,7 +442,7 @@ const WorkspaceHeader = ({
                 <IconButton
                   style={{ float: 'left', marginTop: '-5px', marginRight: '3px' }}
                   color="primary"
-                  aria-label="Tag"
+                  aria-label="Add tag"
                   onClick={handleOpenTag}
                   size="large"
                 >

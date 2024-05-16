@@ -29,7 +29,7 @@ export default class DashboardDetailsPage {
   }
 
   addNewDashboardTag() {
-    return this.page.getByLabel('Add tag', { exact: true });
+    return this.page.getByLabel('Add tag');
   }
 
   getTag(name: string) {
