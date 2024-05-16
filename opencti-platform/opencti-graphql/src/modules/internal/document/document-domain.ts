@@ -77,9 +77,10 @@ interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
 }
 
 const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
+  const preparedPaths = paths.map((p) => (p.endsWith('/') ? p : `${p}/`));
   const filters: FilterGroupWithNested = {
     mode: FilterMode.And,
-    filters: [{ key: ['internal_id'], values: paths, operator: FilterOperator.StartsWith }],
+    filters: [{ key: ['internal_id'], values: preparedPaths, operator: FilterOperator.StartsWith }],
     filterGroups: []
   };
   if (opts?.excludedPaths && opts?.excludedPaths.length > 0) {

@@ -74,7 +74,7 @@ const stixCoreObjectResolvers = {
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
     stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => {
       const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_type: exportContext.entity_type };
+      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
     },
     filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),

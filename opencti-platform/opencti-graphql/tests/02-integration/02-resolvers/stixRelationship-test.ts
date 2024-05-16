@@ -3,7 +3,7 @@ import { stixRelationshipsNumber } from '../../../src/domain/stixRelationship';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
+import { ABSTRACT_STIX_RELATIONSHIP } from '../../../src/schema/general';
 import { LABEL_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { RELATION_INDICATES, RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
@@ -132,7 +132,7 @@ describe('StixRelationship', () => {
         mode: 'and',
         filters: [{
           key: 'relationship_type',
-          values: [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, 'object'],
+          values: [ABSTRACT_STIX_RELATIONSHIP],
           operator: 'eq',
           mode: 'or',
         }],
