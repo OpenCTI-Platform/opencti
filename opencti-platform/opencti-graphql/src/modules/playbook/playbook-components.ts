@@ -34,9 +34,9 @@ import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation }
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
-import { getParentTypes } from '../../schema/schemaUtils';
+import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import type { StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject } from '../../types/stix-common';
+import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
@@ -268,6 +268,27 @@ const PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA: JSONSchemaType<ConnectorConfiguration
   },
   required: ['connector'],
 };
+const extendsBundleElementsWithExtensions = (bundle: StixBundle): StixBundle => {
+  const newBundle = structuredClone(bundle);
+  newBundle.objects = newBundle.objects.map((element) => {
+    const data = structuredClone(element);
+    const openctiType = generateInternalType(data); // convert from stix type
+    // eslint-disable-next-line
+    // @ts-ignore
+    data.extensions = isEmptyField(element.extensions) ? {} : element.extensions;
+    if (isEmptyField(data.extensions[STIX_EXT_OCTI])) {
+      data.extensions[STIX_EXT_OCTI] = { extension_type: 'property-extension', type: openctiType } as StixOpenctiExtension;
+    }
+    if (isStixCyberObservable(openctiType)) {
+      const cyberObject = (data as StixCyberObject);
+      if (isEmptyField(cyberObject.extensions[STIX_EXT_OCTI_SCO])) {
+        cyberObject.extensions[STIX_EXT_OCTI_SCO] = { extension_type: 'property-extension' } as CyberObjectExtension;
+      }
+    }
+    return data;
+  });
+  return newBundle;
+};
 const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = {
   id: 'PLAYBOOK_CONNECTOR_COMPONENT',
   name: 'Enrich through connector',
@@ -310,6 +331,9 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     }
   },
   executor: async ({ bundle }) => {
+    // Add extensions if needed
+    // This is needed as the rest of playbook expecting STIX2.1 format with extensions
+    const stixBundle = extendsBundleElementsWithExtensions(bundle);
     // TODO Could be reactivated after improvement of enrichment connectors
     // if (previousStepBundle) {
     //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
@@ -317,7 +341,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     //     return { output_port: 'unmodified', bundle };
     //   }
     // }
-    return { output_port: 'out', bundle };
+    return { output_port: 'out', bundle: stixBundle };
   }
 };
 
@@ -1119,7 +1143,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_MATCHING_COMPONENT.id]: PLAYBOOK_MATCHING_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
-  [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
   [PLAYBOOK_RULE_COMPONENT.id]: PLAYBOOK_RULE_COMPONENT,
