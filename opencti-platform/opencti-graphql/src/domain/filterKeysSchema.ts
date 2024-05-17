@@ -399,7 +399,7 @@ export const generateFilterKeysSchema = async () => {
   filterKeysSchema.set('Stix-Filtering', new Map([[REPRESENTATIVE_FILTER, {
     filterKey: REPRESENTATIVE_FILTER,
     type: 'string',
-    label: 'Representative',
+    label: 'Representation',
     multiple: true,
     subEntityTypes: [],
     elementsForFilterValuesSearch: [],

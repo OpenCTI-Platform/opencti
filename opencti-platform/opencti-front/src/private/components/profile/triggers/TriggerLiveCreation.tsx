@@ -299,8 +299,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           helpers={helpers}
           redirection
           searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-            entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-          />
+          entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+        />
       )}
 
     </React.Fragment>
