@@ -299,17 +299,17 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = ({ paginationOpti
           query={feedCreationAllTypesQuery}
           render={({ props: data }: { props: FeedCreationAllTypesQuery$data }) => {
             if (data && data.scoTypes && data.sdoTypes) {
-              let result = [];
-              result = ((data as FeedCreationAllTypesQuery$data).scoTypes.edges ?? []).map((n) => ({
+              const resultSco = ((data as FeedCreationAllTypesQuery$data).scoTypes.edges ?? []).map((n) => ({
                 label: t_i18n(`entity_${n.node.label}`),
                 value: n.node.label,
                 type: n.node.label,
               }));
-              result = ((data as FeedCreationAllTypesQuery$data).sdoTypes.edges ?? []).map((n) => ({
+              const resultSdo = ((data as FeedCreationAllTypesQuery$data).sdoTypes.edges ?? []).map((n) => ({
                 label: t_i18n(`entity_${n.node.label}`),
                 value: n.node.label,
                 type: n.node.label,
               }));
+              const result = [...resultSco, ...resultSdo];
               const entitiesTypes = R.sortWith(
                 [R.ascend(R.prop('label'))],
                 result,
@@ -532,19 +532,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = ({ paginationOpti
                                             resultProps
                                             && resultProps.schemaAttributeNames
                                           ) {
-                                            let attributes = R.pipe(
-                                              R.map((n: any) => n.node),
-                                              R.filter(
-                                                (n: any) => !R.includes(
-                                                  n.value,
-                                                  ignoredAttributesInFeeds,
-                                                )
-                                                  && !n.value.startsWith('i_'),
-                                              ),
-                                            )(
-                                              resultProps.schemaAttributeNames
-                                                .edges,
-                                            );
+                                            const allAttributes = resultProps.schemaAttributeNames.edges.map((edge) => (edge.node));
+                                            let attributes = allAttributes.filter((node) => (!ignoredAttributesInFeeds.includes(node.value) && !node.value.startsWith('i_')));
+
                                             if (
                                               attributes.filter(
                                                 (n) => n.value === 'hashes',
