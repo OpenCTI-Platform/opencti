@@ -120,7 +120,7 @@
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "实体 X 的实例触发器会通知以下事件：更新/删除 X、创建/删除与 X 的关系、创建/删除在其引用中包含 X 的实体（例如包含 X、与 X 共享、由 X 创建......）、在实体的引用中添加/删除 X。",
   "An unknown error has occurred!  Please try again later.": "发生未知错误，请稍后再试。",
   "An unknown error has occurred! Please try again later.": "出现未知错误！请稍后再试。",
-  "An unknown error occurred. Please provide a ": "出现未知错误。请提供",
+  "An unknown error occurred. Please provide a": "出现未知错误。请提供",
   "Analyses": "分析",
   "Analysis": "分析",
   "Analysis definition version": "分析定义版本",
