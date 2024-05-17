@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -23,9 +22,14 @@ import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { FeedCreationAllTypesQuery$data, FeedCreationAllTypesQuery$variables } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
+import { FeedAttributeMappingInput, MemberAccessInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
+import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
+
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -38,6 +42,8 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Theme } from '../../../../components/Theme';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -59,8 +65,9 @@ export const feedCreationAllTypesQuery = graphql`
         }
     }
 `;
-
-const useStyles = makeStyles((theme) => ({
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
+const useStyles = makeStyles((theme: Theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -111,7 +118,25 @@ const feedCreationMutation = graphql`
     }
 `;
 
-const feedCreationValidation = (t_i18n) => Yup.object().shape({
+interface FeedAddInput {
+  name: string;
+  description: string;
+  filters: string;
+  separator: string;
+  feed_date_attribute: string;
+  rolling_time: number;
+  include_header: boolean;
+  feed_types: string[];
+  feed_public: boolean;
+  feed_attributes: FeedAttributeMappingInput[];
+  authorized_members: MemberAccessInput[];
+}
+
+interface FeedCreationFormProps {
+  paginationOptions: FeedCreationAllTypesQuery$variables;
+}
+
+const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t_i18n('This field is required')),
   separator: Yup.string().required(t_i18n('This field is required')),
   rolling_time: Yup.number().required(t_i18n('This field is required')),
@@ -120,22 +145,12 @@ const feedCreationValidation = (t_i18n) => Yup.object().shape({
   authorized_members: Yup.array().nullable(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_feeds',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const FeedCreation = ({ paginationOptions }) => {
+const FeedCreation: FunctionComponent<FeedCreationFormProps> = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
-  const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
+  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
 
@@ -145,7 +160,7 @@ const FeedCreation = ({ paginationOptions }) => {
     setFeedAttributes({ 0: {} });
   };
 
-  const handleSelectTypes = (types) => {
+  const handleSelectTypes = (types: string[]) => {
     setSelectedTypes(types);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
@@ -164,41 +179,48 @@ const FeedCreation = ({ paginationOptions }) => {
     }
     setFeedAttributes({ ...updatedFeedAttributes });
   };
-
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const [commit] = useApiMutation(feedCreationMutation);
+  const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
       mappings: R.values(n.mappings),
     }));
     const finalValues = R.pipe(
-      R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
+      R.assoc('rolling_time', parseInt(String(values.rolling_time), 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.assoc(
         'authorized_members',
-        values.authorized_members.map(({ value }) => ({
-          id: value,
+        values.authorized_members.map(({ id }) => ({
+          id,
           access_right: 'view',
         })),
       ),
     )(values);
-    commitMutation({
-      mutation: feedCreationMutation,
+    setSubmitting(true);
+    commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('feedAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        const newEdge = payload?.setLinkedRecord(payload, 'node');
+        if (newEdge) {
+          const container = store.getRoot();
+          const userId = container.getDataID();
+          const userProxy = store.get(userId);
+          if (userProxy) {
+            const conn = ConnectionHandler.getConnection(
+              userProxy,
+              'Pagination_feeds',
+              paginationOptions,
+            );
+            if (conn) {
+              ConnectionHandler.insertEdgeBefore(conn, newEdge);
+            }
+          }
+        }
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -234,22 +256,24 @@ const FeedCreation = ({ paginationOptions }) => {
   };
 
   const handleAddAttribute = () => {
-    const newKey = R.last(Object.keys(feedAttributes))
-      ? R.last(Object.keys(feedAttributes)) + 1
+    const allKeys = Object.keys(feedAttributes);
+    const lastKey = R.last(allKeys);
+    const newKey = lastKey
+      ? lastKey + 1
       : 0;
     setFeedAttributes(R.assoc(newKey, {}, feedAttributes));
   };
 
-  const handleRemoveAttribute = (i) => {
+  const handleRemoveAttribute = (i: string) => {
     setFeedAttributes(R.dissoc(i, feedAttributes));
   };
 
-  const handleChangeField = (i, value) => {
+  const handleChangeField = (i: string, value: string) => {
     const newFeedAttribute = R.assoc('attribute', value, feedAttributes[i]);
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
 
-  const handleChangeAttributeMapping = (i, type, value) => {
+  const handleChangeAttributeMapping = (i: string, type: string, value: string) => {
     const mapping = { type, attribute: value };
     const newFeedAttributeMapping = R.assoc(
       type,
@@ -273,45 +297,35 @@ const FeedCreation = ({ paginationOptions }) => {
       {({ onClose }) => (
         <QueryRenderer
           query={feedCreationAllTypesQuery}
-          render={({ props: data }) => {
+          render={({ props: data }: { props: FeedCreationAllTypesQuery$data }) => {
             if (data && data.scoTypes && data.sdoTypes) {
               let result = [];
-              result = [
-                ...R.pipe(
-                  R.pathOr([], ['scoTypes', 'edges']),
-                  R.map((n) => ({
-                    label: t_i18n(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                )(data),
-                ...result,
-              ];
-              result = [
-                ...R.pipe(
-                  R.pathOr([], ['sdoTypes', 'edges']),
-                  R.map((n) => ({
-                    label: t_i18n(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                )(data),
-                ...result,
-              ];
+              result = ((data as FeedCreationAllTypesQuery$data).scoTypes.edges ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.node.label}`),
+                value: n.node.label,
+                type: n.node.label,
+              }));
+              result = ((data as FeedCreationAllTypesQuery$data).sdoTypes.edges ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.node.label}`),
+                value: n.node.label,
+                type: n.node.label,
+              }));
               const entitiesTypes = R.sortWith(
                 [R.ascend(R.prop('label'))],
                 result,
               );
               return (
-                <Formik
+                <Formik<FeedAddInput>
                   initialValues={{
                     name: '',
                     description: '',
                     separator: ';',
+                    filters: '',
                     rolling_time: 60,
                     include_header: true,
                     feed_types: [],
                     authorized_members: [],
+                    feed_attributes: [],
                     feed_date_attribute: 'created_at',
                     feed_public: false,
                   }}
@@ -413,7 +427,7 @@ const FeedCreation = ({ paginationOptions }) => {
                         component={SelectField}
                         variant="standard"
                         name="feed_types"
-                        onChange={(_, value) => handleSelectTypes(value)}
+                        onChange={(_: any, value: any) => handleSelectTypes(value)}
                         label={t_i18n('Entity types')}
                         fullWidth={true}
                         multiple={true}
@@ -513,15 +527,15 @@ const FeedCreation = ({ paginationOptions }) => {
                                         variables={{
                                           elementType: [selectedType],
                                         }}
-                                        render={({ props: resultProps }) => {
+                                        render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
                                           if (
                                             resultProps
                                             && resultProps.schemaAttributeNames
                                           ) {
                                             let attributes = R.pipe(
-                                              R.map((n) => n.node),
+                                              R.map((n: any) => n.node),
                                               R.filter(
-                                                (n) => !R.includes(
+                                                (n: any) => !R.includes(
                                                   n.value,
                                                   ignoredAttributesInFeeds,
                                                 )
@@ -588,7 +602,7 @@ const FeedCreation = ({ paginationOptions }) => {
                               </Grid>
                             </div>
                           ))}
-                          <div className={classes.add}>
+                          <div className={classes.buttonAdd}>
                             <Button
                               disabled={selectedTypes.length === 0}
                               variant="contained"
@@ -633,10 +647,6 @@ const FeedCreation = ({ paginationOptions }) => {
       )}
     </Drawer>
   );
-};
-
-FeedCreation.propTypes = {
-  paginationOptions: PropTypes.object,
 };
 
 export default FeedCreation;
