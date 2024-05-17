@@ -23,10 +23,9 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { FeedCreationAllTypesQuery$data, FeedCreationAllTypesQuery$variables } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
+import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
 import { FeedAttributeMappingInput, MemberAccessInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -44,6 +43,7 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { Theme } from '../../../../components/Theme';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -133,7 +133,7 @@ interface FeedAddInput {
 }
 
 interface FeedCreationFormProps {
-  paginationOptions: FeedCreationAllTypesQuery$variables;
+  paginationOptions: PaginationOptions
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
@@ -145,7 +145,8 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
   authorized_members: Yup.array().nullable(),
 });
 
-const FeedCreation: FunctionComponent<FeedCreationFormProps> = ({ paginationOptions }) => {
+const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
+  const { paginationOptions } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
