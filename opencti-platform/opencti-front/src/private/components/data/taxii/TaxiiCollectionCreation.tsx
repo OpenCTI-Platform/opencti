@@ -18,18 +18,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import {
-  emptyFilterGroup,
-  isFilterGroupNotEmpty,
-  serializeFilterGroupForBackend,
-  useBuildFilterKeysMapFromEntityType
-} from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
-import {generateUniqueItemsArray} from "../../../../utils/utils";
+import { generateUniqueItemsArray } from '../../../../utils/utils';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions
