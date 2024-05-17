@@ -68,6 +68,10 @@ const groupFragment = graphql`
     auto_new_marking
     group_confidence_level {
       max_confidence
+      overrides{
+        max_confidence
+        entity_type
+      }
     }
     description
     members {
