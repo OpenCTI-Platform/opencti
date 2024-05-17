@@ -429,7 +429,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         component={SelectField}
                         variant="standard"
                         name="feed_types"
-                        onChange={(_: any, value: any) => handleSelectTypes(value)}
+                        onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
                         label={t_i18n('Entity types')}
                         fullWidth={true}
                         multiple={true}
@@ -505,9 +505,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                     name="attribute"
                                     label={t_i18n('Column')}
                                     fullWidth={true}
-                                    value={feedAttributes[i].attribute}
-                                    onChange={(event) => handleChangeField(i, event.target.value)
-                                    }
+                                    value={feedAttributes[i].attribute || ''}
+                                    onChange={(event) => handleChangeField(i, event.target.value)}
                                   />
                                 </Grid>
                                 {selectedTypes.map((selectedType) => (
