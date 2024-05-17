@@ -717,12 +717,18 @@ const useSearchEntities = ({
                   type: n.label,
                 })),
                 ...result,
-                {
-                  label: t_i18n('entity_Stix-Cyber-Observable'),
-                  value: 'Stix-Cyber-Observable',
-                  type: 'Stix-Cyber-Observable',
-                },
               ];
+              // if there are not only stix cyber observables in the entity types list, add the 'Stix Cyber Observable' abstract type
+              if (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object'))) {
+                result = [
+                  {
+                    label: t_i18n('entity_Stix-Cyber-Observable'),
+                    value: 'Stix-Cyber-Observable',
+                    type: 'Stix-Cyber-Observable',
+                  },
+                  ...result,
+                ];
+              }
             }
             // push the stix domain objects
             if (
@@ -736,13 +742,19 @@ const useSearchEntities = ({
                   value: n.label,
                   type: n.label,
                 })),
-                {
-                  label: t_i18n('entity_Stix-Domain-Object'),
-                  value: 'Stix-Domain-Object',
-                  type: 'Stix-Domain-Object',
-                },
                 ...result,
               ];
+              // if there are not only stix domain objects in the entity types list, add the 'Stix Domain Object' abstract type
+              if (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object'))) {
+                result = [
+                  {
+                    label: t_i18n('entity_Stix-Domain-Object'),
+                    value: 'Stix-Domain-Object',
+                    type: 'Stix-Domain-Object',
+                  },
+                  ...result,
+                ];
+              }
             }
             // push the stix core relationships types
             if (
