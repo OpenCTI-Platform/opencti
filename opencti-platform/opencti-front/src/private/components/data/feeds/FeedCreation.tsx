@@ -151,6 +151,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
+
+  // TODO: typing this state properly implies deep refactoring
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
