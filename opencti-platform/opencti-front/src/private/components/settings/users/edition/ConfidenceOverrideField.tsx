@@ -28,7 +28,7 @@ interface UserConfidenceOverridesFieldComponentProps
   onSubmit: (index: number, value: OverrideFormData | null) => void;
 }
 
-const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
+const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
   form,
   field,
   index,
@@ -191,4 +191,4 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   );
 };
 
-export default UserConfidenceOverrideField;
+export default ConfidenceOverrideField;

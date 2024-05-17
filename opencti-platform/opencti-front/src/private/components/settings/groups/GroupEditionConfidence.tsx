@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
-import UserConfidenceOverrideField from '@components/settings/users/edition/UserConfidenceOverrideField';
+import ConfidenceOverrideField from '@components/settings/users/edition/ConfidenceOverrideField';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { GroupEditionConfidence_group$data } from './__generated__/GroupEditionConfidence_group.graphql';
@@ -188,7 +188,7 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
                       index={idx}
                       name={`overrides[${idx}]`}
                       // rendered components and its props
-                      component={UserConfidenceOverrideField}
+                      component={ConfidenceOverrideField}
                       onDelete={() => arrayHelpers.remove(idx)}
                       onSubmit={handleSubmitOverride}
                     />

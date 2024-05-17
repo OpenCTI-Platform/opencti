@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { userMutationFieldPatch } from '@components/settings/users/edition/UserEditionOverview';
-import UserConfidenceOverrideField from '@components/settings/users/edition/UserConfidenceOverrideField';
+import ConfidenceOverrideField from '@components/settings/users/edition/ConfidenceOverrideField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
@@ -201,7 +201,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                       index={idx}
                       name={`overrides[${idx}]`}
                       // rendered components and its props
-                      component={UserConfidenceOverrideField}
+                      component={ConfidenceOverrideField}
                       onDelete={() => arrayHelpers.remove(idx)}
                       onSubmit={handleSubmitOverride}
                     />
