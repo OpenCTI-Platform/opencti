@@ -16,11 +16,17 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import {uniq} from "ramda";
+import {generateUniqueItemsArray} from "../../../../utils/utils";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -131,6 +137,8 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   }, [filters]);
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = () => {};
 
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
   return (
     <Formik
       onSubmit={onSubmit}
@@ -189,29 +197,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             gap: 1 }}
           >
             <Filters
-              availableFilterKeys={[
-                'entity_type',
-                'workflow_id',
-                'objectAssignee',
-                'objects',
-                'objectMarking',
-                'objectLabel',
-                'creator_id',
-                'createdBy',
-                'priority',
-                'severity',
-                'x_opencti_score',
-                'x_opencti_detection',
-                'x_opencti_main_observable_type',
-                'revoked',
-                'confidence',
-                'indicator_types',
-                'pattern_type',
-                'fromId',
-                'toId',
-                'fromTypes',
-                'toTypes',
-              ]}
+              availableFilterKeys={availableFilterKeys}
               helpers={helpers}
               searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
