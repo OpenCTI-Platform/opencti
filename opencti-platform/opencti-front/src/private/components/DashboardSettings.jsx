@@ -42,6 +42,8 @@ const useStyles = makeStyles(() => createStyles({
   }),
 }));
 
+export const DEFAULT_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
+
 export const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
     $count: Int!
@@ -90,7 +92,7 @@ const DashboardSettings = () => {
   const [updateDashboard] = useApiMutation(dashboardSettingsMutation);
   const handleUpdate = (name, newValue) => {
     let value = newValue;
-    if (value === 'default') {
+    if (value === 'automatic') {
       value = '';
     }
     updateDashboard({ variables: { input: [{ key: name, value }] } });
@@ -183,7 +185,7 @@ const DashboardSettings = () => {
                         </InputLabel>
                         <Select
                           labelId="dashboard"
-                          value={dashboard?.id ?? 'default'}
+                          value={dashboard?.id ?? 'automatic'}
                           onChange={(event) => handleUpdate(
                             'default_dashboard',
                             event.target.value,
@@ -194,15 +196,18 @@ const DashboardSettings = () => {
                             select: classes.muiSelect,
                           }}
                         >
-                          <MenuItem value="default">
-                            <em>{t_i18n('Automatic')}</em>
+                          <MenuItem value="automatic">
+                            <em>{t_i18n('Default dashboard')}</em>
                           </MenuItem>
-                          {dashboards?.length > 0 && (
+                          <MenuItem value={DEFAULT_DASHBOARD}>
+                            <em>{t_i18n('Platform dashboard')}</em>
+                          </MenuItem>
+                          {dashboards.length > 0 && (
                             <ListSubheader>
-                              {t_i18n('Recommended dashboards')}
+                              {t_i18n('Dashboards from your groups & organizations')}
                             </ListSubheader>
                           )}
-                          {dashboards?.map(({ id, name }) => (
+                          {dashboards.map(({ id, name }) => (
                             <MenuItem key={id} value={id}>
                               <ListItemIcon classes={{
                                 root: classes.muiSelectIcon,
@@ -214,7 +219,7 @@ const DashboardSettings = () => {
                             </MenuItem>
                           ))}
                           {workspaces?.length > 0 && (
-                            <ListSubheader>{t_i18n('Dashboards')}</ListSubheader>
+                            <ListSubheader>{t_i18n('Other custom dashboards')}</ListSubheader>
                           )}
                           {workspaces?.map(({ node }) => (
                             <MenuItem key={node.id} value={node.id}>

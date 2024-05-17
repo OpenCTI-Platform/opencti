@@ -9,7 +9,7 @@ import { Biohazard, ShieldSearch } from 'mdi-material-ui';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
-import DashboardSettings from './DashboardSettings';
+import DashboardSettings, { DEFAULT_DASHBOARD } from './DashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
 import StixCoreObjectsList from './common/stix_core_objects/StixCoreObjectsList';
@@ -596,7 +596,7 @@ const DashboardComponent = ({ queryRef }) => {
   const { dashboard } = localTimeFieldPreferences;
   let defaultDashboard = default_dashboard?.id;
   if (!defaultDashboard) {
-    defaultDashboard = dashboards[0]?.id;
+    defaultDashboard = dashboards[0]?.id ?? DEFAULT_DASHBOARD;
   } else if (dashboard && dashboard !== 'default') {
     // Handle old conf
     defaultDashboard = dashboard;
@@ -604,7 +604,7 @@ const DashboardComponent = ({ queryRef }) => {
   return (
     <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
       <div className={classes.root} data-testid="dashboard-page">
-        {defaultDashboard ? (
+        {defaultDashboard !== DEFAULT_DASHBOARD ? (
           <CustomDashboard
             dashboard={defaultDashboard}
             timeField={default_time_field}
