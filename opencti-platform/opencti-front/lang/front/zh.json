@@ -1,7 +1,6 @@
 {
   " (reversed)": "（反向）",
   " & ": "&；",
-  " to your administrator or OpenCTI maintainers": "给您的管理员或 OpenCTI 维护者",
   "0 equals no maximum": "0 等于没有最大值",
   "24 hours": "24小时",
   "24h": "24小时",
@@ -121,6 +120,7 @@
   "An unknown error has occurred!  Please try again later.": "发生未知错误，请稍后再试。",
   "An unknown error has occurred! Please try again later.": "出现未知错误！请稍后再试。",
   "An unknown error occurred. Please provide a": "出现未知错误。请提供",
+  "An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers": "出现未知错误。请向管理员或 OpenCTI 维护人员提供 {link_support_package}",
   "Analyses": "分析",
   "Analysis": "分析",
   "Analysis definition version": "分析定义版本",

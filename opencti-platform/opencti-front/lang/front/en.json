@@ -1,7 +1,6 @@
 {
   " (reversed)": " (reversed)",
   " & ": " & ",
-  " to your administrator or OpenCTI maintainers": " to your administrator or OpenCTI maintainers",
   "0 equals no maximum": "0 equals no maximum",
   "24 hours": "24 hours",
   "24h": "24h",
@@ -121,6 +120,7 @@
   "An unknown error has occurred!  Please try again later.": "An unknown error has occurred!  Please try again later.",
   "An unknown error has occurred! Please try again later.": "An unknown error has occurred! Please try again later.",
   "An unknown error occurred. Please provide a": "An unknown error occurred. Please provide a",
+  "An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers": "An unknown error occurred. Please provide a {link_support_package} to your administrator or OpenCTI maintainers",
   "Analyses": "Analyses",
   "Analysis": "Analysis",
   "Analysis definition version": "Analysis definition version",

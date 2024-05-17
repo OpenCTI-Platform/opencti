@@ -1,7 +1,6 @@
 {
   " (reversed)": "(逆)",
   " & ": "&；",
-  " to your administrator or OpenCTI maintainers": "を管理者または OpenCTI メンテナに連絡してください。",
   "0 equals no maximum": "0 は最大値なし",
   "24 hours": "24時間",
   "24h": "24時間",
@@ -121,6 +120,7 @@
   "An unknown error has occurred!  Please try again later.": "不明なエラーが発生しました。後でもう一度お試しください。",
   "An unknown error has occurred! Please try again later.": "不明なエラーが発生しました！後で再試行してください。",
   "An unknown error occurred. Please provide a": "不明なエラーが発生しました。を入力してください。",
+  "An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers": "不明なエラーが発生しました。管理者または OpenCTI メンテナに {link_support_package} を提供してください。",
   "Analyses": "分析",
   "Analysis": "分析",
   "Analysis definition version": "解析定義バージョン",
