@@ -65,17 +65,13 @@ class StixCoreObjectLabels extends Component {
                       color: label.color,
                       borderColor: label.color,
                       backgroundColor: hexToRGB(label.color),
+                      cursor: onClick ? 'pointer' : 'inherit',
                     }}
-                    onClick={
-                      typeof onClick === 'function'
-                        ? onClick.bind(
-                          this,
-                          'objectLabel',
-                          label.id,
-                          'eq',
-                        )
-                        : null
-                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onClick?.('objectLabel', label.id, 'eq');
+                    }}
                   />
                 </Tooltip>
               ),
@@ -91,11 +87,11 @@ class StixCoreObjectLabels extends Component {
                 borderColor: '#d32f2f',
                 backgroundColor: 'rgba(211, 47, 47, .1)',
               }}
-              onClick={
-                typeof onClick === 'function'
-                  ? onClick.bind(this, 'objectLabel', null, 'eq')
-                  : null
-              }
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick?.('objectLabel', null, 'eq');
+              }}
             />
           ) : (
             <Chip
@@ -110,11 +106,11 @@ class StixCoreObjectLabels extends Component {
                   theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
                 ),
               }}
-              onClick={
-                typeof onClick === 'function'
-                  ? onClick.bind(this, 'objectLabel', null, 'eq')
-                  : null
-              }
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick?.('objectLabel', null, 'eq');
+              }}
             />
           )
         }

@@ -1,16 +1,21 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
+import { FiligranLoader } from 'filigran-icon';
+import { isNotEmptyField } from '../utils/utils';
+import { UserContext } from '../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
-    width: '100vh',
-    minWidth: '100vh',
-    height: 'calc(100vh-180px)',
-    minHeight: 'calc(100vh-180px)',
-    padding: '0 0 0 180px',
+    width: '100%',
+    minWidth: '100%',
+    height: '100%',
+    minHeight: 'calc(100vh - 180px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   containerInElement: {
     width: '100%',
@@ -18,17 +23,11 @@ const useStyles = makeStyles(() => ({
     display: 'table',
   },
   loader: {
-    width: '100%',
-    margin: 0,
-    padding: 0,
-    position: 'absolute',
-    top: '46%',
-    left: 0,
-    textAlign: 'center',
+    width: '5rem',
     zIndex: 20,
   },
   loaderInElement: {
-    width: '100%',
+    width: '5rem',
     margin: 0,
     padding: 0,
     display: 'table-cell',
@@ -36,6 +35,7 @@ const useStyles = makeStyles(() => ({
     textAlign: 'center',
   },
   loaderCircle: {
+    width: '5rem',
     display: 'inline-block',
   },
 }));
@@ -57,11 +57,12 @@ const Loader: FunctionComponent<LoaderProps> = ({
   withTopMargin = false,
 }) => {
   const classes = useStyles();
+
+  const { settings } = useContext(UserContext);
+  const hasFiligranLoader = isNotEmptyField(settings?.enterprise_edition) || !settings?.platform_whitemark;
   return (
     <div
-      className={
-        variant === 'inElement' ? classes.containerInElement : classes.container
-      }
+      className={variant === 'inElement' ? classes.containerInElement : classes.container}
       style={
         variant === 'inElement'
           ? {
@@ -81,11 +82,15 @@ const Loader: FunctionComponent<LoaderProps> = ({
             : {}
         }
       >
-        <CircularProgress
-          size={variant === 'inElement' ? 40 : 80}
-          thickness={1}
-          className={classes.loaderCircle}
-        />
+        {hasFiligranLoader ? (
+          <FiligranLoader height={variant === 'inElement' ? 40 : 80} />
+        ) : (
+          <CircularProgress
+            size={variant === 'inElement' ? 40 : 80}
+            thickness={1}
+            className={classes.loaderCircle}
+          />
+        )}
       </div>
     </div>
   );

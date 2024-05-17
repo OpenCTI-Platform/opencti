@@ -16,7 +16,7 @@ const styles = () => ({
     marginTop: 40,
   },
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1,
     padding: '0 200px 0 205px',
     display: 'flex',
     height: 50,

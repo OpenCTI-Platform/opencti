@@ -61,7 +61,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = () => ({
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1,
     display: 'flex',
     overflow: 'hidden',
   },

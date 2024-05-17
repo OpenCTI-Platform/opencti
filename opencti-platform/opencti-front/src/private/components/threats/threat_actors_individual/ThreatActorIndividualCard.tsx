@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
 import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 
-const ThreatActorIndividualCardFragment = graphql`
+export const ThreatActorIndividualCardFragment = graphql`
   fragment ThreatActorIndividualCard_node on ThreatActorIndividual {
     id
     name
@@ -12,9 +12,22 @@ const ThreatActorIndividualCardFragment = graphql`
     created
     modified
     entity_type
+    threat_actor_types
+    creators {
+      id
+      name
+    }
     avatar {
       id
       name
+    }
+    status {
+      id
+      template {
+        id
+        name
+        color
+      }
     }
     objectLabel {
       id

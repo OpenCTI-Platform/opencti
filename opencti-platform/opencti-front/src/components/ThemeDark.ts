@@ -36,6 +36,10 @@ const ThemeDark = (
     success: { main: '#03A847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
+    pagination: {
+      main: '#ffffff',
+      border: hexToRGB('#ffffff', 0.5),
+    },
     chip: { main: '#ffffff' },
     ee: {
       main: EE_COLOR,

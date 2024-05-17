@@ -10,12 +10,13 @@ declare module '@mui/material/IconButton' {
 declare module '@mui/material/Button' {
   interface ButtonPropsColorOverrides {
     ee: true
+    pagination: true
   }
 }
 
-declare module '@mui/material/Button' {
-  interface ChipPropsColorOverrides {
-    ee: true
+declare module '@mui/material/ButtonGroup' {
+  interface ButtonGroupPropsColorOverrides {
+    pagination: true
   }
 }
 
@@ -49,6 +50,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   error: Partial<ExtendedColor>
   success: Partial<ExtendedColor>
   chip: Partial<ExtendedColor>
+  pagination: Partial<ExtendedColor> & { border: string }
   ee: Partial<ExtendedColor>
   secondary: Partial<ExtendedColor>
   mode: PaletteMode

@@ -1,18 +1,14 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
-import { PersonOutlined } from '@mui/icons-material';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupEditionContainer_group$data } from '@components/settings/groups/__generated__/GroupEditionContainer_group.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { usersLinesSearchQuery } from '../users/UsersLines';
 import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 const userMutationRelationAdd = graphql`
   mutation GroupEditionUsersRelationAddMutation(
@@ -51,9 +47,10 @@ interface GroupEditionUsersProps {
   group: GroupEditionContainer_group$data,
   queryRef: PreloadedQuery<UsersLinesSearchQuery>,
   paginationOptionsForUpdater: GroupUsersLinesQuery$variables,
+  children: ReactNode,
 }
 
-const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater }) => {
+const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, queryRef, paginationOptionsForUpdater, children }) => {
   const groupId = group.id;
   const groupUsers = group.members?.edges?.map((n) => ({ id: n.node.id })) ?? [];
   const usersData = usePreloadedQuery<UsersLinesSearchQuery>(usersLinesSearchQuery, queryRef);
@@ -100,32 +97,30 @@ const GroupEditionUsers: FunctionComponent<GroupEditionUsersProps> = ({ group, q
   };
 
   return (
-    <List dense={true}>
-      {users.map((user) => {
+    <DataTableWithoutFragment
+      dataColumns={{
+        name: { flexSize: 50, isSortable: false },
+        user_email: {},
+      }}
+      storageKey={`group-${group.id}-users`}
+      data={users}
+      globalCount={users.length}
+      filtersComponent={children}
+      variant={DataTableVariant.inline}
+      actions={(user) => {
         const groupUser = groupUsers.find((g) => g.id === user.id);
         return (
-          <ListItem key={user.id} divider={true}>
-            <ListItemIcon color="primary">
-              <PersonOutlined/>
-            </ListItemIcon>
-            <ListItemText
-              primary={user.name}
-              secondary={user.user_email}
-            />
-            <ListItemSecondaryAction>
-              <Checkbox
-                onChange={(event) => handleToggle(
-                  user.id,
-                  groupUser,
-                  event,
-                )}
-                checked={groupUser !== undefined}
-              />
-            </ListItemSecondaryAction>
-          </ListItem>
+          <Checkbox
+            onClick={(event) => handleToggle(
+              user.id,
+              groupUser,
+              event as unknown as React.ChangeEvent<HTMLInputElement>,
+            )}
+            checked={groupUser !== undefined}
+          />
         );
-      })}
-    </List>
+      }}
+    />
   );
 };
 

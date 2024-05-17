@@ -29,7 +29,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
-    zIndex: 1040,
+    zIndex: 1,
     display: 'flex',
     height: 50,
     overflow: 'hidden',

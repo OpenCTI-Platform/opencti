@@ -18,14 +18,15 @@ export enum OrderMode {
 }
 
 export interface PaginationOptions {
-  toId?: string | string[];
-  fromId?: string[];
-  toTypes?: string[];
-  fromTypes?: string[];
-  search?: string;
-  orderBy?: string | null;
-  orderMode?: OrderMode;
-  filters?: FilterGroup;
+  toId?: string | string[]
+  fromId?: string[]
+  toTypes?: string[]
+  fromTypes?: string[]
+  search?: string
+  orderBy?: string | null
+  orderMode?: OrderMode
+  filters?: FilterGroup
+  pageSize?: string
 }
 
 export type ListLines = FunctionComponent<unknown>;
