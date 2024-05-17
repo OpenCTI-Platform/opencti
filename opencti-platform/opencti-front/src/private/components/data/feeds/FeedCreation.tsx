@@ -421,7 +421,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
-                      ><MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
+                      >
+                        <MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
                         <MenuItem key={'updated_at'} value={'updated_at'}>{t_i18n('Update date')}</MenuItem>
                       </Field>
                       <Field
@@ -557,19 +558,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
-                                                value={
-                                                  feedAttributes[i]
-                                                    ?.mappings
-                                                  && feedAttributes[i].mappings[
-                                                    selectedType
-                                                  ]?.attribute
-                                                }
-                                                onChange={(event) => handleChangeAttributeMapping(
-                                                  i,
-                                                  selectedType,
-                                                  event.target.value,
-                                                )
-                                                }
+                                                value={feedAttributes[i]?.mappings?.[selectedType]?.attribute || ''}
+                                                onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value) }
                                               >
                                                 {attributes.map(
                                                   (attribute) => (
