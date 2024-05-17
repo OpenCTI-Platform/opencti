@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
-import Toolbar from '@mui/material/Toolbar';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -109,21 +108,22 @@ import logoFiligranTextLight from '../../../static/images/logo_filigran_text_lig
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
+const SMALL_BAR_WIDTH = 55;
+const OPEN_BAR_WIDTH = 180;
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     minHeight: '100vh',
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
+    background: 'none',
     overflowX: 'hidden',
   },
   drawerPaperOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     minHeight: '100vh',
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
+    background: 'none',
     overflowX: 'hidden',
   },
   menuItemIcon: {
@@ -160,25 +160,25 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 12,
   },
   menuCollapseOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuCollapse: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogoOpen: {
-    width: 180,
+    width: OPEN_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogo: {
-    width: 55,
+    width: SMALL_BAR_WIDTH,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
@@ -265,6 +265,7 @@ const LeftBar = () => {
   const handleToggle = () => {
     setSelectedMenu([]);
     localStorage.setItem('navOpen', String(!navOpen));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'navOpen' }));
     localStorage.setItem('selectedMenu', JSON.stringify([]));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
@@ -354,6 +355,7 @@ const LeftBar = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
+
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
@@ -442,18 +444,22 @@ const LeftBar = () => {
         paper: navOpen ? classes.drawerPaperOpen : classes.drawerPaper,
       }}
       sx={{
-        width: navOpen ? 180 : 55,
+        width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+        zIndex: 2,
+        background: theme.palette.background.nav,
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
         transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.easeInOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
       }}
     >
-      <Toolbar />
       <div ref={ref}>
         <MenuList
           component="nav"
-          style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 58px )` }}
         >
           <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
             <MenuItem

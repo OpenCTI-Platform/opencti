@@ -173,7 +173,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
   const mappedEntitiesWithNode = filteredMappedEntities.map((e) => { return { node: e }; });
 
   handleSetNumberOfElements({
-    number: filteredMappedEntities.length.toString(),
+    number: filteredMappedEntities.length,
     symbol: '',
     original: filteredMappedEntities.length,
   });

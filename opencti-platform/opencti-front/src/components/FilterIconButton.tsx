@@ -8,7 +8,7 @@ import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 
-interface FilterIconButtonProps {
+export interface FilterIconButtonProps {
   availableFilterKeys?: string[];
   filters?: FilterGroup;
   handleRemoveFilter?: (key: string, op?: string) => void;

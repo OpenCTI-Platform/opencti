@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({
   bottomNav: {
-    zIndex: 1000,
+    zIndex: 1,
     display: 'flex',
     overflow: 'hidden',
     paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,

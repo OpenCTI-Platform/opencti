@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 import { ThreatActorGroupCard_node$key } from './__generated__/ThreatActorGroupCard_node.graphql';
 
-const ThreatActorGroupCardFragment = graphql`
+export const ThreatActorGroupCardFragment = graphql`
   fragment ThreatActorGroupCard_node on ThreatActorGroup {
     id
     name
@@ -11,6 +11,12 @@ const ThreatActorGroupCardFragment = graphql`
     description
     created
     modified
+    entity_type
+    threat_actor_types
+    creators {
+      id
+      name
+    }
     objectLabel {
       id
       value
@@ -27,6 +33,15 @@ const ThreatActorGroupCardFragment = graphql`
       id
       name
     }
+    status {
+      id
+      template {
+        id
+        name
+        color
+      }
+    }
+    workflowEnabled
     targetedCountries: stixCoreRelationships(
       relationship_type: "targets"
       toTypes: ["Country"]

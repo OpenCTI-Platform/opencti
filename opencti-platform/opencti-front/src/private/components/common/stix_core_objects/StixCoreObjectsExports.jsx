@@ -1,6 +1,6 @@
 import React from 'react';
+import * as PropTypes from 'prop-types';
 import Drawer from '../drawer/Drawer';
-
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectsExportsContent, { stixCoreObjectsExportsContentQuery } from './StixCoreObjectsExportsContent';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,6 +35,14 @@ const StixCoreObjectsExports = ({
       />
     </Drawer>
   );
+};
+
+StixCoreObjectsExports.propTypes = {
+  exportContext: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  open: PropTypes.bool,
+  exportType: PropTypes.string,
+  handleToggle: PropTypes.func,
 };
 
 export default StixCoreObjectsExports;

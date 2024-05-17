@@ -26123,6 +26123,7 @@ export enum ThreatActorsOrdering {
   CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  ThreatActorTypes = 'threat_actor_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

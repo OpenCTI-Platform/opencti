@@ -36,6 +36,10 @@ const ThemeLight = (
     success: { main: '#03A847' },
     primary: { main: THEME_LIGHT_DEFAULT_PRIMARY || '#0066ff' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
+    pagination: {
+      main: '#000000',
+      border: hexToRGB('#000000', 0.5),
+    },
     chip: { main: '#000000' },
     ee: {
       main: EE_COLOR,

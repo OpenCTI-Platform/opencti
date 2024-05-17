@@ -68,6 +68,7 @@ const SearchInput = (props) => {
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
+    ...otherProps
   } = props;
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
@@ -155,6 +156,7 @@ const SearchInput = (props) => {
           input: classInput,
         },
       }}
+      {...otherProps}
       autoComplete="off"
     />
   );

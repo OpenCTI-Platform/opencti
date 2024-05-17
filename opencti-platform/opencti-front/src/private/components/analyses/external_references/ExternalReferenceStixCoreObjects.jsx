@@ -42,7 +42,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
         <List classes={{ root: classes.list }}>
           {stixCoreObjects.map((stixCoreObjectOrRelationship) => (
             <ListItem
-              key={stixCoreObjectOrRelationship?.id}
+              key={stixCoreObjectOrRelationship.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
@@ -50,12 +50,12 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
               to={`${computeLink(stixCoreObjectOrRelationship)}`}
             >
               <ListItemIcon>
-                <ItemIcon type={stixCoreObjectOrRelationship?.entity_type} />
+                <ItemIcon type={stixCoreObjectOrRelationship.entity_type} />
               </ListItemIcon>
               <ListItemText
-                primary={stixCoreObjectOrRelationship?.representative?.main}
+                primary={stixCoreObjectOrRelationship.representative?.main}
                 primaryTypographyProps={{ style: { wordWrap: 'break-word' } }}
-                secondary={truncate(stixCoreObjectOrRelationship?.representative?.secondary, 150)}
+                secondary={truncate(stixCoreObjectOrRelationship.representative?.secondary, 150)}
               />
             </ListItem>
           ))}

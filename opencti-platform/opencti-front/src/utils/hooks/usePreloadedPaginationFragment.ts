@@ -9,7 +9,7 @@ type KeyType<TData = unknown> = Readonly<{
   ' $fragmentSpreads': FragmentType;
 }>;
 
-interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
+export interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>;
   linesQuery: GraphQLTaggedNode;
   linesFragment: GraphQLTaggedNode;
@@ -17,21 +17,15 @@ interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
-const usePreloadedPaginationFragment = <
-  QueryType extends OperationType,
-  FragmentKey extends KeyType,
->({
-    queryRef,
-    linesQuery,
-    linesFragment,
-    nodePath,
-    setNumberOfElements,
-  }: UsePreloadedPaginationFragment<QueryType>) => {
+const usePreloadedPaginationFragment = <QueryType extends OperationType, FragmentKey extends KeyType>({
+  queryRef,
+  linesQuery,
+  linesFragment,
+  nodePath,
+  setNumberOfElements,
+}: UsePreloadedPaginationFragment<QueryType>) => {
   const queryData = usePreloadedQuery(linesQuery, queryRef) as FragmentKey;
-  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<
-  QueryType,
-  FragmentKey
-  >(linesFragment, queryData);
+  const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<QueryType, FragmentKey>(linesFragment, queryData);
   useEffect(() => {
     const deep_value = (nodePath ?? []).reduce(
       (a, v) => a[v as keyof object],
@@ -46,6 +40,7 @@ const usePreloadedPaginationFragment = <
     data,
     hasMore: () => hasNext,
     isLoadingMore: () => isLoadingNext,
+    isLoading: isLoadingNext,
     loadMore: loadNext,
   };
 };

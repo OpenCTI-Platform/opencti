@@ -91,7 +91,7 @@ class RootIndicator extends Component {
       <>
         <QueryRenderer
           query={indicatorQuery}
-          variables={{ id: indicatorId, relationship_type: 'indicates' }}
+          variables={{ id: indicatorId }}
           render={({ props }) => {
             if (props) {
               if (props.indicator) {
