@@ -1637,6 +1637,12 @@ const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type'
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 
 const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
+
+const buildFieldForQuery = (field) => {
+  return isDateNumericOrBooleanAttribute(field) || field === '_id' || isObjectFlatAttribute(field)
+    ? field
+    : `${field}.keyword`;
+};
 const buildLocalMustFilter = async (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -1698,7 +1704,7 @@ const buildLocalMustFilter = async (validFilter) => {
             } else if (nestedOperator === 'not_eq') {
               nestedMustNot.push({
                 multi_match: {
-                  fields: isDateNumericOrBooleanAttribute(nestedFieldKey) || nestedFieldKey === '_id' || isObjectFlatAttribute(nestedFieldKey) ? nestedFieldKey : `${nestedFieldKey}.keyword`,
+                  fields: buildFieldForQuery(nestedFieldKey),
                   query: nestedSearchValue.toString(),
                 }
               });
@@ -1707,7 +1713,7 @@ const buildLocalMustFilter = async (validFilter) => {
             } else { // nestedOperator = 'eq'
               nestedShould.push({
                 multi_match: {
-                  fields: isDateNumericOrBooleanAttribute(nestedFieldKey) || nestedFieldKey === '_id' || isObjectFlatAttribute(nestedFieldKey) ? nestedFieldKey : `${nestedFieldKey}.keyword`,
+                  fields: buildFieldForQuery(nestedFieldKey),
                   query: nestedSearchValue.toString(),
                 }
               });
@@ -1791,7 +1797,7 @@ const buildLocalMustFilter = async (validFilter) => {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
         targets.push({
           multi_match: {
-            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) || k === '_id' || isObjectFlatAttribute(k) ? k : `${k}.keyword`}`),
+            fields: arrayKeys.map((k) => buildFieldForQuery(k)),
             query: values[i].toString(),
           },
         });
@@ -2691,7 +2697,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
   body.aggs = {
     genres: {
       terms: {
-        field: isDateNumericOrBooleanAttribute(field) ? field : `${field}.keyword`,
+        field: buildFieldForQuery(field),
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -2975,7 +2981,6 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = await buildDataRestrictions(context, user);
-  const isDateOrNumber = isDateNumericOrBooleanAttribute(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);
@@ -2998,7 +3003,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
     aggs: {
       values: {
         terms: {
-          field: isDateOrNumber ? field : `${field}.keyword`,
+          field: buildFieldForQuery(field),
           size: first ?? ES_DEFAULT_PAGINATION,
           order: { _key: orderMode },
         },
