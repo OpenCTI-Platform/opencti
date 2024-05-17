@@ -175,9 +175,10 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
                   <IconButton
                     color="primary"
                     aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: 0 })}
+                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: group.group_confidence_level?.max_confidence })}
                     style={{ marginTop: '5px' }}
                     size="large"
+                    disabled={values.overrides.some((o) => o.entity_type === '')}
                   >
                     <Add fontSize="small" />
                   </IconButton>
