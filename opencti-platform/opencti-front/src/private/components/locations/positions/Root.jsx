@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Position from './Position';
@@ -171,6 +172,12 @@ class RootPosition extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/content`}
+                          value={`/dashboard/locations/positions/${position.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/locations/positions/${position.id}/analyses`}
                           value={`/dashboard/locations/positions/${position.id}/analyses`}
                           label={t('Analyses')}
@@ -213,6 +220,14 @@ class RootPosition extends Component {
                         element={
                           <PositionKnowledge position={props.position} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={position}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

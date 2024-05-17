@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Event from './Event';
@@ -164,6 +165,12 @@ class RootEvent extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/events/${event.id}/content`}
+                          value={`/dashboard/entities/events/${event.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/events/${event.id}/analyses`}
                           value={`/dashboard/entities/events/${event.id}/analyses`}
                           label={t('Analyses')}
@@ -209,6 +216,14 @@ class RootEvent extends Component {
                         element={
                           <EventKnowledge event={event} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={event}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

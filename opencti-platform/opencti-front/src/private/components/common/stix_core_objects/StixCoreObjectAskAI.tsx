@@ -36,8 +36,8 @@ import {
   StixCoreObjectAskAIConvertFilesToStixMutation,
   StixCoreObjectAskAIConvertFilesToStixMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIConvertFilesToStixMutation.graphql';
-import { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from '../stix_domain_objects/StixDomainObjectContentFiles';
-import { stixDomainObjectContentFieldPatchMutation } from '../stix_domain_objects/StixDomainObjectContent';
+import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
+import { stixDomainObjectContentFieldPatchMutation } from './StixCoreObjectContent';
 import FilesNativeField from '../form/FilesNativeField';
 import type {
   StixDomainObjectContentFilesUploadStixDomainObjectMutation,
@@ -141,7 +141,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
   const [commitMutationUpdateContent] = useApiMutation<StixDomainObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
-  const [commitMutationCreateFile] = useApiMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixDomainObjectContentFilesUploadStixDomainObjectMutation);
+  const [commitMutationCreateFile] = useApiMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
   const [commitMutationSummarizeFiles] = useApiMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
   const [commitMutationConvertFilesToStix] = useApiMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);

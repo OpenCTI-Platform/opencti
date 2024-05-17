@@ -10,6 +10,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
@@ -165,6 +166,12 @@ class RootChannel extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/arsenal/channels/${channel.id}/content`}
+                          value={`/dashboard/arsenal/channels/${channel.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/arsenal/channels/${channel.id}/analyses`}
                           value={`/dashboard/arsenal/channels/${channel.id}/analyses`}
                           label={t('Analyses')}
@@ -204,6 +211,14 @@ class RootChannel extends Component {
                         element={(
                           <ChannelKnowledge
                             channel={props.channel}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.channel}
                           />
                         )}
                       />

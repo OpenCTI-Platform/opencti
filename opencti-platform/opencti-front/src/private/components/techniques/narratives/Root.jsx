@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Narrative from './Narrative';
@@ -164,6 +165,12 @@ class RootNarrative extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/techniques/narratives/${narrative.id}/content`}
+                          value={`/dashboard/techniques/narratives/${narrative.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
                           value={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
                           label={t('Analyses')}
@@ -200,6 +207,14 @@ class RootNarrative extends Component {
                         element={
                           <NarrativeKnowledge narrative={props.narrative} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={narrative}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

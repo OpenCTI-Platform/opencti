@@ -22,7 +22,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -35,7 +35,7 @@ const subscription = graphql`
         ...Report_report
         ...ReportKnowledgeGraph_report
         ...ReportEditionContainer_report
-        ...StixDomainObjectContent_stixDomainObject
+        ...StixCoreObjectContent_stixCoreObject
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -58,7 +58,7 @@ const reportQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -226,8 +226,8 @@ const RootReport = () => {
                     <Route
                       path="/content"
                       element={
-                        <StixDomainObjectContent
-                          stixDomainObject={report}
+                        <StixCoreObjectContent
+                          stixCoreObject={report}
                         />
                       }
                     />

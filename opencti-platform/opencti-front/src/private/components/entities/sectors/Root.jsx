@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Sector from './Sector';
@@ -167,6 +168,12 @@ class RootSector extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/sectors/${sector.id}/content`}
+                          value={`/dashboard/entities/sectors/${sector.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/sectors/${sector.id}/analyses`}
                           value={`/dashboard/entities/sectors/${sector.id}/analyses`}
                           label={t('Analyses')}
@@ -211,6 +218,14 @@ class RootSector extends Component {
                         path="/knowledge/*"
                         element={(
                           <SectorKnowledge sector={sector} />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={sector}
+                          />
                         )}
                       />
                       <Route

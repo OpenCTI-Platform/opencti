@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import IntrusionSet from './IntrusionSet';
@@ -180,6 +181,12 @@ class RootIntrusionSet extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
                           value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
                           label={t('Analyses')}
@@ -221,6 +228,14 @@ class RootIntrusionSet extends Component {
                             <IntrusionSetKnowledge intrusionSet={props.intrusionSet} />
                           </div>
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.intrusionSet}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

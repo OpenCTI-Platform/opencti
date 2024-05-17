@@ -19,7 +19,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import FileManager from '../../common/files/FileManager';
 import FeedbackPopover from './FeedbackPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -62,7 +62,7 @@ const feedbackQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForExport {
       ...FileManager_connectorsExport
@@ -191,8 +191,8 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             <Route
               path="/content"
               element={
-                <StixDomainObjectContent
-                  stixDomainObject={feedbackData}
+                <StixCoreObjectContent
+                  stixCoreObject={feedbackData}
                 />
               }
             />

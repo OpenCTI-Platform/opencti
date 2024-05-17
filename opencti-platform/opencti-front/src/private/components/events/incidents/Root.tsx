@@ -19,7 +19,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
@@ -53,7 +53,7 @@ const incidentQuery = graphql`
       x_opencti_graph_data
       ...Incident_incident
       ...IncidentKnowledge_incident
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -180,8 +180,8 @@ const RootIncidentComponent = ({ queryRef }) => {
             <Route
               path="/content"
               element={(
-                <StixDomainObjectContent
-                  stixDomainObject={incident}
+                <StixCoreObjectContent
+                  stixCoreObject={incident}
                 />
               )}
             />

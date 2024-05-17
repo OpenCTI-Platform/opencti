@@ -49,14 +49,14 @@ const styles = (theme) => ({
   },
 });
 
-export const stixDomainObjectContentFilesUploadStixDomainObjectMutation = graphql`
-  mutation StixDomainObjectContentFilesUploadStixDomainObjectMutation(
+export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
+  mutation StixCoreObjectContentFilesUploadStixDomainObjectMutation(
     $id: ID!
     $file: Upload!
     $fileMarkings: [String]
     $noTriggerImport: Boolean
   ) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings) {
         id
         name
@@ -87,7 +87,7 @@ const fileValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
 });
 
-class StixDomainObjectContentFiles extends Component {
+class StixCoreObjectContentFiles extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -134,7 +134,7 @@ class StixDomainObjectContentFiles extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { t, stixDomainObjectId } = this.props;
+    const { t, stixCoreObjectId } = this.props;
     // eslint-disable-next-line prefer-const
     let { name, type } = values;
     if (type === 'text/plain' && !name.endsWith('.txt')) {
@@ -160,14 +160,14 @@ class StixDomainObjectContentFiles extends Component {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
     commitMutation({
-      mutation: stixDomainObjectContentFilesUploadStixDomainObjectMutation,
-      variables: { file, id: stixDomainObjectId, fileMarkings },
+      mutation: stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+      variables: { file, id: stixCoreObjectId, fileMarkings },
       setSubmitting,
       onCompleted: (result) => {
         setSubmitting(false);
         resetForm();
         this.handleCloseCreate();
-        this.props.onFileChange(result.stixDomainObjectEdit.importPush.id);
+        this.props.onFileChange(result.stixCoreObjectEdit.importPush.id);
       },
     });
   }
@@ -193,7 +193,7 @@ class StixDomainObjectContentFiles extends Component {
       classes,
       t,
       files,
-      stixDomainObjectId,
+      stixCoreObjectId,
       content,
       handleSelectFile,
       handleSelectContent,
@@ -241,7 +241,7 @@ class StixDomainObjectContentFiles extends Component {
           <Typography variant="body2" style={{ margin: '5px 0 0 15px', float: 'left' }}>{t('Files')}</Typography>
           <div style={{ float: 'right', display: 'flex', margin: '-4px 15px 0 0' }}>
             <FileUploader
-              entityId={stixDomainObjectId}
+              entityId={stixCoreObjectId}
               onUploadSuccess={onFileChange.bind(this)}
               size="small"
               nameInCallback={true}
@@ -357,8 +357,8 @@ class StixDomainObjectContentFiles extends Component {
   }
 }
 
-StixDomainObjectContentFiles.propTypes = {
-  stixDomainObjectId: PropTypes.string,
+StixCoreObjectContentFiles.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   files: PropTypes.array,
@@ -373,4 +373,4 @@ export default R.compose(
   inject18n,
   withStyles(styles),
   withHooksSettingsMessagesBannerHeight,
-)(StixDomainObjectContentFiles);
+)(StixCoreObjectContentFiles);
