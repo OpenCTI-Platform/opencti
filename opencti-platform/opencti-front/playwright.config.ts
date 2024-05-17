@@ -51,17 +51,30 @@ export default defineConfig({
   timeout: 200000,
   /* Configure projects for major browsers */
   projects: [
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/
+    },
+    {
+      name: 'init data',
+      testMatch: "init.data.ts",
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests_e2e/.setup/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'],
+      use: {
+        ...devices['Desktop Chrome'],
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
           height: 1080
         }
       },
-      dependencies: ['setup'],
+      dependencies: ['init data'],
     },
     // {
     //   name: 'firefox',
