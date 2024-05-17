@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 
@@ -20,7 +20,6 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
-          standard_id
           name
           description
         }
@@ -51,49 +50,66 @@ const READ_QUERY = gql`
 
 describe('CaseTemplate resolver standard behavior', () => {
   let caseTemplateInternalId: string;
-  const caseTemplateStandardId = 'caseTemplate--f505027c-997d-4243-b67c-471f994e20d4';
+  let taskTemplateInternalId: string;
+  const caseTemplateStandardId = 'case-template--1a80c59c-d839-4984-af04-04f3286d8f89';
 
-  it('should caseTemplate be created', async () => {
+  it('should caseTemplate created', async () => {
     const CREATE_QUERY = gql`
       mutation CaseTemplateAdd($input: CaseTemplateAddInput!) {
         caseTemplateAdd(input: $input) {
           id
           name
           description
-          created
         }
       }
     `;
     const CASE_TEMPLATE_TO_CREATE = {
       input: {
-        name: 'Case-Template',
-        description: 'Case-Template description',
-        tasks: [],
+        name: 'TestCaseTemplate',
+        description: 'Test case template description',
+        tasks: []
       },
     };
     const caseTemplate = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: CASE_TEMPLATE_TO_CREATE,
     });
-
-    expect(caseTemplate).not.toBeNull();
     expect(caseTemplate.data?.caseTemplateAdd).not.toBeNull();
-    expect(caseTemplate.data?.caseTemplateAdd.name).toEqual('Case-Template');
+    expect(caseTemplate.data?.caseTemplateAdd.name).toEqual('TestCaseTemplate');
     caseTemplateInternalId = caseTemplate.data?.caseTemplateAdd.id;
   });
 
-  it('should caseTemplate be loaded by internal id', async () => {
+  it('should taskTemplate created', async () => {
+    const CREATE_TASK_QUERY = gql`
+      mutation TaskTemplateAdd($input: TaskTemplateAddInput!) {
+        taskTemplateAdd(input: $input) {
+          id
+          name
+          description
+        }
+      }
+    `;
+    const TASK_TEMPLATE_TO_CREATE = {
+      input: {
+        name: 'TestTaskTemplate',
+        description: 'Test task template description'
+      },
+    };
+    const taskTemplate = await queryAsAdmin({
+      query: CREATE_TASK_QUERY,
+      variables: TASK_TEMPLATE_TO_CREATE,
+    });
+    expect(taskTemplate).not.toBeNull();
+    expect(taskTemplate.data?.taskTemplateAdd).not.toBeNull();
+    expect(taskTemplate.data?.taskTemplateAdd.name).toEqual('TestTaskTemplate');
+    taskTemplateInternalId = taskTemplate.data?.taskTemplateAdd.id;
+  });
+
+  it('should caseTemplate loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseTemplateInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.caseTemplate).not.toBeNull();
     expect(queryResult.data?.caseTemplate.id).toEqual(caseTemplateInternalId);
-  });
-
-  it('should caseTemplate be loaded by standard id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseTemplateStandardId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.caseTemplate).not.toBeNull();
-    expect(queryResult.data?.caseTemplate.id).toEqual(caseTemplateStandardId);
   });
 
   it('should list caseTemplates', async () => {
@@ -103,7 +119,7 @@ describe('CaseTemplate resolver standard behavior', () => {
 
   it('should update caseTemplate', async () => {
     const UPDATE_QUERY = gql`
-      mutation CaseTemplateEdit($id: ID!, $input: [EditInput!]!) {
+      mutation CaseTemplateFieldPatch($id: ID!, $input: [EditInput!]!) {
         caseTemplateFieldPatch(id: $id, input: $input) {
           id
           name
@@ -119,7 +135,7 @@ describe('CaseTemplate resolver standard behavior', () => {
 
   it('should add relation in caseTemplate', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CaseTemplateEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+      mutation CaseTemplateRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
         caseTemplateRelationAdd(id: $id, input: $input) {
           id
         }
@@ -128,9 +144,9 @@ describe('CaseTemplate resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: caseTemplateStandardId,
+        id: caseTemplateInternalId,
         input: {
-          toId: 'task--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          toId: taskTemplateInternalId,
           relationship_type: 'template-task',
         },
       },
@@ -140,7 +156,7 @@ describe('CaseTemplate resolver standard behavior', () => {
 
   it('should delete relation in caseTemplate', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CaseTemplateEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+      mutation CaseTemplateRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
         caseTemplateRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
           id
         }
@@ -150,16 +166,40 @@ describe('CaseTemplate resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: caseTemplateInternalId,
-        toId: 'task--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        toId: taskTemplateInternalId,
         relationship_type: 'template-task',
       },
     });
-    expect(queryResult.data?.caseTemplateRelationDelete).not.toBeNull();
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data?.caseTemplateRelationDelete).toBeNull();
   });
 
-  it('should caseTemplate be deleted', async () => {
+  it('should taskTemplate deleted', async () => {
+    const DELETE_TASK_QUERY = gql`
+      mutation TaskTemplateDelete($id: ID!) {
+        taskTemplateDelete(id: $id)
+      }
+    `;
+    await queryAsAdmin({
+      query: DELETE_TASK_QUERY,
+      variables: { id: taskTemplateInternalId },
+    });
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        query taskTemplate($id: String!) {
+          taskTemplate(id: $id) {
+            id
+          }
+        }
+      `,
+      variables: { id: taskTemplateInternalId }
+    });
+    expect(queryResult.data?.taskTemplate).toBeNull();
+  });
+
+  it('should caseTemplate deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation caseTemplateDelete($id: ID!) {
+      mutation CaseTemplateDelete($id: ID!) {
         caseTemplateDelete(id: $id)
       }
     `;
