@@ -5,31 +5,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
+import Overrides from '@components/settings/Overrides';
 import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceLevelProps = {
   user: Pick<User_user$data, 'user_confidence_level' | 'effective_confidence_level'>
-};
-
-type OverridesProps = {
-  overrides: ReadonlyArray<{
-    entity_type: string;
-    max_confidence: number;
-  }> | undefined;
-};
-
-const Overrides: React.FC<OverridesProps> = ({ overrides }) => {
-  const { t_i18n } = useFormatter();
-  return overrides?.length ? (
-    <div style={{ marginTop: '5px' }}>
-      <div>{t_i18n('Max Confidence is overridden for some entity types:')}</div>
-      {overrides.map((override, index) => (
-        <div key={index}>
-          {`- ${t_i18n(`entity_${override.entity_type}`)}: ${override.max_confidence}`}
-        </div>
-      ))}
-    </div>
-  ) : null;
 };
 
 const ConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {

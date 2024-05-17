@@ -317,6 +317,14 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t_i18n('Max Confidence Level')}
+                </Typography>
+                <div className="clearfix"/>
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
                 />
