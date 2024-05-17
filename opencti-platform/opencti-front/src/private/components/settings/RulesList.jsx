@@ -288,7 +288,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       y: entry.value,
     };
   });
-  const chartDataRelations = data.stixCoreRelationshipsTimeSeries.map(
+  const chartDataRelations = data.stixRelationshipsTimeSeries.map(
     (entry) => {
       const date = new Date(entry.date);
       date.setDate(date.getDate() + 15);
@@ -298,8 +298,8 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       };
     },
   );
-  const totalRelations = data.stixCoreRelationshipsNumber.total;
-  const differenceRelations = totalRelations - data.stixCoreRelationshipsNumber.count;
+  const totalRelations = data.stixRelationshipsNumber.total;
+  const differenceRelations = totalRelations - data.stixRelationshipsNumber.count;
   const totalEntities = data.stixDomainObjectsNumber.total;
   const differenceEntities = totalEntities - data.stixDomainObjectsNumber.count;
   return (
@@ -725,7 +725,7 @@ export default createRefetchContainer(
           date
           value
         }
-        stixCoreRelationshipsTimeSeries(
+        stixRelationshipsTimeSeries(
           field: "created_at"
           relationship_type: ["stix-relationship"]
           operation: count
@@ -744,7 +744,7 @@ export default createRefetchContainer(
           total
           count
         }
-        stixCoreRelationshipsNumber(
+        stixRelationshipsNumber(
           relationship_type: ["stix-relationship"]
           onlyInferred: true
           endDate: $endDate
