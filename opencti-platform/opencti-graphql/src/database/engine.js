@@ -1692,15 +1692,25 @@ const buildLocalMustFilter = async (validFilter) => {
           });
         } else {
           for (let i = 0; i < nestedValues.length; i += 1) {
-            const nestedSearchValues = nestedValues[i].toString();
+            const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
-              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+              nestedShould.push({ query_string: { query: `${nestedSearchValue}`, fields: [nestedFieldKey] } });
             } else if (nestedOperator === 'not_eq') {
-              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              nestedMustNot.push({
+                multi_match: {
+                  fields: isDateNumericOrBooleanAttribute(nestedFieldKey) || nestedFieldKey === '_id' || isObjectFlatAttribute(nestedFieldKey) ? nestedFieldKey : `${nestedFieldKey}.keyword`,
+                  query: nestedSearchValue.toString(),
+                }
+              });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValue } } });
             } else { // nestedOperator = 'eq'
-              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              nestedShould.push({
+                multi_match: {
+                  fields: isDateNumericOrBooleanAttribute(nestedFieldKey) || nestedFieldKey === '_id' || isObjectFlatAttribute(nestedFieldKey) ? nestedFieldKey : `${nestedFieldKey}.keyword`,
+                  query: nestedSearchValue.toString(),
+                }
+              });
             }
           }
         }
