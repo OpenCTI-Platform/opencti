@@ -2,7 +2,7 @@ import { logApp } from '../config/conf';
 import { BULK_TIMEOUT, elBulk, elList } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_DATA_INDICES } from '../database/utils';
-import { aliases, iAliasedIds, xOpenctiAliases } from '../schema/attribute-definition';
+import { iAliasedIds } from '../schema/attribute-definition';
 import { FilterOperator } from '../generated/graphql';
 import { generateAliasesIdsForInstance } from '../schema/identifier';
 
@@ -23,15 +23,11 @@ export const up = async (next) => {
   };
   const filters = {
     mode: 'or',
-    filters: [
-      { key: xOpenctiAliases.name, values: [], operator: FilterOperator.NotNil },
-      { key: aliases.name, values: [], operator: FilterOperator.NotNil }
-    ],
+    filters: [{ key: iAliasedIds.name, values: [], operator: FilterOperator.NotNil }],
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true, callback };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
-
   logApp.info(`${message} > done`);
   next();
 };
