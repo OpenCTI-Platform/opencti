@@ -122,6 +122,7 @@ enum DataComponentsOrdering {
     updated_at
     x_opencti_workflow_id
     confidence
+    _score
 }
 
 # Relay connections

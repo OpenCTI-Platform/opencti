@@ -146,6 +146,7 @@ enum TasksOrdering {
   confidence
   due_date
   objectAssignee
+  _score
 }
 
 type TaskEdge {

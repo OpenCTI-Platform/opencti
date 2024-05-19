@@ -18,6 +18,7 @@ enum IndicatorsOrdering {
   objectMarking
   creator
   createdBy
+  _score
 }
 type IndicatorConnection {
   pageInfo: PageInfo!

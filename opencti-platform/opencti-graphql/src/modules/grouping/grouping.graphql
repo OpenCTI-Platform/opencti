@@ -146,6 +146,7 @@ enum GroupingsOrdering {
     objectMarking
     x_opencti_workflow_id
     creator
+    _score
 }
 
 # Relay connections

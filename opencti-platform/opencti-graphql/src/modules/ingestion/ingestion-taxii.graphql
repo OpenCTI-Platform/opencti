@@ -37,6 +37,7 @@ enum IngestionTaxiiOrdering {
     updated_at
     uri
     version
+    _score
 }
 type IngestionTaxiiConnection {
     pageInfo: PageInfo!

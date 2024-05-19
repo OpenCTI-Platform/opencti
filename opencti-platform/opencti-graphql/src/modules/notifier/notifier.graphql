@@ -2,6 +2,7 @@ enum NotifierOrdering {
     name
     created
     connector
+    _score
 }
 
 type NotifierParameter {

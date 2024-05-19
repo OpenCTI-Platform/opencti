@@ -127,6 +127,7 @@ enum EventsOrdering {
     x_opencti_workflow_id
     start_time
     stop_time
+    _score
 }
 
 # Relay connections

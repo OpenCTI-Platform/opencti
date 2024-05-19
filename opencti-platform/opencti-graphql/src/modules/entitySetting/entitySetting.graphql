@@ -50,6 +50,7 @@ type EntitySetting implements InternalObject & BasicObject {
 # Ordering
 enum EntitySettingsOrdering {
   target_type
+  _score
 }
 
 # Relay connections

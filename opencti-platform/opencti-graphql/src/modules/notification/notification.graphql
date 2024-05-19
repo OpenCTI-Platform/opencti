@@ -19,6 +19,7 @@ enum TriggersOrdering {
     event_types
     trigger_type
     notifiers
+    _score
 }
 enum TriggerType {
     live
@@ -111,6 +112,7 @@ input TriggerActivityDigestAddInput {
 enum NotificationsOrdering {
     name
     created
+    _score
 }
 type NotificationCount {
     user_id: String
