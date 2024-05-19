@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
+import EditEntityControlledDial from 'src/components/EditEntityButton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { externalReferenceEditionOverviewFocus } from './ExternalReferenceEditionOverview';
@@ -51,6 +52,7 @@ ExternalReferenceEditionProps
             <ExternalReferenceEditionContainer
               externalReference={props.externalReference}
               handleClose={handleClose}
+              controlledDial={EditEntityControlledDial()}
             />
           );
         }

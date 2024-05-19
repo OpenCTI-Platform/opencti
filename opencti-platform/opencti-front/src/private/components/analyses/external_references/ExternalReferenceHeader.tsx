@@ -2,6 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import Security from '../../../../utils/Security';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
@@ -22,14 +23,21 @@ const useStyles = makeStyles(() => ({
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
   PopoverComponent: ReactElement<{ id: string }>;
+  EditComponent?: JSX.Element;
 }
 
 const ExternalReferenceHeaderComponent: FunctionComponent<
 ExternalReferenceHeaderComponentProps
-> = ({ externalReference, PopoverComponent }) => {
+> = ({ externalReference, PopoverComponent, EditComponent }) => {
   const classes = useStyles();
 
-  return (
+  // Styled components
+  const FlexHeader = styled('div')({
+    display: 'flex',
+    justifyContent: 'space-between',
+  });
+
+  return (<FlexHeader>
     <div>
       <Typography
         variant="h1"
@@ -45,7 +53,8 @@ ExternalReferenceHeaderComponentProps
       </Security>
       <div className="clearfix" />
     </div>
-  );
+    {EditComponent}
+  </FlexHeader>);
 };
 
 const ExternalReferenceHeader = createFragmentContainer(
