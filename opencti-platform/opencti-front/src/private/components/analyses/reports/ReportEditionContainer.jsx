@@ -1,5 +1,6 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import ReportEditionOverview from './ReportEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -7,8 +8,10 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 
 const ReportEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, report, open } = props;
+  const { handleClose, report, open, controlledDial } = props;
   const { editContext } = report;
 
   return (
@@ -16,8 +19,9 @@ const ReportEditionContainer = (props) => {
       title={t_i18n('Update a report')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <ReportEditionOverview
         report={report}
