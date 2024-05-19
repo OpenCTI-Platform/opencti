@@ -17,8 +17,9 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import NotePopover from './NotePopover';
 import inject18n from '../../../../components/i18n';
 import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import NoteEdition from './NoteEdition';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -100,6 +101,9 @@ class RootNote extends Component {
                         <ContainerHeader
                           container={note}
                           PopoverComponent={<NotePopover note={note} />}
+                          EditComponent={<CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
+                            <NoteEdition noteId={note.id} />
+                          </CollaborativeSecurity>}
                           redirectToContent={true}
                         />
                       }
@@ -107,6 +111,9 @@ class RootNote extends Component {
                       <ContainerHeader
                         container={props.note}
                         PopoverComponent={<NotePopover note={note} />}
+                        EditComponent={<CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
+                          <NoteEdition noteId={note.id} />
+                        </CollaborativeSecurity>}
                         redirectToContent={false}
                       />
                     </CollaborativeSecurity>
@@ -146,7 +153,7 @@ class RootNote extends Component {
                       <Route
                         path="/"
                         element={
-                          <Note note={props.note} enableReferences={false}/>
+                          <Note noteFragment={props.note} enableReferences={false}/>
                         }
                       />
                       <Route

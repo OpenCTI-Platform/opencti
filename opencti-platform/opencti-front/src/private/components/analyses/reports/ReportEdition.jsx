@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import EditEntityButton from '../../../../components/EditEntityButton';
+import EditEntityControlledDial from '../../../../components/EditEntityButton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
@@ -40,7 +40,7 @@ class ReportEdition extends Component {
               <ReportEditionContainer
                 report={props.report}
                 handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityButton}
+                controlledDial={EditEntityControlledDial()}
               />
             );
           }
