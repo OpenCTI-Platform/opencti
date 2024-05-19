@@ -1,12 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import { describe, expect, it } from 'vitest';
-import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
+import { generateAliasesId, generateStandardId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
 import '../../../src/modules/index';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject'; // Need to import registration files
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject'; // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -19,11 +19,10 @@ describe('identifier', () => {
   });
 
   it('should aliases generated with normalization', () => {
-    const ids = generateAliasesId(['APT-28', 'SnowFlake'], {});
-    expect(ids).toEqual([
-      'aliases--d8ac97ba-19f1-5fa1-8cd6-e956915f4edd',
-      'aliases--7312795f-839a-5733-b5f4-c6010ced7a2e',
-    ]);
+    const classicId = generateStandardId(ENTITY_TYPE_MALWARE, { name: 'SnowFlake' });
+    const aliasId = generateAliasesId(['SnowFlake'], { name: 'APT28', entity_type: ENTITY_TYPE_MALWARE }).at(0);
+    expect(classicId).toEqual('malware--1bc77052-c136-5258-b95d-fc8117fba3fd');
+    expect(classicId).toEqual(aliasId);
   });
 
   it('should stix id v5 always added', () => {

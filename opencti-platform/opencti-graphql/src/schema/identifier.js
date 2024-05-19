@@ -7,14 +7,7 @@ import { DatabaseError, UnsupportedError } from '../config/errors';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_INCIDENT,
-  isStixDomainObject,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
-  isStixObjectAliased
-} from './stixDomainObject';
+import { isStixDomainObject, isStixObjectAliased } from './stixDomainObject';
 import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
@@ -25,7 +18,6 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
@@ -445,41 +437,24 @@ export const generateStandardId = (type, data) => {
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);
 };
-export const generateAliasesId = (rawAliases, instance = {}) => {
-  const aliases = R.uniq(rawAliases);
-  const additionalFields = {};
-  if (isStixDomainObjectIdentity(instance.entity_type)) {
-    additionalFields.identity_class = instance.identity_class;
-  }
-  if (isStixDomainObjectLocation(instance.entity_type)) {
-    additionalFields.x_opencti_location_type = instance.x_opencti_location_type;
-  }
-  if (instance.entity_type === ENTITY_TYPE_ATTACK_PATTERN && instance.x_mitre_id) {
-    additionalFields.x_mitre_id = instance.x_mitre_id;
-  }
-  if (instance.entity_type === ENTITY_TYPE_VOCABULARY) {
-    additionalFields.category = instance.category;
-  }
-  if (instance.entity_type === ENTITY_TYPE_INCIDENT && instance.created) {
-    additionalFields.created = instance.created;
-  }
-  return R.uniq(aliases.map((alias) => {
-    const dataUUID = { name: normalizeName(alias), ...additionalFields };
-    const uuid = idGen('ALIAS', alias, dataUUID, OPENCTI_NAMESPACE);
-    return `aliases--${uuid}`;
-  }));
-};
-
-export const generateAliasesIdsForInstance = (instance) => {
+export const generateAliasesId = (rawAliases, instance) => {
   if (isEmptyField(instance.entity_type)) {
     throw UnsupportedError('Cant generate alias without entity type ', { instance });
   }
-  if (isStixObjectAliased(instance.entity_type)) {
-    const aliases = [instance.name, ...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
-    return generateAliasesId(aliases, instance);
+  if (!isStixObjectAliased(instance.entity_type)) {
+    return [];
   }
-  return [];
+  const aliases = R.uniq(rawAliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+  return R.uniq(aliases.map((alias) => {
+    const instanceWithAliasAsName = { ...instance, name: alias };
+    return generateStandardId(instance.entity_type, instanceWithAliasAsName);
+  }));
 };
+export const generateAliasesIdsForInstance = (instance) => {
+  const aliases = [...(instance.aliases || []), ...(instance.x_opencti_aliases || [])];
+  return generateAliasesId(aliases, instance);
+};
+
 const getHashIds = (type, hashes) => {
   const ids = [];
   if (isStixCyberObservableHashedObservable(type) && isNotEmptyField(hashes)) {

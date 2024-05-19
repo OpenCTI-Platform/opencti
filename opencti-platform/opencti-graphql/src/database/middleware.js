@@ -604,10 +604,12 @@ const depsKeys = (type) => ([
   ],
 ]);
 
-const idNormalizeDataEntity = (nameOrId, data) => (isAnId(nameOrId) ? nameOrId : generateAliasesId([nameOrId], data).at(0));
+const idVocabulary = (nameOrId, category) => {
+  return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
+};
 
-const idLabel = (label) => {
-  return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
+const idLabel = (labelOrId) => {
+  return isAnId(labelOrId) ? labelOrId : generateStandardId(ENTITY_TYPE_LABEL, { value: labelOrId });
 };
 
 /**
@@ -637,7 +639,6 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const expectedIds = [];
     const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
     let embeddedFromResolution;
-    let forceAliases = false;
     const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
@@ -657,10 +658,9 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
           const category = getVocabularyCategoryForField(destKey, type);
-          const elements = ids.map((i) => ({ id: generateStandardId(ENTITY_TYPE_VOCABULARY, { name: i, category }), destKey, multiple: isListing }));
-          elements.push(...ids.map((i) => ({ id: idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }), destKey, multiple: isListing })));
+          const elements = ids.map((i) => idVocabulary(i, category))
+            .map((lid) => ({ id: lid, destKey, multiple: isListing }));
           fetchingIds.push(...elements);
-          forceAliases = true;
         } else if (isListing) {
           const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
           fetchingIds.push(...elements);
@@ -682,7 +682,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
-    const findOpts = { forceAliases, indices: READ_DATA_INDICES };
+    const findOpts = { forceAliases: true, indices: READ_DATA_INDICES };
     const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), findOpts);
     let embeddedFromPromise = Promise.resolve();
     if (embeddedFromResolution) {
@@ -1619,7 +1619,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           }
         }
         // Regenerated the internal ids with the instance target aliases
-        const aliasesId = generateAliasesId(R.uniq([askedModificationName, ...aliases]), instance);
+        const aliasesId = generateAliasesId([askedModificationName, ...aliases], instance);
         const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasInput);
       } else if (aliasesInput) {
@@ -1629,7 +1629,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           aliasesInput.value = R.uniqBy((e) => normalizeName(e), [...aliasesInput.value, ...(instance[aliasField] || [])]);
         }
         // Internal ids alias must be generated again
-        const aliasesId = generateAliasesId(R.uniq([instance.name, ...aliasesInput.value]), instance);
+        const aliasesId = generateAliasesId([instance.name, ...aliasesInput.value], instance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
       }
