@@ -4,6 +4,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import { groupingEditionOverviewFocus } from './GroupingEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityButton from '../../../../components/EditEntityButton';
 
 export const groupingEditionQuery = graphql`
   query GroupingEditionContainerQuery($id: String!) {
@@ -33,6 +34,7 @@ const GroupingEdition = ({ groupingId }) => {
             <GroupingEditionContainer
               grouping={props.grouping}
               handleClose={handleClose}
+              controlledDial={EditEntityButton}
             />
           );
         }

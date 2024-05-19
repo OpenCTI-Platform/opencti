@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import useHelper from '../../../../utils/hooks/useHelper';
 import GroupingDetails from './GroupingDetails';
 import GroupingEdition from './GroupingEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -21,6 +22,8 @@ const useStyles = makeStyles(() => ({
 
 const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <div data-testid="grouping-details-page">
       <Grid
@@ -45,9 +48,11 @@ const GroupingComponent = ({ grouping }) => {
         stixCoreObjectOrStixCoreRelationshipId={grouping.id}
         defaultMarkings={grouping.objectMarking ?? []}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <GroupingEdition groupingId={grouping.id} />
-      </Security>
+      {!FABReplaced
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <GroupingEdition groupingId={grouping.id} />
+        </Security>
+      }
     </div>
   );
 };
