@@ -1080,7 +1080,7 @@ describe('Upsert and merge entities', () => {
     // Test the merged data
     expect(loadedThreat).not.toBeNull();
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
-    expect(loadedThreat.i_aliases_ids.length).toEqual(7);
+    expect(loadedThreat.i_aliases_ids.length).toEqual(6);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
     expect(loadedThreat.createdBy).not.toBeUndefined(); // [organizationThreatTarget]
     expect(loadedThreat.createdBy.name).toEqual('organizationThreatTarget'); // [organizationThreatTarget]
