@@ -880,7 +880,7 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.x_opencti_stix_ids.length).toEqual(1);
-    expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
+    expect(createdMalware.i_aliases_ids.length).toEqual(0);
     let loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
     expect(loadMalware['object-marking'].length).toEqual(2);
