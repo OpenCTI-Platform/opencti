@@ -1619,7 +1619,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           }
         }
         // Regenerated the internal ids with the instance target aliases
-        const aliasesId = generateAliasesId([askedModificationName, ...aliases], instance);
+        const aliasesId = generateAliasesId(aliases, instance);
         const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasInput);
       } else if (aliasesInput) {
@@ -1629,7 +1629,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           aliasesInput.value = R.uniqBy((e) => normalizeName(e), [...aliasesInput.value, ...(instance[aliasField] || [])]);
         }
         // Internal ids alias must be generated again
-        const aliasesId = generateAliasesId([instance.name, ...aliasesInput.value], instance);
+        const aliasesId = generateAliasesId(aliasesInput.value, instance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
       }
