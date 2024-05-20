@@ -18,7 +18,8 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_redacted_inputs": ["password", "secret", "token"]
+      "logs_redacted_inputs": ["password", "secret", "token"],
+      "extended_error_message": false
     },
     "audit_logs": {
       "logs_files": true,

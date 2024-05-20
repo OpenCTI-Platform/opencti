@@ -96,6 +96,8 @@ nconf.file('default', resolveEnvFile('default'));
 const appLogLevel = nconf.get('app:app_logs:logs_level');
 const appLogFileTransport = booleanConf('app:app_logs:logs_files', true);
 const appLogConsoleTransport = booleanConf('app:app_logs:logs_console', true);
+const appLogExtendedErrors = booleanConf('app:app_logs:extended_error_message', false);
+
 const appLogTransports = [];
 const logsDirname = nconf.get('app:app_logs:logs_directory');
 if (appLogFileTransport) {
@@ -220,12 +222,19 @@ export const logApp = {
     const isError = messageOrError instanceof Error;
     let message = isError ? messageOrError.message : messageOrError;
     let error = null;
+
     if (isError && !(messageOrError instanceof ApolloError)) {
       error = UnknownError(message, { cause: messageOrError });
       message = 'Platform unmanaged direct error';
     }
-    logApp._log(level, message, error, meta);
-    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
+
+    let finalMetaContent = meta;
+    if (appLogExtendedErrors) {
+      finalMetaContent = { ...meta, ...messageOrError.data };
+    }
+
+    logApp._log(level, message, error, finalMetaContent);
+    supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...finalMetaContent, source: 'backend' }));
   },
   debug: (message, meta = {}) => logApp._log('debug', message, null, meta),
   info: (message, meta = {}) => logApp._log('info', message, null, meta),

@@ -10,7 +10,8 @@
     "app_logs": {
       "logs_level": "info",
       "logs_files": false,
-      "logs_console": true
+      "logs_console": true,
+      "extended_error_message": true
     },
     "audit_logs": {
       "logs_files": false,
