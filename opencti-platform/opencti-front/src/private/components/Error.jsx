@@ -17,9 +17,13 @@ export const SimpleError = () => {
     <div style={{ paddingTop: 10 }}>
       <Alert severity="error">
         <span style={{ marginRight: 10 }}>
-          {t_i18n('An unknown error occurred. Please provide a')}&nbsp;
-          <Link to="/dashboard/settings/support">{t_i18n('support package')}</Link>&nbsp;
-          {t_i18n(' to your administrator or OpenCTI maintainers')}
+          {t_i18n(
+            '',
+            {
+              id: 'An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers',
+              values: { link_support_package: <Link to="/dashboard/settings/support">{t_i18n('support package')}</Link> },
+            },
+          )}
         </span>
       </Alert>
     </div>
