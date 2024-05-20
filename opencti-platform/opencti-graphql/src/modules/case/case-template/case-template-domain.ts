@@ -10,7 +10,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../../domain/stixObjectOrStixRelationship';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
-import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
+import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 import type { BasicStoreEntityCase } from '../case-types';
 
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
@@ -74,14 +74,15 @@ export const caseTemplateAddRelation = async (context: AuthContext, user: AuthUs
   return relation.to;
 };
 export const caseTemplateDeleteRelation = async (context: AuthContext, user: AuthUser, caseTemplateId: string, toId: string, relationshipType: string) => {
-  const relation = await stixObjectOrRelationshipDeleteRefRelation(context, user, caseTemplateId, toId, relationshipType, ABSTRACT_INTERNAL_OBJECT);
+  const caseTemplate = await stixObjectOrRelationshipDeleteRefRelation(context, user, caseTemplateId, toId, relationshipType, ABSTRACT_INTERNAL_OBJECT);
+  const task = await storeLoadById(context, user, toId, ENTITY_TYPE_TASK_TEMPLATE) as BasicStoreEntityTaskTemplate;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `removes Task template \`${extractEntityRepresentativeName(relation.from)}\` for case template \`${relation.to.name}\``,
+    message: `removes Task template \`${task.name}\` for case template \`${caseTemplate.name}\``,
     context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: { caseTemplateId, toId, relationshipType } }
   });
-  return relation.to;
+  return caseTemplate.to;
 };
