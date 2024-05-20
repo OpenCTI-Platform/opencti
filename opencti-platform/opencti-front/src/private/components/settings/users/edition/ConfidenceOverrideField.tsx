@@ -38,7 +38,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
-  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => entity_type.type !== 'entity_Stix-Meta-Objects');
+  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => entity_type.type !== 'entity_Stix-Meta-Objects' && entity_type.type !== 'entity_Stix-Cyber-Observables');
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const { value, name } = field;
