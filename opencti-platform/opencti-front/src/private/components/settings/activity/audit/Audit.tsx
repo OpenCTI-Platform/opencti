@@ -35,6 +35,8 @@ import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import Security from '../../../../../utils/Security';
+import useGranted, { SETTINGS_KNOWLEDGEACTIVITY, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -98,7 +100,19 @@ const Audit = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
+  const isUserHasSecurity = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const isUserHasActivity = useGranted([SETTINGS_KNOWLEDGEACTIVITY]);
   const { t_i18n } = useFormatter();
+
+  let type = ['History'];
+  if (isUserHasSecurity && isUserHasActivity) {
+    type = ['Activity', 'History'];
+  } else if (isUserHasSecurity) {
+    type = ['Activity'];
+  } else if (isUserHasActivity) {
+    type = ['History'];
+  }
+
   const {
     viewStorage,
     paginationOptions,
@@ -112,7 +126,7 @@ const Audit = () => {
       sortBy: 'timestamp',
       orderAsc: false,
       openExports: false,
-      types: ['Activity'],
+      types: type,
       count: 25,
     },
   );
@@ -191,21 +205,23 @@ const Audit = () => {
   };
   const extraFields = (
     <div style={{ marginLeft: 10 }}>
-      <FormControlLabel
-        value="start"
-        control={
-          <Checkbox
-            style={{ padding: 7 }}
-            onChange={() => {
-              const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
-              storageHelpers.handleAddProperty('types', newTypes);
-            }}
-            checked={types?.length === 2}
-          />
-        }
-        label={t_i18n('Include knowledge')}
-        labelPlacement="end"
-      />
+      <Security needs={[SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY]}>
+        <FormControlLabel
+          value="start"
+          control={
+            <Checkbox
+              style={{ padding: 7 }}
+              onChange={() => {
+                const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
+                storageHelpers.handleAddProperty('types', newTypes);
+              }}
+              checked={types?.length === 2}
+            />
+          }
+          label={t_i18n('Include knowledge')}
+          labelPlacement="end"
+        />
+      </Security>
     </div>
   );
   return (
