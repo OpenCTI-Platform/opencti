@@ -23,6 +23,7 @@ function EditEntityControlledDial({
 }: EditEntityControlledDialOptions = {}) {
   const EditEntityButton = ({ onOpen }: { onOpen: () => void }) => {
     const { t_i18n } = useFormatter();
+    const buttonLabel = t_i18n('Edit');
     const StyledEditButton = styled(Button)({
       margin,
     });
@@ -31,8 +32,9 @@ function EditEntityControlledDial({
         onClick={onOpen}
         variant={variant}
         size={size}
+        aria-label={buttonLabel}
       >
-        {t_i18n('Edit')} <Edit fontSize={size} />
+        {buttonLabel} <Edit fontSize={size} />
       </StyledEditButton>
     );
   };
