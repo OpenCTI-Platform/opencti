@@ -47,18 +47,12 @@ export const resolveTypesForRelationship = (
 };
 
 export const resolveTypesForRelationshipRef = (
-  schemaRelationsTypesMapping: Map<string, readonly string[]>,
+  schemaRelationsTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>,
   entityType: string,
   relationshipRefKey: string,
 ) => {
-  const types: string[] = [];
-  schemaRelationsTypesMapping.forEach((values, key) => {
-    if (values.includes(relationshipRefKey)) {
-      const [from, to] = key.split('_');
-      if (from.includes(entityType) || from === '*') {
-        types.push(to);
-      }
-    }
-  });
-  return uniq(types);
+  return schemaRelationsTypesMapping
+    .get(entityType)
+    ?.find((ref) => ref.name === relationshipRefKey)
+    ?.toTypes ?? [];
 };

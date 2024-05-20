@@ -34,7 +34,7 @@ export interface UserContextType {
     smos: { id: string, label: string }[]
     scrs: { id: string, label: string }[]
     schemaRelationsTypesMapping: Map<string, readonly string[]>
-    schemaRelationsRefTypesMapping: Map<string, readonly string[]>
+    schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>
     filterKeysSchema: Map<string, Map<string, FilterDefinition>>
   } | undefined;
 }
