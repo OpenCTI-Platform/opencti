@@ -98,7 +98,7 @@ class FeedLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.columns.width }}
               >
-                {node.feed_attributes.map((n) => n.attribute).join(', ')}
+                {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
               </div>
               <div
                 className={classes.filtersItem}
@@ -135,6 +135,7 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
     fragment FeedLine_node on Feed {
       id
       name
+      separator
       rolling_time
       filters
       include_header

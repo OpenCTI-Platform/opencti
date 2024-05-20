@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
@@ -23,9 +21,14 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig } from 'formik/dist/types';
+import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
+import { FeedAttributeMappingInput, MemberAccessInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
+import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -38,6 +41,9 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -59,8 +65,9 @@ export const feedCreationAllTypesQuery = graphql`
         }
     }
 `;
-
-const styles = (theme) => ({
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
+const useStyles = makeStyles((theme: Theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -68,26 +75,8 @@ const styles = (theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
   step: {
     position: 'relative',
@@ -102,28 +91,10 @@ const styles = (theme) => ({
   formControl: {
     width: '100%',
   },
-  stepType: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepField: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepValues: {
-    paddingRight: 20,
-    margin: 0,
-  },
   stepCloseButton: {
     position: 'absolute',
     top: -20,
     right: -20,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
   },
   buttonAdd: {
     width: '100%',
@@ -137,7 +108,7 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
 const feedCreationMutation = graphql`
     mutation FeedCreationMutation($input: FeedAddInput!) {
@@ -147,30 +118,43 @@ const feedCreationMutation = graphql`
     }
 `;
 
-const feedCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  separator: Yup.string().required(t('This field is required')),
-  rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().required(t('This field is required')),
+interface FeedAddInput {
+  name: string;
+  description: string;
+  filters: string;
+  separator: string;
+  feed_date_attribute: string;
+  rolling_time: number;
+  include_header: boolean;
+  feed_types: string[];
+  feed_public: boolean;
+  feed_attributes: FeedAttributeMappingInput[];
+  authorized_members: MemberAccessInput[];
+}
+
+interface FeedCreationFormProps {
+  paginationOptions: PaginationOptions
+}
+
+const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
+  name: Yup.string().required(t_i18n('This field is required')),
+  separator: Yup.string().required(t_i18n('This field is required')),
+  rolling_time: Yup.number().required(t_i18n('This field is required')),
+  feed_types: Yup.array().required(t_i18n('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_feeds',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const FeedCreation = (props) => {
-  const { t, classes } = props;
-  const [selectedTypes, setSelectedTypes] = useState([]);
+const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
+  const { paginationOptions } = props;
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
-  const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
+
+  // TODO: typing this state properly implies deep refactoring
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
 
@@ -180,7 +164,7 @@ const FeedCreation = (props) => {
     setFeedAttributes({ 0: {} });
   };
 
-  const handleSelectTypes = (types) => {
+  const handleSelectTypes = (types: string[]) => {
     setSelectedTypes(types);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
@@ -199,41 +183,48 @@ const FeedCreation = (props) => {
     }
     setFeedAttributes({ ...updatedFeedAttributes });
   };
-
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const [commit] = useApiMutation(feedCreationMutation);
+  const onSubmit: FormikConfig<FeedAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
       mappings: R.values(n.mappings),
     }));
     const finalValues = R.pipe(
-      R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
+      R.assoc('rolling_time', parseInt(String(values.rolling_time), 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.assoc(
         'authorized_members',
-        values.authorized_members.map(({ value }) => ({
-          id: value,
+        values.authorized_members.map(({ id }) => ({
+          id,
           access_right: 'view',
         })),
       ),
     )(values);
-    commitMutation({
-      mutation: feedCreationMutation,
+    setSubmitting(true);
+    commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('feedAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          props.paginationOptions,
-          newEdge,
-        );
+        const newEdge = payload?.setLinkedRecord(payload, 'node');
+        if (newEdge) {
+          const container = store.getRoot();
+          const userId = container.getDataID();
+          const userProxy = store.get(userId);
+          if (userProxy) {
+            const conn = ConnectionHandler.getConnection(
+              userProxy,
+              'Pagination_feeds',
+              paginationOptions,
+            );
+            if (conn) {
+              ConnectionHandler.insertEdgeBefore(conn, newEdge);
+            }
+          }
+        }
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -269,22 +260,24 @@ const FeedCreation = (props) => {
   };
 
   const handleAddAttribute = () => {
-    const newKey = R.last(Object.keys(feedAttributes))
-      ? R.last(Object.keys(feedAttributes)) + 1
+    const allKeys = Object.keys(feedAttributes);
+    const lastKey = R.last(allKeys);
+    const newKey = lastKey
+      ? lastKey + 1
       : 0;
     setFeedAttributes(R.assoc(newKey, {}, feedAttributes));
   };
 
-  const handleRemoveAttribute = (i) => {
+  const handleRemoveAttribute = (i: string) => {
     setFeedAttributes(R.dissoc(i, feedAttributes));
   };
 
-  const handleChangeField = (i, value) => {
+  const handleChangeField = (i: string, value: string) => {
     const newFeedAttribute = R.assoc('attribute', value, feedAttributes[i]);
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
 
-  const handleChangeAttributeMapping = (i, type, value) => {
+  const handleChangeAttributeMapping = (i: string, type: string, value: string) => {
     const mapping = { type, attribute: value };
     const newFeedAttributeMapping = R.assoc(
       type,
@@ -301,56 +294,46 @@ const FeedCreation = (props) => {
 
   return (
     <Drawer
-      title={t('Create a feed')}
+      title={t_i18n('Create a feed')}
       variant={DrawerVariant.createWithPanel}
       onClose={handleClose}
     >
       {({ onClose }) => (
         <QueryRenderer
           query={feedCreationAllTypesQuery}
-          render={({ props: data }) => {
+          render={({ props: data }: { props: FeedCreationAllTypesQuery$data }) => {
             if (data && data.scoTypes && data.sdoTypes) {
-              let result = [];
-              result = [
-                ...R.pipe(
-                  R.pathOr([], ['scoTypes', 'edges']),
-                  R.map((n) => ({
-                    label: t(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                )(data),
-                ...result,
-              ];
-              result = [
-                ...R.pipe(
-                  R.pathOr([], ['sdoTypes', 'edges']),
-                  R.map((n) => ({
-                    label: t(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                )(data),
-                ...result,
-              ];
+              const resultSco = ((data as FeedCreationAllTypesQuery$data).scoTypes.edges ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.node.label}`),
+                value: n.node.label,
+                type: n.node.label,
+              }));
+              const resultSdo = ((data as FeedCreationAllTypesQuery$data).sdoTypes.edges ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.node.label}`),
+                value: n.node.label,
+                type: n.node.label,
+              }));
+              const result = [...resultSco, ...resultSdo];
               const entitiesTypes = R.sortWith(
                 [R.ascend(R.prop('label'))],
                 result,
               );
               return (
-                <Formik
+                <Formik<FeedAddInput>
                   initialValues={{
                     name: '',
                     description: '',
                     separator: ';',
+                    filters: '',
                     rolling_time: 60,
                     include_header: true,
                     feed_types: [],
                     authorized_members: [],
+                    feed_attributes: [],
                     feed_date_attribute: 'created_at',
                     feed_public: false,
                   }}
-                  validationSchema={feedCreationValidation(t)}
+                  validationSchema={feedCreationValidation(t_i18n)}
                   onSubmit={onSubmit}
                   onReset={onClose}
                 >
@@ -360,14 +343,14 @@ const FeedCreation = (props) => {
                         component={TextField}
                         variant="standard"
                         name="name"
-                        label={t('Name')}
+                        label={t_i18n('Name')}
                         fullWidth={true}
                       />
                       <Field
                         component={TextField}
                         variant="standard"
                         name="description"
-                        label={t('Description')}
+                        label={t_i18n('Description')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -379,14 +362,14 @@ const FeedCreation = (props) => {
                         style={{ position: 'relative' }}
                       >
                         <AlertTitle>
-                          {t('Make this feed public and available to anyone')}
+                          {t_i18n('Make this feed public and available to anyone')}
                         </AlertTitle>
                         <FormControlLabel
                           control={<Switch />}
                           style={{ marginLeft: 1 }}
                           name="feed_public"
                           onChange={(_, checked) => setFieldValue('feed_public', checked)}
-                          label={t('Public feed')}
+                          label={t_i18n('Public feed')}
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
@@ -394,7 +377,7 @@ const FeedCreation = (props) => {
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
-                            helpertext={t('Let the field empty to grant all authenticated users')}
+                            helpertext={t_i18n('Let the field empty to grant all authenticated users')}
                             name="authorized_members"
                           />
                         )}
@@ -403,7 +386,7 @@ const FeedCreation = (props) => {
                         component={TextField}
                         variant="standard"
                         name="separator"
-                        label={t('Separator')}
+                        label={t_i18n('Separator')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -412,14 +395,14 @@ const FeedCreation = (props) => {
                         variant="standard"
                         type="number"
                         name="rolling_time"
-                        label={t('Rolling time (in minutes)')}
+                        label={t_i18n('Rolling time (in minutes)')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                         InputProps={{
                           endAdornment: (
                             <InputAdornment position="end">
                               <Tooltip
-                                title={t(
+                                title={t_i18n(
                                   'Return all objects matching the filters that have been updated since this amount of minutes',
                                 )}
                               >
@@ -437,19 +420,20 @@ const FeedCreation = (props) => {
                         component={SelectField}
                         variant="standard"
                         name="feed_date_attribute"
-                        label={t('Base attribute')}
+                        label={t_i18n('Base attribute')}
                         fullWidth={true}
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
-                      ><MenuItem key={'created_at'} value={'created_at'}>{t('Creation date')}</MenuItem>
-                        <MenuItem key={'updated_at'} value={'updated_at'}>{t('Update date')}</MenuItem>
+                      >
+                        <MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
+                        <MenuItem key={'updated_at'} value={'updated_at'}>{t_i18n('Update date')}</MenuItem>
                       </Field>
                       <Field
                         component={SelectField}
                         variant="standard"
                         name="feed_types"
-                        onChange={(_, value) => handleSelectTypes(value)}
-                        label={t('Entity types')}
+                        onChange={(_: unknown, value: string[]) => handleSelectTypes(value)}
+                        label={t_i18n('Entity types')}
                         fullWidth={true}
                         multiple={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
@@ -464,7 +448,7 @@ const FeedCreation = (props) => {
                         component={SwitchField}
                         type="checkbox"
                         name="include_header"
-                        label={t('Include headers in the feed')}
+                        label={t_i18n('Include headers in the feed')}
                         containerstyle={{ marginTop: 20 }}
                       />
                       <Box sx={{ paddingTop: 4,
@@ -522,11 +506,10 @@ const FeedCreation = (props) => {
                                   <MuiTextField
                                     variant="standard"
                                     name="attribute"
-                                    label={t('Column')}
+                                    label={t_i18n('Column')}
                                     fullWidth={true}
-                                    value={feedAttributes[i].attribute}
-                                    onChange={(event) => handleChangeField(i, event.target.value)
-                                    }
+                                    value={feedAttributes[i].attribute || ''}
+                                    onChange={(event) => handleChangeField(i, event.target.value)}
                                   />
                                 </Grid>
                                 {selectedTypes.map((selectedType) => (
@@ -539,7 +522,7 @@ const FeedCreation = (props) => {
                                       className={classes.formControl}
                                     >
                                       <InputLabel>
-                                        {t(`entity_${selectedType}`)}
+                                        {t_i18n(`entity_${selectedType}`)}
                                       </InputLabel>
                                       <QueryRenderer
                                         query={
@@ -548,24 +531,14 @@ const FeedCreation = (props) => {
                                         variables={{
                                           elementType: [selectedType],
                                         }}
-                                        render={({ props: resultProps }) => {
+                                        render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
                                           if (
                                             resultProps
                                             && resultProps.schemaAttributeNames
                                           ) {
-                                            let attributes = R.pipe(
-                                              R.map((n) => n.node),
-                                              R.filter(
-                                                (n) => !R.includes(
-                                                  n.value,
-                                                  ignoredAttributesInFeeds,
-                                                )
-                                                  && !n.value.startsWith('i_'),
-                                              ),
-                                            )(
-                                              resultProps.schemaAttributeNames
-                                                .edges,
-                                            );
+                                            const allAttributes = resultProps.schemaAttributeNames.edges.map((edge) => (edge.node));
+                                            let attributes = allAttributes.filter((node) => (!ignoredAttributesInFeeds.includes(node.value) && !node.value.startsWith('i_')));
+
                                             if (
                                               attributes.filter(
                                                 (n) => n.value === 'hashes',
@@ -587,19 +560,8 @@ const FeedCreation = (props) => {
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
-                                                value={
-                                                  feedAttributes[i]
-                                                    ?.mappings
-                                                  && feedAttributes[i].mappings[
-                                                    selectedType
-                                                  ]?.attribute
-                                                }
-                                                onChange={(event) => handleChangeAttributeMapping(
-                                                  i,
-                                                  selectedType,
-                                                  event.target.value,
-                                                )
-                                                }
+                                                value={feedAttributes[i]?.mappings?.[selectedType]?.attribute || ''}
+                                                onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value) }
                                               >
                                                 {attributes.map(
                                                   (attribute) => (
@@ -623,7 +585,7 @@ const FeedCreation = (props) => {
                               </Grid>
                             </div>
                           ))}
-                          <div className={classes.add}>
+                          <div className={classes.buttonAdd}>
                             <Button
                               disabled={selectedTypes.length === 0}
                               variant="contained"
@@ -645,7 +607,7 @@ const FeedCreation = (props) => {
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
                         >
-                          {t('Cancel')}
+                          {t_i18n('Cancel')}
                         </Button>
                         <Button
                           variant="contained"
@@ -654,7 +616,7 @@ const FeedCreation = (props) => {
                           disabled={isSubmitting || !areAttributesValid()}
                           classes={{ root: classes.button }}
                         >
-                          {t('Create')}
+                          {t_i18n('Create')}
                         </Button>
                       </div>
                     </Form>
@@ -670,14 +632,4 @@ const FeedCreation = (props) => {
   );
 };
 
-FeedCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(FeedCreation);
+export default FeedCreation;
