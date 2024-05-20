@@ -22,21 +22,23 @@ export type FilterDefinition = {
   subFilters?: FilterDefinition[] | null;
 };
 
+export type SchemaType = {
+  scos: { id: string, label: string }[]
+  sdos: { id: string, label: string }[]
+  smos: { id: string, label: string }[]
+  scrs: { id: string, label: string }[]
+  schemaRelationsTypesMapping: Map<string, readonly string[]>
+  schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>
+};
+
 export interface UserContextType {
   me: RootPrivateQuery$data['me'] | undefined;
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;
-  schema: {
-    scos: { id: string, label: string }[]
-    sdos: { id: string, label: string }[]
-    smos: { id: string, label: string }[]
-    scrs: { id: string, label: string }[]
-    schemaRelationsTypesMapping: Map<string, readonly string[]>
-    schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string, readonly toTypes: readonly string[] }[]>
-    filterKeysSchema: Map<string, Map<string, FilterDefinition>>
-  } | undefined;
+  schema: SchemaType | undefined;
 }
 
 const defaultContext = {

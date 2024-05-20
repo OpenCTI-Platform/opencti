@@ -27,14 +27,13 @@ import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
-import { stixDomainObjectThreatDiamondQuery } from '@components/common/stix_domain_objects/StixDomainObjectThreatDiamondQuery';
-import { StixDomainObjectThreatDiamondQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatDiamondQuery.graphql';
-import StixDomainObjectDiamond from '@components/common/stix_domain_objects/StixDomainObjectDiamond';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
+import StixCoreObjectReportsHorizontalBars from '../../analyses/reports/StixCoreObjectReportsHorizontalBars';
+import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -47,6 +46,7 @@ import {
   emptyFilterGroup,
   getDefaultFilterObject,
   isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   useFilterDefinition,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
@@ -146,9 +146,17 @@ interface StixDomainObjectThreatKnowledgeProps {
 const StixDomainObjectThreatKnowledge: FunctionComponent<
 StixDomainObjectThreatKnowledgeProps
 > = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
+  /*
+    TODO
+    we should reword the component to be able to manipulate data easier
+    in fact, page update is complicated, if not impossible
+    it could be interesting to use the relay provider and rework the uses of graphql queries
+  */
   const classes = useStyles();
   const { n, t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
+  // const BULK_RELATIONS_FF = isFeatureEnable('4352_BULK_RELATIONS');
+  const BULK_RELATIONS_FF = true;
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);

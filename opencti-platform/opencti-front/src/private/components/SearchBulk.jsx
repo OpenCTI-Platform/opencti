@@ -17,6 +17,7 @@ import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ToggleButtonGroup } from '@mui/material';
+import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -286,20 +287,7 @@ const SearchBulk = () => {
                 mode: 'and',
                 filters: [
                   {
-                    key: [
-                      'name',
-                      'aliases',
-                      'x_opencti_aliases',
-                      'x_mitre_id',
-                      'value',
-                      'subject',
-                      'attribute_abstract',
-                      'hashes.MD5',
-                      'hashes.SHA-1',
-                      'hashes.SHA-256',
-                      'hashes.SHA-512',
-                      'x_opencti_additional_names',
-                    ],
+                    key: allEntitiesKeyList,
                     values,
                   },
                 ],
