@@ -97,9 +97,8 @@ RUN set -ex \
         "${USERNAME}" \
     && install -o "${UID}" -g "${GID}" -m 0755 -d '/opt/opencti/logs'
 
-RUN mkdir -p /opt/opencti/logs
-
-RUN chmod -R 0733 /opt/opencti/logs
+RUN mkdir -p /opt/opencti/logs /opt/opencti/telemetry /opt/opencti/.support \
+    && chmod -R 0733 /opt/opencti/logs /opt/opencti/telemetry /opt/opencti/.support
 
 VOLUME ["/opt/opencti/logs"]
 
