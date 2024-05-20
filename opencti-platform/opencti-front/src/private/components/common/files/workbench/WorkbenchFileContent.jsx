@@ -243,6 +243,8 @@ const importValidation = (t) => Yup.object().shape({
   connector_id: Yup.string().trim().required(t('This field is required')),
 });
 
+const uniqStixDomainObjectsFields = ['name', 'type', 'pattern', 'identity_class', 'x_opencti_location_type'];
+
 const WorkbenchFileContentComponent = ({
   connectorsImport,
   file,
@@ -1065,7 +1067,7 @@ const WorkbenchFileContentComponent = ({
     }
     setStixDomainObjects(
       uniqWithByFields(
-        ['name', 'type'],
+        uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
           ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
           ...markingDefinitions,
@@ -1172,7 +1174,7 @@ const WorkbenchFileContentComponent = ({
     );
     setStixDomainObjects(
       uniqWithByFields(
-        ['name', 'type', 'identity_class', 'x_opencti_location_type'],
+        uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
           ...stixDomainObjects.filter(
             (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
@@ -1247,7 +1249,7 @@ const WorkbenchFileContentComponent = ({
     );
     setStixDomainObjects(
       uniqWithByFields(
-        ['name', 'type'],
+        uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
           ...stixDomainObjects,
           ...markingDefinitions,
@@ -1371,7 +1373,7 @@ const WorkbenchFileContentComponent = ({
     ]);
     setStixDomainObjects(
       uniqWithByFields(
-        ['name', 'type'],
+        uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
           ...stixDomainObjects,
           ...markingDefinitions,
@@ -1453,7 +1455,7 @@ const WorkbenchFileContentComponent = ({
     setContainerStep(1);
     setStixDomainObjects(
       uniqWithByFields(
-        ['name', 'type'],
+        uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
           ...stixDomainObjects,
           ...markingDefinitions,
