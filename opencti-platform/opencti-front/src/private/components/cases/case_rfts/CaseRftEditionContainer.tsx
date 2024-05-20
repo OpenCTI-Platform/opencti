@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
 import { CaseRftEditionOverview_case$key } from '@components/cases/case_rfts/__generated__/CaseRftEditionOverview_case.graphql';
+import useHelper from 'src/utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -12,6 +13,7 @@ interface CaseRftEditionContainerProps {
   queryRef: PreloadedQuery<CaseRftEditionContainerCaseQuery>
   handleClose: () => void
   open?: boolean
+  controlledDial?: DrawerControlledDialType
 }
 
 export const caseRftEditionQuery = graphql`
@@ -26,8 +28,15 @@ export const caseRftEditionQuery = graphql`
   }
 `;
 
-const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> = ({ queryRef, handleClose, open }) => {
+const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> = ({
+  queryRef,
+  handleClose,
+  open,
+  controlledDial,
+}) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { caseRft } = usePreloadedQuery(caseRftEditionQuery, queryRef);
   if (caseRft === null) {
     return <ErrorNotFound />;
@@ -35,10 +44,11 @@ const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> =
   return (
     <Drawer
       title={t_i18n('Update a request for takedown')}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={caseRft?.editContext}
       onClose={handleClose}
       open={open}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       {({ onClose }) => (
         <CaseRftEditionOverview

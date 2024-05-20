@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { tasksEditionOverviewFocus } from './TasksEditionOverview';
@@ -29,6 +30,7 @@ const TaskEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
           <TasksEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}

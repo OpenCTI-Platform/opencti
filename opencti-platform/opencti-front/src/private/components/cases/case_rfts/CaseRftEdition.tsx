@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseRftEditionContainerCaseQuery } from './__generated__/CaseRftEditionContainerCaseQuery.graphql';
@@ -29,6 +30,7 @@ const CaseRftEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
           <CaseRftEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}
