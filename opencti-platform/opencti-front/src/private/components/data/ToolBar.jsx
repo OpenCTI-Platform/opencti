@@ -76,7 +76,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { findFilterFromKey, serializeFilterGroupForBackend, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import PromoteDrawer from './drawers/PromoteDrawer';
 
 const styles = (theme) => ({
@@ -1298,32 +1298,29 @@ class ToolBar extends Component {
     )
       || (entityTypeFilterValues.length === 1
         && notScannableTypes.includes(entityTypeFilterValues[0]));
-    const selectedElementsList = R.values(selectedElements || {});
+    const selectedElementsList = Object.values(selectedElements || {});
     const titleCopy = this.titleCopy();
     let keptElement = null;
     let newAliases = [];
     if (!typesAreNotMergable && !typesAreDifferent) {
       keptElement = keptEntityId
-        ? R.head(selectedElementsList.filter((o) => o.id === keptEntityId))
-        : R.head(selectedElementsList);
+        ? selectedElementsList.find((o) => o.id === keptEntityId)
+        : selectedElementsList[0];
       if (keptElement) {
-        const names = R.filter(
-          (o) => o !== keptElement.name,
-          R.pluck('name', selectedElementsList),
-        );
-        const aliases = !R.isNil(keptElement.aliases)
-          ? R.filter(
-            (o) => !R.isNil(o),
-            R.flatten(R.pluck('aliases', selectedElementsList)),
-          )
-          : R.filter(
-            (o) => !R.isNil(o),
-            R.flatten(R.pluck('x_opencti_aliases', selectedElementsList)),
-          );
-        newAliases = R.filter(
-          (o) => o.length > 0,
-          R.uniq(R.concat(names, aliases)),
-        );
+        const names = selectedElementsList
+          .map((el) => el.name)
+          .filter((name) => name !== keptElement.name);
+        const aliases = keptElement.aliases !== null
+          ? selectedElementsList
+            .map((el) => el.aliases)
+            .flat()
+            .filter((alias) => alias !== null && alias !== undefined)
+          : selectedElementsList
+            .map((el) => el.x_opencti_aliases)
+            .flat()
+            .filter((alias) => alias !== null && alias !== undefined);
+
+        newAliases = [...new Set(names.concat(aliases).filter((o) => o && o.length > 0))];
       }
     }
     let paperClass;
