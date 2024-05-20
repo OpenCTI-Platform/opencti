@@ -152,6 +152,11 @@ describe('CaseTemplate resolver standard behavior', () => {
       },
     });
     expect(queryResult.data?.caseTemplateRelationAdd).not.toBeNull();
+    const readQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseTemplateInternalId } });
+    expect(readQueryResult).not.toBeNull();
+    expect(readQueryResult.data?.caseTemplate).not.toBeNull();
+    const tasks = readQueryResult.data?.caseTemplate.tasks.edges;
+    expect(tasks.length).toBeGreaterThan(0);
   });
 
   it('should delete relation in caseTemplate', async () => {
