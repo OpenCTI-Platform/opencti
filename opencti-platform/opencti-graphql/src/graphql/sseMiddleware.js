@@ -576,7 +576,7 @@ const createSseMiddleware = () => {
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
                   const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
-                  if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
+                  if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                     cache.set(stix.id, 'hit');
                   } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
