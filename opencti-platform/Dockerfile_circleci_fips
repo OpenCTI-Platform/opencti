@@ -65,7 +65,7 @@ RUN set -ex \
 RUN mkdir -p /opt/opencti/logs /opt/opencti/telemetry /opt/opencti/.support \
     && chmod -R 0733 /opt/opencti/logs /opt/opencti/telemetry /opt/opencti/.support
 
-VOLUME ["/opt/opencti/logs"]
+VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 USER "${USERNAME}"
 
