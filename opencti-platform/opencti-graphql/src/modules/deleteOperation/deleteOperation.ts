@@ -29,7 +29,10 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
     { name: 'deleted_elements', label: 'Deleted elements', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   ],
   relations: [],
-  relationsRefs: [objectOrganization, objectMarking],
+  relationsRefs: [
+    objectMarking,
+    { ...objectOrganization, isFilterable: false },
+  ],
   representative: (stix: StixDeleteOperation) => {
     return stix.main_entity_name;
   },
