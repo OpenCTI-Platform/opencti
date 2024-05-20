@@ -237,10 +237,10 @@ class SyncPopover extends Component {
               {t('Stop')}
             </MenuItem>
           )}
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
+          <MenuItem disabled={running} onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem disabled={running} onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
           </MenuItem>
         </Menu>
