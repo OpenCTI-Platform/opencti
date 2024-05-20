@@ -144,7 +144,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
 import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -730,7 +730,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     // In case of missing from / to, fail directly
     const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIds, ...extendedErrors({ input }) });
     }
     // In case of missing reference NOT from or to, we reject twice before accepting
     // TODO this retry must be removed in favor of reworking the workers synchronization
@@ -740,7 +740,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber <= 2) {
-      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault });
+      throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, ...extendedErrors({ input }) });
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));

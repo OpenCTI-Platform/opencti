@@ -1,5 +1,6 @@
 import { filter, head, includes, isEmpty, isNil } from 'ramda';
-import conf, { booleanConf, logApp } from '../config/conf';
+import { stripIgnoredCharacters } from 'graphql/utilities';
+import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { ALREADY_DELETED_ERROR, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR, VALIDATION_ERROR } from '../config/errors';
@@ -47,6 +48,24 @@ const graphQLNodeParser = (node) => {
   return result;
 };
 
+const resolveKeyPromises = async (object) => {
+  const resolvedObject = {};
+  const entries = Object.entries(object).filter(([, value]) => value && typeof value.then === 'function');
+  const values = await Promise.all(entries.map(([, value]) => value));
+  entries.forEach(([key], index) => {
+    resolvedObject[key] = values[index];
+  });
+  return { ...object, ...resolvedObject };
+};
+
+const tryResolveKeyPromises = async (data) => {
+  try {
+    return [await resolveKeyPromises(data), undefined];
+  } catch (e) {
+    return [data, e];
+  }
+};
+
 export default {
   requestDidStart: /* v8 ignore next */ () => {
     const start = Date.now();
@@ -63,6 +82,7 @@ export default {
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
         const origin = contextUser ? contextUser.origin : undefined;
+        const [variables] = await tryResolveKeyPromises(contextVariables);
         // Compute inner relations
         let innerRelationCount = 0;
         if (isWrite) {
@@ -95,7 +115,12 @@ export default {
         };
         if (isCallError) {
           const currentError = head(context.errors);
-          callMetaData.query_attributes = (currentError.nodes ?? []).map((node) => graphQLNodeParser(node));
+          if (appLogExtendedErrors) {
+            callMetaData.variables = variables;
+            callMetaData.operation_query = stripIgnoredCharacters(context.request.query);
+          } else {
+            callMetaData.query_attributes = (currentError.nodes ?? []).map((node) => graphQLNodeParser(node));
+          }
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && ![
             UNSUPPORTED_ERROR,

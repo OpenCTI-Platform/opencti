@@ -38,7 +38,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES
 } from './utils';
-import conf, { booleanConf, loadCert, logApp } from '../config/conf';
+import conf, { booleanConf, extendedErrors, loadCert, logApp } from '../config/conf';
 import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -3026,7 +3026,7 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
   const { refresh = true, pipeline } = opts;
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
+  logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, { documentBody });
   let indexParams = {
     index: indexName,
     id: documentBody.internal_id,
@@ -3038,7 +3038,7 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
     indexParams = { ...indexParams, pipeline };
   }
   await engine.index(indexParams).catch((err) => {
-    throw DatabaseError('Simple indexing fail', { cause: err, internalId, entityType });
+    throw DatabaseError('Simple indexing fail', { cause: err, internalId, entityType, ...extendedErrors({ documentBody }) });
   });
   return documentBody;
 };
@@ -3053,7 +3053,7 @@ export const elUpdate = (indexName, internalId, documentBody, retry = ES_RETRY_O
     refresh: true,
     body: documentBody,
   }).catch((err) => {
-    throw DatabaseError('Update indexing fail', { cause: err, internalId, entityType });
+    throw DatabaseError('Update indexing fail', { cause: err, internalId, entityType, ...extendedErrors({ documentBody }) });
   });
 };
 export const elReplace = (indexName, documentId, documentBody) => {

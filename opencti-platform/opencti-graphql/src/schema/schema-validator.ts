@@ -15,6 +15,7 @@ import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
+import { extendedErrors } from '../config/conf';
 
 const ajv = new Ajv();
 
@@ -33,7 +34,7 @@ export const validateAndFormatSchemaAttribute = (
     // with a patch object, the value matches something inside the object and not the object itself
     // so we cannot check directly the multiplicity as it concerns an internal mapping
     // let's assume it's OK, and validateDataBeforeIndexing would check it.
-    throw ValidationError(attributeName, { message: `Attribute ${attributeName} cannot be multiple` });
+    throw ValidationError(attributeName, { message: 'Attribute cannot be multiple', ...extendedErrors({ input: editInput }) });
   }
   // Data validation
   if (attributeDefinition.type === 'string') {
@@ -41,7 +42,7 @@ export const validateAndFormatSchemaAttribute = (
     for (let index = 0; index < editInput.value.length; index += 1) {
       const value = editInput.value[index];
       if (value && !R.is(String, value)) {
-        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a string` });
+        throw ValidationError(attributeName, { message: 'Attribute must be a string', ...extendedErrors({ input: editInput }) });
       } else {
         values.push(value ? value.trim() : value);
       }
@@ -63,7 +64,7 @@ export const validateAndFormatSchemaAttribute = (
   if (attributeDefinition.type === 'boolean') {
     editInput.value.forEach((value) => {
       if (value && !R.is(Boolean, value) && !R.is(String, value)) {
-        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string` });
+        throw ValidationError(attributeName, { message: 'Attribute must be a boolean/string', ...extendedErrors({ input: editInput }) });
       }
     });
   }
@@ -71,7 +72,7 @@ export const validateAndFormatSchemaAttribute = (
     // Test date value (Accept only ISO date string)
     editInput.value.forEach((value) => {
       if (value && !R.is(String, value) && !utcDate(value).isValid()) {
-        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a boolean/string` });
+        throw ValidationError(attributeName, { message: 'Attribute must be a boolean/string', ...extendedErrors({ input: editInput }) });
       }
     });
   }
@@ -79,7 +80,7 @@ export const validateAndFormatSchemaAttribute = (
     // Test numeric value (Accept string)
     editInput.value.forEach((value) => {
       if (value && Number.isNaN(Number(value))) {
-        throw ValidationError(attributeName, { message: `Attribute ${attributeName} must be a numeric/string` });
+        throw ValidationError(attributeName, { message: 'Attribute must be a numeric/string', ...extendedErrors({ input: editInput }) });
       }
     });
   }
@@ -89,7 +90,7 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     if (R.isEmpty(editInputs) || !Array.isArray(editInputs)) {
-      throw UnsupportedError('Cannot validate an empty or invalid input');
+      throw UnsupportedError('Cannot validate an empty or invalid input', { ...extendedErrors({ input: editInputs }) });
     }
     editInputs.forEach((editInput) => {
       const attributeDefinition = availableAttributes.get(editInput.key);

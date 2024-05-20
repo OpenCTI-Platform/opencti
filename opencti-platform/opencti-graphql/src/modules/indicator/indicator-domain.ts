@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError } from '../../config/errors';
@@ -182,7 +182,7 @@ export const createObservablesFromIndicator = async (
       const createdObservable = await createEntity(context, user, observableInput, observable.type);
       observablesToLink.push(createdObservable.id);
     } catch (err) {
-      logApp.error('[API] Create observable from indicator fail', { index, cause: err });
+      logApp.error('[API] Create observable from indicator fail', { index, cause: err, ...extendedErrors({ input: observableInput }) });
     }
   }
   await Promise.all(

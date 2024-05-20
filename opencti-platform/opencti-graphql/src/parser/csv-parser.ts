@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { parse } from 'csv-parse/sync';
 import * as readline from 'readline';
 import { Readable } from 'stream';
-import { logApp } from '../config/conf';
+import { extendedErrors, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 
 const parserOption = (delimiter: string, comment: string) => ({
@@ -62,7 +62,7 @@ export const parseCsvBufferContent = (buffer: Buffer, delimiter: string, skipLin
                 parsingResult.push(parsing[0]);
               }
             } catch (err) {
-              logApp.error('[CSV-PARSER] Error parsing CSV line', { cause: err });
+              logApp.error('[CSV-PARSER] Error parsing CSV line', { cause: err, ...extendedErrors({ line }) });
             }
           }
           resolve(parsingResult);
