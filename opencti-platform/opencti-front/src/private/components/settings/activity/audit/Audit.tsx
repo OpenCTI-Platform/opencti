@@ -102,10 +102,14 @@ const Audit = () => {
   const { settings } = useAuth();
   const isUserHasSecurity = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isUserHasActivity = useGranted([SETTINGS_KNOWLEDGEACTIVITY]);
+  const hasBothCapabilities = useGranted(
+    [SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY],
+    true,
+  );
   const { t_i18n } = useFormatter();
 
   let type = ['History'];
-  if (isUserHasSecurity && isUserHasActivity) {
+  if (hasBothCapabilities) {
     type = ['Activity', 'History'];
   } else if (isUserHasSecurity) {
     type = ['Activity'];
@@ -205,29 +209,52 @@ const Audit = () => {
   };
   const extraFields = (
     <div style={{ marginLeft: 10 }}>
-      <Security needs={[SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY]}>
-        <FormControlLabel
-          value="start"
-          control={
-            <Checkbox
-              style={{ padding: 7 }}
-              onChange={() => {
-                const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
-                storageHelpers.handleAddProperty('types', newTypes);
-              }}
-              checked={types?.length === 2}
+      {hasBothCapabilities && (
+        <Security needs={[SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY]}>
+          <div>
+            <FormControlLabel
+              value="start"
+              control={
+                <Checkbox
+                  style={{ padding: 7 }}
+                  onChange={() => {
+                    const newTypes = ['History'];
+                    storageHelpers.handleAddProperty('types', newTypes);
+                  }}
+                  checked={(types ?? []).includes('History') && !(types ?? []).includes('Activity')}
+                />
+              }
+              label={t_i18n('Include Basic Knowledge')}
+              labelPlacement="end"
             />
-          }
-          label={t_i18n('Include knowledge')}
-          labelPlacement="end"
-        />
-      </Security>
+            <FormControlLabel
+              value="start"
+              control={
+                <Checkbox
+                  style={{ padding: 7 }}
+                  onChange={() => {
+                    const newTypes = ['Activity'];
+                    storageHelpers.handleAddProperty('types', newTypes);
+                  }}
+                  checked={(types ?? []).includes('Activity')}
+                />
+              }
+              label={t_i18n('Include Audit & Extended Knowledge')}
+              labelPlacement="end"
+            />
+          </div>
+        </Security>
+      )}
     </div>
   );
   return (
     <div className={classes.container}>
-      <ActivityMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Events'), current: true }]} />
+      <ActivityMenu/>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
+        label: t_i18n('Events'),
+        current: true,
+      }]}
+      />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
           {t_i18n(
