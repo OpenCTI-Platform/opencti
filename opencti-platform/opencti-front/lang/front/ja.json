@@ -1221,6 +1221,8 @@
   "Incident type": "インシデントタイプ",
   "incident_type": "インシデントの種類",
   "Incidents": "インシデント",
+  "Include Audit & Extended Knowledge": "監査 & 拡張知識を含む",
+  "Include Basic Knowledge": "基礎知識を含む",
   "Include files not related to any knowledge (data import)": "知識とは関係のないファイルを含める（データインポート）",
   "Include headers in the feed": "フィードにヘッダを含める",
   "Include knowledge": "知識を含む",

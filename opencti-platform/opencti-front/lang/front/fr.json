@@ -1221,6 +1221,8 @@
   "Incident type": "Type d'incident",
   "incident_type": "Type d'incident",
   "Incidents": "Incidents",
+  "Include Audit & Extended Knowledge": "Inclure Audit & ; Connaissances étendues",
+  "Include Basic Knowledge": "Inclure les connaissances de base",
   "Include files not related to any knowledge (data import)": "Inclure des fichiers non liés à de la connaissance (import de données)",
   "Include headers in the feed": "Inclure les en-têtes dans le flux",
   "Include knowledge": "Inclure les connaissances",

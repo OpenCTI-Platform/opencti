@@ -25,6 +25,18 @@ export const queryAsAdminWithSuccess = async (request: { query: any, variables: 
 };
 
 /**
+ * Execute the query as some User, and verify success and return query result.
+ * @param client
+ * @param request
+ */
+export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { query: any, variables: any }) => {
+  const requestResult = await executeInternalQuery(client, print(request.query), request.variables);
+  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
+  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  return requestResult;
+};
+
+/**
  * Execute the query as some User (see testQuery.ts), and verify that access is forbidden.
  * @param client
  * @param request

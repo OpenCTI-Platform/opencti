@@ -100,21 +100,20 @@ const Audit = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
-  const isUserHasSecurity = useGranted([SETTINGS_SECURITYACTIVITY]);
-  const isUserHasActivity = useGranted([SETTINGS_KNOWLEDGEACTIVITY]);
+  const hasSecurityCapability = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const hasKnowledgeCapability = useGranted([SETTINGS_KNOWLEDGEACTIVITY]);
   const hasBothCapabilities = useGranted(
     [SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY],
     true,
   );
   const { t_i18n } = useFormatter();
 
-  let type = ['History'];
-  if (hasBothCapabilities) {
-    type = ['Activity', 'History'];
-  } else if (isUserHasSecurity) {
-    type = ['Activity'];
-  } else if (isUserHasActivity) {
-    type = ['History'];
+  const initialTypes = [];
+  if (hasKnowledgeCapability) {
+    initialTypes.push('History');
+  }
+  if (hasSecurityCapability) {
+    initialTypes.push('Activity');
   }
 
   const {
@@ -130,7 +129,7 @@ const Audit = () => {
       sortBy: 'timestamp',
       orderAsc: false,
       openExports: false,
-      types: type,
+      types: initialTypes,
       count: 25,
     },
   );
@@ -207,6 +206,17 @@ const Audit = () => {
         setLoading(false);
       });
   };
+
+  const handleCheckboxChange = (type: string) => {
+    let newTypes = [...(types ?? [])];
+    if (newTypes.includes(type)) {
+      newTypes = newTypes.filter((t) => t !== type);
+    } else {
+      newTypes.push(type);
+    }
+    storageHelpers.handleAddProperty('types', newTypes);
+  };
+
   const extraFields = (
     <div style={{ marginLeft: 10 }}>
       {hasBothCapabilities && (
@@ -217,11 +227,8 @@ const Audit = () => {
               control={
                 <Checkbox
                   style={{ padding: 7 }}
-                  onChange={() => {
-                    const newTypes = ['History'];
-                    storageHelpers.handleAddProperty('types', newTypes);
-                  }}
-                  checked={(types ?? []).includes('History') && !(types ?? []).includes('Activity')}
+                  onChange={() => handleCheckboxChange('History')}
+                  checked={(types ?? []).includes('History')}
                 />
               }
               label={t_i18n('Include Basic Knowledge')}
@@ -232,10 +239,7 @@ const Audit = () => {
               control={
                 <Checkbox
                   style={{ padding: 7 }}
-                  onChange={() => {
-                    const newTypes = ['Activity'];
-                    storageHelpers.handleAddProperty('types', newTypes);
-                  }}
+                  onChange={() => handleCheckboxChange('Activity')}
                   checked={(types ?? []).includes('Activity')}
                 />
               }

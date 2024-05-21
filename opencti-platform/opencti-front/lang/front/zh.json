@@ -1221,6 +1221,8 @@
   "Incident type": "事件类型",
   "incident_type": "事件类型",
   "Incidents": "安全事件",
+  "Include Audit & Extended Knowledge": "包括审计和amp; 扩展知识",
+  "Include Basic Knowledge": "包括基本知识",
   "Include files not related to any knowledge (data import)": "包含与任何知识无关的文件（数据导入）",
   "Include headers in the feed": "在提要中包含标题",
   "Include knowledge": "包括知识",

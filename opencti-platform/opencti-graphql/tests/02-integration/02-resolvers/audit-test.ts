@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsUserIsExpectedForbidden, queryAsUserWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 describe('Log/Audit resolver rights management checks', () => {
@@ -46,7 +46,7 @@ describe('Log/Audit resolver rights management checks', () => {
         }
     `;
 
-  it('should Participant/Editor user not be allowed to request audit data.', async () => {
+  it('should Participant user not be allowed to request audit data.', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
       query: AUDIT_QUERY,
       variables: {
@@ -56,11 +56,21 @@ describe('Log/Audit resolver rights management checks', () => {
     });
   });
 
-  it('should Security user not be allowed to request knowledge data.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
+  it('should Security user be allowed to request audit data.', async () => {
+    await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: AUDIT_QUERY,
       variables: {
-        types: ['History'],
+        types: ['Activity'],
+        first: 10
+      },
+    });
+  });
+
+  it('Should user cannot access audit and knowledge data if not authenticated', async () => {
+    await queryUnauthenticatedIsExpectedForbidden({
+      query: AUDIT_QUERY,
+      variables: {
+        types: ['Activity'],
         first: 10
       },
     });
