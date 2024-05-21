@@ -22,7 +22,7 @@ In summary, automated imports through connectors empower OpenCTI users with a sc
 
 ## Native automated import
 
-In OpenCTI, the "Data > Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the three built-in functions: Live Streams, TAXII Feeds, and RSS Feeds.
+In OpenCTI, the "Data > Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the four built-in functions: Live Streams, TAXII Feeds, RSS Feeds, and CSV Feeds.
 
 ### Live streams
 
@@ -80,42 +80,34 @@ Additional configuration options:
 
 ### CSV feeds
 
-The CSV feeds ingester integrates new entities to the platform.
-![CSV feeds interface](assets/csv-feeds.png)
+CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure TAXII ingesters:
 
-Create a CSV feeds ingester by clicking on the "+" button
-Fill the URL field up to retrieve the CSV file.
+1. CSV URL: Provide the URL of the CSV file exposed from which items will be imported.
+2. CSV Mappers: Choose the CSV mapper to be used to import the data.
+3. Authentication type (if necessary): Enter the authentication type.
 
-![CSV feeds creation](csv-feeds-creation.png)
+!!! note "CSV mapper"
 
-Note that a CSV mapper is required.
+    CSV feed functionality is based on CSV mappers. It is necessary to create the appropriate CSV mapper to import the data contained in the file. See the page dedicated to the [CSV mapper](../administration/csv-mappers.md).
 
-![CSV feeds creation: CSV mapper](csv-feeds-creation-csv-mapper.png)
+Additional configuration options:
 
-![CSV feeds creation: prior CSV mapper test](csv-feeds-creation-prior-test.png)
+- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
+- Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
-To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper.
-A valid URL-CSV mapper combination results in the identification of up to 50 entities.
+![CSV feeds creation: prior CSV mapper test](assets/csv-feeds-creation.png)
 
-![CSV feeds creation: csv mapper test](csv-feeds-creation-test.png)
+To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper. A valid URL-CSV mapper combination results in the identification of up to 50 entities.
 
-Once, the test is successful, the "Create" button can be clicked.
-
-![CSV feeds creation: after CSV mapper test](csv-feeds-creation-after-test.png)
-
-![CSV feeds creation: list](csv-feeds-creation-list.png)
+![CSV feeds creation: csv mapper test](assets/csv-feeds-creation-test.png)
 
 To start your new ingester, click on "Start", in the burger menu.
 
-![CSV feeds creation: start](csv-feeds-creation-start.png)
+![CSV feeds creation: start](assets/csv-feeds-creation-start.png)
 
-CSV feed ingestion is made possible thanks to the connector "ImportCSV".
-So you can track the progress in the Connectors page.
-On a regular basis, the ingestion is updated when new data is added to the CSV feed. 
+CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data > Ingestion > Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.
 
-![CSV feeds creation: connectors](csv-feeds-connectors.png)
-
-![CSV feeds creation: tracking](csv-feeds-importCSV-connector-tracking.png)
+![CSV feeds creation: tracking](assets/csv-feeds-importCSV-connector-tracking.png)
 
 
 <a id="best-practices-section"></a>

@@ -65,6 +65,10 @@ You can then check if the extracted values match the expected entities and relat
 
 ![Test a CSV Mapper](assets/csv-mappers-test.png)
 
+!!! warning "Partial test"
+
+    The test conducted in this window relies only on the translation of CSV data according to the chosen representation in the mapper. It does not take into account checks for accurate entity formatting (e.g. IPv4) or specific entity configurations (e.g. mandatory "description" field on reports). Consequently, the entities visible in the test window may not be created during the actual import process.
+
 !!! warning "Test with a small file"
 
     We strongly recommend limiting test files to 100 lines and 1MB. Otherwise, the browser may crash.
@@ -73,6 +77,7 @@ You can then check if the extracted values match the expected entities and relat
 ## Use a mapper for importing a CSV file
 
 You can change the default configuration of the import csv connector in your configuration file.
+
 ```json
 "import_csv_built_in_connector": {
   "enabled": true, 

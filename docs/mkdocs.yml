@@ -134,6 +134,7 @@ nav:
       - Containers: usage/containers.md
       - Deduplication: usage/deduplication.md
       - Reliability and confidence: usage/reliability-confidence.md
+      - Meaning of dates: usage/dates.md
     - Explore knowledge:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
@@ -184,8 +185,9 @@ nav:
       - Security:
         - Policies: administration/policies.md
         - Users and RBAC: administration/users.md
-        - Data segregation: administration/segregation.md
-        - Organization segregation: administration/organization-segregation.md
+        - Data segregation:
+          - Marking restriction: administration/segregation.md
+          - Organization segregation: administration/organization-segregation.md
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md

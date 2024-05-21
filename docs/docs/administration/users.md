@@ -28,7 +28,7 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | `Access Dashboards and investigations`                                               | Access to existing custom dashboards and investigations.                                |
 | &nbsp;&nbsp;`Create / Update Dashboards and investigations`                          | Create and update custom dashboards and investigations.                                 |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Delete Dashboards and investigations`                       | Delete existing custom dashboards and investigations.                                   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Manage Public Dashboards`                                   | Manage public dashboards                                                                
+| &nbsp;&nbsp;&nbsp;&nbsp;`Manage Public Dashboards`                                   | Manage public dashboards                                                                |
 | `Access connectors`                                                                  | Read information in the `Data > Connectors` section.                                    |
 | &nbsp;&nbsp;`Manage connector state`                                                 | Reset the connector state to restart ingestion from the beginning.                      |
 | `Access data sharing & ingestion`                                                    | Access and consume data such as TAXII collections.                                      |
@@ -84,6 +84,7 @@ In the image below, you can see how to override the value inherited from the gro
 
     A user without Max confidence level won't have the ability to create, delete or update any data in our platform. Please be sure that your users are always either assigned to group that have a confidence level defined or that have an override of this group confidence level.
 
+<a id="group-section"></a>
 ## Groups
 
 Groups are the main way to manage permissions and [data segregation](segregation.md) as well as platform customization for the given users part of this group. You can manage the groups in `Settings > Security > Groups`.
