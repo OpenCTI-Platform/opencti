@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { Promise as BluePromise } from 'bluebird';
 import { createEntity, distributionEntities, internalDeleteElementById, listAllThings, timeSeriesEntities } from '../database/middleware';
 import { countAllThings, internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
@@ -7,7 +6,7 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { elCount, ES_MAX_CONCURRENCY } from '../database/engine';
+import { elCount } from '../database/engine';
 import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
@@ -141,9 +140,10 @@ export const reportDeleteWithElements = async (context, user, reportId) => {
   const reportOrphanObjects = await listAllThings(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args);
   // Filter out relationships that will already be deleted with the deletion of the source or target element
   const objectsToDelete = reportOrphanObjects.filter((fo) => !reportOrphanObjects.some((o) => fo.fromId === o.internal_id || fo.toId === o.internal_id));
-  await BluePromise.map(objectsToDelete, (object) => {
-    return internalDeleteElementById(context, context.user, object.id);
-  }, { concurrency: ES_MAX_CONCURRENCY });
+  for (let i = 0; i < objectsToDelete.length; i += 1) {
+    const object = objectsToDelete[i];
+    await internalDeleteElementById(context, context.user, object.id);
+  }
   // Delete the report
   await stixDomainObjectDelete(context, user, reportId);
   return reportId;
