@@ -11,7 +11,7 @@ import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../.
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN } from '../../src/schema/identifier';
+import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
@@ -136,6 +136,41 @@ export const ROLE_TEST_CONNECTOR: Role = {
 };
 TESTING_ROLES.push(ROLE_TEST_CONNECTOR);
 
+export const ROLE_DISINFORMATION_ANALYST: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Disinformation analyst: Access knowledge, data and label management' }),
+  name: 'Disinformation analyst: Access knowledge, data and label management',
+  description: 'Disinformation analyst: Access knowledge, data and label management',
+  capabilities: [
+    'KNOWLEDGE_KNPARTICIPATE',
+    'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPLOAD',
+    'KNOWLEDGE_KNASKIMPORT',
+    'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
+    'KNOWLEDGE_KNENRICHMENT',
+    'EXPLORE_EXUPDATE',
+    // FIXME : create/update investigation
+    'TAXIIAPI_SETCOLLECTIONS',
+    // FIXME : manage ingestion
+    'TAXIIAPI_SETCSVMAPPERS',
+    'SETTINGS_SETTAXONOMIES'
+  ]
+};
+
+export const ROLE_PLATFORM_ADMIN: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Platform configuration, connector configuration, manage public dashboard' }),
+  name: 'Platform configuration, connector configuration, manage public dashboard',
+  description: 'Platform configuration, connector configuration, manage public dashboard',
+  capabilities: [
+    'SETTINGS_SETPARAMETERS',
+    'SETTINGS_SETACCESSES',
+    'SETTINGS_SECURITYACTIVITY',
+    'SETTINGS_FILEINDEXING',
+    'SETTINGS_SUPPORT',
+    'MODULES_MODMANAGE',
+    'EXPLORE_EXUPDATE_PUBLISH'
+  ]
+};
+
 // Groups
 interface Group {
   id: string,
@@ -199,6 +234,28 @@ export const CONNECTOR_GROUP: Group = {
   max_shareable_markings: [],
 };
 TESTING_GROUPS.push(CONNECTOR_GROUP);
+
+export const GREEN_DISINFORMATION_ANALYST_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN DISINFORMATION ANALYST GROUP' }),
+  name: 'GREEN DISINFORMATION ANALYST GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_DISINFORMATION_ANALYST],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
+};
+
+export const PLATFORM_ADMIN_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'Platform admin group' }),
+  name: 'Platform admin group',
+  markings: [MARKING_TLP_CLEAR],
+  roles: [ROLE_PLATFORM_ADMIN],
+  group_confidence_level: {
+    max_confidence: 10,
+    overrides: [],
+  }
+};
 
 // Organization
 interface Organization {
@@ -289,6 +346,24 @@ export const USER_CONNECTOR: User = {
   client: createHttpClient('connector@opencti.io', 'connector')
 };
 TESTING_USERS.push(USER_CONNECTOR);
+
+export const USER_DISINFORMATION_ANALYST: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
+  email: 'anais@opencti.io',
+  password: 'disinformation',
+  groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
+  client: createHttpClient('anais@opencti.io', 'disinformation')
+};
+TESTING_USERS.push(USER_DISINFORMATION_ANALYST);
+
+export const USER_PLATFORM_ADMIN: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'platform@opencti.io' }),
+  email: 'platform@opencti.io',
+  password: 'platformadmin',
+  groups: [PLATFORM_ADMIN_GROUP],
+  client: createHttpClient('platform@opencti.io', 'platformadmin')
+};
+TESTING_USERS.push(USER_PLATFORM_ADMIN);
 
 // region group management
 const GROUP_CREATION_MUTATION = `

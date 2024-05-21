@@ -59,10 +59,15 @@ export const SETTINGS_CAPABILITIES = {
   description: 'Access administration',
   attribute_order: 3000,
   dependencies: [
+    { name: 'SETPARAMETERS', description: 'Manage parameters', attribute_order: 3100 },
     { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
     { name: 'SECURITYACTIVITY', description: 'Access Security Activity', attribute_order: 3500 },
+    { name: 'KNOWLEDGEACTIVITY', description: 'Knowledge Activity', attribute_order: 3600 },
+    { name: 'SETTAXONOMIES', description: 'Manage taxonomies', attribute_order: 3700 },
+    { name: 'FILEINDEXING', description: 'Access to file indexing', attribute_order: 3800 },
+    { name: 'SUPPORT', description: 'Access to support data', attribute_order: 3900 },
   ],
 };
 export const CAPABILITIES = [
