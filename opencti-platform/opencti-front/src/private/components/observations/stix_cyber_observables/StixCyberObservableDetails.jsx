@@ -226,7 +226,7 @@ const StixCyberObservableDetails = createFragmentContainer(
         observable_value
         ... on AutonomousSystem {
           number
-          name
+          observableName: name
           rir
         }
         ... on Directory {
@@ -279,7 +279,7 @@ const StixCyberObservableDetails = createFragmentContainer(
         ... on StixFile {
           extensions
           size
-          name
+          observableName: name
           name_enc
           magic_number_hex
           mime_type
@@ -338,7 +338,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           value
         }
         ... on Mutex {
-          name
+          observableName: name
         }
         ... on NetworkTraffic {
           extensions
@@ -382,7 +382,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           service_status
         }
         ... on Software {
-          name
+          observableName: name
           cpe
           swid
           languages
@@ -415,7 +415,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           number_of_subkeys
         }
         ... on WindowsRegistryValueType {
-          name
+          observableName: name
           data
           data_type
         }
