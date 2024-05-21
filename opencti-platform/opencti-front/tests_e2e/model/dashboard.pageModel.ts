@@ -15,12 +15,12 @@ export default class DashboardPage {
     return this.page.getByLabel('Create', { exact: true });
   }
 
-  getImportButton() {
-    return this.page.getByLabel('Import dashboard', { exact: true });
+  getImportDashboardButton() {
+    return this.page.getByTestId('ImportDashboard');
   }
 
-  getAddNewButton() {
-    return this.page.getByLabel('Create dashboard', { exact: true });
+  getAddNewDashboardButton() {
+    return this.page.getByTestId('CreateDashboard');
   }
 
   getItemFromList(name: string) {

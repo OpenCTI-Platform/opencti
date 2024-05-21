@@ -108,6 +108,7 @@ const WorkspaceHeader = ({
   variant,
   adjust,
   handleDateChange,
+  widgetActions,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -379,6 +380,7 @@ const WorkspaceHeader = ({
             handleDashboardDuplication={isGrantedToUpdateDashboard && handleDashboardDuplication}
             variant={variant}
           />
+          {widgetActions}
         </div>
         {variant === 'investigation' && (
           <Security needs={[INVESTIGATION_INUPDATE]}>

@@ -49,7 +49,7 @@ class RootInvestigation extends Component {
     } = this.props;
     // Div is required below, if not set, graph is showing a scrollbar
     return (
-      <div>
+      <div data-testid="investigation-details-page">
         <QueryRenderer
           query={investigationQuery}
           variables={{ id: workspaceId }}
