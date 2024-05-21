@@ -767,7 +767,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw MissingReferenceError('User trying to create the data has missing markings');
+        throw MissingReferenceError({ reason: 'User trying to create the data has missing markings' });
       }
     }
     // Check if available created_by is a correct identity
