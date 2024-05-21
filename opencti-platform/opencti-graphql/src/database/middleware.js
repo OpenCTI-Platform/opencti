@@ -1250,7 +1250,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  await elDeleteElements(context, user, elementToRemoves);
+  await elDeleteElements(context, SYSTEM_USER, elementToRemoves);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
