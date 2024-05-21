@@ -350,7 +350,7 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
-        {isFeatureEnable('PUBLIC_DASHBOARD') && (
+        {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={userCanManage}>
             <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
               <WorkspaceShareButton workspaceId={workspace.id} />
