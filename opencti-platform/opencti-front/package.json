@@ -5,7 +5,7 @@
   "main": "src/front.tsx",
   "dependencies": {
     "@analytics/google-analytics": "1.0.7",
-    "@ckeditor/ckeditor5-react": "6.1.0",
+    "@ckeditor/ckeditor5-react": "6.2.0",
     "@date-fns/upgrade": "1.0.3",
     "@date-io/date-fns": "3.0.0",
     "@emotion/react": "11.11.4",

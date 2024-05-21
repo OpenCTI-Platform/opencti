@@ -418,7 +418,7 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   onHtmlFieldChange(content) {
-    this.setState({ currentContent: content, changed: true });
+    this.setState({ currentContent: content });
   }
 
   onMarkDownFieldChange(value) {
@@ -626,7 +626,10 @@ class StixDomainObjectContentComponent extends Component {
                       toolbar: { shouldNotGroupWhenFull: true },
                     }}
                     data={currentContent ?? ''}
-                    onChange={(_, editor) => {
+                    onChange={() => {
+                      this.setState({ changed: true });
+                    }}
+                    onBlur={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());
                     }}
                   />

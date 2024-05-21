@@ -83,17 +83,16 @@ const RootIncidentComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
   const isOverview = location.pathname === `/dashboard/events/incidents/${incident?.id}`;
+  const paddingRightValue = () => {
+    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/knowledge`)) return 200;
+    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content`)) return 350;
+    return 0;
+  };
   return (
     <>
       {incident ? (
         <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/events/incidents/${incident.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
+          style={{ paddingRight: paddingRightValue() }}
         >
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Events') },
@@ -130,6 +129,12 @@ const RootIncidentComponent = ({ queryRef }) => {
                 to={`/dashboard/events/incidents/${incident.id}/knowledge/overview`}
                 value={`/dashboard/events/incidents/${incident.id}/knowledge`}
                 label={t_i18n('Knowledge')}
+              />
+              <Tab
+                component={Link}
+                to={`/dashboard/events/incidents/${incident.id}/content`}
+                value={`/dashboard/events/incidents/${incident.id}/content`}
+                label={t_i18n('Content')}
               />
               <Tab
                 component={Link}
