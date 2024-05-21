@@ -42,7 +42,7 @@ const useStyles = makeStyles(() => createStyles({
   }),
 }));
 
-export const DEFAULT_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
+export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
@@ -199,7 +199,7 @@ const DashboardSettings = () => {
                           <MenuItem value="automatic">
                             <em>{t_i18n('Default dashboard')}</em>
                           </MenuItem>
-                          <MenuItem value={DEFAULT_DASHBOARD}>
+                          <MenuItem value={PLATFORM_DASHBOARD}>
                             <em>{t_i18n('Platform dashboard')}</em>
                           </MenuItem>
                           {dashboards.length > 0 && (
