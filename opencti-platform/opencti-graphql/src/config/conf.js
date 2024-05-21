@@ -226,11 +226,14 @@ export const logApp = {
   },
   _logWithError: (level, messageOrError, meta = {}) => {
     const isError = messageOrError instanceof Error;
-    let message = isError ? messageOrError.message : messageOrError;
+    const message = isError ? messageOrError.message : messageOrError;
     let error = null;
-    if (isError && !(messageOrError instanceof ApolloError)) {
-      error = UnknownError(message, { cause: messageOrError });
-      message = 'Platform unmanaged direct error';
+    if (isError) {
+      if (messageOrError instanceof ApolloError) {
+        error = messageOrError;
+      } else {
+        error = UnknownError(message, { cause: messageOrError });
+      }
     }
     logApp._log(level, message, error, meta);
     supportLogger.log(level, message, addBasicMetaInformation(LOG_APP, error, { ...meta, source: 'backend' }));
