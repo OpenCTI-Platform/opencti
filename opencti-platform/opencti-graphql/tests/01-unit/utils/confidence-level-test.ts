@@ -35,7 +35,7 @@ describe('Confidence level utilities', () => {
     const group70 = makeGroup(70);
     const group80 = makeGroup(80);
     const group40WithReport90 = makeGroup(40, [{ entity_type: 'Report', max_confidence: 90 }]);
-    const group40WithReport40Case20 = makeGroup(
+    const group40WithReport90Case20 = makeGroup(
       40,
       [{ entity_type: 'Report', max_confidence: 90 }, { entity_type: 'Case-Rfi', max_confidence: 20 }]
     );
@@ -147,15 +147,15 @@ describe('Confidence level utilities', () => {
         max_confidence: null,
         overrides: [{ entity_type: 'Report', max_confidence: 50 }, { entity_type: 'Malware', max_confidence: 35 }],
       },
-      groups: [group70, group40WithReport40Case20],
+      groups: [group70, group40WithReport90Case20],
       capabilities: []
     };
     expect(computeUserEffectiveConfidenceLevel(userJ as unknown as AuthUser)).toEqual({
       max_confidence: 70, // biggest values among the groups
       source: { type: 'Group', object: group70 },
       overrides: [
-        { entity_type: 'Report', max_confidence: 50 }, // from user, overwrites the Report override of group40WithOverrides
-        { entity_type: 'Case-Rfi', max_confidence: 20 }, // from group40WithOverrides
+        { entity_type: 'Report', max_confidence: 50 }, // from user, overwrites the Report override of group40WithReport90Case20
+        { entity_type: 'Case-Rfi', max_confidence: 20 }, // from group40WithReport90Case20
         { entity_type: 'Malware', max_confidence: 35 } // from user's overrides
       ],
     });
