@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { BasicStoreEntityFeed } from '../types/store';
+import type { BasicStoreEntityFeed } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
