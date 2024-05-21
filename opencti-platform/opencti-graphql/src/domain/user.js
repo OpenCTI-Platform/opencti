@@ -1342,19 +1342,21 @@ export const internalAuthenticateUser = async (context, req, user, provider, { t
     sessionUser.impersonate_user_id = previousSession.impersonate_user_id;
   }
   const userOrigin = userWithOrigin(req, sessionUser);
-  if (!isSessionRefresh) {
-    await publishUserAction({
-      user: userOrigin,
-      event_type: 'authentication',
-      event_access: 'administration',
-      event_scope: 'login',
-      context_data: { provider }
-    });
+  if (isEmptyField(user.stateless_session) || user.stateless_session === false) {
+    if (!isSessionRefresh) {
+      await publishUserAction({
+        user: userOrigin,
+        event_type: 'authentication',
+        event_access: 'administration',
+        event_scope: 'login',
+        context_data: { provider }
+      });
+    }
+    req.session.user = sessionUser;
+    req.session.session_provider = { provider, token };
+    req.session.session_refresh = false;
+    req.session.save();
   }
-  req.session.user = sessionUser;
-  req.session.session_provider = { provider, token };
-  req.session.session_refresh = false;
-  req.session.save();
   return userOrigin;
 };
 
