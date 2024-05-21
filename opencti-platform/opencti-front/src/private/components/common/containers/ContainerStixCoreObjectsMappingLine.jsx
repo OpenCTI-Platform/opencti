@@ -143,16 +143,17 @@ const ContainerStixCoreObjectLineComponent = (props) => {
         ) : (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ContainerStixCoreObjectPopover
-            containerId={containerId}
-            toId={node.id}
-            toStandardId={node.standard_id}
-            relationshipType="object"
-            paginationKey="Pagination_objects"
-            paginationOptions={paginationOptions}
-            contentMappingData={contentMappingData}
-            mapping={contentMappingCount[mappedString]}
-            enableReferences={enableReferences}
-          /></Security>
+              containerId={containerId}
+              toId={node.id}
+              toStandardId={node.standard_id}
+              relationshipType="object"
+              paginationKey="Pagination_objects"
+              paginationOptions={paginationOptions}
+              contentMappingData={contentMappingData}
+              mapping={contentMappingCount[mappedString]}
+              enableReferences={enableReferences}
+            />
+          </Security>
         )}
       </ListItemSecondaryAction>
     </ListItem>
