@@ -351,5 +351,8 @@ it('adaptUpdateInputsConfidence should adapt correctly input payload', () => {
   expect(adaptUpdateInputsConfidence(makeUser(10), otherInput, makeReport(null)))
     .toEqual([otherInput, { key: 'confidence', value: ['10'] }]); // inject user's confidence
   expect(adaptUpdateInputsConfidence(makeUser(10), makeConfidenceInput(30), makeReport(null)))
-    .toEqual([{ key: 'confidence', value: ['10'] }]); // capped / no need to inject user's confidence
+    .toEqual([{ key: 'confidence', value: ['10'] }]);
+
+  expect(() => adaptUpdateInputsConfidence(makeUser(null), makeConfidenceInput(30), makeReport(30)))
+    .toThrowError('User has no effective max confidence level and cannot update this element');
 });
