@@ -11111,7 +11111,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [KNOWLEDGE])
+  ): LogConnection @auth(for: [KNOWLEDGE, SETTINGS_KNOWLEDGEACTIVITY])
   audits(
     first: Int
     after: ID
@@ -11120,7 +11120,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [SETTINGS, SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY])
+  ): LogConnection @auth(for: [SETTINGS_SECURITYACTIVITY])
   auditsNumber(
     dateAttribute: String
     types: [String]
