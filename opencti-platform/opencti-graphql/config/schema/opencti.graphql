@@ -1447,6 +1447,7 @@ type User implements BasicObject & InternalObject {
   unit_system: UnitSystem
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1491,6 +1492,7 @@ type MeUser implements BasicObject & InternalObject {
   unit_system: UnitSystem
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
 }
 type SessionDetail {
   id: ID!
@@ -1517,6 +1519,7 @@ input UserAddInput {
   unit_system: String
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
+  monochrome_labels: Boolean
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
 }

@@ -1192,6 +1192,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     unit_system: user.unit_system,
     submenu_show_icons: user.submenu_show_icons,
     submenu_auto_collapse: user.submenu_auto_collapse,
+    monochrome_labels: user.monochrome_labels,
     groups: user.groups,
     roles: user.roles,
     impersonate: impersonate !== undefined,

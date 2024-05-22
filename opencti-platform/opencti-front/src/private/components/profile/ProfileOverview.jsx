@@ -32,6 +32,7 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const styles = () => ({
   container: {
@@ -111,6 +112,7 @@ const userValidation = (t) => Yup.object().shape({
   unit_system: Yup.string().nullable(),
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
+  monochrome_labels: Yup.boolean(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -211,6 +213,8 @@ const OtpComponent = ({ closeFunction }) => (
 );
 
 const ProfileOverviewComponent = (props) => {
+  const { isFeatureEnable } = useHelper();
+  const isMonochromeFeatureEnabled = isFeatureEnable('MONOCHROME_LABELS');
   const { t, me, classes, about, settings } = props;
   const { external, otp_activated: useOtp } = me;
   const objectOrganization = convertOrganizations(me);
@@ -227,6 +231,7 @@ const ProfileOverviewComponent = (props) => {
     'unit_system',
     'submenu_show_icons',
     'submenu_auto_collapse',
+    'monochrome_labels',
   ];
 
   const initialValues = {
@@ -444,6 +449,20 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              {isMonochromeFeatureEnabled &&
+                <ListItem style={{ padding: '10px 0 0 0' }}>
+                  <ListItemText
+                    primary={t('Monochrome labels and entity types')}
+                  />
+                  <Field
+                    component={Switch}
+                    variant="standard"
+                    name="monochrome_labels"
+                    checked={initialValues.monochrome_labels}
+                    onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
+                  />
+                </ListItem>
+              }
               <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
               <NotifierField
                 label={t('Personal notifiers')}
@@ -618,6 +637,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       unit_system
       submenu_show_icons
       submenu_auto_collapse
+      monochrome_labels
       personal_notifiers {
         id
         name
