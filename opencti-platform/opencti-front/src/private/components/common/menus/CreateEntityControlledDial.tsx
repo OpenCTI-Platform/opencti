@@ -1,5 +1,4 @@
 import React from 'react';
-import { Add } from '@mui/icons-material';
 import { Button } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -18,11 +17,10 @@ const CreateEntityControlledDial = (entity_type: string) => {
       title={buttonValue}
       sx={{
         marginLeft: '10px',
-        padding: '7px 10px 7px 5px',
+        padding: '7px 10px',
       }}
     >
       <div style={{ display: 'flex' }}>
-        <Add fontSize='small' />
         {buttonValue}
       </div>
     </Button>
