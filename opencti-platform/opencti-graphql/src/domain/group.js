@@ -47,6 +47,12 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
+export const groupMaxShareableMarkings = async (context, group) => {
+  const dataSharingMaxMarkingsIds = group.max_shareable_markings_ids;
+  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
+};
+
 export const defaultMarkingDefinitions = async (context, group) => {
   const defaultMarking = group.default_marking ?? [];
   return defaultMarking.map(async (entry) => {
