@@ -5128,4 +5128,4 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
   ],
 ]));
 
-export  default filterKeysSchema;
+export default filterKeysSchema;

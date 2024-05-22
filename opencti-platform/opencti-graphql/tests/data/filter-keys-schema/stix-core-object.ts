@@ -1,4 +1,4 @@
-export const stixCoreObjectFilterKeys: string[] = [
+const stixCoreObjectFilterKeys: string[] = [
   'entity_type',
   'created_at',
   'updated_at',
@@ -260,3 +260,5 @@ export const stixCoreObjectFilterKeys: string[] = [
   'media_category',
   'publication_date',
 ];
+
+export default stixCoreObjectFilterKeys;

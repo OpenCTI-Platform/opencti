@@ -1,4 +1,4 @@
-export const stixCoreRelationshipFilterKeys: string[] = [
+const stixCoreRelationshipFilterKeys: string[] = [
   'relationship_type',
   'created_at',
   'updated_at',
@@ -20,3 +20,5 @@ export const stixCoreRelationshipFilterKeys: string[] = [
   'externalReferences',
   'killChainPhases',
 ];
+
+export  default stixCoreRelationshipFilterKeys;
