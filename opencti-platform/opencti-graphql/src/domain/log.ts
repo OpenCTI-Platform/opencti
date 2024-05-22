@@ -3,10 +3,12 @@ import { elCount, elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
 import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
-import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { isUserHasCapability } from '../utils/access';
+import { KNOWLEDGE_CAPABILITY } from '../database/data-initialization';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
@@ -14,7 +16,11 @@ export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLog
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
-  const finalArgs = { ...args, types: args.types ? args.types : [ENTITY_TYPE_HISTORY] };
+  let types = args.types ? args.types : [ENTITY_TYPE_ACTIVITY];
+  if (!isUserHasCapability(user, KNOWLEDGE_CAPABILITY)) {
+    types = types.filter((t) => t !== ENTITY_TYPE_HISTORY);
+  }
+  const finalArgs = { ...args, types };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 

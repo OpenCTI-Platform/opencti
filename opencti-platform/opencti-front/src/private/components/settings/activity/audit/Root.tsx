@@ -18,6 +18,8 @@ import Audit from './Audit';
 import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdition';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../../../components/i18n';
+import Security from '../../../../../utils/Security';
+import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 
 const Root = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -26,7 +28,15 @@ const Root = () => {
   if (!isEnterpriseEdition) {
     return <EnterpriseEdition feature={t_i18n('Activity')} />;
   }
-  return <Audit />;
+  return (
+    <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<span>{t_i18n(
+      'You do not have any access to the audit activity of this OpenCTI instance.',
+    )}</span>}
+    >
+      <Audit />
+    </Security>
+
+  );
 };
 
 export default Root;

@@ -35,8 +35,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
-import Security from '../../../../../utils/Security';
-import useGranted, { SETTINGS_KNOWLEDGEACTIVITY, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -100,21 +99,11 @@ const Audit = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
-  const hasSecurityCapability = useGranted([SETTINGS_SECURITYACTIVITY]);
-  const hasKnowledgeCapability = useGranted([SETTINGS_KNOWLEDGEACTIVITY]);
   const hasBothCapabilities = useGranted(
-    [SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY],
+    [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
     true,
   );
   const { t_i18n } = useFormatter();
-
-  const initialTypes = [];
-  if (hasKnowledgeCapability) {
-    initialTypes.push('History');
-  }
-  if (hasSecurityCapability) {
-    initialTypes.push('Activity');
-  }
 
   const {
     viewStorage,
@@ -129,7 +118,7 @@ const Audit = () => {
       sortBy: 'timestamp',
       orderAsc: false,
       openExports: false,
-      types: initialTypes,
+      types: ['Activity'],
       count: 25,
     },
   );
@@ -207,47 +196,24 @@ const Audit = () => {
       });
   };
 
-  const handleCheckboxChange = (type: string) => {
-    let newTypes = [...(types ?? [])];
-    if (newTypes.includes(type)) {
-      newTypes = newTypes.filter((t) => t !== type);
-    } else {
-      newTypes.push(type);
-    }
-    storageHelpers.handleAddProperty('types', newTypes);
-  };
-
   const extraFields = (
     <div style={{ marginLeft: 10 }}>
       {hasBothCapabilities && (
-        <Security needs={[SETTINGS_SECURITYACTIVITY, SETTINGS_KNOWLEDGEACTIVITY]}>
-          <div>
-            <FormControlLabel
-              value="start"
-              control={
-                <Checkbox
-                  style={{ padding: 7 }}
-                  onChange={() => handleCheckboxChange('History')}
-                  checked={(types ?? []).includes('History')}
-                />
-              }
-              label={t_i18n('Include Basic Knowledge')}
-              labelPlacement="end"
+        <FormControlLabel
+          value="start"
+          control={
+            <Checkbox
+              style={{ padding: 7 }}
+              onChange={() => {
+                const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
+                storageHelpers.handleAddProperty('types', newTypes);
+              }}
+              checked={types?.length === 2}
             />
-            <FormControlLabel
-              value="start"
-              control={
-                <Checkbox
-                  style={{ padding: 7 }}
-                  onChange={() => handleCheckboxChange('Activity')}
-                  checked={(types ?? []).includes('Activity')}
-                />
-              }
-              label={t_i18n('Include Audit & Extended Knowledge')}
-              labelPlacement="end"
-            />
-          </div>
-        </Security>
+          }
+          label={t_i18n('Include knowledge')}
+          labelPlacement="end"
+        />
       )}
     </div>
   );

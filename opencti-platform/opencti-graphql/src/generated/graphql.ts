@@ -1724,7 +1724,6 @@ export enum Capabilities {
   Modules = 'MODULES',
   ModulesModmanage = 'MODULES_MODMANAGE',
   Settings = 'SETTINGS',
-  SettingsKnowledgeactivity = 'SETTINGS_KNOWLEDGEACTIVITY',
   SettingsSecurityactivity = 'SETTINGS_SECURITYACTIVITY',
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
   SettingsSetlabels = 'SETTINGS_SETLABELS',

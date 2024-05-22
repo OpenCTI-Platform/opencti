@@ -16,6 +16,8 @@ import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
+import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
@@ -215,12 +217,18 @@ const Alerting: FunctionComponent = () => {
   };
 
   return (
-    <div className={classes.container}>
-      <ActivityMenu/>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
-      {renderLines()}
-      <AlertCreation paginationOptions={paginationOptions}/>
-    </div>
+    <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<span>{t_i18n(
+      'You do not have any access to the audit activity of this OpenCTI instance.',
+    )}</span>}
+    >
+      <div className={classes.container}>
+        <ActivityMenu/>
+        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
+        {renderLines()}
+        <AlertCreation paginationOptions={paginationOptions}/>
+      </div>
+    </Security>
+
   );
 };
 
