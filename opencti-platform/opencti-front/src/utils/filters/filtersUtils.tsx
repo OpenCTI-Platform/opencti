@@ -639,12 +639,11 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   const filterKeysMap = new Map();
   entityTypes.forEach((entityType) => {
     const currentMap = filterKeysSchema.get(entityType) ?? new Map();
-    currentMap?.forEach((value, key) => {
-      if (filterKeysMap.has(key)) { // add entity type in subEntityTypes of the filter definition
-        filterKeysMap.set(key, { ...value, subEntityTypes: filterKeysMap.get(key).subEntityTypes.concat([entityType]) });
-      } else { // add the filter definition in the map
-        filterKeysMap.set(key, value);
-      }
+    currentMap.forEach((value, key) => {
+      const valueToSet = filterKeysMap.has(key)
+        ? { ...value, subEntityTypes: filterKeysMap.get(key).subEntityTypes.concat([entityType]) }
+        : value
+      filterKeysMap.set(key, valueToSet);
     });
   });
   if (entityTypes.length > 0) { // add entity_type filter if several types are given (entity_type filter already present for abstract types)
