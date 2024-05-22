@@ -35,7 +35,11 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -151,6 +155,11 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { t_i18n } = useFormatter();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
+
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
+  // TODO: remove on chunk#1 merge
+  const generateUniqueItemsArray = <T,>(submittedArray: IterableIterator<T>) => Array.from(new Set(submittedArray));
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -456,24 +465,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         gap: 1 }}
                       >
                         <Filters
-                          availableFilterKeys={[
-                            'workflow_id',
-                            'objectAssignee',
-                            'objects',
-                            'objectMarking',
-                            'objectLabel',
-                            'creator_id',
-                            'createdBy',
-                            'priority',
-                            'severity',
-                            'x_opencti_score',
-                            'x_opencti_detection',
-                            'x_opencti_main_observable_type',
-                            'revoked',
-                            'confidence',
-                            'indicator_types',
-                            'pattern_type',
-                          ]}
+                          availableFilterKeys={availableFilterKeys}
                           helpers={helpers}
                           searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                         />

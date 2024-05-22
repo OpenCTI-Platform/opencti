@@ -29,7 +29,11 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -149,6 +153,11 @@ const FeedEditionContainer = (props) => {
   const [feedAttributes, setFeedAttributes] = useState({
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });
+
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
+  // TODO: remove on chunk#1 merge
+  const generateUniqueItemsArray = (submittedArray) => Array.from(new Set(submittedArray));
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);
@@ -434,24 +443,7 @@ const FeedEditionContainer = (props) => {
                       gap: 1 }}
                     >
                       <Filters
-                        availableFilterKeys={[
-                          'workflow_id',
-                          'objectAssignee',
-                          'objects',
-                          'objectMarking',
-                          'objectLabel',
-                          'creator_id',
-                          'createdBy',
-                          'priority',
-                          'severity',
-                          'x_opencti_score',
-                          'x_opencti_detection',
-                          'x_opencti_main_observable_type',
-                          'revoked',
-                          'confidence',
-                          'indicator_types',
-                          'pattern_type',
-                        ]}
+                        availableFilterKeys={availableFilterKeys}
                         helpers={helpers}
                         searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                       />
