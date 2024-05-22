@@ -29,6 +29,7 @@ type DecayData {
 enum DecayRuleOrdering {
   name
   order
+  _score
 }
 
 # Relay connections

@@ -15,6 +15,7 @@ enum CaseTemplatesOrdering {
   name
   description
   created
+  _score
 }
 
 type CaseTemplateConnection {

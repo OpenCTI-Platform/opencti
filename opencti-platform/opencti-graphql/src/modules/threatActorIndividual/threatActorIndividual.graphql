@@ -150,6 +150,7 @@ enum ThreatActorsIndividualOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 type ThreatActorIndividualConnection {
   pageInfo: PageInfo!

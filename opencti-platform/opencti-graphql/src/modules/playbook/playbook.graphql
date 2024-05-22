@@ -52,6 +52,7 @@ type PlaybookInsertResult {
 enum PlaybooksOrdering {
     name
     playbook_running
+    _score
 }
 
 # Relay connections

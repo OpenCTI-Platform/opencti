@@ -118,6 +118,7 @@ enum LanguagesOrdering {
     objectMarking
     objectLabel
     x_opencti_workflow_id
+    _score
 }
 
 # Relay connections

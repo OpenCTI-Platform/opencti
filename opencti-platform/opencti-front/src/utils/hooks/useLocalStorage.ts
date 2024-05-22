@@ -262,7 +262,7 @@ export const usePaginationLocalStorage = <U>(
   const { filterKeysSchema } = useAuth().schema;
 
   const helpers: UseLocalStorageHelpers = {
-    handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
+    handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value, sortBy: '_score', orderAsc: false })),
     handleRemoveFilterById: (id: string) => {
       if (viewStorage?.filters) {
         const { filters } = viewStorage;

@@ -38,6 +38,7 @@ enum WorkspacesOrdering {
     created_at
     updated_at
     creator
+    _score
 }
 
 # Relay connections

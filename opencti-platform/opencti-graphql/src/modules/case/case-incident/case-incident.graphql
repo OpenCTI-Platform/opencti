@@ -155,6 +155,7 @@ enum CaseIncidentsOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  _score
 }
 # Relay connections
 type CaseIncidentConnection {

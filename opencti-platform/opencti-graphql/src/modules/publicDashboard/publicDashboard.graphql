@@ -33,6 +33,7 @@ enum PublicDashboardsOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 # Relay connections

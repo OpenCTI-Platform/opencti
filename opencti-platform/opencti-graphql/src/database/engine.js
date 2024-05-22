@@ -2544,8 +2544,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
       },
     };
     mustFilters.push(bool);
-    // When using a search, we need to force the sort by score first
-    if (!orderCriterion.includes('_score')) {
+    // When using a search, force a score ordering if nothing specified
+    if (orderCriterion.length === 0) {
       orderCriterion.unshift('_score');
       scoreSearchOrder = 'desc';
     }

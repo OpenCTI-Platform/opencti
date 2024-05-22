@@ -20,6 +20,7 @@ enum IngestionRssOrdering {
     created_at
     updated_at
     uri
+    _score
 }
 type IngestionRssConnection {
     pageInfo: PageInfo!

@@ -141,6 +141,7 @@ enum OrganizationsOrdering {
   updated_at
   x_opencti_organization_type
   x_opencti_workflow_id
+  _score
 }
 
 # Relay connections

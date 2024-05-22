@@ -436,6 +436,7 @@ enum LogsOrdering {
   created_at
   event_type
   event_scope
+  _score
 }
 
 type LogConnection {
@@ -475,6 +476,7 @@ type Log {
 
 enum AttributesOrdering {
   value
+  _score
 }
 
 type AttributeConnection {
@@ -529,6 +531,7 @@ enum TaxiiCollectionOrdering {
   name
   description
   id
+  _score
 }
 
 type FeedMapping {
@@ -585,6 +588,7 @@ enum FeedOrdering {
   name
   rolling_time
   feed_types
+  _score
 }
 
 type FeedEdge {
@@ -639,10 +643,12 @@ enum StreamCollectionOrdering {
   stream_public
   id
   stream_live
+  _score
 }
 
 enum SubTypesOrdering {
   label
+  _score
 }
 
 type SubTypeConnection {
@@ -665,6 +671,7 @@ type SubType {
 
 enum StatusTemplateOrdering {
   name
+  _score
 }
 
 type StatusTemplate {
@@ -688,6 +695,7 @@ type StatusTemplateEdge {
 enum StatusOrdering {
   type
   order
+  _score
 }
 
 type Status {
@@ -726,6 +734,7 @@ enum SynchronizersOrdering {
   running
   uri
   stream_id
+  _score
 }
 
 type Synchronizer {
@@ -776,6 +785,7 @@ input SynchronizerFetchInput {
 enum WorksOrdering {
   status
   timestamp
+  _score
 }
 
 type WorkMessage {
@@ -945,6 +955,7 @@ enum BackgroundTasksOrdering {
   completed
   created_at
   last_execution_date
+  _score
 }
 
 type BackgroundTaskContext {
@@ -1243,6 +1254,7 @@ enum GroupsOrdering {
   created_at
   updated_at
   group_confidence_level
+  _score
 }
 
 type GroupConnection {
@@ -1310,6 +1322,7 @@ enum UsersOrdering {
   external
   created_at
   updated_at
+  _score
 }
 
 type UserConnection {
@@ -1570,6 +1583,7 @@ enum RolesOrdering {
   name
   created_at
   updated_at
+  _score
 }
 
 type RoleConnection {
@@ -1822,6 +1836,7 @@ enum StixMetaObjectsOrdering {
   spec_version
   created_at
   updated_at
+  _score
 }
 
 type StixMetaObjectConnection {
@@ -1857,6 +1872,7 @@ enum MarkingDefinitionsOrdering {
   modified
   created_at
   updated_at
+  _score
 }
 
 type MarkingDefinitionConnection {
@@ -1923,6 +1939,7 @@ enum LabelsOrdering {
   modified
   created_at
   updated_at
+  _score
 }
 
 type LabelConnection {
@@ -1977,6 +1994,7 @@ enum ExternalReferencesOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 type ExternalReferenceConnection {
@@ -2042,6 +2060,7 @@ enum KillChainPhasesOrdering {
   modified
   created_at
   updated_at
+  _score
 }
 
 type KillChainPhaseConnection {
@@ -2301,6 +2320,7 @@ enum AttackPatternsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  _score
 }
 
 type AttackPatternConnection {
@@ -2413,6 +2433,7 @@ enum CampaignsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type CampaignConnection {
@@ -2585,6 +2606,7 @@ enum NotesOrdering {
   objectMarking
   note_types
   creator
+  _score
 }
 
 type NoteConnection {
@@ -2711,6 +2733,7 @@ enum ObservedDatasOrdering {
   x_opencti_workflow_id
   objectMarking
   confidence
+  _score
 }
 
 type ObservedDataConnection {
@@ -2812,6 +2835,7 @@ enum OpinionsOrdering {
   x_opencti_workflow_id
   confidence
   creator
+  _score
 }
 
 type OpinionConnection {
@@ -2933,6 +2957,7 @@ enum ReportsOrdering {
   objectMarking
   report_types
   x_opencti_workflow_id
+  _score
 }
 
 type ReportConnection {
@@ -3043,6 +3068,7 @@ enum CoursesOfActionOrdering {
   x_opencti_workflow_id
   objectMarking
   x_mitre_id
+  _score
 }
 
 type CourseOfActionConnection {
@@ -3247,6 +3273,7 @@ enum IndividualsOrdering {
   modified
   x_opencti_workflow_id
   objectMarking
+  _score
 }
 
 type IndividualConnection {
@@ -3354,6 +3381,7 @@ enum SectorsOrdering {
   updated_at
   x_opencti_workflow_id
   objectMarking
+  _score
 }
 
 type SectorConnection {
@@ -3458,6 +3486,7 @@ enum SystemsOrdering {
   created
   modified
   x_opencti_workflow_id
+  _score
 }
 
 type SystemConnection {
@@ -3569,6 +3598,7 @@ enum InfrastructuresOrdering {
   createdBy
   objectMarking
   creator
+  _score
 }
 
 type InfrastructureConnection {
@@ -3671,6 +3701,7 @@ enum IntrusionSetsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type IntrusionSetConnection {
@@ -3780,6 +3811,7 @@ enum LocationsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  _score
 }
 
 type LocationConnection {
@@ -3880,6 +3912,7 @@ enum PositionsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  _score
 }
 
 type PositionConnection {
@@ -3987,6 +4020,7 @@ enum CitiesOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  _score
 }
 
 type CityConnection {
@@ -4088,6 +4122,7 @@ enum CountriesOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  _score
 }
 
 type CountryConnection {
@@ -4188,6 +4223,7 @@ enum RegionsOrdering {
   created_at
   updated_at
   x_opencti_workflow_id
+  _score
 }
 
 type RegionConnection {
@@ -4295,6 +4331,7 @@ enum MalwaresOrdering {
   objectLabel
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type MalwareConnection {
@@ -4408,6 +4445,7 @@ enum ThreatActorsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type ThreatActorGroupConnection {
@@ -4599,6 +4637,7 @@ enum ToolsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type ToolConnection {
@@ -4703,6 +4742,7 @@ enum VulnerabilitiesOrdering {
   x_opencti_workflow_id
   creator
   confidence
+  _score
 }
 
 type VulnerabilityConnection {
@@ -4818,6 +4858,7 @@ enum IncidentsOrdering {
   confidence
   objectAssignee
   creator
+  _score
 }
 
 type IncidentConnection {
@@ -4927,6 +4968,7 @@ enum StixCyberObservablesOrdering {
   objectMarking
   createdBy
   creator
+  _score
 }
 
 type StixCyberObservableConnection {
@@ -6868,6 +6910,7 @@ enum StixObjectOrStixRelationshipsOrdering {
   modified
   relationship_type
   creator
+  _score
 }
 
 type StixObjectOrStixRelationshipConnection {
@@ -6918,6 +6961,7 @@ enum StixRelationshipsOrdering {
   x_opencti_workflow_id
   createdBy
   creator
+  _score
 }
 
 type StixRelationshipConnection {
@@ -6982,6 +7026,7 @@ enum StixCoreRelationshipsOrdering {
   x_opencti_workflow_id
   createdBy
   creator
+  _score
 }
 
 type StixCoreRelationshipConnection {
@@ -7086,6 +7131,7 @@ enum StixSightingRelationshipsOrdering {
   toCreatedAt
   attribute_count
   x_opencti_workflow_id
+  _score
 }
 
 type StixSightingRelationshipConnection {
@@ -7183,6 +7229,7 @@ enum StixRefRelationshipsOrdering {
   toValidUntil
   toPatternType
   toCreatedAt
+  _score
 }
 
 type StixRefRelationshipConnection {
@@ -8416,6 +8463,7 @@ enum ChannelsOrdering {
   objectLabel
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type ChannelConnection {
@@ -8511,6 +8559,7 @@ enum LanguagesOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  _score
 }
 
 type LanguageConnection {
@@ -8610,6 +8659,7 @@ enum EventsOrdering {
   x_opencti_workflow_id
   start_time
   stop_time
+  _score
 }
 
 type EventConnection {
@@ -8714,6 +8764,7 @@ enum GroupingsOrdering {
   objectMarking
   x_opencti_workflow_id
   creator
+  _score
 }
 
 type GroupingConnection {
@@ -8818,6 +8869,7 @@ enum NarrativesOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  _score
 }
 
 type NarrativeConnection {
@@ -8871,6 +8923,7 @@ enum TriggersOrdering {
   event_types
   trigger_type
   notifiers
+  _score
 }
 
 enum TriggerType {
@@ -8968,6 +9021,7 @@ input TriggerActivityDigestAddInput {
 enum NotificationsOrdering {
   name
   created
+  _score
 }
 
 type NotificationCount {
@@ -9073,6 +9127,7 @@ enum DataComponentsOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type DataComponentConnection {
@@ -9170,6 +9225,7 @@ enum DataSourcesOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type DataSourceConnection {
@@ -9295,6 +9351,7 @@ enum VocabularyOrdering {
   category
   description
   order
+  _score
 }
 
 type VocabularyConnection {
@@ -9385,6 +9442,7 @@ enum AdministrativeAreasOrdering {
   objectMarking
   objectLabel
   x_opencti_workflow_id
+  _score
 }
 
 type AdministrativeAreaConnection {
@@ -9490,6 +9548,7 @@ enum TasksOrdering {
   confidence
   due_date
   objectAssignee
+  _score
 }
 
 type TaskEdge {
@@ -9537,6 +9596,7 @@ enum TaskTemplatesOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 type TaskTemplateConnection {
@@ -9623,6 +9683,7 @@ enum CasesOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  _score
 }
 
 type CaseConnection {
@@ -9651,6 +9712,7 @@ enum CaseTemplatesOrdering {
   name
   description
   created
+  _score
 }
 
 type CaseTemplateConnection {
@@ -9746,6 +9808,7 @@ enum CaseIncidentsOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  _score
 }
 
 type CaseIncidentConnection {
@@ -9862,6 +9925,7 @@ enum CaseRfisOrdering {
   objectMarking
   severity
   priority
+  _score
 }
 
 type CaseRfiConnection {
@@ -9979,6 +10043,7 @@ enum CaseRftsOrdering {
   objectMarking
   severity
   priority
+  _score
 }
 
 type CaseRftConnection {
@@ -10094,6 +10159,7 @@ enum FeedbacksOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  _score
 }
 
 type FeedbackConnection {
@@ -10181,6 +10247,7 @@ type EntitySetting implements InternalObject & BasicObject {
 
 enum EntitySettingsOrdering {
   target_type
+  _score
 }
 
 type EntitySettingConnection {
@@ -10222,6 +10289,7 @@ enum WorkspacesOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 type WorkspaceConnection {
@@ -10338,6 +10406,7 @@ enum MalwareAnalysesOrdering {
   objectMarking
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type MalwareAnalysisConnection {
@@ -10402,6 +10471,7 @@ enum NotifierOrdering {
   name
   created
   connector
+  _score
 }
 
 type NotifierParameter {
@@ -10550,6 +10620,7 @@ enum ThreatActorsIndividualOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  _score
 }
 
 type ThreatActorIndividualConnection {
@@ -10659,6 +10730,7 @@ type PlaybookInsertResult {
 enum PlaybooksOrdering {
   name
   playbook_running
+  _score
 }
 
 type PlaybookConnection {
@@ -10717,6 +10789,7 @@ enum IngestionRssOrdering {
   created_at
   updated_at
   uri
+  _score
 }
 
 type IngestionRssConnection {
@@ -10781,6 +10854,7 @@ enum IngestionTaxiiOrdering {
   updated_at
   uri
   version
+  _score
 }
 
 type IngestionTaxiiConnection {
@@ -10839,6 +10913,7 @@ enum IngestionCsvOrdering {
   updated_at
   uri
   mapper
+  _score
 }
 
 type IngestionCsvConnection {
@@ -10882,6 +10957,7 @@ enum IndicatorsOrdering {
   objectMarking
   creator
   createdBy
+  _score
 }
 
 type IndicatorConnection {
@@ -11047,6 +11123,7 @@ type DecayData {
 enum DecayRuleOrdering {
   name
   order
+  _score
 }
 
 type DecayRuleConnection {
@@ -11145,6 +11222,7 @@ enum OrganizationsOrdering {
   updated_at
   x_opencti_organization_type
   x_opencti_workflow_id
+  _score
 }
 
 type OrganizationConnection {
@@ -11271,6 +11349,7 @@ type CsvMapper implements InternalObject & BasicObject {
 
 enum CsvMapperOrdering {
   name
+  _score
 }
 
 type CsvMapperConnection {
@@ -11395,6 +11474,7 @@ enum PublicDashboardsOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 type PublicDashboardConnection {
@@ -11494,6 +11574,7 @@ enum DeleteOperationOrdering {
   created_at
   deletedBy
   objectMarking
+  _score
 }
 
 type DeleteOperationConnection {

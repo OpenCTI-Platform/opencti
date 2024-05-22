@@ -123,6 +123,7 @@ enum ChannelsOrdering {
     objectLabel
     x_opencti_workflow_id
     confidence
+    _score
 }
 
 # Relay connections

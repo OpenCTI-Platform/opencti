@@ -31,6 +31,7 @@ enum IngestionCsvOrdering {
     updated_at
     uri
     mapper
+    _score
 }
 
 type IngestionCsvConnection {

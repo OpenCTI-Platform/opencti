@@ -69,6 +69,7 @@ type CsvMapper implements InternalObject & BasicObject {
 # Ordering
 enum CsvMapperOrdering {
   name
+  _score
 }
 
 # Relay connections

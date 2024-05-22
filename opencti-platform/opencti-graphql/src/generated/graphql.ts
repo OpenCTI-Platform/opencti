@@ -293,6 +293,7 @@ export type AdministrativeAreaEdge = {
 };
 
 export enum AdministrativeAreasOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -833,6 +834,7 @@ export type AttackPatternEditMutationsRelationDeleteArgs = {
 };
 
 export enum AttackPatternsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -919,6 +921,7 @@ export type AttributeRefInput = {
 };
 
 export enum AttributesOrdering {
+  Score = '_score',
   Value = 'value'
 }
 
@@ -1213,6 +1216,7 @@ export enum BackgroundTaskType {
 }
 
 export enum BackgroundTasksOrdering {
+  Score = '_score',
   Completed = 'completed',
   CreatedAt = 'created_at',
   Id = 'id',
@@ -1687,6 +1691,7 @@ export type CampaignEditMutationsRelationDeleteArgs = {
 };
 
 export enum CampaignsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -2235,6 +2240,7 @@ export type CaseIncidentEdge = {
 };
 
 export enum CaseIncidentsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -2509,6 +2515,7 @@ export type CaseRfiEdge = {
 };
 
 export enum CaseRfisOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -2782,6 +2789,7 @@ export type CaseRftEdge = {
 };
 
 export enum CaseRftsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -2831,12 +2839,14 @@ export type CaseTemplateEdge = {
 };
 
 export enum CaseTemplatesOrdering {
+  Score = '_score',
   Created = 'created',
   Description = 'description',
   Name = 'name'
 }
 
 export enum CasesOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -3070,6 +3080,7 @@ export type ChannelEdge = {
 };
 
 export enum ChannelsOrdering {
+  Score = '_score',
   ChannelTypes = 'channel_types',
   Confidence = 'confidence',
   Created = 'created',
@@ -3083,6 +3094,7 @@ export enum ChannelsOrdering {
 }
 
 export enum CitiesOrdering {
+  Score = '_score',
   Aliases = 'aliases',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -3696,6 +3708,7 @@ export type ContextData = {
 };
 
 export enum CountriesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Description = 'description',
@@ -4217,6 +4230,7 @@ export type CourseOfActionEditMutationsRelationDeleteArgs = {
 };
 
 export enum CoursesOfActionOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -4848,6 +4862,7 @@ export type CsvMapperEdge = {
 };
 
 export enum CsvMapperOrdering {
+  Score = '_score',
   Name = 'name'
 }
 
@@ -5161,6 +5176,7 @@ export type DataComponentEdge = {
 };
 
 export enum DataComponentsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -5393,6 +5409,7 @@ export type DataSourceEdge = {
 };
 
 export enum DataSourcesOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -5471,6 +5488,7 @@ export type DecayRuleEdge = {
 };
 
 export enum DecayRuleOrdering {
+  Score = '_score',
   Name = 'name',
   Order = 'order'
 }
@@ -5535,6 +5553,7 @@ export type DeleteOperationEdge = {
 };
 
 export enum DeleteOperationOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   DeletedBy = 'deletedBy',
   MainEntityName = 'main_entity_name',
@@ -6638,6 +6657,7 @@ export type EntitySettingEdge = {
 };
 
 export enum EntitySettingsOrdering {
+  Score = '_score',
   TargetType = 'target_type'
 }
 
@@ -6864,6 +6884,7 @@ export type EventEdge = {
 };
 
 export enum EventsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   EventTypes = 'event_types',
@@ -7024,6 +7045,7 @@ export type ExternalReferenceEditMutationsRelationDeleteArgs = {
 };
 
 export enum ExternalReferencesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
@@ -7101,6 +7123,7 @@ export type FeedMappingInput = {
 };
 
 export enum FeedOrdering {
+  Score = '_score',
   FeedTypes = 'feed_types',
   Name = 'name',
   RollingTime = 'rolling_time'
@@ -7360,6 +7383,7 @@ export type FeedbackEdge = {
 };
 
 export enum FeedbacksOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -7848,6 +7872,7 @@ export type GroupingEdge = {
 };
 
 export enum GroupingsOrdering {
+  Score = '_score',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -7861,6 +7886,7 @@ export enum GroupingsOrdering {
 }
 
 export enum GroupsOrdering {
+  Score = '_score',
   AutoNewMarking = 'auto_new_marking',
   CreatedAt = 'created_at',
   DefaultAssignation = 'default_assignation',
@@ -9164,6 +9190,7 @@ export type IncidentEditMutationsRelationDeleteArgs = {
 };
 
 export enum IncidentsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -9476,6 +9503,7 @@ export enum IndicatorFormat {
 }
 
 export enum IndicatorsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -9759,6 +9787,7 @@ export type IndividualEditMutationsRelationDeleteArgs = {
 };
 
 export enum IndividualsOrdering {
+  Score = '_score',
   Created = 'created',
   Firstname = 'firstname',
   Lastname = 'lastname',
@@ -10040,6 +10069,7 @@ export type InfrastructureEditMutationsRelationDeleteArgs = {
 };
 
 export enum InfrastructuresOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -10101,6 +10131,7 @@ export type IngestionCsvEdge = {
 };
 
 export enum IngestionCsvOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Mapper = 'mapper',
   Name = 'name',
@@ -10152,6 +10183,7 @@ export type IngestionRssEdge = {
 };
 
 export enum IngestionRssOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -10206,6 +10238,7 @@ export type IngestionTaxiiEdge = {
 };
 
 export enum IngestionTaxiiOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -10504,6 +10537,7 @@ export type IntrusionSetEditMutationsRelationDeleteArgs = {
 };
 
 export enum IntrusionSetsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -10591,6 +10625,7 @@ export type KillChainPhaseEditMutationsRelationDeleteArgs = {
 };
 
 export enum KillChainPhasesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   KillChainName = 'kill_chain_name',
@@ -10664,6 +10699,7 @@ export type LabelEditMutationsFieldPatchArgs = {
 };
 
 export enum LabelsOrdering {
+  Score = '_score',
   Color = 'color',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -10887,6 +10923,7 @@ export type LanguageEdge = {
 };
 
 export enum LanguagesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -11176,6 +11213,7 @@ export type LocationEditMutationsRelationDeleteArgs = {
 };
 
 export enum LocationsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Latitude = 'latitude',
@@ -11214,6 +11252,7 @@ export type LogEdge = {
 };
 
 export enum LogsOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Event = 'event',
   EventScope = 'event_scope',
@@ -11642,6 +11681,7 @@ export type MalwareAddInput = {
 };
 
 export enum MalwareAnalysesOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   CreatedBy = 'createdBy',
   Creator = 'creator',
@@ -11944,6 +11984,7 @@ export type MalwareEditMutationsRelationDeleteArgs = {
 };
 
 export enum MalwaresOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -12051,6 +12092,7 @@ export type MarkingDefinitionShort = {
 };
 
 export enum MarkingDefinitionsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Definition = 'definition',
@@ -15076,6 +15118,7 @@ export type NarrativeEdge = {
 };
 
 export enum NarrativesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -15596,6 +15639,7 @@ export type NoteUserAddInput = {
 };
 
 export enum NotesOrdering {
+  Score = '_score',
   AttributeAbstract = 'attribute_abstract',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -15656,6 +15700,7 @@ export type NotificationEvent = {
 };
 
 export enum NotificationsOrdering {
+  Score = '_score',
   Created = 'created',
   Name = 'name'
 }
@@ -15707,6 +15752,7 @@ export type NotifierEdge = {
 };
 
 export enum NotifierOrdering {
+  Score = '_score',
   Connector = 'connector',
   Created = 'created',
   Name = 'name'
@@ -16016,6 +16062,7 @@ export type ObservedDataEditMutationsRelationDeleteArgs = {
 };
 
 export enum ObservedDatasOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -16342,6 +16389,7 @@ export type OpinionUserAddInput = {
 };
 
 export enum OpinionsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -16605,6 +16653,7 @@ export type OrganizationEdge = {
 export type OrganizationOrIndividual = Individual | Organization;
 
 export enum OrganizationsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -17142,6 +17191,7 @@ export type PlaybookInsertResult = {
 };
 
 export enum PlaybooksOrdering {
+  Score = '_score',
   Name = 'name',
   PlaybookRunning = 'playbook_running'
 }
@@ -17412,6 +17462,7 @@ export type PositionInput = {
 };
 
 export enum PositionsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Modified = 'modified',
@@ -17701,6 +17752,7 @@ export type PublicDashboardEdge = {
 };
 
 export enum PublicDashboardsOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Creator = 'creator',
   Name = 'name',
@@ -20815,6 +20867,7 @@ export type RegionEditMutationsRelationDeleteArgs = {
 };
 
 export enum RegionsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Description = 'description',
@@ -21141,6 +21194,7 @@ export type ReportEditMutationsRelationDeleteArgs = {
 };
 
 export enum ReportsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -21280,6 +21334,7 @@ export type RoleEditMutationsRelationDeleteArgs = {
 };
 
 export enum RolesOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Name = 'name',
   UpdatedAt = 'updated_at'
@@ -21605,6 +21660,7 @@ export type SectorEditMutationsRelationDeleteArgs = {
 };
 
 export enum SectorsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Description = 'description',
@@ -22014,6 +22070,7 @@ export type StatusEdge = {
 };
 
 export enum StatusOrdering {
+  Score = '_score',
   Order = 'order',
   Type = 'type'
 }
@@ -22045,6 +22102,7 @@ export type StatusTemplateEdge = {
 };
 
 export enum StatusTemplateOrdering {
+  Score = '_score',
   Name = 'name'
 }
 
@@ -22598,6 +22656,7 @@ export type StixCoreRelationshipsExportAskInput = {
 };
 
 export enum StixCoreRelationshipsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -22903,6 +22962,7 @@ export type StixCyberObservablesExportAskInput = {
 };
 
 export enum StixCyberObservablesOrdering {
+  Score = '_score',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
@@ -23506,6 +23566,7 @@ export type StixMetaObjectEdge = {
 };
 
 export enum StixMetaObjectsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
@@ -23559,6 +23620,7 @@ export type StixObjectOrStixRelationshipRefEdge = {
 };
 
 export enum StixObjectOrStixRelationshipsOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -23705,6 +23767,7 @@ export type StixRefRelationshipsAddInput = {
 };
 
 export enum StixRefRelationshipsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -23771,6 +23834,7 @@ export type StixRelationshipSchema = {
 };
 
 export enum StixRelationshipsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -23986,6 +24050,7 @@ export type StixSightingRelationshipsEdge = {
 };
 
 export enum StixSightingRelationshipsOrdering {
+  Score = '_score',
   AttributeCount = 'attribute_count',
   Confidence = 'confidence',
   Created = 'created',
@@ -24061,6 +24126,7 @@ export type StreamCollectionEditMutationsFieldPatchArgs = {
 };
 
 export enum StreamCollectionOrdering {
+  Score = '_score',
   Description = 'description',
   Id = 'id',
   Name = 'name',
@@ -24113,6 +24179,7 @@ export type SubTypeEditMutationsStatusFieldPatchArgs = {
 };
 
 export enum SubTypesOrdering {
+  Score = '_score',
   Label = 'label'
 }
 
@@ -24344,6 +24411,7 @@ export type SynchronizerFetchInput = {
 };
 
 export enum SynchronizersOrdering {
+  Score = '_score',
   CurrentStateDate = 'current_state_date',
   Id = 'id',
   Name = 'name',
@@ -24614,6 +24682,7 @@ export type SystemEditMutationsRelationDeleteArgs = {
 };
 
 export enum SystemsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   Firstname = 'firstname',
@@ -24891,6 +24960,7 @@ export type TaskTemplateEdge = {
 };
 
 export enum TaskTemplatesOrdering {
+  Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
@@ -24901,6 +24971,7 @@ export enum TaskTemplatesOrdering {
 }
 
 export enum TasksOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -24965,6 +25036,7 @@ export type TaxiiCollectionEditMutationsFieldPatchArgs = {
 };
 
 export enum TaxiiCollectionOrdering {
+  Score = '_score',
   Description = 'description',
   Id = 'id',
   Name = 'name'
@@ -25901,6 +25973,7 @@ export type ThreatActorIndividualEdge = {
 };
 
 export enum ThreatActorsIndividualOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -25911,6 +25984,7 @@ export enum ThreatActorsIndividualOrdering {
 }
 
 export enum ThreatActorsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -26189,6 +26263,7 @@ export type ToolEditMutationsRelationDeleteArgs = {
 };
 
 export enum ToolsOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -26483,6 +26558,7 @@ export enum TriggerType {
 }
 
 export enum TriggersOrdering {
+  Score = '_score',
   Created = 'created',
   EventTypes = 'event_types',
   Name = 'name',
@@ -27246,6 +27322,7 @@ export type UserStatus = {
 };
 
 export enum UsersOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   External = 'external',
   Firstname = 'firstname',
@@ -27369,6 +27446,7 @@ export type VocabularyFieldDefinition = {
 };
 
 export enum VocabularyOrdering {
+  Score = '_score',
   Category = 'category',
   Description = 'description',
   Name = 'name',
@@ -27376,6 +27454,7 @@ export enum VocabularyOrdering {
 }
 
 export enum VulnerabilitiesOrdering {
+  Score = '_score',
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -28120,6 +28199,7 @@ export type WorkTracking = {
 };
 
 export enum WorksOrdering {
+  Score = '_score',
   Status = 'status',
   Timestamp = 'timestamp'
 }
@@ -28196,6 +28276,7 @@ export type WorkspaceEdge = {
 };
 
 export enum WorkspacesOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Creator = 'creator',
   Name = 'name',

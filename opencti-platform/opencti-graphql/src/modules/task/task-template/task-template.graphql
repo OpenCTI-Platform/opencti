@@ -18,6 +18,7 @@ enum TaskTemplatesOrdering {
   created_at
   updated_at
   creator
+  _score
 }
 
 type TaskTemplateConnection {
