@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { Button, styled } from '@mui/material';
+import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import Drawer from '../../common/drawer/Drawer';
@@ -25,18 +25,6 @@ const useStyles = makeStyles({
   container: {
     padding: 0,
   },
-});
-
-const StyledSearchHeader = styled('div')({
-  marginLeft: 'auto',
-  marginRight: '20px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-});
-
-const CreateButtonWithMargin = styled(Button)({
-  marginTop: '5px',
 });
 
 const AddExternalReferences = ({
@@ -81,22 +69,29 @@ const AddExternalReferences = ({
         open={open}
         onClose={handleClose}
         header={(
-          <StyledSearchHeader>
+          <div style={{
+            marginLeft: 'auto',
+            marginRight: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+          }}
+          >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
             {FABReplaced
-              && <CreateButtonWithMargin
+              && <Button sx={{ marginTop: '5px' }}
                 onClick={() => setDialogOpen(true)}
                 color='primary'
                 size='small'
                 variant='contained'
                  >
                 {t_i18n('Create')} {t_i18n('entity_External-Reference')} <Add />
-              </CreateButtonWithMargin>
+              </Button>
             }
-          </StyledSearchHeader>
+          </div>
         )}
       >
         <div className={classes.container}>

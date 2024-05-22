@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton, styled } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton, ThemeProvider, createTheme } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from 'src/components/i18n';
@@ -7,22 +7,11 @@ import SearchInput from 'src/components/SearchInput';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
-import { StyledCreateButton } from '@components/common/menus/CreateEntityControlledDial';
 import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.graphql';
 import { NoteCreationForm } from './NoteCreation';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
-
-const CreateButton = styled(IconButton)({
-  float: 'right',
-  marginTop: -15,
-});
-
-const StyledDrawerHeader = styled('div')({
-  marginLeft: 'auto',
-  marginRight: '20px',
-});
 
 interface AddNotesFunctionalComponentProps {
   stixCoreObjectOrStixCoreRelationshipId: string,
@@ -65,35 +54,60 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
     setSearch(keyword);
   };
 
+  const CustomIconButtonTheme = createTheme({
+    components: {
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            float: 'right',
+            marginTop: -15,
+          },
+        },
+      },
+    },
+  });
+
   return (
     <>
-      <CreateButton
-        color="primary"
-        aria-label={t_i18n('Add')}
-        onClick={handleOpen}
-        size="large"
-      >
-        <Add fontSize="small" />
-      </CreateButton>
+      <ThemeProvider theme={CustomIconButtonTheme}>
+        <IconButton
+          color="primary"
+          aria-label={t_i18n('Add')}
+          onClick={handleOpen}
+          size="large"
+        >
+          <Add
+            fontSize="small"
+          />
+        </IconButton>
+      </ThemeProvider>
       <Drawer
         open={open}
         onClose={handleClose}
         title={t_i18n('Add notes')}
         header={(
-          <StyledDrawerHeader>
+          <div style={{
+            marginLeft: 'auto',
+            marginRight: '20px',
+          }}
+          >
             <SearchInput
               variant="noAnimation"
               onSubmit={handleSearch}
             />
-            <StyledCreateButton
+            <Button
               onClick={handleDialogOpen}
               color='primary'
               size='small'
               variant='contained'
+              sx={{
+                marginLeft: '10px',
+                padding: '7px 10px',
+              }}
             >
               {t_i18n('Create')} {t_i18n('entity_Note')} <Add />
-            </StyledCreateButton>
-          </StyledDrawerHeader>
+            </Button>
+          </div>
         )}
       >
         <QueryRenderer
@@ -158,7 +172,10 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        PaperProps={{ elevation: 1 }}
+        PaperProps={{
+          elevation: 1,
+          style: { width: 800 },
+        }}
       >
         <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
         <DialogContent>

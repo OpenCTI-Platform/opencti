@@ -1,12 +1,7 @@
 import React from 'react';
 import { Add } from '@mui/icons-material';
-import { Button, styled } from '@mui/material';
+import { Button } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
-
-export const StyledCreateButton = styled(Button)({
-  marginLeft: '10px',
-  padding: '7px 10px',
-});
 
 const CreateEntityControlledDial = (entity_type: string) => {
   const { t_i18n } = useFormatter();
@@ -14,16 +9,23 @@ const CreateEntityControlledDial = (entity_type: string) => {
   const controlledDial = ({ onOpen }: {
     onOpen: () => void
   }) => (
-    <StyledCreateButton
+    <Button
       onClick={onOpen}
       color='primary'
       size='small'
       variant='contained'
       aria-label={buttonValue}
       title={buttonValue}
+      sx={{
+        marginLeft: '10px',
+        padding: '7px 10px 7px 5px',
+      }}
     >
-      {buttonValue} <Add />
-    </StyledCreateButton>
+      <div style={{ display: 'flex' }}>
+        <Add fontSize='small' />
+        {buttonValue}
+      </div>
+    </Button>
   );
   return controlledDial;
 };
