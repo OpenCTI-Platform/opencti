@@ -1,10 +1,10 @@
 import React from 'react';
 import { Group_group$data } from '@components/settings/groups/__generated__/Group_group.graphql';
-import { ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import Overrides from '@components/settings/Overrides';
+import { Alert, AlertTitle } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
@@ -31,11 +31,11 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
 
   if (!confidenceLevel) {
     return (
-      <Tooltip
-        title={t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
-      >
-        <ReportGmailerrorred fontSize={'small'} color={'error'}/>
-      </Tooltip>
+      <Alert severity={'error'} variant={'outlined'}>
+        <AlertTitle>
+          {t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
+        </AlertTitle>
+      </Alert>
     );
   }
 
