@@ -26725,6 +26725,7 @@ export type User = BasicObject & InternalObject & {
   roles: Array<Role>;
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
+  stateless_session?: Maybe<Scalars['Boolean']['output']>;
   submenu_auto_collapse?: Maybe<Scalars['Boolean']['output']>;
   submenu_show_icons?: Maybe<Scalars['Boolean']['output']>;
   theme?: Maybe<Scalars['String']['output']>;
@@ -38147,6 +38148,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   roles?: Resolver<Array<ResolversTypes['Role']>, ParentType, ContextType>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stateless_session?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_auto_collapse?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   submenu_show_icons?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
