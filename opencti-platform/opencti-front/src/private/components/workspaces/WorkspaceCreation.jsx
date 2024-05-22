@@ -59,8 +59,8 @@ export const importMutation = graphql`
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const workspaceValidation = (t_i18n) => Yup.object().shape({
+  name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
   description: Yup.string().nullable(),
 });
 
