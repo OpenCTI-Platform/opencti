@@ -1,14 +1,29 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import { Group_group$data } from '@components/settings/groups/__generated__/Group_group.graphql';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
+import { InformationOutline } from 'mdi-material-ui';
+import Overrides from '@components/settings/Overrides';
+import { Alert, AlertTitle } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
 
 type GroupConfidenceLevelProps = {
   confidenceLevel?: Data_GroupConfidenceLevel
+};
+
+const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel }) => {
+  const overrides = confidenceLevel?.overrides ?? [];
+
+  return overrides.length > 0 ? (
+    <Tooltip
+      sx={{ marginLeft: 1 }}
+      title={<Overrides overrides={overrides}/>}
+    >
+      <InformationOutline fontSize={'small'} color={'info'}/>
+    </Tooltip>
+  ) : null;
 };
 
 const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel }) => {
@@ -24,20 +39,13 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
     );
   }
 
-  // TODO: add overrides in a tooltip when in use
-
   return (
-    <div style={{ float: 'left', marginRight: 5 }}>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ float: 'left' }}
-      >
-        {t_i18n('Max Confidence Level')}
-      </Typography>
-      <div className="clearfix"/>
-      {`${confidenceLevel.max_confidence}`}
-    </div>
+    <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
+      {confidenceLevel.max_confidence
+          && <ConfidenceTooltip confidenceLevel={confidenceLevel}/>
+        }
+    </Box>
   );
 };
 
