@@ -1338,7 +1338,7 @@ const WorkbenchFileContentComponent = ({
       observable_value: observableValue({
         ...observable,
         ...finalValues,
-        entity_type: stixType,
+        entity_type: observableType,
       }),
     };
     const observableDefaultKey = defaultKey(updatedObservable);
