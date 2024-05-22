@@ -642,7 +642,7 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
     currentMap.forEach((value, key) => {
       const valueToSet = filterKeysMap.has(key)
         ? { ...value, subEntityTypes: filterKeysMap.get(key).subEntityTypes.concat([entityType]) }
-        : value
+        : value;
       filterKeysMap.set(key, valueToSet);
     });
   });

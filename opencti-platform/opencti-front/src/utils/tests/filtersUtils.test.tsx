@@ -4,7 +4,7 @@ import React from 'react';
 import { useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
 import { createMockUserContext, ProvidersWrapper, ProvidersWrapperProps } from './test-render';
 import { BYPASS } from '../hooks/useGranted';
-import { filterKeysSchema } from './FilterUtilsConstants';
+import filterKeysSchema from './FilterUtilsConstants';
 
 describe('Filters utils', () => {
   describe('useBuildFilterKeysMapFromEntityType', () => {

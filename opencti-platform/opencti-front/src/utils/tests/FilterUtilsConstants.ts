@@ -1,4 +1,4 @@
-export const filterKeysSchema = new Map();
+const filterKeysSchema = new Map();
 filterKeysSchema.set('Stix-Core-Object', new Map([
   [
     'entity_type',
@@ -5127,3 +5127,5 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     },
   ],
 ]));
+
+export  default filterKeysSchema;
