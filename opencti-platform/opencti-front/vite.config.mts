@@ -145,6 +145,7 @@ const depsToOptimize = [
   "@mui/icons-material/Delete",
   "@mui/lab/LoadingButton",
   "@mui/material/Breadcrumbs",
+  "classnames",
 ]
 
 const logger = createLogger()
@@ -185,7 +186,7 @@ export default defineConfig({
   },
 
   customLogger: logger,
-  
+
   plugins: [
     viteStaticCopy({
       targets: [

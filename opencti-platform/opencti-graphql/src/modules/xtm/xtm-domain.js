@@ -220,7 +220,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
 
   // Enrich with the earliest kill chain phase
   const enrichedFilteredObasAttackPatterns = filteredObasAttackPatterns.map(
-    (n) => R.assoc('attack_pattern_kill_chain_phase', sortByPhaseOrder(n.attack_pattern_kill_chain_phases.map((o) => indexedSortedObasKillChainPhase[o])).at(0), n)
+    (n) => R.assoc('attack_pattern_kill_chain_phase', sortByPhaseOrder(n.attack_patterns_kill_chain_phases.map((o) => indexedSortedObasKillChainPhase[o])).at(0), n)
   );
 
   // Sort attack pattern by kill chain phase
