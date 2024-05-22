@@ -5,16 +5,16 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Box from '@mui/material/Box';
 import { User_user$data } from '@components/settings/users/__generated__/User_user.graphql';
-import Overrides from '@components/settings/Overrides';
+import UserConfidenceOverrides from '@components/settings/users/UserConfidenceOverrides';
 import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceLevelProps = {
-  user: Pick<User_user$data, 'user_confidence_level' | 'effective_confidence_level'>
+  user: Pick<User_user$data, 'effective_confidence_level'>
 };
 
-const ConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
+const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
   const source = user.effective_confidence_level?.source;
-  const overrides = user.effective_confidence_level?.overrides;
+  const overrides = user.effective_confidence_level?.overrides ?? [];
   const { t_i18n } = useFormatter();
   if (source) {
     if (source.type === 'Group' && !!source.object) {
@@ -34,7 +34,7 @@ const ConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
                   ),
                 },
               })}
-              <Overrides overrides={overrides} />
+              <UserConfidenceOverrides overrides={overrides} />
             </>
           }
         >
@@ -50,7 +50,7 @@ const ConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
           title={
             <div>
               {t_i18n('The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user\'s groups.')}
-              <Overrides overrides={overrides}/>
+              <UserConfidenceOverrides overrides={overrides}/>
             </div>
           }
         >
@@ -90,7 +90,7 @@ const UserConfidenceLevel: React.FC<UserConfidenceLevelProps> = ({ user }) => {
     <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${user.effective_confidence_level.max_confidence ?? '-'}`}</span>
       {user.effective_confidence_level.source
-        && <ConfidenceSource user={user}/>
+        && <MaxConfidenceSource user={user}/>
       }
     </Box>
   );

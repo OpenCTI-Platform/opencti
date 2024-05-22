@@ -1,14 +1,14 @@
 import React from 'react';
-import { useFormatter } from '../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 
-type OverridesProps = {
+type GroupOverridesProps = {
   overrides: ReadonlyArray<{
     entity_type: string;
     max_confidence: number;
   }> | undefined;
 };
 
-const Overrides: React.FC<OverridesProps> = ({ overrides }) => {
+const GroupConfidenceOverrides: React.FC<GroupOverridesProps> = ({ overrides }) => {
   const { t_i18n } = useFormatter();
   return overrides?.length ? (
     <div style={{ marginTop: '5px' }}>
@@ -22,4 +22,4 @@ const Overrides: React.FC<OverridesProps> = ({ overrides }) => {
   ) : null;
 };
 
-export default Overrides;
+export default GroupConfidenceOverrides;
