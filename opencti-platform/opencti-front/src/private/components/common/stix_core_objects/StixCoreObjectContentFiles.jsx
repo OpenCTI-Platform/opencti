@@ -50,7 +50,7 @@ const styles = (theme) => ({
 });
 
 export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
-  mutation StixCoreObjectContentFilesUploadStixDomainObjectMutation(
+  mutation StixCoreObjectContentFilesUploadStixCoreObjectMutation(
     $id: ID!
     $file: Upload!
     $fileMarkings: [String]

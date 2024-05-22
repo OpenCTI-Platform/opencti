@@ -27,7 +27,7 @@ import {
   StixCoreObjectAskAISummarizeFilesMutation,
   StixCoreObjectAskAISummarizeFilesMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAISummarizeFilesMutation.graphql';
-import { StixDomainObjectContentFieldPatchMutation } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectContentFieldPatchMutation.graphql';
+import { StixCoreObjectContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFieldPatchMutation.graphql';
 import {
   StixCoreObjectAskAIContainerReportMutation,
   StixCoreObjectAskAIContainerReportMutation$data,
@@ -36,13 +36,13 @@ import {
   StixCoreObjectAskAIConvertFilesToStixMutation,
   StixCoreObjectAskAIConvertFilesToStixMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAIConvertFilesToStixMutation.graphql';
+import type {
+  StixCoreObjectContentFilesUploadStixCoreObjectMutation,
+  StixCoreObjectContentFilesUploadStixCoreObjectMutation$data,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { stixDomainObjectContentFieldPatchMutation } from './StixCoreObjectContent';
 import FilesNativeField from '../form/FilesNativeField';
-import type {
-  StixDomainObjectContentFilesUploadStixDomainObjectMutation,
-  StixDomainObjectContentFilesUploadStixDomainObjectMutation$data,
-} from '../stix_domain_objects/__generated__/StixDomainObjectContentFilesUploadStixDomainObjectMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -140,8 +140,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   };
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationUpdateContent] = useApiMutation<StixDomainObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
-  const [commitMutationCreateFile] = useApiMutation<StixDomainObjectContentFilesUploadStixDomainObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
+  const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
+  const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
   const [commitMutationSummarizeFiles] = useApiMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);
   const [commitMutationConvertFilesToStix] = useApiMutation<StixCoreObjectAskAIConvertFilesToStixMutation>(stixCoreObjectAskAIConvertFilesToStixMutation);
@@ -260,12 +260,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
         fileMarkings,
         noTriggerImport: false,
       },
-      onCompleted: (response: StixDomainObjectContentFilesUploadStixDomainObjectMutation$data) => {
+      onCompleted: (response: StixCoreObjectContentFilesUploadStixCoreObjectMutation$data) => {
         setAcceptedResult(null);
         setIsSubmitting(false);
         navigate({
           pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' && format !== 'json' ? 'content' : 'files'}`,
-          search: `${createSearchParams({ forceFile: 'true', currentFileId: response?.stixDomainObjectEdit?.importPush?.id ?? '' })}`,
+          search: `${createSearchParams({ forceFile: 'true', currentFileId: response?.stixCoreObjectEdit?.importPush?.id ?? '' })}`,
         });
       },
     });
