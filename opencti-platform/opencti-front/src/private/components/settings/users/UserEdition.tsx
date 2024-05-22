@@ -102,6 +102,13 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
         overrides {
           max_confidence
           entity_type
+          source {
+            type
+            object {
+              ... on User { entity_type id name }
+              ... on Group { entity_type id name }
+            }
+          }
         }
         source {
           type

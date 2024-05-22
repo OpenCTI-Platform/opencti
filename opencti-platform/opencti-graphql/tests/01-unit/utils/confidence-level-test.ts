@@ -62,7 +62,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userA as unknown as AuthUser)).toEqual({
       max_confidence: 30,
       source: { type: 'User', object: userA },
-      overrides: [{ entity_type: 'Malware', max_confidence: 70 }],
+      overrides: [{ entity_type: 'Malware', max_confidence: 70, source: { type: 'User', object: userA } }],
     });
 
     const userB = {
@@ -134,7 +134,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userH as unknown as AuthUser)).toEqual({
       max_confidence: 40,
       source: { type: 'Group', object: group40WithReport90 },
-      overrides: [{ entity_type: 'Report', max_confidence: 90 }],
+      overrides: [{ entity_type: 'Report', max_confidence: 90, source: { type: 'Group', object: group40WithReport90 } }],
     });
 
     const userI = {
@@ -148,7 +148,7 @@ describe('Confidence level utilities', () => {
     expect(computeUserEffectiveConfidenceLevel(userI as unknown as AuthUser)).toEqual({
       max_confidence: 30,
       source: { type: 'User', object: userI },
-      overrides: [{ entity_type: 'Report', max_confidence: 90 }],
+      overrides: [{ entity_type: 'Report', max_confidence: 90, source: { type: 'Group', object: group40WithReport90 } }],
     });
 
     const userJ = {
@@ -163,9 +163,9 @@ describe('Confidence level utilities', () => {
       max_confidence: 70, // biggest values among the groups
       source: { type: 'Group', object: group70 },
       overrides: [
-        { entity_type: 'Report', max_confidence: 50 }, // from user, overwrites the Report override of group40WithOverrides
-        { entity_type: 'Case-Rfi', max_confidence: 20 }, // from group40WithOverrides
-        { entity_type: 'Malware', max_confidence: 35 } // from user's overrides
+        { entity_type: 'Report', max_confidence: 50, source: { type: 'User', object: userJ } }, // from user, overwrites the Report override of group40WithOverrides
+        { entity_type: 'Case-Rfi', max_confidence: 20, source: { type: 'Group', object: group40WithOverrides } }, // from group40WithOverrides
+        { entity_type: 'Malware', max_confidence: 35, source: { type: 'User', object: userJ } } // from user's overrides
       ],
     });
 

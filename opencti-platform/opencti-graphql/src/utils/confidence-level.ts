@@ -5,11 +5,17 @@ import { FunctionalError, LockTimeoutError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isBypassUser } from './access';
+import type { Group } from '../types/group';
 
 type ObjectWithConfidence = {
   id: string,
   entity_type: string,
   confidence?: number | null
+};
+
+type ConfidenceSource = {
+  type: 'Group' | 'User' | 'Bypass',
+  object: Group | AuthUser | null
 };
 
 export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
@@ -26,8 +32,8 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
 
   // otherwise we get all groups for this user, and select the highest max_confidence found
   let maxLevel = null;
-  let source = null;
-  const overridesMap = new Map<string, number>();
+  let source: ConfidenceSource | null = null;
+  const overridesMap = new Map<string, { max_confidence: number, source: ConfidenceSource }>();
   if (user.groups) {
     for (let i = 0; i < user.groups.length; i += 1) {
       // groups were not migrated when introducing group_confidence_level, so group_confidence_level might be null
@@ -42,8 +48,8 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
       const groupOverrides = user.groups[i].group_confidence_level?.overrides ?? [];
       for (let j = 0; j < groupOverrides.length; j += 1) {
         const { entity_type, max_confidence } = groupOverrides[j];
-        if (!overridesMap.has(entity_type) || (overridesMap.get(entity_type) ?? 0) < max_confidence) {
-          overridesMap.set(entity_type, max_confidence);
+        if (!overridesMap.has(entity_type) || (overridesMap.get(entity_type)?.max_confidence ?? 0) < max_confidence) {
+          overridesMap.set(entity_type, { max_confidence, source: { object: user.groups[i], type: 'Group' } });
         }
       }
     }
@@ -59,13 +65,13 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
     // for each user override, overridesMap.set
     user.user_confidence_level?.overrides.forEach(({ entity_type, max_confidence }) => {
       // user's overrides overwrite any override set at the groups level
-      overridesMap.set(entity_type, max_confidence);
+      overridesMap.set(entity_type, { max_confidence, source: { object: user, type: 'User' } });
     });
   }
 
   // turn map into array
   const overrides = Array.from(overridesMap.entries())
-    .map(([key, value]) => ({ entity_type: key, max_confidence: value }));
+    .map(([key, value]) => ({ entity_type: key, max_confidence: value.max_confidence, source: value.source }));
 
   // note that a user cannot have only overrides
   if (isEmptyField(maxLevel)) {

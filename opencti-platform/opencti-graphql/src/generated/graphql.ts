@@ -6006,7 +6006,14 @@ export type EditUserContext = {
 export type EffectiveConfidenceLevel = {
   __typename?: 'EffectiveConfidenceLevel';
   max_confidence: Scalars['Int']['output'];
-  overrides: Array<ConfidenceLevelOverride>;
+  overrides: Array<EffectiveConfidenceLevelOverride>;
+  source?: Maybe<EffectiveConfidenceLevelSource>;
+};
+
+export type EffectiveConfidenceLevelOverride = {
+  __typename?: 'EffectiveConfidenceLevelOverride';
+  entity_type: Scalars['String']['output'];
+  max_confidence: Scalars['Int']['output'];
   source?: Maybe<EffectiveConfidenceLevelSource>;
 };
 
@@ -28746,6 +28753,7 @@ export type ResolversTypes = ResolversObject<{
   EditOperation: EditOperation;
   EditUserContext: ResolverTypeWrapper<EditUserContext>;
   EffectiveConfidenceLevel: ResolverTypeWrapper<EffectiveConfidenceLevel>;
+  EffectiveConfidenceLevelOverride: ResolverTypeWrapper<EffectiveConfidenceLevelOverride>;
   EffectiveConfidenceLevelSource: ResolverTypeWrapper<Omit<EffectiveConfidenceLevelSource, 'object'> & { object?: Maybe<ResolversTypes['EffectiveConfidenceLevelSourceObject']> }>;
   EffectiveConfidenceLevelSourceObject: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['EffectiveConfidenceLevelSourceObject']>;
   EffectiveConfidenceLevelSourceType: EffectiveConfidenceLevelSourceType;
@@ -29524,6 +29532,7 @@ export type ResolversParentTypes = ResolversObject<{
   EditInput: EditInput;
   EditUserContext: EditUserContext;
   EffectiveConfidenceLevel: EffectiveConfidenceLevel;
+  EffectiveConfidenceLevelOverride: EffectiveConfidenceLevelOverride;
   EffectiveConfidenceLevelSource: Omit<EffectiveConfidenceLevelSource, 'object'> & { object?: Maybe<ResolversParentTypes['EffectiveConfidenceLevelSourceObject']> };
   EffectiveConfidenceLevelSourceObject: ResolversUnionTypes<ResolversParentTypes>['EffectiveConfidenceLevelSourceObject'];
   ElasticSearchMetrics: ElasticSearchMetrics;
@@ -32064,7 +32073,14 @@ export type EditUserContextResolvers<ContextType = any, ParentType extends Resol
 
 export type EffectiveConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevel'] = ResolversParentTypes['EffectiveConfidenceLevel']> = ResolversObject<{
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
+  overrides?: Resolver<Array<ResolversTypes['EffectiveConfidenceLevelOverride']>, ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type EffectiveConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevelOverride'] = ResolversParentTypes['EffectiveConfidenceLevelOverride']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -38826,6 +38842,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DomainName?: DomainNameResolvers<ContextType>;
   EditUserContext?: EditUserContextResolvers<ContextType>;
   EffectiveConfidenceLevel?: EffectiveConfidenceLevelResolvers<ContextType>;
+  EffectiveConfidenceLevelOverride?: EffectiveConfidenceLevelOverrideResolvers<ContextType>;
   EffectiveConfidenceLevelSource?: EffectiveConfidenceLevelSourceResolvers<ContextType>;
   EffectiveConfidenceLevelSourceObject?: EffectiveConfidenceLevelSourceObjectResolvers<ContextType>;
   ElasticSearchMetrics?: ElasticSearchMetricsResolvers<ContextType>;
