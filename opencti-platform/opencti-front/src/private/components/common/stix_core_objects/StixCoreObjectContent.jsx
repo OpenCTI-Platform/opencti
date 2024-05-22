@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import Editor from 'ckeditor5-custom-build';
+import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { Document, Page, pdfjs } from 'react-pdf';
