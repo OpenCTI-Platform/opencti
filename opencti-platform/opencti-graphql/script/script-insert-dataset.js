@@ -12,6 +12,7 @@ const API_TOKEN = conf.get('app:admin:token');
 const PYTHON_PATH = './src/python/testing';
 const sample1 = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
 const sample2 = [API_URI, API_TOKEN, './tests/data/poisonivy.json'];
+const sampleE2e = [API_URI, API_TOKEN, './tests/data/data-test-stix-e2e.json'];
 
 const scriptInsertDataset = async () => {
   const executeContext = executionContext('insert-dataset');
@@ -24,6 +25,11 @@ const scriptInsertDataset = async () => {
     // Insert dataset
     await execChildPython(executeContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', sample1);
     await execChildPython(executeContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', sample2);
+    const isE2e = process.argv.some((val) => val === '--context=e2e');
+    if (isE2e) {
+      await execChildPython(executeContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', sampleE2e);
+    }
+
     logApp.info('[OPENCTI] Dataset insertion succeeded');
   } catch (e) {
     logApp.error('[OPENCTI] Dataset insertion failed', { error: e });
