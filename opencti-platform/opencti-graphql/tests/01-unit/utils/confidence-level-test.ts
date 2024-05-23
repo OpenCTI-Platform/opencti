@@ -155,7 +155,7 @@ describe('Confidence level utilities', () => {
       source: { type: 'Group', object: group70 },
       overrides: [
         { entity_type: 'Report', max_confidence: 50, source: { type: 'User', object: userJ } }, // from user, overwrites the Report override of group40WithReport90Case20
-        { entity_type: 'Case-Rfi', max_confidence: 20, source: { type: 'Group', object: group40WithOverrides } }, // from group40WithReport90Case20
+        { entity_type: 'Case-Rfi', max_confidence: 20, source: { type: 'Group', object: group40WithReport90Case20 } }, // from group40WithReport90Case20
         { entity_type: 'Malware', max_confidence: 35, source: { type: 'User', object: userJ } } // from user's overrides
       ],
     });
