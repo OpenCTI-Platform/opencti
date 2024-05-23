@@ -1221,8 +1221,6 @@
   "Incident type": "Art des Vorfalls",
   "incident_type": "Vorfall-Typ",
   "Incidents": "Vorfälle",
-  "Include Audit & Extended Knowledge": "Audit & Erweiterte Kenntnisse einbeziehen",
-  "Include Basic Knowledge": "Grundkenntnisse einbeziehen",
   "Include files not related to any knowledge (data import)": "Dateien einschließen, die sich nicht auf einen Wissensstand beziehen (Datenimport)",
   "Include headers in the feed": "Kopfzeilen in den Feed einbeziehen",
   "Include knowledge": "Wissen einbeziehen",
