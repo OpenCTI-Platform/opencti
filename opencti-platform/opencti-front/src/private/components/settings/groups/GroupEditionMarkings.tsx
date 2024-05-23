@@ -334,7 +334,7 @@ const GroupEditionMarkingsComponent = ({
                       </Alert>
                       <Field
                         component={MarkingsSelectField}
-                        markingDefinitions={markingDefinitions}
+                        markingDefinitions={resolvedGroupMarkingDefinitions}
                         name="shareableMarkings"
                         onChange={(markingIds: string[]) => handleToggleMarkingIds('max_shareable_markings_ids', markingIds)}
                       />

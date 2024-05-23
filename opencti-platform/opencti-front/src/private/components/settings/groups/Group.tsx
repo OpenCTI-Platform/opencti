@@ -262,7 +262,30 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t_i18n('Max Confidence Level')}
+                </Typography>
+                <div className="clearfix"/>
+                <GroupConfidenceLevel
+                  confidenceLevel={group.group_confidence_level}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+            {t_i18n('Markings')}
+          </Typography>
+          <div className="clearfix" />
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Default markings')}
                   <Tooltip
@@ -300,7 +323,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Allowed markings')}
                 </Typography>
@@ -327,20 +350,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={12}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t_i18n('Max Confidence Level')}
-                </Typography>
-                <div className="clearfix"/>
-                <GroupConfidenceLevel
-                  confidenceLevel={group.group_confidence_level}
-                />
-              </Grid>
-              <Grid item={true} xs={12}>
+              <Grid item={true} xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Maximum shareable markings')}
                 </Typography>
