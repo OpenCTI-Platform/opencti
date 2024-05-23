@@ -53,6 +53,8 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
     maxLevel = user.user_confidence_level?.max_confidence;
     // source only tells where max_confidence comes, not the overrides (TODO: add sources for each override?)
     source = { type: 'User', object: user };
+    // discard any overrides info from the group, user definition takes priority over groups
+    overridesMap.clear();
   }
 
   if (isNotEmptyField(user.user_confidence_level?.overrides)) {
