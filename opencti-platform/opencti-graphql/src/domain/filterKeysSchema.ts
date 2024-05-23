@@ -44,7 +44,7 @@ import { isBasicRelationship, isStixRelationship } from '../schema/stixRelations
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
-type FilterDefinition = {
+export type FilterDefinition = {
   filterKey: string
   type: string // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
   label: string // filter key translation in English

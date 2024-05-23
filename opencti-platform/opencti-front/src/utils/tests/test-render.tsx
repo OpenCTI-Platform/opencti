@@ -57,13 +57,13 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
   };
 };
 
-interface ProvidersWrapperProps {
+export interface ProvidersWrapperProps {
   children: ReactNode
   relayConfig?: Partial<EnvironmentConfig>
   userContext?: Partial<UserContextType>
 }
 
-const ProvidersWrapper = ({ children, relayConfig, userContext }: ProvidersWrapperProps) => {
+export const ProvidersWrapper = ({ children, relayConfig, userContext }: ProvidersWrapperProps) => {
   const relayEnv = createMockEnvironment(relayConfig);
   const defaultUserContext = userContext ?? createMockUserContext();
 

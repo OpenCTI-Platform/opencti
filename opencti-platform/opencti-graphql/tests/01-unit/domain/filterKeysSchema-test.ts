@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
+import {type FilterDefinition, generateFilterKeysSchema} from '../../../src/domain/filterKeysSchema';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -30,6 +30,8 @@ import {
 } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
+import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-object';
+import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-core-relationship';
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();
@@ -38,10 +40,13 @@ describe('Filter keys schema generation testing', async () => {
       n.entity_type,
       new Map(n.filters_schema.map((m) => [m.filterKey, m.filterDefinition]))
     ]));
-  it('should generate a filter keys schema for filterable attributes only', () => {
-    const stixCoreObjectFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT);
-    expect(stixCoreObjectFilterDefinitionMap?.get('name')?.filterKey).toEqual('name'); // filterable attribute
-    expect(stixCoreObjectFilterDefinitionMap?.get('content_mapping')).toEqual(undefined); // not filterable attribute
+  it('should generate a filter keys schema for Stix core object filterable attributes only', () => {
+    const stixCoreObjectFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT) ?? new Map<string, FilterDefinition>();
+    expect(Array.from(stixCoreObjectFilterDefinitionMap.keys())).containSubset(stixCoreObjectFilterKeys);
+  });
+  it('should generate a filter keys schema for Stix core relationship filterable attributes only', () => {
+    const stixCoreRelationshipFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP) ?? new Map<string, FilterDefinition>();
+    expect(Array.from(stixCoreRelationshipFilterDefinitionMap.keys())).containSubset(stixCoreRelationshipFilterKeys);
   });
   it('should construct correct filter definition for vocabulary string attributes', () => {
     // 'report_types' attribute (for Report entity type)
