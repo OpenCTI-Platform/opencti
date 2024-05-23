@@ -7109,6 +7109,7 @@ input StixCoreRelationshipAddInput {
   objectOrganization: [String]
   externalReferences: [String]
   killChainPhases: [String]
+  x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
 }

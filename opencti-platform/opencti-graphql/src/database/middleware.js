@@ -821,7 +821,7 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   }
   // If element needs to be updated, start a SHARE background task
   if (targetGrantIds.length > 0) {
-    const input = { ids: targetGrantIds, scope: 'SETTINGS', actions: [{ type, context: { values: elementGrants } }] };
+    const input = { ids: targetGrantIds, scope: 'KNOWLEDGE', actions: [{ type, context: { values: elementGrants } }] };
     taskPromise = createListTask(context, context.user, input);
   }
   return taskPromise;
