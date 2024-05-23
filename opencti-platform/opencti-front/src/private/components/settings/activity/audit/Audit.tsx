@@ -197,27 +197,25 @@ const Audit = () => {
       });
   };
 
-  const extraFields = (
+  const extraFields = hasBothCapabilities ? (
     <div style={{ marginLeft: 10 }}>
-      {hasBothCapabilities && (
-        <FormControlLabel
-          value="start"
-          control={
-            <Checkbox
-              style={{ padding: 7 }}
-              onChange={() => {
-                const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
-                storageHelpers.handleAddProperty('types', newTypes);
-              }}
-              checked={types?.length === 2}
-            />
+      <FormControlLabel
+        value="start"
+        control={
+          <Checkbox
+            style={{ padding: 7 }}
+            onChange={() => {
+              const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
+              storageHelpers.handleAddProperty('types', newTypes);
+            }}
+            checked={types?.length === 2}
+          />
           }
-          label={t_i18n('Include knowledge')}
-          labelPlacement="end"
-        />
-      )}
+        label={t_i18n('Include knowledge')}
+        labelPlacement="end"
+      />
     </div>
-  );
+  ) : <></>;
   return (
     <div className={classes.container}>
       <ActivityMenu/>

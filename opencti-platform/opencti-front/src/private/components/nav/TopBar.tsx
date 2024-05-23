@@ -21,7 +21,7 @@ import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
-import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -141,6 +141,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     bannerSettings: { bannerHeightNumber },
     settings: { platform_openbas_url: openBASUrl },
   } = useAuth();
+  const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
@@ -240,7 +241,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             />
           </Link>
         </div>
-        <div className={classes.menuContainer} style={{ marginLeft: navOpen ? 25 : 30 }}>
+        {hasKnowledgeAccess && <div className={classes.menuContainer} style={{ marginLeft: navOpen ? 25 : 30 }}>
           <SearchInput
             onSubmit={handleSearch}
             keyword={keyword}
@@ -248,7 +249,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             placeholder={`${t_i18n('Search the platform')}...`}
             fullWidth={true}
           />
-        </div>
+        </div>}
         <div className={classes.barRight}>
           <div className={classes.barRightContainer}>
             <Security needs={[KNOWLEDGE]}>

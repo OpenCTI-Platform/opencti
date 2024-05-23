@@ -19,7 +19,7 @@ import { createStyles } from '@mui/styles';
 import { useFormatter } from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import useAuth from '../../utils/hooks/useAuth';
-import { EXPLORE } from '../../utils/hooks/useGranted';
+import useGranted, { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
 import ItemIcon from '../../components/ItemIcon';
 import Transition from '../../components/Transition';
@@ -76,9 +76,8 @@ const dashboardSettingsMutation = graphql`
 `;
 
 const DashboardSettings = () => {
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const classes = useStyles({ bannerHeightNumber });
   const { t_i18n } = useFormatter();
   const {
@@ -99,7 +98,7 @@ const DashboardSettings = () => {
   };
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  return (
+  return hasKnowledgeAccess ? (
     <>
       <Fab
         onClick={handleOpen}
@@ -247,7 +246,7 @@ const DashboardSettings = () => {
         </DialogActions>
       </Dialog>
     </>
-  );
+  ) : <></>;
 };
 
 export default DashboardSettings;

@@ -22549,6 +22549,7 @@ export type StixCoreRelationshipAddInput = {
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type StixCoreRelationshipConnection = {

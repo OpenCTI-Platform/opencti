@@ -9,16 +9,11 @@ import { logApp } from '../config/conf';
 export const up = async (next) => {
   const context = executionContext('migration');
   logApp.info('[MIGRATION] Add SECURITY_ACTIVITY capability to platform and to users with SETTINGS capability');
-
-  const securityActivityCapability = await addCapability(
-    context,
-    SYSTEM_USER,
-    {
-      name: 'SETTINGS_SECURITYACTIVITY',
-      description: 'Security Activity',
-      attribute_order: 3500
-    }
-  );
+  const securityActivityCapability = await addCapability(context, SYSTEM_USER, {
+    name: 'SETTINGS_SECURITYACTIVITY',
+    description: 'Security Activity',
+    attribute_order: 3500
+  });
   const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
   for (let i = 0; i < roles.length; i += 1) {
     const role = roles[i].id;
@@ -27,11 +22,7 @@ export const up = async (next) => {
       return capability.name.startsWith('SETTINGS');
     });
     if (hasSettings) {
-      const input = {
-        fromId: role,
-        toId: securityActivityCapability.id,
-        relationship_type: 'has-capability',
-      };
+      const input = { fromId: role, toId: securityActivityCapability.id, relationship_type: 'has-capability' };
       await createRelation(context, SYSTEM_USER, input);
     }
   }
