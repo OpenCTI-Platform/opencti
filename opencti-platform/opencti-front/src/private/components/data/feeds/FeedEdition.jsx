@@ -366,7 +366,8 @@ const FeedEditionContainer = (props) => {
                           label={'Accessible for'}
                           style={fieldSpacingContainerStyle}
                           multiple={true}
-                          helpertext={t('Let the field empty to grant all authenticated users')}name="authorized_members"
+                          helpertext={t('Let the field empty to grant all authenticated users')}
+                          name="authorized_members"
                         />
                       )}
                     </Alert>
