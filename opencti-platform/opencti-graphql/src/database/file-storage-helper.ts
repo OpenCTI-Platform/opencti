@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import fs from 'node:fs';
 import { deleteFiles, loadedFilesListing, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreBase } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
 import { allFilesForPaths } from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
@@ -15,7 +15,7 @@ interface FileUploadOpts {
   noTriggerImport?: boolean,
   errorOnExisting?: boolean,
   file_markings?: string[],
-  containerId?: string,
+  container?: BasicStoreEntity,
 }
 
 interface FileUploadData {

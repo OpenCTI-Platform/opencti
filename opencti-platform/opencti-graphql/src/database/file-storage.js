@@ -339,7 +339,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], containerId } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], container } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -394,18 +394,18 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     uploadStatus: 'complete',
   };
   await indexFileToDocument(file);
+  // either container or entity for job import depending on context (ex: report containing the external reference)
+  const jobImportEntity = container ?? entity;
   // confidence control on the context entity (like a report) if we want auto-enrichment
   // noThrow ; we do not want to fail here as it's an automatic process.
   // we will simply not start the job
-  const isConfidenceMatch = entity ? controlUserConfidenceAgainstElement(user, entity, true) : true;
+  const isConfidenceMatch = jobImportEntity ? controlUserConfidenceAgainstElement(user, jobImportEntity, true) : true;
   const isFilePathForImportEnrichment = filePath.startsWith('import/')
     && !filePath.startsWith('import/pending');
 
   // Trigger an enrich job for import file if needed
   if (!noTriggerImport && isConfidenceMatch && isFilePathForImportEnrichment) {
-    // either container id or entity_id depending on context (ex: report containing the external reference)
-    const jobImportEntityId = containerId ?? file.metaData.entity_id;
-    await uploadJobImport(context, user, file.id, file.metaData.mimetype, jobImportEntityId);
+    await uploadJobImport(context, user, file.id, file.metaData.mimetype, jobImportEntity?.internal_id);
   }
   return { upload: file, untouched: false };
 };

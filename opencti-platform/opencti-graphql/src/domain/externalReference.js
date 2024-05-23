@@ -38,7 +38,7 @@ export const externalReferenceImportPush = async (context, user, externalReferen
   let finalArgs = { ...args };
   if (containersRefs.length === 1) {
     // if externalRef is contained in one container only, we want to send this context container id for import
-    finalArgs = { ...finalArgs, containerId: containersRefs[0]?.id };
+    finalArgs = { ...finalArgs, container: containersRefs[0] };
   }
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };
