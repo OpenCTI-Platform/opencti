@@ -35,6 +35,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -98,7 +99,13 @@ const Audit = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
+  const hasBothCapabilities = useGranted(
+    [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
+    true,
+  );
+  const knowledgeCapability = useGranted([KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
+
   const {
     viewStorage,
     paginationOptions,
@@ -189,7 +196,8 @@ const Audit = () => {
         setLoading(false);
       });
   };
-  const extraFields = (
+
+  const extraFields = hasBothCapabilities ? (
     <div style={{ marginLeft: 10 }}>
       <FormControlLabel
         value="start"
@@ -202,16 +210,20 @@ const Audit = () => {
             }}
             checked={types?.length === 2}
           />
-        }
+          }
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
     </div>
-  );
+  ) : <></>;
   return (
     <div className={classes.container}>
-      <ActivityMenu />
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Events'), current: true }]} />
+      <ActivityMenu/>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
+        label: t_i18n('Events'),
+        current: true,
+      }]}
+      />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
           {t_i18n(
@@ -237,7 +249,7 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
-        entityTypes={['History']}
+        entityTypes={knowledgeCapability ? ['History'] : ['Activity']}
       >
         {queryRef && (
           <React.Suspense

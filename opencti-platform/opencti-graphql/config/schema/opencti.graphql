@@ -59,6 +59,7 @@ enum Capabilities {
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
+  SETTINGS_SECURITYACTIVITY
   TAXIIAPI_SETCOLLECTIONS
   TAXIIAPI_SETCSVMAPPERS
   VIRTUAL_ORGANIZATION_ADMIN
@@ -11118,7 +11119,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [SETTINGS])
+  ): LogConnection @auth(for: [SETTINGS_SECURITYACTIVITY])
   auditsNumber(
     dateAttribute: String
     types: [String]
@@ -11438,7 +11439,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 

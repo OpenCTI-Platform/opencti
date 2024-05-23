@@ -25,24 +25,41 @@ export const queryAsAdminWithSuccess = async (request: { query: any, variables: 
 };
 
 /**
+ * Execute the query as some User, and verify success and return query result.
+ * @param client
+ * @param request
+ */
+export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { query: any, variables: any }) => {
+  const requestResult = await executeInternalQuery(client, print(request.query), request.variables);
+  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
+  expect(requestResult.errors, `This errors should not be there: ${requestResult.errors}`).toBeUndefined();
+  return requestResult;
+};
+
+/**
  * Execute the query as some User (see testQuery.ts), and verify that access is forbidden.
  * @param client
  * @param request
  */
 export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, request: any) => {
   const queryResult = await executeInternalQuery(client, print(request.query), request.variables);
+  logApp.info('queryAsUserIsExpectedForbidden=> queryResult:', queryResult);
   expect(queryResult.errors, 'FORBIDDEN_ACCESS is expected.').toBeDefined();
-  expect(queryResult.errors?.length, 'FORBIDDEN_ACCESS is expected.').toBe(1);
-  expect(queryResult.errors[0].name, 'FORBIDDEN_ACCESS is expected.').toBe(FORBIDDEN_ACCESS);
+  expect(queryResult.errors?.length, `FORBIDDEN_ACCESS is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
+  expect(queryResult.errors[0].name, `FORBIDDEN_ACCESS is expected but got ${queryResult.errors[0].name}`).toBe(FORBIDDEN_ACCESS);
 };
 
+/**
+ * Call a graphQL request with no authentication / no login and verify that access is forbidden.
+ * @param request
+ */
 export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
   const anonymous = createUnauthenticatedClient();
 
   const queryResult = await executeInternalQuery(anonymous, print(request.query), request.variables);
-  expect(queryResult.errors, 'AUTH_REQUIRED is expected.').toBeDefined();
-  expect(queryResult.errors?.length, 'AUTH_REQUIRED is expected.').toBe(1);
-  expect(queryResult.errors[0].name, 'AUTH_REQUIRED is expected.').toBe(AUTH_REQUIRED);
+  expect(queryResult.errors, 'AUTH_REQUIRED error is expected but got zero errors.').toBeDefined();
+  expect(queryResult.errors?.length, `AUTH_REQUIRED is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
+  expect(queryResult.errors[0].name, `AUTH_REQUIRED is expected but got ${queryResult.errors[0].name}`).toBe(AUTH_REQUIRED);
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
