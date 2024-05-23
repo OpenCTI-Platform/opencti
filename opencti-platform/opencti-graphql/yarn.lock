@@ -1656,9 +1656,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/transport@npm:8.5.1":
-  version: 8.5.1
-  resolution: "@elastic/transport@npm:8.5.1"
+"@elastic/transport@npm:8.5.2":
+  version: 8.5.2
+  resolution: "@elastic/transport@npm:8.5.2"
   dependencies:
     debug: "npm:^4.3.4"
     hpagent: "npm:^1.0.0"
@@ -1666,7 +1666,7 @@ __metadata:
     secure-json-parse: "npm:^2.4.0"
     tslib: "npm:^2.4.0"
     undici: "npm:^6.12.0"
-  checksum: 10/be01486a358e466f9504a51bcc565fd88259ab53ee62bbbafebcea1bb8d3ec206e763116a7521713dba79a9944f6824e12f3dcdc80f970ccaa156b9132a23cd3
+  checksum: 10/fb85ef0aa9a7951afbcdadf6324256c14d1b4cd4c34f3513be3ce543cc06bb44d0b1f0e96563d9da11a5889195db3caee9cdac8ff8dfcf4d3a1d86735cdd376e
   languageName: node
   linkType: hard
 
@@ -11055,7 +11055,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.556.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@elastic/elasticsearch": "npm:8.13.1"
-    "@elastic/transport": "npm:8.5.1"
+    "@elastic/transport": "npm:8.5.2"
     "@escape.tech/graphql-armor": "npm:2.4.0"
     "@graphql-codegen/cli": "npm:5.0.2"
     "@graphql-codegen/client-preset": "npm:4.2.4"
