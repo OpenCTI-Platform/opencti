@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton, ThemeProvider, createTheme } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from 'src/components/i18n';
@@ -54,33 +54,22 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
     setSearch(keyword);
   };
 
-  const CustomIconButtonTheme = createTheme({
-    components: {
-      MuiIconButton: {
-        styleOverrides: {
-          root: {
-            float: 'right',
-            marginTop: -15,
-          },
-        },
-      },
-    },
-  });
-
   return (
     <>
-      <ThemeProvider theme={CustomIconButtonTheme}>
-        <IconButton
-          color="primary"
-          aria-label={t_i18n('Add')}
-          onClick={handleOpen}
-          size="large"
-        >
-          <Add
-            fontSize="small"
-          />
-        </IconButton>
-      </ThemeProvider>
+      <IconButton
+        color="primary"
+        aria-label={t_i18n('Add')}
+        onClick={handleOpen}
+        size="large"
+        style={{
+          float: 'right',
+          marginTop: -15,
+        }}
+      >
+        <Add
+          fontSize="small"
+        />
+      </IconButton>
       <Drawer
         open={open}
         onClose={handleClose}
@@ -105,7 +94,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                 padding: '7px 10px',
               }}
             >
-              {t_i18n('Create')} {t_i18n('entity_Note')} <Add />
+              {t_i18n('Create')} {t_i18n('entity_Note')}
             </Button>
           </div>
         )}

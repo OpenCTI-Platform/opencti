@@ -73,8 +73,9 @@ const AddExternalReferences = ({
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
-            flexDirection: 'column',
+            flexWrap: 'wrap',
             alignItems: 'flex-end',
+            justifyContent: 'flex-end',
           }}
           >
             <SearchInput
@@ -82,13 +83,13 @@ const AddExternalReferences = ({
               onSubmit={handleSearch}
             />
             {FABReplaced
-              && <Button sx={{ marginTop: '5px' }}
+              && <Button sx={{ margin: '5px 0 0 5px' }}
                 onClick={() => setDialogOpen(true)}
                 color='primary'
                 size='small'
                 variant='contained'
                  >
-                {t_i18n('Create')} {t_i18n('entity_External-Reference')} <Add />
+                {t_i18n('Create')} {t_i18n('entity_External-Reference')}
               </Button>
             }
           </div>
