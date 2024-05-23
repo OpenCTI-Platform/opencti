@@ -107,7 +107,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { getParentTypes, isAnId } from '../schema/schemaUtils';
+import { isAnId } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
