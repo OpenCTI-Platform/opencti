@@ -1938,7 +1938,13 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
-            const currentRels = await listAllRelations(context, user, relType, { fromId: initial.id });
+            const currentRels = (await listAllRelations(context, user, relType, { fromId: initial.id }))
+              .map((rel) => ({
+                ...rel,
+                // we resolve from and to without need of an extra query
+                to: targetCreated,
+                from: initial,
+              }));
             relationsToDelete.push(...currentRels);
           }
           // Create the new one
@@ -2001,7 +2007,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
           const currentRels = await listAllRelations(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
-          const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId));
+          const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId))
+            .map((r) => ({
+              ...r,
+              // we resolve from and to without need of an extra query
+              to: refs.find((ref) => ref.internal_id === r.toId),
+              from: initial,
+            }));
+
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
             updatedInputs.push({ key, value: refs, operation });
@@ -2046,9 +2059,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
+      // in case of deletion in a container objects, we chose not to UNSHARE the elements that were in the container
     }
     if (relationsToCreate.length > 0) {
       await elIndexElements(context, user, initial.entity_type, relationsToCreate);
+      // in case of addition in a container objects, we need to propagate the sharing to these new objects
+      const objectsRefRelationships = relationsToCreate.filter((r) => r.relationship_type === RELATION_OBJECT);
+      if (objectsRefRelationships.length > 0) {
+        await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
+      }
     }
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
@@ -2546,9 +2565,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    const update = await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
-    await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
-    return update;
+    return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
   }
   // -- No modification applied
   return { element, event: null, isCreation: false };
