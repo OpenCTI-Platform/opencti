@@ -6519,14 +6519,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.6.8":
-  version: 1.6.8
-  resolution: "axios@npm:1.6.8"
+"axios@npm:1.7.2":
+  version: 1.7.2
+  resolution: "axios@npm:1.7.2"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/3f9a79eaf1d159544fca9576261ff867cbbff64ed30017848e4210e49f3b01e97cf416390150e6fdf6633f336cd43dc1151f890bbd09c3c01ad60bb0891eee63
+  checksum: 10/6ae80dda9736bb4762ce717f1a26ff997d94672d3a5799ad9941c24d4fb019c1dff45be8272f08d1975d7950bac281f3ba24aff5ecd49ef5a04d872ec428782f
   languageName: node
   linkType: hard
 
@@ -15080,7 +15080,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:4.2.1"
     analytics: "npm:0.8.11"
     apexcharts: "npm:3.49.1"
-    axios: "npm:1.6.8"
+    axios: "npm:1.7.2"
     babel-plugin-relay: "npm:16.2.0"
     chokidar: "npm:3.6.0"
     ckeditor5-custom-build: "npm:0.0.1"

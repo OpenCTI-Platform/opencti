@@ -78,7 +78,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.6.8",
+    "axios": "1.7.2",
     "axios-cookiejar-support": "5.0.0",
     "bcryptjs": "2.4.3",
     "blocked-at": "1.2.0",
