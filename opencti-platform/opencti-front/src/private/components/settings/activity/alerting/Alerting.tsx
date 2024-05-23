@@ -217,18 +217,12 @@ const Alerting: FunctionComponent = () => {
   };
 
   return (
-    <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<span>{t_i18n(
-      'You do not have any access to the audit activity of this OpenCTI instance.',
-    )}</span>}
-    >
-      <div className={classes.container}>
-        <ActivityMenu/>
-        <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
-        {renderLines()}
-        <AlertCreation paginationOptions={paginationOptions}/>
-      </div>
-    </Security>
-
+    <div className={classes.container}>
+      <ActivityMenu/>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
+      {renderLines()}
+      <AlertCreation paginationOptions={paginationOptions}/>
+    </div>
   );
 };
 
