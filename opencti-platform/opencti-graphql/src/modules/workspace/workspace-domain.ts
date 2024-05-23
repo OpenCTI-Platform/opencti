@@ -36,11 +36,18 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 
+export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
+
 export const findById = (
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
 ) => {
+  if (workspaceId === PLATFORM_DASHBOARD) {
+    return {
+      id: PLATFORM_DASHBOARD
+    } as BasicStoreEntityWorkspace;
+  }
   return storeLoadById<BasicStoreEntityWorkspace>(
     context,
     user,
