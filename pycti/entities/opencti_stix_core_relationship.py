@@ -588,6 +588,7 @@ class StixCoreRelationship:
         external_references = kwargs.get("externalReferences", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         self.opencti.app_logger.info(
@@ -630,6 +631,7 @@ class StixCoreRelationship:
                     "objectOrganization": granted_refs,
                     "externalReferences": external_references,
                     "killChainPhases": kill_chain_phases,
+                    "x_opencti_workflow_id": x_opencti_workflow_id,
                     "update": update,
                 }
             },
@@ -1188,6 +1190,11 @@ class StixCoreRelationship:
                 objectOrganization=(
                     stix_relation["x_opencti_granted_refs"]
                     if "x_opencti_granted_refs" in stix_relation
+                    else None
+                ),
+                x_opencti_workflow_id=(
+                    stix_relation["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_relation
                     else None
                 ),
                 update=update,
