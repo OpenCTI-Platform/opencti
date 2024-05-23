@@ -187,7 +187,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                   <IconButton
                     color="primary"
                     aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: user.user_confidence_level && user.user_confidence_level.max_confidence ? user.user_confidence_level.max_confidence : 0 })}
+                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: user.effective_confidence_level && user.effective_confidence_level.max_confidence ? user.effective_confidence_level.max_confidence : 0 })}
                     style={{ marginTop: '5px' }}
                     size="large"
                     disabled={values.overrides.some((o) => o.entity_type === '')}
