@@ -47,10 +47,23 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const groupMaxShareableMarkings = async (context, group) => {
+export const groupMaxShareableMarkings = async (context, user, group) => {
   const dataSharingMaxMarkingsIds = group.max_shareable_markings_ids || [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
+  const maxShareableMarkings = dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
+  // check compatibility with allowed markings
+  const allowedMarkings = await groupAllowedMarkings(context, user, group.id);
+  const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
+  const maxShareableAllowedMarkings = maxShareableMarkings.map((marking) => {
+    // if marking is not allowed, keep the most restrictive allowed marking of the same type
+    if (!allowedMarkingsIds.includes(marking.id)) {
+      const sortedAllowedMarkingsWithSameType = allowedMarkings.filter((allowedMarking) => allowedMarking.definition_type === marking.definition_type)
+        .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+      return sortedAllowedMarkingsWithSameType.length > 0 ? sortedAllowedMarkingsWithSameType[0] : undefined;
+    }
+    return marking;
+  });
+  return maxShareableAllowedMarkings.filter((m) => !!m);
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {

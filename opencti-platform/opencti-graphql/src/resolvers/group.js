@@ -33,7 +33,7 @@ const groupResolvers = {
   Group: {
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     allowed_marking: (group, _, context) => groupAllowedMarkings(context, context.user, group.id),
-    max_shareable_markings: (group, _, context) => groupMaxShareableMarkings(context, group),
+    max_shareable_markings: (group, _, context) => groupMaxShareableMarkings(context, context.user, group),
     roles: (group, args, context) => rolesPaginated(context, context.user, group.id, args),
     members: (group, args, context) => membersPaginated(context, context.user, group.id, args),
     default_dashboard: (current, _, context) => loadByIdLoader.load({ id: current.default_dashboard, type: ENTITY_TYPE_WORKSPACE }, context, context.user),
