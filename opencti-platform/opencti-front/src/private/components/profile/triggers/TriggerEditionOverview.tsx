@@ -447,7 +447,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                     filters={filters}
                     helpers={helpers}
                     redirection
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
                   />)
               }
             </span>
