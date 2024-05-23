@@ -2046,11 +2046,17 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     if (relationsToDelete.length > 0) {
       await elDeleteElements(context, user, relationsToDelete);
-      await createContainerSharingTask(context, ACTION_TYPE_UNSHARE, initial, relationsToDelete);
+      const objectsRefRelationships = relationsToDelete.filter((r) => r.relationship_type === RELATION_OBJECT);
+      if (objectsRefRelationships.length > 0) {
+        await createContainerSharingTask(context, ACTION_TYPE_UNSHARE, initial, objectsRefRelationships);
+      }
     }
     if (relationsToCreate.length > 0) {
       await elIndexElements(context, user, initial.entity_type, relationsToCreate);
-      await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, relationsToCreate);
+      const objectsRefRelationships = relationsToCreate.filter((r) => r.relationship_type === RELATION_OBJECT);
+      if (objectsRefRelationships.length > 0) {
+        await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
+      }
     }
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
