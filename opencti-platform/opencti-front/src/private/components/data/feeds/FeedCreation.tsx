@@ -41,7 +41,7 @@ import {
   useBuildFilterKeysMapFromEntityType
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { isNotEmptyField } from '../../../../utils/utils';
+import {generateUniqueItemsArray, isNotEmptyField} from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -157,8 +157,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
-  // TODO: remove on chunk#1 merge
-  const generateUniqueItemsArray = <T,>(submittedArray: IterableIterator<T>) => Array.from(new Set(submittedArray));
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   // TODO: typing this state properly implies deep refactoring

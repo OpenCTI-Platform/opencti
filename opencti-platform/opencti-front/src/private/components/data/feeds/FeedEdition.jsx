@@ -35,7 +35,7 @@ import {
   useBuildFilterKeysMapFromEntityType
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { isNotEmptyField } from '../../../../utils/utils';
+import {generateUniqueItemsArray, isNotEmptyField} from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -155,8 +155,6 @@ const FeedEditionContainer = (props) => {
   });
 
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
-  // TODO: remove on chunk#1 merge
-  const generateUniqueItemsArray = (submittedArray) => Array.from(new Set(submittedArray));
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   const handleSelectTypes = (types) => {
