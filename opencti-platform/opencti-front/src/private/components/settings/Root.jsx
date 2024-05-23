@@ -1,7 +1,15 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import { isOnlyOrganizationAdmin, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import {
+  isOnlyOrganizationAdmin,
+  VIRTUAL_ORGANIZATION_ADMIN,
+  SETTINGS,
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+  SETTINGS_SECURITYACTIVITY,
+} from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const Security = lazy(() => import('../../../utils/Security'));
@@ -171,21 +179,35 @@ const Root = () => {
             />
             <Route
               path="/activity"
-              element={(
-                <Navigate to="/dashboard/settings/activity/audit" replace={true} />
-              )}
+              element={
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Navigate to="/dashboard/settings/activity/audit" replace={true} />
+                </Security>
+              }
             />
             <Route
-              path="activity/audit"
-              Component={boundaryWrapper(Audit)}
+              path="/activity/audit"
+              element={
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Audit />
+                </Security>
+              }
             />
             <Route
-              path="activity/configuration"
-              Component={boundaryWrapper(Configuration)}
+              path="/activity/configuration"
+              element={
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Configuration />
+                </Security>
+              }
             />
             <Route
-              path="activity/alerting"
-              Component={boundaryWrapper(Alerting)}
+              path="/activity/alerting"
+              element={
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Alerting />
+                </Security>
+              }
             />
             <Route
               path="/file_indexing"

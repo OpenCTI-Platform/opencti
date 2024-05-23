@@ -22,8 +22,6 @@ import EnterpriseEdition from '../../../common/entreprise_edition/EnterpriseEdit
 import { RootAlertingQuery } from './__generated__/RootAlertingQuery.graphql';
 import Alerting from './Alerting';
 import { useFormatter } from '../../../../../components/i18n';
-import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
-import Security from '../../../../../utils/Security';
 
 export const rootQuery = graphql`
   query RootAlertingQuery {

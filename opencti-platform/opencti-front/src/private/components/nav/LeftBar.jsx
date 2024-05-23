@@ -84,6 +84,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
   SETTINGS,
+  SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
@@ -212,6 +213,7 @@ const LeftBar = () => {
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+  const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const anchors = {
     analyses: useRef(null),
     cases: useRef(null),
@@ -913,7 +915,7 @@ const LeftBar = () => {
                   { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
                   { granted: isGrantedToSettings, link: '/dashboard/settings/customization', label: 'Customization' },
                   { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
-                  { granted: isGrantedToSettings, link: '/dashboard/settings/activity', label: 'Activity' },
+                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
                   { granted: isGrantedToSettings, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
                   { granted: isGrantedToSettings, link: '/dashboard/settings/support', label: 'Support' },
                 ],
