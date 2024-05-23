@@ -22,7 +22,8 @@ COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
-    && rm /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && npm install -g node-gyp \
     && yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
@@ -39,7 +40,8 @@ COPY opencti-front/patch ./patch
 COPY opencti-front/packages ./packages
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
-    && rm /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && npm install -g node-gyp \
 && yarn install
 
@@ -53,7 +55,8 @@ FROM base AS app
 
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
-    && rm /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
+    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && python3 -m ensurepip \
     && rm -rv /usr/lib/python*/ensurepip \
     && pip3 install --no-cache-dir --upgrade pip setuptools wheel \
