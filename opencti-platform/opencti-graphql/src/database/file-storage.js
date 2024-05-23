@@ -339,7 +339,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [] } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], containerId } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -399,12 +399,13 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   // we will simply not start the job
   const isConfidenceMatch = entity ? controlUserConfidenceAgainstElement(user, entity, true) : true;
   const isFilePathForImportEnrichment = filePath.startsWith('import/')
-    && !filePath.startsWith('import/pending')
-    && !filePath.startsWith('import/External-Reference');
+    && !filePath.startsWith('import/pending');
 
   // Trigger an enrich job for import file if needed
   if (!noTriggerImport && isConfidenceMatch && isFilePathForImportEnrichment) {
-    await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
+    // either container id or entity_id depending on context (ex: report containing the external reference)
+    const jobImportEntityId = containerId ?? file.metaData.entity_id;
+    await uploadJobImport(context, user, file.id, file.metaData.mimetype, jobImportEntityId);
   }
   return { upload: file, untouched: false };
 };

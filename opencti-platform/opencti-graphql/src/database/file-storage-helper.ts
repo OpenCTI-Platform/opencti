@@ -15,6 +15,7 @@ interface FileUploadOpts {
   noTriggerImport?: boolean,
   errorOnExisting?: boolean,
   file_markings?: string[],
+  containerId?: string,
 }
 
 interface FileUploadData {
