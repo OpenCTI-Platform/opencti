@@ -2548,9 +2548,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    const update = await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
-    await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
-    return update;
+    return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
   }
   // -- No modification applied
   return { element, event: null, isCreation: false };
