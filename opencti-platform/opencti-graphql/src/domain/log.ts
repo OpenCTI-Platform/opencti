@@ -7,8 +7,7 @@ import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObj
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
 import { addFilter } from '../utils/filtering/filtering-utils';
-import { isUserHasCapability } from '../utils/access';
-import { KNOWLEDGE_CAPABILITY } from '../database/data-initialization';
+import { isUserHasCapability, KNOWLEDGE } from '../utils/access';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
@@ -17,7 +16,7 @@ export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLog
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
   let types = args.types ? args.types : [ENTITY_TYPE_ACTIVITY];
-  if (!isUserHasCapability(user, KNOWLEDGE_CAPABILITY)) {
+  if (!isUserHasCapability(user, KNOWLEDGE)) {
     types = types.filter((t) => t !== ENTITY_TYPE_HISTORY);
   }
   const finalArgs = { ...args, types };

@@ -103,6 +103,7 @@ const Audit = () => {
     [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
     true,
   );
+  const knowledgeCapability = useGranted([KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
 
   const {
@@ -250,7 +251,7 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
-        entityTypes={['History']}
+        entityTypes={knowledgeCapability ? ['History'] : ['Activity']}
       >
         {queryRef && (
           <React.Suspense

@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 import { listAllEntities } from '../database/middleware-loader';
@@ -21,20 +20,19 @@ export const up = async (next) => {
     }
   );
   const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < roles.length; i++) {
-    const getRoleCapabilities = await roleCapabilities(context, SYSTEM_USER, roles[i].id);
-    const hasSettings = getRoleCapabilities.some((role) => {
-      return role.name.startsWith('SETTINGS');
+  for (let i = 0; i < roles.length; i += 1) {
+    const role = roles[i].id;
+    const getRoleCapabilities = await roleCapabilities(context, SYSTEM_USER, role);
+    const hasSettings = getRoleCapabilities.some((capability) => {
+      return capability.name.startsWith('SETTINGS');
     });
     if (hasSettings) {
       const input = {
-        fromId: roles[i].id,
+        fromId: role,
         toId: securityActivityCapability.id,
         relationship_type: 'has-capability',
       };
-      const finalInput = R.assoc('fromId', roles[i].id, input);
-      await createRelation(context, SYSTEM_USER, finalInput);
+      await createRelation(context, SYSTEM_USER, input);
     }
   }
   next();

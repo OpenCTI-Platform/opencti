@@ -16,7 +16,7 @@ import { TAXIIAPI } from '../domain/user';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
 
 // region Platform capabilities definition
-export const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
+const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 };
 export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
@@ -62,7 +62,7 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
-    { name: 'SECURITYACTIVITY', description: 'Security Activity', attribute_order: 3500 },
+    { name: 'SECURITYACTIVITY', description: 'Access Security Activity', attribute_order: 3500 },
   ],
 };
 export const CAPABILITIES = [
