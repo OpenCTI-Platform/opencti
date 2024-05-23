@@ -1278,6 +1278,33 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Meaning of dates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3134,6 +3161,56 @@
   
   
   
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4_2_3" id="__nav_4_4_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Data segregation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="4" aria-labelledby="__nav_4_4_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data segregation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../administration/segregation/" class="md-nav__link">
         
@@ -3141,7 +3218,7 @@
   <span class="md-ellipsis">
     
   
-    Data segregation
+    Marking restriction
   
 
     
@@ -3177,6 +3254,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -4794,7 +4879,7 @@
 <p>OpenCTI's connector ecosystem covers a broad spectrum of sources, enhancing the platform's capability to integrate data from various contexts, from threat intelligence providers to specialized databases. The list of available connectors can be found in our <a href="https://www.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76">connectors catalog</a>. Connectors are categorized into three types: import connectors (the focus here), <a href="../enrichment/">enrichment connectors</a>, and stream consumers. Further documentation on connectors is available on <a href="../../deployment/connectors/">the dedicated documentation page</a>.</p>
 <p>In summary, automated imports through connectors empower OpenCTI users with a scalable, efficient, and customizable mechanism for data ingestion, ensuring that the platform remains enriched with the latest and most relevant intelligence.</p>
 <h2 id="native-automated-import">Native automated import</h2>
-<p>In OpenCTI, the "Data &gt; Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the three built-in functions: Live Streams, TAXII Feeds, and RSS Feeds.</p>
+<p>In OpenCTI, the "Data &gt; Ingestion" section provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Here, we'll explore the configuration process for the four built-in functions: Live Streams, TAXII Feeds, RSS Feeds, and CSV Feeds.</p>
 <h3 id="live-streams">Live streams</h3>
 <p>Live Streams enable users to consume data from another OpenCTI platform, fostering collaborative intelligence sharing. Here's a step-by-step guide to configure Live streams synchroniser:</p>
 <ol>
@@ -4842,27 +4927,28 @@
 </ul>
 <p><a class="glightbox" href="../assets/rss-feed-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="RSS feed configuration" src="../assets/rss-feed-configuration.png" /></a></p>
 <h3 id="csv-feeds">CSV feeds</h3>
-<p>The CSV feeds ingester integrates new entities to the platform.
-<a class="glightbox" href="../assets/csv-feeds.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds interface" src="../assets/csv-feeds.png" /></a></p>
-<p>Create a CSV feeds ingester by clicking on the "+" button
-Fill the URL field up to retrieve the CSV file.</p>
-<p><a class="glightbox" href="../csv-feeds-creation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation" src="../csv-feeds-creation.png" /></a></p>
-<p>Note that a CSV mapper is required.</p>
-<p><a class="glightbox" href="../csv-feeds-creation-csv-mapper.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper" src="../csv-feeds-creation-csv-mapper.png" /></a></p>
-<p><a class="glightbox" href="../csv-feeds-creation-prior-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: prior CSV mapper test" src="../csv-feeds-creation-prior-test.png" /></a></p>
-<p>To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper.
-A valid URL-CSV mapper combination results in the identification of up to 50 entities.</p>
-<p><a class="glightbox" href="../csv-feeds-creation-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: csv mapper test" src="../csv-feeds-creation-test.png" /></a></p>
-<p>Once, the test is successful, the "Create" button can be clicked.</p>
-<p><a class="glightbox" href="../csv-feeds-creation-after-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: after CSV mapper test" src="../csv-feeds-creation-after-test.png" /></a></p>
-<p><a class="glightbox" href="../csv-feeds-creation-list.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: list" src="../csv-feeds-creation-list.png" /></a></p>
+<p>CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure TAXII ingesters:</p>
+<ol>
+<li>CSV URL: Provide the URL of the CSV file exposed from which items will be imported.</li>
+<li>CSV Mappers: Choose the CSV mapper to be used to import the data.</li>
+<li>Authentication type (if necessary): Enter the authentication type.</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">CSV mapper</p>
+<p>CSV feed functionality is based on CSV mappers. It is necessary to create the appropriate CSV mapper to import the data contained in the file. See the page dedicated to the <a href="../../administration/csv-mappers/">CSV mapper</a>.</p>
+</div>
+<p>Additional configuration options:</p>
+<ul>
+<li>User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please <a href="./#best-practices-section">see the section "Best practices" below</a> for more information.</li>
+<li>Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.</li>
+</ul>
+<p><a class="glightbox" href="../assets/csv-feeds-creation.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: prior CSV mapper test" src="../assets/csv-feeds-creation.png" /></a></p>
+<p>To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper. A valid URL-CSV mapper combination results in the identification of up to 50 entities.</p>
+<p><a class="glightbox" href="../assets/csv-feeds-creation-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: csv mapper test" src="../assets/csv-feeds-creation-test.png" /></a></p>
 <p>To start your new ingester, click on "Start", in the burger menu.</p>
-<p><a class="glightbox" href="../csv-feeds-creation-start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="../csv-feeds-creation-start.png" /></a></p>
-<p>CSV feed ingestion is made possible thanks to the connector "ImportCSV".
-So you can track the progress in the Connectors page.
-On a regular basis, the ingestion is updated when new data is added to the CSV feed. </p>
-<p><a class="glightbox" href="../csv-feeds-connectors.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: connectors" src="../csv-feeds-connectors.png" /></a></p>
-<p><a class="glightbox" href="../csv-feeds-importCSV-connector-tracking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: tracking" src="../csv-feeds-importCSV-connector-tracking.png" /></a></p>
+<p><a class="glightbox" href="../assets/csv-feeds-creation-start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="../assets/csv-feeds-creation-start.png" /></a></p>
+<p>CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data &gt; Ingestion &gt; Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.</p>
+<p><a class="glightbox" href="../assets/csv-feeds-importCSV-connector-tracking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: tracking" src="../assets/csv-feeds-importCSV-connector-tracking.png" /></a></p>
 <p><a id="best-practices-section"></a></p>
 <h3 id="best-practices-for-feed-import">Best practices for feed import</h3>
 <p>Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:</p>
@@ -4902,7 +4988,7 @@ On a regular basis, the ingestion is updated when new data is added to the CSV f
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-06T02:57:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-21T13:59:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-21</span>
   </span>
 
     
@@ -4930,6 +5016,11 @@ On a regular basis, the ingestion is updated when new data is added to the CSV f
     
     <nav>
       
+        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+          
+          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
+        </a>
+      
         <a href="https://github.com/Goumies" class="md-author" title="@Goumies">
           
           <img src="https://avatars.githubusercontent.com/u/13460700?v=4&size=72" alt="Goumies">
@@ -4938,11 +5029,6 @@ On a regular basis, the ingestion is updated when new data is added to the CSV f
         <a href="https://github.com/nino-filigran" class="md-author" title="@nino-filigran">
           
           <img src="https://avatars.githubusercontent.com/u/148041607?v=4&size=72" alt="nino-filigran">
-        </a>
-      
-        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
-          
-          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
         </a>
       
         <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
