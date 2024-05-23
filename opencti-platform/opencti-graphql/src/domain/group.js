@@ -48,7 +48,7 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
 };
 
 export const groupMaxShareableMarkings = async (context, group) => {
-  const dataSharingMaxMarkingsIds = group.max_shareable_markings_ids;
+  const dataSharingMaxMarkingsIds = group.max_shareable_markings_ids || [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   return dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
 };

@@ -106,6 +106,12 @@ const groupFragment = graphql`
       x_opencti_color
       x_opencti_order
     }
+    max_shareable_markings {
+      id
+      definition
+      x_opencti_color
+      x_opencti_order
+    }
     default_marking {
       entity_type
       values {
@@ -127,6 +133,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     R.descend(R.propOr(0, 'x_opencti_order')),
   ]);
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
+  const maxShareableMarkings = markingsSort(group.max_shareable_markings ?? []);
   // Handle only GLOBAL entity type for now
   const globalDefaultMarkings = markingsSort(
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
@@ -332,6 +339,33 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <GroupConfidenceLevel
                   confidenceLevel={group.group_confidence_level}
                 />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Maximum shareable markings')}
+                </Typography>
+                <FieldOrEmpty source={maxShareableMarkings}>
+                  <List>
+                    {maxShareableMarkings.map((marking) => (
+                      <ListItem
+                        key={marking?.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon
+                            type="Marking-Definition"
+                            color={marking?.x_opencti_color ?? undefined}
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(marking?.definition, 40)}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
             </Grid>
           </Paper>
