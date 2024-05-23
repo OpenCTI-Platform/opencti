@@ -32,6 +32,8 @@ import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-object';
 import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-core-relationship';
+import { ENTITY_TYPE_INDICATOR } from "../../../src/modules/indicator/indicator-types";
+import indicatorFilterKeys from "../../data/filter-keys-schema/indicatorFilterKeys";
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();
@@ -47,6 +49,10 @@ describe('Filter keys schema generation testing', async () => {
   it('should generate a filter keys schema for Stix core relationship filterable attributes only', () => {
     const stixCoreRelationshipFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP) ?? new Map<string, FilterDefinition>();
     expect(Array.from(stixCoreRelationshipFilterDefinitionMap.keys())).containSubset(stixCoreRelationshipFilterKeys);
+  });
+  it('should generate a filter keys schema for Indicator filterable attributes only', () => {
+    const indicatorFilterDefinitionMap = filterKeysSchema.get(ENTITY_TYPE_INDICATOR) ?? new Map<string, FilterDefinition>();
+    expect(Array.from(indicatorFilterDefinitionMap.keys())).containSubset(indicatorFilterKeys);
   });
   it('should construct correct filter definition for vocabulary string attributes', () => {
     // 'report_types' attribute (for Report entity type)
