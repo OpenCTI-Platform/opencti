@@ -16,6 +16,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
@@ -48,6 +49,8 @@ const ContainerStixDomainObjects = ({
   container: ContainerStixDomainObjects_container$key;
   enableReferences?: boolean
 }) => {
+  const { t_i18n } = useFormatter();
+
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -218,6 +221,7 @@ const ContainerStixDomainObjects = ({
             variant="large"
             container={containerData}
             warning={true}
+            warningMessage={t_i18n('Be careful, you are about to delete the selected entities (not the relationships)')}
           />
           <StixDomainObjectsRightBar
             types={types}
