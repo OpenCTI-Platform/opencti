@@ -16,8 +16,6 @@ import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
-import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
-import Security from '../../../../../utils/Security';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
