@@ -673,7 +673,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const renderForm = (resolveEntityRef) => {
     let fromEntity = resolveEntityRef.entity;
     let toEntity = targetEntity;
-    let relationshipTypes;
+    let relationshipTypes = [];
+
     if (resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0) {
       if (isRelationReversed) {
         fromEntity = targetEntity;
