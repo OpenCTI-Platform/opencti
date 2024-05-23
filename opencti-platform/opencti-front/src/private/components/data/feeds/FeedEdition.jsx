@@ -346,8 +346,8 @@ const FeedEditionContainer = (props) => {
                     />
                     <Alert
                       icon={false}
-                      classes={{ root: classes.alert, message: classes.message,
-                      }}severity="warning"
+                      classes={{ root: classes.alert, message: classes.message,}}
+                      severity="warning"
                       variant="outlined"
                       style={{ position: 'relative' }}
                     >
