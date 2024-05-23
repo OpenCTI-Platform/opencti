@@ -26,6 +26,7 @@ interface UserConfidenceOverridesFieldComponentProps
   index: number;
   onDelete: () => void;
   onSubmit: (index: number, value: OverrideFormData | null) => void;
+  currentOverrides: OverrideFormData[];
 }
 
 const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
@@ -34,6 +35,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
   index,
   onDelete,
   onSubmit,
+  currentOverrides,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -129,6 +131,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
               options={entityTypesToOverride}
+              getOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
               onInputChange={(event) => searchType(event)}

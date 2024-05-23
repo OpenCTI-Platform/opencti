@@ -204,6 +204,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                       component={ConfidenceOverrideField}
                       onDelete={() => arrayHelpers.remove(idx)}
                       onSubmit={handleSubmitOverride}
+                      currentOverrides={values.overrides}
                     />
                   ))}
                 </div>
