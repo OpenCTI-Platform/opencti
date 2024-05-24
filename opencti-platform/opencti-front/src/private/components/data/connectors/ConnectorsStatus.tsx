@@ -27,7 +27,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import useGranted, { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import type { Theme } from '../../../../components/Theme';
@@ -349,66 +349,65 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               divider={true}
               component={Link}
               to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-              disabled={!isGrantedManage}
+            >
+              <ListItemIcon
+                style={{ color: connector.active ? '#4caf50' : '#f44336' }}
               >
-                <ListItemIcon
-                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
-                >
-                  <ExtensionOutlined />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.name}
-                      >
-                        {connector.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.connector_type}
-                      >
-                        {t_i18n(connector.connector_type)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.auto}
-                      >
-                        <ItemBoolean
-                          label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
-                          status={
-                              connector.connector_type
-                                === 'INTERNAL_ENRICHMENT'
-                              || connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                                ? connector.auto
-                                : null
-                            }
-                          variant="inList"
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.messages}
-                      >
-                        {n(connector.messages)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.updated_at}
-                      >
-                        {nsdt(connector.updated_at)}
-                      </div>
+                <ExtensionOutlined />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.name}
+                    >
+                      {connector.name}
                     </div>
-                    }
-                />
-                <ListItemSecondaryAction>
-                  <Security needs={[MODULES_MODMANAGE]}>
-                    <>
-                      <Tooltip title={t_i18n('Reset the connector state')}>
-                        <IconButton
-                          onClick={() => {
-                            setConnectorIdToReset(connector.id);
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.connector_type}
+                    >
+                      {t_i18n(connector.connector_type)}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.auto}
+                    >
+                      <ItemBoolean
+                        label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
+                        status={
+                            connector.connector_type
+                              === 'INTERNAL_ENRICHMENT'
+                            || connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                              ? connector.auto
+                              : null
+                          }
+                        variant="inList"
+                      />
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.messages}
+                    >
+                      {n(connector.messages)}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.updated_at}
+                    >
+                      {nsdt(connector.updated_at)}
+                    </div>
+                  </div>
+                  }
+              />
+              <ListItemSecondaryAction>
+                <Security needs={[MODULES_MODMANAGE]}>
+                  <>
+                    <Tooltip title={t_i18n('Reset the connector state')}>
+                      <IconButton
+                        onClick={() => {
+                          setConnectorIdToReset(connector.id);
                             setConnectorMessages(connector.messages);
                           }}
                           aria-haspopup="true"

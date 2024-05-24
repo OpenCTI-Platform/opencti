@@ -80,11 +80,7 @@ const Root = () => {
         />
         <Route
           path="/ingestion/connectors/:connectorId"
-          element={
-            <Security needs={[MODULES_MODMANAGE]} placeholder={<Navigate to="/dashboard" />}>
-              <RootConnector />
-            </Security>
-          }
+          element={<RootConnector />}
         />
         <Route
           path="/import/*"
