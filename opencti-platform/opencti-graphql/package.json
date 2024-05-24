@@ -46,7 +46,7 @@
     "@aws-sdk/lib-storage": "3.583.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@elastic/elasticsearch": "8.13.1",
-    "@elastic/transport": "8.5.1",
+    "@elastic/transport": "8.5.2",
     "@escape.tech/graphql-armor": "2.4.0",
     "@graphql-tools/schema": "10.0.3",
     "@graphql-tools/utils": "10.1.2",
