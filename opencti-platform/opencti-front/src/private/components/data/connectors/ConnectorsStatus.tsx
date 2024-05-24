@@ -349,7 +349,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               divider={true}
               component={Link}
               to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-              // disabled={!isGrantedManage}
+              disabled={!isGrantedManage}
               >
                 <ListItemIcon
                   style={{ color: connector.active ? '#4caf50' : '#f44336' }}

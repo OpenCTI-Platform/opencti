@@ -11237,7 +11237,7 @@ type Query {
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
-  connector(id: String!): Connector @auth(for: [MODULES])
+  connector(id: String!): Connector @auth(for: [MODULES_MODMANAGE])
   connectors: [Connector] @auth(for: [MODULES])
   connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
@@ -11252,7 +11252,7 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): WorkConnection @auth(for: [MODULES])
+  ): WorkConnection @auth(for: [MODULES_MODMANAGE])
   runtimeAttributes(
     first: Int
     search: String
