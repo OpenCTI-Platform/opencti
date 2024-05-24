@@ -8,6 +8,8 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
+import { generateUniqueItemsArray } from '../utils';
+import { handleFilterHelpers } from '../hooks/useLocalStorage';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -867,6 +869,13 @@ export const convertOperatorToIcon = (operator: string) => {
     default:
       return null;
   }
+};
+
+export const cleanFeedFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
+  const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
+  const allListedFilters = extractAllFilters(filters);
+  const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
+  filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
 };
 
 export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: FilterGroup) => {

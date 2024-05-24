@@ -36,8 +36,8 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import {
+  cleanFeedFilters,
   emptyFilterGroup,
-  extractAllFilters,
   serializeFilterGroupForBackend,
   useBuildFilterKeysMapFromEntityType,
   useCompleteFilterKeysMap,
@@ -50,6 +50,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
+import { FilterDefinition } from '../../../../utils/hooks/useAuth';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -158,7 +159,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
-  const completeFilterKeysMap = useCompleteFilterKeysMap();
+  const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useCompleteFilterKeysMap();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
@@ -174,16 +175,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setFeedAttributes({ 0: {} });
   };
 
-  const cleanFeedFilters = (types: string[]) => {
-    const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
-    const allListedFilters = extractAllFilters(filters);
-    const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
-    filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
-  };
-
   const handleSelectTypes = (types: string[]) => {
     setSelectedTypes(types);
-    cleanFeedFilters(types);
+    cleanFeedFilters(filters, helpers, types, completeFilterKeysMap);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate

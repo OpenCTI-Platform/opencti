@@ -29,7 +29,13 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import {
+  cleanFeedFilters,
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType,
+  useCompleteFilterKeysMap
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -136,7 +142,7 @@ const feedValidation = (t) => Yup.object().shape({
   separator: Yup.string().required(t('This field is required')),
   feed_date_attribute: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().required(t('This field is required')),
+  feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
@@ -150,11 +156,13 @@ const FeedEditionContainer = (props) => {
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });
 
+  const completeFilterKeysMap = useCompleteFilterKeysMap();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);
+    cleanFeedFilters(filters, helpers, types, completeFilterKeysMap);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
