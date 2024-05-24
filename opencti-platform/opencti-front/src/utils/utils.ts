@@ -43,4 +43,4 @@ export const getFileUri = (id: string) => {
   return imageView;
 };
 
-export const generateUniqueItemsArray = <T>(submittedArray: IterableIterator<T>) => Array.from(new Set(submittedArray));
+export const generateUniqueItemsArray = <T>(submittedArray: IterableIterator<T> | Array<T>) => Array.from(new Set(submittedArray));

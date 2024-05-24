@@ -35,7 +35,13 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { emptyFilterGroup, serializeFilterGroupForBackend, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  extractAllFilters,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType,
+  useCompleteFilterKeysMap,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -140,7 +146,7 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
   name: Yup.string().required(t_i18n('This field is required')),
   separator: Yup.string().required(t_i18n('This field is required')),
   rolling_time: Yup.number().required(t_i18n('This field is required')),
-  feed_types: Yup.array().required(t_i18n('This field is required')),
+  feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
@@ -152,6 +158,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
+  const completeFilterKeysMap = useCompleteFilterKeysMap();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
@@ -167,8 +174,16 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     setFeedAttributes({ 0: {} });
   };
 
+  const cleanFeedFilters = (types: string[]) => {
+    const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
+    const allListedFilters = extractAllFilters(filters);
+    const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
+    filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
+  };
+
   const handleSelectTypes = (types: string[]) => {
     setSelectedTypes(types);
+    cleanFeedFilters(types);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
