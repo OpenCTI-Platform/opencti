@@ -25,6 +25,7 @@ import {
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
+  REPRESENTATIVE_FILTER,
   REVOKED_FILTER,
   SCORE_FILTER,
   SEVERITY_FILTER,
@@ -33,6 +34,7 @@ import {
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
+import { extractStixRepresentative } from '../../../database/stix-representative';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -277,6 +279,14 @@ export const testRelationToTypes = (stix: any, filter: Filter) => {
 };
 
 /**
+ * REPRESENTATIVE
+ */
+export const testRepresentative = (stix: any, filter: Filter) => {
+  const representative: string = extractStixRepresentative(stix);
+  return testStringFilter(filter, [representative]);
+};
+
+/**
  * CONNECTED TO for DIRECT EVENTS ONLY
  * test if the stix is directly related to the instance id
  */
@@ -348,4 +358,5 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [RELATION_FROM_TYPES_FILTER]: testRelationFromTypes,
   [RELATION_TO_FILTER]: testRelationTo,
   [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
+  [REPRESENTATIVE_FILTER]: testRepresentative,
 };

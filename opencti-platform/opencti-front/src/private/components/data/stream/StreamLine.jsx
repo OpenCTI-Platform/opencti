@@ -133,6 +133,7 @@ class StreamLineLineComponent extends Component {
                   filters={filters}
                   dataColumns={dataColumns}
                   styleNumber={3}
+                  entityTypes={['Stix-Filtering']}
                 />
               </div>
             </>
