@@ -4,8 +4,6 @@ import fs from 'node:fs';
 import { parse } from 'csv-parse/sync';
 import * as readline from 'readline';
 import { Readable } from 'stream';
-import { extendedErrors, logApp } from '../config/conf';
-import { isNotEmptyField } from '../database/utils';
 
 const parserOption = (delimiter: string, comment: string) => ({
   delimiter,
