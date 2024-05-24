@@ -51,8 +51,7 @@ interface WorkspaceShareListProps {
 }
 
 const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceShareListProps) => {
-  const { settings } = useAuth();
-  const { platform_data_sharing_max_markings } = settings;
+  const { me } = useAuth();
 
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
@@ -75,7 +74,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
 
   const filterMaxMarkings = (dashboard: typeof dashboards[0]) => {
     const { allowed_markings } = dashboard;
-    return (platform_data_sharing_max_markings ?? []).filter((maxMarking) => {
+    return (me.max_shareable_marking ?? []).filter((maxMarking) => {
       const marking = (allowed_markings ?? []).find((m) => m.definition_type === maxMarking.definition_type);
       return marking && marking.x_opencti_order > maxMarking.x_opencti_order;
     });

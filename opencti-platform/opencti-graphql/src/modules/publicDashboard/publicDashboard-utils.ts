@@ -8,8 +8,14 @@ import { computeAvailableMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
-import { getDataSharingMaxMarkings } from '../../domain/settings';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
+
+// Retrieves all available markings than can be shared.
+export const getAvailableDataSharingMarkings = async (context: AuthContext, user: AuthUser) => {
+  const maxMarkings = user.max_shareable_marking;
+  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return computeAvailableMarkings(maxMarkings, allMarkings);
+};
 
 /**
  * Find which markings should be used when searching the data to populate in the widgets.
@@ -24,12 +30,12 @@ export const findWidgetsMaxMarkings = async (
   userAuthorPublicDashboard: AuthUser
 ) => {
   // To find max markings allowed for widgets we keep the intersection of markings from:
-  // - Max markings for data sharing defined by the admin of the platform,
+  // - Max shareable markings of the user,
   // - Max markings of the public dashboard defined by the user who created it,
   // - Max markings of the user who created it.
   // (The last case is necessary if the user has lost markings between the time they create the public
   // dashboard and the time someone access the public dashboard).
-  const dataSharingMaxMarkings = await getDataSharingMaxMarkings(context, SYSTEM_USER);
+  const dataSharingMaxMarkings = await getAvailableDataSharingMarkings(context, userAuthorPublicDashboard);
   const dashboardMaxMarkings = publicDashboard.allowed_markings;
   // Call of cleanMarkings to keep only the max for each type.
   const userMaxMarkings = await cleanMarkings(context, userAuthorPublicDashboard.allowed_marking);

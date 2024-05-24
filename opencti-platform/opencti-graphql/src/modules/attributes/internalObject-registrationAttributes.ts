@@ -161,7 +161,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_organization', label: 'Platform organization', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'platform_data_sharing_max_markings', label: 'Platform data sharing max markings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_favicon', label: 'Platform favicon', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_email', label: 'Platform email', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme', label: 'Theme', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -231,7 +230,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
         { name: 'values', label: 'Values', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       ]
     },
-    { name: 'max_shareable_markings_ids', label: 'Default sharing max markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
+    { name: 'max_shareable_marking_ids', label: 'Default sharing max markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'group_confidence_level',

@@ -1177,7 +1177,6 @@ type Settings implements InternalObject & BasicObject {
   entity_type: String!
   parent_types: [String!]!
   platform_organization: Organization
-  platform_data_sharing_max_markings: [MarkingDefinition!]
   platform_title: String
   platform_favicon: String
   platform_email: String
@@ -1292,8 +1291,8 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  max_shareable_markings_ids: [String!]
-  max_shareable_markings: [MarkingDefinition!]
+  max_shareable_marking_ids: [String!]
+  max_shareable_marking: [MarkingDefinition!]
   default_hidden_types: [String!]
   group_confidence_level: ConfidenceLevel
   editContext: [EditUserContext!]
@@ -1518,6 +1517,7 @@ type MeUser implements BasicObject & InternalObject {
   effective_confidence_level: EffectiveConfidenceLevel
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
+  max_shareable_marking: [MarkingDefinition!]
   otp_mandatory: Boolean
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   default_dashboards: [Workspace!]!

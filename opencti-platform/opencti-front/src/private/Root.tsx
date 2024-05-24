@@ -47,12 +47,6 @@ const rootSettingsFragment = graphql`
     platform_whitemark
     platform_session_idle_timeout
     platform_session_timeout
-    platform_data_sharing_max_markings {
-      id
-      definition
-      definition_type
-      x_opencti_order
-    }
     platform_feature_flags {
       id
       enable
@@ -129,6 +123,11 @@ const rootPrivateQuery = graphql`
         definition_type
         definition
         x_opencti_color
+        x_opencti_order
+      }
+      max_shareable_marking {
+        id
+        definition_type
         x_opencti_order
       }
       personal_notifiers {

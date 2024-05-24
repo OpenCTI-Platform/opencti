@@ -314,6 +314,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
     [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
   );
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
+  console.log('maxShareableMarkings', maxShareableMarkings);
   return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: maxShareableMarkings };
 };
 

@@ -8,7 +8,7 @@ import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { storeLoadById } from '../database/middleware-loader';
+import { listAllToEntitiesThroughRelations, storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -18,6 +18,7 @@ import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { computeAvailableMarkings } from './user';
+import { RELATION_MEMBER_OF } from "../schema/internalRelationship";
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -201,23 +202,3 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-/**
- * Retrieves max level of markings that can be shared.
- * @param context
- * @param user
- * @param settings
- * @returns {Promise<StoreMarkingDefinition[]>}
- */
-export const getDataSharingMaxMarkings = async (context, user, settings = undefined) => {
-  const { platform_data_sharing_max_markings } = settings ?? await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  const dataSharingMaxMarkings = platform_data_sharing_max_markings ?? [];
-  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return dataSharingMaxMarkings.map((m) => allMarkingsMap.get(m)).filter((m) => !!m);
-};
-
-// Retrieves all available markings than can be shared.
-export const getAvailableDataSharingMarkings = async (context, user) => {
-  const maxMarkings = await getDataSharingMaxMarkings(context, user);
-  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return computeAvailableMarkings(maxMarkings, allMarkings);
-};

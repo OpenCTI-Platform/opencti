@@ -106,7 +106,7 @@ const groupFragment = graphql`
       x_opencti_color
       x_opencti_order
     }
-    max_shareable_markings {
+    max_shareable_marking {
       id
       definition
       x_opencti_color
@@ -133,7 +133,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     R.descend(R.propOr(0, 'x_opencti_order')),
   ]);
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
-  const maxShareableMarkings = markingsSort(group.max_shareable_markings ?? []);
+  const maxShareableMarkings = markingsSort(group.max_shareable_marking ?? []);
   // Handle only GLOBAL entity type for now
   const globalDefaultMarkings = markingsSort(
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')

@@ -94,7 +94,7 @@ const groupMutationFieldPatch = graphql`
 `;
 
 const groupMarkingsValidation = () => Yup.object().shape({
-  max_shareable_markings_ids: Yup.array().of(Yup.string()).nullable(),
+  max_shareable_marking_ids: Yup.array().of(Yup.string()).nullable(),
 });
 
 const GroupEditionMarkingsComponent = ({
@@ -106,7 +106,7 @@ const GroupEditionMarkingsComponent = ({
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
-  const groupMaxShareableMarkings = group.max_shareable_markings || [];
+  const groupMaxShareableMarkings = group.max_shareable_marking || [];
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
     groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
@@ -336,7 +336,7 @@ const GroupEditionMarkingsComponent = ({
                         component={MarkingsSelectField}
                         markingDefinitions={(resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)}
                         name="shareableMarkings"
-                        onChange={(markingIds: string[]) => handleToggleMarkingIds('max_shareable_markings_ids', markingIds)}
+                        onChange={(markingIds: string[]) => handleToggleMarkingIds('max_shareable_marking_ids', markingIds)}
                       />
                     </Form>
                   )}
@@ -362,7 +362,7 @@ const GroupEditionMarkings = createFragmentContainer(
         allowed_marking {
           id
         }
-        max_shareable_markings {
+        max_shareable_marking {
           id
         }
         default_marking {

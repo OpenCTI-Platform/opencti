@@ -31,7 +31,7 @@ import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
-import { getWidgetArguments } from './publicDashboard-utils';
+import { getAvailableDataSharingMarkings, getWidgetArguments } from './publicDashboard-utils';
 import {
   findAll as stixCoreObjects,
   stixCoreObjectsDistribution,
@@ -45,7 +45,6 @@ import { bookmarks } from '../../domain/user';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
-import { getAvailableDataSharingMarkings } from '../../domain/settings';
 
 export const findById = (
   context: AuthContext,
@@ -164,8 +163,8 @@ export const addPublicDashboard = async (
     user,
   );
 
-  // check platform data sharing max markings
-  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, SYSTEM_USER)).map((m) => m.id);
+  // check user data sharing max markings
+  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, user)).map((m) => m.id);
   if (input.allowed_markings_ids?.some((id) => !availableDataSharingMarkingIds.includes(id))) {
     throw UnsupportedError('Invalid markings');
   }
