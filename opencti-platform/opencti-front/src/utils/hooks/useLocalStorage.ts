@@ -17,20 +17,8 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useAuth from './useAuth';
+import { handleFilterHelpers } from '../filters/filtersHelpers-types';
 
-export interface handleFilterHelpers {
-  handleSwitchGlobalMode: () => void;
-  handleSwitchLocalMode: (filter: Filter) => void;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleRemoveFilterById: (id: string) => void;
-  handleChangeOperatorFilters: HandleOperatorFilter;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
-  handleClearAllFilters: (filters?: Filter[]) => void;
-  getLatestAddFilterId: () => string | undefined;
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
-}
 export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleSearch: (value: string) => void;
   handleRemoveFilter: (key: string, op?: string, id?: string) => void;
@@ -87,11 +75,6 @@ export type HandleAddFilter = (
   id: string,
   op?: string,
   event?: SyntheticEvent
-) => void;
-
-export type HandleOperatorFilter = (
-  id: string,
-  op: string,
 ) => void;
 
 export type UseLocalStorage = [

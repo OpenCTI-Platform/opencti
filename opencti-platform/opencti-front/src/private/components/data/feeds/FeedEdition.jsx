@@ -34,7 +34,7 @@ import {
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
   useBuildFilterKeysMapFromEntityType,
-  useCompleteFilterKeysMap
+  useCompleteFilterKeysMap,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
@@ -142,7 +142,7 @@ const feedValidation = (t) => Yup.object().shape({
   separator: Yup.string().required(t('This field is required')),
   feed_date_attribute: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
+  feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
