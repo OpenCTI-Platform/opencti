@@ -70,16 +70,16 @@ export const CAPABILITIES = [
   KNOWLEDGE_CAPABILITIES,
   {
     name: 'EXPLORE',
-    description: 'Access Dashboards and investigations',
+    description: 'Access dashboards and investigations',
     attribute_order: 1000,
     dependencies: [
       {
         name: 'EXUPDATE',
-        description: 'Create / Update Dashboards and investigations',
+        description: 'Create / Update dashboards and investigations',
         attribute_order: 1100,
         dependencies: [
-          { name: 'EXDELETE', description: 'Delete Dashboards and investigations', attribute_order: 1200 },
-          { name: 'PUBLISH', description: 'Manage Public Dashboards', attribute_order: 1300 },
+          { name: 'EXDELETE', description: 'Delete dashboards and investigations', attribute_order: 1200 },
+          { name: 'PUBLISH', description: 'Manage public dashboards', attribute_order: 1300 },
         ],
       },
     ],
