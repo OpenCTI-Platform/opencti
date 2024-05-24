@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { uniq } from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
   internalFindByIds,
@@ -52,7 +51,6 @@ export const groupMaxShareableMarkings = async (context, user, group) => {
   const dataSharingMaxMarkingsIds = group.max_shareable_marking_ids || [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const maxShareableMarkings = dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
-  console.log('max ids', dataSharingMaxMarkingsIds);
   // check compatibility with allowed markings
   const allowedMarkings = await groupAllowedMarkings(context, user, group.id);
   const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
@@ -119,13 +117,13 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
     });
 };
 
+// return: array of the max shareable markings arrays of the different groups
 export const maxShareableMarkingDefinitionsFromGroups = async (context, groupIds) => {
   // Retrieve max shareable markings by groups
   return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
     .then((groups) => groups.map((group) => {
       return groupMaxShareableMarkings(context, SYSTEM_USER, group);
-    }).flat())
-    .then((maxShareableMarkings) => uniq(maxShareableMarkings));
+    }));
 };
 
 export const rolesPaginated = async (context, user, groupId, args) => {
