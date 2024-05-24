@@ -211,7 +211,8 @@ It is the case for:
 
 - ``sightedBy``: entities to which X is linked via a STIX sighting relationship,
 - ``workflow_id``: status id of the entities, or status template id of the status of the entities,
-- ``connectedToId``: the listened instances for an instance trigger.
+- ``representative``: entities whose representative (name for reports, value for some observables, composition of the source and target names for a relationship...) matches the filter,
+* ``connectedToId``: the listened instances for an instance trigger.
 
 For some keys, negative equality filtering is not supported yet (`not_eq` operator). For instance, it is the case for:
 
