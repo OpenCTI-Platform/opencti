@@ -1059,6 +1059,7 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  safeAction: Boolean
 }
 
 input BackgroundTaskContextInput {

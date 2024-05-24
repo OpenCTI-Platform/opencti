@@ -1413,11 +1413,14 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
     const { data: sourcesDependencies, rawDependencies: sourcesRawDependencies } = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const { data: targetDependencies, rawDependencies: targetRawDependencies } = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
-    // User must have access to all dependencies to be able to merge
-    const allDependencies = [...sourcesRawDependencies, ...targetRawDependencies];
-    const filteredDependencies = await userFilterStoreElements(context, user, allDependencies);
-    if (allDependencies.length !== filteredDependencies.length) throw FunctionalError('Cannot access all entities dependencies for merging');
-    allDependencies.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
+    // User must have access to all dependencies to be able to merge if safeMerge option is activated
+    const { safeMerge = false } = opts;
+    if (safeMerge) {
+      const allDependencies = [...sourcesRawDependencies, ...targetRawDependencies];
+      const filteredDependencies = await userFilterStoreElements(context, user, allDependencies);
+      if (allDependencies.length !== filteredDependencies.length) throw FunctionalError('Cannot access all entities dependencies for merging');
+      allDependencies.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
+    }
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
     await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
