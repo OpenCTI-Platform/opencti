@@ -67,7 +67,7 @@ const initImportCsvConnector = () => {
         }).on('end', async () => {
           if (!hasError) {
             const string = chunks.join('');
-            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, entity);
+            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, { entity });
             const validateBeforeImport = connectorConfig.config.validate_before_import;
             if (validateBeforeImport) {
               await updateExpectationsNumber(context, applicantUser, workId, 1);

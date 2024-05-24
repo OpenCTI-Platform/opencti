@@ -16,18 +16,25 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];
 
+interface BundleProcessOpts {
+  entity?: BasicStoreBase
+  maxRecordNumber?: number
+}
+
 export const bundleProcess = async (
   context: AuthContext,
   user: AuthUser,
   content: Buffer | string,
   mapper: CsvMapperParsed,
-  entity?: BasicStoreBase
+  opts: BundleProcessOpts = {}
 ) => {
+  const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);
   const sanitizedMapper = sanitized(mapper);
   const bundleBuilder = new BundleBuilder();
   let skipLine = sanitizedMapper.has_header;
-  const records = await parsingProcess(content, mapper.separator, mapper.skipLineChar);
+  const rawRecords = await parsingProcess(content, mapper.separator, mapper.skipLineChar);
+  const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
   if (records) {
     await Promise.all((records.map(async (record: string[]) => {
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
