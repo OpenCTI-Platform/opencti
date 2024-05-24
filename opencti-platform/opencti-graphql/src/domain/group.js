@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { uniq } from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
   internalFindByIds,
@@ -115,6 +116,16 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
         };
       }));
     });
+};
+
+export const maxShareableMarkingDefinitionsFromGroups = async (context, groupIds) => {
+  // Retrieve max shareable markings by groups
+  return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
+    .then((groups) => groups.map((group) => {
+      return group.max_shareable_markings ?? [];
+    }).flat())
+    // Keep the m max shareable marking by group
+    .then((maxShareableMarkings) => uniq(maxShareableMarkings));
 };
 
 export const rolesPaginated = async (context, user, groupId, args) => {

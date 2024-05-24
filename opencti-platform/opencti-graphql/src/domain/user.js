@@ -63,7 +63,7 @@ import {
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
+import { defaultMarkingDefinitionsFromGroups, findAll as findGroups, maxShareableMarkingDefinitionsFromGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -309,9 +309,12 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
     userMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   }
   const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
-  const [userMarkings, markings, defaultMarkings] = await Promise.all([userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise]);
+  const maxShareableMarkingsPromise = maxShareableMarkingDefinitionsFromGroups(context, groupIds);
+  const [userMarkings, markings, defaultMarkings, maxShareableMarkings] = await Promise.all(
+    [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
+  );
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
-  return { user: computedMarkings, all: markings, default: defaultMarkings };
+  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: maxShareableMarkings };
 };
 
 export const getRoles = async (context, userGroups) => {
@@ -1176,6 +1179,12 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
+    max_shareable_marking: user.max_shareable_marking.map((m) => ({
+      id: m.id,
+      standard_id: m.standard_id,
+      internal_id: m.internal_id,
+      definition_type: m.definition_type,
+    })),
     default_marking: user.default_marking?.map((entry) => ({
       entity_type: entry.entity_type,
       values: entry.values?.map((m) => ({
@@ -1271,6 +1280,7 @@ export const buildCompleteUser = async (context, client) => {
     allowed_marking: marking.user,
     all_marking: marking.all,
     default_marking: marking.default,
+    max_shareable_marking: marking.max_shareable,
     effective_confidence_level,
   };
 };
