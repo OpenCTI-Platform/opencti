@@ -75,6 +75,7 @@ const styles = (theme) => ({
   },
   views: {
     marginTop: -5,
+    display: 'flex',
   },
   linesContainer: {
     margin: 0,
@@ -264,8 +265,7 @@ class ListLines extends Component {
               )}
               {(typeof handleChangeView === 'function'
                 || typeof handleToggleExports === 'function'
-                || typeof handleExportCsv === 'function'
-                || createButton !== undefined) && (
+                || typeof handleExportCsv === 'function') && (
                 <ToggleButtonGroup
                   size="small"
                   color="secondary"
@@ -425,13 +425,13 @@ class ListLines extends Component {
                         </span>
                       </Tooltip>
                   )}
-                  {/*
-                    * Passing in createButton because cannot use hooks here.
-                    * More permanent solution once FAB_REPLACEMENT is completed.
-                    */}
-                  {createButton}
                 </ToggleButtonGroup>
               )}
+              {/*
+                * Passing in createButton because cannot use hooks here.
+                * More permanent solution once FAB_REPLACEMENT is completed.
+                */}
+              {createButton}
             </div>
           </div>
         )}
