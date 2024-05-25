@@ -351,14 +351,16 @@ class OpenCTIApiClient:
                     if "name" in main_error
                     else main_error["message"]
                 )
-                if "data" in main_error and "reason" in main_error["data"]:
-                    raise ValueError(
-                        {"name": error_name, "message": main_error["data"]["reason"]}
-                    )
-                else:
-                    raise ValueError(
-                        {"name": error_name, "message": main_error["message"]}
-                    )
+                error_detail = {
+                    "name": error_name,
+                    "error_message": main_error["message"],
+                }
+                meta_data = main_error["data"] if "data" in main_error else {}
+                # Prevent logging of input as bundle is logged differently
+                if meta_data.get("input") is not None:
+                    del meta_data["input"]
+                value_error = {**error_detail, **meta_data}
+                raise ValueError(value_error)
             else:
                 return result
         else:
