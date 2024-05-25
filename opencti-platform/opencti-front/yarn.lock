@@ -3878,37 +3878,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reactflow/background@npm:11.3.10":
-  version: 11.3.10
-  resolution: "@reactflow/background@npm:11.3.10"
+"@reactflow/background@npm:11.3.13":
+  version: 11.3.13
+  resolution: "@reactflow/background@npm:11.3.13"
   dependencies:
-    "@reactflow/core": "npm:11.11.0"
+    "@reactflow/core": "npm:11.11.3"
     classcat: "npm:^5.0.3"
     zustand: "npm:^4.4.1"
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/5816d23c1c597f86b111988aa90f07905e0ddad28746db6cfdee8a94ff595c3ddb0864df6599635adc19b910521131092d8e77555b0bdf2f7e214bece7545c1c
+  checksum: 10/9f637589a1c965e60df3f22e93a9a087c4cfe902eae58502721ede959651af8c18d5f6433ed689e0280252b64cf5c4e1280ba5bbbd6b5335cc4d2bf5ea382b20
   languageName: node
   linkType: hard
 
-"@reactflow/controls@npm:11.2.10":
-  version: 11.2.10
-  resolution: "@reactflow/controls@npm:11.2.10"
+"@reactflow/controls@npm:11.2.13":
+  version: 11.2.13
+  resolution: "@reactflow/controls@npm:11.2.13"
   dependencies:
-    "@reactflow/core": "npm:11.11.0"
+    "@reactflow/core": "npm:11.11.3"
     classcat: "npm:^5.0.3"
     zustand: "npm:^4.4.1"
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/9ac3e29750a2b795388f702f676197fd85d7eb751eec7afb3680e96544d45f23a250c673df50519b4ea8b6f29fbb258f6439c6969c22ce912a1645d4196163ad
+  checksum: 10/e7d867f073aba622c419f8e49cd9b8e6f913c6ab9d04bd8ff1436182e1109901fb8cff00c89064b4c0361f1e1037becea251c84361b4b60f061de48e9954b719
   languageName: node
   linkType: hard
 
-"@reactflow/core@npm:11.11.0":
-  version: 11.11.0
-  resolution: "@reactflow/core@npm:11.11.0"
+"@reactflow/core@npm:11.11.3":
+  version: 11.11.3
+  resolution: "@reactflow/core@npm:11.11.3"
   dependencies:
     "@types/d3": "npm:^7.4.0"
     "@types/d3-drag": "npm:^3.0.1"
@@ -3922,15 +3922,15 @@ __metadata:
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/d4c00686cb219a5312c1032b763431b41c24e350cea6051fd7450448530180209ea02d565b29400a3a20764cf9df1318d7658cf0918334aea5e5ab08e07a346f
+  checksum: 10/2bd1f810c07579549c47bc27daab911d4add7bc3d3babc98fe2c43efff7755f944e59dbaab60192cb22cf5be2b173579226eb94e82a282e29ca05f9d284a38c2
   languageName: node
   linkType: hard
 
-"@reactflow/minimap@npm:11.7.10":
-  version: 11.7.10
-  resolution: "@reactflow/minimap@npm:11.7.10"
+"@reactflow/minimap@npm:11.7.13":
+  version: 11.7.13
+  resolution: "@reactflow/minimap@npm:11.7.13"
   dependencies:
-    "@reactflow/core": "npm:11.11.0"
+    "@reactflow/core": "npm:11.11.3"
     "@types/d3-selection": "npm:^3.0.3"
     "@types/d3-zoom": "npm:^3.0.1"
     classcat: "npm:^5.0.3"
@@ -3940,15 +3940,15 @@ __metadata:
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/8547d85358ef3d795d63393b247b8c9da532efa0445108daf29e5e7b26fa7ce6d033c950ef4caf75400d470770a6abcacb717e180544b439bd622d3a593bbcd7
+  checksum: 10/73ff65b466feb930b0e346c60e13b02820a7f201279bab776fb39e086f5547fdd3eb5cf79c38bd4f32f3382879d798694b4a45aa83e008a2c7d86d44286549a0
   languageName: node
   linkType: hard
 
-"@reactflow/node-resizer@npm:2.2.10":
-  version: 2.2.10
-  resolution: "@reactflow/node-resizer@npm:2.2.10"
+"@reactflow/node-resizer@npm:2.2.13":
+  version: 2.2.13
+  resolution: "@reactflow/node-resizer@npm:2.2.13"
   dependencies:
-    "@reactflow/core": "npm:11.11.0"
+    "@reactflow/core": "npm:11.11.3"
     classcat: "npm:^5.0.4"
     d3-drag: "npm:^3.0.0"
     d3-selection: "npm:^3.0.0"
@@ -3956,21 +3956,21 @@ __metadata:
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/10f5a954c6124235ae38537f9533a809ba661650d2627ca235444c3840310f68d69211e6338279a31b8a04c2c0056c4d96463b3f223458b0b508009283f60cdb
+  checksum: 10/71facb1271a1bede5116b3091a08807f93dcf06816e0f30d0929a525580f067414a10b24e5f7515617380f27d163fafc68f5440abf2a53cc5d42436ca589c46d
   languageName: node
   linkType: hard
 
-"@reactflow/node-toolbar@npm:1.3.10":
-  version: 1.3.10
-  resolution: "@reactflow/node-toolbar@npm:1.3.10"
+"@reactflow/node-toolbar@npm:1.3.13":
+  version: 1.3.13
+  resolution: "@reactflow/node-toolbar@npm:1.3.13"
   dependencies:
-    "@reactflow/core": "npm:11.11.0"
+    "@reactflow/core": "npm:11.11.3"
     classcat: "npm:^5.0.3"
     zustand: "npm:^4.4.1"
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/c0e91d3c6b3b7712c6b5f4ae19aa72d9a6f254648000077cce7083d080c86c5121c86f9375409d1743351d5e3e0150b50d24576d5a9e54dd13695ca600280a63
+  checksum: 10/532b889192d1644689d095b08367eccd397d02cd4974efee7873f8928e094e807be00f18b089d89cfae6ee8168e4b41694b0d52740a83e9059031b8bd50cefc3
   languageName: node
   linkType: hard
 
@@ -15161,7 +15161,7 @@ __metadata:
     react-test-renderer: "npm:18.3.1"
     react-timeline-range-slider: "npm:1.4.1"
     react-virtualized: "npm:9.22.5"
-    reactflow: "npm:11.11.0"
+    reactflow: "npm:11.11.3"
     recharts: "npm:2.12.4"
     relay-compiler: "npm:16.2.0"
     relay-runtime: "npm:16.2.0"
@@ -16999,20 +16999,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reactflow@npm:11.11.0":
-  version: 11.11.0
-  resolution: "reactflow@npm:11.11.0"
+"reactflow@npm:11.11.3":
+  version: 11.11.3
+  resolution: "reactflow@npm:11.11.3"
   dependencies:
-    "@reactflow/background": "npm:11.3.10"
-    "@reactflow/controls": "npm:11.2.10"
-    "@reactflow/core": "npm:11.11.0"
-    "@reactflow/minimap": "npm:11.7.10"
-    "@reactflow/node-resizer": "npm:2.2.10"
-    "@reactflow/node-toolbar": "npm:1.3.10"
+    "@reactflow/background": "npm:11.3.13"
+    "@reactflow/controls": "npm:11.2.13"
+    "@reactflow/core": "npm:11.11.3"
+    "@reactflow/minimap": "npm:11.7.13"
+    "@reactflow/node-resizer": "npm:2.2.13"
+    "@reactflow/node-toolbar": "npm:1.3.13"
   peerDependencies:
     react: ">=17"
     react-dom: ">=17"
-  checksum: 10/e1c743362e43567f279c30b34045cbdf6c395aff38f3c515f2165b0f10461948b3cd0cf897fa1db8613b74fd2ed6f1febf9107eac67f4126770586e369fda010
+  checksum: 10/15620901b3d2817e07ccada03ab108cbd4c9e863db884a36492bcf27b25c8a3e5f28a3ed34782cbba8105a0abf2830b3060758ad3759d7df8cb52f078e1289ca
   languageName: node
   linkType: hard
 
