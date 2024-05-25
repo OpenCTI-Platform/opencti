@@ -682,8 +682,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     // TODO Improve type restriction from targeted ref inferred types
     // This information must be added in the model
-    const findOpts = { forceAliases: true, indices: READ_DATA_INDICES };
-    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), findOpts);
+    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id));
     let embeddedFromPromise = Promise.resolve();
     if (embeddedFromResolution) {
       fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
@@ -971,7 +970,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (instance, inputs) => {
+const mergeInstanceWithUpdateInputs = (base, inputs) => {
+  const instance = structuredClone(base);
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
@@ -1861,7 +1861,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Based on that we will be able to generate the correct standard id
     locksIds = getInstanceIds(updated); // Take lock ids on the new merged initial.
     const targetStandardId = generateStandardId(initial.entity_type, updated);
-    if (targetStandardId !== initial.standard_id && !(initial[IDS_STIX] ?? []).includes(targetStandardId)) {
+    const otherIds = [...(initial[IDS_STIX] ?? []), ...(initial[iAliasedIds.name] ?? [])];
+    if (targetStandardId !== initial.standard_id && !otherIds.includes(targetStandardId)) {
       locksIds.push(targetStandardId);
       eventualNewStandardId = targetStandardId;
     }
