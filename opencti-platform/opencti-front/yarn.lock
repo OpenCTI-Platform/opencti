@@ -15144,7 +15144,7 @@ __metadata:
     react-csv: "npm:2.2.2"
     react-dom: "npm:18.3.1"
     react-force-graph-2d: "npm:1.25.5"
-    react-force-graph-3d: "npm:1.24.2"
+    react-force-graph-3d: "npm:1.24.3"
     react-grid-layout: "npm:1.4.4"
     react-intl: "npm:6.6.8"
     react-leaflet: "npm:4.2.1"
@@ -16557,16 +16557,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-3d@npm:1.24.2":
-  version: 1.24.2
-  resolution: "react-force-graph-3d@npm:1.24.2"
+"react-force-graph-3d@npm:1.24.3":
+  version: 1.24.3
+  resolution: "react-force-graph-3d@npm:1.24.3"
   dependencies:
     3d-force-graph: "npm:^1.73"
     prop-types: "npm:15"
     react-kapsule: "npm:2"
   peerDependencies:
     react: "*"
-  checksum: 10/0d1a94af90e37a8a89ebfa120e56f2807faf2de4fffaaaf02e521a106650dc44f6a670126944af34c397f5a9e4ad6a3fb726a27034337a38e9263ccbbeb39f9b
+  checksum: 10/dc78ed9b3c7430f99b102acd4505011c6553b7511bf9e1d56cd35dbee59caeb9999b3872c599c0ed86c1bd602bc312cf6331d2bcf1744fdfdcdec3dce3c63f92
   languageName: node
   linkType: hard
 
