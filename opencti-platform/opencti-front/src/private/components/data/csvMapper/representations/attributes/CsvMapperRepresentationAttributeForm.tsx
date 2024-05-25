@@ -53,7 +53,7 @@ CsvMapperRepresentationAttributeFormProps
   const { name, value } = field;
   const { setFieldValue } = form;
 
-  const options = alphabet(1);
+  const options = alphabet(26);
 
   // -- ERRORS --
 

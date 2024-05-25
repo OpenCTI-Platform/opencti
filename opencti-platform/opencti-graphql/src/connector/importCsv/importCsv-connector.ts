@@ -62,48 +62,40 @@ const initImportCsvConnector = () => {
           chunks.push(chunk.toString('utf8'));
         }).on('error', async (error) => {
           hasError = true;
-          const errorData = {
-            error: error.message,
-            source: fileId,
-          };
+          const errorData = { error: error.message, source: fileId };
           await reportExpectation(context, applicantUser, workId, errorData);
-        })
-          .on('end', async () => {
-            if (!hasError) {
-              const string = chunks.join('');
-              const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, entity);
+        }).on('end', async () => {
+          if (!hasError) {
+            const string = chunks.join('');
+            const bundle = await bundleProcess(context, applicantUser, Buffer.from(string), csvMapper, { entity });
+            const validateBeforeImport = connectorConfig.config.validate_before_import;
+            if (validateBeforeImport) {
               await updateExpectationsNumber(context, applicantUser, workId, 1);
-
-              const validateBeforeImport = connectorConfig.config.validate_before_import;
-              if (validateBeforeImport) {
-                const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
-                const file = {
-                  createReadStream: () => contentStream,
-                  filename: `${workId}.json`,
-                  mimetype: 'application/json',
-                };
-                await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
-
-                await reportExpectation(context, applicantUser, workId);
-              } else {
-                const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
-                await pushToSync({
-                  type: 'bundle',
-                  update: true,
-                  applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
-                  work_id: workId,
-                  content
-                });
-              }
+              const contentStream = Readable.from([JSON.stringify(bundle, null, '  ')]);
+              const file = {
+                createReadStream: () => contentStream,
+                filename: `${workId}.json`,
+                mimetype: 'application/json',
+              };
+              await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
+              await reportExpectation(context, applicantUser, workId);
+            } else {
+              await updateExpectationsNumber(context, applicantUser, workId, bundle.objects.length);
+              const content = Buffer.from(JSON.stringify(bundle), 'utf-8').toString('base64');
+              await pushToSync({
+                type: 'bundle',
+                update: true,
+                applicant_id: applicantId ?? OPENCTI_SYSTEM_UUID,
+                work_id: workId,
+                content
+              });
             }
-          });
+          }
+        });
       }
       await updateProcessedTime(context, applicantUser, workId, ' generated bundle(s) for worker import');
     } catch (error: any) {
-      const errorData = {
-        error: error.stack,
-        source: fileId,
-      };
+      const errorData = { error: error.stack, source: fileId };
       await reportExpectation(context, applicantUser, workId, errorData);
     }
   };

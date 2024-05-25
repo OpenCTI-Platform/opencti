@@ -7,11 +7,9 @@ import datetime
 import functools
 import json
 import os
-import random
 import sys
 import threading
 import time
-import traceback
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Dict, List, Optional, Union
@@ -29,7 +27,6 @@ from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
-from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 60
@@ -40,34 +37,6 @@ resource = Resource(attributes={SERVICE_NAME: "opencti-worker"})
 bundles_global_counter = meter.create_counter(
     name="opencti_bundles_global_counter",
     description="number of bundles processed",
-)
-bundles_success_counter = meter.create_counter(
-    name="opencti_bundles_success_counter",
-    description="number of bundles successfully processed",
-)
-bundles_timeout_error_counter = meter.create_counter(
-    name="opencti_bundles_timeout_error_counter",
-    description="number of bundles in timeout error",
-)
-bundles_request_error_counter = meter.create_counter(
-    name="opencti_bundles_request_error_counter",
-    description="number of bundles in request error",
-)
-bundles_technical_error_counter = meter.create_counter(
-    name="opencti_bundles_technical_error_counter",
-    description="number of bundles in technical error",
-)
-bundles_lock_error_counter = meter.create_counter(
-    name="opencti_bundles_lock_error_counter",
-    description="number of bundles in lock error",
-)
-bundles_missing_reference_error_counter = meter.create_counter(
-    name="opencti_bundles_missing_reference_error_counter",
-    description="number of bundles in missing reference error",
-)
-bundles_bad_gateway_error_counter = meter.create_counter(
-    name="opencti_bundles_bad_gateway_error_counter",
-    description="number of bundles in bad gateway error",
 )
 bundles_processing_time_gauge = meter.create_histogram(
     name="opencti_bundles_processing_time_gauge",
@@ -164,7 +133,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.warning(str(err))
         self.channel.basic_qos(prefetch_count=1)
         assert self.channel is not None
-        self.processing_count: int = 0
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
 
@@ -251,32 +219,20 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         previous_standard = data.get("previous_standard")
         self.api.set_previous_standard_header(previous_standard)
         # Execute the import
-        self.processing_count += 1
-        content = "Unparseable"
+        imported_items = []
+        event_type = data["type"] if "type" in data else "bundle"
+        types = (
+            data["entities_types"]
+            if "entities_types" in data and len(data["entities_types"]) > 0
+            else None
+        )
         try:
-            event_type = data["type"] if "type" in data else "bundle"
-            types = (
-                data["entities_types"]
-                if "entities_types" in data and len(data["entities_types"]) > 0
-                else None
-            )
-            processing_count = self.processing_count
-            if self.processing_count == PROCESSING_COUNT:
-                processing_count = None  # type: ignore
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 update = data["update"] if "update" in data else False
-                self.api.stix2.import_bundle_from_json(
-                    content, update, types, processing_count
+                imported_items = self.api.stix2.import_bundle_from_json(
+                    content, update, types, work_id
                 )
-                # Ack the message
-                cb = functools.partial(self.ack_message, channel, delivery_tag)
-                connection.add_callback_threadsafe(cb)
-                if work_id is not None:
-                    self.api.work.report_expectation(work_id, None)
-                self.processing_count = 0
-                bundles_success_counter.add(1)
-                return True
             elif event_type == "event":
                 event = base64.b64decode(data["content"]).decode("utf-8")
                 event_content = json.loads(event)
@@ -286,10 +242,19 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         "type": "bundle",
                         "objects": [event_content["data"]],
                     }
-                    self.api.stix2.import_bundle(bundle, True, types, processing_count)
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
                 elif event_type == "delete":
-                    delete_id = event_content["data"]["id"]
-                    self.api.stix.delete(id=delete_id)
+                    delete_object = event_content["data"]
+                    delete_object["opencti_operation"] = event_type
+                    bundle = {
+                        "type": "bundle",
+                        "objects": [delete_object],
+                    }
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
                 elif event_type == "merge":
                     # Start with a merge
                     target_id = event_content["data"]["id"]
@@ -299,115 +264,36 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             event_content["context"]["sources"],
                         )
                     )
-                    self.api.stix.merge(id=target_id, object_ids=source_ids)
-                    # Update the target entity after merge
+                    merge_object = event_content["data"]
+                    merge_object["opencti_operation"] = "merge"
+                    merge_object["merge_target_id"] = target_id
+                    merge_object["merge_source_ids"] = source_ids
                     bundle = {
                         "type": "bundle",
-                        "objects": [event_content["data"]],
+                        "objects": [merge_object],
                     }
-                    self.api.stix2.import_bundle(bundle, True, types, processing_count)
-                # Ack the message
-                cb = functools.partial(self.ack_message, channel, delivery_tag)
-                connection.add_callback_threadsafe(cb)
-                self.processing_count = 0
-                bundles_success_counter.add(1)
-                return True
+                    imported_items = self.api.stix2.import_bundle(
+                        bundle, True, types, work_id
+                    )
+                else:
+                    raise ValueError(
+                        "Unsupported operation type", {"event_type": event_type}
+                    )
             else:
-                # Unknown type, just move on.
-                return True
-        except Timeout:
-            bundles_timeout_error_counter.add(1)
-            self.worker_logger.warning("A connection timeout occurred")
-            time.sleep(60)
-            # Platform is under heavy load: wait for unlock & retry almost indefinitely.
-            sleep_jitter = round(random.uniform(10, 30), 2)
-            time.sleep(sleep_jitter)
-            self.data_handler(connection, channel, delivery_tag, data)
-            return True
-        except RequestException:
-            bundles_request_error_counter.add(1, {"origin": "opencti-worker"})
+                raise ValueError("Unsupported event type", {"event_type": event_type})
+        except Exception as ex:
+            # Technical unmanaged exception
             self.worker_logger.error(
-                "Message NOT acknowledged",
-                {"tag": delivery_tag, "type": "RequestException"},
+                "Error executing data handling", {"reason": str(ex)}
             )
-            cb = functools.partial(self.nack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
-            self.processing_count = 0
-            return False
-        except Exception as ex:  # pylint: disable=broad-except
-            error = str(ex)
-            error_msg = traceback.format_exc()
-            if "LOCK_ERROR" in error_msg:
-                bundles_lock_error_counter.add(1)
-                # Platform is under heavy load:
-                # wait for unlock & retry indefinitely.
-                sleep_jitter = round(random.uniform(10, 30), 2)
-                time.sleep(sleep_jitter)
-                self.data_handler(connection, channel, delivery_tag, data)
-            elif (
-                "MISSING_REFERENCE_ERROR" in error_msg
-                and self.processing_count < PROCESSING_COUNT
-            ):
-                bundles_missing_reference_error_counter.add(1)
-                # In case of missing reference, wait & retry
-                sleep_jitter = round(random.uniform(1, 3), 2)
-                time.sleep(sleep_jitter)
-                self.worker_logger.info(
-                    "Message reprocess",
-                    {"tag": delivery_tag, "count": self.processing_count},
-                )
-                self.data_handler(connection, channel, delivery_tag, data)
-            elif "MISSING_REFERENCE_ERROR" in error_msg:
-                self.worker_logger.warning(error_msg)
-                self.processing_count = 0
-                cb = functools.partial(self.ack_message, channel, delivery_tag)
-                connection.add_callback_threadsafe(cb)
-                if work_id is not None:
-                    self.api.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": (
-                                content if len(content) < 50000 else "Bundle too large"
-                            ),
-                        },
-                    )
-                return False
-            elif "Bad Gateway" in error_msg:
-                bundles_bad_gateway_error_counter.add(1)
-                self.worker_logger.error("A connection error occurred")
-                time.sleep(60)
-                self.worker_logger.info(
-                    "Message NOT acknowledged (Bad Gateway)", {"tag": delivery_tag}
-                )
-                cb = functools.partial(self.nack_message, channel, delivery_tag)
-                connection.add_callback_threadsafe(cb)
-                self.processing_count = 0
-                return False
-            else:
-                bundles_technical_error_counter.add(1)
-                # Platform does not know what to do and raises an error:
-                # fail and acknowledge the message.
-                self.worker_logger.error(error)
-                self.processing_count = 0
-                cb = functools.partial(self.ack_message, channel, delivery_tag)
-                connection.add_callback_threadsafe(cb)
-                if work_id is not None:
-                    self.api.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": (
-                                content if len(content) < 50000 else "Bundle too large"
-                            ),
-                        },
-                    )
-                return False
-            return None
         finally:
-            bundles_global_counter.add(1)
+            bundles_global_counter.add(len(imported_items))
             processing_delta = datetime.datetime.now() - start_processing
             bundles_processing_time_gauge.record(processing_delta.seconds)
+            # Ack the message
+            cb = functools.partial(self.ack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
+            return True
 
     def run(self) -> None:
         try:
