@@ -1905,10 +1905,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       // noinspection ExceptionCaughtLocallyJS
       throw FunctionalError('This update will produce a duplicate', {
         id: initial.id,
-        initial,
-        updates,
         type: initial.entity_type,
-        existingEntities,
         existingIds: existingEntities.map((e) => e.id),
       });
     }
