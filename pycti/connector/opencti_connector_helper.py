@@ -1226,9 +1226,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         if bypass_split:
             bundles = [bundle]
+            expectations_number = len(json.loads(bundle)["objects"])
         else:
             stix2_splitter = OpenCTIStix2Splitter()
-            bundles = stix2_splitter.split_bundle(bundle, True, event_version)
+            expectations_number, bundles = (
+                stix2_splitter.split_bundle_with_expectations(
+                    bundle, True, event_version
+                )
+            )
 
         if len(bundles) == 0:
             self.metric.inc("error_count")
@@ -1236,7 +1241,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         if bundle_send_to_queue:
             if work_id:
-                self.api.work.add_expectations(work_id, len(bundles))
+                self.api.work.add_expectations(work_id, expectations_number)
             if entities_types is None:
                 entities_types = []
             pika_credentials = pika.PlainCredentials(

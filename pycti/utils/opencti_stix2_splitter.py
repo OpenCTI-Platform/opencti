@@ -1,6 +1,9 @@
 import json
 import re
 import uuid
+from typing import Tuple
+
+from typing_extensions import deprecated
 
 MITRE_X_CAPEC = (
     "x_capec_*"  # https://github.com/mitre-attack/attack-stix-data/issues/34
@@ -58,16 +61,10 @@ class OpenCTIStix2Splitter:
         self.cache_index[item_id] = item  # Put in cache
         return nb_deps
 
-    def split_bundle(self, bundle, use_json=True, event_version=None) -> list:
-        """splits a valid stix2 bundle into a list of bundles
-        :param bundle: valid stix2 bundle
-        :type bundle:
-        :param use_json: is JSON?
-        :type use_json:
-        :raises Exception: if data is not valid JSON
-        :return: returns a list of bundles
-        :rtype: list
-        """
+    def split_bundle_with_expectations(
+        self, bundle, use_json=True, event_version=None
+    ) -> Tuple[int, list]:
+        """splits a valid stix2 bundle into a list of bundles"""
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
@@ -96,16 +93,31 @@ class OpenCTIStix2Splitter:
             return elem["nb_deps"]
 
         self.elements.sort(key=by_dep_size)
-        for entity in self.elements:
+
+        elements_with_deps = list(
+            map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
+        )
+
+        number_expectations = 0
+        for entity in elements_with_deps:
+            number_expectations += len(entity["elements"])
             bundles.append(
                 self.stix2_create_bundle(
                     bundle_data["id"],
                     entity["nb_deps"],
-                    [entity],
+                    entity["elements"],
                     use_json,
                     event_version,
                 )
             )
+
+        return number_expectations, bundles
+
+    @deprecated("Use split_bundle_with_expectations instead")
+    def split_bundle(self, bundle, use_json=True, event_version=None) -> list:
+        expectations, bundles = self.split_bundle_with_expectations(
+            bundle, use_json, event_version
+        )
         return bundles
 
     @staticmethod

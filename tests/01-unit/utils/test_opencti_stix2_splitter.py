@@ -9,16 +9,16 @@ def test_split_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/enterprise-attack.json") as file:
         content = file.read()
-    bundles = stix_splitter.split_bundle(content)
-    assert len(bundles) == 7029
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 7029
 
 
 def test_split_cyclic_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     with open("./tests/data/cyclic-bundle.json") as file:
         content = file.read()
-    bundles = stix_splitter.split_bundle(content)
-    assert len(bundles) == 3
+    expectations, bundles = stix_splitter.split_bundle_with_expectations(content)
+    assert expectations == 3
 
 
 def test_create_bundle():
