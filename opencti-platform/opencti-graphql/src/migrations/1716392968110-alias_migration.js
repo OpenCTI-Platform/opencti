@@ -1,5 +1,5 @@
 import { logApp } from '../config/conf';
-import { BULK_TIMEOUT, elBulk, elList } from '../database/engine';
+import { BULK_TIMEOUT, elBulk, elCount, elList } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_DATA_INDICES } from '../database/utils';
 import { iAliasedIds } from '../schema/attribute-definition';
@@ -10,8 +10,16 @@ const message = '[MIGRATION] Alias ids rewrite to align on algorithm modificatio
 
 export const up = async (next) => {
   const context = executionContext('migration');
-  logApp.info(`${message} > started`);
+  const filters = {
+    mode: 'or',
+    filters: [{ key: iAliasedIds.name, values: [], operator: FilterOperator.NotNil }],
+    filterGroups: [],
+  };
+  const total = await elCount(context, SYSTEM_USER, READ_DATA_INDICES, { filters, noFiltersChecking: true });
+  logApp.info(`${message} > started, ${total} elements to modify`);
+  let totalIndex = 0;
   const callback = async (entities) => {
+    totalIndex += entities.length;
     const bulkOperations = entities.map((entity) => {
       const aliasIds = generateAliasesIdsForInstance(entity);
       return [
@@ -20,14 +28,10 @@ export const up = async (next) => {
       ];
     }).flat();
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulkOperations });
+    logApp.info(`${message} > progress, ${totalIndex}/${total}`);
   };
-  const filters = {
-    mode: 'or',
-    filters: [{ key: iAliasedIds.name, values: [], operator: FilterOperator.NotNil }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true, callback };
-  await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
+
+  await elList(context, SYSTEM_USER, READ_DATA_INDICES, { filters, noFiltersChecking: true, callback });
   logApp.info(`${message} > done`);
   next();
 };
