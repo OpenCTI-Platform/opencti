@@ -359,7 +359,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       }],
     }
     : emptyFilterGroup;
-  const [filters, helpers] = useFiltersState(initialFilters);
+  const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
   const virtualEntityTypes = actualTypeFilter.length > 0 ? actualTypeFilter : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   const stixNestedRefRelationshipValidation = () => Yup.object().shape({
     relationship_type: Yup.string().required(t_i18n('This field is required')),
