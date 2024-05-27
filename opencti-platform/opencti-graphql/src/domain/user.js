@@ -302,18 +302,27 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
   let userMarkingsPromise;
-  if (shouldBypass) { // Bypass user have all platform markings
-    userMarkingsPromise = allMarkingsPromise;
+  let maxShareableMarkingsPromise;
+  let userMarkings;
+  let markings;
+  let defaultMarkings;
+  let maxShareableMarkings;
+  let maxShareableMarkingsPromiseArray;
+  if (shouldBypass) { // Bypass user have all platform markings and can share all markings
+    [markings, defaultMarkings] = await Promise.all(
+      [allMarkingsPromise, defaultGroupMarkingsPromise]
+    );
+    userMarkings = markings;
+    maxShareableMarkings = markings;
   } else { // Standard user have markings related to his groups
     userMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-  }
-  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
-  const maxShareableMarkingsPromise = maxShareableMarkingDefinitionsFromGroups(context, groupIds);
-  const [userMarkings, markings, defaultMarkings, maxShareableMarkingsPromiseArray] = await Promise.all(
-    [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
-  );
-  const maxShareableMarkings = await Promise.all(maxShareableMarkingsPromiseArray);
+    maxShareableMarkingsPromise = maxShareableMarkingDefinitionsFromGroups(context, groupIds);
+    [userMarkings, markings, defaultMarkings, maxShareableMarkingsPromiseArray] = await Promise.all(
+      [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
+    );
+    maxShareableMarkings = await Promise.all(maxShareableMarkingsPromiseArray);}
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
   return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: uniq(maxShareableMarkings.flat()) };
 };

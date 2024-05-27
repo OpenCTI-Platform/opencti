@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
+import { isEmptyField } from '../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -87,12 +88,11 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const [operation, setOperation] = useState<string | undefined>(undefined);
 
   const { me } = useAuth();
-  console.log('me.max_shareable', me.max_shareable_marking);
   let allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
   if (limitToMaxSharing) {
     allowedMarkingDefinitions = allowedMarkingDefinitions.filter((def) => {
-      const maxMarking = me.max_shareable_marking?.find((marking) => marking.definition_type === def.definition_type);
-      return !!maxMarking && maxMarking.x_opencti_order >= def.x_opencti_order;
+      const maxMarkingsOfType = me.max_shareable_marking?.filter((marking) => marking.definition_type === def.definition_type);
+      return !isEmptyField(maxMarkingsOfType) && maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order >= def.x_opencti_order);
     });
   }
   const filteredAllowedMarkingDefinitionsOut = filterTargetIds
