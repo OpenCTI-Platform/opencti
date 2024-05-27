@@ -17,6 +17,7 @@ import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObser
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
@@ -61,6 +62,8 @@ interface ContainerStixCyberObservablesComponentProps {
 const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
+  const { t_i18n } = useFormatter();
+
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
@@ -287,6 +290,7 @@ ContainerStixCyberObservablesComponentProps
               container={container}
               handleCopy={handleCopy}
               warning={true}
+              warningMessage={t_i18n('Be careful, you are about to delete the selected observables (not the relationships)')}
             />
             <StixCyberObservablesRightBar
               types={types}

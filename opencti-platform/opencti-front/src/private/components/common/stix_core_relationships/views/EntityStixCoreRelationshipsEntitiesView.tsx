@@ -230,7 +230,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
         variant="medium"
         warning={true}
         warningMessage={t_i18n(
-          'Be careful, you are about to delete the selected entities (not the relationships!).',
+          'Be careful, you are about to delete the selected entities (not the relationships)',
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
