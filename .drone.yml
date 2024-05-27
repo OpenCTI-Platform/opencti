@@ -10,8 +10,6 @@ steps:
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) "TODO" ${DRONE_PULL_REQUEST}
       - ls -lart
-      - pwd
-      - env
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -42,7 +40,6 @@ steps:
     commands:
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
-      - ls -lart
       - echo "DRONE_WORKSPACE=$DRONE_WORKSPACE"
       - echo "DRONE_WORKSPACE=${DRONE_WORKSPACE}"
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
