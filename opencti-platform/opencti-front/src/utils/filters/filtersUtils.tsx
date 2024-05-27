@@ -38,9 +38,9 @@ export type Filter = {
 };
 
 export type FiltersRestrictions = {
-  preventEditionFor?: string[], // filter keys whose values can't be changed
   preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
   preventRemoveFor?: string[], // filter keys whose filter can't be removed
+  preventFilterValuesEditionFor?: Map<string, string[]>, // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
 export const emptyFilterGroup = {
@@ -282,6 +282,12 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
     return t_i18n(`relationship_${value}`);
   }
   return value;
+};
+
+export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
+  return !(filtersRestrictions?.preventFilterValuesEditionFor
+    && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
+    && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
 };
 
 //----------------------------------------------------------------------------------------------------------------------

@@ -204,10 +204,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       const alreadySelectedValues = childFilter?.values ?? [];
       let representationToAdd;
       if (checked) {
-        representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] }; // the representation to add = the former values + the added value
+        // the representation to add = the former values + the added value
+        representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] };
       } else {
         const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
-        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined; // the representation to add = the former values - the removed value
+        // the representation to add = the former values - the removed value
+        representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
       }
       helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
     } else if (checked) {
