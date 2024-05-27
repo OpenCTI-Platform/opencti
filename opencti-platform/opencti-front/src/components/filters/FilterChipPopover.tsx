@@ -39,7 +39,7 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  preventFilterValuesRemoveFor?: Map<string, string[]>;
+  preventFilterValuesEditionFor?: Map<string, string[]>;
 }
 
 export interface FilterChipsParameter {
@@ -154,7 +154,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
-  preventFilterValuesRemoveFor,
+  preventFilterValuesEditionFor,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -303,7 +303,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const checked = subKey
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
-          const notEditable = preventFilterValuesRemoveFor && filter?.key && preventFilterValuesRemoveFor.get(filter.key)?.includes(option.value);
+          const notEditable = preventFilterValuesEditionFor && filter?.key && preventFilterValuesEditionFor.get(filter.key)?.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label} followCursor>
               <li

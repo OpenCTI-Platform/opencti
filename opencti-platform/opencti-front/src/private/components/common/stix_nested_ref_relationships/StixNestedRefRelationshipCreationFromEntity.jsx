@@ -561,7 +561,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               availableEntityTypes={virtualEntityTypes}
               additionalFilterKeys={{
                 filterKeys: ['entity_type'],
-                filtersRestrictions: { preventRemoveFor: ['entity_type'], preventLocalModeSwitchingFor: ['entity_type'], preventFilterValuesRemoveFor: new Map([['entity_type', actualTypeFilter]]) } }
+                filtersRestrictions: { preventLocalModeSwitchingFor: ['entity_type'], preventFilterValuesEditionFor: new Map([['entity_type', actualTypeFilter]]) } }
               }
             >
               <QueryRenderer

@@ -81,12 +81,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const onCLick = onClickLabel;
+  const deactivatePopoverMenu = filtersRestrictions?.preventFilterValuesEditionFor
+    && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
+    && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v));
+  const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
+  const menuClassName = deactivatePopoverMenu ? '' : classes.label;
   if (isOperatorNil) {
     return (
       <>
         <strong
-          className={classes.label}
+          className={menuClassName}
           onClick={onCLick}
         >
           {label}
@@ -130,7 +134,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <>
         <strong
-          className={classes.label}
+          className={menuClassName}
           onClick={onCLick}
         >
           {label}
@@ -194,7 +198,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   return (
     <>
       <strong
-        className={classes.label}
+        className={menuClassName}
         onClick={onCLick}
       >
         {label}

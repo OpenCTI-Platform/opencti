@@ -262,6 +262,7 @@ FilterIconButtonContainerProps
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
+        const filterValues = currentFilter.values;
         const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
@@ -288,7 +289,10 @@ FilterIconButtonContainerProps
         const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
-
+        const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
+          && !(filtersRestrictions?.preventFilterValuesEditionFor
+            && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
+            && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
         return (
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
@@ -340,7 +344,7 @@ FilterIconButtonContainerProps
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
-                    (isReadWriteFilter && !(filtersRestrictions?.preventRemoveFor?.includes(filterKey)))
+                    (isReadWriteFilter && authorizeFilterRemoving)
                       ? () => manageRemoveFilter(
                         currentFilter.id,
                         filterKey,
@@ -388,7 +392,7 @@ FilterIconButtonContainerProps
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
             availableRelationshipTypes={availableRelationshipTypes}
-            preventFilterValuesRemoveFor={filtersRestrictions?.preventFilterValuesRemoveFor}
+            preventFilterValuesEditionFor={filtersRestrictions?.preventFilterValuesEditionFor}
           />
         </Box>
       )}
