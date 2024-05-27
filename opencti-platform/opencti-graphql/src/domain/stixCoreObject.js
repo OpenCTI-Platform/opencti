@@ -389,7 +389,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
-  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, container } = args;
+  const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
@@ -409,7 +409,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, container });
+    const { upload: up, untouched } = await uploadToStorage(context, user, filePath, file, { meta, noTriggerImport, entity: previous, file_markings, importContextEntities });
     if (untouched) {
       // When synchronizing the version can be the same.
       // If it's the case, just return without any x_opencti_files modifications

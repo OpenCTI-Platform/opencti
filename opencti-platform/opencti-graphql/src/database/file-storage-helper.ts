@@ -10,12 +10,12 @@ import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 
 interface FileUploadOpts {
-  entity?:BasicStoreBase | unknown,
+  entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
   meta? : any,
   noTriggerImport?: boolean,
   errorOnExisting?: boolean,
   file_markings?: string[],
-  container?: BasicStoreEntity,
+  importContextEntities?: BasicStoreEntity[], // entities used for import context
 }
 
 interface FileUploadData {

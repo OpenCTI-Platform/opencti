@@ -34,12 +34,8 @@ export const references = async (context, user, externalReferenceId, args) => {
 };
 
 export const externalReferenceImportPush = async (context, user, externalReferenceId, file, args = {}) => {
-  const containersRefs = await references(context, user, externalReferenceId, { types: ['Container'], connectionFormat: false, first: 2 });
-  let finalArgs = { ...args };
-  if (containersRefs.length === 1) {
-    // if externalRef is contained in one container only, we want to send this context container id for import
-    finalArgs = { ...finalArgs, container: containersRefs[0] };
-  }
+  const entitiesReferences = await references(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], connectionFormat: false, first: 50 });
+  const finalArgs = { ...args, importContextEntities: entitiesReferences };
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };
 
