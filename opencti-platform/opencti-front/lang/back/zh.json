@@ -100,6 +100,7 @@
   "Connector name": "连接器名称",
   "Connector scope": "连接器范围",
   "Connector state": "连接器状态",
+  "Connector trigger filters": "连接器触发滤波器",
   "Connector type": "连接器类型",
   "Connectors": "连接器",
   "Consent confirm text": "同意确认文本",

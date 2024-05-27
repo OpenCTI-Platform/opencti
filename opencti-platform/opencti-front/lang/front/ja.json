@@ -2550,6 +2550,8 @@
   "toTypes": "ターゲットのタイプ",
   "Trash": "ゴミ箱",
   "Trigger": "トリガー",
+  "Trigger filters": "トリガーフィルター",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "トリガー・フィルタを使用すると、フィルタとスコープに一致するエンティティに対してこのコネクタを自動的にトリガーできます。",
   "trigger_type": "トリガーの種類",
   "Triggering on": "トリガーオン",
   "Triggers": "トリガー",

@@ -2550,6 +2550,8 @@
   "toTypes": "Type destination",
   "Trash": "Corbeille",
   "Trigger": "Déclencheur",
+  "Trigger filters": "Filtres de déclenchement",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "Les filtres de déclenchement peuvent être utilisés pour déclencher automatiquement ce connecteur sur les entités correspondant aux filtres et au périmètre.",
   "trigger_type": "Type de déclencheur",
   "Triggering on": "Se déclenche sur",
   "Triggers": "Déclencheurs",

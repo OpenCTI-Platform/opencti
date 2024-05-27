@@ -1708,6 +1708,7 @@ type Connector implements BasicObject & InternalObject {
   auto: Boolean
   only_contextual: Boolean
   playbook_compatible: Boolean
+  connector_trigger_filters: String
   connector_type: String
   connector_scope: [String!]
   connector_state: String
@@ -11243,7 +11244,7 @@ type Query {
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
-  connectors: [Connector] @auth(for: [MODULES])
+  connectors: [Connector!] @auth(for: [MODULES])
   connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
@@ -12807,6 +12808,7 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
+  updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
   runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID! @auth(for: [SETTINGS])
   feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])

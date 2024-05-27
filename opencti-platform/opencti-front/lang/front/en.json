@@ -2550,6 +2550,8 @@
   "toTypes": "Target type",
   "Trash": "Trash",
   "Trigger": "Trigger",
+  "Trigger filters": "Trigger filters",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.",
   "trigger_type": "Trigger type",
   "Triggering on": "Triggering on",
   "Triggers": "Triggers",

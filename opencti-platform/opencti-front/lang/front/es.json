@@ -2550,6 +2550,8 @@
   "toTypes": "Tipo de destino",
   "Trash": "Papelera",
   "Trigger": "Disparador",
+  "Trigger filters": "Filtros de activación",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "Se pueden utilizar filtros de activación para activar automáticamente este conector en entidades que coincidan con los filtros y el ámbito.",
   "trigger_type": "Tipo de disparador",
   "Triggering on": "Activación de",
   "Triggers": "Disparadores",

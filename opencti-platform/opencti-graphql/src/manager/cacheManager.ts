@@ -13,6 +13,7 @@ import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
+import type { BasicStoreEntityConnector } from '../connector/connector';
 import { resolveUserById } from '../domain/user';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
@@ -69,6 +70,12 @@ const platformResolvedFilters = (context: AuthContext) => {
     // Trigger filters
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
     filteringIds.push(...triggers.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
+    // Connectors filters (for enrichment connectors)
+    const connectors = await listAllEntities<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+    filteringIds.push(...connectors.map((s) => {
+      const connFilters = s.connector_trigger_filters?.length > 0 ? s.connector_trigger_filters : initialFilterGroup;
+      return extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
+    }).flat());
     // Playbook filters
     const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
     const playbookFilterIds = playbooks

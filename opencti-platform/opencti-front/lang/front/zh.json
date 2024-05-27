@@ -2550,6 +2550,8 @@
   "toTypes": "目标类型",
   "Trash": "回收站",
   "Trigger": "触发",
+  "Trigger filters": "触发过滤器",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "触发过滤器可用于在符合过滤器和范围的实体上自动触发此连接器。",
   "trigger_type": "触发器类型",
   "Triggering on": "触发时间",
   "Triggers": "触发器",

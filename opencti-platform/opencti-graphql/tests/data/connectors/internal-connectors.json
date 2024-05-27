@@ -1,0 +1,243 @@
+[
+  {
+    "_index": "opencti_internal_objects-000001",
+    "id": "0F56AEC3-BAB4-495F-9616-22F0592601BB",
+    "sort": [
+      "connector--4f34f7cc-6a75-5fc8-8597-ce3b6baf4364"
+    ],
+    "internal_id": "0F56AEC3-BAB4-495F-9616-22F0592601BB",
+    "name": "ExportFileStix",
+    "connector_type": "INTERNAL_EXPORT_FILE",
+    "connector_scope": [
+      "application/json"
+    ],
+    "auto": false,
+    "only_contextual": false,
+    "connector_user_id": "88ec0c6a-13ce-5e39-b486-354fe4a7084f",
+    "entity_type": "Connector",
+    "standard_id": "connector--4f34f7cc-6a75-5fc8-8597-ce3b6baf4364",
+    "creator_id": [
+      "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+    ],
+    "created_at": "2023-09-07T20:16:08.921Z",
+    "updated_at": "2024-05-31T12:09:23.956Z",
+    "base_type": "ENTITY",
+    "parent_types": [
+      "Basic-Object",
+      "Internal-Object"
+    ],
+    "representative": {
+      "main": "ExportFileStix"
+    },
+    "connector_state": "",
+    "playbook_compatible": false,
+    "connector_state_reset": true,
+    "config": {
+      "connection": {
+        "host": "localhost",
+        "vhost": "/",
+        "use_ssl": false,
+        "port": 5672,
+        "user": "guest",
+        "pass": "guest"
+      },
+      "push": "push_0F56AEC3-BAB4-495F-9616-22F0592601BB",
+      "push_routing": "push_routing_0F56AEC3-BAB4-495F-9616-22F0592601BB",
+      "push_exchange": "amqp.worker.exchange",
+      "listen": "listen_0F56AEC3-BAB4-495F-9616-22F0592601BB",
+      "listen_routing": "listen_routing_0F56AEC3-BAB4-495F-9616-22F0592601BB",
+      "listen_exchange": "amqp.connector.exchange"
+    },
+    "active": false
+  },
+  {
+    "_index": "opencti_internal_objects-000001",
+    "id": "7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+    "sort": [
+      "connector--533f96fc-e8b1-5aba-8e28-ea23386c3920"
+    ],
+    "internal_id": "7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+    "name": "ImportExternalReference",
+    "connector_type": "INTERNAL_ENRICHMENT",
+    "connector_scope": [
+      "External-Reference"
+    ],
+    "auto": false,
+    "only_contextual": false,
+    "playbook_compatible": false,
+    "connector_user_id": "7ee54fee-1e97-4eaf-9263-24881760f00c",
+    "confidence": 100,
+    "entity_type": "Connector",
+    "standard_id": "connector--533f96fc-e8b1-5aba-8e28-ea23386c3920",
+    "creator_id": [
+      "7ee54fee-1e97-4eaf-9263-24881760f00c"
+    ],
+    "created_at": "2024-05-13T13:53:26.366Z",
+    "updated_at": "2024-06-07T09:36:35.952Z",
+    "base_type": "ENTITY",
+    "parent_types": [
+      "Basic-Object",
+      "Internal-Object"
+    ],
+    "connector_state": "null",
+    "connector_trigger_filters": "{\"mode\":\"and\",\"filters\":[{\"key\":[\"creator_id\"],\"values\":[\"cae57c08-a936-4e45-9de5-4e4a00b01a3f\"],\"operator\":\"eq\",\"mode\":\"or\"}],\"filterGroups\":[]}",
+    "config": {
+      "connection": {
+        "host": "localhost",
+        "vhost": "/",
+        "use_ssl": false,
+        "port": 5672,
+        "user": "guest",
+        "pass": "guest"
+      },
+      "push": "push_7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+      "push_routing": "push_routing_7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+      "push_exchange": "amqp.worker.exchange",
+      "listen": "listen_7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+      "listen_routing": "listen_routing_7fcb20c6-ec82-4140-b5fc-6bbd9f10bd89",
+      "listen_exchange": "amqp.connector.exchange"
+    },
+    "active": true
+  },
+  {
+    "_index": "opencti_internal_objects-000001",
+    "id": "633AAC2A-542E-4700-B4BD-C240C8CBC965",
+    "sort": [
+      "connector--723fcbed-7a76-52aa-a57d-012d7e96df67"
+    ],
+    "internal_id": "633AAC2A-542E-4700-B4BD-C240C8CBC965",
+    "name": "ImportFileStix",
+    "connector_type": "INTERNAL_IMPORT_FILE",
+    "connector_scope": [
+      "application/json",
+      "text/xml"
+    ],
+    "auto": false,
+    "only_contextual": false,
+    "connector_user_id": "88ec0c6a-13ce-5e39-b486-354fe4a7084f",
+    "entity_type": "Connector",
+    "standard_id": "connector--723fcbed-7a76-52aa-a57d-012d7e96df67",
+    "creator_id": [
+      "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+    ],
+    "created_at": "2023-09-07T20:21:12.126Z",
+    "updated_at": "2024-05-20T15:20:22.369Z",
+    "base_type": "ENTITY",
+    "parent_types": [
+      "Basic-Object",
+      "Internal-Object"
+    ],
+    "representative": {
+      "main": "ImportFileStix"
+    },
+    "connector_state": "null",
+    "playbook_compatible": false,
+    "config": {
+      "connection": {
+        "host": "localhost",
+        "vhost": "/",
+        "use_ssl": false,
+        "port": 5672,
+        "user": "guest",
+        "pass": "guest"
+      },
+      "push": "push_633AAC2A-542E-4700-B4BD-C240C8CBC965",
+      "push_routing": "push_routing_633AAC2A-542E-4700-B4BD-C240C8CBC965",
+      "push_exchange": "amqp.worker.exchange",
+      "listen": "listen_633AAC2A-542E-4700-B4BD-C240C8CBC965",
+      "listen_routing": "listen_routing_633AAC2A-542E-4700-B4BD-C240C8CBC965",
+      "listen_exchange": "amqp.connector.exchange"
+    },
+    "active": false
+  },
+  {
+    "_index": "opencti_internal_objects-000001",
+    "id": "00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+    "sort": [
+      "connector--bb18a128-f558-5f51-807c-9a0a23987066"
+    ],
+    "internal_id": "00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+    "name": "ImportDocument",
+    "connector_type": "INTERNAL_IMPORT_FILE",
+    "connector_scope": [
+      "application/pdf",
+      "text/plain",
+      "text/html",
+      "text/csv",
+      "text/markdown"
+    ],
+    "auto": true,
+    "only_contextual": false,
+    "connector_user_id": "88ec0c6a-13ce-5e39-b486-354fe4a7084f",
+    "entity_type": "Connector",
+    "standard_id": "connector--bb18a128-f558-5f51-807c-9a0a23987066",
+    "creator_id": [
+      "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+    ],
+    "created_at": "2023-09-07T20:18:47.887Z",
+    "updated_at": "2024-06-07T09:36:35.953Z",
+    "base_type": "ENTITY",
+    "parent_types": [
+      "Basic-Object",
+      "Internal-Object"
+    ],
+    "representative": {
+      "main": "ImportDocument"
+    },
+    "connector_state": "null",
+    "playbook_compatible": false,
+    "connector_state_reset": false,
+    "config": {
+      "connection": {
+        "host": "localhost",
+        "vhost": "/",
+        "use_ssl": false,
+        "port": 5672,
+        "user": "guest",
+        "pass": "guest"
+      },
+      "push": "push_00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+      "push_routing": "push_routing_00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+      "push_exchange": "amqp.worker.exchange",
+      "listen": "listen_00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+      "listen_routing": "listen_routing_00D5DFBD-9472-44FD-914C-A7FE19E0F7AB",
+      "listen_exchange": "amqp.connector.exchange"
+    },
+    "active": true
+  },
+  {
+    "id": "d336676c-4ee5-4257-96ff-b2a86688d4af",
+    "internal_id": "d336676c-4ee5-4257-96ff-b2a86688d4af",
+    "active": true,
+    "auto": false,
+    "connector_scope": [
+      "text/csv"
+    ],
+    "connector_type": "INTERNAL_IMPORT_FILE",
+    "name": "ImportCsv",
+    "built_in": true,
+    "configurations": [
+      {
+        "id": "67dbf538-f8fc-4716-80d9-a5fdd1e1561f",
+        "name": "CSV mapper test 1",
+        "configuration": "{\"_index\":\"opencti_internal_objects-000001\",\"id\":\"67dbf538-f8fc-4716-80d9-a5fdd1e1561f\",\"sort\":[\"csvmapper--dcd709ee-e14d-5cec-a946-545bd258e6f0\"],\"name\":\"CSV mapper test 1\",\"has_header\":false,\"separator\":\",\",\"representations\":\"[{\"id\":\"61b7c392-7527-441e-ac86-9476013b8078\",\"type\":\"entity\",\"target\":{\"entity_type\":\"Channel\"},\"attributes\":[{\"key\":\"name\",\"column\":{\"column_name\":\"A\",\"configuration\":null},\"default_values\":null,\"based_on\":null},{\"key\":\"i_attributes\",\"column\":{\"column_name\":\"B\",\"configuration\":null},\"default_values\":null,\"based_on\":null}]}]\",\"skipLineChar\":\"\",\"confidence\":100,\"entity_type\":\"CsvMapper\",\"internal_id\":\"67dbf538-f8fc-4716-80d9-a5fdd1e1561f\",\"standard_id\":\"csvmapper--dcd709ee-e14d-5cec-a946-545bd258e6f0\",\"creator_id\":[\"88ec0c6a-13ce-5e39-b486-354fe4a7084f\"],\"base_type\":\"ENTITY\",\"parent_types\":[\"Basic-Object\",\"Internal-Object\"],\"i_attributes\":[{\"updated_at\":\"2024-05-14T08:30:10.192Z\",\"user_id\":\"88ec0c6a-13ce-5e39-b486-354fe4a7084f\",\"confidence\":100,\"name\":\"representations\"}]}"
+      }
+    ],
+    "config": {
+      "connection": {
+        "host": "localhost",
+        "vhost": "/",
+        "use_ssl": false,
+        "port": 5672,
+        "user": "guest",
+        "pass": "guest"
+      },
+      "push": "push_d336676c-4ee5-4257-96ff-b2a86688d4af",
+      "push_routing": "push_routing_d336676c-4ee5-4257-96ff-b2a86688d4af",
+      "push_exchange": "amqp.worker.exchange",
+      "listen": "listen_d336676c-4ee5-4257-96ff-b2a86688d4af",
+      "listen_routing": "listen_routing_d336676c-4ee5-4257-96ff-b2a86688d4af",
+      "listen_exchange": "amqp.connector.exchange"
+    }
+  }
+]

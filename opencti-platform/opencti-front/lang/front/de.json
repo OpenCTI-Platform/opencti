@@ -2550,6 +2550,8 @@
   "toTypes": "Zieltyp",
   "Trash": "Papierkorb",
   "Trigger": "Auslöser",
+  "Trigger filters": "Filter auslösen",
+  "Trigger filters can be used to trigger automatically this connector on entities matching the filters and scope.": "Triggerfilter können verwendet werden, um diesen Konnektor automatisch bei Entitäten auszulösen, die den Filtern und dem Bereich entsprechen.",
   "trigger_type": "Auslösertyp",
   "Triggering on": "Triggerung auf",
   "Triggers": "Auslöser",
