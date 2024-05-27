@@ -47,11 +47,20 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
+const unauthorizedMarkingsFromList = async (context, user, groupId, maxShareableMarkingsIds) => {
+  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const maxShareableMarkings = maxShareableMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
+  const allowedMarkings = await groupAllowedMarkings(context, user, groupId);
+  const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
+  return maxShareableMarkings.filter((marking) => !allowedMarkingsIds.includes(marking.id));
+};
+
 export const groupMaxShareableMarkings = async (context, user, group) => {
+  // fetch the max shareable markings definitions
   const dataSharingMaxMarkingsIds = group.max_shareable_marking_ids || [];
   const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const maxShareableMarkings = dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
-  // check compatibility with allowed markings
+  // check the compatibility with allowed markings
   const allowedMarkings = await groupAllowedMarkings(context, user, group.id);
   const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
   const maxShareableAllowedMarkings = maxShareableMarkings.map((marking) => {
@@ -148,6 +157,20 @@ export const groupDelete = async (context, user, groupId) => {
 };
 
 export const groupEditField = async (context, user, groupId, input) => {
+  // check max shareable markings are allowed
+  const maxShareableMarkingsIds = input
+    .filter((i) => i.key === 'max_shareable_marking_ids' && (!i.operation || ['add', 'replace'].includes(i.operation)))
+    .map((i) => i.value);
+  const unauthorizedMarkingsValues = maxShareableMarkingsIds.length > 0
+    ? await unauthorizedMarkingsFromList(context, user, groupId, maxShareableMarkingsIds)
+    : [];
+  if (unauthorizedMarkingsValues.length > 0) {
+    throw FunctionalError(
+      'The maximum shareable markings you want to add are not authorized for this group.',
+      unauthorizedMarkingsValues.map((marking) => marking.type)
+    );
+  }
+  // update the attribute
   const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
     user,
