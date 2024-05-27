@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
@@ -86,6 +86,11 @@ class RootIndicator extends Component {
       location,
       params: { indicatorId },
     } = this.props;
+    const getCurrentTab = (indicator) => {
+      if (location.pathname.includes(`/dashboard/observations/indicators/${indicator.id}/knowledge`)) return `/dashboard/observations/indicators/${indicator.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/observations/indicators/${indicator.id}/content`)) return `/dashboard/observations/indicators/${indicator.id}/content`;
+      return location.pathname;
+    };
     return (
       <>
         <QueryRenderer
@@ -95,8 +100,23 @@ class RootIndicator extends Component {
             if (props) {
               if (props.indicator) {
                 const { indicator } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/observations/indicators/${indicator.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/observations/indicators/${indicator.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
-                  <>
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Observations') },
                       { label: t('Indicators'), link: '/dashboard/observations/indicators' },
@@ -106,7 +126,7 @@ class RootIndicator extends Component {
                     <StixDomainObjectHeader
                       entityType="Indicator"
                       stixDomainObject={indicator}
-                      PopoverComponent={<IndicatorPopover />}
+                      PopoverComponent={<IndicatorPopover/>}
                       noAliases={true}
                     />
                     <Box
@@ -117,13 +137,7 @@ class RootIndicator extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/observations/indicators/${indicator.id}/knowledge`,
-                          )
-                            ? `/dashboard/observations/indicators/${indicator.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(indicator)}
                       >
                         <Tab
                           component={Link}
@@ -172,15 +186,15 @@ class RootIndicator extends Component {
                     <Routes>
                       <Route
                         path="/"
-                        element={(<Indicator indicator={indicator} />)}
+                        element={(<Indicator indicator={indicator}/>)}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={indicator}
                           />
-                        )}
+                                }
                       />
                       <Route
                         path="/analyses"
@@ -188,7 +202,7 @@ class RootIndicator extends Component {
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             stixDomainObjectOrStixCoreRelationship={indicator}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/sightings"
@@ -206,7 +220,7 @@ class RootIndicator extends Component {
                               'System',
                             ]}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/files"
@@ -217,7 +231,7 @@ class RootIndicator extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.indicator}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/history"
@@ -225,7 +239,7 @@ class RootIndicator extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={indicatorId}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge"
@@ -233,7 +247,7 @@ class RootIndicator extends Component {
                           <IndicatorEntities
                             indicatorId={indicatorId}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -241,18 +255,18 @@ class RootIndicator extends Component {
                           <StixCoreRelationship
                             entityId={indicatorId}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge/sightings/:sightingId"
-                        element={ (
+                        element={(
                           <StixSightingRelationship
                             entityId={indicatorId}
                           />
-                        )}
+                                )}
                       />
                     </Routes>
-                  </>
+                  </div>
                 );
               }
               return <ErrorNotFound />;

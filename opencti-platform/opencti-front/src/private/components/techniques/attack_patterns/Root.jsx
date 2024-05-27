@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import AttackPattern from './AttackPattern';
@@ -85,6 +85,11 @@ class RootAttackPattern extends Component {
       location,
       params: { attackPatternId },
     } = this.props;
+    const getCurrentTab = (attackPattern) => {
+      if (location.pathname.includes(`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`)) return `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`)) return `/dashboard/techniques/attack_patterns/${attackPattern.id}/content`;
+      return location.pathname;
+    };
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
@@ -132,6 +137,13 @@ class RootAttackPattern extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -154,13 +166,7 @@ class RootAttackPattern extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
-                          )
-                            ? `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(attackPattern)}
                       >
                         <Tab
                           component={Link}
@@ -220,12 +226,12 @@ class RootAttackPattern extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={attackPattern}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

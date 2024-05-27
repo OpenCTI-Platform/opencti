@@ -263,7 +263,7 @@ class CaseRfiKnowledgeComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
           link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}

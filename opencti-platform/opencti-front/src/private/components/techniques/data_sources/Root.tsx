@@ -9,7 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -75,6 +75,11 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const getCurrentTab = (dataSource) => {
+    if (location.pathname.includes(`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`)) return `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/techniques/data_sources/${dataSource.id}/content`)) return `/dashboard/techniques/data_sources/${dataSource.id}/content`;
+    return location.pathname;
+  };
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
@@ -92,6 +97,13 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
     )
   ) {
     paddingRight = 350;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/techniques/data_sources/${dataSource.id}/content/mapping`,
+    )
+  ) {
+    paddingRight = 0;
   }
   return (
     <>
@@ -114,13 +126,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
-                )
-                  ? `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(dataSource)}
             >
               <Tab
                 component={Link}
@@ -167,12 +173,12 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               }
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={dataSource}
                 />
-              )}
+              }
             />
             <Route
               path="/files"

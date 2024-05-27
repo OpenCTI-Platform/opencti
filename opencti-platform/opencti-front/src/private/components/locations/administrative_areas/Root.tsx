@@ -8,7 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -193,18 +193,18 @@ const RootAdministrativeAreaComponent = ({
               }
             />
             <Route
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
+                  stixCoreObject={administrativeArea}
+                />
+              }
+            />
+            <Route
               path="/knowledge/*"
               element={
                 <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
               }
-            />
-            <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
-                  stixCoreObject={administrativeArea}
-                />
-              )}
             />
             <Route
               path="/analyses"

@@ -11,7 +11,7 @@ import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingPopover from './GroupingPopover';
@@ -87,6 +87,13 @@ const RootGrouping = () => {
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+
+  const getCurrentTab = (grouping) => {
+    if (location.pathname.includes(`/dashboard/analyses/groupings/${grouping.id}/knowledge`)) return `/dashboard/analyses/groupings/${grouping.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/analyses/groupings/${grouping.id}/content`)) return `/dashboard/analyses/groupings/${grouping.id}/content`;
+    return location.pathname;
+  };
+
   return (
     <>
       <QueryRenderer
@@ -115,6 +122,13 @@ const RootGrouping = () => {
               ) {
                 paddingRight = 350;
               }
+              if (
+                location.pathname.includes(
+                  `/dashboard/analyses/groupings/${grouping.id}/content/mapping`,
+                )
+              ) {
+                paddingRight = 0;
+              }
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -139,13 +153,7 @@ const RootGrouping = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                                location.pathname.includes(
-                                  `/dashboard/analyses/groupings/${grouping.id}/knowledge`,
-                                )
-                                  ? `/dashboard/analyses/groupings/${grouping.id}/knowledge`
-                                  : location.pathname
-                              }
+                      value={getCurrentTab(grouping)}
                     >
                       <Tab
                         component={Link}
@@ -214,10 +222,11 @@ const RootGrouping = () => {
                       }
                     />
                     <Route
-                      path="/content"
+                      path="/content/*"
                       element={
-                        <StixCoreObjectContent
+                        <StixCoreObjectContentRoot
                           stixCoreObject={grouping}
+                          isContainer={true}
                         />
                       }
                     />

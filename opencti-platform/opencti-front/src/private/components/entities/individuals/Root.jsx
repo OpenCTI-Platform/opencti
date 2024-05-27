@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Individual from './Individual';
@@ -117,6 +117,13 @@ class RootIndividual extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
+
+    const getCurrentTab = (individual) => {
+      if (location.pathname.includes(`/dashboard/entities/individuals/${individual.id}/knowledge`)) return `/dashboard/entities/individuals/${individual.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/entities/individuals/${individual.id}/content`)) return `/dashboard/entities/individuals/${individual.id}/content`;
+      return location.pathname;
+    };
+
     return (
       <>
         <Routes>
@@ -164,6 +171,13 @@ class RootIndividual extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/individuals/${individual.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -190,13 +204,7 @@ class RootIndividual extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/entities/individuals/${individual.id}/knowledge`,
-                          )
-                            ? `/dashboard/entities/individuals/${individual.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(individual)}
                       >
                         <Tab
                           component={Link}
@@ -271,12 +279,12 @@ class RootIndividual extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={individual}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

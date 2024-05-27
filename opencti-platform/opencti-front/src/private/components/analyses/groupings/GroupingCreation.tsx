@@ -150,7 +150,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         }
         if (mapAfter) {
           navigate(
-            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
+            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
           );
         }
       },

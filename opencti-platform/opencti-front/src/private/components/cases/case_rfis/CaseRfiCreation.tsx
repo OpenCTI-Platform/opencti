@@ -151,7 +151,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         }
         if (mapAfter) {
           navigate(
-            `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/knowledge/content`,
+            `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
           );
         }
       },

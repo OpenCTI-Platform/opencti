@@ -164,7 +164,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         }
         if (mapAfter) {
           navigate(
-            `/dashboard/analyses/reports/${response.reportAdd?.id}/knowledge/content`,
+            `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
           );
         }
       },

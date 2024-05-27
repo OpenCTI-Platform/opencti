@@ -1013,7 +1013,7 @@ class GroupingKnowledgeGraphComponent extends Component {
                 container={grouping}
                 PopoverComponent={<GroupingPopover />}
                 link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-                modes={['graph', 'content', 'correlation', 'matrix']}
+                modes={['graph', 'correlation', 'matrix']}
                 currentMode={mode}
                 adjust={this.handleZoomToFit.bind(this)}
                 knowledge={true}

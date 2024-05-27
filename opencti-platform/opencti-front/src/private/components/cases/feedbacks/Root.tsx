@@ -10,6 +10,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -19,7 +20,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import FileManager from '../../common/files/FileManager';
 import FeedbackPopover from './FeedbackPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -103,6 +103,11 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const getCurrentTab = (feedback) => {
+    if (location.pathname.includes(`/dashboard/incidents/feedbacks/${feedback.id}/knowledge`)) return `/dashboard/incidents/feedbacks/${feedback.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/incidents/feedbacks/${feedback.id}/content`)) return `/dashboard/incidents/feedbacks/${feedback.id}/content`;
+    return location.pathname;
+  };
   const {
     feedback: feedbackData,
     connectorsForExport,
@@ -116,6 +121,13 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       )
     ) {
       paddingRight = 350;
+    }
+    if (
+      location.pathname.includes(
+        `/dashboard/cases/feedbacks/${feedbackData.id}/content/mapping`,
+      )
+    ) {
+      paddingRight = 0;
     }
   }
   const canManage = feedbackData?.currentUserAccessRight === 'admin';
@@ -147,13 +159,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/cases/feedbacks/${feedbackData.id}/knowledge`,
-                )
-                  ? `/dashboard/cases/feedbacks/${feedbackData.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(feedbackData)}
             >
               <Tab
                 component={Link}
@@ -190,10 +196,11 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
                 />}
             />
             <Route
-              path="/content"
+              path="/content/*"
               element={
-                <StixCoreObjectContent
+                <StixCoreObjectContentRoot
                   stixCoreObject={feedbackData}
+                  isContainer={true}
                 />
               }
             />

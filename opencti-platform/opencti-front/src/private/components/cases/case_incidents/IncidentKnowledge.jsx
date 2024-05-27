@@ -263,7 +263,7 @@ class IncidentKnowledgeComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
           link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}

@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Event from './Event';
@@ -85,6 +85,13 @@ class RootEvent extends Component {
       params: { eventId },
     } = this.props;
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
+
+    const getCurrentTab = (event) => {
+      if (location.pathname.includes(`/dashboard/entities/events/${event.id}/knowledge`)) return `/dashboard/entities/events/${event.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/entities/events/${event.id}/content`)) return `/dashboard/entities/events/${event.id}/content`;
+      return location.pathname;
+    };
+
     return (
       <>
         <Routes>
@@ -130,6 +137,13 @@ class RootEvent extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/events/${event.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -152,13 +166,7 @@ class RootEvent extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/entities/events/${event.id}/knowledge`,
-                          )
-                            ? `/dashboard/entities/events/${event.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(event)}
                       >
                         <Tab
                           component={Link}
@@ -227,12 +235,12 @@ class RootEvent extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={event}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

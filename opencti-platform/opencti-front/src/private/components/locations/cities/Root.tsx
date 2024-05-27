@@ -8,7 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import City from './City';
 import CityKnowledge from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -78,6 +78,13 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
+
+  const getCurrentTab = () => {
+    if (location.pathname.includes(`/dashboard/locations/cities/${city.id}/knowledge`)) return `/dashboard/locations/cities/${city.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/locations/cities/${city.id}/content`)) return `/dashboard/locations/cities/${city.id}/content`;
+    return location.pathname;
+  };
+
   let paddingRight = 0;
   if (
     location.pathname.includes(
@@ -92,6 +99,13 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
     )
   ) {
     paddingRight = 350;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/cities/${city.id}/content/mapping`,
+    )
+  ) {
+    paddingRight = 0;
   }
   return (
     <>
@@ -119,13 +133,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/locations/cities/${city.id}/knowledge`,
-                )
-                  ? `/dashboard/locations/cities/${city.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab()}
             >
               <Tab
                 component={Link}
@@ -187,12 +195,12 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
               element={<CityKnowledge cityData={city} />}
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={city}
                 />
-              )}
+              }
             />
             <Route
               path="/analyses"

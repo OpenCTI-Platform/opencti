@@ -6,8 +6,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Campaign from './Campaign';
@@ -86,6 +86,11 @@ class RootCampaign extends Component {
       location,
       params: { campaignId },
     } = this.props;
+    const getCurrentTab = (campaign) => {
+      if (location.pathname.includes(`/dashboard/threats/campaigns/${campaign.id}/knowledge`)) return `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/threats/campaigns/${campaign.id}/content`)) return `/dashboard/threats/campaigns/${campaign.id}/content`;
+      return location.pathname;
+    };
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
@@ -137,6 +142,13 @@ class RootCampaign extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/campaigns/${campaign.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -159,13 +171,7 @@ class RootCampaign extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/threats/campaigns/${campaign.id}/knowledge`,
-                          )
-                            ? `/dashboard/threats/campaigns/${campaign.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(campaign)}
                       >
                         <Tab
                           component={Link}
@@ -228,12 +234,12 @@ class RootCampaign extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
-                            stixCoreObject={props.campaign}
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
+                            stixCoreObject={campaign}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

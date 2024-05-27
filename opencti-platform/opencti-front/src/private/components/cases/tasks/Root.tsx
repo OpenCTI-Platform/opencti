@@ -9,11 +9,11 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseTask from './Task';
@@ -71,6 +71,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const getCurrentTab = (task) => {
+    if (location.pathname.includes(`/dashboard/cases/tasks/${task.id}/knowledge`)) return `/dashboard/cases/tasks/${task.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/cases/tasks/${task.id}/content`)) return `/dashboard/cases/tasks/${task.id}/content`;
+    return location.pathname;
+  };
   const {
     task: data,
     connectorsForExport,
@@ -82,6 +87,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
       location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content`)
     ) {
       paddingRight = 350;
+    }
+    if (
+      location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content/mapping`)
+    ) {
+      paddingRight = 0;
     }
   }
   return (
@@ -108,13 +118,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/cases/tasks/${data.id}/knowledge`,
-                )
-                  ? `/dashboard/cases/tasks/${data.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(data)}
             >
               <Tab
                 component={Link}
@@ -148,9 +152,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
               element={<CaseTask data={data} />}
             />
             <Route
-              path="/content"
+              path="/content/*"
               element={
-                <StixCoreObjectContent stixCoreObject={data} />
+                <StixCoreObjectContentRoot
+                  stixCoreObject={data}
+                />
               }
             />
             <Route

@@ -9,7 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -77,6 +77,11 @@ const RootDataComponent = () => {
   );
   useSubscription(subConfig);
   const location = useLocation();
+  const getCurrentTab = (dataComponent) => {
+    if (location.pathname.includes(`/dashboard/arsenal/techniques/${dataComponent.id}/data_components`)) return `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/arsenal/techniques/${dataComponent.id}/data_components`)) return `/dashboard/techniques/data_components/${dataComponent.id}/content`;
+    return location.pathname;
+  };
   const { t_i18n } = useFormatter();
   return (
     <>
@@ -102,6 +107,13 @@ const RootDataComponent = () => {
               ) {
                 paddingRight = 350;
               }
+              if (
+                location.pathname.includes(
+                  `/dashboard/techniques/data_components/${dataComponent.id}/content/mapping`,
+                )
+              ) {
+                paddingRight = 0;
+              }
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -126,13 +138,7 @@ const RootDataComponent = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                        location.pathname.includes(
-                          `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
-                        )
-                          ? `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`
-                          : location.pathname
-                      }
+                      value={getCurrentTab(dataComponent)}
                     >
                       <Tab
                         component={Link}
@@ -174,12 +180,12 @@ const RootDataComponent = () => {
                       }
                     />
                     <Route
-                      path="/content"
-                      element={(
-                        <StixCoreObjectContent
+                      path="/content/*"
+                      element={
+                        <StixCoreObjectContentRoot
                           stixCoreObject={dataComponent}
                         />
-                      )}
+                      }
                     />
                     <Route
                       path="/files"

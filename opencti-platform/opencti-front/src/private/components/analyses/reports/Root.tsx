@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
@@ -22,7 +23,6 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -86,6 +86,11 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const getCurrentTab = (report) => {
+    if (location.pathname.includes(`/dashboard/analyses/reports/${report.id}/knowledge`)) return `/dashboard/analyses/reports/${report.id}/knowledge`;
+    if (location.pathname.includes(`/dashboard/analyses/reports/${report.id}/content`)) return `/dashboard/analyses/reports/${report.id}/content`;
+    return location.pathname;
+  };
   return (
     <>
       <QueryRenderer
@@ -114,6 +119,13 @@ const RootReport = () => {
               ) {
                 paddingRight = 350;
               }
+              if (
+                location.pathname.includes(
+                  `/dashboard/analyses/reports/${report.id}/content/mapping`,
+                )
+              ) {
+                paddingRight = 0;
+              }
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -141,13 +153,7 @@ const RootReport = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                        location.pathname.includes(
-                          `/dashboard/analyses/reports/${report.id}/knowledge`,
-                        )
-                          ? `/dashboard/analyses/reports/${report.id}/knowledge`
-                          : location.pathname
-                      }
+                      value={getCurrentTab(report)}
                     >
                       <Tab
                         component={Link}
@@ -225,10 +231,11 @@ const RootReport = () => {
                       )}
                     />
                     <Route
-                      path="/content"
+                      path="/content/*"
                       element={
-                        <StixCoreObjectContent
+                        <StixCoreObjectContentRoot
                           stixCoreObject={report}
+                          isContainer={true}
                         />
                       }
                     />

@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Sector from './Sector';
@@ -87,6 +87,13 @@ class RootSector extends Component {
       params: { sectorId },
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
+
+    const getCurrentTab = (sector) => {
+      if (location.pathname.includes(`/dashboard/entities/sectors/${sector.id}/knowledge`)) return `/dashboard/entities/sectors/${sector.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/entities/sectors/${sector.id}/content`)) return `/dashboard/entities/sectors/${sector.id}/content`;
+      return location.pathname;
+    };
+
     return (
       <>
         <Routes>
@@ -130,6 +137,13 @@ class RootSector extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/sectors/${sector.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -154,13 +168,7 @@ class RootSector extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/entities/sectors/${sector.id}/knowledge`,
-                          )
-                            ? `/dashboard/entities/sectors/${sector.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(sector)}
                       >
                         <Tab
                           component={Link}
@@ -229,12 +237,12 @@ class RootSector extends Component {
                         )}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={sector}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

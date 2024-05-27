@@ -153,7 +153,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         }
         if (mapAfter) {
           navigate(
-            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/knowledge/content`,
+            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
           );
         }
       },

@@ -153,7 +153,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         }
         if (mapAfter) {
           navigate(
-            `/dashboard/cases/rfts/${response.caseRftAdd?.id}/knowledge/content`,
+            `/dashboard/cases/rfts/${response.caseRftAdd?.id}/content/mapping`,
           );
         }
       },

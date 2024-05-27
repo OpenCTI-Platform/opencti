@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -85,6 +85,11 @@ class RootArtifact extends Component {
       location,
       params: { observableId },
     } = this.props;
+    const getCurrentTab = (observable) => {
+      if (location.pathname.includes(`/dashboard/observations/artifacts/${observable.id}/knowledge`)) return `/dashboard/observations/artifacts/${observable.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/observations/artifacts/${observable.id}/content`)) return `/dashboard/observations/artifacts/${observable.id}/content`;
+      return location.pathname;
+    };
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
       <>
@@ -95,8 +100,23 @@ class RootArtifact extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/observations/artifacts/${stixCyberObservable.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/observations/artifacts/${stixCyberObservable.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
-                  <>
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Observations') },
                       { label: t('Artifacts'), link: '/dashboard/observations/artifacts' },
@@ -115,13 +135,7 @@ class RootArtifact extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`,
-                          )
-                            ? `/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(stixCyberObservable)}
                       >
                         <Tab
                           component={Link}
@@ -174,7 +188,7 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservable={stixCyberObservable}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge"
@@ -183,15 +197,15 @@ class RootArtifact extends Component {
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                        }
+                                }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                        )}
+                                }
                       />
                       <Route
                         path="/sightings"
@@ -212,7 +226,7 @@ class RootArtifact extends Component {
                               'System',
                             ]}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/files"
@@ -225,7 +239,7 @@ class RootArtifact extends Component {
                             isArtifact={true}
                             directDownload={true}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/history"
@@ -233,7 +247,7 @@ class RootArtifact extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -241,7 +255,7 @@ class RootArtifact extends Component {
                           <StixCoreRelationship
                             entityId={observableId}
                           />
-                        )}
+                                )}
                       />
                       <Route
                         path="/knowledge/sightings/:sightingId"
@@ -250,10 +264,10 @@ class RootArtifact extends Component {
                             entityId={observableId}
                             paddingRight
                           />
-                        )}
+                                )}
                       />
                     </Routes>
-                  </>
+                  </div>
                 );
               }
               return <ErrorNotFound />;

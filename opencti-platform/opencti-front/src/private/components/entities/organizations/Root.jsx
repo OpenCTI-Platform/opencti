@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Organization from './Organization';
@@ -116,6 +116,13 @@ class RootOrganization extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
+
+    const getCurrentTab = (organization) => {
+      if (location.pathname.includes(`/dashboard/entities/organizations/${organization.id}/knowledge`)) return `/dashboard/entities/organizations/${organization.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/entities/organizations/${organization.id}/content`)) return `/dashboard/entities/organizations/${organization.id}/content`;
+      return location.pathname;
+    };
+
     return (
       <>
         <Routes>
@@ -167,6 +174,13 @@ class RootOrganization extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/organizations/${organization.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -193,13 +207,7 @@ class RootOrganization extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/entities/organizations/${organization.id}/knowledge`,
-                          )
-                            ? `/dashboard/entities/organizations/${organization.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(organization)}
                       >
                         <Tab
                           component={Link}
@@ -274,12 +282,12 @@ class RootOrganization extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={organization}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

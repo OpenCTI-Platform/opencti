@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Narrative from './Narrative';
@@ -85,6 +85,11 @@ class RootNarrative extends Component {
       location,
       params: { narrativeId },
     } = this.props;
+    const getCurrentTab = (narrative) => {
+      if (location.pathname.includes(`/dashboard/techniques/narratives/${narrative.id}/knowledge`)) return `/dashboard/techniques/narratives/${narrative.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/techniques/narratives/${narrative.id}/content`)) return `/dashboard/techniques/narratives/${narrative.id}/content`;
+      return location.pathname;
+    };
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <>
@@ -129,6 +134,13 @@ class RootNarrative extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/narratives/${narrative.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }} >
                     <Breadcrumbs variant="object" elements={[
@@ -151,13 +163,7 @@ class RootNarrative extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/techniques/narratives/${narrative.id}/knowledge`,
-                          )
-                            ? `/dashboard/techniques/narratives/${narrative.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(narrative)}
                       >
                         <Tab
                           component={Link}
@@ -217,12 +223,12 @@ class RootNarrative extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={narrative}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

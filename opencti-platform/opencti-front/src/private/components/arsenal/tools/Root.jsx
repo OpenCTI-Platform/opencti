@@ -6,12 +6,12 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
@@ -87,6 +87,11 @@ class RootTool extends Component {
       location,
       params: { toolId },
     } = this.props;
+    const getCurrentTab = (tool) => {
+      if (location.pathname.includes(`/dashboard/arsenal/tools/${tool.id}/knowledge`)) return `/dashboard/arsenal/tools/${tool.id}/knowledge`;
+      if (location.pathname.includes(`/dashboard/arsenal/tools/${tool.id}/content`)) return `/dashboard/arsenal/tools/${tool.id}/content`;
+      return location.pathname;
+    };
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <>
@@ -131,6 +136,13 @@ class RootTool extends Component {
                 ) {
                   paddingRight = 350;
                 }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/tools/${tool.id}/content/mapping`,
+                  )
+                ) {
+                  paddingRight = 0;
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -153,13 +165,7 @@ class RootTool extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/arsenal/tools/${tool.id}/knowledge`,
-                          )
-                            ? `/dashboard/arsenal/tools/${tool.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(tool)}
                       >
                         <Tab
                           component={Link}
@@ -222,12 +228,12 @@ class RootTool extends Component {
                         )}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={tool}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses/*"
