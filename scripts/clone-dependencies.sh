@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]
 then
     echo "[CLONE-DEPS] This scripts $0 requires 3 paramaters: branch_name:$1, workspace:$2, github_token:$3 (optional: PR_number:$4)"
