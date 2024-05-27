@@ -12,13 +12,13 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/latest/deployment/overview/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/deployment/map/">
       
       
-        <link rel="prev" href="../..">
+        <link rel="prev" href="../rollover/">
       
       
-        <link rel="next" href="../installation/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Overview - OpenCTI Documentation</title>
+        <title>On-premise map server - OpenCTI Documentation</title>
       
     
     
@@ -101,7 +101,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overview" class="md-skip">
+        <a href="#deploy-on-premise-map-server-with-opencti-styles" class="md-skip">
           Skip to content
         </a>
       
@@ -286,7 +286,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../overview/" class="md-tabs__link">
           
   
   Deployment & Setup
@@ -517,8 +517,6 @@
                 
   
   
-    
-  
   
   
     
@@ -528,11 +526,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
         
           
           <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
@@ -552,7 +552,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -567,36 +567,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -611,115 +585,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#platform" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Platform
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connectors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Connectors
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#infrastructure-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Infrastructure requirements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Infrastructure requirements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#platform_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Platform
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -984,8 +849,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -993,13 +860,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
         
           
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
@@ -1019,7 +884,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1115,10 +980,36 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../map/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    On-premise map server
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1133,6 +1024,81 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-directory-for-the-data-and-upload-planet-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create directory for the data and upload planet data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#start-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start Docker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opencti-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI Parameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -4647,91 +4613,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
+  <a href="#introduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Architecture
+        Introduction
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#platform" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Platform
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#connectors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Connectors
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#infrastructure-requirements" class="md-nav__link">
+  <a href="#create-directory-for-the-data-and-upload-planet-data" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Infrastructure requirements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Infrastructure requirements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dependencies
+        Create directory for the data and upload planet data
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#platform_1" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#start-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Platform
+        Start Docker
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#configure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opencti-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI Parameters
+      
+    </span>
+  </a>
   
 </li>
       
@@ -4780,7 +4712,7 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../overview/" class="md-path__link">
           
   <span class="md-ellipsis">
     Deployment & Setup
@@ -4800,10 +4732,10 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../managers/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Platform
+    Advanced
   </span>
 
         </a>
@@ -4822,7 +4754,7 @@
 
 
   
-    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/overview.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/map.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -4831,156 +4763,79 @@
     
       
     
-    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/deployment/overview.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/deployment/map.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.15 8.15 0 0 1-1.23-2Z"/></svg>
     </a>
   
 
 
-<h1 id="overview">Overview</h1>
-<p>Before starting the installation, let's discover how OpenCTI is working, which dependencies are needed and what are the minimal requirements to deploy it in production.</p>
-<h2 id="architecture">Architecture</h2>
-<p>The OpenCTI platform relies on several external databases and services in order to work.</p>
-<p><a class="glightbox" href="../assets/architecture.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Architecture" src="../assets/architecture.png" /></a></p>
-<h3 id="platform">Platform</h3>
-<p>The platform is the central part of the OpenCTI technological stack. It allows users to access to the user interface but also provides the <a href="https://graphql.org">GraphQL API</a> used by connectors and workers to insert data. In the context of a production deployment, you may need to scale horizontally and launch multiple platforms behind a load balancer connected to the same databases (ElasticSearch, Redis, S3, RabbitMQ).</p>
-<h3 id="workers">Workers</h3>
-<p>The workers are standalone Python processes consuming messages from the RabbitMQ broker in order to do asynchronous write queries. You can launch as many workers as you need to increase the write performances. At some point, the write performances will be limited by the throughput of the ElasticSearch database cluster.</p>
-<div class="admonition note">
-<p class="admonition-title">Number of workers</p>
-<p>If you need to increase performances, it is better to launch more platforms to handle worker queries. The recommended setup is to have at least one platform for 3 workers (ie. 9 workers distributed over 3 platforms).</p>
-</div>
-<h3 id="connectors">Connectors</h3>
-<p>The connectors are third-party pieces of software (Python processes) that can play five different 
-roles on the platform:</p>
+<h1 id="deploy-on-premise-map-server-with-opencti-styles">Deploy on-premise map server with OpenCTI styles</h1>
+<h2 id="introduction">Introduction</h2>
+<p>The OpenStreetMap tiles for the planet will take 80GB. Here are the instructions to deploy a local OpenStreetMap server with the OpenCTI styles.</p>
+<h2 id="create-directory-for-the-data-and-upload-planet-data">Create directory for the data and upload planet data</h2>
+<p>When you will launch the map server container, it will be necessary to mount a volume with the planet tiles data. Just create the directory for the data.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mkdir<span class="w"> </span>/var/YOUR_DATA_DIR
+</span></code></pre></div>
+<p>We have hosted the free-to-use planet tiles, just download the <a href="https://filigran.io/app/uploads/maptiler-osm-2020-02-10-v3.11-planet.mbtiles">planet data</a> from filigran.io.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>wget<span class="w"> </span>https://filigran.io/app/uploads/maptiler-osm-2020-02-10-v3.11-planet.mbtiles
+</span></code></pre></div>
+<p>Put the file <code>maptiler-osm-2020-12-14-v3.11-planet.mbtiles</code> in the data directory:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cp<span class="w"> </span>maptiler-osm-2020-12-14-v3.11-planet.mbtiles<span class="w"> </span>/var/YOUR_DATA_DIR/
+</span></code></pre></div>
+<h2 id="start-docker">Start Docker</h2>
+<p>Replace the port 80 by the port you would like to expose. Inside the Docker, the map server listen on the port 80.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--restart<span class="w"> </span>always<span class="w"> </span>-v<span class="w"> </span>/var/YOUR_DATA_DIR:/data<span class="w"> </span>-p<span class="w"> </span><span class="m">80</span>:80<span class="w"> </span>klokantech/openmaptiles-server:latest<span class="w"> </span>
+</span></code></pre></div>
+<h2 id="configure">Configure</h2>
+<p>Download on your computer the OpenCTI JSON styles (you will have to upload it through the web UI later).</p>
+<ul>
+<li><a href="https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-dark2.json">OpenCTI Map Dark mode style (filigran-dark2.json)</a></li>
+<li><a href="https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-light2.json">OpenCTI Map Light mode style (filigran-light2.json)</a></li>
+</ul>
+<p>Now, you can access to the map server, you should see the following page:</p>
+<p><a class="glightbox" href="../assets/install-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Install" src="../assets/install-map-server.png" /></a></p>
+<p>On the next page, you should see the existing data:</p>
+<p><a class="glightbox" href="../assets/region-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Region" src="../assets/region-map-server.png" /></a></p>
+<p>On the next page, click on "Advanced Options":</p>
+<p><a class="glightbox" href="../assets/options-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Options" src="../assets/options-map-server.png" /></a></p>
+<p>Upload the <code>filigran-dark2.json</code> and <code>filigran-light2.json</code> files:</p>
+<p><a class="glightbox" href="../assets/style-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Styles" src="../assets/style-map-server.png" /></a></p>
+<p>Save and run the server with default parameters:</p>
+<p><a class="glightbox" href="../assets/settings-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Settings" src="../assets/settings-map-server.png" /></a></p>
+<h2 id="opencti-parameters">OpenCTI Parameters</h2>
+<p>Once the server is running, you should see the list of available styles:</p>
+<p><a class="glightbox" href="../assets/viewer-map-server.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Viewer" src="../assets/viewer-map-server.png" /></a></p>
+<p>Click on "Viewer", and take the URL:</p>
+<blockquote>
+<p>👉 http:/YOUR_URL/styles/{ID}/....</p>
+</blockquote>
+<p>In the OpenCTI configuration, just put:</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
-<th style="text-align: left;">Examples</th>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Value</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;">EXTERNAL_IMPORT</td>
-<td style="text-align: left;">Pull data from remote sources, convert it to STIX2 and insert it on the OpenCTI platform.</td>
-<td style="text-align: left;">MITRE Datasets, MISP, CVE, AlienVault, Mandiant, etc.</td>
+<td style="text-align: left;">app:map_tile_server_dark</td>
+<td style="text-align: left;">APP__MAP_TILE_SERVER_DARK</td>
+<td style="text-align: left;">http://{YOUR_MAP_SERVER}/styles/{ID_DARK}/{z}/{x}/{y}.png</td>
+<td>The address of the OpenStreetMap provider with dark theme style</td>
 </tr>
 <tr>
-<td style="text-align: left;">INTERNAL_ENRICHMENT</td>
-<td style="text-align: left;">Listen for new OpenCTI entities or users requests, pull data from remote sources to enrich.</td>
-<td style="text-align: left;">Shodan, DomainTools, IpInfo, etc.</td>
-</tr>
-<tr>
-<td style="text-align: left;">INTERNAL_IMPORT_FILE</td>
-<td style="text-align: left;"><a href="../../usage/import-files/">Extract data from files</a> uploaded on OpenCTI trough the UI or the API.</td>
-<td style="text-align: left;">STIX 2.1, PDF, Text, HTML, etc.</td>
-</tr>
-<tr>
-<td style="text-align: left;">INTERNAL_EXPORT_FILE</td>
-<td style="text-align: left;"><a href="../../usage/export/">Generate export</a> from OpenCTI data, based on a single object or a list.</td>
-<td style="text-align: left;">STIX 2.1, CSV, PDF, etc.</td>
-</tr>
-<tr>
-<td style="text-align: left;">STREAM</td>
-<td style="text-align: left;">Consume a platform <a href="../../usage/feeds/">data stream</a> an <em>do</em> something with events.</td>
-<td style="text-align: left;">Splunk, Elastic Security, Q-Radar, etc.</td>
+<td style="text-align: left;">app:map_tile_server_light</td>
+<td style="text-align: left;">APP__MAP_TILE_SERVER_LIGHT</td>
+<td style="text-align: left;">http://{YOUR_MAP_SERVER}/styles/{ID_LIGHT}/{z}/{x}/{y}.png</td>
+<td>The address of the OpenStreetMap provider with light theme style</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition note">
-<p class="admonition-title">List of connectors</p>
-<p>You can find all currently available connectors in the <a href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76">OpenCTI Ecosystem</a>.</p>
-</div>
-<h2 id="infrastructure-requirements">Infrastructure requirements</h2>
-<h3 id="dependencies">Dependencies</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Component</th>
-<th style="text-align: left;">Version</th>
-<th style="text-align: left;">CPU</th>
-<th style="text-align: left;">RAM</th>
-<th style="text-align: left;">Disk type</th>
-<th style="text-align: left;">Disk space</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">ElasticSearch / OpenSearch</td>
-<td style="text-align: left;">&gt;= 8.0 / &gt;= 2.9</td>
-<td style="text-align: left;">2 cores</td>
-<td style="text-align: left;">≥ 8GB</td>
-<td style="text-align: left;">SSD</td>
-<td style="text-align: left;">≥ 16GB</td>
-</tr>
-<tr>
-<td style="text-align: left;">Redis</td>
-<td style="text-align: left;">&gt;= 7.1</td>
-<td style="text-align: left;">1 core</td>
-<td style="text-align: left;">≥ 1GB</td>
-<td style="text-align: left;">SSD</td>
-<td style="text-align: left;">≥ 16GB</td>
-</tr>
-<tr>
-<td style="text-align: left;">RabbitMQ</td>
-<td style="text-align: left;">&gt;= 3.11</td>
-<td style="text-align: left;">1 core</td>
-<td style="text-align: left;">≥ 512MB</td>
-<td style="text-align: left;">Standard</td>
-<td style="text-align: left;">≥ 2GB</td>
-</tr>
-<tr>
-<td style="text-align: left;">S3 / MinIO</td>
-<td style="text-align: left;">&gt;= RELEASE.2023-02</td>
-<td style="text-align: left;">1 core</td>
-<td style="text-align: left;">≥ 128MB</td>
-<td style="text-align: left;">SSD</td>
-<td style="text-align: left;">≥ 16GB</td>
-</tr>
-</tbody>
-</table>
-<h3 id="platform_1">Platform</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Component</th>
-<th style="text-align: left;">CPU</th>
-<th style="text-align: left;">RAM</th>
-<th style="text-align: left;">Disk type</th>
-<th style="text-align: left;">Disk space</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;">OpenCTI Core</td>
-<td style="text-align: left;">2 cores</td>
-<td style="text-align: left;">≥ 8GB</td>
-<td style="text-align: left;">None (stateless)</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr>
-<td style="text-align: left;">Worker(s)</td>
-<td style="text-align: left;">1 core</td>
-<td style="text-align: left;">≥ 128MB</td>
-<td style="text-align: left;">None (stateless)</td>
-<td style="text-align: left;">-</td>
-</tr>
-<tr>
-<td style="text-align: left;">Connector(s)</td>
-<td style="text-align: left;">1 core</td>
-<td style="text-align: left;">≥ 128MB</td>
-<td style="text-align: left;">None (stateless)</td>
-<td style="text-align: left;">-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition note">
-<p class="admonition-title">Clustering</p>
-<p>To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the <a href="../clustering/">dedicated section</a>.</p>
-</div>
+<p>You're good to go!</p>
 
 
 
@@ -5003,7 +4858,7 @@ roles on the platform:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-13T08:12:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-27T19:10:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-27</span>
   </span>
 
     
@@ -5013,7 +4868,7 @@ roles on the platform:</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-07T15:12:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-07</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-27T19:10:30+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-27</span>
   </span>
 
     
@@ -5034,16 +4889,6 @@ roles on the platform:</p>
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
           <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
-        </a>
-      
-        <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
-          
-          <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
-        </a>
-      
-        <a href="https://github.com/helene-nguyen" class="md-author" title="@helene-nguyen">
-          
-          <img src="https://avatars.githubusercontent.com/u/75518128?v=4&size=72" alt="helene-nguyen">
         </a>
       
       
@@ -5077,7 +4922,7 @@ roles on the platform:</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: Home">
+          <a href="../rollover/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Indices and rollover">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -5087,20 +4932,20 @@ roles on the platform:</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Home
+                Indices and rollover
               </div>
             </div>
           </a>
         
         
           
-          <a href="../installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation">
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Installation
+                Troubleshooting
               </div>
             </div>
             <div class="md-footer__button md-icon">
