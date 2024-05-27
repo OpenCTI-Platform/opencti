@@ -39,7 +39,6 @@ interface FilterChipMenuProps {
   searchContext?: FilterSearchContext
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  preventFilterValuesEditionFor?: Map<string, string[]>;
 }
 
 export interface FilterChipsParameter {
@@ -154,7 +153,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
-  preventFilterValuesEditionFor,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -303,7 +301,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           const checked = subKey
             ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
-          const notEditable = preventFilterValuesEditionFor && filter?.key && preventFilterValuesEditionFor.get(filter.key)?.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label} followCursor>
               <li
@@ -313,7 +310,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     e.stopPropagation();
                   }
                 }}
-                onClick={notEditable ? undefined : () => handleChange(!checked, option.value, subKey)}
+                onClick={() => handleChange(!checked, option.value, subKey)}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
@@ -322,7 +319,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   margin: 0,
                 }}
               >
-                <Checkbox checked={checked} color={notEditable ? 'default' : undefined} />
+                <Checkbox checked={checked} />
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}
