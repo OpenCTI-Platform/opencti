@@ -54,7 +54,7 @@ clone_for_pr_build() {
             echo "[CLONE-DEPS][CLIENT-PYTHON] Found a PR in client-python with number ${CLI_PYTHON_PR_NUMBER}, using it."
             gh pr checkout ${CLI_PYTHON_PR_NUMBER}
         else
-            echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in opencti side, keeping client-python:master"
+            echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:master"
             # Repository already clone on master branch
         fi
 
@@ -75,10 +75,10 @@ clone_for_pr_build() {
 
         if [[ "${CONNECTOR_PR_NUMBER}" != "" ]]
         then
-            echo "[CLONE-DEPS][CONNECTOR] Found a PR in client-python with number ${CONNECTOR_PR_NUMBER}, using it."
+            echo "[CLONE-DEPS][CONNECTOR] Found a PR in connectors with number ${CONNECTOR_PR_NUMBER}, using it."
             gh pr checkout ${CONNECTOR_PR_NUMBER}
         else
-            echo "[CLONE-DEPS][CONNECTOR] No PR found in opencti side, keeping connector:master"
+            echo "[CLONE-DEPS][CONNECTOR] No PR found in connectors side, keeping connector:master"
             # Repository already clone on master branch
         fi
         
