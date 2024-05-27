@@ -243,7 +243,8 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
-  const data = await updateAttribute(context, user, fromId, from.entity_type, updates);
+  // We skip references validation when updating organization sharing
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   if (isStixDomainObjectShareableContainer(from.entity_type)) {
     await createSharingTask(context, 'SHARE', fromId, organizationId);
   }
@@ -253,7 +254,8 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId) => {
   const from = await internalLoadById(context, user, fromId);
   const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
-  const data = await updateAttribute(context, user, fromId, from.entity_type, updates);
+  // We skip references validation when updating organization sharing
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
   if (isStixDomainObjectShareableContainer(from.entity_type)) {
     await createSharingTask(context, 'UNSHARE', fromId, organizationId);
   }
