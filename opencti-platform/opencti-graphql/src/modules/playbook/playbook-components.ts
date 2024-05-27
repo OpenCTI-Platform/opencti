@@ -173,7 +173,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
       playbook_id: playbookId,
       applicant_id: AUTOMATION_MANAGER_USER_UUID,
       content,
-      update: true
+      update: false,
     });
     return { output_port: undefined, bundle, forceBundleTracking: true };
   }
