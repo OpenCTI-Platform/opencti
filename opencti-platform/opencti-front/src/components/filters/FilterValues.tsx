@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter, FiltersRestrictions, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { Filter, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -81,9 +81,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const deactivatePopoverMenu = filtersRestrictions?.preventFilterValuesEditionFor
-    && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
-    && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v));
+  const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues);
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   const menuClassName = deactivatePopoverMenu ? '' : classes.label;
   if (isOperatorNil) {

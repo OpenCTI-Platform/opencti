@@ -284,6 +284,12 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
   return value;
 };
 
+export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
+  return !(filtersRestrictions?.preventFilterValuesEditionFor
+    && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
+    && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
+};
+
 //----------------------------------------------------------------------------------------------------------------------
 // Serialization
 // TODO:

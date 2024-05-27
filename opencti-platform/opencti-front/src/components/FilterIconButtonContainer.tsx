@@ -9,7 +9,15 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, Filter, FilterGroup, FilterSearchContext, FiltersRestrictions, useFilterDefinition } from '../utils/filters/filtersUtils';
+import {
+  convertOperatorToIcon,
+  Filter,
+  FilterGroup,
+  FilterSearchContext,
+  FiltersRestrictions,
+  isFilterEditable,
+  useFilterDefinition
+} from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -290,9 +298,7 @@ FilterIconButtonContainerProps
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
-          && !(filtersRestrictions?.preventFilterValuesEditionFor
-            && Array.from(filtersRestrictions.preventFilterValuesEditionFor.keys() ?? []).includes(filterKey)
-            && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
+          && isFilterEditable(filtersRestrictions, filterKey, filterValues);
         return (
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
