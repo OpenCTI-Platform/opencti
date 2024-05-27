@@ -13,7 +13,7 @@ PR_NUMBER=$4
 
 
 CLI_PYTHON_DIR="${WORKSPACE}/client-python"
-CONNECTOR_DIR="${WORKSPACE}/connectors"
+CONNECTOR_DIR="${WORKSPACE}/opencti-connectors"
 echo "CLI_PYTHON_DIR=${CLI_PYTHON_DIR}"
 echo "CONNECTOR_DIR=${CONNECTOR_DIR}"
 
