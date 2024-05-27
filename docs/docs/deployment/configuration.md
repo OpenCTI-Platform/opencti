@@ -92,22 +92,23 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Maps & references
 
-| Parameter                 | Environment variable       | Default value                                              | Description                                                      |
-|:--------------------------|:---------------------------|:-----------------------------------------------------------|------------------------------------------------------------------|
-| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with dark theme style  |
-| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png | The address of the OpenStreetMap provider with light theme style |
-| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                    | External reference mandatory attachment                          |
+| Parameter                 | Environment variable       | Default value                                                  | Description                                                      |
+|:--------------------------|:---------------------------|:---------------------------------------------------------------|------------------------------------------------------------------|
+| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png   | The address of the OpenStreetMap provider with dark theme style  |
+| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with light theme style |
+| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                        | External reference mandatory attachment                          |
 
 #### Functional customization
 
-| Parameter                                                                       | Environment variable                                            | Default value | Description                                                                              |
-|:--------------------------------------------------------------------------------|:----------------------------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------|
-| relations_deduplication:past_days                                               | RELATIONS_DEDUPLICATION__PAST_DAYS                              | 30            | De-duplicate relations based on `start_time` and `stop_time` - *n* days                  |
-| relations_deduplication:next_days                                               | RELATIONS_DEDUPLICATION__NEXT_DAYS                              | 30            | De-duplicate relations based on `start_time` and `stop_time` + *n* days                  |
-| relations_deduplication:created_by_based                                        | RELATIONS_DEDUPLICATION__CREATED_BY_BASED                       | `false`       | Take into account the author to duplicate even if `stat_time` / `stop_time` are matching |
-| relations_deduplication:types_overrides:*relationship_type*:past_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__PAST_DAYS         |               | Override the past days for a specific type of relationship (ex. *targets*)               |
-| relations_deduplication:types_overrides:*relationship_type*:next_days           | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS         |               | Override the next days for a specific type of relationship (ex. *targets*)               |
-| relations_deduplication:types_overrides:*relationship_type*:created_by_based    | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED  |               | Override the author duplication for a specific type of relationship (ex. *targets*)      |
+| Parameter                                                                    | Environment variable                                           | Default value | Description                                                                              |
+|:-----------------------------------------------------------------------------|:---------------------------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------|
+| app:artifact_zip_password                                                    | APP__ARTIFACT_ZIP_PASSWORD                                     | infected      | Artifact encrypted archive default password                                              |
+| relations_deduplication:past_days                                            | RELATIONS_DEDUPLICATION__PAST_DAYS                             | 30            | De-duplicate relations based on `start_time` and `stop_time` - *n* days                  |
+| relations_deduplication:next_days                                            | RELATIONS_DEDUPLICATION__NEXT_DAYS                             | 30            | De-duplicate relations based on `start_time` and `stop_time` + *n* days                  |
+| relations_deduplication:created_by_based                                     | RELATIONS_DEDUPLICATION__CREATED_BY_BASED                      | `false`       | Take into account the author to duplicate even if `stat_time` / `stop_time` are matching |
+| relations_deduplication:types_overrides:*relationship_type*:past_days        | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__PAST_DAYS        |               | Override the past days for a specific type of relationship (ex. *targets*)               |
+| relations_deduplication:types_overrides:*relationship_type*:next_days        | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__NEXT_DAYS        |               | Override the next days for a specific type of relationship (ex. *targets*)               |
+| relations_deduplication:types_overrides:*relationship_type*:created_by_based | RELATIONS_DEDUPLICATION__*RELATIONSHIP_TYPE*__CREATED_BY_BASED |               | Override the author duplication for a specific type of relationship (ex. *targets*)      |
 
 #### Technical customization
 

@@ -125,6 +125,7 @@ nav:
       - Platform managers: deployment/managers.md
       - Clustering: deployment/clustering.md
       - Indices and rollover: deployment/rollover.md
+      - On-premise map server: deployment/map.md
       - Troubleshooting: deployment/troubleshooting.md
   - User Guide:
     - Getting started: usage/getting-started.md
