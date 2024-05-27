@@ -80,6 +80,7 @@ export const registerConnector = async (context, user, connectorData) => {
       updated_at: now(),
       connector_user_id: user.id,
       connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
+      connector_type: type,
       auto,
       only_contextual,
       playbook_compatible

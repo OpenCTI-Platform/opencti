@@ -1650,6 +1650,7 @@ enum ConnectorType {
   EXTERNAL_IMPORT
   INTERNAL_IMPORT_FILE
   INTERNAL_ENRICHMENT
+  INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
 }
@@ -7367,6 +7368,7 @@ type Query {
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]
+  connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   work(id: ID!): Work
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
@@ -7779,6 +7781,11 @@ type KillChainPhaseEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): KillChainPhase
 }
 
+enum AnalysisContentType {
+  fields
+  file
+}
+
 type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -7790,6 +7797,7 @@ type StixCoreObjectEditMutations {
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
+  askAnalysis(contentSource: [String!]!, contentType: AnalysisContentType!, connectorId: ID): Work
 }
 
 input StixDomainObjectFileEditInput {

@@ -304,6 +304,11 @@ export enum AdministrativeAreasOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum AnalysisContentType {
+  Fields = 'fields',
+  File = 'file'
+}
+
 export type AppDebugDistribution = {
   __typename?: 'AppDebugDistribution';
   label: Scalars['String']['output'];
@@ -3447,6 +3452,7 @@ export type ConnectorMetadata = {
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
+  InternalAnalysis = 'INTERNAL_ANALYSIS',
   InternalEnrichment = 'INTERNAL_ENRICHMENT',
   InternalExportFile = 'INTERNAL_EXPORT_FILE',
   InternalImportFile = 'INTERNAL_IMPORT_FILE',
@@ -17816,6 +17822,7 @@ export type Query = {
   city?: Maybe<City>;
   connector?: Maybe<Connector>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  connectorsForAnalysis?: Maybe<Array<Maybe<Connector>>>;
   connectorsForExport?: Maybe<Array<Maybe<Connector>>>;
   connectorsForImport?: Maybe<Array<Maybe<Connector>>>;
   connectorsForNotification?: Maybe<Array<Maybe<Connector>>>;
@@ -22310,6 +22317,7 @@ export type StixCoreObjectEdge = {
 
 export type StixCoreObjectEditMutations = {
   __typename?: 'StixCoreObjectEditMutations';
+  askAnalysis?: Maybe<Work>;
   askEnrichment?: Maybe<Work>;
   delete?: Maybe<Scalars['ID']['output']>;
   exportAsk?: Maybe<Array<File>>;
@@ -22320,6 +22328,13 @@ export type StixCoreObjectEditMutations = {
   relationsAdd?: Maybe<StixCoreObject>;
   restrictionOrganizationAdd?: Maybe<StixCoreObject>;
   restrictionOrganizationDelete?: Maybe<StixCoreObject>;
+};
+
+
+export type StixCoreObjectEditMutationsAskAnalysisArgs = {
+  connectorId?: InputMaybe<Scalars['ID']['input']>;
+  contentSource: Array<Scalars['String']['input']>;
+  contentType: AnalysisContentType;
 };
 
 
@@ -28661,6 +28676,7 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
   AdministrativeAreaEdge: ResolverTypeWrapper<Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversTypes['AdministrativeArea'] }>;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
+  AnalysisContentType: AnalysisContentType;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
   AppDebugDistribution: ResolverTypeWrapper<AppDebugDistribution>;
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
@@ -35790,6 +35806,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
+  connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForImport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForNotification?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
@@ -36790,6 +36807,7 @@ export type StixCoreObjectEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEditMutations'] = ResolversParentTypes['StixCoreObjectEditMutations']> = ResolversObject<{
+  askAnalysis?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskAnalysisArgs, 'contentSource' | 'contentType'>>;
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;

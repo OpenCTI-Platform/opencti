@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Instance trigger successfully created. You can click again on the bell to edit the options.",
   "instance_trigger": "Instance trigger",
   "intermediate": "intermediate",
+  "INTERNAL_ANALYSIS": "Analysis",
   "INTERNAL_ENRICHMENT": "Enrichment",
   "INTERNAL_EXPORT_FILE": "Files export",
   "INTERNAL_IMPORT_FILE": "Files import",

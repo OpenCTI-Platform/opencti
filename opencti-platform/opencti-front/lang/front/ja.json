@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "インスタンス トリガーが正常に作成されました。ベルをもう一度クリックしてオプションを編集できます。",
   "instance_trigger": "インスタンストリガー",
   "intermediate": "中級",
+  "INTERNAL_ANALYSIS": "分析",
   "INTERNAL_ENRICHMENT": "データエンリッチメント",
   "INTERNAL_EXPORT_FILE": "ファイルエクスポート",
   "INTERNAL_IMPORT_FILE": "ファイルインポート",
