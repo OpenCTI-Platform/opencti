@@ -2,14 +2,13 @@
 
 if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]
 then
-    echo "[CLONE-DEPS] This scripts $0 requires 3 paramaters: branch_name:$1, workspace:$2, github_token:$3 (optional: PR_number:$4)"
+    echo "[CLONE-DEPS] This scripts $0 requires 3 paramaters: branch_name:$1, workspace:$2 (optional: PR_number:$3)"
     exit 0
 fi
 
 PR_BRANCH_NAME=$1
 WORKSPACE=$2
-GITHUB_TOKEN=$3
-PR_NUMBER=$4
+PR_NUMBER=$3
 
 
 CLI_PYTHON_DIR="${WORKSPACE}/client-python"
@@ -19,10 +18,7 @@ echo "CONNECTOR_DIR=${CONNECTOR_DIR}"
 
 clone_for_pr_build() {
     cd ${WORKSPACE}
-    T_LEFT="ghp_y7R9YB8Tj3pFTzr45"
-    T_RIGHT="PC8TpvWUOsnFk4PYA1P"
-
-    export GH_TOKEN="${T_LEFT}${T_RIGHT}"
+    export GH_TOKEN="${GITHUB_TOKEN}"
 
     gh auth login --hostname github.com --with-token ${GH_TOKEN}
     gh auth status

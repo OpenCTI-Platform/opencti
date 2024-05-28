@@ -5,10 +5,13 @@ name: opencti-tests
 steps:
   - name: dependencies-checkout
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    environment:
+      GITHUB_TOKEN:
+          from_secret: github_token
     commands:
       - apk add git github-cli
       - chmod 777 scripts/*
-      - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) "TODO" ${DRONE_PULL_REQUEST}
+      - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) ${DRONE_PULL_REQUEST}
       - ls -lart
 
   - name: api-tests
