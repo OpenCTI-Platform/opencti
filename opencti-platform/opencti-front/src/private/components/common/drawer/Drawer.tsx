@@ -162,7 +162,7 @@ const Drawer = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2">{title}</Typography>
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

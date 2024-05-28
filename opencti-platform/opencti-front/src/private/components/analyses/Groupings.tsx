@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
 import GroupingCreation from './groupings/GroupingCreation';
@@ -25,6 +26,8 @@ interface GroupingsProps {
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -147,6 +150,9 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <GroupingCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -191,9 +197,11 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <GroupingCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!FAB_REPLACED
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <GroupingCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

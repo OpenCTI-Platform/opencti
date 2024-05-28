@@ -8,6 +8,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -106,7 +108,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     GROUPING_TYPE,
     basicShape,
   );
-  const [commit] = useApiMutation<GroupingCreationMutation>(groupingMutation);
+  const [commit] = useApiMutation<GroupingCreationMutation>(
+    groupingMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -283,11 +289,14 @@ const GroupingCreation = ({
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={DrawerVariant.create}
+      variant={FAB_REPLACED ? undefined : DrawerVariant.create}
+      controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Grouping') : undefined}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

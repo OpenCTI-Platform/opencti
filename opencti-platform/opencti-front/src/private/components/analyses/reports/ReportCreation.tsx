@@ -8,6 +8,8 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
+import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -116,7 +118,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     content: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation(REPORT_TYPE, basicShape);
-  const [commit] = useApiMutation<ReportCreationMutation>(reportCreationMutation);
+  const [commit] = useApiMutation<ReportCreationMutation>(
+    reportCreationMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}` },
+  );
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -325,6 +331,8 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_reports',
@@ -334,7 +342,8 @@ const ReportCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a report')}
-      variant={DrawerVariant.create}
+      variant={FAB_REPLACED ? undefined : DrawerVariant.create}
+      controlledDial={FAB_REPLACED ? CreateEntityControlledDial('entity_Report') : undefined}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>

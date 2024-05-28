@@ -7,6 +7,9 @@ import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
+import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -19,10 +22,6 @@ const useStyles = makeStyles({
     float: 'left',
     marginTop: -15,
   },
-  search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
-  },
   container: {
     padding: 0,
   },
@@ -33,8 +32,12 @@ const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipReferences,
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpen = () => {
     setOpen(true);
@@ -62,15 +65,33 @@ const AddExternalReferences = ({
         <Add fontSize="small" />
       </IconButton>
       <Drawer
-        title="Add external references"
+        title={t_i18n('Add external references')}
         open={open}
         onClose={handleClose}
         header={(
-          <div className={classes.search}>
+          <div style={{
+            marginLeft: 'auto',
+            marginRight: '20px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
+          }}
+          >
             <SearchInput
               variant="inDrawer"
               onSubmit={handleSearch}
             />
+            {FABReplaced
+              && <Button sx={{ margin: '5px 0 0 5px' }}
+                onClick={() => setDialogOpen(true)}
+                color='primary'
+                size='small'
+                variant='contained'
+                 >
+                {t_i18n('Create')} {t_i18n('entity_External-Reference')}
+              </Button>
+            }
           </div>
         )}
       >
@@ -93,7 +114,9 @@ const AddExternalReferences = ({
                     }
                     data={props}
                     paginationOptions={paginationOptions}
-                    open={open}
+                    open={FABReplaced ? false : open}
+                    openContextual={dialogOpen}
+                    handleCloseContextual={FABReplaced ? () => setDialogOpen(false) : undefined}
                     search={search}
                   />
                 );
