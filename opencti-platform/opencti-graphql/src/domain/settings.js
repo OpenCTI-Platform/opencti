@@ -8,17 +8,14 @@ import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { listAllToEntitiesThroughRelations, storeLoadById } from '../database/middleware-loader';
+import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { computeAvailableMarkings } from './user';
-import { RELATION_MEMBER_OF } from "../schema/internalRelationship";
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
