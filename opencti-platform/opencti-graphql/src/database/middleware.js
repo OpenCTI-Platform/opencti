@@ -149,7 +149,7 @@ import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utc
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
-  BYPASS_REFERENCE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
@@ -1842,7 +1842,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-    const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
+    const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
       if (!isNoReferenceKey && isEmptyField(opts.references)) {
@@ -2280,7 +2280,7 @@ const upsertRelationRule = async (context, user, instance, input, opts = {}) => 
 
 const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
-    const isAllowedToByPass = isUserHasCapability(user, BYPASS_REFERENCE);
+    const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       if (isEmptyField(input.externalReferences)) {
         throw ValidationError('externalReferences', {

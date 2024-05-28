@@ -4,7 +4,7 @@ import { addCapability } from '../domain/grant';
 export const up = async (next) => {
   const context = executionContext('migration');
   await addCapability(context, SYSTEM_USER, {
-    name: 'TAXIIAPI_SETCSVMAPPERS',
+    name: 'INGESTION_SETCSVMAPPERS',
     description: 'Manage CSV mappers',
     attribute_order: 2520
   });

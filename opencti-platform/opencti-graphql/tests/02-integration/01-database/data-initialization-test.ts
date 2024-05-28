@@ -11,7 +11,7 @@ describe('Data initialization test', () => {
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
-      'BYPASSREFERENCE',
+      'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
       'CONNECTORAPI',
       'EXPLORE',
       'EXPLORE_EXUPDATE',
@@ -37,7 +37,8 @@ describe('Data initialization test', () => {
       'SETTINGS_SETMARKINGS',
       'TAXIIAPI',
       'TAXIIAPI_SETCOLLECTIONS',
-      'TAXIIAPI_SETCSVMAPPERS',
+      'INGESTION',
+      'INGESTION_SETCSVMAPPERS',
     ];
     expect(capabilitiesNames).toEqual(allExpectedNames);
   });

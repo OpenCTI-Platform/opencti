@@ -1715,6 +1715,8 @@ export enum Capabilities {
   ExploreExupdate = 'EXPLORE_EXUPDATE',
   ExploreExupdateExdelete = 'EXPLORE_EXUPDATE_EXDELETE',
   ExploreExupdatePublish = 'EXPLORE_EXUPDATE_PUBLISH',
+  Ingestion = 'INGESTION',
+  IngestionSetcsvmappers = 'INGESTION_SETCSVMAPPERS',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
@@ -1734,7 +1736,6 @@ export enum Capabilities {
   SettingsSetlabels = 'SETTINGS_SETLABELS',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
   TaxiiapiSetcollections = 'TAXIIAPI_SETCOLLECTIONS',
-  TaxiiapiSetcsvmappers = 'TAXIIAPI_SETCSVMAPPERS',
   VirtualOrganizationAdmin = 'VIRTUAL_ORGANIZATION_ADMIN'
 }
 
