@@ -1,7 +1,8 @@
 # Retention policies
 
-Retention rules serve the purpose of establishing data retention times, specifying when data should be automatically deleted from the platform. Users can define filters to target specific objects. Any object meeting these criteria that haven't been updated within the designated time frame will be deleted.
+Retention rules serve the purpose of establishing data retention times, specifying when data should be automatically deleted from the platform. Users can define filters to target specific objects. Any object meeting these criteria that haven't been updated within the designated time frame will be permanently deleted.
 
+Note that the data deleted by an active retention policy will not appear in the [trash](../usage/delete-restore.md) and thus cannot be restored.  
 
 ## Configuration
 

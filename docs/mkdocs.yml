@@ -172,6 +172,7 @@ nav:
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Automation: usage/automation.md
+    - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
       - Native feeds: usage/feeds.md
       - Manual export: usage/export.md

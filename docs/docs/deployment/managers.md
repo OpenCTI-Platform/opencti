@@ -77,6 +77,10 @@ The indicator decay manager allows to update indicators score automatically base
 
 More information can be found [here](../administration/decay-rules.md).
 
+## Trash manager
+
+The trash manager is responsible to delete permanently elements stored in the [trash](../usage/delete-restore.md) after a specified period of time (7 days by default).
+
 ## Filigran telemetry manager
 
 The telemetry manager collects periodically statistical data about platform usage.

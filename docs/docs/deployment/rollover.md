@@ -40,6 +40,8 @@ ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been 
 
 By default, a rollover policy is applied on all indices used by OpenCTI.
 
+* `opencti_deleted_objects`
+* `opencti_files`
 * `opencti_history`
 * `opencti_inferred_entities`
 * `opencti_inferred_relationships`
@@ -102,6 +104,8 @@ In Kibana, clone the `opencti-index-template` to have one index template by Open
 
 Create the following index templates:
 
+* `octi_deleted_objects`
+* `octi_files`
 * `octi_history`
 * `octi_inferred_entities`
 * `octi_inferred_relationships`
@@ -142,6 +146,8 @@ PUT octi_history-000001
 
 Repeat this step for all indices:
 
+* `octi_deleted_objects`
+* `octi_files`
 * `octi_history`
 * `octi_inferred_entities`
 * `octi_inferred_relationships`
