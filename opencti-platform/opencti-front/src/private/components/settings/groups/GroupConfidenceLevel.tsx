@@ -3,8 +3,8 @@ import { Group_group$data } from '@components/settings/groups/__generated__/Grou
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
-import Overrides from '@components/settings/Overrides';
 import { Alert, AlertTitle } from '@mui/material';
+import GroupConfidenceOverrides from '@components/settings/groups/GroupConfidenceOverrides';
 import { useFormatter } from '../../../../components/i18n';
 
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
@@ -19,7 +19,7 @@ const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLeve
   return overrides.length > 0 ? (
     <Tooltip
       sx={{ marginLeft: 1 }}
-      title={<Overrides overrides={overrides}/>}
+      title={<GroupConfidenceOverrides overrides={overrides}/>}
     >
       <InformationOutline fontSize={'small'} color={'info'}/>
     </Tooltip>

@@ -1361,21 +1361,27 @@ type ConfidenceLevelOverride {
   entity_type: String!
   max_confidence: Int!
 }
-type EffectiveConfidenceLevel {
+type EffectiveConfidenceLevelOverride {
+  entity_type: String!
   max_confidence: Int!
-  overrides: [ConfidenceLevelOverride!]!
   source: EffectiveConfidenceLevelSource
 }
+type EffectiveConfidenceLevel {
+  max_confidence: Int!
+  overrides: [EffectiveConfidenceLevelOverride!]!
+  source: EffectiveConfidenceLevelSource
+}
+
 type EffectiveConfidenceLevelSource {
   type: EffectiveConfidenceLevelSourceType!
   object: EffectiveConfidenceLevelSourceObject
 }
-union EffectiveConfidenceLevelSourceObject = Group | User
 enum EffectiveConfidenceLevelSourceType {
   User,
   Group,
   Bypass
 }
+union EffectiveConfidenceLevelSourceObject = Group | User
 
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id
