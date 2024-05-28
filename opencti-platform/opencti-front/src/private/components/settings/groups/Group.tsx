@@ -372,6 +372,15 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         <ListItemText
                           primary={truncate(marking?.definition, 40)}
                         />
+                        {!allowedMarkings.map((m) => m.id).includes(marking.id)
+                          && <Tooltip
+                            title={t_i18n(
+                              'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
+                            )}
+                             >
+                            <WarningOutlined color="warning"/>
+                          </Tooltip>
+                        }
                       </ListItem>
                     ))}
                   </List>
