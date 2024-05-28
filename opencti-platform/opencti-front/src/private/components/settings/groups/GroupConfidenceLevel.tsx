@@ -3,7 +3,6 @@ import { Group_group$data } from '@components/settings/groups/__generated__/Grou
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
-
 import { Alert, AlertTitle } from '@mui/material';
 import GroupConfidenceOverrides from '@components/settings/groups/GroupConfidenceOverrides';
 import { useFormatter } from '../../../../components/i18n';
