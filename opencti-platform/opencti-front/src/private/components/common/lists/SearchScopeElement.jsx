@@ -39,14 +39,10 @@ const SearchScopeElement = ({
       ? availableRelationFilterTypes[name].includes(n)
       : true))
     .map((n) => {
-      let labelToTranslate = n.toString();
-      if (!['Group', 'User'].includes(labelToTranslate)) {
-        labelToTranslate = n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`;
-      }
       return {
-        label: t_i18n(labelToTranslate),
+        label: t_i18n(n.toString()[0] === n.toString()[0].toUpperCase()
+          ? `entity_${n.toString()}`
+          : `relationship_${n.toString()}`),
         value: n,
         type: n,
       };

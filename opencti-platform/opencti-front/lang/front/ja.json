@@ -957,6 +957,7 @@
   "Entity_type": "タイプ",
   "entity_types": "エンティティ タイプ",
   "entity_Url": "URL",
+  "User": "内蔵",
   "entity_User-Account": "ユーザアカウント",
   "entity_User-Agent": "ユーザーエージェント",
   "entity_Vocabulary": "語彙",
