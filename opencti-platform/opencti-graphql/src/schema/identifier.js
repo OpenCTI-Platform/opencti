@@ -401,7 +401,6 @@ export const isStandardIdDowngraded = (previous, updated) => {
 
 const generateStixUUID = (type, data) => {
   const { data: dataUUID } = generateDataUUID(type, data);
-  console.log('dataUUID', dataUUID);
   return idGen(type, data, dataUUID, OASIS_NAMESPACE);
 };
 const generateObjectUUID = (type, data) => {
