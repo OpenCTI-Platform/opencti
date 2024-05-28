@@ -8,6 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -53,6 +54,7 @@ const countryQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -134,6 +136,12 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
               />
               <Tab
                 component={Link}
+                to={`/dashboard/locations/countries/${country.id}/content`}
+                value={`/dashboard/locations/countries/${country.id}/content`}
+                label={t_i18n('Content')}
+              />
+              <Tab
+                component={Link}
                 to={`/dashboard/locations/countries/${country.id}/analyses`}
                 value={`/dashboard/locations/countries/${country.id}/analyses`}
                 label={t_i18n('Analyses')}
@@ -172,6 +180,14 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             <Route
               path="/knowledge/*"
               element={<CountryKnowledge countryData={country} />}
+            />
+            <Route
+              path="/content"
+              element={(
+                <StixCoreObjectContent
+                  stixCoreObject={country}
+                />
+              )}
             />
             <Route
               path="/analyses"

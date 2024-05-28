@@ -11,6 +11,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
@@ -53,6 +54,7 @@ const toolQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -166,6 +168,12 @@ class RootTool extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/arsenal/tools/${tool.id}/content`}
+                          value={`/dashboard/arsenal/tools/${tool.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/arsenal/tools/${tool.id}/analyses`}
                           value={`/dashboard/arsenal/tools/${tool.id}/analyses`}
                           label={t('Analyses')}
@@ -204,6 +212,14 @@ class RootTool extends Component {
                         path="/knowledge/*"
                         element={(
                           <ToolKnowledge tool={tool} />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={tool}
+                          />
                         )}
                       />
                       <Route

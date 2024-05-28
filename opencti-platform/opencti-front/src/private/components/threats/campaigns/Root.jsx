@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Campaign from './Campaign';
@@ -52,6 +53,7 @@ const campaignQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -172,6 +174,12 @@ class RootCampaign extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/threats/campaigns/${campaign.id}/content`}
+                          value={`/dashboard/threats/campaigns/${campaign.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
                           value={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
                           label={t('Analyses')}
@@ -211,6 +219,14 @@ class RootCampaign extends Component {
                         element={
                           <CampaignKnowledge campaign={props.campaign} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.campaign}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

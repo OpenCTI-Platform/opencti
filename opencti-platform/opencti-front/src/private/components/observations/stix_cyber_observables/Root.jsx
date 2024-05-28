@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -52,6 +53,7 @@ const stixCyberObservableQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -135,6 +137,12 @@ class RootStixCyberObservable extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/observations/observables/${stixCyberObservable.id}/content`}
+                          value={`/dashboard/observations/observables/${stixCyberObservable.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/observations/observables/${stixCyberObservable.id}/analyses`}
                           value={`/dashboard/observations/observables/${stixCyberObservable.id}/analyses`}
                           label={t('Analyses')}
@@ -175,6 +183,14 @@ class RootStixCyberObservable extends Component {
                             stixCyberObservable={props.stixCyberObservable}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.stixCyberObservable}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

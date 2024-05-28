@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -51,6 +52,7 @@ const dataSourceQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -121,6 +123,12 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               />
               <Tab
                 component={Link}
+                to={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
+                value={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
+                label={t_i18n('Content')}
+              />
+              <Tab
+                component={Link}
                 to={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
                 value={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
                 label={t_i18n('Data')}
@@ -150,6 +158,14 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                   )}
                 />
               }
+            />
+            <Route
+              path="/content"
+              element={(
+                <StixCoreObjectContent
+                  stixCoreObject={dataSource}
+                />
+              )}
             />
             <Route
               path="/files"

@@ -19,11 +19,11 @@ import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectContentFiles, { stixDomainObjectContentFilesUploadStixDomainObjectMutation } from './StixDomainObjectContentFiles';
+import StixCoreObjectContentFiles, { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import StixDomainObjectContentBar from './StixDomainObjectContentBar';
+import StixCoreObjectContentBar from './StixCoreObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -104,7 +104,7 @@ const styles = () => ({
 const interval$ = interval(FIVE_SECONDS);
 
 export const stixDomainObjectContentFieldPatchMutation = graphql`
-  mutation StixDomainObjectContentFieldPatchMutation(
+  mutation StixCoreObjectContentFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
@@ -112,19 +112,19 @@ export const stixDomainObjectContentFieldPatchMutation = graphql`
   ) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
-        ...StixDomainObjectContent_stixDomainObject
+        ...StixCoreObjectContent_stixCoreObject
       }
     }
   }
 `;
 
-const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
-  mutation StixDomainObjectContentUploadExternalReferenceMutation(
+const stixCoreObjectContentUploadExternalReferenceMutation = graphql`
+  mutation StixCoreObjectContentUploadExternalReferenceMutation(
     $id: ID!
     $file: Upload!
     $fileMarkings: [String]
   ) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       importPush(file: $file, noTriggerImport: true, fileMarkings: $fileMarkings) {
         id
         name
@@ -153,11 +153,11 @@ const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
 
 const sortByLastModified = R.sortBy(R.prop('lastModified'));
 
-const getFiles = (stixDomainObject) => {
-  const importFiles = stixDomainObject.importFiles?.edges
+const getFiles = (stixCoreObject) => {
+  const importFiles = stixCoreObject.importFiles?.edges
     ?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
-  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
+  const externalReferencesFiles = stixCoreObject.externalReferences?.edges
     ?.map((n) => n?.node?.importFiles?.edges)
     .flat()
     .filter((n) => !!n?.node)
@@ -177,8 +177,8 @@ const getFiles = (stixDomainObject) => {
   );
 };
 
-const getExportFiles = (stixDomainObject) => {
-  const exportFiles = stixDomainObject.exportFiles?.edges
+const getExportFiles = (stixCoreObject) => {
+  const exportFiles = stixCoreObject.exportFiles?.edges
     ?.filter((n) => !!n?.node)
     .map((n) => n.node) ?? [];
   return sortByLastModified(
@@ -193,20 +193,20 @@ const getExportFiles = (stixDomainObject) => {
 
 const isContainerWithContent = (type) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
 
-class StixDomainObjectContentComponent extends Component {
+class StixCoreObjectContentComponent extends Component {
   constructor(props) {
-    const LOCAL_STORAGE_KEY = `stix-domain-object-content-${props.stixDomainObject.id}`;
+    const LOCAL_STORAGE_KEY = `stix-core-object-content-${props.stixCoreObject.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.navigate,
       props.location,
       LOCAL_STORAGE_KEY,
     );
-    const { stixDomainObject } = props;
-    const isContentCompatible = isContainerWithContent(stixDomainObject.entity_type);
-    const files = getFiles(stixDomainObject);
-    const exportFiles = getExportFiles(stixDomainObject);
-    let currentFileId = isEmptyField(stixDomainObject.contentField) ? R.head(files)?.id : null;
+    const { stixCoreObject } = props;
+    const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
+    const files = getFiles(stixCoreObject);
+    const exportFiles = getExportFiles(stixCoreObject);
+    let currentFileId = isEmptyField(stixCoreObject.contentField) ? R.head(files)?.id : null;
     let isLoading = false;
     let onProgressExportFileName;
     if (params.currentFileId && (!params.contentSelected || params.forceFile)) {
@@ -226,8 +226,8 @@ class StixDomainObjectContentComponent extends Component {
       currentPdfPageNumber: 1,
       pdfViewerZoom: 1.2,
       markdownSelectedTab: 'write',
-      initialContent: isContentCompatible ? stixDomainObject.contentField : props.t('Write something awesome...'),
-      currentContent: isContentCompatible ? stixDomainObject.contentField : props.t('Write something awesome...'),
+      initialContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
+      currentContent: isContentCompatible ? stixCoreObject.contentField : props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
       changed: false,
       isLoading,
@@ -236,7 +236,7 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   saveView() {
-    const LOCAL_STORAGE_KEY = `stix-domain-object-content-${this.props.stixDomainObject.id}`;
+    const LOCAL_STORAGE_KEY = `stix-core-object-content-${this.props.stixCoreObject.id}`;
     saveViewParameters(
       this.props.navigate,
       this.props.location,
@@ -246,10 +246,10 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   loadFileContent() {
-    const { stixDomainObject } = this.props;
+    const { stixCoreObject } = this.props;
     const files = [
-      ...getFiles(stixDomainObject),
-      ...getExportFiles(stixDomainObject),
+      ...getFiles(stixCoreObject),
+      ...getExportFiles(stixCoreObject),
     ];
     this.setState({ isLoading: true }, () => {
       const { currentFileId } = this.state;
@@ -280,14 +280,14 @@ class StixDomainObjectContentComponent extends Component {
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch({ id: this.props.stixDomainObject.id });
+      this.props.relay.refetch({ id: this.props.stixCoreObject.id });
     });
 
-    const { stixDomainObject } = this.props;
+    const { stixCoreObject } = this.props;
     const { currentFileId } = this.state;
     const files = [
-      ...getFiles(stixDomainObject),
-      ...getExportFiles(stixDomainObject),
+      ...getFiles(stixCoreObject),
+      ...getExportFiles(stixCoreObject),
     ];
     const currentFile = files.find((f) => f.id === currentFileId);
 
@@ -298,8 +298,8 @@ class StixDomainObjectContentComponent extends Component {
 
   componentDidUpdate() {
     const { onProgressExportFileName } = this.state;
-    const { stixDomainObject } = this.props;
-    const exportFiles = getExportFiles(stixDomainObject);
+    const { stixCoreObject } = this.props;
+    const exportFiles = getExportFiles(stixCoreObject);
 
     if (onProgressExportFileName) {
       const exportFile = exportFiles.find(
@@ -321,8 +321,8 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   handleSelectContent() {
-    const { stixDomainObject, t } = this.props;
-    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixDomainObject.contentField ?? t('Write something awesome...') }, () => {
+    const { stixCoreObject, t } = this.props;
+    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixCoreObject.contentField ?? t('Write something awesome...') }, () => {
       this.saveView();
     });
   }
@@ -335,13 +335,13 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   handleFileChange(fileName = null, isDelete = false) {
-    const { t, stixDomainObject } = this.props;
-    this.props.relay.refetch({ id: stixDomainObject.id });
+    const { t, stixCoreObject } = this.props;
+    this.props.relay.refetch({ id: stixCoreObject.id });
     if (fileName && fileName === this.state.currentFileId && isDelete) {
       this.setState({
         currentFileId: null,
-        contentSelected: isContainerWithContent(stixDomainObject.entity_type),
-        currentContent: isContainerWithContent(stixDomainObject.entity_type) ? stixDomainObject.contentField ?? t('Write something awesome...') : '',
+        contentSelected: isContainerWithContent(stixCoreObject.entity_type),
+        currentContent: isContainerWithContent(stixCoreObject.entity_type) ? stixCoreObject.contentField ?? t('Write something awesome...') : '',
       }, () => this.saveView());
     } else if (fileName && !isDelete) {
       this.setState({ currentFileId: fileName, contentSelected: false }, () => {
@@ -367,9 +367,9 @@ class StixDomainObjectContentComponent extends Component {
   // END OF PDF SECTION
 
   prepareSaveFile() {
-    const { stixDomainObject } = this.props;
+    const { stixCoreObject } = this.props;
     const { currentFileId } = this.state;
-    const files = getFiles(stixDomainObject);
+    const files = getFiles(stixCoreObject);
     const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const fragment = currentFileId.split('/');
@@ -393,16 +393,18 @@ class StixDomainObjectContentComponent extends Component {
 
     commitMutation({
       mutation: isExternalReference
-        ? stixDomainObjectContentUploadExternalReferenceMutation
-        : stixDomainObjectContentFilesUploadStixDomainObjectMutation,
+        ? stixCoreObjectContentUploadExternalReferenceMutation
+        : stixCoreObjectContentFilesUploadStixCoreObjectMutation,
       variables: { file, id: currentId, noTriggerImport: true, fileMarkings },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
 
   saveContent() {
-    const { id } = this.props.stixDomainObject;
+    const { id } = this.props.stixCoreObject;
     const inputValues = [{ key: 'content', value: this.state.currentContent }];
+    // Currently, only containers have a content available, so this mutation targets SDOs only. If content is added to all Stix Core Objects,
+    // this mutation will need to be updated to a stixCoreObjectEdit instead of a stixDomainObjectEdit
     commitMutation({
       mutation: stixDomainObjectContentFieldPatchMutation,
       variables: {
@@ -431,7 +433,7 @@ class StixDomainObjectContentComponent extends Component {
 
   handleDownloadPdf() {
     const { currentFileId, currentContent } = this.state;
-    const { stixDomainObject } = this.props;
+    const { stixCoreObject } = this.props;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
     const htmlData = currentContent
       .replaceAll('id="undefined" ', '')
@@ -521,14 +523,14 @@ class StixDomainObjectContentComponent extends Component {
           bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
         },
       };
-      const fragment = (currentFileId ?? stixDomainObject.name).split('/');
+      const fragment = (currentFileId ?? stixCoreObject.name).split('/');
       const currentName = R.last(fragment);
       pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
     });
   }
 
   render() {
-    const { classes, stixDomainObject, t } = this.props;
+    const { classes, stixCoreObject, t } = this.props;
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -539,8 +541,8 @@ class StixDomainObjectContentComponent extends Component {
       changed,
       contentSelected,
     } = this.state;
-    const files = getFiles(stixDomainObject);
-    const exportFiles = getExportFiles(stixDomainObject);
+    const files = getFiles(stixCoreObject);
+    const exportFiles = getExportFiles(stixCoreObject);
     const currentUrl = currentFileId
       && `${APP_BASE_PATH}/storage/view/${encodeURIComponent(currentFileId)}`;
     const currentGetUrl = currentFileId
@@ -550,12 +552,12 @@ class StixDomainObjectContentComponent extends Component {
     const currentFileType = currentFile && currentFile.metaData.mimetype;
     const { innerHeight } = window;
     const height = innerHeight - 270;
-    const isContentCompatible = isContainerWithContent(stixDomainObject.entity_type);
+    const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
     return (
       <div className={classes.container} data-testid="sdo-content-page">
-        <StixDomainObjectContentFiles
-          stixDomainObjectId={stixDomainObject.id}
-          content={isContentCompatible ? stixDomainObject.contentField ?? '' : null}
+        <StixCoreObjectContentFiles
+          stixCoreObjectId={stixCoreObject.id}
+          content={isContentCompatible ? stixCoreObject.contentField ?? '' : null}
           contentSelected={contentSelected}
           files={files}
           exportFiles={exportFiles}
@@ -571,7 +573,7 @@ class StixDomainObjectContentComponent extends Component {
           <>
             {currentFileType === 'text/plain' && (
               <>
-                <StixDomainObjectContentBar
+                <StixCoreObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
@@ -608,7 +610,7 @@ class StixDomainObjectContentComponent extends Component {
             )}
             {(currentFileType === 'text/html' || contentSelected) && (
               <>
-                <StixDomainObjectContentBar
+                <StixCoreObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   handleSave={() => (contentSelected ? this.saveContent() : this.saveFile())}
@@ -647,7 +649,7 @@ class StixDomainObjectContentComponent extends Component {
             )}
             {currentFileType === 'text/markdown' && (
               <>
-                <StixDomainObjectContentBar
+                <StixCoreObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
                   navOpen={navOpen}
@@ -693,7 +695,7 @@ class StixDomainObjectContentComponent extends Component {
             )}
             {currentFileType === 'application/pdf' && (
               <>
-                <StixDomainObjectContentBar
+                <StixCoreObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
                   handleZoomOut={this.handleZoomOut.bind(this)}
                   directDownload={currentGetUrl}
@@ -758,26 +760,26 @@ class StixDomainObjectContentComponent extends Component {
   }
 }
 
-StixDomainObjectContentComponent.propTypes = {
-  stixDomainObject: PropTypes.object,
+StixCoreObjectContentComponent.propTypes = {
+  stixCoreObject: PropTypes.object,
   theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export const stixDomainObjectContentRefetchQuery = graphql`
-  query StixDomainObjectContentRefetchQuery($id: String!) {
-    stixDomainObject(id: $id) {
-      ...StixDomainObjectContent_stixDomainObject
+export const stixCoreObjectContentRefetchQuery = graphql`
+  query StixCoreObjectContentRefetchQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      ...StixCoreObjectContent_stixCoreObject
     }
   }
 `;
 
-const StixDomainObjectContent = createRefetchContainer(
-  StixDomainObjectContentComponent,
+const StixCoreObjectContent = createRefetchContainer(
+  StixCoreObjectContentComponent,
   {
-    stixDomainObject: graphql`
-      fragment StixDomainObjectContent_stixDomainObject on StixDomainObject {
+    stixCoreObject: graphql`
+      fragment StixCoreObjectContent_stixCoreObject on StixCoreObject {
         id
         entity_type
         ... on Report {
@@ -892,7 +894,7 @@ const StixDomainObjectContent = createRefetchContainer(
       }
     `,
   },
-  stixDomainObjectContentRefetchQuery,
+  stixCoreObjectContentRefetchQuery,
 );
 
 export default R.compose(
@@ -900,4 +902,4 @@ export default R.compose(
   withTheme,
   withRouter,
   withStyles(styles),
-)(StixDomainObjectContent);
+)(StixCoreObjectContent);

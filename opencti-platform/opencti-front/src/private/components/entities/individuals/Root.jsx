@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Individual from './Individual';
@@ -54,6 +55,7 @@ const individualQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -203,6 +205,12 @@ class RootIndividual extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/content`}
+                          value={`/dashboard/entities/individuals/${individual.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/individuals/${individual.id}/analyses`}
                           value={`/dashboard/entities/individuals/${individual.id}/analyses`}
                           label={t('Analyses')}
@@ -254,6 +262,14 @@ class RootIndividual extends Component {
                             viewAs={viewAs}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={individual}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

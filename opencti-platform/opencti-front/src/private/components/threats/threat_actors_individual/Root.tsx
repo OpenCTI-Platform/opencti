@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -58,7 +59,7 @@ const ThreatActorIndividualQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForExport {
       ...FileManager_connectorsExport
@@ -175,6 +176,12 @@ const RootThreatActorIndividualComponent = ({
                 />
                 <Tab
                   component={Link}
+                  to={`/dashboard/threats/threat_actors_individual/${data.id}/content`}
+                  value={`/dashboard/threats/threat_actors_individual/${data.id}/content`}
+                  label={t_i18n('Content')}
+                />
+                <Tab
+                  component={Link}
                   to={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
                   value={`/dashboard/threats/threat_actors_individual/${data.id}/analyses`}
                   label={t_i18n('Analyses')}
@@ -214,6 +221,14 @@ const RootThreatActorIndividualComponent = ({
                 element={
                   <ThreatActorIndividualKnowledge threatActorIndividualData={data} />
                 }
+              />
+              <Route
+                path="/content"
+                element={(
+                  <StixCoreObjectContent
+                    stixCoreObject={data}
+                  />
+                )}
               />
               <Route
                 path="/analyses"

@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -52,6 +53,7 @@ const dataComponentQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -133,6 +135,12 @@ const RootDataComponent = () => {
                       />
                       <Tab
                         component={Link}
+                        to={`/dashboard/techniques/data_components/${dataComponent.id}/content`}
+                        value={`/dashboard/techniques/data_components/${dataComponent.id}/content`}
+                        label={t_i18n('Content')}
+                      />
+                      <Tab
+                        component={Link}
                         to={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
                         value={`/dashboard/techniques/data_components/${dataComponent.id}/files`}
                         label={t_i18n('Data')}
@@ -157,6 +165,14 @@ const RootDataComponent = () => {
                       element={
                         <DataComponentKnowledge data={dataComponent} />
                       }
+                    />
+                    <Route
+                      path="/content"
+                      element={(
+                        <StixCoreObjectContent
+                          stixCoreObject={dataComponent}
+                        />
+                      )}
                     />
                     <Route
                       path="/files"

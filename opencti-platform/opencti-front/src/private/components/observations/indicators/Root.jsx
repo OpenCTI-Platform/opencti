@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
@@ -52,6 +53,7 @@ const indicatorQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -137,6 +139,12 @@ class RootIndicator extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/observations/indicators/${indicator.id}/content`}
+                          value={`/dashboard/observations/indicators/${indicator.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/observations/indicators/${indicator.id}/analyses`}
                           value={`/dashboard/observations/indicators/${indicator.id}/analyses`}
                           label={t('Analyses')}
@@ -165,6 +173,14 @@ class RootIndicator extends Component {
                       <Route
                         path="/"
                         element={(<Indicator indicator={indicator} />)}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={indicator}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

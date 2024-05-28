@@ -11,6 +11,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
@@ -51,6 +52,7 @@ const vulnerabilityQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -167,6 +169,12 @@ class RootVulnerability extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
                           value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
                           label={t('Analyses')}
@@ -208,6 +216,14 @@ class RootVulnerability extends Component {
                         element={(
                           <VulnerabilityKnowledge
                             vulnerability={vulnerability}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={vulnerability}
                           />
                         )}
                       />

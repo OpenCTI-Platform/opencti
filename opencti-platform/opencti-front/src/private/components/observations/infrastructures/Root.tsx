@@ -11,6 +11,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import InfrastructurePopover from './InfrastructurePopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -53,6 +54,7 @@ const infrastructureQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -126,6 +128,12 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               />
               <Tab
                 component={Link}
+                to={`/dashboard/observations/infrastructures/${infrastructure.id}/content`}
+                value={`/dashboard/observations/infrastructures/${infrastructure.id}/content`}
+                label={t_i18n('Content')}
+              />
+              <Tab
+                component={Link}
                 to={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
                 value={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
                 label={t_i18n('Analyses')}
@@ -162,6 +170,14 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             <Route
               path="/knowledge/*"
               element={<InfrastructureKnowledge infrastructure={infrastructure} />}
+            />
+            <Route
+              path="/content"
+              element={(
+                <StixCoreObjectContent
+                  stixCoreObject={infrastructure}
+                />
+              )}
             />
             <Route
               path="/analyses/*"

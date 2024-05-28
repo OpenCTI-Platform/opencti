@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
@@ -47,6 +48,7 @@ const courseOfActionQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -127,6 +129,12 @@ class RootCourseOfAction extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`}
+                          value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/files`}
                           value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/files`}
                           label={t('Data')}
@@ -151,6 +159,14 @@ class RootCourseOfAction extends Component {
                         element={
                           <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={courseOfAction}
+                          />
+                        )}
                       />
                       <Route
                         path="/files"

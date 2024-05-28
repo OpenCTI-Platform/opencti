@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Organization from './Organization';
@@ -54,6 +55,7 @@ const organizationQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -206,6 +208,12 @@ class RootOrganization extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/content`}
+                          value={`/dashboard/entities/organizations/${organization.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/entities/organizations/${organization.id}/analyses`}
                           value={`/dashboard/entities/organizations/${organization.id}/analyses`}
                           label={t('Analyses')}
@@ -257,6 +265,14 @@ class RootOrganization extends Component {
                             viewAs={viewAs}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={organization}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

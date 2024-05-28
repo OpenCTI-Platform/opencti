@@ -11,7 +11,7 @@ import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingPopover from './GroupingPopover';
@@ -34,7 +34,7 @@ const subscription = graphql`
         ...Grouping_grouping
         ...GroupingKnowledgeGraph_grouping
         ...GroupingEditionContainer_grouping
-        ...StixDomainObjectContent_stixDomainObject
+        ...StixCoreObjectContent_stixCoreObject
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -57,7 +57,7 @@ const groupingQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -215,8 +215,8 @@ const RootGrouping = () => {
                     <Route
                       path="/content"
                       element={
-                        <StixDomainObjectContent
-                          stixDomainObject={grouping}
+                        <StixCoreObjectContent
+                          stixCoreObject={grouping}
                         />
                       }
                     />
