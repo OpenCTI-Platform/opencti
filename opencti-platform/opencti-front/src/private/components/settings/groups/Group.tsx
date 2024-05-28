@@ -15,6 +15,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
+import { uniq } from 'ramda';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -103,12 +104,14 @@ const groupFragment = graphql`
     allowed_marking {
       id
       definition
+      definition_type
       x_opencti_color
       x_opencti_order
     }
     max_shareable_marking {
       id
       definition
+      definition_type
       x_opencti_color
       x_opencti_order
     }
@@ -133,7 +136,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     R.descend(R.propOr(0, 'x_opencti_order')),
   ]);
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
+  const markingTypes = uniq(allowedMarkings.map((marking) => marking.definition_type)).filter((type) => !!type) as string[];
   const maxShareableMarkings = markingsSort(group.max_shareable_marking ?? []);
+  const notShareableMarkingTypes = markingTypes
+    .filter((type) => !maxShareableMarkings.map((shareableMarking) => shareableMarking.definition_type).includes(type))
+    .sort((a, b) => a.localeCompare(b));
   // Handle only GLOBAL entity type for now
   const globalDefaultMarkings = markingsSort(
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
@@ -358,7 +365,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   <List>
                     {maxShareableMarkings.map((marking) => (
                       <ListItem
-                        key={marking?.id}
+                        key={marking.id}
                         dense={true}
                         divider={true}
                         button={false}
@@ -366,11 +373,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         <ListItemIcon>
                           <ItemIcon
                             type="Marking-Definition"
-                            color={marking?.x_opencti_color ?? undefined}
+                            color={marking.x_opencti_color ?? undefined}
                           />
                         </ListItemIcon>
                         <ListItemText
-                          primary={truncate(marking?.definition, 40)}
+                          primary={truncate(marking.definition, 40)}
                         />
                         {!allowedMarkings.map((m) => m.id).includes(marking.id)
                           && <Tooltip
@@ -381,6 +388,23 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             <WarningOutlined color="warning"/>
                           </Tooltip>
                         }
+                      </ListItem>
+                    ))}
+                    {notShareableMarkingTypes.map((type) => (
+                      <ListItem
+                        key={type}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon
+                            type="Marking-Definition"
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${type} : ${t_i18n('not shareable')}`}
+                        />
                       </ListItem>
                     ))}
                   </List>
