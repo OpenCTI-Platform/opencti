@@ -957,7 +957,7 @@
   "Entity_type": "Tipo",
   "entity_types": "Tipo de entidads",
   "entity_Url": "Dirección URL",
-  "User": "Usuario",
+  "entity_User": "Usuario",
   "entity_User-Account": "Cuenta de usuario",
   "entity_User-Agent": "User agent",
   "entity_Vocabulary": "Vocabulario",

@@ -957,7 +957,7 @@
   "Entity_type": "Typ",
   "entity_types": "Entitätstypen",
   "entity_Url": "URL",
-  "User": "Benutzer",
+  "entity_User": "Benutzer",
   "entity_User-Account": "Benutzerkonto",
   "entity_User-Agent": "Benutzer-Agent",
   "entity_Vocabulary": "Vokabeln",
