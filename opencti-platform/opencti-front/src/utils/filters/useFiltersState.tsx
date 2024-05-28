@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { emptyFilterGroup, Filter, FilterGroup, FilterValue } from './filtersUtils';
+import { emptyFilterGroup } from './filtersUtils';
 import {
   handleAddFilterWithEmptyValueUtil,
   handleAddRepresentationFilterUtil,
@@ -10,7 +10,7 @@ import {
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
-import { handleFilterHelpers } from '../hooks/useLocalStorage';
+import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 interface useFiltersStateProps {
   filters: FilterGroup,

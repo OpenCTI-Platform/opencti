@@ -1,4 +1,4 @@
-import { Filter, FilterGroup, FilterValue } from './filtersUtils';
+import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup,

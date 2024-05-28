@@ -10,7 +10,6 @@ import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import {
-  Filter,
   FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
@@ -22,10 +21,10 @@ import {
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
-import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
+import { Filter, FilterValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -200,15 +199,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   ];
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
     if (childKey) { // case 'regardingOf' filter
-      const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
+      const childFilters = filter?.values.filter((val: FilterValue) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
-      const alreadySelectedValues = childFilter?.values ?? [];
+      const alreadySelectedValues: FilterValue = childFilter?.values ?? [];
       let representationToAdd;
       if (checked) {
         // the representation to add = the former values + the added value
         representationToAdd = { key: childKey, values: [...alreadySelectedValues, value] };
       } else {
-        const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
+        const cleanedValues = alreadySelectedValues.filter((val: FilterValue) => val !== value);
         // the representation to add = the former values - the removed value
         representationToAdd = cleanedValues.length > 0 ? { key: childKey, values: cleanedValues } : undefined;
       }
@@ -259,7 +258,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
 
   const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string): ReactNode => {
     const getOptions = getOptionsFromEntities(entities, searchScope, fKey);
-    const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+    const optionsValues = subKey ? (filterValues.find((f: FilterValue) => f.key === subKey)?.values ?? []) : filterValues;
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
     const selectedOptions: OptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
 
@@ -301,7 +300,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         )}
         renderOption={(props, option) => {
           const checked = subKey
-            ? filterValues.filter((fVal) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
+            ? filterValues.filter((fVal: FilterValue) => fVal && fVal.key === subKey && fVal.values.includes(option.value)).length > 0
             : filterValues.includes(option.value);
           return (
             <Tooltip title={option.label} key={option.label} followCursor>

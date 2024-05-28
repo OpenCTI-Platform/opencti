@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -17,7 +17,7 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useAuth from './useAuth';
-import { handleFilterHelpers } from '../filters/filtersHelpers-types';
+import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
 
 export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleSearch: (value: string) => void;
@@ -274,7 +274,7 @@ export const usePaginationLocalStorage = <U>(
                 ...viewStorage.filters,
                 filters: [
                   ...viewStorage.filters.filters
-                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                    .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                   newFilterElement, // remove value=id
                 ],
               };
@@ -287,7 +287,7 @@ export const usePaginationLocalStorage = <U>(
                 ...viewStorage.filters,
                 filters: [
                   ...viewStorage.filters.filters
-                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                    .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                 ],
               };
               setValue((c) => ({
@@ -300,7 +300,7 @@ export const usePaginationLocalStorage = <U>(
           const newBaseFilters = {
             ...viewStorage.filters,
             filters: viewStorage.filters.filters
-              .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+              .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
           };
           setValue((c) => ({
             ...c,
@@ -355,7 +355,7 @@ export const usePaginationLocalStorage = <U>(
         const newBaseFilters = {
           ...viewStorage.filters,
           filters: [
-            ...viewStorage.filters.filters.map((f) => (f.key === k && f.operator === op ? newFilterElement : f)),
+            ...viewStorage.filters.filters.map((f: Filter) => (f.key === k && f.operator === op ? newFilterElement : f)),
           ],
         };
         setValue((c) => ({
@@ -399,7 +399,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddRepresentationFilter: (id: string, value: string) => {
       if (value === null) { // handle clicking on 'no label' in entities list
-        const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
+        const findCorrespondingFilter = viewStorage.filters?.filters.find((f: Filter) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
             const { filters } = viewStorage;
@@ -480,7 +480,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage.filters,
           filters: [
             ...viewStorage.filters.filters
-              .filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
+              .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
             newFilterElement, // add new filter
           ],
         };

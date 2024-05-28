@@ -1,5 +1,5 @@
 import { head, last, toPairs } from 'ramda';
-import { Filter, FilterGroup } from './filtersUtils';
+import { Filter, FilterGroup } from './filtersHelpers-types';
 
 // --- convert filters in the old format (before 5.12) to the new one
 
@@ -66,10 +66,9 @@ export const convertFiltersFromOldFormat = (filters: string): FilterGroup => {
       newFiltersContent.push({ key, values: valIds as string[], operator, mode });
     }
   });
-  const newFilters = {
+  return {
     mode: 'and',
     filters: newFiltersContent,
     filterGroups: newFilterGroupsContent,
   };
-  return newFilters;
 };

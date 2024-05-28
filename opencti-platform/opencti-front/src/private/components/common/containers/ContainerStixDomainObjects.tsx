@@ -15,8 +15,9 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { emptyFilterGroup, FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {

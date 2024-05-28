@@ -24,7 +24,8 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import ListLines from '../../../../components/list_lines/ListLines';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
-import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

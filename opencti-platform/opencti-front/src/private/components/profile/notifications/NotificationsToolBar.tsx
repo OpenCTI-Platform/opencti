@@ -29,9 +29,10 @@ import type { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
 import Transition from '../../../../components/Transition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { FilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

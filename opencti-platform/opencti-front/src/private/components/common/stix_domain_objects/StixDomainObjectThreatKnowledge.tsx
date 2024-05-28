@@ -44,13 +44,13 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import type { Theme } from '../../../../components/Theme';
 import {
   emptyFilterGroup,
-  FilterGroup,
   getDefaultFilterObject,
   isFilterGroupNotEmpty,
   useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   useFilterDefinition,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

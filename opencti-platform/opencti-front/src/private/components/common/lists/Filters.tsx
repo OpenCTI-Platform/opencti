@@ -2,20 +2,13 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import { uniq } from 'ramda';
-import {
-  constructHandleAddFilter,
-  constructHandleRemoveFilter,
-  emptyFilterGroup,
-  Filter,
-  FilterGroup,
-  FilterSearchContext,
-  FiltersVariant,
-} from '../../../../utils/filters/filtersUtils';
+import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, FilterSearchContext, FiltersVariant } from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
-import { HandleAddFilter, handleFilterHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { Filter, FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 
 interface FiltersProps {
   variant?: string;

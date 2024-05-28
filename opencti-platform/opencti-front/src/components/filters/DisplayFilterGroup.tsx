@@ -11,8 +11,8 @@ import CodeBlock from '@components/common/CodeBlock';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../i18n';
-import { Filter, FilterGroup } from '../../utils/filters/filtersUtils';
 import { FilterRepresentative } from './FiltersModel';
+import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;

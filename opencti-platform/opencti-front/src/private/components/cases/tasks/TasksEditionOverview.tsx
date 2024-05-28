@@ -22,7 +22,7 @@ import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import { FilterGroup } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(

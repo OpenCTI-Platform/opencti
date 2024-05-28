@@ -12,7 +12,8 @@ import { DataColumns, PaginationOptions } from '../../../../../../components/lis
 import { StixDomainObjectIndicatorsLinesQuery$data } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../../../relay/environment';
-import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string

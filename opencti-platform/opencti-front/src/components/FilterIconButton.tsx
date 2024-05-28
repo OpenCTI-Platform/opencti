@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useEffect, useRef } from 'react';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { DataColumns } from './list_lines';
-import { Filter, FilterGroup, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject, FiltersRestrictions, FilterSearchContext } from '../utils/filters/filtersUtils';
+import { GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject, FiltersRestrictions, FilterSearchContext } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import FilterIconButtonContainer from './FilterIconButtonContainer';
-import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
+import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 
 interface FilterIconButtonProps {
   availableFilterKeys?: string[];
@@ -123,7 +123,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const displayedFilters = filters ? {
     ...filters,
     filters:
-      filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)) } : undefined;
+      filters.filters.filter((f: Filter) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)) } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery

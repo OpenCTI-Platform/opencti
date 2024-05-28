@@ -11,7 +11,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
-import { Filter, FilterGroup } from '../../../../utils/filters/filtersUtils';
+import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

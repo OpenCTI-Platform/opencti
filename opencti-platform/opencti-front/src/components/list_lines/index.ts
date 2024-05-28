@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
-import { Option } from '../../private/components/common/form/ReferenceField';
-import { FilterGroup } from '../../utils/filters/filtersUtils';
+import { Option } from '@components/common/form/ReferenceField';
+import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 export interface DataColumn {
   isSortable: boolean;

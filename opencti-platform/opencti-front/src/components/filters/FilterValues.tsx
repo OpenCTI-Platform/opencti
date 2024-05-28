@@ -7,10 +7,11 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
+import { Filter } from '../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -100,7 +101,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   }
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
-  const values = filterValues.map((id) => {
+  const values = filterValues.map((id: string) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode
       && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)
