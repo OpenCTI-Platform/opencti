@@ -101,7 +101,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
-    const isLocalModeSwitchable = isReadWriteFilter && handleSwitchLocalMode && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey);
+    const isLocalModeSwitchable =
+      isReadWriteFilter
+      && handleSwitchLocalMode
+      && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)
+      && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     return (
