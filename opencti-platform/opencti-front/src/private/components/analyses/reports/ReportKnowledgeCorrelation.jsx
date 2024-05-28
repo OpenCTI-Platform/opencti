@@ -846,6 +846,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const stixCoreObjectsTypes = R.pipe(
+      R.filter((n) => n.node.entity_type
+          && n.node.entity_type.length > 1
+          && n.node.entity_type[0] !== n.node.entity_type[0].toLowerCase()),
       R.map((n) => R.assoc(
         'tlabel',
         t(
@@ -858,7 +861,6 @@ class ReportKnowledgeCorrelationComponent extends Component {
       sortByLabel,
       R.map((n) => n.node.entity_type),
       R.filter((n) => n && n.length > 0),
-      R.concat(['Report', 'reported-in']),
       R.uniq,
     )(report.objects.edges);
     const markedBy = R.uniqBy(
