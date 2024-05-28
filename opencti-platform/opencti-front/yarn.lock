@@ -5471,10 +5471,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:*, @types/relay-runtime@npm:14.1.23":
+"@types/relay-runtime@npm:*":
   version: 14.1.23
   resolution: "@types/relay-runtime@npm:14.1.23"
   checksum: 10/8df248c36f1fedd76ff869f4b057aad3d29e485258afde6ae98dbef792c0241c3109b436bc657d0c428bd198f01cdc45140cd2dfa2868cb55345ec7e662b33cc
+  languageName: node
+  linkType: hard
+
+"@types/relay-runtime@npm:14.1.24":
+  version: 14.1.24
+  resolution: "@types/relay-runtime@npm:14.1.24"
+  checksum: 10/97775be4fcdbb0ee431d15d0b6812e0501cfaefdd5049e7a3b0e98077f7f603c47576d3c1c982fb1a2996e479adc0aada90b2c41acf054adefbcb47a689e6225
   languageName: node
   linkType: hard
 
@@ -15139,7 +15146,7 @@ __metadata:
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:18.0.7"
-    "@types/relay-runtime": "npm:14.1.23"
+    "@types/relay-runtime": "npm:14.1.24"
     "@types/relay-test-utils": "npm:14.1.4"
     "@types/uuid": "npm:9.0.8"
     "@vitejs/plugin-react": "npm:4.2.1"
