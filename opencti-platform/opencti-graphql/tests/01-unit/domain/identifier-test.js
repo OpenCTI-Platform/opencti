@@ -6,7 +6,44 @@ import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
 import '../../../src/modules/index';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject'; // Need to import registration files
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_DATA_COMPONENT,
+  ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY
+} from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../src/modules/case/case-rft/case-rft-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_CHANNEL } from '../../../src/modules/channel/channel-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
+import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
+import { ENTITY_TYPE_LANGUAGE } from '../../../src/modules/language/language-types';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_NARRATIVE } from '../../../src/modules/narrative/narrative-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../../../src/modules/task/task-types';
+import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types'; // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -16,6 +53,86 @@ describe('identifier', () => {
     expect(normalize).toEqual('my ♫̟  data  test');
     normalize = normalizeName('SnowFlake');
     expect(normalize).toEqual('snowflake');
+  });
+
+  it('should ids generated correctly', () => {
+    // attack_pattern
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack' })).toEqual('attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack', x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { x_mitre_id: 'MITREID' })).toEqual('attack-pattern--b74cfee2-7b14-585e-862f-fea45e802da9');
+    // campaign
+    expect(generateStandardId(ENTITY_TYPE_CAMPAIGN, { name: 'attack' })).toEqual('campaign--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
+    // note
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!' })).toEqual('note--2b4ab5af-2307-58e1-8862-a6a269aae798');
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!', created: '2022-11-25T19:00:05.000Z' })).toEqual('note--10861e5c-049e-54f6-9736-81c106e39a0b');
+    // observed-data
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { objects: [{ standard_id: 'id' }] })).toEqual('observed-data--4765c523-81bc-54c8-b1af-ee81d961dad1');
+    // opinion
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_OPINION, { opinion: 'Good' })).toEqual('opinion--0aef8829-207e-508b-b1f1-9da07f3379cb');
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_OPINION, { opinion: 'Good', created: '2022-11-25T19:00:05.000Z' })).toEqual('opinion--941dbd61-c6b1-5290-b63f-19a38983d7f7');
+    // report
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, { name: 'Report', published: '2022-11-25T19:00:05.000Z' })).toEqual('report--761c6602-975f-5e5e-b220-7a2d41f33ce4');
+    // course-of-action
+    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID' })).toEqual('course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { x_mitre_id: 'MITREID', name: 'Name' })).toEqual('course-of-action--b74cfee2-7b14-585e-862f-fea45e802da9');
+    expect(generateStandardId(ENTITY_TYPE_COURSE_OF_ACTION, { name: 'Name' })).toEqual('course-of-action--e6e2ee8d-e54d-50cd-b77c-df8c8eea7726');
+    // identity
+    expect(generateStandardId(ENTITY_TYPE_IDENTITY_INDIVIDUAL, { name: 'julien', identity_class: 'Individual' })).toEqual('identity--d969b177-497f-598d-8428-b128c8f5f819');
+    expect(generateStandardId(ENTITY_TYPE_IDENTITY_SECTOR, { name: 'julien', identity_class: 'Sector' })).toEqual('identity--14ffa2a4-e16a-522a-937a-784c0ac1fab0');
+    expect(generateStandardId(ENTITY_TYPE_IDENTITY_SYSTEM, { name: 'julien', identity_class: 'System' })).toEqual('identity--8af97482-121d-53f7-a533-9c48f06b5a38');
+    expect(generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'organization', identity_class: 'individual' })).toEqual('identity--00f7eb8c-6af2-5ed5-9ede-ede4c623de3b');
+    // infrastructure
+    expect(generateStandardId(ENTITY_TYPE_INFRASTRUCTURE, { name: 'infra' })).toEqual('infrastructure--8a20116f-5a41-5508-ae4b-c293ac67c527');
+    // intrusion-set
+    expect(generateStandardId(ENTITY_TYPE_INTRUSION_SET, { name: 'intrusion' })).toEqual('intrusion-set--30757026-c4bd-574d-ae52-8d8503b4818e');
+    // location
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_CITY, { name: 'Lyon', x_opencti_location_type: 'City' })).toEqual('location--da430873-42c8-57ca-b08b-a797558c6cbd');
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, { name: 'Lyon', x_opencti_location_type: 'Administrative-Area' })).toEqual('location--2ad8a94d-39cc-508c-b8b6-367783f9ecfe');
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_POSITION, { latitude: 5.12, name: 'Position1' })).toEqual('location--56b3fc50-5091-5f2e-bd19-7b40ee3881e4');
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_POSITION, { longitude: 5.12, name: 'Position2' })).toEqual('location--dd2cf94c-1d58-58a1-b21f-0ede4059aaf0');
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_POSITION, { latitude: 5.12, longitude: 5.12 })).toEqual('location--57acef55-747a-55ef-9c49-06ca85f8d749');
+    expect(generateStandardId(ENTITY_TYPE_LOCATION_POSITION, { name: 'Position3' })).toEqual('location--a4152781-8721-5d44-ae2d-e492665bc35b');
+    // malware
+    expect(generateStandardId(ENTITY_TYPE_MALWARE, { name: 'malware' })).toEqual('malware--92ddf766-b27c-5159-8f46-27002bba2f04');
+    // threat-actor-group
+    expect(generateStandardId(ENTITY_TYPE_THREAT_ACTOR_GROUP, { name: 'CARD04' })).toEqual('threat-actor--6d458783-df3b-5398-8e30-282655ad7b94');
+    // tool
+    expect(generateStandardId(ENTITY_TYPE_TOOL, { name: 'my-tool' })).toEqual('tool--41cd21d0-f50e-5e3d-83fc-447e0def97b7');
+    // vulnerability
+    expect(generateStandardId(ENTITY_TYPE_VULNERABILITY, { name: 'vulnerability' })).toEqual('vulnerability--2c690168-aec3-57f1-8295-adf53f4dc3da');
+    // incident
+    expect(generateStandardId(ENTITY_TYPE_INCIDENT, { name: 'incident', created: '2022-11-25T19:00:05.000Z' })).toEqual('incident--0e117c15-0a94-5ad3-b090-0395613f5b29');
+    // case-incident
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, { name: 'case', created: '2022-11-25T19:00:05.000Z' })).toEqual('case-incident--4838a141-bd19-542c-85d9-cce0382645b5');
+    // case-rfi
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_CASE_RFI, { name: 'case', created: '2022-11-25T19:00:05.000Z' })).toEqual('case-rfi--4838a141-bd19-542c-85d9-cce0382645b5');
+    // case-rft
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_CASE_RFT, { name: 'case', created: '2022-11-25T19:00:05.000Z' })).toEqual('case-rft--4838a141-bd19-542c-85d9-cce0382645b5');
+    // feedback
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_FEEDBACK, { name: 'case', created: '2022-11-25T19:00:05.000Z' })).toEqual('feedback--4838a141-bd19-542c-85d9-cce0382645b5');
+    // channel
+    expect(generateStandardId(ENTITY_TYPE_CHANNEL, { name: 'channel' })).toEqual('channel--4936cdd5-6b6a-5c92-a756-cae1f09dcd80');
+    // data-component
+    expect(generateStandardId(ENTITY_TYPE_DATA_COMPONENT, { name: 'data-component' })).toEqual('data-component--32fdc52a-b4c5-5268-af2f-cdf820271f0b');
+    // data-source
+    expect(generateStandardId(ENTITY_TYPE_DATA_SOURCE, { name: 'data-source' })).toEqual('data-source--f0925972-35e1-5172-9161-4d7180908339');
+    // grouping
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_GROUPING, { name: 'grouping', context: 'context' })).toEqual('grouping--8462bd42-4cad-54ae-a261-efc1a762d83d');
+    // indicator
+    expect(generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[domain-name:value = \'shortsvelventysjo.shop\']' })).toEqual('indicator--e3a64916-7775-5262-9246-9d3783cfdfa6');
+    // language
+    expect(generateStandardId(ENTITY_TYPE_LANGUAGE, { name: 'fr' })).toEqual('language--0ef28873-9d49-5cdb-a53a-eb7613391ee9');
+    // malware-analysis
+    expect(generateStandardId(ENTITY_TYPE_MALWARE_ANALYSIS, { product: 'linux', result_name: 'result' })).toEqual('malware-analysis--3d501241-a4a5-574d-a503-301a6426f8c1');
+    expect(generateStandardId(ENTITY_TYPE_MALWARE_ANALYSIS, { product: 'linux', result_name: 'result', submitted: '2022-11-25T19:00:05.000Z' })).toEqual('malware-analysis--d7ffe68a-0d5f-5fea-a375-3338ba4ea13c');
+    // narrative
+    expect(generateStandardId(ENTITY_TYPE_NARRATIVE, { name: 'narrative' })).toEqual('narrative--804a7e40-d39c-59b6-9e3f-1ba1bc92b739');
+    // task
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_TASK, { name: 'case', created: '2022-11-25T19:00:05.000Z' })).toEqual('task--4838a141-bd19-542c-85d9-cce0382645b5');
+    // threat-actor-individual
+    expect(generateStandardId(ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, { name: 'CARD04' })).toEqual('threat-actor--af15b6ae-a3dd-54d3-8fa0-3adfe0391d01');
+    // vocabulary
+    expect(generateStandardId(ENTITY_TYPE_VOCABULARY, { name: 'facebook', category: 'account_type_ov' })).toEqual('vocabulary--85ae7185-ff6f-509b-a011-3069921614aa');
   });
 
   it('should aliases generated with normalization', () => {

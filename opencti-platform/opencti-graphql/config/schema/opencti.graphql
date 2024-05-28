@@ -3659,7 +3659,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input OpinionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  opinion: String!
+  opinion: String! @constraint(minLength: 2)
   explanation: String
   authors: [String]
   revoked: Boolean

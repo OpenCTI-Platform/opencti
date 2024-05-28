@@ -185,27 +185,25 @@ const stixBaseEntityContribution = {
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created' }],
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
-    [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'opinion' }, { src: 'created' }],
+    [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'opinion' }, { src: 'created', dependencies: ['opinion'] }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
-    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
-    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
-    [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
+    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_IDENTITY_SYSTEM]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
-    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
-    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
+    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
+    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type', dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_LOCATION_POSITION]: [[{ src: 'latitude' }, { src: 'longitude' }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE }],
+    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE, dependencies: [NAME_FIELD] }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created' }],
-    [D.ENTITY_TYPE_DATA_COMPONENT]: [[{ src: NAME_FIELD }]],
-    [D.ENTITY_TYPE_DATA_SOURCE]: [[{ src: NAME_FIELD }]],
+    [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],
@@ -214,6 +212,9 @@ const stixBaseEntityContribution = {
   },
   resolvers: {
     name(data) {
+      return normalizeName(data);
+    },
+    identity_class(data) {
       return normalizeName(data);
     },
     value(data) {
@@ -316,7 +317,7 @@ const filteredIdContributions = (contrib, way, data) => {
     const [key, value] = entry;
     const prop = R.find((e) => R.includes(key, e.src), way);
     const { src, dest, dependencies = [] } = prop;
-    const dataDependencies = Object.values(R.pick(dependencies, data));
+    const dataDependencies = Object.values(R.pickAll(dependencies, data));
     const isEmptyValueInDependencies = dataDependencies.filter((n) => isEmptyField(n)).length !== 0;
     if (isEmptyValueInDependencies) {
       return {};
@@ -400,6 +401,7 @@ export const isStandardIdDowngraded = (previous, updated) => {
 
 const generateStixUUID = (type, data) => {
   const { data: dataUUID } = generateDataUUID(type, data);
+  console.log('dataUUID', dataUUID);
   return idGen(type, data, dataUUID, OASIS_NAMESPACE);
 };
 const generateObjectUUID = (type, data) => {
