@@ -485,6 +485,7 @@ const useSearchEntities = ({
             label: n?.node.name,
             value: n?.node.id,
             type: n?.node.entity_type,
+            group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
         });
@@ -612,9 +613,12 @@ const useSearchEntities = ({
           buildOptionsFromIdentitySearchQuery(filterKey, ['Organization', 'Individual', 'System']);
           break;
         case 'id':
-        case 'contextEntityId':
         case 'connectedToId':
           buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
+          break;
+        case 'contextEntityId':
+          buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
+          buildOptionsFromMembersSearchQuery(filterKey, ['User', 'Group']);
           break;
         case 'sightedBy':
           fetchQuery(stixDomainObjectsLinesSearchQuery, {
@@ -652,14 +656,21 @@ const useSearchEntities = ({
               value: n.label,
               type: n.label,
             })),
-            ...elementTypeResult,
-          ];
-          elementTypeResult = [
             ...(schema.sdos ?? []).map((n) => ({
               label: t_i18n(`entity_${n.label}`),
               value: n.label,
               type: n.label,
             })),
+            {
+              label: t_i18n('User'),
+              value: 'User',
+              type: 'User',
+            },
+            {
+              label: t_i18n('Group'),
+              value: 'Group',
+              type: 'Group',
+            },
             ...elementTypeResult,
           ];
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
