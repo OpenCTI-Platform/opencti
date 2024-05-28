@@ -29,6 +29,10 @@ interface UserConfidenceOverridesFieldComponentProps
   currentOverrides: OverrideFormData[];
 }
 
+const filterOverridableEntityTypes = (entity_type: string | null) => {
+  return entity_type !== 'entity_Stix-Meta-Objects' && entity_type !== 'entity_Stix-Cyber-Observables';
+};
+
 const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
   form,
   field,
@@ -40,7 +44,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
-  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => entity_type.type !== 'entity_Stix-Meta-Objects' && entity_type.type !== 'entity_Stix-Cyber-Observables');
+  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => filterOverridableEntityTypes(entity_type.type));
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const { value, name } = field;
@@ -131,6 +135,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
               options={entityTypesToOverride}
+              disableClearable={true as never}
               getOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
