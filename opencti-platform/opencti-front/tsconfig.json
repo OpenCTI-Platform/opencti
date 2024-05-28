@@ -21,7 +21,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@components/*": ["src/private/components/*"]
+      "@components/*": ["src/private/components/*"],
+      "src": ["src/*"]
     },
     "types": ["@testing-library/jest-dom"]
   },
