@@ -143,13 +143,13 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
         externalReferences: input.externalReferences,
         update: true,
       };
-      await addIndicator(context, user, indicatorToCreate);
-    } else {
-      logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
+      return addIndicator(context, user, indicatorToCreate);
     }
+    logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
   } catch (err) {
     logApp.info('[OPENCTI] Cannot create indicator', { error: err });
   }
+  return undefined;
 };
 
 export const promoteObservableToIndicator = async (context, user, observableId) => {
@@ -159,8 +159,7 @@ export const promoteObservableToIndicator = async (context, user, observableId) 
   const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const objectOrganization = (observable[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
   const createdBy = observable[INPUT_CREATED_BY]?.internal_id;
-  await createIndicatorFromObservable(context, user, { objectLabel, objectMarking, objectOrganization, createdBy }, observable);
-  return observable;
+  return await createIndicatorFromObservable(context, user, { objectLabel, objectMarking, objectOrganization, createdBy }, observable);
 };
 
 export const addStixCyberObservable = async (context, user, input) => {

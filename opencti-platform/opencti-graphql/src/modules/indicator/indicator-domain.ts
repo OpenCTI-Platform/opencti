@@ -195,6 +195,7 @@ export const createObservablesFromIndicator = async (
       return createRelation(context, user, relationInput);
     })
   );
+  return observablesToLink;
 };
 
 export const promoteIndicatorToObservable = async (context: AuthContext, user: AuthUser, indicatorId: string) => {

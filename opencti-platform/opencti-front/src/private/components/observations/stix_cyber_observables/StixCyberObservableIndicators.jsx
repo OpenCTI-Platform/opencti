@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { append, compose, filter, includes } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
@@ -28,6 +28,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { commitMutation } from '../../../../relay/environment';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import Transition from '../../../../components/Transition';
+import { insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   itemHead: {
@@ -92,13 +93,16 @@ const inlineStyles = {
 const stixCyberObservableIndicatorsPromoteMutation = graphql`
   mutation StixCyberObservableIndicatorsPromoteMutation(
     $id: ID!
-    $first: Int!
   ) {
     stixCyberObservableEdit(id: $id) {
       promote {
         id
-        ...StixCyberObservableIndicators_stixCyberObservable
-        @arguments(first: $first)
+        entity_type
+        parent_types
+        name
+        created_at
+        updated_at
+        pattern_type
       }
     }
   }
@@ -112,13 +116,8 @@ class StixCyberObservableIndicatorsComponent extends Component {
       displayPromoteStix: false,
       displayCreate: false,
       promotingStix: false,
-      deleted: [],
     };
     this.indicatorParams = { first: 200 };
-  }
-
-  onDelete(id) {
-    this.setState({ deleted: append(id, this.state.deleted) });
   }
 
   handleOpen(event) {
@@ -154,6 +153,18 @@ class StixCyberObservableIndicatorsComponent extends Component {
         ...this.indicatorParams,
         id: this.props.stixCyberObservable.id,
       },
+      updater: (store) => {
+        insertNode(
+          store,
+          'Pagination_stixCyberObservables_indicators',
+          {},
+          'stixCyberObservableEdit',
+          this.props.stixCyberObservable.id,
+          undefined,
+          undefined,
+          'promote',
+        );
+      },
       onCompleted: () => {
         this.setState({ promotingStix: false });
         this.handleClosePromoteStix();
@@ -171,6 +182,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
+            data-testid='AddOrCreateIndicatorsButton'
             color="primary"
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
@@ -193,12 +205,10 @@ class StixCyberObservableIndicatorsComponent extends Component {
           </Menu>
         </Security>
         <div className="clearfix" />
-        <List style={{ marginTop: -15 }}>
-          {filter(
-            (n) => !includes(n.node.id, this.state.deleted),
-            stixCyberObservable.indicators.edges,
-          ).map((indicatorEdge) => (
+        <List style={{ marginTop: -15 }} data-testid='stixCyberObservableIndicatorsList'>
+          {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
             <ListItem
+              data-testid={`stixCyberObservableIndicatorsItem-${indicatorEdge.node.id}`}
               key={indicatorEdge.node.id}
               classes={{ root: classes.item }}
               divider={true}
@@ -240,7 +250,6 @@ class StixCyberObservableIndicatorsComponent extends Component {
                 <StixCyberObservableIndicatorPopover
                   observableId={stixCyberObservable.id}
                   indicatorId={indicatorEdge.node.id}
-                  onDelete={this.onDelete.bind(this, indicatorEdge.node.id)}
                 />
               </ListItemSecondaryAction>
             </ListItem>
@@ -306,7 +315,7 @@ const StixCyberObservableIndicators = createFragmentContainer(
         observable_value
         parent_types
         entity_type
-        indicators(first: $first) {
+        indicators(first: $first) @connection(key: "Pagination_stixCyberObservables_indicators") {
           edges {
             node {
               id
