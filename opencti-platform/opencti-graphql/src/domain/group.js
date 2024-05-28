@@ -47,14 +47,6 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-const unauthorizedMarkingsFromList = async (context, user, groupId, maxShareableMarkingsIds) => {
-  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const maxShareableMarkings = maxShareableMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
-  const allowedMarkings = await groupAllowedMarkings(context, user, groupId);
-  const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
-  return maxShareableMarkings.filter((marking) => !allowedMarkingsIds.includes(marking.id));
-};
-
 export const groupMaxShareableMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
 };
@@ -194,25 +186,6 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
   }
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
-  }
-  // if we remove a marking access that is in max_shareable_marking
-  if (relationshipType === RELATION_ACCESSES_TO) {
-    const maxShareableMarkings = await groupMaxShareableMarkings(context, user, groupId);
-    if (maxShareableMarkings.map((m) => m.id).includes(toId)) {
-      // remove the marking from max_shareable_marking
-      await groupDeleteRelation(context, user, groupId, undefined, toId, RELATION_CAN_SHARE);
-      // add the most restrictive marking of the same definition_type allowed in max shareable marking if it exists
-      const toIdMarkingType = maxShareableMarkings.filter((m) => m.id === toId)[0].definition_type;
-      const orderedShareableMarkingsOfSameType = maxShareableMarkings.filter((m) => m.definition_type === toIdMarkingType)
-        .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
-      if (orderedShareableMarkingsOfSameType.length > 0) {
-        const shareableAddInput = {
-          relationship_type: RELATION_CAN_SHARE,
-          toId: orderedShareableMarkingsOfSameType[0].id,
-        };
-        await groupAddRelation(context, user, groupId, shareableAddInput);
-      }
-    }
   }
   let target;
   if (fromId) {
