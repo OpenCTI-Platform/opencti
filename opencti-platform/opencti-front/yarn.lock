@@ -3321,7 +3321,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:5.15.15, @mui/icons-material@npm:^5.4.1":
+"@mui/core-downloads-tracker@npm:^5.15.18":
+  version: 5.15.18
+  resolution: "@mui/core-downloads-tracker@npm:5.15.18"
+  checksum: 10/d6f5d5bc70b7ace16b1fa86adf5f5bc175840fd21d69f230b8b2348fab4863940df030ace0c6b76beb57bd8bfa6a460788cbd86be90772c13684d87d409d8d32
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:5.15.18":
+  version: 5.15.18
+  resolution: "@mui/icons-material@npm:5.15.18"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+  peerDependencies:
+    "@mui/material": ^5.0.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/d6ef5207e28fb56ec2f1b6cfaa8bf9cdfa91806171507f90e21710ae12129bb080c7c54bb409dbe2c7b4eb59c9d1e466ea6999d081db943285dfd59d39d54682
+  languageName: node
+  linkType: hard
+
+"@mui/icons-material@npm:^5.4.1":
   version: 5.15.15
   resolution: "@mui/icons-material@npm:5.15.15"
   dependencies:
@@ -3366,7 +3389,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/material@npm:5.15.15, @mui/material@npm:^5.4.1":
+"@mui/material@npm:5.15.18":
+  version: 5.15.18
+  resolution: "@mui/material@npm:5.15.18"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@mui/base": "npm:5.0.0-beta.40"
+    "@mui/core-downloads-tracker": "npm:^5.15.18"
+    "@mui/system": "npm:^5.15.15"
+    "@mui/types": "npm:^7.2.14"
+    "@mui/utils": "npm:^5.15.14"
+    "@types/react-transition-group": "npm:^4.4.10"
+    clsx: "npm:^2.1.0"
+    csstype: "npm:^3.1.3"
+    prop-types: "npm:^15.8.1"
+    react-is: "npm:^18.2.0"
+    react-transition-group: "npm:^4.4.5"
+  peerDependencies:
+    "@emotion/react": ^11.5.0
+    "@emotion/styled": ^11.3.0
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+  peerDependenciesMeta:
+    "@emotion/react":
+      optional: true
+    "@emotion/styled":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 10/5c52261090eb91e9ba6d3e7d791b8b8be9c90af0e27f8fcace24b9788952bd03ab18c9736760fe72edf17e9d67fcc32c71f9b132c7d534919a120d59c84f568c
+  languageName: node
+  linkType: hard
+
+"@mui/material@npm:^5.4.1":
   version: 5.15.15
   resolution: "@mui/material@npm:5.15.15"
   dependencies:
@@ -3437,9 +3493,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/styles@npm:5.15.15":
-  version: 5.15.15
-  resolution: "@mui/styles@npm:5.15.15"
+"@mui/styles@npm:5.15.18":
+  version: 5.15.18
+  resolution: "@mui/styles@npm:5.15.18"
   dependencies:
     "@babel/runtime": "npm:^7.23.9"
     "@emotion/hash": "npm:^0.9.1"
@@ -3464,7 +3520,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/599d39f146bb5325a5bf5a374e3b7f7a7965736646a4c72e13911376069011fc78d56b5e9b4809f975865c1ef0ef59e9cf6be86dbe6dc41a50cf40d813357510
+  checksum: 10/dedf0f97485271ac0a6e8bc76cd1188d7e85ff66d2a5ac952d6507b0e7cc9e42a6d1a8950783fe8e5f47a5138c8302fb6316364e19c1eb5fe3d00ab190d6fe34
   languageName: node
   linkType: hard
 
@@ -3544,9 +3600,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:6.19.9":
-  version: 6.19.9
-  resolution: "@mui/x-date-pickers@npm:6.19.9"
+"@mui/x-date-pickers@npm:6.20.0":
+  version: 6.20.0
+  resolution: "@mui/x-date-pickers@npm:6.20.0"
   dependencies:
     "@babel/runtime": "npm:^7.23.2"
     "@mui/base": "npm:^5.0.0-beta.22"
@@ -3588,7 +3644,7 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 10/d5c2e84e039b791c0d36595d56b9b7aa57a098aed0bc4de7f2933b6305434fc2865331b49d660c40298f8537114b68a05127e32effa660df74721040b1817f09
+  checksum: 10/9d9cd686d63a10d53634ae4bb33e93f2448ff1d6237bc085cc5d3b735114f126c108d8df0551e26aea65304f5630869deeebc524b3015e878ca8727df2b18c7a
   languageName: node
   linkType: hard
 
@@ -15058,12 +15114,12 @@ __metadata:
     "@emotion/styled": "npm:11.11.5"
     "@fontsource/geologica": "npm:5.0.5"
     "@fontsource/ibm-plex-sans": "npm:5.0.20"
-    "@mui/icons-material": "npm:5.15.15"
+    "@mui/icons-material": "npm:5.15.18"
     "@mui/lab": "npm:5.0.0-alpha.170"
-    "@mui/material": "npm:5.15.15"
-    "@mui/styles": "npm:5.15.15"
+    "@mui/material": "npm:5.15.18"
+    "@mui/styles": "npm:5.15.18"
     "@mui/utils": "npm:5.15.14"
-    "@mui/x-date-pickers": "npm:6.19.9"
+    "@mui/x-date-pickers": "npm:6.20.0"
     "@playwright/test": "npm:1.44.1"
     "@rjsf/core": "npm:5.18.1"
     "@rjsf/mui": "npm:5.18.1"
