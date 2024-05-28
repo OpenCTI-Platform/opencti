@@ -41,10 +41,11 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
+  RELATION_CAN_SHARE,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO,
+  RELATION_PARTICIPATE_TO
 } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -63,7 +64,7 @@ import {
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
-import { defaultMarkingDefinitionsFromGroups, findAll as findGroups, maxShareableMarkingDefinitionsFromGroups } from './group';
+import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
@@ -309,7 +310,6 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   let markings;
   let defaultMarkings;
   let maxShareableMarkings;
-  let maxShareableMarkingsPromiseArray;
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
     [markings, defaultMarkings] = await Promise.all(
       [allMarkingsPromise, defaultGroupMarkingsPromise]
@@ -318,11 +318,11 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
     maxShareableMarkings = markings;
   } else { // Standard user have markings related to his groups
     userMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-    maxShareableMarkingsPromise = maxShareableMarkingDefinitionsFromGroups(context, groupIds);
-    [userMarkings, markings, defaultMarkings, maxShareableMarkingsPromiseArray] = await Promise.all(
+    maxShareableMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
+    [userMarkings, markings, defaultMarkings, maxShareableMarkings] = await Promise.all(
       [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
     );
-    maxShareableMarkings = await Promise.all(maxShareableMarkingsPromiseArray);}
+  }
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
   return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: uniq(maxShareableMarkings.flat()) };
 };

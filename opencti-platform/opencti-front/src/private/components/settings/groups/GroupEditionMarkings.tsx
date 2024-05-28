@@ -11,7 +11,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
-import * as Yup from 'yup';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -80,23 +79,6 @@ const groupMutationPatchDefaultValues = graphql`
   }
 `;
 
-const groupMutationFieldPatch = graphql`
-    mutation GroupEditionMarkingsMarkingDefinitionsPatchMaxShareableMarkingsIdsMutation(
-        $id: ID!
-        $input: [EditInput]!
-    ) {
-        groupEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...GroupEditionMarkings_group
-            }
-        }
-    }
-`;
-
-const groupMarkingsValidation = () => Yup.object().shape({
-  max_shareable_marking_ids: Yup.array().of(Yup.string()).nullable(),
-});
-
 const GroupEditionMarkingsComponent = ({
   group,
 }: {
@@ -107,6 +89,7 @@ const GroupEditionMarkingsComponent = ({
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
   const groupMaxShareableMarkings = group.max_shareable_marking || [];
+  const maxShareableMarkingsIds = groupMaxShareableMarkings.map((v) => v.id);
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
     groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
@@ -116,9 +99,8 @@ const GroupEditionMarkingsComponent = ({
   const [commitAdd] = useApiMutation(groupMutationRelationAdd);
   const [commitDelete] = useApiMutation(groupMutationRelationDelete);
   const [commitDefaultValues] = useApiMutation(groupMutationPatchDefaultValues);
-  const [commitFieldPatch] = useApiMutation(groupMutationFieldPatch);
 
-  const handleToggle = (
+  const handleToggleAllowedMarkings = (
     markingDefinitionId: string,
     groupMarkingDefinition:
     | {
@@ -176,21 +158,31 @@ const GroupEditionMarkingsComponent = ({
     });
   };
 
-  const handleToggleMarkingIds = (name: string, markingIds: string[]) => {
-    groupMarkingsValidation()
-      .validateAt(name, { [name]: markingIds })
-      .then(() => {
-        commitFieldPatch({
+  const handleToggleMaxShareableMarkings = (markingIds: string[]) => {
+    markingIds.forEach((markingId) => {
+      if (!maxShareableMarkingsIds.includes(markingId)) {
+        commitAdd({
           variables: {
             id: group.id,
             input: {
-              key: name,
-              value: markingIds,
+              toId: markingId,
+              relationship_type: 'can-share',
             },
           },
         });
-      })
-      .catch(() => false);
+      }
+    });
+    maxShareableMarkingsIds.forEach((shareableMarkingId) => {
+      if (!markingIds.includes(shareableMarkingId)) {
+        commitDelete({
+          variables: {
+            id: group.id,
+            toId: shareableMarkingId,
+            relationship_type: 'can-share',
+          },
+        });
+      }
+    });
   };
 
   const retrieveMarking = (
@@ -249,7 +241,7 @@ const GroupEditionMarkingsComponent = ({
                         <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
                           <Checkbox
-                            onChange={(event) => handleToggle(
+                            onChange={(event) => handleToggleAllowedMarkings(
                               markingDefinition.id,
                               groupMarkingDefinition,
                               event,
@@ -266,7 +258,7 @@ const GroupEditionMarkingsComponent = ({
                   enableReinitialize={true}
                   initialValues={{
                     defaultMarkings: resolvedGroupDefaultMarkingDefinitions,
-                    shareableMarkings: groupMaxShareableMarkings.map((v) => v.id),
+                    shareableMarkings: maxShareableMarkingsIds,
                   }}
                   onSubmit={() => {}}
                 >
@@ -336,7 +328,7 @@ const GroupEditionMarkingsComponent = ({
                         component={MarkingsSelectField}
                         markingDefinitions={(resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)}
                         name="shareableMarkings"
-                        onChange={(markingIds: string[]) => handleToggleMarkingIds('max_shareable_marking_ids', markingIds)}
+                        onChange={(markingIds: string[]) => handleToggleMaxShareableMarkings(markingIds)}
                       />
                     </Form>
                   )}

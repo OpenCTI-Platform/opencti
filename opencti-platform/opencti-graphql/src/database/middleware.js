@@ -2787,8 +2787,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   }
 };
 export const createRelation = async (context, user, input, opts = {}) => {
-  const data = await createRelationRaw(context, user, input, opts);
-  return data.element;
+  const data = await createRelationRaw(context, user, input, opts);return data.element;
 };
 export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
   const args = {

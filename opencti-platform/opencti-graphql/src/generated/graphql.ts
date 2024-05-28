@@ -7546,7 +7546,6 @@ export type Group = BasicObject & InternalObject & {
   group_confidence_level?: Maybe<ConfidenceLevel>;
   id: Scalars['ID']['output'];
   max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
-  max_shareable_marking_ids?: Maybe<Array<Scalars['String']['output']>>;
   members?: Maybe<UserConnection>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -32707,7 +32706,6 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
-  max_shareable_marking_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;

@@ -11,7 +11,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_CAN_SHARE, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -55,24 +55,8 @@ const unauthorizedMarkingsFromList = async (context, user, groupId, maxShareable
   return maxShareableMarkings.filter((marking) => !allowedMarkingsIds.includes(marking.id));
 };
 
-export const groupMaxShareableMarkings = async (context, user, group) => {
-  // fetch the max shareable markings definitions
-  const dataSharingMaxMarkingsIds = group.max_shareable_marking_ids || [];
-  const allMarkingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const maxShareableMarkings = dataSharingMaxMarkingsIds.map((markingId) => allMarkingsMap.get(markingId)).filter((m) => !!m);
-  // check the compatibility with allowed markings
-  const allowedMarkings = await groupAllowedMarkings(context, user, group.id);
-  const allowedMarkingsIds = allowedMarkings.map((m) => m.id);
-  const maxShareableAllowedMarkings = maxShareableMarkings.map((marking) => {
-    // if marking is not allowed, keep the most restrictive allowed marking of the same type
-    if (!allowedMarkingsIds.includes(marking.id)) {
-      const sortedAllowedMarkingsWithSameType = allowedMarkings.filter((allowedMarking) => allowedMarking.definition_type === marking.definition_type)
-        .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
-      return sortedAllowedMarkingsWithSameType.length > 0 ? sortedAllowedMarkingsWithSameType[0] : undefined;
-    }
-    return marking;
-  });
-  return maxShareableAllowedMarkings.filter((m) => !!m);
+export const groupMaxShareableMarkings = async (context, user, groupId) => {
+  return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {
@@ -157,20 +141,6 @@ export const groupDelete = async (context, user, groupId) => {
 };
 
 export const groupEditField = async (context, user, groupId, input) => {
-  // check max shareable markings are allowed
-  const maxShareableMarkingsIds = input
-    .filter((i) => i.key === 'max_shareable_marking_ids' && (!i.operation || ['add', 'replace'].includes(i.operation)))
-    .map((i) => i.value);
-  const unauthorizedMarkingsValues = maxShareableMarkingsIds.length > 0
-    ? await unauthorizedMarkingsFromList(context, user, groupId, maxShareableMarkingsIds)
-    : [];
-  if (unauthorizedMarkingsValues.length > 0) {
-    throw FunctionalError(
-      'The maximum shareable markings you want to add are not authorized for this group.',
-      unauthorizedMarkingsValues.map((marking) => marking.type)
-    );
-  }
-  // update the attribute
   const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
     user,
@@ -224,6 +194,25 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
   }
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  // if we remove a marking access that is in max_shareable_marking
+  if (relationshipType === RELATION_ACCESSES_TO) {
+    const maxShareableMarkings = await groupMaxShareableMarkings(context, user, groupId);
+    if (maxShareableMarkings.map((m) => m.id).includes(toId)) {
+      // remove the marking from max_shareable_marking
+      await groupDeleteRelation(context, user, groupId, undefined, toId, RELATION_CAN_SHARE);
+      // add the most restrictive marking of the same definition_type allowed in max shareable marking if it exists
+      const toIdMarkingType = maxShareableMarkings.filter((m) => m.id === toId)[0].definition_type;
+      const orderedShareableMarkingsOfSameType = maxShareableMarkings.filter((m) => m.definition_type === toIdMarkingType)
+        .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+      if (orderedShareableMarkingsOfSameType.length > 0) {
+        const shareableAddInput = {
+          relationship_type: RELATION_CAN_SHARE,
+          toId: orderedShareableMarkingsOfSameType[0].id,
+        };
+        await groupAddRelation(context, user, groupId, shareableAddInput);
+      }
+    }
   }
   let target;
   if (fromId) {
