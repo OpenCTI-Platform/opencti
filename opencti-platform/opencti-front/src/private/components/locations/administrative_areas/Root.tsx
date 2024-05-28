@@ -84,18 +84,25 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/administrative_areas/${administrativeArea.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       {administrativeArea ? (
-        <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
-        >
+        <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Locations') },
             { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },

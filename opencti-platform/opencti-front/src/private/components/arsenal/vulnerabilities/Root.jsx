@@ -116,16 +116,23 @@ class RootVulnerability extends Component {
             if (props) {
               if (props.vulnerability) {
                 const { vulnerability } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Arsenal') },
                       { label: t('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },

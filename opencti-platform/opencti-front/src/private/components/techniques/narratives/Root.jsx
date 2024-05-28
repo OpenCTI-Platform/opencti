@@ -114,16 +114,23 @@ class RootNarrative extends Component {
             if (props) {
               if (props.narrative) {
                 const { narrative } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/narratives/${narrative.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/narratives/${narrative.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/techniques/narratives/${narrative.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }} >
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Techniques') },
                       { label: t('Narratives'), link: '/dashboard/techniques/narratives' },

@@ -122,16 +122,23 @@ class RootCampaign extends Component {
               if (props.campaign) {
                 const { campaign } = props;
                 const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaign.id}`;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/campaigns/${campaign.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/campaigns/${campaign.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/threats/campaigns/${campaign.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
                       { label: t('Campaigns'), link: '/dashboard/threats/campaigns' },

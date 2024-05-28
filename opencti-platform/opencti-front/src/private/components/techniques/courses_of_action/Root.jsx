@@ -90,8 +90,23 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div>
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Techniques') },
                       { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
@@ -101,7 +116,7 @@ class RootCourseOfAction extends Component {
                     <StixDomainObjectHeader
                       entityType="Course-Of-Action"
                       disableSharing={true}
-                      stixDomainObject={props.courseOfAction}
+                      stixDomainObject={courseOfAction}
                       PopoverComponent={<CourseOfActionPopover />}
                       isOpenctiAlias={true}
                     />

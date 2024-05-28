@@ -117,16 +117,23 @@ class RootAttackPattern extends Component {
             if (props) {
               if (props.attackPattern) {
                 const { attackPattern } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Techniques') },
                       { label: t('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },

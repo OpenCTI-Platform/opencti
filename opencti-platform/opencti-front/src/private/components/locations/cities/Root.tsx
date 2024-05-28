@@ -78,18 +78,25 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/cities/${city.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/cities/${city.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       {city ? (
-        <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/locations/cities/${city.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
-        >
+        <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Locations') },
             { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },

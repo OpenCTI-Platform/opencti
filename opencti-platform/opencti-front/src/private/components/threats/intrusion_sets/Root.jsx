@@ -128,17 +128,23 @@ class RootIntrusionSet extends Component {
               if (props.intrusionSet) {
                 const { intrusionSet } = props;
                 const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                    data-testid="intrusionSet-details-page"
-                  >
+                  <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
                       { label: t('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },

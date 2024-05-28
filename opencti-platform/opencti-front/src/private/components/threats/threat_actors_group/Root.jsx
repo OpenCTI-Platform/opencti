@@ -126,16 +126,23 @@ class RootThreatActorGroup extends Component {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
                 const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
                       { label: t('Threat actors (group)'), link: '/dashboard/threats/threat_actors_group' },

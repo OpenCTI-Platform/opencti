@@ -80,18 +80,25 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/countries/${country.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/countries/${country.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       {country ? (
-        <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/locations/countries/${country.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
-        >
+        <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Locations') },
             { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },

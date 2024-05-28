@@ -96,6 +96,21 @@ const RootThreatActorIndividualComponent = ({
   );
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
   const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/threats/threat_actors_individual/${data.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       <Routes>
@@ -129,15 +144,7 @@ const RootThreatActorIndividualComponent = ({
       </Routes>
       <>
         {data ? (
-          <div
-            style={{
-              paddingRight: location.pathname.includes(
-                `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
-              )
-                ? 200
-                : 0,
-            }}
-          >
+          <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
               { label: t_i18n('Threats') },
               { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },

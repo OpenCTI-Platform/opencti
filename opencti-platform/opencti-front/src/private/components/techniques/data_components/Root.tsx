@@ -87,16 +87,23 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
+              let paddingRight = 0;
+              if (
+                location.pathname.includes(
+                  `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
+                )
+              ) {
+                paddingRight = 200;
+              }
+              if (
+                location.pathname.includes(
+                  `/dashboard/techniques/data_components/${dataComponent.id}/content`,
+                )
+              ) {
+                paddingRight = 350;
+              }
               return (
-                <div
-                  style={{
-                    paddingRight: location.pathname.includes(
-                      `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
-                    )
-                      ? 200
-                      : 0,
-                  }}
-                >
+                <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
                     { label: t_i18n('Techniques') },
                     { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },
