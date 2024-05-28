@@ -4,12 +4,12 @@ import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 
-interface MarkingDefinition {
+export type EntityMarkingDefinition = {
   id: string
   definition: string
   definition_type: string
   x_opencti_order: number
-}
+};
 
 type MarkingsSelectFieldValue = string[];
 
@@ -18,7 +18,7 @@ interface MarkingsSelectFieldInternalValue {
 }
 
 interface MarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> {
-  markingDefinitions: MarkingDefinition[]
+  markingDefinitions: EntityMarkingDefinition[]
   onChange?: (val: MarkingsSelectFieldValue) => void
 }
 

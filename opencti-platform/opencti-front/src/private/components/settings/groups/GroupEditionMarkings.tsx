@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
+import { uniq } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -215,6 +216,12 @@ const GroupEditionMarkingsComponent = ({
               globalDefaultMarking,
               markingDefinitionsConverted,
             );
+            const resolvedMaxShareableMarkingDefinitions = retrieveMarking(
+              groupMaxShareableMarkings,
+              markingDefinitionsConverted,
+            );
+            const proposedShareableMarkings = uniq((resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)
+              .concat((resolvedMaxShareableMarkingDefinitions ?? []).map((m) => m?.entity)));
             return (
               <>
                 <Typography variant="h2" style={{ marginTop: 35 }}>
@@ -326,7 +333,7 @@ const GroupEditionMarkingsComponent = ({
                       </Alert>
                       <Field
                         component={MarkingsSelectField}
-                        markingDefinitions={(resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)}
+                        markingDefinitions={proposedShareableMarkings}
                         name="shareableMarkings"
                         onChange={(markingIds: string[]) => handleToggleMaxShareableMarkings(markingIds)}
                       />
@@ -356,6 +363,9 @@ const GroupEditionMarkings = createFragmentContainer(
         }
         max_shareable_marking {
           id
+          definition
+          definition_type
+          x_opencti_order
         }
         default_marking {
           entity_type
