@@ -151,7 +151,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     filterGroups: []
   };
   return {
-    name: 'Default Trigger for Assignee/Participant',
+    name: `Default Trigger for ${user.name}`,
     trigger_type: 'live',
     trigger_scope: 'knowledge',
     event_types: ['create', 'update', 'delete'],

@@ -263,7 +263,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
                                                             </tr>
                                                          </tbody>
                                                       </table>
-                                                      <h2 style="font-size: 18px; font-weight: 400; margin: 0; text-align: center">Automatic digest subscription</h2>
+                                                      <h2 style="font-size: 18px; font-weight: 400; margin: 0; text-align: center">Automatic trigger for participant/Assignee</h2>
                                                       <table border="0" cellpadding="0" cellspacing="0" width="100%"style="font-size: 0; height: 30px; width: 100%; min-width: 100%; line-height: 0;">
                                                          <tbody>
                                                             <tr>
