@@ -258,10 +258,9 @@ const IngestionTaxiiCreation = (props) => {
               )}
               <CreatorField
                 name="user_id"
-                label={t(
-                  'User responsible for data creation (empty = System)',
-                )}
+                label={t('User responsible for data creation (empty = System)')}
                 containerStyle={fieldSpacingContainerStyle}
+                showConfidence
               />
               <Field
                 component={DateTimePickerField}

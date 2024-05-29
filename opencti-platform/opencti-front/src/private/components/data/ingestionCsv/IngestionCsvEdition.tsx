@@ -326,9 +326,9 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           <CreatorField
             name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
-            isOptionEqualToValue={(option: Option, value: string) => option.value === value}
             onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
+            showConfidence
           />
           {enableReferences && (
             <CommitMessage
