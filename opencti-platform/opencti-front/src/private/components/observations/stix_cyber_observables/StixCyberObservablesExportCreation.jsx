@@ -96,7 +96,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const { orderBy, orderMode, filters } = paginationOptions;
+    const { orderBy, orderMode, filters, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
@@ -113,6 +113,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
           orderBy,
           orderMode,
           selectedIds,
+          search,
         },
       },
       onCompleted: () => {

@@ -78,7 +78,7 @@ const StixCoreObjectsExportCreationComponent = ({
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
-    const { orderBy, filters, orderMode } = paginationOptions;
+    const { orderBy, filters, orderMode, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     commitMutation({
@@ -94,6 +94,7 @@ const StixCoreObjectsExportCreationComponent = ({
           orderMode,
           contentMaxMarkings,
           fileMarkings,
+          search,
         },
       },
       onCompleted: () => {
