@@ -838,6 +838,45 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connector_state = connector_configuration["connector_state"]
         self.connector_config = connector_configuration["config"]
 
+        # Overwrite connector config for RabbitMQ if given manually / in conf
+        self.connector_config["connection"]["host"] = get_config_variable(
+            "MQ_HOST",
+            ["mq", "host"],
+            config,
+            default=self.connector_config["connection"]["host"],
+        )
+        self.connector_config["connection"]["port"] = get_config_variable(
+            "MQ_PORT",
+            ["mq", "port"],
+            config,
+            isNumber=True,
+            default=self.connector_config["connection"]["port"],
+        )
+        self.connector_config["connection"]["vhost"] = get_config_variable(
+            "MQ_VHOST",
+            ["mq", "vhost"],
+            config,
+            default=self.connector_config["connection"]["vhost"],
+        )
+        self.connector_config["connection"]["use_ssl"] = get_config_variable(
+            "MQ_USE_SSL",
+            ["mq", "use_ssl"],
+            config,
+            default=self.connector_config["connection"]["use_ssl"],
+        )
+        self.connector_config["connection"]["user"] = get_config_variable(
+            "MQ_USER",
+            ["mq", "user"],
+            config,
+            default=self.connector_config["connection"]["user"],
+        )
+        self.connector_config["connection"]["pass"] = get_config_variable(
+            "MQ_PASS",
+            ["mq", "pass"],
+            config,
+            default=self.connector_config["connection"]["pass"],
+        )
+
         # Start ping thread
         if not self.connect_run_and_terminate:
             self.ping = PingAlive(
