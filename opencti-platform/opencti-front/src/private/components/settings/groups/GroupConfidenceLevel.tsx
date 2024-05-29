@@ -42,9 +42,9 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
   return (
     <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
-      {confidenceLevel.max_confidence
-          && <ConfidenceTooltip confidenceLevel={confidenceLevel}/>
-        }
+      {!!confidenceLevel.max_confidence
+        && <ConfidenceTooltip confidenceLevel={confidenceLevel}/>
+      }
     </Box>
   );
 };

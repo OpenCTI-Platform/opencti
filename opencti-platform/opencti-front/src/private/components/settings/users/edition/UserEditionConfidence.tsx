@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { userMutationFieldPatch } from '@components/settings/users/edition/UserEditionOverview';
-import UserConfidenceOverrideField from '@components/settings/users/edition/UserConfidenceOverrideField';
+import ConfidenceOverrideField from '@components/settings/users/edition/ConfidenceOverrideField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
@@ -160,6 +160,7 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
     }
   };
 
+  const defaultOverrideConfidence = user.effective_confidence_level && user.effective_confidence_level.max_confidence ? user.effective_confidence_level.max_confidence : 0;
   return (
     <>
       <Formik<ConfidenceFormData>
@@ -187,10 +188,10 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                   <IconButton
                     color="primary"
                     aria-label="Add"
-                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: 0 })}
+                    onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: defaultOverrideConfidence })}
                     style={{ marginTop: '5px' }}
                     size="large"
-                    disabled={user.effective_confidence_level === null}
+                    disabled={values.overrides.some((o) => o.entity_type === '')}
                   >
                     <Add fontSize="small" />
                   </IconButton>
@@ -201,9 +202,10 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                       index={idx}
                       name={`overrides[${idx}]`}
                       // rendered components and its props
-                      component={UserConfidenceOverrideField}
+                      component={ConfidenceOverrideField}
                       onDelete={() => arrayHelpers.remove(idx)}
                       onSubmit={handleSubmitOverride}
+                      currentOverrides={values.overrides}
                     />
                   ))}
                 </div>

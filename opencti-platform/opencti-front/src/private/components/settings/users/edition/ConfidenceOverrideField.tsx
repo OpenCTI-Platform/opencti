@@ -26,18 +26,25 @@ interface UserConfidenceOverridesFieldComponentProps
   index: number;
   onDelete: () => void;
   onSubmit: (index: number, value: OverrideFormData | null) => void;
+  currentOverrides: OverrideFormData[];
 }
 
-const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
+const filterOverridableEntityTypes = (entity_type: string | null) => {
+  return entity_type !== 'entity_Stix-Meta-Objects' && entity_type !== 'entity_Stix-Cyber-Observables';
+};
+
+const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldComponentProps> = ({
   form,
   field,
   index,
   onDelete,
   onSubmit,
+  currentOverrides,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
+  const entityTypesToOverride = availableEntityTypes.filter((entity_type) => filterOverridableEntityTypes(entity_type.type));
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
   const { value, name } = field;
@@ -82,7 +89,7 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   const searchType = (event: React.SyntheticEvent) => {
     const selectChangeEvent = event as SelectChangeEvent;
     const val = selectChangeEvent?.target.value ?? '';
-    return availableEntityTypes.filter(
+    return entityTypesToOverride.filter(
       (type) => type.value.includes(val)
         || t_i18n(`entity_${type.label}`).includes(val),
     );
@@ -121,15 +128,17 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
-            <MUIAutocomplete<AvailableEntityOption>
+            <MUIAutocomplete<AvailableEntityOption, false, boolean>
               selectOnFocus
               openOnFocus
               autoHighlight
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
-              options={availableEntityTypes}
+              options={entityTypesToOverride}
+              disableClearable
+              getOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
-              value={availableEntityTypes.find((e) => e.id === value.entity_type) || null}
+              value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
               onInputChange={(event) => searchType(event)}
               onChange={(_, selectedValue) => handleSubmitEntityType(selectedValue)}
               renderInput={(params) => (
@@ -140,8 +149,13 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
                   size="small"
                 />
               )}
-              renderOption={(props, option) => (
-                <li {...props}>
+              // Need to ignore because there is a property key in the object but the
+              // type given by MUI does not reference it
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              renderOption={({ key, ...props }, option) => (
+                // Separate key and other props because asked by React to avoid warnings.
+                <li key={key} {...props}>
                   <div style={{
                     paddingTop: 4,
                     display: 'inline-block',
@@ -190,4 +204,4 @@ const UserConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFiel
   );
 };
 
-export default UserConfidenceOverrideField;
+export default ConfidenceOverrideField;
