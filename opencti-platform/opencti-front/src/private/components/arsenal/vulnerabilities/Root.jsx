@@ -11,6 +11,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
@@ -51,6 +52,7 @@ const vulnerabilityQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -114,16 +116,23 @@ class RootVulnerability extends Component {
             if (props) {
               if (props.vulnerability) {
                 const { vulnerability } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Arsenal') },
                       { label: t('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
@@ -164,6 +173,12 @@ class RootVulnerability extends Component {
                           to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge/overview`}
                           value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -208,6 +223,14 @@ class RootVulnerability extends Component {
                         element={(
                           <VulnerabilityKnowledge
                             vulnerability={vulnerability}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={vulnerability}
                           />
                         )}
                       />

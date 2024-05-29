@@ -1165,7 +1165,6 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       }
     });
-    console.log(JSON.stringify(queryResult.data.globalSearch.edges));
     expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 11 entities with a source reliability
     // (source_reliability = A - Completely reliable)
     queryResult = await queryAsAdmin({
@@ -1536,6 +1535,66 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) with a Malware-Analysis as source ref
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
+    // (fromTypes = Malware)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2); // 2 relationships with a Malware as source ref
+    // (fromTypes = Malware OR Malware-Analysis)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware', 'Malware-Analysis'],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 2 relationships with a Malware as source ref + 1 with Malware-Analysis
+    // (fromTypes = Malware AND Malware-Analysis)
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_TYPES_FILTER,
+              operator: 'eq',
+              values: ['Malware', 'Malware-Analysis'],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationships with a Malware and a Malware-Analysis as source ref
     // (toTypes != Malware-Analysis)
     queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,

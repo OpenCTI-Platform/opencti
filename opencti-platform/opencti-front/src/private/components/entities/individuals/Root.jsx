@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Individual from './Individual';
@@ -54,6 +55,7 @@ const individualQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -147,16 +149,23 @@ class RootIndividual extends Component {
             if (props) {
               if (props.individual) {
                 const { individual } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/individuals/${individual.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/individuals/${individual.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/entities/individuals/${individual.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Entities') },
                       { label: t('Individuals'), link: '/dashboard/entities/individuals' },
@@ -200,6 +209,12 @@ class RootIndividual extends Component {
                           to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
                           value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/individuals/${individual.id}/content`}
+                          value={`/dashboard/entities/individuals/${individual.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -254,6 +269,14 @@ class RootIndividual extends Component {
                             viewAs={viewAs}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={individual}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

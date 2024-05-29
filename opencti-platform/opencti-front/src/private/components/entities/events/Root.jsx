@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Event from './Event';
@@ -50,6 +51,7 @@ const eventQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -86,23 +88,24 @@ class RootEvent extends Component {
     return (
       <>
         <Routes>
-          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'locations',
-              'threats',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'observables',
-            ]}
-                                              />}
+          <Route path="/knowledge/*" element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'locations',
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'tools',
+                'observables',
+              ]}
+            />
+          }
           >
-
           </Route>
         </Routes>
         <QueryRenderer
@@ -112,16 +115,23 @@ class RootEvent extends Component {
             if (props) {
               if (props.event) {
                 const { event } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/events/${event.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/events/${event.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/entities/events/${event.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Entities') },
                       { label: t('Events'), link: '/dashboard/entities/events' },
@@ -161,6 +171,12 @@ class RootEvent extends Component {
                           to={`/dashboard/entities/events/${event.id}/knowledge/overview`}
                           value={`/dashboard/entities/events/${event.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/events/${event.id}/content`}
+                          value={`/dashboard/entities/events/${event.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -209,6 +225,14 @@ class RootEvent extends Component {
                         element={
                           <EventKnowledge event={event} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={event}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

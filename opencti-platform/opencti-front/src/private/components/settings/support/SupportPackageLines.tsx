@@ -7,6 +7,7 @@ import {
 import { SupportPackageLines_data$key } from '@components/settings/support/__generated__/SupportPackageLines_data.graphql';
 import SupportPackageLine from '@components/settings/support/SupportPackageLine';
 import { interval } from 'rxjs';
+import LineDummy from '@components/common/LineDummy';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -118,6 +119,7 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
           data?.supportPackages?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
         LineComponent={SupportPackageLine}
+        DummyLineComponent={LineDummy}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
       />

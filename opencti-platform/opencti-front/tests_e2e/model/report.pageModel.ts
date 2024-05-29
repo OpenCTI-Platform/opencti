@@ -8,7 +8,7 @@ export default class ReportPage {
   }
 
   openNewReportForm() {
-    return this.page.getByLabel('Add', { exact: true }).click();
+    return this.page.getByRole('button', { name: 'Create' }).click();
   }
 
   closeNewreport() {

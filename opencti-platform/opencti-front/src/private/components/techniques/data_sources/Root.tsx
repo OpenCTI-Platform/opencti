@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -51,6 +52,7 @@ const dataSourceQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -76,18 +78,25 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/techniques/data_sources/${dataSource.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       {dataSource ? (
-        <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
-        >
+        <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Techniques') },
             { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
@@ -121,6 +130,12 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               />
               <Tab
                 component={Link}
+                to={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
+                value={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
+                label={t_i18n('Content')}
+              />
+              <Tab
+                component={Link}
                 to={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
                 value={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
                 label={t_i18n('Data')}
@@ -150,6 +165,14 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                   )}
                 />
               }
+            />
+            <Route
+              path="/content"
+              element={(
+                <StixCoreObjectContent
+                  stixCoreObject={dataSource}
+                />
+              )}
             />
             <Route
               path="/files"

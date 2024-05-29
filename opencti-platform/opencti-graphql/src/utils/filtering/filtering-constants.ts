@@ -25,6 +25,7 @@ export const RELATION_FROM_ROLE_FILTER = 'fromRole';
 export const RELATION_TO_ROLE_FILTER = 'toRole';
 export const RELATION_FROM_TYPES_FILTER = 'fromTypes';
 export const RELATION_TO_TYPES_FILTER = 'toTypes';
+export const REPRESENTATIVE_FILTER = 'representative'; // representative of an entity
 export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';

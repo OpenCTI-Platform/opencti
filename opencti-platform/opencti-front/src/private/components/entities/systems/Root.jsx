@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import System from './System';
@@ -52,6 +53,7 @@ const systemQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -144,16 +146,23 @@ class RootSystem extends Component {
             if (props) {
               if (props.system) {
                 const { system } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/systems/${system.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/systems/${system.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/entities/systems/${system.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Entities') },
                       { label: t('Systems'), link: '/dashboard/entities/systems' },
@@ -197,6 +206,12 @@ class RootSystem extends Component {
                           to={`/dashboard/entities/systems/${system.id}/knowledge/overview`}
                           value={`/dashboard/entities/systems/${system.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/systems/${system.id}/content`}
+                          value={`/dashboard/entities/systems/${system.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -251,6 +266,14 @@ class RootSystem extends Component {
                             viewAs={viewAs}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={system}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses/*"

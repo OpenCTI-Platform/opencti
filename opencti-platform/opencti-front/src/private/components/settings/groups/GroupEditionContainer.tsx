@@ -8,6 +8,7 @@ import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { initialStaticPaginationForGroupUsers } from '@components/settings/users/GroupUsers';
+import GroupEditionConfidence from './GroupEditionConfidence';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupEditionRoles, { groupEditionRolesLinesSearchQuery } from './GroupEditionRoles';
@@ -20,6 +21,7 @@ import { GroupEditionContainer_group$key } from './__generated__/GroupEditionCon
 import GroupEditionMarkings from './GroupEditionMarkings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -46,6 +48,7 @@ const GroupEditionContainerFragment = graphql`
     }
     ...GroupEditionOverview_group
     ...GroupEditionMarkings_group
+    ...GroupEditionConfidence_group
     ...GroupEditionRoles_group
     @arguments(
       orderBy: $rolesOrderBy
@@ -72,6 +75,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
 
   const [currentTab, setTab] = useState(0);
 
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const groupData = usePreloadedQuery<GroupEditionContainerQuery>(groupEditionContainerQuery, groupQueryRef);
   const roleQueryRef = useQueryLoading<GroupEditionRolesLinesSearchQuery>(groupEditionRolesLinesSearchQuery);
   const userQueryRef = useQueryLoading<UsersLinesSearchQuery>(usersLinesSearchQuery);
@@ -110,6 +114,7 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
             <Tab label={t_i18n('Roles')} />
             <Tab label={t_i18n('Markings')} />
             <Tab label={t_i18n('Members')} />
+            <Tab label={t_i18n('Confidences')} />
           </Tabs>
         </Box>
         {currentTab === 0 && (
@@ -129,6 +134,9 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
           >
             <GroupEditionUsers group={group} queryRef={userQueryRef} paginationOptionsForUpdater={paginationOptionsForUserEdition} />
           </React.Suspense>
+        )}
+        {hasSetAccess && currentTab === 4 && (
+          <GroupEditionConfidence group={group} context={editContext} />
         )}
       </>
     </Drawer>

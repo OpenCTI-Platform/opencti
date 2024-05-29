@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ThreatActorGroup from './ThreatActorGroup';
@@ -54,6 +55,7 @@ const ThreatActorGroupQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -124,16 +126,23 @@ class RootThreatActorGroup extends Component {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
                 const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
                       { label: t('Threat actors (group)'), link: '/dashboard/threats/threat_actors_group' },
@@ -176,6 +185,12 @@ class RootThreatActorGroup extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`}
+                          value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
                           value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
                           label={t('Analyses')}
@@ -215,6 +230,14 @@ class RootThreatActorGroup extends Component {
                         element={
                           <ThreatActorGroupKnowledge threatActorGroup={props.threatActorGroup} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.threatActorGroup}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

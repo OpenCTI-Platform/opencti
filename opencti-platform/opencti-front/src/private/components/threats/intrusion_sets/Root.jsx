@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import IntrusionSet from './IntrusionSet';
@@ -57,6 +58,7 @@ const intrusionSetQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -126,17 +128,23 @@ class RootIntrusionSet extends Component {
               if (props.intrusionSet) {
                 const { intrusionSet } = props;
                 const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                    data-testid="intrusionSet-details-page"
-                  >
+                  <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Threats') },
                       { label: t('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
@@ -177,6 +185,12 @@ class RootIntrusionSet extends Component {
                           to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
                           value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -221,6 +235,14 @@ class RootIntrusionSet extends Component {
                             <IntrusionSetKnowledge intrusionSet={props.intrusionSet} />
                           </div>
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.intrusionSet}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

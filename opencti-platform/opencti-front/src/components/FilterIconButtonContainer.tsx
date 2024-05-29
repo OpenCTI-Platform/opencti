@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, Filter, FilterGroup, FilterSearchContext, FiltersRestrictions, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, Filter, FilterGroup, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -262,6 +262,7 @@ FilterIconButtonContainerProps
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
+        const filterValues = currentFilter.values;
         const isOperatorDisplayed = operatorIcon.includes(filterOperator ?? 'eq');
         const keyLabel = (
           <>
@@ -288,7 +289,8 @@ FilterIconButtonContainerProps
         const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
           ? { bgcolor: `${chipColor}.dark` }
           : undefined;
-
+        const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
+          && isFilterEditable(filtersRestrictions, filterKey, filterValues);
         return (
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
@@ -299,7 +301,6 @@ FilterIconButtonContainerProps
                   currentFilter={currentFilter}
                   handleSwitchLocalMode={handleSwitchLocalMode}
                   filtersRepresentativesMap={filtersRepresentativesMap}
-                  helpers={helpers}
                   redirection={redirection}
                   entityTypes={entityTypes}
                   filtersRestrictions={filtersRestrictions}
@@ -330,7 +331,6 @@ FilterIconButtonContainerProps
                       handleSwitchLocalMode={helpers?.handleSwitchLocalMode ?? handleSwitchLocalMode}
                       filtersRepresentativesMap={filtersRepresentativesMap}
                       redirection={redirection}
-                      helpers={helpers}
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
                       chipColor={chipColor}
@@ -342,7 +342,7 @@ FilterIconButtonContainerProps
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
-                    (isReadWriteFilter && !(filtersRestrictions?.preventRemoveFor?.includes(filterKey)))
+                    (isReadWriteFilter && authorizeFilterRemoving)
                       ? () => manageRemoveFilter(
                         currentFilter.id,
                         filterKey,

@@ -7,8 +7,7 @@ import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { Filter, FiltersRestrictions, useFilterDefinition } from '../../utils/filters/filtersUtils';
-import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
+import { Filter, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -55,7 +54,6 @@ interface FilterValuesProps {
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
   onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  helpers?: handleFilterHelpers;
   isReadWriteFilter?: boolean;
   chipColor?: ChipOwnProps['color'];
   noLabelDisplay?: boolean;
@@ -71,7 +69,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   redirection,
   handleSwitchLocalMode,
   onClickLabel,
-  helpers,
   isReadWriteFilter,
   chipColor,
   noLabelDisplay,
@@ -84,13 +81,14 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const classes = useStyles();
-  const deactivatePopoverMenu = !helpers || filtersRestrictions?.preventEditionFor?.includes(filterKey);
+  const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues);
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
+  const menuClassName = deactivatePopoverMenu ? '' : classes.label;
   if (isOperatorNil) {
     return (
       <>
         <strong
-          className={deactivatePopoverMenu ? '' : classes.label}
+          className={menuClassName}
           onClick={onCLick}
         >
           {label}
@@ -134,7 +132,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <>
         <strong
-          className={deactivatePopoverMenu ? '' : classes.label}
+          className={menuClassName}
           onClick={onCLick}
         >
           {label}
@@ -198,7 +196,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   return (
     <>
       <strong
-        className={deactivatePopoverMenu ? '' : classes.label}
+        className={menuClassName}
         onClick={onCLick}
       >
         {label}

@@ -7,6 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Organization from './Organization';
@@ -54,6 +55,7 @@ const organizationQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -150,16 +152,23 @@ class RootOrganization extends Component {
             if (props) {
               if (props.organization) {
                 const { organization } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/organizations/${organization.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/entities/organizations/${organization.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/entities/organizations/${organization.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Entities') },
                       { label: t('Organizations'), link: '/dashboard/entities/organizations' },
@@ -203,6 +212,12 @@ class RootOrganization extends Component {
                           to={`/dashboard/entities/organizations/${organization.id}/knowledge/overview`}
                           value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/entities/organizations/${organization.id}/content`}
+                          value={`/dashboard/entities/organizations/${organization.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -257,6 +272,14 @@ class RootOrganization extends Component {
                             viewAs={viewAs}
                           />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={organization}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

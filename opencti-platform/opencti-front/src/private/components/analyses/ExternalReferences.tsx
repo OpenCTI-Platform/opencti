@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
@@ -29,6 +30,8 @@ interface ExternalReferencesProps {
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -114,6 +117,12 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           entityTypes={['External-Reference']}
+          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ExternalReferenceCreation
+              paginationOptions={queryPaginationOptions}
+              openContextual={false}
+            />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -160,12 +169,14 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('External references'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ExternalReferenceCreation
-          paginationOptions={queryPaginationOptions}
-          openContextual={false}
-        />
-      </Security>
+      {!FAB_REPLACED
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ExternalReferenceCreation
+            paginationOptions={queryPaginationOptions}
+            openContextual={false}
+          />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

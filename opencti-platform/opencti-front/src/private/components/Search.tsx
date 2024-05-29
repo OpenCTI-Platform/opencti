@@ -66,10 +66,11 @@ const Search = () => {
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
+    search: searchTerm,
   } as unknown as SearchStixCoreObjectsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<SearchStixCoreObjectsLinesPaginationQuery>(
     searchStixCoreObjectsLinesQuery,
-    { ...queryPaginationOptions, search: searchTerm },
+    queryPaginationOptions,
   );
 
   const handleSearch = (searchKeyword: string) => {
@@ -145,7 +146,7 @@ const Search = () => {
           disableCards={true}
           filters={filters}
           keyword={searchTerm}
-          paginationOptions={paginationOptions}
+          paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableEntityTypes={['Stix-Core-Object']}

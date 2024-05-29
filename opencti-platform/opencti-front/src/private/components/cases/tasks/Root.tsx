@@ -13,7 +13,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseTask from './Task';
@@ -49,7 +49,7 @@ const TaskQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport
@@ -149,7 +149,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             <Route
               path="/content"
               element={
-                <StixDomainObjectContent stixDomainObject={data} />
+                <StixCoreObjectContent stixCoreObject={data} />
               }
             />
             <Route

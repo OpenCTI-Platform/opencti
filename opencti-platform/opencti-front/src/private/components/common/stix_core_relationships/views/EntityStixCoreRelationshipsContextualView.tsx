@@ -311,7 +311,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         variant="medium"
         warning={true}
         warningMessage={t_i18n(
-          'Be careful, you are about to delete the selected entities.',
+          'Be careful, you are about to delete the selected entities',
         )}
       />
     </>

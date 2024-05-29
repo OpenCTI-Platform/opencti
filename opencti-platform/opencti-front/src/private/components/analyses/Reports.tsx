@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -21,6 +22,8 @@ const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -137,6 +140,9 @@ const Reports: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
+          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ReportCreation paginationOptions={queryPaginationOptions} />
+          </Security>}
         >
           {queryRef && (
             <React.Suspense
@@ -182,9 +188,11 @@ const Reports: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ReportCreation paginationOptions={queryPaginationOptions} />
-      </Security>
+      {!FAB_REPLACED
+        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportCreation paginationOptions={queryPaginationOptions} />
+        </Security>
+      }
     </ExportContextProvider>
   );
 };

@@ -8,6 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -53,6 +54,7 @@ const administrativeAreaQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -82,18 +84,25 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
+  let paddingRight = 0;
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (
+    location.pathname.includes(
+      `/dashboard/locations/administrative_areas/${administrativeArea.id}/content`,
+    )
+  ) {
+    paddingRight = 350;
+  }
   return (
     <>
       {administrativeArea ? (
-        <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
-        >
+        <div style={{ paddingRight }}>
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Locations') },
             { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
@@ -140,6 +149,12 @@ const RootAdministrativeAreaComponent = ({
               />
               <Tab
                 component={Link}
+                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
+                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
+                label={t_i18n('Content')}
+              />
+              <Tab
+                component={Link}
                 to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
                 value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
                 label={t_i18n('Analyses')}
@@ -182,6 +197,14 @@ const RootAdministrativeAreaComponent = ({
               element={
                 <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
               }
+            />
+            <Route
+              path="/content"
+              element={(
+                <StixCoreObjectContent
+                  stixCoreObject={administrativeArea}
+                />
+              )}
             />
             <Route
               path="/analyses"

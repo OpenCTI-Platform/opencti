@@ -1,0 +1,26 @@
+[
+  {
+    "id": "directory--8cdc9b17-880f-566c-a1ba-eb9a04063df7",
+    "spec_version": "2.1",
+    "type": "directory",
+    "extensions": {
+      "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+        "extension_type": "property-extension",
+        "id": "12b94bf1-f6cb-447e-806a-98e41479feeb",
+        "type": "Directory",
+        "created_at": "2024-05-10T12:50:00.951Z",
+        "updated_at": "2024-05-10T13:49:47.464Z",
+        "is_inferred": false,
+        "creator_ids": [
+          "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+        ]
+      },
+      "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+        "extension_type": "property-extension",
+        "description": "test",
+        "score": 50
+      }
+    },
+    "path": "test"
+  }
+]

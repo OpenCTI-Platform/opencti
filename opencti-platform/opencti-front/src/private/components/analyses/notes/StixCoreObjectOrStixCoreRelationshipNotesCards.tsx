@@ -11,6 +11,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
+import useHelper from 'src/utils/hooks/useHelper';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
@@ -38,6 +39,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -164,6 +166,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   title,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const basicShape = {
     content: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -250,11 +254,18 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           >
             <EditOutlined fontSize="small" />
           </IconButton>
-          <AddNotes
-            stixCoreObjectOrStixCoreRelationshipId={id}
-            stixCoreObjectOrStixCoreRelationshipNotes={notes}
-            paginationOptions={paginationOptions}
-          />
+          {FAB_REPLACED
+            ? <AddNotesFunctionalComponent
+                stixCoreObjectOrStixCoreRelationshipId={id}
+                stixCoreObjectOrStixCoreRelationshipNotes={data}
+                paginationOptions={paginationOptions}
+              />
+            : <AddNotes
+                stixCoreObjectOrStixCoreRelationshipId={id}
+                stixCoreObjectOrStixCoreRelationshipNotes={notes}
+                paginationOptions={paginationOptions}
+              />
+          }
         </>
       </Security>
       <div className="clearfix" />

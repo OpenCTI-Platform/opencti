@@ -10,6 +10,7 @@ import { QueryRenderer, requestSubscription } from '../../../../relay/environmen
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
@@ -51,6 +52,7 @@ const channelQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -113,16 +115,23 @@ class RootChannel extends Component {
             if (props) {
               if (props.channel) {
                 const { channel } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/channels/${channel.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/arsenal/channels/${channel.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/arsenal/channels/${channel.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Arsenal') },
                       { label: t('Channels'), link: '/dashboard/arsenal/channels' },
@@ -165,6 +174,12 @@ class RootChannel extends Component {
                         />
                         <Tab
                           component={Link}
+                          to={`/dashboard/arsenal/channels/${channel.id}/content`}
+                          value={`/dashboard/arsenal/channels/${channel.id}/content`}
+                          label={t('Content')}
+                        />
+                        <Tab
+                          component={Link}
                           to={`/dashboard/arsenal/channels/${channel.id}/analyses`}
                           value={`/dashboard/arsenal/channels/${channel.id}/analyses`}
                           label={t('Analyses')}
@@ -204,6 +219,14 @@ class RootChannel extends Component {
                         element={(
                           <ChannelKnowledge
                             channel={props.channel}
+                          />
+                        )}
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={props.channel}
                           />
                         )}
                       />

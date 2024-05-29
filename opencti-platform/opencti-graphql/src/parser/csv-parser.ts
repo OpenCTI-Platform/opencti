@@ -4,8 +4,6 @@ import fs from 'node:fs';
 import { parse } from 'csv-parse/sync';
 import * as readline from 'readline';
 import { Readable } from 'stream';
-import { extendedErrors, logApp } from '../config/conf';
-import { isNotEmptyField } from '../database/utils';
 
 const parserOption = (delimiter: string, comment: string) => ({
   delimiter,
@@ -45,31 +43,16 @@ export const parseCsvBufferContent = (buffer: Buffer, delimiter: string, skipLin
     const chunks: Uint8Array[] = [];
     readable.on('data', (chunk: Uint8Array) => {
       chunks.push(new Uint8Array([...chunk]));
-    })
-      .on('error', (err) => {
-        reject(err);
-      })
-      .on('end', () => {
-        try {
-          const parsingResult = [];
-          const data = Buffer.concat(chunks).toString('utf8');
-          const lines = data.split('\n');
-          for (let index = 0; index < lines.length; index += 1) {
-            const line = lines[index];
-            try {
-              const parsing = parse(line, parserOption(delimiter, skipLineChar));
-              if (isNotEmptyField(parsing[0])) {
-                parsingResult.push(parsing[0]);
-              }
-            } catch (err) {
-              logApp.error('[CSV-PARSER] Error parsing CSV line', { cause: err, ...extendedErrors({ line }) });
-            }
-          }
-          resolve(parsingResult);
-        } catch (error) {
-          reject(error);
-        }
-      });
+    }).on('error', (err) => {
+      reject(err);
+    }).on('end', () => {
+      try {
+        const parsing = parse(Buffer.concat(chunks).toString('utf8'), parserOption(delimiter, skipLineChar));
+        resolve(parsing);
+      } catch (error) {
+        reject(error);
+      }
+    });
   });
 };
 

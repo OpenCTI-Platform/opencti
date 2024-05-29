@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Position from './Position';
@@ -50,6 +51,7 @@ const positionQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
     connectorsForImport {
       ...FileManager_connectorsImport
@@ -117,16 +119,23 @@ class RootPosition extends Component {
             if (props) {
               if (props.position) {
                 const { position } = props;
+                let paddingRight = 0;
+                if (
+                  location.pathname.includes(
+                    `/dashboard/locations/positions/${position.id}/knowledge`,
+                  )
+                ) {
+                  paddingRight = 200;
+                }
+                if (
+                  location.pathname.includes(
+                    `/dashboard/locations/positions/${position.id}/content`,
+                  )
+                ) {
+                  paddingRight = 350;
+                }
                 return (
-                  <div
-                    style={{
-                      paddingRight: location.pathname.includes(
-                        `/dashboard/locations/positions/${position.id}/knowledge`,
-                      )
-                        ? 200
-                        : 0,
-                    }}
-                  >
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Locations') },
                       { label: t('Positions'), link: '/dashboard/locations/positions' },
@@ -168,6 +177,12 @@ class RootPosition extends Component {
                           to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
                           value={`/dashboard/locations/positions/${position.id}/knowledge`}
                           label={t('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/locations/positions/${position.id}/content`}
+                          value={`/dashboard/locations/positions/${position.id}/content`}
+                          label={t('Content')}
                         />
                         <Tab
                           component={Link}
@@ -213,6 +228,14 @@ class RootPosition extends Component {
                         element={
                           <PositionKnowledge position={props.position} />
                         }
+                      />
+                      <Route
+                        path="/content"
+                        element={(
+                          <StixCoreObjectContent
+                            stixCoreObject={position}
+                          />
+                        )}
                       />
                       <Route
                         path="/analyses"

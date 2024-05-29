@@ -17,7 +17,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
 import CaseIncidentPopover from './CaseIncidentPopover';
@@ -56,7 +56,7 @@ const caseIncidentQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...StixDomainObjectContent_stixDomainObject
+      ...StixCoreObjectContent_stixCoreObject
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
@@ -215,8 +215,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             <Route
               path="/content"
               element={
-                <StixDomainObjectContent
-                  stixDomainObject={caseData}
+                <StixCoreObjectContent
+                  stixCoreObject={caseData}
                 />}
             />
             <Route

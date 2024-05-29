@@ -1637,6 +1637,12 @@ const BASE_FIELDS = ['_index', 'internal_id', 'standard_id', 'sort', 'base_type'
   'connections', 'first_seen', 'last_seen', 'start_time', 'stop_time'];
 
 const RANGE_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
+
+const buildFieldForQuery = (field) => {
+  return isDateNumericOrBooleanAttribute(field) || field === '_id' || isObjectFlatAttribute(field)
+    ? field
+    : `${field}.keyword`;
+};
 const buildLocalMustFilter = async (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -1692,15 +1698,25 @@ const buildLocalMustFilter = async (validFilter) => {
           });
         } else {
           for (let i = 0; i < nestedValues.length; i += 1) {
-            const nestedSearchValues = nestedValues[i].toString();
+            const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
-              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+              nestedShould.push({ query_string: { query: `${nestedSearchValue}`, fields: [nestedFieldKey] } });
             } else if (nestedOperator === 'not_eq') {
-              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              nestedMustNot.push({
+                multi_match: {
+                  fields: buildFieldForQuery(nestedFieldKey),
+                  query: nestedSearchValue.toString(),
+                }
+              });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
-              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValues } } });
+              nestedShould.push({ range: { [nestedFieldKey]: { [nestedOperator]: nestedSearchValue } } });
             } else { // nestedOperator = 'eq'
-              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              nestedShould.push({
+                multi_match: {
+                  fields: buildFieldForQuery(nestedFieldKey),
+                  query: nestedSearchValue.toString(),
+                }
+              });
             }
           }
         }
@@ -1781,7 +1797,7 @@ const buildLocalMustFilter = async (validFilter) => {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
         targets.push({
           multi_match: {
-            fields: arrayKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) || k === '_id' || isObjectFlatAttribute(k) ? k : `${k}.keyword`}`),
+            fields: arrayKeys.map((k) => buildFieldForQuery(k)),
             query: values[i].toString(),
           },
         });
@@ -2333,7 +2349,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const filter = filters[index];
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.some((fiterKey) => complexConversionFilterKeys.includes(fiterKey))) {
+    if (arrayKeys.some((filterKey) => complexConversionFilterKeys.includes(filterKey))) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
       }
@@ -2681,7 +2697,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
   body.aggs = {
     genres: {
       terms: {
-        field: isDateNumericOrBooleanAttribute(field) ? field : `${field}.keyword`,
+        field: buildFieldForQuery(field),
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -2965,7 +2981,6 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = await buildDataRestrictions(context, user);
-  const isDateOrNumber = isDateNumericOrBooleanAttribute(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);
@@ -2988,7 +3003,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
     aggs: {
       values: {
         terms: {
-          field: isDateOrNumber ? field : `${field}.keyword`,
+          field: buildFieldForQuery(field),
           size: first ?? ES_DEFAULT_PAGINATION,
           order: { _key: orderMode },
         },

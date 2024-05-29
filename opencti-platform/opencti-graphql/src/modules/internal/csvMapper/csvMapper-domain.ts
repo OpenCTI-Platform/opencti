@@ -21,7 +21,6 @@ import { FunctionalError } from '../../../config/errors';
 // -- UTILS --
 
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
-  const limitedTestingText = content.split(/\r?\n/).slice(0, 100).join('\n'); // Get 100 lines max
   let parsedConfiguration;
   try {
     parsedConfiguration = JSON.parse(configuration);
@@ -29,7 +28,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
     throw FunctionalError('Could not parse CSV mapper configuration', { error });
   }
   const csvMapper = parseCsvMapper(parsedConfiguration);
-  const bundle = await bundleProcess(context, user, Buffer.from(limitedTestingText), csvMapper);
+  const bundle = await bundleProcess(context, user, Buffer.from(content), csvMapper, { maxRecordNumber: 100 });
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,

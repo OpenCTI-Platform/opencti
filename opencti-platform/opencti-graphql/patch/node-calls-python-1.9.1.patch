@@ -8,6 +8,6 @@ index d042863..0fea515 100644
  const path = require("path");
 -const nodecallspython = require("./build/Release/nodecallspython");
 +const nodecallspython = require("./build/Release/nodecallspython.node");
+ const chokidar = require("chokidar");
 
  class Interpreter
- {

@@ -75,6 +75,7 @@ const styles = (theme) => ({
   },
   views: {
     marginTop: -5,
+    display: 'flex',
   },
   linesContainer: {
     margin: 0,
@@ -204,6 +205,7 @@ class ListLines extends Component {
       helpers,
       inline,
       additionalFilterKeys,
+      createButton,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -425,6 +427,11 @@ class ListLines extends Component {
                   )}
                 </ToggleButtonGroup>
               )}
+              {/*
+                * Passing in createButton because cannot use hooks here.
+                * More permanent solution once FAB_REPLACEMENT is completed.
+                */}
+              {createButton}
             </div>
           </div>
         )}
@@ -699,6 +706,7 @@ ListLines.propTypes = {
   availableFilterKeys: PropTypes.array,
   additionalFilterKeys: PropTypes.object,
   entityTypes: PropTypes.array,
+  createButton: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);
