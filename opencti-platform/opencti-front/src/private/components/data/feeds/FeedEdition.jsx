@@ -30,11 +30,11 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import {
-  cleanFeedFilters,
+  cleanFilters,
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
   useBuildFilterKeysMapFromEntityType,
-  useCompleteFilterKeysMap,
+  useFetchFilterKeysSchema,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
@@ -156,13 +156,13 @@ const FeedEditionContainer = (props) => {
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });
 
-  const completeFilterKeysMap = useCompleteFilterKeysMap();
+  const completeFilterKeysMap = useFetchFilterKeysSchema();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
   const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);
-    cleanFeedFilters(filters, helpers, types, completeFilterKeysMap);
+    cleanFilters(filters, helpers, types, completeFilterKeysMap);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate

@@ -644,7 +644,7 @@ export const getAvailableOperatorForFilter = (
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
-export const useCompleteFilterKeysMap = () => {
+export const useFetchFilterKeysSchema = () => {
   const { filterKeysSchema } = useAuth().schema;
   return filterKeysSchema;
 };
@@ -859,7 +859,7 @@ export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: F
   return allFilters;
 };
 
-export const cleanFeedFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
+export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
   const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
   const allListedFilters = extractAllFilters(filters);
   const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
