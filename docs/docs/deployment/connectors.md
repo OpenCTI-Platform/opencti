@@ -33,7 +33,9 @@ Information stored in OpenCTI can be extracted into different file formats like 
 
 ## Connector configuration
 
-All connectors have to be able to access the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition to these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.
+### Connector users and tokens
+
+All connectors have to be able to access the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`.
 
 !!! warning "Connectors tokens"
     
@@ -48,6 +50,10 @@ All connectors have to be able to access the OpenCTI API. To allow this connecti
     | INTERNAL_IMPORT_FILE | Connector           | Import data with the connector user.                   |
     | INTERNAL_EXPORT_FILE | Administrator       | Export data with the user who requested the export.    |
     | STREAM               | Connector           | Consume the streams with the connector user.           |
+
+### Parameters
+
+In addition to these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.
 
 Here is an example of a connector `docker-compose.yml` file:
 ```yaml
@@ -67,6 +73,30 @@ connector:
   name: 'MITRE ATT&CK'
   scope: 'identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report'
   log_level: 'info'
+```
+
+### Advanced parameters
+
+By default, connector are connecting to `RabbitMQ` using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
+
+```yaml
+- MQ_HOST=rabbit.mydomain.com
+- MQ_PORT=5672
+- MQ_VHOST=/
+- MQ_USE_SSL=false
+- MQ_USER=guest
+- MQ_PASS=guest
+```
+
+Here is an example in a connector `config.yml` file:
+
+```yaml
+mq:
+  host: 'rabbit.mydomain.com'
+  port: '5672'
+  use_ssl: false
+  user: 'guest'
+  pass: 'guest'
 ```
 
 ## Networking
