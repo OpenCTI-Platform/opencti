@@ -128,14 +128,14 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
         </AccordionSummary>
         <AccordionDetails style={{ width: '100%' }}>
           <>
-            <MUIAutocomplete<AvailableEntityOption>
+            <MUIAutocomplete<AvailableEntityOption, false, boolean>
               selectOnFocus
               openOnFocus
               autoHighlight
               getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
               noOptionsText={t_i18n('No available options')}
               options={entityTypesToOverride}
-              disableClearable={true as never}
+              disableClearable
               getOptionDisabled={(option) => currentOverrides?.some((selectedOption) => selectedOption.entity_type === option.id)}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
               value={entityTypesToOverride.find((e) => e.id === value.entity_type) || null}
@@ -149,8 +149,13 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
                   size="small"
                 />
               )}
-              renderOption={(props, option) => (
-                <li {...props}>
+              // Need to ignore because there is a property key in the object but the
+              // type given by MUI does not reference it
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              renderOption={({ key, ...props }, option) => (
+                // Separate key and other props because asked by React to avoid warnings.
+                <li key={key} {...props}>
                   <div style={{
                     paddingTop: 4,
                     display: 'inline-block',
