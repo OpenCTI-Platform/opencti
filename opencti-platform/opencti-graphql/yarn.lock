@@ -8803,17 +8803,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-redis-subscriptions@npm:2.6.0":
-  version: 2.6.0
-  resolution: "graphql-redis-subscriptions@npm:2.6.0"
+"graphql-redis-subscriptions@npm:2.6.1":
+  version: 2.6.1
+  resolution: "graphql-redis-subscriptions@npm:2.6.1"
   dependencies:
-    ioredis: "npm:^5.2.4"
+    ioredis: "npm:^5.3.2"
   peerDependencies:
     graphql-subscriptions: ^1.0.0 || ^2.0.0
   dependenciesMeta:
     ioredis:
       optional: true
-  checksum: 10/43f6cf2e91a94511d6a845bf51309f3117b29e972c934e3d5926fbe319c179309a4a2dde64ec1e20de8b256084f5116a15f93a5ef8e87089a58c02053080ab76
+  checksum: 10/266b899683560510146350f8536eeb37e206177ce43737f940475c3b22568084982ac12eca94163e4fd77c126e74cdc4d80ef5f66cee51f157183b9003797a68
   languageName: node
   linkType: hard
 
@@ -9295,7 +9295,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.3.2, ioredis@npm:^5.2.4":
+"ioredis@npm:5.3.2":
   version: 5.3.2
   resolution: "ioredis@npm:5.3.2"
   dependencies:
@@ -9309,6 +9309,23 @@ __metadata:
     redis-parser: "npm:^3.0.0"
     standard-as-callback: "npm:^2.1.0"
   checksum: 10/0140f055ef81d28e16ca8400b99dabb9ce82009f54afd83cba952c7d0c5d736841e43247765b8ee1af1f02843531c5b8df240af18bd3d7e2ca3d60b36e76213f
+  languageName: node
+  linkType: hard
+
+"ioredis@npm:^5.3.2":
+  version: 5.4.1
+  resolution: "ioredis@npm:5.4.1"
+  dependencies:
+    "@ioredis/commands": "npm:^1.1.1"
+    cluster-key-slot: "npm:^1.1.0"
+    debug: "npm:^4.3.4"
+    denque: "npm:^2.1.0"
+    lodash.defaults: "npm:^4.2.0"
+    lodash.isarguments: "npm:^3.1.0"
+    redis-errors: "npm:^1.2.0"
+    redis-parser: "npm:^3.0.0"
+    standard-as-callback: "npm:^2.1.0"
+  checksum: 10/9043b812ac58065e80c759d130602cc64490fcaeaacf93723453fda04c7ba61dab0e2f50380eacb045592378ededf44f270c0d43e13e3e8b8d7c5a8d7fecb823
   languageName: node
   linkType: hard
 
@@ -11248,7 +11265,7 @@ __metadata:
     graphql-constraint-directive: "npm:5.4.3"
     graphql-import: "npm:1.0.2"
     graphql-no-alias: "npm:3.0.3"
-    graphql-redis-subscriptions: "npm:2.6.0"
+    graphql-redis-subscriptions: "npm:2.6.1"
     graphql-relay: "npm:0.10.0"
     graphql-scalars: "npm:1.23.0"
     graphql-subscriptions: "npm:2.0.0"
