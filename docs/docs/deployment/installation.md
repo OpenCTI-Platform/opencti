@@ -35,7 +35,7 @@ OpenCTI can be deployed using the *docker-compose* command.
 
 !!! note "Deploy FIPS 140-2 compliant components"
 
-    We are providing FIPS 140-2 compliant images, please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
+    We provide FIPS 140-2 compliant images. Please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
 
 ### Pre-requisites
 
@@ -63,17 +63,17 @@ cd docker
 
 !!! warning "ElasticSearch / OpenSearch configuration"
 
-    - We highly recommend to put the ElasticSearch / OpenSearch following parameter:
+    - We strongly recommend that you add the following ElasticSearch / OpenSearch parameter:
 
     ```bash
     thread_pool.search.queue_size=5000
     ```
 
-    - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](rollover.md#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the necessary user permissions for the OpenSearch/ElasticSearch integration.
+    - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](rollover.md#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the user permissions required for the OpenSearch/ElasticSearch integration.
 
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
-You can either rename the file `.env.sample` in `.env` and put the expected values or just fill directly the `docker-compose.yml` with the values corresponding to your environment.
+You can either rename the file `.env.sample` as `.env` and enter the values or just directly edit the `docker-compose.yml` with the values for your environment.
 
 !!! note "Configuration static parameters"
 
@@ -111,7 +111,7 @@ If your `docker-compose` deployment does not support `.env` files, just export a
 export $(cat .env | grep -v "#" | xargs)
 ```
 
-As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
+As OpenCTI has a dependency on ElasticSearch, you have to set `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
 sudo sysctl -w vm.max_map_count=1048575
@@ -128,7 +128,7 @@ vm.max_map_count=1048575
 
 The default for OpenCTI data is to be persistent.
 
-In the `docker-compose.yml`, you will find at the end the list of necessary persistent volumes for the dependencies:
+In `docker-compose.yml`, you will find the list of necessary persistent volumes for the dependencies at the end:
 
 ```yaml
 volumes:
