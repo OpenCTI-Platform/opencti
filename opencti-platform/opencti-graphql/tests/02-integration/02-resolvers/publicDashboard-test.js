@@ -138,6 +138,7 @@ const MARKINGS_QUERY = gql`
 
 describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
+  let clearPrivateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
 
   beforeAll(async () => {
@@ -948,7 +949,8 @@ describe('PublicDashboard resolver', () => {
         }
       `;
 
-      let publicDashboardInternalId;
+      let greenPublicDashboardInternalId;
+      let clearPublicDashboardInternalId;
 
       let tlpClear;
       let tlpGreen;
@@ -986,10 +988,14 @@ describe('PublicDashboard resolver', () => {
           variables: { id: vegetaId },
         });
         // endregion
-        // region Delete the publicDashboard.
+        // region Delete the publicDashboards.
         await queryAsAdmin({
           query: DELETE_QUERY,
-          variables: { id: publicDashboardInternalId },
+          variables: { id: greenPublicDashboardInternalId },
+        });
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: clearPublicDashboardInternalId },
         });
         // endregion
       });
@@ -1001,22 +1007,37 @@ describe('PublicDashboard resolver', () => {
         tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
         tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
         // endregion
-        // region Create the publicDashboard.
-        const PUBLIC_DASHBOARD_TO_CREATE = {
+        // region Create the publicDashboards.
+        const GREEN_PUBLIC_DASHBOARD_TO_CREATE = {
           input: {
-            name: 'public dashboard markings',
-            uri_key: 'public-dashboard-markings',
+            name: 'public dashboard marking green',
+            uri_key: 'public_dashboard_marking_green',
             dashboard_id: privateDashboardInternalId,
             allowed_markings_ids: [tlpGreen.id],
             enabled: true,
           },
         };
-        const publicDashboard = await editorQuery({
+        const greenPublicDashboard = await editorQuery({
           query: CREATE_QUERY,
-          variables: PUBLIC_DASHBOARD_TO_CREATE,
+          variables: GREEN_PUBLIC_DASHBOARD_TO_CREATE,
         });
         resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
-        publicDashboardInternalId = publicDashboard.data.publicDashboardAdd.id;
+        const CLEAR_PUBLIC_DASHBOARD_TO_CREATE = {
+          input: {
+            name: 'public dashboard marking clear',
+            uri_key: 'public_dashboard_marking_clear',
+            dashboard_id: clearPrivateDashboardInternalId,
+            allowed_markings_ids: [tlpClear.id],
+            enabled: true,
+          },
+        };
+        const clearPublicDashboard = await editorQuery({
+          query: CREATE_QUERY,
+          variables: CLEAR_PUBLIC_DASHBOARD_TO_CREATE,
+        });
+        resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
+        greenPublicDashboardInternalId = greenPublicDashboard.data.publicDashboardAdd.id;
+        clearPublicDashboardInternalId = clearPublicDashboard.data.publicDashboardAdd.id;
         // endregion
         // region Create some areas.
         const CREATE_AREA = gql`
@@ -1103,7 +1124,7 @@ describe('PublicDashboard resolver', () => {
         const editor_aaa = await editorQuery({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public-dashboard-markings',
+            uriKey: 'public_dashboard_marking_green',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
@@ -1116,12 +1137,11 @@ describe('PublicDashboard resolver', () => {
         const admin_aaa = await queryAsAdmin({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public-dashboard-markings',
+            uriKey: 'public_dashboard_marking_clear',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
         const admin_result = admin_aaa.data.publicStixRelationshipsNumber;
-        expect(admin_aaa).toEqual('test5');
         expect(admin_result.total).toEqual(2);
         expect(admin_result.count).toEqual(0);
       });
@@ -1131,7 +1151,7 @@ describe('PublicDashboard resolver', () => {
         const { data } = await participantQuery({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public-dashboard-markings',
+            uriKey: 'public_dashboard_marking_green',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
