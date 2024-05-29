@@ -26,7 +26,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   },
   attributes: [
     { name: 'rating', label: 'Rating', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    authorizedMembers
+    { ...authorizedMembers, editDefault: true }
   ],
   relations: [],
   relationsRefs: [
