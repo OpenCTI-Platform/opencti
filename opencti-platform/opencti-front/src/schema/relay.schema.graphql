@@ -8043,7 +8043,7 @@ type StixCyberObservableEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!): StixCyberObservable
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
-  promote: Indicator!
+  promote: Indicator
   importPush(file: Upload!, version: DateTime, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   exportPush(file: Upload!): Boolean

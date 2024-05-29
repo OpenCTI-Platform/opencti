@@ -53,7 +53,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
-import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
+import { promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
@@ -276,12 +276,12 @@ const executeEnrichment = async (context, user, actionContext, element) => {
 const executePromote = async (context, user, element, containerId) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-    const createdObservables = await promoteIndicatorToObservable(context, user, element.internal_id);
+    const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
     if (containerId && createdObservables.length > 0) {
       await Promise.all(
-        createdObservables.map((obs) => {
+        createdObservables.map((observable) => {
           const relationInput = {
-            toId: obs,
+            toId: observable.id,
             relationship_type: 'object'
           };
           return stixDomainObjectAddRelation(context, user, containerId, relationInput);
