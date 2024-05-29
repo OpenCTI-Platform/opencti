@@ -97,7 +97,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, availableFilterKeys, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-    const { orderBy, orderMode, filters } = paginationOptions;
+    const { orderBy, orderMode, filters, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const finalFilters = filters ?? emptyFilterGroup;
@@ -115,6 +115,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
           orderBy,
           filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
           selectedIds,
+          search,
         },
       },
       onCompleted: () => {
