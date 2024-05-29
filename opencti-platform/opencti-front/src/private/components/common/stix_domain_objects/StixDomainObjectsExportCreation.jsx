@@ -152,11 +152,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
-
-    // global export pdf can not be used here
-    // export-report-pdf connector needs precise entity_type to work but the type sent here is incompatible
-    const availableFormat = exportScopes.filter((exportScope) => exportScope !== 'application/pdf');
-
+    const availableFormat = exportScopes;
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
