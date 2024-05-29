@@ -273,32 +273,41 @@ const executeEnrichment = async (context, user, actionContext, element) => {
     await askElementEnrichmentForConnector(context, user, element.standard_id, connector.internal_id);
   }, { concurrency: ES_MAX_CONCURRENCY });
 };
-const executePromote = async (context, user, element, containerId) => {
+
+export const executePromoteIndicatorToObservables = async (context, user, element, containerId) => {
+  const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
+  if (containerId && createdObservables.length > 0) {
+    await Promise.all(
+      createdObservables.map((observable) => {
+        const relationInput = {
+          toId: observable.id,
+          relationship_type: 'object'
+        };
+        return stixDomainObjectAddRelation(context, user, containerId, relationInput);
+      })
+    );
+  }
+};
+
+export const executePromoteObservableToIndicator = async (context, user, element, containerId) => {
+  const createdIndicator = await promoteObservableToIndicator(context, user, element.internal_id);
+  if (containerId && createdIndicator) {
+    const relationInput = {
+      toId: createdIndicator.id,
+      relationship_type: 'object'
+    };
+    await stixDomainObjectAddRelation(context, user, containerId, relationInput);
+  }
+};
+
+export const executePromote = async (context, user, element, containerId) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-    const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
-    if (containerId && createdObservables.length > 0) {
-      await Promise.all(
-        createdObservables.map((observable) => {
-          const relationInput = {
-            toId: observable.id,
-            relationship_type: 'object'
-          };
-          return stixDomainObjectAddRelation(context, user, containerId, relationInput);
-        })
-      );
-    }
+    await executePromoteIndicatorToObservables(context, user, element, containerId);
   }
   // If observable, promote to indicator
   if (isStixCyberObservable(element.entity_type)) {
-    const createdIndicator = await promoteObservableToIndicator(context, user, element.internal_id);
-    if (containerId && createdIndicator) {
-      const relationInput = {
-        toId: createdIndicator.id,
-        relationship_type: 'object'
-      };
-      await stixDomainObjectAddRelation(context, user, containerId, relationInput);
-    }
+    await executePromoteObservableToIndicator(context, user, element, containerId);
   }
 };
 const executeRuleApply = async (context, user, actionContext, element) => {
