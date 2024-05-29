@@ -1,10 +1,9 @@
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 
 const LIST_QUERY = gql`
@@ -131,29 +130,6 @@ const MARKINGS_QUERY = gql`
         node {
           id
           definition
-        }
-      }
-    }
-  }
-`;
-
-const READ_MAX_MARKINGS_QUERY = gql`
-  query settingsMaxMarkings {
-    settings {
-      id
-    }
-  }
-`;
-
-const EDIT_MAX_MARKINGS_QUERY = gql`
-  mutation edtSettingsMaxMarkings($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        platform_data_sharing_max_markings {
-          id
-          definition
-          definition_type
-          x_opencti_order
         }
       }
     }
@@ -287,21 +263,6 @@ describe('PublicDashboard resolver', () => {
         const markings = data.markingDefinitions.edges.map((e) => e.node);
         const tlpRed = markings.find((m) => m.definition === 'TLP:RED');
 
-        // Set max markings
-        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
-        const settingsId = settingsResult.data.settings.id;
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpRed.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-
         // Add security user in private dashboard authorizedMembers with admin access right
         const authorizedMembersUpdate = [
           {
@@ -338,18 +299,6 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboardQuery).not.toBeNull();
         expect(publicDashboardQuery.errors.length).toEqual(1);
         expect(publicDashboardQuery.errors.at(0).message).toEqual('Not allowed markings');
-
-        // Reset max markings.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: []
-            }
-          },
-        });
       });
 
       it('should publicDashboard created', async () => {
@@ -1003,27 +952,12 @@ describe('PublicDashboard resolver', () => {
 
       let tlpClear;
       let tlpGreen;
-      let tlpRed;
 
       let spainId;
       let raditzId;
       let vegetaId;
 
-      let settingsId;
-
       afterAll(async () => {
-        // region Reset max markings.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: []
-            }
-          },
-        });
-        // endregion
         // region Delete areas.
         const DELETE_AREA = gql`
           mutation administrativeAreaDelete($id: ID!) {
@@ -1066,22 +1000,6 @@ describe('PublicDashboard resolver', () => {
         const markings = data.markingDefinitions.edges.map((e) => e.node);
         tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
         tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
-        tlpRed = markings.find((m) => m.definition === 'TLP:RED');
-        // endregion
-        // region Set max markings
-        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
-        settingsId = settingsResult.data.settings.id;
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpRed.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
         // endregion
         // region Create the publicDashboard.
         const PUBLIC_DASHBOARD_TO_CREATE = {
@@ -1181,33 +1099,36 @@ describe('PublicDashboard resolver', () => {
       });
 
       it('should return the data for API: SCR Number', async () => {
-        const aaa = await queryAsAdmin({
+        // editor user: tlpRed as max shareable markings
+        const editor_aaa = await editorQuery({
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-markings',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        const result = aaa.data.publicStixRelationshipsNumber;
-        expect(result.total).toEqual(2);
-        expect(result.count).toEqual(0);
+        expect(editor_aaa).toEqual('test editor');
+        const editor_result = editor_aaa.data.publicStixRelationshipsNumber;
+        expect(editor_result.total).toEqual(2);
+        expect(editor_result.count).toEqual(0);
+
+        // admin with bypass rights: can share everything
+        const admin_aaa = await queryAsAdmin({
+          query: API_SCR_NUMBER_QUERY,
+          variables: {
+            uriKey: 'public-dashboard-markings',
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+          },
+        });
+        const admin_result = admin_aaa.data.publicStixRelationshipsNumber;
+        expect(admin_aaa).toEqual('test5');
+        expect(admin_result.total).toEqual(2);
+        expect(admin_result.count).toEqual(0);
       });
 
       it('should return the data for API: SCR Number with limited max marking', async () => {
-        // Change the max marking to something more restrictive.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpClear.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-
-        const { data } = await queryAsAdmin({
+        // participant user has no max shareable markings: he cannot share anything
+        const { data } = await participantQuery({
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-markings',

@@ -10,7 +10,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 
-// Retrieves all available markings than can be shared.
+// Return all the available markings a user can share
 export const getAvailableDataSharingMarkings = async (context: AuthContext, user: AuthUser) => {
   const maxMarkings = user.max_shareable_marking;
   const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
