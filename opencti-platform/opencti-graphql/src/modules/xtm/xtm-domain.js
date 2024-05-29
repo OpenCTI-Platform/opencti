@@ -90,6 +90,20 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   const content = await resolveContent(context, user, stixCoreObject);
   const finalAttackPatterns = R.take(RESOLUTION_LIMIT, attackPatterns);
 
+  // Create the scenario
+  const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
+  const description = extractRepresentativeDescription(stixCoreObject);
+  const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
+  const obasScenario = await createScenario(
+    name,
+    subtitle,
+    description,
+    [...labels, { value: 'opencti', color: '#001bda' }],
+    stixCoreObject.id,
+    stixCoreObject.entity_type,
+    simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
+  );
+
   // Get kill chin phases
   const sortByPhaseOrder = R.sortBy(R.prop('phase_order'));
   const obasKillChainPhases = await getKillChainPhases();
@@ -195,19 +209,6 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
   }
 
   // Get contracts from OpenBAS related to found attack patterns
-  // Create the scenario
-  const name = `[${stixCoreObject.entity_type}] ${extractEntityRepresentativeName(stixCoreObject)}`;
-  const description = extractRepresentativeDescription(stixCoreObject);
-  const subtitle = `Based on cyber threat knowledge authored by ${author.name}`;
-  const obasScenario = await createScenario(
-    name,
-    subtitle,
-    description,
-    [...labels, { value: 'opencti', color: '#001bda' }],
-    stixCoreObject.id,
-    stixCoreObject.entity_type,
-    simulationType === 'simulated' ? 'global-crisis' : 'attack-scenario'
-  );
 
   // Get attack patterns
   const obasAttackPatterns = await getAttackPatterns();
