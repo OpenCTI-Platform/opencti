@@ -105,20 +105,7 @@ RoleEditionCapabilitiesComponentProps
 
   if (capabilities && capabilities.edges) {
     return (
-      <List
-        dense={true}
-        subheader={
-          <ListSubheader
-            component="div"
-            sx={{
-              paddingLeft: 0,
-              backgroundColor: 'transparent',
-            }}
-          >
-            {t_i18n('Capabilities')}
-          </ListSubheader>
-        }
-      >
+      <List dense={true}>
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {
