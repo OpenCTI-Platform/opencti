@@ -140,7 +140,7 @@ export const createInjectInScenario = async (
       {
         inject_injector_contract: contractId,
         inject_type: injectorType,
-        inject_title: title,
+        inject_title: title.length > 255 ? `${title.substring(0, 250)}...` : title,
         inject_depends_duration: dependsDuration,
         inject_content: content,
         inject_tags: obasTagsIds,
