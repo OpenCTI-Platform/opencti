@@ -154,6 +154,8 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
               aria-label="Add"
               id="addHeight"
               onClick={() => {
+                const newHeight = { measure: 0, date_seen: new Date().toISOString() };
+                arrayHelpers.push(newHeight);
                 commitMutation({
                   ...defaultCommitMutation,
                   mutation: individualHeightMutation,
@@ -161,7 +163,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                     id,
                     input: {
                       key: 'height',
-                      value: [{ measure: null, date_seen: null }],
+                      value: [newHeight],
                       operation: 'add',
                     },
                   },
@@ -251,7 +253,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {
-                  arrayHelpers.push({ date_seen: null });
+                  arrayHelpers.push({ measure: 0, date_seen: new Date().toISOString() });
                 }}
                 style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
               >

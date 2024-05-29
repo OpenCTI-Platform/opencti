@@ -90,6 +90,11 @@ ThreatActorIndividualEditionBiographicsComponentProps
     threatActorIndividualEditionBiographicsFragment,
     threatActorIndividualRef,
   );
+  const dateSeenValidator = Yup.date()
+    .when('measure', {
+      is: (value: number) => value !== undefined && value !== null,
+      then: (schema) => schema.required(t_i18n('This field is required')),
+    });
 
   const basicShape = {
     eye_color: Yup.string()
@@ -98,8 +103,18 @@ ThreatActorIndividualEditionBiographicsComponentProps
     hair_color: Yup.string()
       .nullable()
       .typeError(t_i18n('The value must be a string')),
-    weight: Yup.array(),
-    height: Yup.array(),
+    weight: Yup.array().of(
+      Yup.object().shape({
+        measure: Yup.number().required(t_i18n('This field is required')),
+        date_seen: dateSeenValidator,
+      }),
+    ),
+    height: Yup.array().of(
+      Yup.object().shape({
+        measure: Yup.number().required(t_i18n('This field is required')),
+        date_seen: dateSeenValidator,
+      }),
+    ),
   };
   const threatActorIndividualValidator = useSchemaEditionValidation(
     'Threat-Actor-Individual',
