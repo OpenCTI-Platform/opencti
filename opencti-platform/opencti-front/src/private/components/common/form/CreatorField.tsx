@@ -1,13 +1,17 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
+import { Link } from 'react-router-dom';
+import { OpenInNewOutlined } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Option } from './ReferenceField';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 interface CreatorFieldProps {
   name: string;
@@ -38,21 +42,10 @@ const CreatorFieldQuery = graphql`
   }
 `;
 
-type CreatorNode = {
-  readonly effective_confidence_level: {
-    readonly max_confidence: number;
-    readonly overrides: ReadonlyArray<{
-      readonly entity_type: string;
-      readonly max_confidence: number;
-    }>;
-  } | null | undefined;
-  readonly entity_type: string;
-  readonly id: string;
-  readonly name: string;
-};
+type CreatorNode = NonNullable<CreatorFieldSearchQuery$data['members']>['edges'][number]['node'];
 
 type CreatorOption = Option & {
-  extra?: string | null,
+  extra?: ReactNode,
 };
 
 const CreatorField: FunctionComponent<CreatorFieldProps> = ({
@@ -63,19 +56,36 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   showConfidence = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const isGrantedToUsers = useGranted([SETTINGS_SETACCESSES]);
+
   const [creatorOptions, setCreatorOptions] = useState<CreatorOption[]>([]);
 
   const getExtraFromNode = (node?: CreatorNode) => {
     if (showConfidence && node?.effective_confidence_level) {
-      const confidence = `${t_i18n('Max confidence')} ${node.effective_confidence_level.max_confidence}`;
+      let textToShow = `${t_i18n('Max Confidence')} ${node.effective_confidence_level.max_confidence}`;
       if (node?.effective_confidence_level.overrides?.length) {
         const overrides = t_i18n(
           '',
           { id: '+ N override(s)', values: { count: node.effective_confidence_level.overrides.length } },
         );
-        return `${confidence} ${overrides}`;
+        textToShow = `${textToShow} ${overrides}`;
       }
-      return confidence;
+      if (isGrantedToUsers) {
+        return (
+          <span>
+            {textToShow}
+            <IconButton
+              component={Link}
+              to={`/dashboard/settings/accesses/users/${node.id}`}
+              sx={{ marginLeft: 1 }}
+              color="primary"
+            >
+              <OpenInNewOutlined fontSize="small" />
+            </IconButton>
+          </span>
+        );
+      }
+      return textToShow;
     }
     return null;
   };
@@ -125,22 +135,22 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
           option: CreatorOption,
         ) => (
           <li {...props} >
-            <Box
-              sx={{
-                paddingTop: 1,
+            <div
+              style={{
+                paddingTop: 4,
                 color: option.color,
               }}
             >
               <ItemIcon type="user"/>
-            </Box>
-            <Box
-              sx={{
+            </div>
+            <div
+              style={{
                 flexGrow: 1,
-                marginLeft: 1,
+                marginLeft: 10,
               }}
             >
               {option.label}
-            </Box>
+            </div>
             {option.extra && (
               <Box
                 sx={{
@@ -155,7 +165,6 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             )}
           </li>
         )}
-
       />
     </div>
   );
