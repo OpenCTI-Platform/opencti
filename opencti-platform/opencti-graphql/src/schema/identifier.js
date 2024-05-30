@@ -12,7 +12,7 @@ import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
-import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
+import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID, STIX_TYPE_SIGHTING } from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
@@ -157,6 +157,7 @@ const stixBaseCyberObservableContribution = {
     },
   },
 };
+
 const stixBaseEntityContribution = {
   definition: {
     // Internal
@@ -241,7 +242,51 @@ const stixBaseEntityContribution = {
   },
 };
 
-const identifierContributions = [stixBaseCyberObservableContribution, stixBaseEntityContribution];
+const stixBaseRelationshipContribution = {
+  definition: {
+    relationship: [
+      { src: 'relationship_type' },
+      { src: 'from', dest: 'source_ref' }, { src: 'to', dest: 'target_ref' },
+      { src: 'start_time' }, { src: 'stop_time' }
+    ],
+  },
+  resolvers: {
+    from(from) {
+      return from?.standard_id;
+    },
+    to(to) {
+      return to?.standard_id;
+    }
+  },
+};
+
+const stixBaseSightingContribution = {
+  definition: {
+    sighting: [
+      { src: 'relationship_type', dest: 'type' },
+      { src: 'from', dest: 'sighting_of_ref' }, { src: 'to', dest: 'where_sighted_refs' },
+      { src: 'first_seen' }, { src: 'last_seen' }
+    ],
+  },
+  resolvers: {
+    relationship_type() {
+      return STIX_TYPE_SIGHTING;
+    },
+    from(from) {
+      return from?.standard_id;
+    },
+    to(to) {
+      return [to?.standard_id];
+    }
+  },
+};
+
+const identifierContributions = [
+  stixBaseCyberObservableContribution,
+  stixBaseEntityContribution,
+  stixBaseRelationshipContribution,
+  stixBaseSightingContribution
+];
 export const isSupportedStixType = (stixType) => [...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
   .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor'].includes(stixType);
 export const registerModelIdentifier = (identifier) => {
@@ -256,7 +301,7 @@ const resolveContribution = (type) => {
   }
   return ident;
 };
-export const idGen = (type, raw, data, namespace) => {
+export const idGen = (type, data, namespace) => {
   // If empty data, generate an error message
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
@@ -401,11 +446,11 @@ export const isStandardIdDowngraded = (previous, updated) => {
 
 const generateStixUUID = (type, data) => {
   const { data: dataUUID } = generateDataUUID(type, data);
-  return idGen(type, data, dataUUID, OASIS_NAMESPACE);
+  return idGen(type, dataUUID, OASIS_NAMESPACE);
 };
 const generateObjectUUID = (type, data) => {
   const { data: dataUUID } = generateDataUUID(type, data);
-  return idGen(type, data, dataUUID, OPENCTI_NAMESPACE);
+  return idGen(type, dataUUID, OPENCTI_NAMESPACE);
 };
 
 const generateObjectId = (type, data) => {
@@ -433,9 +478,9 @@ export const generateStandardId = (type, data) => {
   if (isInternalObject(type)) return generateObjectId(type, data);
   // Relations
   if (isInternalRelationship(type)) return `internal-relationship--${generateInternalId()}`;
-  if (isStixCoreRelationship(type)) return `relationship--${generateInternalId()}`;
   if (isStixRefRelationship(type)) return `relationship-meta--${generateInternalId()}`;
-  if (isStixSightingRelationship(type)) return `sighting--${generateInternalId()}`;
+  if (isStixCoreRelationship(type)) return generateStixId('relationship', data);
+  if (isStixSightingRelationship(type)) return generateStixId('sighting', data);
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);
 };
