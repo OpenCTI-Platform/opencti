@@ -25,6 +25,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -77,37 +78,10 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const getCurrentTab = (country) => {
-    if (location.pathname.includes(`/dashboard/locations/countries/${country.id}/knowledge`)) return `/dashboard/locations/countries/${country.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/locations/countries/${country.id}/content`)) return `/dashboard/locations/countries/${country.id}/content`;
-    return location.pathname;
-  };
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
-
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/countries/${country.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/countries/${country.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/countries/${country.id}/content/mapping`,
-    )
-  ) {
-    paddingRight = 0;
-  }
+  const paddingRight = getPaddingRight(location, country?.id, '/dashboard/analyses/groupings');
   return (
     <>
       {country ? (
@@ -134,7 +108,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(country)}
+              value={getCurrentTab(location, country.id, '/dashboard/locations/countries')}
             >
               <Tab
                 component={Link}

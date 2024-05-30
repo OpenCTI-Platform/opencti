@@ -26,6 +26,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -81,35 +82,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
-
-  const getCurrentTab = () => {
-    if (location.pathname.includes(`/dashboard/locations/regions/${region.id}/knowledge`)) return `/dashboard/locations/regions/${region.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/locations/regions/${region.id}/content`)) return `/dashboard/locations/regions/${region.id}/content`;
-    return location.pathname;
-  };
-
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      'c',
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/regions/${region.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/regions/${region.id}/content/mapping`,
-    )
-  ) {
-    paddingRight = 0;
-  }
+  const paddingRight = getPaddingRight(location, region?.id, '/dashboard/locations/regions');
   return (
     <>
       {region ? (
@@ -136,7 +109,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab()}
+              value={getCurrentTab(location, region.id, '/dashboard/locations/regions')}
             >
               <Tab
                 component={Link}

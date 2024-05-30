@@ -14,7 +14,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -181,26 +180,6 @@ class GroupingKnowledgeComponent extends Component {
                         enableReferences={enableReferences}
                       />
                     );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />
-            }
-          />
-          <Route
-            path="/content"
-            element={
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: grouping.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
                   }
                   return (
                     <Loader

@@ -19,6 +19,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -81,11 +82,7 @@ class RootCourseOfAction extends Component {
       location,
       params: { courseOfActionId },
     } = this.props;
-    const getCurrentTab = (courseOfAction) => {
-      if (location.pathname.includes(`/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`)) return `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`)) return `/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`;
-      return location.pathname;
-    };
+
     return (
       <div>
         <QueryRenderer
@@ -95,28 +92,7 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, courseOfAction.id, '/dashboard/techniques/courses_of_action');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -140,7 +116,7 @@ class RootCourseOfAction extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(courseOfAction)}
+                        value={getCurrentTab(location, courseOfAction.id, '/dashboard/techniques/courses_of_action')}
                       >
                         <Tab
                           component={Link}

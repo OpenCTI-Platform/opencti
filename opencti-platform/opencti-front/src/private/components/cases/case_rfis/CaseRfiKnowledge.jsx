@@ -17,7 +17,6 @@ import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnow
 import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
 import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -286,26 +285,6 @@ class CaseRfiKnowledgeComponent extends Component {
                         enableReferences={enableReferences}
                       />
                     );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />
-          }
-          />
-          <Route
-            path="/content"
-            element={
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: caseData.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
                   }
                   return (
                     <Loader

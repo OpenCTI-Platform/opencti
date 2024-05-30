@@ -24,6 +24,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -118,12 +119,6 @@ class RootIndividual extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
 
-    const getCurrentTab = (individual) => {
-      if (location.pathname.includes(`/dashboard/entities/individuals/${individual.id}/knowledge`)) return `/dashboard/entities/individuals/${individual.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/entities/individuals/${individual.id}/content`)) return `/dashboard/entities/individuals/${individual.id}/content`;
-      return location.pathname;
-    };
-
     return (
       <>
         <Routes>
@@ -156,28 +151,7 @@ class RootIndividual extends Component {
             if (props) {
               if (props.individual) {
                 const { individual } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/individuals/${individual.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/individuals/${individual.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/individuals/${individual.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, individual.id, '/dashboard/entities/individuals');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -204,7 +178,7 @@ class RootIndividual extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(individual)}
+                        value={getCurrentTab(location, individual.id, '/dashboard/entities/individuals')}
                       >
                         <Tab
                           component={Link}

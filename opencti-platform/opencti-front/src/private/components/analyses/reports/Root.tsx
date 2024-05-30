@@ -27,6 +27,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -86,11 +87,7 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (report) => {
-    if (location.pathname.includes(`/dashboard/analyses/reports/${report.id}/knowledge`)) return `/dashboard/analyses/reports/${report.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/analyses/reports/${report.id}/content`)) return `/dashboard/analyses/reports/${report.id}/content`;
-    return location.pathname;
-  };
+
   return (
     <>
       <QueryRenderer
@@ -100,32 +97,8 @@ const RootReport = () => {
           if (props) {
             if (props.report) {
               const { report } = props;
-              let paddingRight = 0;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/entities`,
-                )
-                || location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/observables`,
-                )
-              ) {
-                paddingRight = 250;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/content/mapping`,
-                )
-              ) {
-                paddingRight = 0;
-              }
+              const paddingRight = getPaddingRight(location, reportId, '/dashboard/analyses/reports');
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -153,7 +126,7 @@ const RootReport = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(report)}
+                      value={getCurrentTab(location, report.id, '/dashboard/analyses/reports')}
                     >
                       <Tab
                         component={Link}

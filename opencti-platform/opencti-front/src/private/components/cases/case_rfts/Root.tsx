@@ -26,6 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -83,39 +84,13 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (caseData) => {
-    if (location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/knowledge`)) return `/dashboard/cases/rfts/${caseData.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/content`)) return `/dashboard/cases/rfts/${caseData.id}/content`;
-    return location.pathname;
-  };
+
   const {
     caseRft: caseData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
-  let paddingRight = 0;
-  if (caseData) {
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/rfts/${caseData.id}/entities`,
-      )
-      || location.pathname.includes(
-        `/dashboard/cases/rfts/${caseData.id}/observables`,
-      )
-    ) {
-      paddingRight = 250;
-    }
-    if (
-      location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/content`)
-    ) {
-      paddingRight = 350;
-    }
-    if (
-      location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/content/mapping`)
-    ) {
-      paddingRight = 0;
-    }
-  }
+  const paddingRight = getPaddingRight(location, caseData?.id, '/dashboard/cases/rfts');
   return (
     <>
       {caseData ? (
@@ -141,7 +116,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(caseData)}
+              value={getCurrentTab(location, caseData.id, '/dashboard/cases/rfts')}
             >
               <Tab
                 component={Link}

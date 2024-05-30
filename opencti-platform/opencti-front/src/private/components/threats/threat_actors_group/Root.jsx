@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -88,11 +89,6 @@ class RootThreatActorGroup extends Component {
       location,
       params: { threatActorGroupId },
     } = this.props;
-    const getCurrentTab = (threatActorGroup) => {
-      if (location.pathname.includes(`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`)) return `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`)) return `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`;
-      return location.pathname;
-    };
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
     return (
       <>
@@ -131,28 +127,7 @@ class RootThreatActorGroup extends Component {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
                 const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, threatActorGroup.id, '/dashboard/threats/threat_actors_group');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -175,7 +150,7 @@ class RootThreatActorGroup extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(threatActorGroup)}
+                        value={getCurrentTab(location, threatActorGroup, '/dashboard/threats/threat_actors_group')}
                       >
                         <Tab
                           component={Link}

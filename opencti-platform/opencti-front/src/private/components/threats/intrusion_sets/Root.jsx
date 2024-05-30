@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -91,11 +92,7 @@ class RootIntrusionSet extends Component {
       location,
       params: { intrusionSetId },
     } = this.props;
-    const getCurrentTab = (intrusionSet) => {
-      if (location.pathname.includes(`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`)) return `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`)) return `/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
     return (
       <>
@@ -133,28 +130,7 @@ class RootIntrusionSet extends Component {
               if (props.intrusionSet) {
                 const { intrusionSet } = props;
                 const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/intrusion_sets/${intrusionSet.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, intrusionSet.id, '/dashboard/threats/intrusion_sets');
                 return (
                   <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
                     <Breadcrumbs variant="object" elements={[
@@ -178,7 +154,7 @@ class RootIntrusionSet extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(intrusionSet)}
+                        value={getCurrentTab(location, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
                       >
                         <Tab
                           component={Link}

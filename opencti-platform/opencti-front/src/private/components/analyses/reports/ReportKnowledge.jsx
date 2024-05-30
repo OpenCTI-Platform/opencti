@@ -17,7 +17,6 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -281,26 +280,6 @@ class ReportKnowledgeComponent extends Component {
                     return (
                       <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
                     );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />
-            )}
-          />
-          <Route
-            path="/content"
-            element={(
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: report.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
                   }
                   return (
                     <Loader

@@ -25,6 +25,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CityPopover from './CityPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -78,35 +79,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
-
-  const getCurrentTab = () => {
-    if (location.pathname.includes(`/dashboard/locations/cities/${city.id}/knowledge`)) return `/dashboard/locations/cities/${city.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/locations/cities/${city.id}/content`)) return `/dashboard/locations/cities/${city.id}/content`;
-    return location.pathname;
-  };
-
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/cities/${city.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/cities/${city.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/cities/${city.id}/content/mapping`,
-    )
-  ) {
-    paddingRight = 0;
-  }
+  const paddingRight = getPaddingRight(location, city.id, '/dashboard/locations/cities');
   return (
     <>
       {city ? (
@@ -133,7 +106,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab()}
+              value={getCurrentTab(location, city.id, '/dashboard/locations/cities')}
             >
               <Tab
                 component={Link}

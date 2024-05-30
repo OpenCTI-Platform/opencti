@@ -21,6 +21,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -85,11 +86,6 @@ class RootChannel extends Component {
       location,
       params: { channelId },
     } = this.props;
-    const getCurrentTab = (channel) => {
-      if (location.pathname.includes(`/dashboard/arsenal/channels/${channel.id}/knowledge`)) return `/dashboard/arsenal/channels/${channel.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/arsenal/channels/${channel.id}/content`)) return `/dashboard/arsenal/channels/${channel.id}/content`;
-      return location.pathname;
-    };
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
     return (
       <div>
@@ -120,28 +116,7 @@ class RootChannel extends Component {
             if (props) {
               if (props.channel) {
                 const { channel } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/channels/${channel.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/channels/${channel.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/channels/${channel.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, channel.id, '/dashboard/arsenal/channels');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -164,7 +139,7 @@ class RootChannel extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(channel)}
+                        value={getCurrentTab(location, channel.id, '/dashboard/arsenal/channels')}
                       >
                         <Tab
                           component={Link}

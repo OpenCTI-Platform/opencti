@@ -22,6 +22,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import FileManager from '../../common/files/FileManager';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -86,11 +87,7 @@ class RootStixCyberObservable extends Component {
       location,
       params: { observableId },
     } = this.props;
-    const getCurrentTab = (observable) => {
-      if (location.pathname.includes(`/dashboard/observations/observables/${observable.id}/knowledge`)) return `/dashboard/observations/observables/${observable.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/observations/observables/${observable.id}/content`)) return `/dashboard/observations/observables/${observable.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
       <>
@@ -101,21 +98,7 @@ class RootStixCyberObservable extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/observations/observables/${stixCyberObservable.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/observations/observables/${stixCyberObservable.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, stixCyberObservable.id, '/dashboard/observations/observables');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -135,7 +118,7 @@ class RootStixCyberObservable extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(stixCyberObservable)}
+                        value={getCurrentTab(location, stixCyberObservable.id, '/dashboard/observations/observables')}
                       >
                         <Tab
                           component={Link}

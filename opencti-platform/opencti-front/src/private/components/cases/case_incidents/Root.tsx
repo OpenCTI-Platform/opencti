@@ -28,6 +28,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -84,44 +85,14 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (caseData) => {
-    if (location.pathname.includes(`/dashboard/cases/incidents/${caseData.id}/knowledge`)) return `/dashboard/cases/incidents/${caseData.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/cases/incidents/${caseData.id}/content`)) return `/dashboard/cases/incidents/${caseData.id}/content`;
-    return location.pathname;
-  };
+
   const {
     caseIncident: caseData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
-  let paddingRight = 0;
-  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
-  if (caseData) {
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/entities`,
-      )
-      || location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/observables`,
-      )
-    ) {
-      paddingRight = 250;
-    }
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/content`,
-      )
-    ) {
-      paddingRight = 350;
-    }
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/content/mapping`,
-      )
-    ) {
-      paddingRight = 0;
-    }
-  }
+  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
+  const paddingRight = getPaddingRight(location, caseData?.id, '/dashboard/cases/incidents');
   return (
     <>
       {caseData ? (
@@ -147,7 +118,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(caseData)}
+              value={getCurrentTab(location, caseData.id, '/dashboard/cases/incidents')}
             >
               <Tab
                 component={Link}

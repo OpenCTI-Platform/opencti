@@ -26,6 +26,7 @@ import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -85,11 +86,6 @@ const RootThreatActorIndividualComponent = ({
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const getCurrentTab = (data) => {
-    if (location.pathname.includes(`/dashboard/threats/threat_actors_individual/${data.id}/knowledge`)) return `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/threats/threat_actors_individual/${data.id}/content`)) return `/dashboard/threats/threat_actors_individual/${data.id}/content`;
-    return location.pathname;
-  };
   const { t_i18n } = useFormatter();
   const {
     threatActorIndividual: data,
@@ -101,28 +97,7 @@ const RootThreatActorIndividualComponent = ({
   );
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
   const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/threats/threat_actors_individual/${data.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/threats/threat_actors_individual/${data.id}/content/mapping`,
-    )
-  ) {
-    paddingRight = 0;
-  }
+  const paddingRight = getPaddingRight(location, data.id, '/dashboard/threats/threat_actors_individual');
   return (
     <>
       <Routes>
@@ -173,7 +148,7 @@ const RootThreatActorIndividualComponent = ({
               sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >
               <Tabs
-                value={getCurrentTab(data)}
+                value={getCurrentTab(location, data.id, '/dashboard/threats/threat_actors_individual')}
               >
                 <Tab
                   component={Link}

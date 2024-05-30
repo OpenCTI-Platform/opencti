@@ -23,6 +23,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import withRouter from '../../../../utils/compat-router/withRouter';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -86,11 +87,6 @@ class RootIndicator extends Component {
       location,
       params: { indicatorId },
     } = this.props;
-    const getCurrentTab = (indicator) => {
-      if (location.pathname.includes(`/dashboard/observations/indicators/${indicator.id}/knowledge`)) return `/dashboard/observations/indicators/${indicator.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/observations/indicators/${indicator.id}/content`)) return `/dashboard/observations/indicators/${indicator.id}/content`;
-      return location.pathname;
-    };
     return (
       <>
         <QueryRenderer
@@ -100,21 +96,7 @@ class RootIndicator extends Component {
             if (props) {
               if (props.indicator) {
                 const { indicator } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/observations/indicators/${indicator.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/observations/indicators/${indicator.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, indicator.id, '/dashboard/observations/indicators');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -137,7 +119,7 @@ class RootIndicator extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(indicator)}
+                        value={getCurrentTab(location, indicator.id, '/dashboard/observations/indicators')}
                       >
                         <Tab
                           component={Link}

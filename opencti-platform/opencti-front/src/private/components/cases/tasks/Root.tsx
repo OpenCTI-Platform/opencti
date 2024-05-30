@@ -22,6 +22,7 @@ import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -71,29 +72,12 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (task) => {
-    if (location.pathname.includes(`/dashboard/cases/tasks/${task.id}/knowledge`)) return `/dashboard/cases/tasks/${task.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/cases/tasks/${task.id}/content`)) return `/dashboard/cases/tasks/${task.id}/content`;
-    return location.pathname;
-  };
   const {
     task: data,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
-  let paddingRight = 0;
-  if (data) {
-    if (
-      location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content`)
-    ) {
-      paddingRight = 350;
-    }
-    if (
-      location.pathname.includes(`/dashboard/cases/tasks/${data.id}/content/mapping`)
-    ) {
-      paddingRight = 0;
-    }
-  }
+  const paddingRight = getPaddingRight(location, data?.id, '/dashboard/cases/tasks');
   return (
     <>
       {data ? (
@@ -118,7 +102,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(data)}
+              value={getCurrentTab(location, data.id, '/dashboard/cases/tasks')}
             >
               <Tab
                 component={Link}

@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -87,11 +88,7 @@ class RootTool extends Component {
       location,
       params: { toolId },
     } = this.props;
-    const getCurrentTab = (tool) => {
-      if (location.pathname.includes(`/dashboard/arsenal/tools/${tool.id}/knowledge`)) return `/dashboard/arsenal/tools/${tool.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/arsenal/tools/${tool.id}/content`)) return `/dashboard/arsenal/tools/${tool.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <>
@@ -121,28 +118,7 @@ class RootTool extends Component {
             if (props) {
               if (props.tool) {
                 const { tool } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/tools/${tool.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/tools/${tool.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/tools/${tool.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, tool.id, '/dashboard/arsenal/tools');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -165,7 +141,7 @@ class RootTool extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(tool)}
+                        value={getCurrentTab(location, tool.id, '/dashboard/arsenal/tools')}
                       >
                         <Tab
                           component={Link}

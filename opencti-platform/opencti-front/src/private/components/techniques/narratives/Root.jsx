@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -85,11 +86,7 @@ class RootNarrative extends Component {
       location,
       params: { narrativeId },
     } = this.props;
-    const getCurrentTab = (narrative) => {
-      if (location.pathname.includes(`/dashboard/techniques/narratives/${narrative.id}/knowledge`)) return `/dashboard/techniques/narratives/${narrative.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/techniques/narratives/${narrative.id}/content`)) return `/dashboard/techniques/narratives/${narrative.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <>
@@ -119,28 +116,7 @@ class RootNarrative extends Component {
             if (props) {
               if (props.narrative) {
                 const { narrative } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/narratives/${narrative.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/narratives/${narrative.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/narratives/${narrative.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, narrative.id, '/dashboard/techniques/narratives');
                 return (
                   <div style={{ paddingRight }} >
                     <Breadcrumbs variant="object" elements={[
@@ -163,7 +139,7 @@ class RootNarrative extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(narrative)}
+                        value={getCurrentTab(location, narrative.id, '/dashboard/techniques/narratives')}
                       >
                         <Tab
                           component={Link}

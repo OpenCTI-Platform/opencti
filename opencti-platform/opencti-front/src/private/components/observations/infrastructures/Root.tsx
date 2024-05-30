@@ -24,6 +24,7 @@ import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -76,11 +77,6 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (infrastructure) => {
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return `/dashboard/observations/infrastructures/${infrastructure.id}/content`;
-    return location.pathname;
-  };
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   const paddingRightValue = () => {
@@ -111,7 +107,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(infrastructure)}
+              value={getCurrentTab(location, infrastructure.id, '/dashboard/observations/infrastructures/')}
             >
               <Tab
                 component={Link}

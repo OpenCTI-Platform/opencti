@@ -25,6 +25,7 @@ import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -79,11 +80,6 @@ const RootIncidentComponent = ({ queryRef }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (incident) => {
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/knowledge`)) return `/dashboard/events/incidents/${incident.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content`)) return `/dashboard/events/incidents/${incident.id}/content`;
-    return location.pathname;
-  };
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
   const isOverview = location.pathname === `/dashboard/events/incidents/${incident?.id}`;
@@ -115,7 +111,7 @@ const RootIncidentComponent = ({ queryRef }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(incident)}
+              value={getCurrentTab(location, incident.id, '/dashboard/events/incidents/')}
             >
               <Tab
                 component={Link}

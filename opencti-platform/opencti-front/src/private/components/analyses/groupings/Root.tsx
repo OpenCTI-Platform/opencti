@@ -26,6 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -88,12 +89,6 @@ const RootGrouping = () => {
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
-  const getCurrentTab = (grouping) => {
-    if (location.pathname.includes(`/dashboard/analyses/groupings/${grouping.id}/knowledge`)) return `/dashboard/analyses/groupings/${grouping.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/analyses/groupings/${grouping.id}/content`)) return `/dashboard/analyses/groupings/${grouping.id}/content`;
-    return location.pathname;
-  };
-
   return (
     <>
       <QueryRenderer
@@ -103,32 +98,8 @@ const RootGrouping = () => {
           if (props) {
             if (props.grouping) {
               const { grouping } = props;
-              let paddingRight = 0;
               const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/groupings/${grouping.id}/entities`,
-                )
-                      || location.pathname.includes(
-                        `/dashboard/analyses/groupings/${grouping.id}/observables`,
-                      )
-              ) {
-                paddingRight = 250;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/groupings/${grouping.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/groupings/${grouping.id}/content/mapping`,
-                )
-              ) {
-                paddingRight = 0;
-              }
+              const paddingRight = getPaddingRight(location, grouping.id, '/dashboard/analyses/groupings');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -153,7 +124,7 @@ const RootGrouping = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(grouping)}
+                      value={getCurrentTab(location, grouping.id, '/dashboard/analyses/groupings')}
                     >
                       <Tab
                         component={Link}

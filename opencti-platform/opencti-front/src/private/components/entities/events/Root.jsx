@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -86,12 +87,6 @@ class RootEvent extends Component {
     } = this.props;
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
 
-    const getCurrentTab = (event) => {
-      if (location.pathname.includes(`/dashboard/entities/events/${event.id}/knowledge`)) return `/dashboard/entities/events/${event.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/entities/events/${event.id}/content`)) return `/dashboard/entities/events/${event.id}/content`;
-      return location.pathname;
-    };
-
     return (
       <>
         <Routes>
@@ -122,28 +117,7 @@ class RootEvent extends Component {
             if (props) {
               if (props.event) {
                 const { event } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/events/${event.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/events/${event.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/events/${event.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, event.id, '/dashboard/entities/events');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -166,7 +140,7 @@ class RootEvent extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(event)}
+                        value={getCurrentTab(location, event.id, '/dashboard/entities/events')}
                       >
                         <Tab
                           component={Link}

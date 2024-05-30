@@ -23,6 +23,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -103,33 +104,13 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
-  const getCurrentTab = (feedback) => {
-    if (location.pathname.includes(`/dashboard/incidents/feedbacks/${feedback.id}/knowledge`)) return `/dashboard/incidents/feedbacks/${feedback.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/incidents/feedbacks/${feedback.id}/content`)) return `/dashboard/incidents/feedbacks/${feedback.id}/content`;
-    return location.pathname;
-  };
+
   const {
     feedback: feedbackData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
-  let paddingRight = 0;
-  if (feedbackData) {
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/feedbacks/${feedbackData.id}/content`,
-      )
-    ) {
-      paddingRight = 350;
-    }
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/feedbacks/${feedbackData.id}/content/mapping`,
-      )
-    ) {
-      paddingRight = 0;
-    }
-  }
+  const paddingRight = getPaddingRight(location, feedbackData?.id, '/dashboard/cases/feedbacks');
   const canManage = feedbackData?.currentUserAccessRight === 'admin';
   return (
     <>
@@ -159,7 +140,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(feedbackData)}
+              value={getCurrentTab(location, feedbackData.id, '/dashboard/incidents/feedbacks')}
             >
               <Tab
                 component={Link}

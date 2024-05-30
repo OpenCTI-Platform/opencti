@@ -24,6 +24,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -117,12 +118,6 @@ class RootOrganization extends Component {
     const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
 
-    const getCurrentTab = (organization) => {
-      if (location.pathname.includes(`/dashboard/entities/organizations/${organization.id}/knowledge`)) return `/dashboard/entities/organizations/${organization.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/entities/organizations/${organization.id}/content`)) return `/dashboard/entities/organizations/${organization.id}/content`;
-      return location.pathname;
-    };
-
     return (
       <>
         <Routes>
@@ -159,28 +154,7 @@ class RootOrganization extends Component {
             if (props) {
               if (props.organization) {
                 const { organization } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/organizations/${organization.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/organizations/${organization.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/organizations/${organization.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, organization.id, '/dashboard/entities/organizations');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -207,7 +181,7 @@ class RootOrganization extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(organization)}
+                        value={getCurrentTab(location, organization.id, '/dashboard/entities/organizations')}
                       >
                         <Tab
                           component={Link}

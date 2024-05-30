@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -85,11 +86,7 @@ class RootAttackPattern extends Component {
       location,
       params: { attackPatternId },
     } = this.props;
-    const getCurrentTab = (attackPattern) => {
-      if (location.pathname.includes(`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`)) return `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`)) return `/dashboard/techniques/attack_patterns/${attackPattern.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
@@ -122,28 +119,7 @@ class RootAttackPattern extends Component {
             if (props) {
               if (props.attackPattern) {
                 const { attackPattern } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/attack_patterns/${attackPattern.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, attackPattern.id, '/dashboard/techniques/attack_patterns');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -166,7 +142,7 @@ class RootAttackPattern extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(attackPattern)}
+                        value={getCurrentTab(location, attackPattern.id, '/dashboard/techniques/attack_patterns')}
                       >
                         <Tab
                           component={Link}

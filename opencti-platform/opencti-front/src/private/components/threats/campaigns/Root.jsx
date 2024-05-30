@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -86,11 +87,7 @@ class RootCampaign extends Component {
       location,
       params: { campaignId },
     } = this.props;
-    const getCurrentTab = (campaign) => {
-      if (location.pathname.includes(`/dashboard/threats/campaigns/${campaign.id}/knowledge`)) return `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/threats/campaigns/${campaign.id}/content`)) return `/dashboard/threats/campaigns/${campaign.id}/content`;
-      return location.pathname;
-    };
+
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
@@ -127,28 +124,7 @@ class RootCampaign extends Component {
               if (props.campaign) {
                 const { campaign } = props;
                 const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaign.id}`;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/campaigns/${campaign.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/campaigns/${campaign.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/campaigns/${campaign.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, campaign.id, '/dashboard/threats/campaigns');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -171,7 +147,7 @@ class RootCampaign extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(campaign)}
+                        value={getCurrentTab(location, campaign.id, '/dashboard/threats/campaigns')}
                       >
                         <Tab
                           component={Link}

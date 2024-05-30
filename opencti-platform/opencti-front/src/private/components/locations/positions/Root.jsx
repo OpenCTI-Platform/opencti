@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -86,12 +87,6 @@ class RootPosition extends Component {
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
 
-    const getCurrentTab = (position) => {
-      if (location.pathname.includes(`/dashboard/locations/positions/${position.id}/knowledge`)) return `/dashboard/locations/positions/${position.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/locations/positions/${position.id}/content`)) return `/dashboard/locations/positions/${position.id}/content`;
-      return location.pathname;
-    };
-
     return (
       <>
         <Routes>
@@ -126,28 +121,7 @@ class RootPosition extends Component {
             if (props) {
               if (props.position) {
                 const { position } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/locations/positions/${position.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/locations/positions/${position.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/locations/positions/${position.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, position.id, '/dashboard/locations/positions');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -172,7 +146,7 @@ class RootPosition extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(position)}
+                        value={getCurrentTab(location, position.id, '/dashboard/locations/positions')}
                       >
                         <Tab
                           component={Link}

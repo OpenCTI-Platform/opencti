@@ -23,6 +23,7 @@ import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -77,11 +78,6 @@ const RootDataComponent = () => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const getCurrentTab = (dataComponent) => {
-    if (location.pathname.includes(`/dashboard/arsenal/techniques/${dataComponent.id}/data_components`)) return `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/arsenal/techniques/${dataComponent.id}/data_components`)) return `/dashboard/techniques/data_components/${dataComponent.id}/content`;
-    return location.pathname;
-  };
   const { t_i18n } = useFormatter();
   return (
     <>
@@ -92,28 +88,7 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
-              let paddingRight = 0;
-              if (
-                location.pathname.includes(
-                  `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
-                )
-              ) {
-                paddingRight = 200;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/techniques/data_components/${dataComponent.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/techniques/data_components/${dataComponent.id}/content/mapping`,
-                )
-              ) {
-                paddingRight = 0;
-              }
+              const paddingRight = getPaddingRight(location, dataComponent.id, '/dashboard/techniques/data_components');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -138,7 +113,7 @@ const RootDataComponent = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(dataComponent)}
+                      value={getCurrentTab(location, dataComponent.id, '/dashboard/arsenal/techniques')}
                     >
                       <Tab
                         component={Link}

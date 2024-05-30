@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -88,12 +89,6 @@ class RootSector extends Component {
     } = this.props;
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
 
-    const getCurrentTab = (sector) => {
-      if (location.pathname.includes(`/dashboard/entities/sectors/${sector.id}/knowledge`)) return `/dashboard/entities/sectors/${sector.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/entities/sectors/${sector.id}/content`)) return `/dashboard/entities/sectors/${sector.id}/content`;
-      return location.pathname;
-    };
-
     return (
       <>
         <Routes>
@@ -122,28 +117,7 @@ class RootSector extends Component {
             if (props) {
               if (props.sector) {
                 const { sector } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/sectors/${sector.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/sectors/${sector.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/sectors/${sector.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, sector.id, '/dashboard/entities/sectors');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -168,7 +142,7 @@ class RootSector extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(sector)}
+                        value={getCurrentTab(location, sector.id, '/dashboard/entities/sectors')}
                       >
                         <Tab
                           component={Link}

@@ -25,6 +25,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -84,21 +85,7 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/administrative_areas/${administrativeArea.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
+  const paddingRight = getPaddingRight(location, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
     <>
       {administrativeArea ? (
@@ -127,13 +114,7 @@ const RootAdministrativeAreaComponent = ({
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-                )
-                  ? `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location, administrativeArea.id, '/dashboard/locations/administrative_areas')}
             >
               <Tab
                 component={Link}

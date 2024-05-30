@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -85,11 +86,6 @@ class RootVulnerability extends Component {
       location,
       params: { vulnerabilityId },
     } = this.props;
-    const getCurrentTab = (vulnerability) => {
-      if (location.pathname.includes(`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`)) return `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`;
-      if (location.pathname.includes(`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`)) return `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`;
-      return location.pathname;
-    };
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
       <div>
@@ -121,28 +117,7 @@ class RootVulnerability extends Component {
             if (props) {
               if (props.vulnerability) {
                 const { vulnerability } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content/mapping`,
-                  )
-                ) {
-                  paddingRight = 0;
-                }
+                const paddingRight = getPaddingRight(location, vulnerability.id, '/dashboard/arsenal/vulnerabilities');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -166,7 +141,7 @@ class RootVulnerability extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(vulnerability)}
+                        value={getCurrentTab(location, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
                       >
                         <Tab
                           component={Link}

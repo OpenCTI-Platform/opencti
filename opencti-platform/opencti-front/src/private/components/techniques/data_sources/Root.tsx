@@ -23,6 +23,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -75,36 +76,10 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const getCurrentTab = (dataSource) => {
-    if (location.pathname.includes(`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`)) return `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`;
-    if (location.pathname.includes(`/dashboard/techniques/data_sources/${dataSource.id}/content`)) return `/dashboard/techniques/data_sources/${dataSource.id}/content`;
-    return location.pathname;
-  };
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/techniques/data_sources/${dataSource.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/techniques/data_sources/${dataSource.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/techniques/data_sources/${dataSource.id}/content/mapping`,
-    )
-  ) {
-    paddingRight = 0;
-  }
+  const paddingRight = getPaddingRight(location, dataSource?.id, '/dashboard/techniques/data_sources');
   return (
     <>
       {dataSource ? (
@@ -126,7 +101,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(dataSource)}
+              value={getCurrentTab(location, dataSource.id, '/dashboard/techniques/data_sources')}
             >
               <Tab
                 component={Link}
