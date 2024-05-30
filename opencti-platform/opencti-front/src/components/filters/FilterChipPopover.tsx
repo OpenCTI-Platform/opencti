@@ -4,7 +4,7 @@ import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
+import { Autocomplete, MenuItem, Radio, Select } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
@@ -35,9 +35,10 @@ interface FilterChipMenuProps {
   availableRelationFilterTypes?: Record<string, string[]>;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   entityTypes?: string[];
-  searchContext?: FilterSearchContext
+  searchContext?: FilterSearchContext;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  noMultiSelect?: boolean;
 }
 
 export interface FilterChipsParameter {
@@ -152,6 +153,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   filtersRepresentativesMap,
   entityTypes,
   searchContext,
+  noMultiSelect,
 }) => {
   const { t_i18n } = useFormatter();
   const filter = filters.find((f) => f.id === params.filterId);
@@ -198,7 +200,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   ) => Record<string, OptionValue[]>,
   ];
   const handleChange = (checked: boolean, value: string, childKey?: string) => {
-    if (childKey) { // case 'regardingOf' filter
+    if (childKey) { // case 'regardingOf' filter, noMultiSelect not implemented for this filter type
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
       const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
       const alreadySelectedValues = childFilter?.values ?? [];
@@ -213,6 +215,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       }
       helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
     } else if (checked) {
+      if (noMultiSelect) {
+        filter?.values.map((selected) => { return helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', selected); });
+      }
       helpers?.handleAddRepresentationFilter(filter?.id ?? '', value);
     } else {
       helpers?.handleRemoveRepresentationFilter(filter?.id ?? '', value);
@@ -320,7 +325,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                   margin: 0,
                 }}
               >
-                <Checkbox checked={checked} />
+                {noMultiSelect
+                  ? (
+                    <Radio checked={checked} />
+                  ) : (
+                    <Checkbox checked={checked} />
+                  )
+                }
                 <ItemIcon type={option.type} color={option.color} />
                 <span style={{ padding: '0 4px 0 4px' }}>
                   {option.label}

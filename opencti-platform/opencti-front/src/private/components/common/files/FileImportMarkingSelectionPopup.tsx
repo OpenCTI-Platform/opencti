@@ -7,26 +7,29 @@ import React from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import Button from '@mui/material/Button';
 import { Option } from '@components/common/form/ReferenceField';
-import { useFormatter } from '../../../../components/i18n';
+import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useFormatter } from '../../../../components/i18n';
 
 type FileImportMarkingSelectionPopupProps = {
   closePopup: () => void;
-  handleUpload: (fileMarkings: string[]) => void;
+  handleUpload: (fileMarkings: string[], associatedEntityId: string | undefined) => void;
   isOpen: boolean
+  entityId: string
 };
 
-export type SubmittedMarkingsType = {
+export type SubmittedFormValuesType = {
   fileMarkings: Option[];
+  associatedEntity: AssociatedEntityOption;
 };
 
-const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: FileImportMarkingSelectionPopupProps) => {
+const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, entityId }: FileImportMarkingSelectionPopupProps) => {
   const { t_i18n } = useFormatter();
-
-  const handleSubmit = (values: SubmittedMarkingsType) => {
+  const handleSubmit = (values: SubmittedFormValuesType) => {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const associatedEntity = (entityId || values.associatedEntity?.value) || undefined; // Double check this logic
     closePopup();
-    handleUpload(fileMarkings);
+    handleUpload(fileMarkings, associatedEntity);
   };
 
   return (
@@ -35,6 +38,7 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
         enableReinitialize={true}
         initialValues={{
           fileMarkings: [],
+          associatedEntity: { label: '', value: '', type: '' },
         }}
         onSubmit={handleSubmit}
       >
@@ -52,6 +56,16 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen }: F
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
+              {!entityId
+                && (
+                  <div style={{ paddingTop: '10px' }}>
+                    <AssociatedEntityField
+                      label={t_i18n('Associated entity')}
+                      name="associatedEntity"
+                      onChange={setFieldValue}
+                    />
+                  </div>
+                )}
             </DialogContent>
             <DialogActions>
               <Button onClick={() => {
