@@ -111,6 +111,8 @@ This is why we have introduced the concept of max confidence level to tackle thi
 
 Max confidence level per user allows organizations to fine tune their users to ensure knowledge updated and created stays as consistent as possible.
 
+The maximum confidence level can be set at the Group level or at the User level, and can be overridden by entity type for fine-tuning your confidence policy.
+
 #### Overall way of working
 
 The overall idea is that users with a max confidence level lower than a confidence level of an entity cannot update or delete this entity.
@@ -121,10 +123,46 @@ To have a detailed understanding of the concept, please browse through this diag
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>
 
+#### User effective confidence level
+
+User and group confidence level configuration shall be viewed as:
+
+* a maximum confidence level between 0 and 100 (optional for users, mandatory for groups);
+* a list of overrides (a max confidence level between 0 and 100) per entity type (optional).
+
+The user's effective confidence level is the result of this configuration from multiple sources (user and their groups).
+
+To compute this value, OpenCTI uses the following strategy:
+
+* effective maximum confidence is the maximum value found in the user's groups;
+* effective overrides per entity type are cumulated from all groups, taking the maximum value if several overrides are set on the same entity type
+* if a user maximum confidence level is set, it overrides everything from groups, including the overrides per entity type defined at group level
+* if not, but the user has specific overrides per entity types, they override the corresponding confidence levels per entity types coming from groups
+* if a user has the administrator's "Bypass" capability, the effective confidence level will always be 100 without overrides, regardless of the group and user configuration on confidence level
+
+The following diagram describes the different use-cases you can address with this system.
+
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/board/cecHM2dDyOPoviw6qbVYK4/Effective-Confidence-Level-Computation---Documentation?node-id=0-1&t=ZSJNGb93mPAQRPVh-1" allowfullscreen></iframe>
 
 #### How to set a confidence level
 
-To see how to set up the confidence level, please go in this [page](../administration/users.md).
+You can set up a maximum confidence levels from the Confidences tab in the edition panel of your user or group.
+The value can be selected between 0 and 100, or using the admiralty scale selector.
+
+At the group level, the maximum confidence level is mandatory, but is optional at the user level (you have to enable it using the corresponding toggle button).
+
+![Update Confidence Level](assets/update-confidence-level.png)
+
+#### How to override a max confidence level per entity type
+
+You also have the possibility to override a max confidence level per entity type, limited to Stix Domain Objects. 
+
+![Override Max Confidence Level Per Entity](assets/user-confidence-overrides.png)
+
+You can visualize the user's effective confidence level in the user's details view, by hovering the corresponding tooltip.
+It describes where the different values might come from.
+
+![Override Confidence Tooltip](assets/override-confidence-tooltip.png)
 
 ## Usage in OpenCTI
 

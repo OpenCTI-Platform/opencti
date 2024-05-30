@@ -72,11 +72,17 @@ When access to a user, it is possible to:
 * Manage its sessions
 * Manage its triggers and digests
 * Visualize the history and operations
-* Manage its max confidence level (override the value inherited from the group)
+* Manage its max confidence levels
 
 ![User overview](assets/user-overveiw-new.png)
 
-In the image below, you can see how to override the value inherited from the group.
+From this view you can edit the user's information by clicking the "Update" button, which opens a panel with several tabs.
+
+* Overview tab: edit all basic information such as the name or language
+* Password tab: change the password for this user
+* Groups tab: select the groups this user belongs to
+* Organization Admin tab: see [Organization administration](users.md#organization-administration)
+* Confidences tab: manage the user's maximum confidence level and overrides per entity type
 
 ![manage user](assets/user-manage.png)
 
