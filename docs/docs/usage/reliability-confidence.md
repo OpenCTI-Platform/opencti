@@ -124,8 +124,6 @@ To have a detailed understanding of the concept, please browse through this diag
 
 #### How to set a confidence level
 
-To see how to set up the confidence level, please go in this [page](../administration/users.md).
-
 You can set up a max confidence level to your user or group in the Confidences tab of this one. The max confidence level of a group will always be override by one set on user directly. However, if your user doesn't have a max confidence level set up, he will inherit the one from his groups.
 
 ![Update Confidence Level](assets/update-confidence-level.png)
@@ -133,7 +131,12 @@ You can set up a max confidence level to your user or group in the Confidences t
 Here's an example of the inheritance of the max confidence level by groups
 ![Override Confidence Tooltip](assets/override-confidence-tooltip.png)
 
-![Override Max Confidence Level Per Entity](assets/group-confidence-overrides.png)
+
+#### How to override a max confidence level per entity type
+
+You have a possibility to override a max confidence level per entity type. 
+
+![Override Max Confidence Level Per Entity](assets/user-confidence-overrides.png)
 
 ## Usage in OpenCTI
 
