@@ -161,7 +161,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
-  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []).filter((k) => k !== 'entity_type');
 
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -470,7 +470,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         <Filters
                           availableFilterKeys={availableFilterKeys}
                           helpers={helpers}
-                          searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                          searchContext={{ entityTypes: selectedTypes }}
                         />
                       </Box>
                       <FilterIconButton
@@ -478,7 +478,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         helpers={helpers}
                         styleNumber={2}
                         redirection
-                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                        searchContext={{ entityTypes: selectedTypes }}
                       />
                       {selectedTypes.length > 0 && (
                         <div

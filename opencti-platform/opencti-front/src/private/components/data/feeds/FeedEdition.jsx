@@ -158,7 +158,7 @@ const FeedEditionContainer = (props) => {
 
   const completeFilterKeysMap = useFetchFilterKeysSchema();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
-  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []);
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []).filter((k) => k !== 'entity_type');
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);
@@ -448,7 +448,7 @@ const FeedEditionContainer = (props) => {
                       <Filters
                         availableFilterKeys={availableFilterKeys}
                         helpers={helpers}
-                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                        searchContext={{ entityTypes: selectedTypes }}
                       />
                     </Box>
                     <FilterIconButton
@@ -456,7 +456,7 @@ const FeedEditionContainer = (props) => {
                       helpers={helpers}
                       styleNumber={2}
                       redirection
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                      searchContext={{ entityTypes: selectedTypes }}
                     />
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>
