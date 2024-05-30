@@ -89,7 +89,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         && userFilters[0].values.length === 1
         && userFilters[0].values[0] === user.id;
       // TODO clean up user capabilities and use isUserHasCapability without split
-      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SET_ACCESS') || isUserData;
+      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETACCESSES') || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
@@ -102,7 +102,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const notificationsUsers = uniq(objects.map((o) => o.user_id));
       const isUserData = notificationsUsers.length === 1 && notificationsUsers.includes(user.id);
       // TODO clean up user capabilities and use isUserHasCapability without split
-      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SET_ACCESS') || isUserData;
+      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETACCESSES') || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
