@@ -38,6 +38,7 @@ describe('Data initialization test', () => {
       'TAXIIAPI',
       'TAXIIAPI_SETCOLLECTIONS',
       'INGESTION',
+      'INGESTION_SETINGESTIONS',
       'INGESTION_SETCSVMAPPERS',
     ];
     expect(capabilitiesNames).toEqual(allExpectedNames);

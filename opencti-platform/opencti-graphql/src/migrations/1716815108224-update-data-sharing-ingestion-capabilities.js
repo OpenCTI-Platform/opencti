@@ -1,8 +1,7 @@
 import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { createCapabilities } from '../database/data-initialization';
 import { elLoadById, elReplace } from '../database/engine';
-import { findRoles, roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../domain/user';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
 import { listAllEntities } from '../database/middleware-loader';
@@ -15,13 +14,13 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // ------ Create Access ingestion
-  const accessIngestionCapability= await addCapability(context, SYSTEM_USER, {
+  const accessIngestionCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INGESTION',
     attribute_order: 2600,
     description: 'Access ingestion'
   });
   // ------ Create Manage ingestion
-  const manageIngestionCapability= await addCapability(context, SYSTEM_USER, {
+  const manageIngestionCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INGESTION_SETINGESTIONS',
     description: 'Manage ingestion',
     attribute_order: 2610

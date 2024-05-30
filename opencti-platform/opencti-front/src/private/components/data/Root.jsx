@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import { KNOWLEDGE_KNUPDATE, MODULES, MODULES_MODMANAGE, SETTINGS, SETTINGS_SETACCESSES, INGESTION_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, SETTINGS_SETACCESSES, INGESTION_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
