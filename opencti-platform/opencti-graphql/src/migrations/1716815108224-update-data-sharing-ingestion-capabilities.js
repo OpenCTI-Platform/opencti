@@ -28,18 +28,19 @@ export const up = async (next) => {
 
   // ------ Update roles
   const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
-  for (const role of roles) {
-    const capabilities = await roleCapabilities(context, SYSTEM_USER, role.id);
+  for (let i = 0; i < roles.length; i += 1) {
+    const roleId = roles[i].id;
+    const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
     // Select 'Access ingestion' if 'Access Data sharing & ingestion' is selected
     const hasAccessDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI');
     if (hasAccessDataSharingCapability) {
-      const input = { fromId: role.id, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
+      const input = { fromId: roleId, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
       await createRelation(context, SYSTEM_USER, input);
     }
     // Select 'Manage ingestion' if 'Manage Data sharing & ingestion' is selected
     const hasManageDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI_SETCOLLECTIONS');
     if (hasManageDataSharingCapability) {
-      const input = { fromId: role.id, toId: manageIngestionCapability.id, relationship_type: 'has-capability' };
+      const input = { fromId: roleId, toId: manageIngestionCapability.id, relationship_type: 'has-capability' };
       await createRelation(context, SYSTEM_USER, input);
     }
   }
