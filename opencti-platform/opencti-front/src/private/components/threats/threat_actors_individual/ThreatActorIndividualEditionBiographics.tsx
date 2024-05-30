@@ -94,7 +94,8 @@ ThreatActorIndividualEditionBiographicsComponentProps
     .when('measure', {
       is: (value: number) => value !== undefined && value !== null,
       then: (schema) => schema.required(t_i18n('This field is required')),
-    });
+    })
+    .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'));
 
   const basicShape = {
     eye_color: Yup.string()
