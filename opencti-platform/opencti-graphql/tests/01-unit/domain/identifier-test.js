@@ -43,7 +43,9 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalys
 import { ENTITY_TYPE_NARRATIVE } from '../../../src/modules/narrative/narrative-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../../src/modules/task/task-types';
-import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types'; // Need to import registration files
+import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
+import { RELATION_BASED_ON } from '../../../src/schema/stixCoreRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship'; // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -55,6 +57,7 @@ describe('identifier', () => {
     expect(normalize).toEqual('snowflake');
   });
 
+  // !! WARNING !!, this need to be changed along with tests/01-unit/stix/test_bundle_ids_rewrite.py
   it('should ids generated correctly', () => {
     // attack_pattern
     expect(generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, { name: 'attack' })).toEqual('attack-pattern--25f21617-8de8-5d5e-8cd4-b7e88547ba76');
@@ -133,6 +136,16 @@ describe('identifier', () => {
     expect(generateStandardId(ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, { name: 'CARD04' })).toEqual('threat-actor--af15b6ae-a3dd-54d3-8fa0-3adfe0391d01');
     // vocabulary
     expect(generateStandardId(ENTITY_TYPE_VOCABULARY, { name: 'facebook', category: 'account_type_ov' })).toEqual('vocabulary--85ae7185-ff6f-509b-a011-3069921614aa');
+    // relationship
+    const baseRelationship = { relationship_type: RELATION_BASED_ON, from: { standard_id: 'from_id' }, to: { standard_id: 'to_id' } };
+    expect(generateStandardId(RELATION_BASED_ON, baseRelationship)).toEqual('relationship--0b11fa67-da01-5d34-9864-67d4d71c3740');
+    expect(generateStandardId(RELATION_BASED_ON, { ...baseRelationship, start_time: '2022-11-25T19:00:05.000Z' })).toEqual('relationship--c5e1e2ce-14d6-535b-911d-267e92119e01');
+    expect(generateStandardId(RELATION_BASED_ON, { ...baseRelationship, start_time: '2022-11-25T19:00:05.000Z', stop_time: '2022-11-26T19:00:05.000Z' })).toEqual('relationship--a7778a7d-a743-5193-9912-89f88f9ed0b4');
+    // sighting
+    const baseSighting = { relationship_type: STIX_SIGHTING_RELATIONSHIP, from: { standard_id: 'from_id' }, to: { standard_id: 'to_id' } };
+    expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, baseSighting)).toEqual('sighting--161901df-21bb-527a-b96b-354119279fe2');
+    expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, { ...baseSighting, first_seen: '2022-11-25T19:00:05.000Z' })).toEqual('sighting--3c59ceea-8e41-5adb-a257-d070d19e6d2b');
+    expect(generateStandardId(STIX_SIGHTING_RELATIONSHIP, { ...baseSighting, first_seen: '2022-11-25T19:00:05.000Z', last_seen: '2022-11-26T19:00:05.000Z' })).toEqual('sighting--b4d307b6-d22c-5f22-b530-876c298493da');
   });
 
   it('should aliases generated with normalization', () => {
