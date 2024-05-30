@@ -64,7 +64,6 @@ export const INTERNAL_ATTRIBUTES = [
   // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',
-  'x_mitre_id',
   'x_opencti_graph_data',
   // X - OpenCTI
   xOpenctiAliases.name,
