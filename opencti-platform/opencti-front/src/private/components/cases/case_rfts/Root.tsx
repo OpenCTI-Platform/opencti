@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -121,6 +121,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             PopoverComponent={<CaseRftPopover id={caseData.id} />}
             enableQuickSubscription={true}
             enableAskAi={true}
+            redirectToContent={true}
           />
           <Box
             sx={{

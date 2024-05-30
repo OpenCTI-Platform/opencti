@@ -137,6 +137,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             enableQuickSubscription
             enableManageAuthorizedMembers={canManage}
             authorizedMembersMutation={feedbackAuthorizedMembersMutation}
+            redirectToContent={true}
           />
           <Box
             sx={{

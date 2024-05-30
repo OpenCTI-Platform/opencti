@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -131,6 +131,7 @@ const RootReport = () => {
                     enableQuickExport={true}
                     enableAskAi={true}
                     overview={isOverview}
+                    redirectToContent={true}
                   />
                   <Box
                     sx={{

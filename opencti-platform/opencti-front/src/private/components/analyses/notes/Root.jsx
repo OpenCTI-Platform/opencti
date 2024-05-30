@@ -100,6 +100,7 @@ class RootNote extends Component {
                         <ContainerHeader
                           container={note}
                           PopoverComponent={<NotePopover note={note} />}
+                          redirectToContent={true}
                         />
                       }
                     >
