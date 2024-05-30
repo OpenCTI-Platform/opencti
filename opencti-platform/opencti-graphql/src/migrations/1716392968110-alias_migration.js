@@ -1,7 +1,7 @@
 import { logApp } from '../config/conf';
 import { BULK_TIMEOUT, elBulk, elCount, elList } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { READ_DATA_INDICES } from '../database/utils';
+import { READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED } from '../database/utils';
 import { iAliasedIds } from '../schema/attribute-definition';
 import { FilterOperator } from '../generated/graphql';
 import { generateAliasesIdsForInstance } from '../schema/identifier';
@@ -31,7 +31,7 @@ export const up = async (next) => {
     logApp.info(`${message} > progress, ${totalIndex}/${total}`);
   };
 
-  await elList(context, SYSTEM_USER, READ_DATA_INDICES, { filters, noFiltersChecking: true, callback });
+  await elList(context, SYSTEM_USER, READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED, { filters, noFiltersChecking: true, callback });
   logApp.info(`${message} > done`);
   next();
 };

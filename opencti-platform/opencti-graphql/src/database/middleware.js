@@ -658,8 +658,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
           const category = getVocabularyCategoryForField(destKey, type);
-          const elements = ids.map((i) => idVocabulary(i, category))
-            .map((lid) => ({ id: lid, destKey, multiple: isListing }));
+          const elements = ids.map((i) => ({ id: idVocabulary(i, category), destKey, multiple: isListing }));
           fetchingIds.push(...elements);
         } else if (isListing) {
           const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
