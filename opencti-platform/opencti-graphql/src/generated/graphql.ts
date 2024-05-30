@@ -1717,6 +1717,7 @@ export enum Capabilities {
   ExploreExupdatePublish = 'EXPLORE_EXUPDATE_PUBLISH',
   Ingestion = 'INGESTION',
   IngestionSetcsvmappers = 'INGESTION_SETCSVMAPPERS',
+  IngestionSetingestions = 'INGESTION_SETINGESTIONS',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',

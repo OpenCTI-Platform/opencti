@@ -14,6 +14,8 @@ import Skeleton from '@mui/material/Skeleton';
 import IngestionRssPopover from './IngestionRssPopover';
 import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import Security from '../../../../utils/Security';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -107,11 +109,13 @@ class IngestionRssLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <IngestionRssPopover
-            ingestionRssId={node.id}
-            paginationOptions={paginationOptions}
-            running={node.ingestion_running}
-          />
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionRssPopover
+              ingestionRssId={node.id}
+              paginationOptions={paginationOptions}
+              running={node.ingestion_running}
+            />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );

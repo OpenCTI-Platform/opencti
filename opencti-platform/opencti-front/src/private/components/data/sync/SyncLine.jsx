@@ -14,6 +14,8 @@ import Skeleton from '@mui/material/Skeleton';
 import SyncPopover from './SyncPopover';
 import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import Security from '../../../../utils/Security';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -113,11 +115,13 @@ class SyncLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <SyncPopover
-            syncId={node.id}
-            paginationOptions={paginationOptions}
-            running={node.running}
-          />
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <SyncPopover
+              syncId={node.id}
+              paginationOptions={paginationOptions}
+              running={node.running}
+            />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );

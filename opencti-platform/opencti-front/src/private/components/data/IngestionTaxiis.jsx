@@ -11,6 +11,8 @@ import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Security from '../../../utils/Security';
+import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -102,7 +104,9 @@ const IngestionTaxii = () => {
           )}
         />
       </ListLines>
-      <IngestionTaxiiCreation paginationOptions={paginationOptions}/>
+      <Security needs={[INGESTION_SETINGESTIONS]}>
+        <IngestionTaxiiCreation paginationOptions={paginationOptions} />
+      </Security>
     </div>
   );
 };

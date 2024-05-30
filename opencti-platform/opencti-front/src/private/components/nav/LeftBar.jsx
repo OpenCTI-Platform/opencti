@@ -91,6 +91,8 @@ import useGranted, {
   TAXIIAPI_SETCOLLECTIONS,
   INGESTION_SETCSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
+  INGESTION,
+  INGESTION_SETINGESTIONS,
 } from '../../../utils/hooks/useGranted';
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -209,7 +211,7 @@ const LeftBar = () => {
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, INGESTION_SETCSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI_SETCOLLECTIONS]);
   const isGrantedToSettings = useGranted([SETTINGS]);
-  const isGrantedToIngestion = useGranted([SETTINGS, MODULES]);
+  const isGrantedToIngestion = useGranted([SETTINGS, MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -760,7 +762,7 @@ const LeftBar = () => {
             )}
           </MenuList>
         </Security>
-        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, INGESTION_SETCSVMAPPERS]}>
+        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, INGESTION, INGESTION_SETINGESTIONS, INGESTION_SETCSVMAPPERS]}>
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
@@ -803,7 +805,7 @@ const LeftBar = () => {
                 </MenuItem>
               </StyledTooltip>
             </Security>
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, INGESTION_SETCSVMAPPERS]}>
+            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, INGESTION, INGESTION_SETINGESTIONS, INGESTION_SETCSVMAPPERS]}>
               <MenuItem
                 ref={anchors.data}
                 selected={!navOpen && location.pathname.includes('/dashboard/data')}
