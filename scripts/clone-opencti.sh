@@ -1,8 +1,8 @@
 #!/bin/sh
 
-if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]
+if [[ -z "$1" ]] || [[ -z "$2" ]]
 then
-    echo "[CLONE-DEPS] This scripts $0 requires 3 paramaters: branch_name:$1, workspace:$2 (optional: PR_number:$3)"
+    echo "[CLONE-DEPS] This scripts $0 requires 2 paramaters: branch_name:$1, workspace:$2 (optional: PR_number:$3)"
     exit 0
 fi
 
