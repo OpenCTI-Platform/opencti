@@ -1,4 +1,4 @@
-FROM node:20-alpine AS app
+FROM node:20-alpine3.20 AS app
 
 WORKDIR /opt
 RUN apk add tini python3 py3-pip python3-dev git
