@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -129,6 +129,7 @@ const RootGrouping = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}
+                    redirectToContent={true}
                   />
                   <Box
                     sx={{

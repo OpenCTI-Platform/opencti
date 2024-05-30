@@ -4,7 +4,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -125,6 +125,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
             enableQuickSubscription={true}
             enableAskAi={true}
+            redirectToContent={true}
           />
           <Box
             sx={{
