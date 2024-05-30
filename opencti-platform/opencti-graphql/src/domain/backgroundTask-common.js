@@ -88,7 +88,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const isUserData = userFilters.length > 0
         && userFilters[0].values.length === 1
         && userFilters[0].values[0] === user.id;
-      const isAuthorized = userCapabilities.includes(BYPASS) || isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
+      const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
@@ -100,7 +100,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
       const notificationsUsers = uniq(objects.map((o) => o.user_id));
       const isUserData = notificationsUsers.length === 1 && notificationsUsers.includes(user.id);
-      const isAuthorized = userCapabilities.includes(BYPASS) || isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
+      const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
