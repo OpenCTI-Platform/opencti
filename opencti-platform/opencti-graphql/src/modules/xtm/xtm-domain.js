@@ -125,13 +125,13 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
             - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
-            - Order of kill chain phases is ${killChainPhasesListOfNames}
-            - We are in the kill chain phase ${killChainPhaseName}
-            - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
-            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack
-            - The incident response team is under attack
-            - Ensure that all words are accurately spelled and that the grammar is correct.
-            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - We are in the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack.
+            - The incident response team is under attack.
+            - Ensure that all words are accurately spelled and that the grammar is correct and the output format is in HTML.
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
             
             # Context about the attack
             ${content}
@@ -139,8 +139,8 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
       const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
       const promptIncidentResponseSubject = `
             # Instructions
-            - Generate a subject for the following email
-            - The subject should be short and comprehensible
+            - Generate a subject for the following email.
+            - The subject should be short and comprehensible.
             - Ensure that all words are accurately spelled and that the grammar is correct.
             
             # Email content
@@ -156,7 +156,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         dependsOnDuration,
         {
           expectations: [],
-          subject: `[${killChainPhaseName}] ${responseIncidentResponseSubject}`,
+          subject: responseIncidentResponseSubject,
           body: responseIncidentResponse
         },
         [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
@@ -168,13 +168,13 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
             - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
-            - Order of kill chain phases is ${killChainPhasesListOfNames}
-            - We are in the kill chain phase ${killChainPhaseName}
-            - You should write an email message representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
-            - The email message should be addressed from the security operation center team to the chief security officer, talking about the phase of the attack
-            - The incident response team is under attack
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - We are in the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this kill chain phase (${killChainPhaseName}) targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the chief security officer, talking about the phase of the attack.
+            - The incident response team is under attack.
             - Ensure that all words are accurately spelled and that the grammar is correct.
-            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
             
             # Context about the attack
             ${content}
@@ -199,7 +199,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         dependsOnDuration,
         {
           expectations: [],
-          subject: `[${killChainPhaseName}] ${responseCisoSubject}`,
+          subject: responseCisoSubject,
           body: responseCiso
         },
         [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
@@ -239,14 +239,14 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
             - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
-            - Order of kill chain phases is ${killChainPhasesListOfNames}
-            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
-            - You should take into account the context about the attack
-            - You should write an email message representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
-            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack
-            - The incident response team is under attack
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}.
+            - You should take into account the context about the attack.
+            - You should write an email message (only the content, NOT the subject) representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - The email message should be addressed from the security operation center team to the incident response team, talking about the phase of the attack.
+            - The incident response team is under attack.
             - Ensure that all words are accurately spelled and that the grammar is correct.
-            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
             
             # Context about the attack
             ${content}
@@ -255,6 +255,16 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             ${obasAttackPattern.attack_pattern_description}
             `;
       const responseIncidentResponse = await compute(null, promptIncidentResponse, user);
+      const promptIncidentResponseSubject = `
+            # Instructions
+            - Generate a subject for the following email
+            - The subject should be short and comprehensible
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseIncidentResponse}
+            `;
+      const responseIncidentResponseSubject = await compute(null, promptIncidentResponseSubject, user);
       const titleIncidentResponse = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the incident response team`;
       await createInjectInScenario(
         obasScenario.scenario_id,
@@ -262,7 +272,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
         titleIncidentResponse,
         dependsOnDuration,
-        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseIncidentResponse },
+        { expectations: [], subject: responseIncidentResponseSubject, body: responseIncidentResponse },
         [{ value: 'opencti', color: '#001bda' }, { value: 'csirt', color: '#c28b0d' }]
       );
       dependsOnDuration += (interval * 60);
@@ -271,14 +281,14 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             - The context is a cybersecurity breach and attack simulation and cybersecurity crisis management exercise
             - The enterprise is under attack! The incident response team and the CISO will need to answer to fake injections and questions.
             - You should fake it and not writing about the simulation but like if it is a true cybersecurity threat and / or incident.
-            - Order of kill chain phases is ${killChainPhasesListOfNames}
-            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}
-            - You should write an email message representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph
-            - You should take into account the context about the attack
-            - The email message should be addressed from the security operation center team to the chief information security officer
-            - The CISO is under attack
+            - Order of kill chain phases is ${killChainPhasesListOfNames}.
+            - Examine the provided content which describes an attack technique in the context of the kill chain phase ${killChainPhaseName}.
+            - You should write an email message (only the content, NOT the subject) representing this attack technique targeting the enterprise of 3 paragraphs with 3 lines in each paragraph in HTML.
+            - You should take into account the context about the attack.
+            - The email message should be addressed from the security operation center team to the chief information security officer.
+            - The CISO is under attack.
             - Ensure that all words are accurately spelled and that the grammar is correct.
-            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format
+            - Your response should be in HTML format. Be sure to respect this format and to NOT output anything else than the format.
           
             # Context about the attack
             ${content}
@@ -287,6 +297,16 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
             ${obasAttackPattern.attack_pattern_description}
         `;
       const responseCiso = await compute(null, promptCiso, user);
+      const promptCisoSubject = `
+            # Instructions
+            - Generate a subject for the following email
+            - The subject should be short and comprehensible
+            - Ensure that all words are accurately spelled and that the grammar is correct.
+            
+            # Email content
+            ${responseCiso}
+            `;
+      const responseCisoSubject = await compute(null, promptCisoSubject, user);
       const titleCiso = `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name} - Email to the CISO`;
       await createInjectInScenario(
         obasScenario.scenario_id,
@@ -294,7 +314,7 @@ export const generateOpenBasScenario = async (context, user, stixCoreObject, att
         '2790bd39-37d4-4e39-be7e-53f3ca783f86',
         titleCiso,
         dependsOnDuration,
-        { expectations: [], subject: `[${killChainPhaseName}] ${obasAttackPattern.attack_pattern_name}`, body: responseCiso },
+        { expectations: [], subject: responseCisoSubject, body: responseCiso },
         [{ value: 'opencti', color: '#001bda' }, { value: 'ciso', color: '#b41313' }]
       );
       dependsOnDuration += (interval * 60);
