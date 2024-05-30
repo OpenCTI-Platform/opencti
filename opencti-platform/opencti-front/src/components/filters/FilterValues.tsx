@@ -101,7 +101,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     );
   }
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
-  const values = filterValues.map((id: string) => {
+  const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode
       && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)

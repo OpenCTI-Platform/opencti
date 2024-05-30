@@ -274,7 +274,7 @@ export const usePaginationLocalStorage = <U>(
                 ...viewStorage.filters,
                 filters: [
                   ...viewStorage.filters.filters
-                    .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                   newFilterElement, // remove value=id
                 ],
               };
@@ -300,7 +300,7 @@ export const usePaginationLocalStorage = <U>(
           const newBaseFilters = {
             ...viewStorage.filters,
             filters: viewStorage.filters.filters
-              .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+              .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
           };
           setValue((c) => ({
             ...c,
@@ -355,7 +355,7 @@ export const usePaginationLocalStorage = <U>(
         const newBaseFilters = {
           ...viewStorage.filters,
           filters: [
-            ...viewStorage.filters.filters.map((f: Filter) => (f.key === k && f.operator === op ? newFilterElement : f)),
+            ...viewStorage.filters.filters.map((f) => (f.key === k && f.operator === op ? newFilterElement : f)),
           ],
         };
         setValue((c) => ({
@@ -399,7 +399,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddRepresentationFilter: (id: string, value: string) => {
       if (value === null) { // handle clicking on 'no label' in entities list
-        const findCorrespondingFilter = viewStorage.filters?.filters.find((f: Filter) => id === f.id);
+        const findCorrespondingFilter = viewStorage.filters?.filters.find((f) => id === f.id);
         if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
           if (viewStorage.filters) {
             const { filters } = viewStorage;
@@ -480,7 +480,7 @@ export const usePaginationLocalStorage = <U>(
           ...viewStorage.filters,
           filters: [
             ...viewStorage.filters.filters
-              .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
+              .filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
             newFilterElement, // add new filter
           ],
         };

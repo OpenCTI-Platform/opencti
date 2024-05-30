@@ -11,7 +11,7 @@ import { convertOperatorToIcon } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
-import { Filter, FilterGroup } from '../utils/filters/filtersHelpers-types';
+import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,7 +55,7 @@ const TaskFilterValue = ({
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
     <>
-      {(filters.filters ?? []).map((currentFilter: Filter) => {
+      {(filters.filters ?? []).map((currentFilter) => {
         const label = `${truncate(
           currentFilter.key.startsWith('rel_')
             ? t_i18n(
@@ -104,7 +104,7 @@ const TaskFilterValue = ({
                   {isOperatorNil ? (
                     <DisplayNilLabel/>
                   ) : (
-                    currentFilter.values.map((o: string) => {
+                    currentFilter.values.map((o) => {
                       const localFilterMode = t_i18n(
                         (currentFilter.mode ?? 'or').toUpperCase(),
                       );
