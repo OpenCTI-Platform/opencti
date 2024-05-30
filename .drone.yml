@@ -92,14 +92,16 @@ services:
       RABBITMQ__HOSTNAME: rabbitmq
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
+      GITHUB_TOKEN:
+        from_secret: github_token
     commands:
-      - apk add build-base git libffi-dev cargo
-      - BRANCH=$(echo $DRONE_SOURCE_BRANCH)
-      - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo $(echo $BRANCH | cut -d "/" -f2-) || echo 'master' )
-      - git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
-      - cd /tmp/opencti/opencti-platform/opencti-graphql
-      - OPENCTI_COMMIT=$(git rev-parse --short HEAD)
-      - echo [INFO] using opencti@$OPENCTI_BRANCH:$OPENCTI_COMMIT
+      - apk add build-base git libffi-dev cargo github-cli
+      - chmod 777 scripts/*
+      - echo "DRONE_SOURCE_BRANCH:${DRONE_SOURCE_BRANCH}, DRONE_PULL_REQUEST:${DRONE_PULL_REQUEST}"
+      - ./scripts/clone-opencti.sh "${DRONE_SOURCE_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
+      - ls -lart
+      - cd opencti/opencti-platform/opencti-graphql
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
