@@ -254,3 +254,19 @@ After the build you can start the production build with yarn serv.
 $ cd ../opencti-graphql
 $ yarn serv
 ```
+
+## Continous Integration and features cross repository
+
+When a feature requires changes in two or more repository in opencti, connectors and client-python; then some specific convention must be use to have the continuous integration build them all together.
+
+### Naming convention of branch
+
+The Pull Request on ***opencti*** repository should be (issue or bug)/number + optional, example: `issue/7062-contributing`
+
+The pull request on ***connector*** or ***client-python*** should refer to opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
+
+Note that if there are several matches, the first one is taken. So for example having `issue/7062-contributing` and `issue/7062` that are both marked as "multi-repository" is not a good idea.
+
+### Labels
+
+All Pull Requests involved must have the label `multi-repository` added in GitHub.
