@@ -77,6 +77,7 @@ When access to a user, it is possible to:
 ![User overview](assets/user-overveiw-new.png)
 
 From this view you can edit the user's information by clicking the "Update" button, which opens a panel with several tabs.
+
 * Overview tab: edit all basic information such as the name or language
 * Password tab: change the password for this user
 * Groups tab: select the groups this user belongs to
