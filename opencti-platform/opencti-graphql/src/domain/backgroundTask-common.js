@@ -101,7 +101,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
       const notificationsUsers = uniq(objects.map((o) => o.user_id));
       const isUserData = notificationsUsers.length === 1 && notificationsUsers.includes(user.id);
-      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(SETACCESSES) || isUserData;
+      // TODO clean up user capabilities and use isUserHasCapability without split
+      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SET_ACCESS') || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
