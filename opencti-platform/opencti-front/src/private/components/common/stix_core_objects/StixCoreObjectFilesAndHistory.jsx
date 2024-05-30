@@ -140,6 +140,7 @@ const StixCoreObjectFilesAndHistory = ({
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
+  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -241,6 +242,8 @@ const StixCoreObjectFilesAndHistory = ({
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
+  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
+  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
   return (
     <div className={classes.container} data-testid="StixCoreObjectFilesAndHistory">
       <Grid
@@ -327,6 +330,7 @@ const StixCoreObjectFilesAndHistory = ({
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
+                      setCsvMapperId={setCsvMapperId}
                     >
                     {selectedConnector.configurations.map((config) => {
                       return (
@@ -341,6 +345,7 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                   }
                 {selectedConnector?.name === 'ImportCsv'
+                  && csvMapper?.has_user_choice
                   && (
                     <>
                       <ObjectMarkingField
@@ -348,9 +353,6 @@ const StixCoreObjectFilesAndHistory = ({
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
-                      <DialogContentText>
-                        {t_i18n('Marking definitions to use by the csv mapper...')}
-                      </DialogContentText>
                     </>
                   )
                 }
@@ -505,7 +507,7 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
         updated_at
         configurations {
             id
-            name,
+            name
             configuration
         }
       }

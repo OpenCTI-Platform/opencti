@@ -25,7 +25,6 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
-import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -182,6 +181,9 @@ class ImportContentComponent extends Component {
       sortBy: 'name',
       orderAsc: true,
       selectedConnector: null,
+      selectedConfiguration: '',
+      csvMapperId: '',
+      csvMapper: null,
     };
   }
 
@@ -193,6 +195,13 @@ class ImportContentComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  handleSetCsvMapperId(csvMapperId) {
+    this.setState({ csvMapperId });
+    const selectedConfiguration = this.state.selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
+    this.setState({ selectedConfiguration });
+    this.setState({ csvMapper: selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '' });
   }
 
   handleOpenImport(file) {
@@ -315,7 +324,8 @@ class ImportContentComponent extends Component {
     const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
     const handleSelectConnector = (_, value) => {
-      this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
+      const selectedConnector = connectors.find((c) => c.id === value);
+      this.setState({ selectedConnector });
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
         && this.state.selectedConnector?.configurations?.length === 0;
@@ -559,6 +569,9 @@ class ImportContentComponent extends Component {
                           label={t('Configuration')}
                           fullWidth={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
+                          setCsvMapperId={this.setState}
+                          handleSetCsvMapperId={this.handleSetCsvMapperId.bind(this)}
+                          fromClassComponent={true}
                         >
                         {this.state.selectedConnector.configurations?.map((config) => {
                           return (
@@ -574,6 +587,7 @@ class ImportContentComponent extends Component {
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
                     {this.state.selectedConnector?.name === 'ImportCsv'
+                      && this.state.csvMapper?.has_user_choice
                       && (
                         <>
                           <ObjectMarkingField
@@ -581,9 +595,6 @@ class ImportContentComponent extends Component {
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                           />
-                          <DialogContentText>
-                            {t('Marking definitions to use by the csv mapper...')}
-                          </DialogContentText>
                         </>
                       )
                     }

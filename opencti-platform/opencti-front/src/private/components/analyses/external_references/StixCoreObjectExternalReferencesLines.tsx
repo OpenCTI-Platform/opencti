@@ -119,6 +119,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
   );
+  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const handleSelectConnector = (_: string, value: string) => {
     setSelectedConnector(data.connectorsForImport?.find((c) => c?.id === value) ?? null);
@@ -234,6 +235,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
       setSubmitting: undefined,
     });
   };
+  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
+  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -551,6 +554,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
+                      setCsvMapperId={setCsvMapperId}
                     >
                     {(selectedConnector?.configurations ?? []).map((config) => {
                       return (
@@ -565,6 +569,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                 }
                 {selectedConnector?.name === 'ImportCsv'
+                    && csvMapper?.has_user_choice
                     && (
                     <>
                       <ObjectMarkingField
@@ -572,9 +577,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
-                      <DialogContentText>
-                        {t_i18n('Marking definitions to use by the csv mapper...')}
-                      </DialogContentText>
                     </>
                     )
                 }

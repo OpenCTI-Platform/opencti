@@ -140,6 +140,7 @@ const FileManager = ({
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
+  const [csvMapperId, setCsvMapperId] = useState('');
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -248,6 +249,9 @@ const FileManager = ({
     'Malware',
   ].includes(entity.entity_type);
 
+  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
+  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
+
   return (
     <div className={classes.container} data-testid="FileManager">
       <Grid
@@ -334,6 +338,7 @@ const FileManager = ({
                       label={t('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
+                      setCsvMapperId={setCsvMapperId}
                     >
                       {selectedConnector.configurations.map((config) => {
                         return (
@@ -348,18 +353,16 @@ const FileManager = ({
                     </Field>
                   )}
                   {selectedConnector?.name === 'ImportCsv'
-                    && (
+                      && csvMapper?.has_user_choice
+                      && (
                       <>
                         <ObjectMarkingField
                           name="objectMarking"
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                         />
-                        <DialogContentText>
-                          {t('Marking definitions to use by the csv mapper...')}
-                        </DialogContentText>
                       </>
-                    )
+                      )
                   }
                 </DialogContent>
                 <DialogActions>

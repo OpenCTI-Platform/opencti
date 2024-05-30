@@ -7644,7 +7644,7 @@ type Query {
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   csvMapper(id: String!): CsvMapper
-  csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
+  csvMappers(all: Boolean, connectionFormat: Boolean, first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   publicDashboard(id: String!): PublicDashboard
@@ -11415,6 +11415,7 @@ type CsvMapper implements InternalObject & BasicObject {
   parent_types: [String!]!
   name: String!
   has_header: Boolean!
+  has_user_choice: Boolean!
   separator: String!
   skipLineChar: String
   representations: [CsvMapperRepresentation!]!

@@ -40,13 +40,23 @@ const SelectField = (props) => {
     onChange,
     onFocus,
     onSubmit,
+    setCsvMapperId,
+    handleSetCsvMapperId,
+    fromClassComponent,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
+      const csvMapperId = value?.startsWith('{') ? JSON.parse(value)?.id : '';
       setFieldValue(name, value);
       if (typeof onChange === 'function') {
         onChange(name, value);
+      }
+      if (typeof setCsvMapperId === 'function' && !fromClassComponent) {
+        setCsvMapperId(csvMapperId);
+      }
+      if (typeof handleSetCsvMapperId === 'function') {
+        handleSetCsvMapperId(csvMapperId);
       }
     },
     [setFieldValue, onChange, name],

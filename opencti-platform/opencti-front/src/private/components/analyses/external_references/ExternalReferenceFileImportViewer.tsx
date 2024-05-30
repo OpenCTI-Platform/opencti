@@ -18,7 +18,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import DialogContentText from '@mui/material/DialogContentText';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -98,6 +97,7 @@ ExternalReferenceFileImportViewerBaseProps
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
+  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
   const importConnsPerFormat = scopesConn(connectorsImport);
@@ -149,6 +149,8 @@ ExternalReferenceFileImportViewerBaseProps
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
+  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
+  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
   return (
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
@@ -263,6 +265,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
+                        setCsvMapperId={setCsvMapperId}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (
@@ -277,6 +280,7 @@ ExternalReferenceFileImportViewerBaseProps
                     </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                     }
                   {selectedConnector?.name === 'ImportCsv'
+                      && csvMapper?.has_user_choice
                       && (
                       <>
                         <ObjectMarkingField
@@ -284,9 +288,6 @@ ExternalReferenceFileImportViewerBaseProps
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                         />
-                        <DialogContentText>
-                          {t_i18n('Marking definitions to use by the csv mapper...')}
-                        </DialogContentText>
                       </>
                       )
                   }
