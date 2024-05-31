@@ -289,10 +289,13 @@ describe('TaskManager executePromote tests', () => {
     return { createdIndicator, createObservable, createdReport };
   };
 
-  const resetTestContext = async (observableId: string, indicatorId: string, containerId: string) => {
-    await stixCyberObservableDelete(testContext, ADMIN_USER, observableId);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorId);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, containerId);
+  const resetTestContext = async (stixCyberObservableIds: string[], stixDomainObjectIds: string[]) => {
+    for (let i = 0; i < stixCyberObservableIds.length; i += 1) {
+      await stixCyberObservableDelete(testContext, ADMIN_USER, stixCyberObservableIds[i]);
+    }
+    for (let i = 0; i < stixDomainObjectIds.length; i += 1) {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, stixDomainObjectIds[i]);
+    }
   };
 
   describe('PROMOTE IN CONTAINER', () => {
@@ -312,7 +315,7 @@ describe('TaskManager executePromote tests', () => {
     });
 
     afterAll(async () => {
-      await resetTestContext(observableId, indicatorId, containerId);
+      await resetTestContext([observableId], [indicatorId, containerId]);
     });
 
     it('PROMOTE indicator to observable', async () => {
@@ -332,6 +335,8 @@ describe('TaskManager executePromote tests', () => {
     let indicatorId = '';
     let observableId = '';
     let containerId = '';
+    let createdIndicatorId = '';
+    let createdObservableId: string[] = [];
 
     beforeAll(async () => {
       const { createdIndicator, createObservable, createdReport } = await prepareTestContext();
@@ -342,17 +347,19 @@ describe('TaskManager executePromote tests', () => {
     });
 
     afterAll(async () => {
-      await resetTestContext(observableId, indicatorId, containerId);
+      await resetTestContext([observableId, ...createdObservableId], [indicatorId, createdIndicatorId, containerId]);
     });
 
     it('PROMOTE observable to indicator', async () => {
       const createdIndicator = await promoteObservableToIndicator(testContext, ADMIN_USER, observableId);
       expect(createdIndicator).not.toBeUndefined();
+      createdIndicatorId = createdIndicator.id;
     });
 
     it('PROMOTE indicator to observable', async () => {
       const createdObservables = await promoteIndicatorToObservables(testContext, ADMIN_USER, indicatorId);
       expect(createdObservables.length).greaterThan(0);
+      createdObservableId = createdObservables.map(({ id }) => id);
     });
   });
 });
