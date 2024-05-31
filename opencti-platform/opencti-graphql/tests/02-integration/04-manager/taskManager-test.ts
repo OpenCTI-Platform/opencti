@@ -14,7 +14,7 @@ import { type OrganizationAddInput } from '../../../src/generated/graphql';
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
 
-describe.skip('TaskManager executeReplace tests ', () => {
+describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
   const reportsId: string[] = [];
   afterAll(async () => {
