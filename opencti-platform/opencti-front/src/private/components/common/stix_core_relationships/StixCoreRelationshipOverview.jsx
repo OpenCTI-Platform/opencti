@@ -409,7 +409,7 @@ class StixCoreRelationshipContainer extends Component {
                     <MarkdownDisplay
                       content={
                         stixCoreRelationship.x_opencti_inferences !== null ? (
-                          <i>{t('Inferred knowledge')}</i>
+                          t('Inferred knowledge')
                         ) : (
                           stixCoreRelationship.description
                         )
