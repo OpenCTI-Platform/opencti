@@ -101,6 +101,7 @@ const sentinelOptions = async (clusterNodes: Partial<SentinelAddress>[]): Promis
   const passwordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
   return {
     ...passwordAuth,
+    keyPrefix: REDIS_PREFIX,
     name: conf.get('redis:sentinel_master_name'),
     role: conf.get('redis:sentinel_role'),
     preferredSlaves: conf.get('redis:sentinel_preferred_slaves'),
