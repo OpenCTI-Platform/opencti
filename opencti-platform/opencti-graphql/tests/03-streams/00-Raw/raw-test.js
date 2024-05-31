@@ -75,7 +75,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
       expect(updateEventsByTypes['note'].length).toBe(3);
       expect(updateEventsByTypes['opinion'].length).toBe(6);
-      expect(updateEventsByTypes['report'].length).toBe(10);
+      expect(updateEventsByTypes['report'].length).toBe(12);
       expect(updateEventsByTypes['ipv4-addr'].length).toBe(3);
       expect(updateEventsByTypes['tool'].length).toBe(7);
       expect(updateEventsByTypes['sighting'].length).toBe(4);
