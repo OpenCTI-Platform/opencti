@@ -21,7 +21,7 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
-import { BYPASS, isUserHasCapability } from '../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { userAddIndividual } from '../domain/user';
 
@@ -73,7 +73,7 @@ const noteResolvers = {
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);
-        const isManager = isUserHasCapability(context.user, KNOWLEDGE_UPDATE);
+        const isManager = isUserHasCapability(context.user, KNOWLEDGE_KNUPDATE);
         const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
         return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
       },

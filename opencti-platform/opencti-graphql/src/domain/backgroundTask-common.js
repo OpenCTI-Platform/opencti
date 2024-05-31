@@ -3,7 +3,7 @@ import { uniq } from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
-import { BYPASS, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
+import { BYPASS, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
@@ -88,7 +88,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       const isUserData = userFilters.length > 0
         && userFilters[0].values.length === 1
         && userFilters[0].values[0] === user.id;
-      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(SETTINGS_SET_ACCESSES) || isUserData;
+      const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
@@ -100,7 +100,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
       const notificationsUsers = uniq(objects.map((o) => o.user_id));
       const isUserData = notificationsUsers.length === 1 && notificationsUsers.includes(user.id);
-      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(SETTINGS_SET_ACCESSES) || isUserData;
+      const isAuthorized = isUserHasCapability(user, SETTINGS_SET_ACCESSES) || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();
       }
