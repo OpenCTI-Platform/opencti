@@ -138,9 +138,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
   const markingTypes = uniq(allowedMarkings.map((marking) => marking.definition_type)).filter((type) => !!type) as string[];
   const maxShareableMarkings = markingsSort(group.max_shareable_marking ?? []);
-  const notShareableMarkingTypes = markingTypes
-    .filter((type) => !maxShareableMarkings.map((shareableMarking) => shareableMarking.definition_type).includes(type))
-    .sort((a, b) => a.localeCompare(b));
+  const maxShareableMarkingsByType = new Map(markingTypes.map((type) => {
+    const sortedMaxMarkingsOfType = maxShareableMarkings.filter((m) => m.definition_type === type)
+      .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+    return [type, sortedMaxMarkingsOfType.length > 0 ? sortedMaxMarkingsOfType[0] : undefined];
+  }));
   // Handle only GLOBAL entity type for now
   const globalDefaultMarkings = markingsSort(
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
@@ -361,52 +363,58 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Maximum shareable markings')}
                 </Typography>
-                <FieldOrEmpty source={maxShareableMarkings}>
+                <FieldOrEmpty source={markingTypes}>
                   <List>
-                    {maxShareableMarkings.map((marking) => (
-                      <ListItem
-                        key={marking.id}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                            color={marking.x_opencti_color ?? undefined}
+                    {markingTypes.map((type) => {
+                      const marking = maxShareableMarkingsByType.get(type);
+                      if (marking) {
+                        return (
+                          <ListItem
+                            key={marking.id}
+                            dense={true}
+                            divider={true}
+                            button={false}
+                          >
+                            <Typography variant="h3" gutterBottom={true} width={100}>
+                              {truncate(type, 40)}
+                            </Typography>
+                            <ListItemIcon>
+                              <ItemIcon
+                                type="Marking-Definition"
+                                color={marking.x_opencti_color ?? undefined}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={truncate(marking.definition, 40)}
+                            />
+                            {!allowedMarkings.map((m) => m.id).includes(marking.id)
+                              && <Tooltip
+                                title={t_i18n(
+                                  'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
+                                )}
+                                 >
+                                <WarningOutlined color="warning"/>
+                              </Tooltip>
+                            }
+                          </ListItem>
+                        );
+                      }
+                      return (
+                        <ListItem
+                          key={type}
+                          dense={true}
+                          divider={true}
+                          button={false}
+                        >
+                          <Typography variant="h3" gutterBottom={true} width={100}>
+                            {truncate(type, 40)}
+                          </Typography>
+                          <ListItemText
+                            primary={t_i18n('not shareable')}
                           />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(marking.definition, 40)}
-                        />
-                        {!allowedMarkings.map((m) => m.id).includes(marking.id)
-                          && <Tooltip
-                            title={t_i18n(
-                              'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
-                            )}
-                             >
-                            <WarningOutlined color="warning"/>
-                          </Tooltip>
-                        }
-                      </ListItem>
-                    ))}
-                    {notShareableMarkingTypes.map((type) => (
-                      <ListItem
-                        key={type}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${type} : ${t_i18n('not shareable')}`}
-                        />
-                      </ListItem>
-                    ))}
+                        </ListItem>
+                      );
+                    })}
                   </List>
                 </FieldOrEmpty>
               </Grid>
