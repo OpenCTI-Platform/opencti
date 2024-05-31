@@ -25,7 +25,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(31);
       expect(createEventsByTypes.location.length).toBe(15);
-      expect(createEventsByTypes.relationship.length).toBe(132);
+      expect(createEventsByTypes.relationship.length).toBe(136);
       expect(createEventsByTypes.sighting.length).toBe(4);
       expect(createEventsByTypes.indicator.length).toBe(33);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
