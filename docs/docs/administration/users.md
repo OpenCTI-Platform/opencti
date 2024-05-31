@@ -97,16 +97,17 @@ Groups are the main way to manage permissions and [data segregation](segregation
 
 Here is the description of the group available parameters.
 
-| Parameter              | Description                                                                                                                                                               |
-|:-----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Auto new markings`    | If a new marking definition is created, this group will automatically be granted to it.                                                                                   |
-| `Default membership`   | If a new user is created (manually or upon SSO), it will be added to this group.                                                                                          |
-| `Roles`                | Roles and capabilities granted to the users belonging to this group.                                                                                                      |
-| `Default dashboard`    | Customize the home dashboard for the users belonging to this group.                                                                                                       |
-| `Default markings`     | In `Settings > Customization > Entity types`, if a default marking definition is enabled, default markings of the group is used.                                          |
-| `Allowed markings`     | Grant access to the group to the defined marking definitions, more details in [data segregation](segregation.md).                                                         |
-| `Triggers and digests` | Define defaults triggers and digests for the users belonging to this group.                                                                                               |
-| `Max confidence level` | Define the maximum confidence level for the group: it will impact the capacity to update entities, the confidence level of a newly created entity by a user of the group. |
+| Parameter                | Description                                                                                                                                                               |
+|:-------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Auto new markings`      | If a new marking definition is created, this group will automatically be granted to it.                                                                                   |
+| `Default membership`     | If a new user is created (manually or upon SSO), it will be added to this group.                                                                                          |
+| `Roles`                  | Roles and capabilities granted to the users belonging to this group.                                                                                                      |
+| `Default dashboard`      | Customize the home dashboard for the users belonging to this group.                                                                                                       |
+| `Default markings`       | In `Settings > Customization > Entity types`, if a default marking definition is enabled, default markings of the group is used.                                          |
+| `Allowed markings`       | Grant access to the group to the defined marking definitions, more details in [data segregation](segregation.md).                                                         |
+| `Max shareable markings` | Grant authorization to the group to share marking definitions.                                                                                                            |
+| `Triggers and digests`   | Define defaults triggers and digests for the users belonging to this group.                                                                                               |
+| `Max confidence level`   | Define the maximum confidence level for the group: it will impact the capacity to update entities, the confidence level of a newly created entity by a user of the group. |
 
 ![Group overview](assets/group-overview-new.png)
 
