@@ -42,7 +42,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.file.length).toBe(4);
       expect(createEventsByTypes.campaign.length).toBe(5);
       expect(createEventsByTypes.incident.length).toBe(2);
-      expect(createEventsByTypes.report.length).toBe(31);
+      expect(createEventsByTypes.report.length).toBe(33);
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(335); // 328 created at init + 2 created in tests + 5 vocabulary organizations types
       expect(createEventsByTypes.vulnerability.length).toBe(7);
