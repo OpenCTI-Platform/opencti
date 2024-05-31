@@ -61,7 +61,6 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
-  INTERNAL_IDS_ALIASES,
   isAbstract,
   REL_INDEX_PREFIX,
   RULE_PREFIX
@@ -80,7 +79,6 @@ import {
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObject,
-  isStixObjectAliased,
   STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
@@ -114,9 +112,9 @@ import {
   complexConversionFilterKeys,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
-  INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_REGARDING_OF,
   INSTANCE_RELATION_FILTER,
+  INSTANCE_RELATION_TYPES_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -131,7 +129,19 @@ import {
   X_OPENCTI_WORKFLOW_ID
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
-import { booleanMapping, dateMapping, longStringFormats, numericMapping, shortMapping, shortStringFormats, textMapping } from '../schema/attribute-definition';
+import {
+  booleanMapping,
+  dateMapping,
+  iAliasedIds,
+  internalId,
+  longStringFormats,
+  numericMapping,
+  shortMapping,
+  shortStringFormats,
+  standardId,
+  textMapping,
+  xOpenctiStixIds
+} from '../schema/attribute-definition';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { INTERNAL_RELATIONSHIPS, isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -1280,7 +1290,7 @@ const computeQueryIndices = (indices, types) => {
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
-  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null, forceAliases = false } = opts;
+  const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { orderBy = 'created_at', orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || !type) ? type : [type];
@@ -1295,13 +1305,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const mustTerms = [];
     const workingIds = groupIds[index];
     const idsTermsPerType = [];
-    const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    if ((types || []).some((typeElement) => isStixObjectAliased(typeElement)) || forceAliases) {
-      elementTypes.push(INTERNAL_IDS_ALIASES);
-    }
-    // With onRelationship option, the ids needs to be found on a relationship connection side.
-    // onRelationship must be from or to
-    // Compute combination terms
+    const elementTypes = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
     for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
       const elementType = elementTypes[indexType];
       const terms = { [`${elementType}.keyword`]: workingIds };
@@ -3040,9 +3044,9 @@ export const elBulk = async (args) => {
 /* v8 ignore next */
 export const elIndex = async (indexName, documentBody, opts = {}) => {
   const { refresh = true, pipeline } = opts;
-  const internalId = documentBody.internal_id;
+  const documentId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logApp.debug(`[SEARCH] index > ${entityType} ${internalId} in ${indexName}`, { documentBody });
+  logApp.debug(`[SEARCH] index > ${entityType} ${documentId} in ${indexName}`, { documentBody });
   let indexParams = {
     index: indexName,
     id: documentBody.internal_id,
@@ -3054,22 +3058,22 @@ export const elIndex = async (indexName, documentBody, opts = {}) => {
     indexParams = { ...indexParams, pipeline };
   }
   await engine.index(indexParams).catch((err) => {
-    throw DatabaseError('Simple indexing fail', { cause: err, internalId, entityType, ...extendedErrors({ documentBody }) });
+    throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
   });
   return documentBody;
 };
 /* v8 ignore next */
-export const elUpdate = (indexName, internalId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   return engine.update({
-    id: internalId,
+    id: documentId,
     index: indexName,
     retry_on_conflict: retry,
     timeout: BULK_TIMEOUT,
     refresh: true,
     body: documentBody,
   }).catch((err) => {
-    throw DatabaseError('Update indexing fail', { cause: err, internalId, entityType, ...extendedErrors({ documentBody }) });
+    throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
   });
 };
 export const elReplace = (indexName, documentId, documentBody) => {
@@ -3090,14 +3094,14 @@ export const elReplace = (indexName, documentId, documentBody) => {
     script: { source, params: doc },
   });
 };
-export const elDelete = (indexName, internalId) => {
+export const elDelete = (indexName, documentId) => {
   return engine.delete({
-    id: internalId,
+    id: documentId,
     index: indexName,
     timeout: BULK_TIMEOUT,
     refresh: true,
   }).catch((err) => {
-    throw DatabaseError('Deleting indexing fail', { cause: err, internalId });
+    throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
   });
 };
 

@@ -3,7 +3,7 @@ import '../../src/modules/index';
 // import managers
 import '../../src/manager/index';
 // endregion
-import { initializeBucket, initializeFileStorageClient } from '../../src/database/file-storage';
+import { initializeBucket, storageInit } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
@@ -105,7 +105,7 @@ const waitPlatformIsAlive = async (): Promise<true> => {
 export async function setup() {
   await initializeRedisClients();
   await searchEngineInit();
-  await initializeFileStorageClient();
+  await storageInit();
   // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');

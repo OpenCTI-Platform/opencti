@@ -880,7 +880,7 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.x_opencti_stix_ids.length).toEqual(1);
-    expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
+    expect(createdMalware.i_aliases_ids.length).toEqual(0);
     let loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
     expect(loadMalware['object-marking'].length).toEqual(2);
@@ -1080,7 +1080,7 @@ describe('Upsert and merge entities', () => {
     // Test the merged data
     expect(loadedThreat).not.toBeNull();
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
-    expect(loadedThreat.i_aliases_ids.length).toEqual(7);
+    expect(loadedThreat.i_aliases_ids.length).toEqual(6);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
     expect(loadedThreat.createdBy).not.toBeUndefined(); // [organizationThreatTarget]
     expect(loadedThreat.createdBy.name).toEqual('organizationThreatTarget'); // [organizationThreatTarget]
