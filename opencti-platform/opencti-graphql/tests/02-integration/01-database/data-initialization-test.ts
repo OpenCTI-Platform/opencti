@@ -7,7 +7,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 describe('Data initialization test', () => {
   it('should create all capabilities', async () => {
     const capabilities = await listAllEntities<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(28);
+    expect(capabilities.length).toEqual(30);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',
