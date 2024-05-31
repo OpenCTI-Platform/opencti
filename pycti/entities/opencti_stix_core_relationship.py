@@ -521,6 +521,7 @@ class StixCoreRelationship:
         start_time_stop = kwargs.get("startTimeStop", None)
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
+        filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.app_logger.info("Reading stix_core_relationship", {"id": id})
@@ -543,6 +544,12 @@ class StixCoreRelationship:
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCoreRelationship"]
             )
+        elif filters is not None:
+            result = self.list(filters=filters, customAttributes=custom_attributes)
+            if len(result) > 0:
+                return result[0]
+            else:
+                return None
         elif from_id is not None and to_id is not None:
             result = self.list(
                 fromOrToId=from_or_to_id,
