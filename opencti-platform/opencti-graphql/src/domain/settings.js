@@ -198,4 +198,3 @@ export const getCriticalAlerts = async (context, user) => {
   // no alert
   return [];
 };
-

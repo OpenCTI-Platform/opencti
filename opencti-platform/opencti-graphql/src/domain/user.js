@@ -298,6 +298,13 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
   return R.uniqBy((m) => m.id, computedMarkings);
 };
 
+// Return all the available markings a user can share
+export const getAvailableDataSharingMarkings = async (context, user) => {
+  const maxMarkings = user.max_shareable_marking;
+  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return computeAvailableMarkings(maxMarkings, allMarkings);
+};
+
 const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = capabilities.map((c) => c.name);

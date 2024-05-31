@@ -136,9 +136,27 @@ const MARKINGS_QUERY = gql`
   }
 `;
 
+const API_SCR_NUMBER_QUERY = gql`
+    query PublicStixRelationshipsNumber(
+        $startDate: DateTime
+        $endDate: DateTime
+        $uriKey: String!
+        $widgetId : String!
+    ) {
+        publicStixRelationshipsNumber(
+            startDate: $startDate
+            endDate: $endDate
+            uriKey: $uriKey
+            widgetId : $widgetId
+        ) {
+            total
+            count
+        }
+    }
+`;
+
 describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
-  let clearPrivateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
 
   beforeAll(async () => {
@@ -633,24 +651,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         it('should return the data for API: SCR Number', async () => {
-          const API_SCR_NUMBER_QUERY = gql`
-            query PublicStixRelationshipsNumber(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixRelationshipsNumber(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                total
-                count
-              }
-            }
-          `;
           const { data } = await queryAsAdmin({
             query: API_SCR_NUMBER_QUERY,
             variables: {
@@ -930,25 +930,6 @@ describe('PublicDashboard resolver', () => {
     });
 
     describe('Tests widgets API with markings', () => {
-      const API_SCR_NUMBER_QUERY = gql`
-        query PublicStixRelationshipsNumber(
-          $startDate: DateTime
-          $endDate: DateTime
-          $uriKey: String!
-          $widgetId : String!
-        ) {
-          publicStixRelationshipsNumber(
-            startDate: $startDate
-            endDate: $endDate
-            uriKey: $uriKey
-            widgetId : $widgetId
-          ) {
-            total
-            count
-          }
-        }
-      `;
-
       let greenPublicDashboardInternalId;
       let clearPublicDashboardInternalId;
 
@@ -1021,12 +1002,11 @@ describe('PublicDashboard resolver', () => {
           query: CREATE_QUERY,
           variables: GREEN_PUBLIC_DASHBOARD_TO_CREATE,
         });
-        resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
         const CLEAR_PUBLIC_DASHBOARD_TO_CREATE = {
           input: {
             name: 'public dashboard marking clear',
             uri_key: 'public_dashboard_marking_clear',
-            dashboard_id: clearPrivateDashboardInternalId,
+            dashboard_id: privateDashboardInternalId,
             allowed_markings_ids: [tlpClear.id],
             enabled: true,
           },
@@ -1128,7 +1108,6 @@ describe('PublicDashboard resolver', () => {
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        expect(editor_aaa).toEqual('test editor');
         const editor_result = editor_aaa.data.publicStixRelationshipsNumber;
         expect(editor_result.total).toEqual(2);
         expect(editor_result.count).toEqual(0);

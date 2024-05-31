@@ -4,18 +4,11 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDa
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { UnsupportedError } from '../../config/errors';
-import { computeAvailableMarkings } from '../../domain/user';
+import { computeAvailableMarkings, getAvailableDataSharingMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-
-// Return all the available markings a user can share
-export const getAvailableDataSharingMarkings = async (context: AuthContext, user: AuthUser) => {
-  const maxMarkings = user.max_shareable_marking;
-  const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return computeAvailableMarkings(maxMarkings, allMarkings);
-};
 
 /**
  * Find which markings should be used when searching the data to populate in the widgets.

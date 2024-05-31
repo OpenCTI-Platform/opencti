@@ -31,7 +31,7 @@ import { initializeAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicStoreRelation, NumberResult, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
-import { getAvailableDataSharingMarkings, getWidgetArguments } from './publicDashboard-utils';
+import { getWidgetArguments } from './publicDashboard-utils';
 import {
   findAll as stixCoreObjects,
   stixCoreObjectsDistribution,
@@ -41,7 +41,7 @@ import {
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findAll as stixRelationships, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
-import { bookmarks } from '../../domain/user';
+import { bookmarks, getAvailableDataSharingMarkings } from '../../domain/user';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import * as settingsModule from '../../../src/domain/settings';
+import * as userModule from '../../../src/domain/user';
 import { testContext } from '../../utils/testQuery';
 import { findWidgetsMaxMarkings } from '../../../src/modules/publicDashboard/publicDashboard-utils';
 import type { PublicDashboardCached } from '../../../src/modules/publicDashboard/publicDashboard-types';
@@ -58,7 +58,7 @@ const AUTHOR_DASHBOARD = {
 describe('publicDashboard-utils', () => {
   describe('findWidgetsMaxMarkings', () => {
     beforeAll(() => {
-      vi.spyOn(settingsModule, 'getDataSharingMaxMarkings')
+      vi.spyOn(userModule, 'getAvailableDataSharingMarkings')
         .mockImplementation(async () => [TLP_GREEN, TEST_GREEN]);
       vi.spyOn(cacheModule, 'getEntitiesListFromCache')
         .mockImplementation(async () => [

@@ -102,15 +102,6 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
     });
 };
 
-// return: array of the max shareable markings arrays of the different groups
-export const maxShareableMarkingDefinitionsFromGroups = async (context, groupIds) => {
-  // Retrieve max shareable markings by groups
-  return internalFindByIds(context, SYSTEM_USER, groupIds, { type: ENTITY_TYPE_GROUP })
-    .then((groups) => groups.map((group) => {
-      return groupMaxShareableMarkings(context, SYSTEM_USER, group);
-    }));
-};
-
 export const rolesPaginated = async (context, user, groupId, args) => {
   return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, false, args);
 };
