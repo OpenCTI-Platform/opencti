@@ -178,6 +178,7 @@ class StixNestedRefRelationship:
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
             self.opencti.app_logger.info(
                 "Reading stix_observable_relationship", {"id": id}
@@ -201,6 +202,12 @@ class StixNestedRefRelationship:
             return self.opencti.process_multiple_fields(
                 result["data"]["stixRefRelationship"]
             )
+        elif filters is not None:
+            result = self.list(filters=filters, customAttributes=custom_attributes)
+            if len(result) > 0:
+                return result[0]
+            else:
+                return None
         else:
             result = self.list(
                 fromOrToId=from_or_to_id,

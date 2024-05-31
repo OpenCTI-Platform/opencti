@@ -431,6 +431,7 @@ class StixSightingRelationship:
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
             self.opencti.app_logger.info("Reading stix_sighting", {"id": id})
             query = (
@@ -452,6 +453,12 @@ class StixSightingRelationship:
             return self.opencti.process_multiple_fields(
                 result["data"]["stixSightingRelationship"]
             )
+        elif filters is not None:
+            result = self.list(filters=filters)
+            if len(result) > 0:
+                return result[0]
+            else:
+                return None
         elif from_id is not None and to_id is not None:
             result = self.list(
                 fromOrToId=from_or_to_id,

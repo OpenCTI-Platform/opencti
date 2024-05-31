@@ -481,6 +481,7 @@ class StixObjectOrStixRelationship:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
             self.opencti.app_logger.info(
                 "Reading StixObjectOrStixRelationship", {"id": id}
@@ -504,6 +505,12 @@ class StixObjectOrStixRelationship:
             return self.opencti.process_multiple_fields(
                 result["data"]["stixObjectOrStixRelationship"]
             )
+        elif filters is not None:
+            result = self.list(filters=filters)
+            if len(result) > 0:
+                return result[0]
+            else:
+                return None
         else:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
