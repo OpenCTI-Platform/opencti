@@ -1450,10 +1450,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-effective-confidence-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User effective confidence level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#how-to-set-a-confidence-level" class="md-nav__link">
     <span class="md-ellipsis">
       
         How to set a confidence level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-override-a-max-confidence-level-per-entity-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to override a max confidence level per entity type
       
     </span>
   </a>
@@ -4857,10 +4879,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-effective-confidence-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User effective confidence level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#how-to-set-a-confidence-level" class="md-nav__link">
     <span class="md-ellipsis">
       
         How to set a confidence level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-override-a-max-confidence-level-per-entity-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to override a max confidence level per entity type
       
     </span>
   </a>
@@ -5094,14 +5138,42 @@
 <p>We know that in organizations, different users do not always have the same expertise or seniority.  As a result, some specific users can be more "trusted" when creating or updating knowledge than others. Additionally, because connectors, TAXII feeds and streams are all linked to respectively one user, it is important to be able to differentiate which connector, stream or TAXII feed is more trustable than others.</p>
 <p>This is why we have introduced the concept of max confidence level to tackle this use case.</p>
 <p>Max confidence level per user allows organizations to fine tune their users to ensure knowledge updated and created stays as consistent as possible.</p>
+<p>The maximum confidence level can be set at the Group level or at the User level, and can be overridden by entity type for fine-tuning your confidence policy.</p>
 <h4 id="overall-way-of-working">Overall way of working</h4>
 <p>The overall idea is that users with a max confidence level lower than a confidence level of an entity cannot update or delete this entity.</p>
 <p>Also, in a conservative approach, when 2 confidence levels are possible, we would always take the lowest one.</p>
 <p>To have a detailed understanding of the concept, please browse through this diagram:</p>
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>
 
+<h4 id="user-effective-confidence-level">User effective confidence level</h4>
+<p>User and group confidence level configuration shall be viewed as:</p>
+<ul>
+<li>a maximum confidence level between 0 and 100 (optional for users, mandatory for groups);</li>
+<li>a list of overrides (a max confidence level between 0 and 100) per entity type (optional).</li>
+</ul>
+<p>The user's effective confidence level is the result of this configuration from multiple sources (user and their groups).</p>
+<p>To compute this value, OpenCTI uses the following strategy:</p>
+<ul>
+<li>effective maximum confidence is the maximum value found in the user's groups;</li>
+<li>effective overrides per entity type are cumulated from all groups, taking the maximum value if several overrides are set on the same entity type</li>
+<li>if a user maximum confidence level is set, it overrides everything from groups, including the overrides per entity type defined at group level</li>
+<li>if not, but the user has specific overrides per entity types, they override the corresponding confidence levels per entity types coming from groups</li>
+<li>if a user has the administrator's "Bypass" capability, the effective confidence level will always be 100 without overrides, regardless of the group and user configuration on confidence level</li>
+</ul>
+<p>The following diagram describes the different use-cases you can address with this system.</p>
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/board/cecHM2dDyOPoviw6qbVYK4/Effective-Confidence-Level-Computation---Documentation?node-id=0-1&t=ZSJNGb93mPAQRPVh-1" allowfullscreen></iframe>
+
 <h4 id="how-to-set-a-confidence-level">How to set a confidence level</h4>
-<p>To see how to set up the confidence level, please go in this <a href="../../administration/users/">page</a>.</p>
+<p>You can set up a maximum confidence levels from the Confidences tab in the edition panel of your user or group.
+The value can be selected between 0 and 100, or using the admiralty scale selector.</p>
+<p>At the group level, the maximum confidence level is mandatory, but is optional at the user level (you have to enable it using the corresponding toggle button).</p>
+<p><a class="glightbox" href="../assets/update-confidence-level.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update Confidence Level" src="../assets/update-confidence-level.png" /></a></p>
+<h4 id="how-to-override-a-max-confidence-level-per-entity-type">How to override a max confidence level per entity type</h4>
+<p>You also have the possibility to override a max confidence level per entity type, limited to Stix Domain Objects. </p>
+<p><a class="glightbox" href="../assets/user-confidence-overrides.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Override Max Confidence Level Per Entity" src="../assets/user-confidence-overrides.png" /></a></p>
+<p>You can visualize the user's effective confidence level in the user's details view, by hovering the corresponding tooltip.
+It describes where the different values might come from.</p>
+<p><a class="glightbox" href="../assets/override-confidence-tooltip.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Override Confidence Tooltip" src="../assets/override-confidence-tooltip.png" /></a></p>
 <h2 id="usage-in-opencti">Usage in OpenCTI</h2>
 <h3 id="example-with-the-admiralty-code-template">Example with the admiralty code template</h3>
 <p>Your organization have received a report from a CTI provider. At your organization level, this provider is considered as reliable most of the time and its reliability level has been set to "B - Usually Reliable" (your organization uses the Admiralty code).</p>
@@ -5134,7 +5206,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-06T02:56:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-30T14:55:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-30</span>
   </span>
 
     
@@ -5162,6 +5234,16 @@
     
     <nav>
       
+        <a href="https://github.com/labo-flg" class="md-author" title="@labo-flg">
+          
+          <img src="https://avatars.githubusercontent.com/u/146674147?v=4&size=72" alt="labo-flg">
+        </a>
+      
+        <a href="https://github.com/SarahBocognano" class="md-author" title="@SarahBocognano">
+          
+          <img src="https://avatars.githubusercontent.com/u/98532359?v=4&size=72" alt="SarahBocognano">
+        </a>
+      
         <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
           
           <img src="https://avatars.githubusercontent.com/u/70956706?v=4&size=72" alt="Lhorus6">
@@ -5172,12 +5254,13 @@
           <img src="https://avatars.githubusercontent.com/u/148041607?v=4&size=72" alt="nino-filigran">
         </a>
       
-        <a href="https://github.com/SouadHadjiat" class="md-author" title="@SouadHadjiat">
-          
-          <img src="https://avatars.githubusercontent.com/u/668192?v=4&size=72" alt="SouadHadjiat">
-        </a>
       
       
+        
+          <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/usage/reliability-confidence.md" class="md-author md-author--more">
+            +1
+          </a>
+        
       
     </nav>
   </span>

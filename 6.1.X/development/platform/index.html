@@ -4761,6 +4761,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#continous-integration-and-features-cross-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continous Integration and features cross repository
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continous Integration and features cross repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naming-convention-of-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming convention of branch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5184,6 +5223,45 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#continous-integration-and-features-cross-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continous Integration and features cross repository
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continous Integration and features cross repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#naming-convention-of-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming convention of branch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -5441,6 +5519,14 @@ This package will be minified and optimized with esbuild.</p>
 <div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>../opencti-graphql
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>$<span class="w"> </span>yarn<span class="w"> </span>serv
 </span></code></pre></div>
+<h2 id="continous-integration-and-features-cross-repository">Continous Integration and features cross repository</h2>
+<p>When a feature requires changes in two or more repository in opencti, connectors and client-python; then some specific convention must be use to have the continuous integration build them all together.</p>
+<h3 id="naming-convention-of-branch">Naming convention of branch</h3>
+<p>The Pull Request on <strong><em>opencti</em></strong> repository should be (issue or bug)/number + optional, example: <code>issue/7062-contributing</code></p>
+<p>The pull request on <strong><em>connector</em></strong> or <strong><em>client-python</em></strong> should refer to opencti one by starting with "opencti/" and then the same name. Example: <code>opencti/issue/7062-contributing</code></p>
+<p>Note that if there are several matches, the first one is taken. So for example having <code>issue/7062-contributing</code> and <code>issue/7062</code> that are both marked as "multi-repository" is not a good idea.</p>
+<h3 id="labels">Labels</h3>
+<p>All Pull Requests involved must have the label <code>multi-repository</code> added in GitHub.</p>
 
 
 
@@ -5463,7 +5549,7 @@ This package will be minified and optimized with esbuild.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-03-12T08:05:56+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-03-12</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-05-30T12:30:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-05-30</span>
   </span>
 
     
@@ -5490,6 +5576,11 @@ This package will be minified and optimized with esbuild.</p>
 
     
     <nav>
+      
+        <a href="https://github.com/aHenryJard" class="md-author" title="@aHenryJard">
+          
+          <img src="https://avatars.githubusercontent.com/u/3634942?v=4&size=72" alt="aHenryJard">
+        </a>
       
         <a href="https://github.com/labo-flg" class="md-author" title="@labo-flg">
           
