@@ -188,7 +188,10 @@ const rootPrivateQuery = graphql`
     }
     schemaRelationsRefTypesMapping {
       key
-      values
+      values {
+        name
+        toTypes
+      }
     }
     filterKeysSchema {
       entity_type

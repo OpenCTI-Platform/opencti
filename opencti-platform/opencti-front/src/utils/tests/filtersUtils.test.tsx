@@ -30,7 +30,7 @@ describe('Filters utils', () => {
                 smos: [{ id: '', label: '' }],
                 scrs: [{ id: '', label: '' }],
                 schemaRelationsTypesMapping: new Map<string, readonly string[]>(),
-                schemaRelationsRefTypesMapping: new Map<string, readonly string[]>(),
+                schemaRelationsRefTypesMapping: new Map<string, readonly { name: string, toTypes: string[] }[]>(),
                 filterKeysSchema,
               },
             })

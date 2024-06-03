@@ -10762,6 +10762,15 @@ type StixRelationshipSchema {
   values: [String!]!
 }
 
+type StixRelationshipRefSchemaValue {
+  name: String!
+  toTypes: [String!]!
+}
+type StixRelationshipRefSchema {
+  key: String!
+  values: [StixRelationshipRefSchemaValue!]!
+}
+
 ############## StixCoreRelationships
 enum StixCoreRelationshipsOrdering {
   entity_type
@@ -12016,7 +12025,7 @@ type Query {
     dynamicTo: FilterGroup
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth
-  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]! @auth
+  schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]! @auth
   filterKeysSchema: [FilterKeysSchema!]! @auth
 
   ######## STIX CORE RELATIONSHIPS
