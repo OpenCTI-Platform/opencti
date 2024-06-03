@@ -53,8 +53,8 @@ export class TelemetryMeterManager {
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
-    const activUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions,);
-    activUsersCountGauge.addCallback((observableResult: ObservableResult) => {
+    const activeUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions,);
+    activeUsersCountGauge.addCallback((observableResult: ObservableResult) => {
       /* eslint-disable @typescript-eslint/ban-ts-comment */
       // @ts-ignore
       observableResult.observe(this[observer]);
@@ -65,7 +65,7 @@ export class TelemetryMeterManager {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     this.registerGauge('total_users_count', 'number of users', 'usersCount');
-    this.registerGauge('active_users_count', 'number of active users', 'activUsersCount');
+    this.registerGauge('active_users_count', 'number of active users', 'activeUsersCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
