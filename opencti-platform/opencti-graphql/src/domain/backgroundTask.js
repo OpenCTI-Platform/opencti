@@ -1,5 +1,5 @@
 import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
@@ -61,7 +61,7 @@ const buildQueryFilters = async (filters, search, taskPosition) => {
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
   const options = await buildQueryFilters(filters, search, start);
-  return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
+  return elPaginate(context, user, READ_DATA_INDICES, options);
 };
 
 export const createRuleTask = async (context, user, ruleDefinition, input) => {
