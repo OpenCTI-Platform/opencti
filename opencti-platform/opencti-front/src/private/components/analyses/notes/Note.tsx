@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'relay-runtime';
 import useHelper from 'src/utils/hooks/useHelper';
-import { Grid, styled } from '@mui/material';
+import { Grid } from '@mui/material';
 import { CollaborativeSecurity } from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import { useFragment } from 'react-relay';
@@ -76,31 +76,34 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  // Styled components
-  const PaddedGrid = styled(Grid)({
-    paddingTop: 10,
-  });
-  const MarginGrid = styled(Grid)(({ bottomMargin }: { bottomMargin?: number }) => ({
-    marginTop: 25,
-    marginBottom: bottomMargin,
-  }));
-
   return (<>
-    <MarginGrid
+    <Grid
       container={true}
       spacing={3}
+      style={{
+        marginTop: 25,
+      }}
     >
-      <PaddedGrid item={true} xs={6}>
+      <Grid item={true} xs={6} style={{
+        paddingTop: 10,
+      }}
+      >
         <NoteDetails note={note} />
-      </PaddedGrid>
-      <PaddedGrid item={true} xs={6}>
+      </Grid>
+      <Grid item={true} xs={6} style={{
+        paddingTop: 10,
+      }}
+      >
         <StixDomainObjectOverview stixDomainObject={note} />
-      </PaddedGrid>
-    </MarginGrid>
-    <MarginGrid
+      </Grid>
+    </Grid>
+    <Grid
       container={true}
       spacing={3}
-      bottomMargin={20}
+      style={{
+        marginTop: 25,
+        marginBottom: 20,
+      }}
     >
       <Grid item={true} xs={12}>
         <ContainerStixObjectsOrStixRelationships
@@ -109,11 +112,14 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
           enableReferences={enableReferences}
         />
       </Grid>
-    </MarginGrid>
-    <MarginGrid
+    </Grid>
+    <Grid
       container={true}
       spacing={3}
-      bottomMargin={20}
+      style={{
+        marginTop: 25,
+        marginBottom: 20,
+      }}
     >
       <Grid item={true} xs={6}>
         <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
@@ -121,7 +127,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
       <Grid item={true} xs={6}>
         <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
       </Grid>
-    </MarginGrid>
+    </Grid>
     {!FABReplaced
       && <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
         <NoteEdition noteId={note.id} />

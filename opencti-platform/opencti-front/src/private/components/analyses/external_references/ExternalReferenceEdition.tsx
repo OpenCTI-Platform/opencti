@@ -52,7 +52,7 @@ ExternalReferenceEditionProps
             <ExternalReferenceEditionContainer
               externalReference={props.externalReference}
               handleClose={handleClose}
-              controlledDial={EditEntityControlledDial()}
+              controlledDial={EditEntityControlledDial}
             />
           );
         }

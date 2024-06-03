@@ -40,7 +40,7 @@ class ReportEdition extends Component {
               <ReportEditionContainer
                 report={props.report}
                 handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial()}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

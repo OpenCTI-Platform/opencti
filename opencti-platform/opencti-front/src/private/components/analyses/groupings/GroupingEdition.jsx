@@ -34,7 +34,7 @@ const GroupingEdition = ({ groupingId }) => {
             <GroupingEditionContainer
               grouping={props.grouping}
               handleClose={handleClose}
-              controlledDial={EditEntityControlledDial()}
+              controlledDial={EditEntityControlledDial}
             />
           );
         }

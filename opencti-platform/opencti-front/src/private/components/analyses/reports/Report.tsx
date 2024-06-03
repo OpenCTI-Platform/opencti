@@ -1,4 +1,4 @@
-import { Grid, styled } from '@mui/material';
+import { Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import useHelper from 'src/utils/hooks/useHelper';
 import Security from 'src/utils/Security';
@@ -88,39 +88,29 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
   const { isFeatureEnable } = useHelper();
   const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  // Styled components
-  const ParentGrid = styled(Grid)({
-    marginBottom: 20,
-  });
-  const PaddedGrid = styled(Grid)({
-    paddingTop: 10,
-  });
-  const MarginGrid = styled(Grid)({
-    marginTop: 30,
-  });
-
   return (<>
-    <ParentGrid
+    <Grid
       container={true}
       spacing={3}
+      style={{ marginBottom: 20 }}
     >
-      <PaddedGrid item={true} xs={6}>
+      <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
         <ReportDetails report={report} />
-      </PaddedGrid>
-      <PaddedGrid item={true} xs={6}>
+      </Grid>
+      <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
         <StixDomainObjectOverview
           stixDomainObject={report}
           displayAssignees
           displayParticipants
         />
-      </PaddedGrid>
-      <MarginGrid item={true} xs={6}>
+      </Grid>
+      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
         <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
-      </MarginGrid>
-      <MarginGrid item={true} xs={6}>
+      </Grid>
+      <Grid item={true} xs={6} style={{ marginTop: 30 }}>
         <StixCoreObjectLatestHistory stixCoreObjectId={report.id} />
-      </MarginGrid>
-    </ParentGrid>
+      </Grid>
+    </Grid>
     <StixCoreObjectOrStixCoreRelationshipNotes
       stixCoreObjectOrStixCoreRelationshipId={report.id}
       defaultMarkings={report.objectMarking ?? []}
