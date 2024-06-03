@@ -231,6 +231,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   label={t('Content max marking definition levels')}
                                   onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
                                   style={fieldSpacingContainerStyle}
+                                  limitToMaxSharing
                                 />
                                 <ObjectMarkingField
                                   name="fileMarkings"
