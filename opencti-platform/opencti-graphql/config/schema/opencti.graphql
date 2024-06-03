@@ -813,6 +813,9 @@ type FileMetadata {
   description: String
   order: Int
   inCarousel: Boolean
+  analysis_content_source: String
+  analysis_content_type: String
+  analysis_type: String
 }
 type File {
   id: ID!
@@ -11388,6 +11391,7 @@ type Query {
 
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
+  stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -12443,6 +12447,32 @@ enum AnalysisContentType {
   file
 }
 
+enum AnalysisContentType {
+  fields
+  file
+}
+
+union Analysis = MappingAnalysis
+
+input MappingAnalysisInput {
+  mappedEntities: [MappedEntityInput]
+}
+
+type MappingAnalysis {
+  analysisType: String!
+  mappedEntities: [MappedEntity]
+}
+
+input MappedEntityInput {
+  matchedString: String!
+  matchedEntityId: String!
+}
+
+type MappedEntity {
+  matchedString: String!
+  matchedEntity: StixCoreObject!
+}
+
 type StixCoreObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -12451,6 +12481,8 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
+  analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [CONNECTORAPI])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])

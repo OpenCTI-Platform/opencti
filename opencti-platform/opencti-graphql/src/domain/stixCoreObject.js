@@ -31,9 +31,9 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, storeFileConverter } from '../database/file-storage';
-import { findById as documentFindById } from '../modules/internal/document/document-domain';
-import { elCount, elUpdateElement } from '../database/engine';
+import { deleteFile, loadFile, getFileContent, storeFileConverter } from '../database/file-storage';
+import { findById as documentFindById , paginatedForPathWithEnrichment} from '../modules/internal/document/document-domain';
+import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
@@ -506,6 +506,86 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     context_data: contextData
   });
   return true;
+};
+
+export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) => {
+  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant upload a file an none existing element', { entityId });
+  }
+  const { file, contentSource, contentType, analysisType } = args;
+  const meta = { analysis_content_source: contentSource, analysis_content_type: contentType, analysis_type: analysisType };
+  const path = `analysis/${entity.entity_type}/${entityId}`;
+  const { upload: up } = await uploadToStorage(context, user, path, file, { entity, meta });
+  const contextData = buildContextDataForFile(entity, path, up.name);
+  await publishUserAction({
+    user,
+    event_type: 'file',
+    event_access: 'extended',
+    event_scope: 'create',
+    context_data: contextData
+  });
+  return up;
+};
+
+export const analysisClear = async (context, user, entityId, contentSource, contentType) => {
+  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant clear analysis on none existing element', { entityId });
+  }
+  const analysisFilePath = `analysis/${entity.entity_type}/${entity.id}`;
+  const analysisFilesPagination = await paginatedForPathWithEnrichment(context, context.user, analysisFilePath, entityId);
+  const analysisFilesNodes = analysisFilesPagination.edges.map(({ node }) => node);
+  for (let i = 0; i < analysisFilesNodes.length; i += 1) {
+    const analysisFile = analysisFilesNodes[i];
+    if (analysisFile?.metaData?.analysis_content_source === contentSource && analysisFile?.metaData?.analysis_content_type === contentType) {
+      const upDelete = await deleteFile(context, context.user, analysisFile?.id);
+      const contextData = buildContextDataForFile(null, analysisFile?.id, upDelete.name);
+      await publishUserAction({
+        user,
+        event_type: 'file',
+        event_access: 'extended',
+        event_scope: 'delete',
+        context_data: contextData
+      });
+    }
+  }
+
+  return true;
+};
+
+export const stixCoreAnalysis = async (context, user, entityId, contentSource, contentType) => {
+  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  if (!entity) {
+    throw UnsupportedError('Cant get analysis on none existing element', { entityId });
+  }
+
+  // Retrieve analysis file for given contentSource and contentType
+  const analysisFilePath = `analysis/${entity.entity_type}/${entity.id}`;
+  const analysisFilesPagination = await paginatedForPathWithEnrichment(context, context.user, analysisFilePath, entityId);
+  const analysisFilesNodes = analysisFilesPagination.edges.map(({ node }) => node);
+  const analysis = analysisFilesNodes.find((a) => a.metaData?.analysis_content_source === contentSource && a.metaData?.analysis_content_type === contentType);
+  if (!analysis) return null;
+
+  // Get analysis file content as json data
+  const analysisType = analysis.metaData.analysis_type;
+  if (analysisType !== 'mapping_analysis') throw UnsupportedError('Analysis type not supported', { analysisType }); // We currently only handle one analysis type
+  const analysisContent = await getFileContent(analysis.id);
+  if (!analysisContent) throw UnsupportedError('Couldnt retrieve file', { analysis });
+  const analysisParsedContent = JSON.parse(analysisContent);
+
+  // Parse json data and transform it into MappedAnalysis object
+  const entitiesToResolve = analysisParsedContent.map((d) => d.value);
+  const entitiesToFinds = R.uniq(entitiesToResolve.filter((u) => isNotEmptyField(u)));
+  const entitiesResolved = await elFindByIds(context, user, entitiesToFinds);
+  const analysisDataConverted = (mappedData) => {
+    const entityResolved = entitiesResolved.find((e) => e.id === mappedData.value || e.standard_id === mappedData.value);
+    return { matchedString: mappedData.key, matchedEntity: entityResolved };
+  };
+
+  const mappedEntities = analysisParsedContent.map((d) => analysisDataConverted(d)).filter((e) => e.matchedEntity);
+
+  return { analysisType, mappedEntities };
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
