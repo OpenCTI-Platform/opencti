@@ -19,6 +19,9 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ObservedDataEdition from './ObservedDataEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -120,6 +123,11 @@ class RootObservedData extends Component {
                   <ContainerHeader
                     container={observedData}
                     PopoverComponent={<ObservedDataPopover />}
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <ObservedDataEdition observedDataId={observedData.id} />
+                      </Security>
+                    )}
                     redirectToContent = {false}
                   />
                   <Box

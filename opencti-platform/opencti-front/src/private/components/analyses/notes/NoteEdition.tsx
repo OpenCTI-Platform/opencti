@@ -38,7 +38,7 @@ const NoteEdition = ({ noteId }: { noteId: string }) => {
       query={noteEditionQuery}
       variables={{ id: noteId }}
       render={({ props }: { props: NoteEditionContainerQuery$data }) => {
-        if (props && props.note) {
+        if (props?.note) {
           return (
             <CollaborativeSecurity
               data={props.note}
