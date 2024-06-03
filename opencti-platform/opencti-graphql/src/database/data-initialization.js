@@ -56,7 +56,7 @@ const KNOWLEDGE_CAPABILITIES = {
 };
 export const SETTINGS_CAPABILITIES = {
   name: 'SETTINGS',
-  description: 'Access administration',
+  description: 'Access to admin functionalities',
   attribute_order: 3000,
   dependencies: [
     { name: 'SETPARAMETERS', description: 'Manage parameters', attribute_order: 3100 },
