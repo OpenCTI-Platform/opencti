@@ -9,7 +9,7 @@ import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../schema/g
 import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
-import { stixCoreObjectImportDelete } from './stixCoreObject';
+import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, externalReferenceId) => {
@@ -31,6 +31,12 @@ export const references = async (context, user, externalReferenceId, args) => {
     return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   }
   return listThings(context, user, types, R.assoc('filters', filters, args));
+};
+
+export const externalReferenceImportPush = async (context, user, externalReferenceId, file, args = {}) => {
+  const entitiesReferences = await references(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], connectionFormat: false, first: 50 });
+  const finalArgs = { ...args, importContextEntities: entitiesReferences };
+  return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
 };
 
 export const addExternalReference = async (context, user, externalReference) => {

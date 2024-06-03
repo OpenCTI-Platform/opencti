@@ -339,7 +339,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [] } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -394,19 +394,38 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     uploadStatus: 'complete',
   };
   await indexFileToDocument(file);
-  // confidence control on the context entity (like a report) if we want auto-enrichment
-  // noThrow ; we do not want to fail here as it's an automatic process.
-  // we will simply not start the job
-  const isConfidenceMatch = entity ? controlUserConfidenceAgainstElement(user, entity, true) : true;
-  const isFilePathForImportEnrichment = filePath.startsWith('import/')
-    && !filePath.startsWith('import/pending')
-    && !filePath.startsWith('import/External-Reference');
 
-  // Trigger an enrich job for import file if needed
-  if (!noTriggerImport && isConfidenceMatch && isFilePathForImportEnrichment) {
-    await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);
+  const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
+  if (!noTriggerImport && isFilePathForImportEnrichment) {
+    // Trigger import on file context entities : either specified importContextEntities or file entity or global import
+    // Entities for job import can depend on context (ex: report containing the external reference)
+    const jobImportContextEntities = [...importContextEntities];
+    if (jobImportContextEntities.length === 0 && entity) {
+      jobImportContextEntities.push(entity);
+    }
+    await triggerJobImport(context, user, file, jobImportContextEntities);
   }
   return { upload: file, untouched: false };
+};
+
+const triggerJobImport = async (context, user, file, contextEntities = []) => {
+  if (contextEntities.length === 0) {
+    // global import
+    await uploadJobImport(context, user, file.id, file.metaData.mimetype, null);
+  }
+  // import on entities
+  for (let i = 0; i < contextEntities.length; i += 1) {
+    const entityContext = contextEntities[i];
+    // confidence control on the context entity (like a report) if we want auto-enrichment
+    // noThrow ; we do not want to fail here as it's an automatic process.
+    // we will simply not start the job
+    const isConfidenceMatch = entityContext ? controlUserConfidenceAgainstElement(user, entityContext, true) : true;
+
+    // Trigger an enrich job for import file if needed
+    if (isConfidenceMatch) {
+      await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityContext?.internal_id);
+    }
+  }
 };
 
 export const streamConverter = (stream) => {

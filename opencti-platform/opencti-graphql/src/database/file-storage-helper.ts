@@ -3,18 +3,19 @@ import { join } from 'node:path';
 import fs from 'node:fs';
 import { deleteFiles, loadedFilesListing, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreBase } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
 import { allFilesForPaths } from '../modules/internal/document/document-domain';
 import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 
 interface FileUploadOpts {
-  entity?:BasicStoreBase | unknown,
+  entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
   meta? : any,
   noTriggerImport?: boolean,
   errorOnExisting?: boolean,
   file_markings?: string[],
+  importContextEntities?: BasicStoreEntity[], // entities used for import context
 }
 
 interface FileUploadData {
