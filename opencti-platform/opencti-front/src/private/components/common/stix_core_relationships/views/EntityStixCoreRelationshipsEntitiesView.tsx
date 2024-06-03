@@ -130,6 +130,9 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   const paginationOptions = {
+    entityId,
+    relationshipTypes,
+    types: stixCoreObjectTypes,
     search: searchTerm,
     orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',

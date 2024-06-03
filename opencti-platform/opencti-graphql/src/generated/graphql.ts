@@ -18005,6 +18005,7 @@ export type Query = {
   stixCoreObjectsMultiNumber?: Maybe<Array<Maybe<Number>>>;
   stixCoreObjectsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   stixCoreObjectsNumber?: Maybe<Number>;
+  stixCoreObjectsRegardingOf?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -19677,6 +19678,19 @@ export type QueryStixCoreObjectsNumberArgs = {
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixCoreObjectsRegardingOfArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  entityId?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationshipTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -35965,6 +35979,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectsMultiNumber?: Resolver<Maybe<Array<Maybe<ResolversTypes['Number']>>>, ParentType, ContextType, Partial<QueryStixCoreObjectsMultiNumberArgs>>;
   stixCoreObjectsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsMultiTimeSeriesArgs, 'interval' | 'startDate'>>;
   stixCoreObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreObjectsNumberArgs>>;
+  stixCoreObjectsRegardingOf?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsRegardingOfArgs>>;
   stixCoreObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipArgs>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsArgs>>;

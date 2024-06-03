@@ -80,6 +80,19 @@ export const findById = async (context, user, stixCoreObjectId) => {
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
+export const stixCoreObjectsPaginated = async (context, user, args) => {
+  let types = [];
+  if (isNotEmptyField(args.types)) {
+    types = args.types.filter((type) => isStixCoreObject(type));
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  const completeArgs = { ...args, bothDirection: true };
+
+  return listEntitiesThroughRelationsPaginated(context, user, args.entityId, args.relationshipTypes, types, false, completeArgs);
+};
+
 export const batchInternalRels = async (context, user, elements, opts = {}) => {
   const relIds = elements.map(({ element, definition }) => element[definition.databaseName]).flat().filter((id) => isNotEmptyField(id));
   // Get all rel resolutions with system user

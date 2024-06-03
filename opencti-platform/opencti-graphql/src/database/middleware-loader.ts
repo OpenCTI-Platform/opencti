@@ -450,13 +450,14 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
 };
 
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
+  relationType: string | string[], entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
+  const relationTypes = Array.isArray(relationType) ? relationType : [relationType];
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
   }
-  if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
+  if (relationTypes.some((t) => UNIMPACTED_ENTITIES_ROLE.includes(`${t}_to`))) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
   }
   const connectedFilters: FilterGroup = {
