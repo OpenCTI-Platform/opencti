@@ -450,7 +450,7 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
 };
 
 export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string | string[], entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
+  relationType: string | string[], entityType: string | string[], reverse_relation: boolean, both_ways: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   const relationTypes = Array.isArray(relationType) ? relationType : [relationType];
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
@@ -534,7 +534,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
 export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean): Promise<T> => {
   const args = { first: 1 };
-  const pagination = await listEntitiesThroughRelationsPaginated<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, args);
+  const pagination = await listEntitiesThroughRelationsPaginated<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, false, args);
   return pagination.edges[0]?.node;
 };
 

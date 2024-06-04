@@ -35,5 +35,5 @@ export const withDataSource = async <T extends BasicStoreCommon>(context: AuthCo
 };
 
 export const attackPatternsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, dataComponentId: string, args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, dataComponentId, RELATION_DETECTS, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, dataComponentId, RELATION_DETECTS, ENTITY_TYPE_ATTACK_PATTERN, false, false, args);
 };
