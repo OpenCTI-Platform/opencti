@@ -82,7 +82,9 @@ const computeValidUntil = (indicator: IndicatorAddInput, validFrom: Moment, life
   if (indicator.revoked && isEmptyField(indicator.valid_until)) {
     // If indicator is explicitly revoked and not valid_until is specified
     // Ensure the valid_until will be revoked by the time computation.
-    return validFrom;
+    // Adding one second to the validFrom if valid_until is empty,
+    // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
+    return validFrom.clone().add(1, 'seconds');
   }
   if (isNotEmptyField(indicator.valid_until)) {
     return utcDate(indicator.valid_until);
