@@ -34,6 +34,7 @@ import { getExportContentMarkings } from '../utils/getExportContentMarkings';
 import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { getAvailableDataSharingMarkings } from './user';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -54,6 +55,15 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
+const checkUserCanShareMarkings = async (context, user, markingsToShare) => {
+  const shareableMarkings = await getAvailableDataSharingMarkings(context, user);
+  const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
+    shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
+  if (!contentMaxMarkingsIsShareable) {
+    throw new Error('You are not allowed to share these markings.');
+  }
+};
+
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
   if (!exportContext || !exportContext?.entity_type) throw new Error('entity_type is missing from askListExport');
 
@@ -61,6 +71,7 @@ export const askListExport = async (context, user, exportContext, format, select
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);
   }));
+  await checkUserCanShareMarkings(context, user, markingLevels);
   const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
 
   const entity = exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
@@ -142,6 +153,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);
   }));
+  await checkUserCanShareMarkings(context, user, markingLevels);
   const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
