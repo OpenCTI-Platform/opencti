@@ -305,6 +305,15 @@ export const getAvailableDataSharingMarkings = async (context, user) => {
   return computeAvailableMarkings(maxMarkings, allMarkings);
 };
 
+export const checkUserCanShareMarkings = async (context, user, markingsToShare) => {
+  const shareableMarkings = await getAvailableDataSharingMarkings(context, user);
+  const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
+    shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
+  if (!contentMaxMarkingsIsShareable) {
+    throw new Error('You are not allowed to share these markings.');
+  }
+};
+
 const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = capabilities.map((c) => c.name);

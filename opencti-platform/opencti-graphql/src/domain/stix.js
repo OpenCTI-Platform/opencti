@@ -34,7 +34,7 @@ import { getExportContentMarkings } from '../utils/getExportContentMarkings';
 import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getAvailableDataSharingMarkings } from './user';
+import { checkUserCanShareMarkings } from './user';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -53,15 +53,6 @@ export const stixDelete = async (context, user, id) => {
 
 export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
-};
-
-const checkUserCanShareMarkings = async (context, user, markingsToShare) => {
-  const shareableMarkings = await getAvailableDataSharingMarkings(context, user);
-  const contentMaxMarkingsIsShareable = markingsToShare.every((m) => (
-    shareableMarkings.some((shareableMarking) => m.definition_type === shareableMarking.definition_type && m.x_opencti_order <= shareableMarking.x_opencti_order)));
-  if (!contentMaxMarkingsIsShareable) {
-    throw new Error('You are not allowed to share these markings.');
-  }
 };
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
