@@ -70,7 +70,7 @@ To apply a default marking when creating a new entity or relationship, you can c
 ### Maximum shareable marking definitions
 
 This configuration allows to define, for each type of marking definitions, until which level
-we allow to share data externally.
+we allow to share data externally (via Public dashboard or file export).
 
 The marking definitions that can be shared by a group are the ones
 - that are allowed for this group
@@ -81,7 +81,7 @@ Note that users with the Bypass capability can share all the markings.
 > For now this max marking definitions is used only for Public dashboard.
 
 For example in the capture below, for the type of marking `TLP`, only data  with a marking
-definition that is allowed and has a level equal or below `GREEN` will be shareable through Public Dashboard. And no data with marking
+definition that is allowed and has a level equal or below `GREEN` will be shareable. And no data with marking
 definition `statement` will be shared at all.
 
 ![Maximum marking definitions shareable](./assets/max-marking-shareable.png)

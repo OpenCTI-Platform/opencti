@@ -24,7 +24,7 @@ This opens the export settings panel, where you can customize your export accord
 
 - desired export format (text/csv, application/pdf, application/vnd.oasis.stix+json, text/plain)
 - export type (simple or full),
-- the max marking definition levels of the elements to be included in the export (a TLP level, for instance). For a marking definition type to be taken into account here, a marking definition from this type must be provided. For example, if you select TLP:GREEN for this field, AMBER and RED elements will be excluded but it will not take into account any PAP markings unless one is elected too.
+- the max marking definition levels of the elements to be included in the export (a TLP level, for instance). The list of the available max markings is limited by the user allowed markings and its maximum shareable markings (more details about maximum shareable marking definitions in [data segregation](segregation.md)). For a marking definition type to be taken into account here, a marking definition from this type must be provided. For example, if you select TLP:GREEN for this field, AMBER and RED elements will be excluded but it will not take into account any PAP markings unless one is elected too.
 - the file marking definition levels of the export (a TLP level, for instance). This marking on the file itself will then restrain the access to it in accordance with users' marking definition levels. For example, if a file has the marking TLP:RED and INTERNAL, a user will need to have these marking to see and access the file in the platform.```
 
 ![customize your export](assets/customize_your_export.png)
@@ -40,7 +40,7 @@ Both ways add your export in the Exported files list in the Data tab.
 
 All entities in your instance can be exported either directly via Generate Export or indirectly via Export List in .json and .csv formats.
 
-### Export a list entities
+### Export a list of entities
 
 You have the option to export either a single element, such as a report, or a collection of elements, such as multiple reports. These exports may contain not only the entity itself but also related elements, depending on the type of export you select: "simple" or "full". See the [Export types (simple and full)](export.md#export-type-section) section.
 
