@@ -2184,6 +2184,7 @@
   "severity": "严重性",
   "Share": "分享",
   "Share as public dashboard": "作为公共仪表板共享",
+  "Share the result of inference rules in TAXII collection": "分享 TAXII 数据库中推理规则的结果",
   "Share with an organization": "与组织共享",
   "shodan": "Shodan",
   "Show left navigation submenu icons": "显示左侧导航子菜单图标",

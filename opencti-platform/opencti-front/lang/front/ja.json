@@ -2184,6 +2184,7 @@
   "severity": "重大度",
   "Share": "共有する",
   "Share as public dashboard": "公開ダッシュボードとして共有",
+  "Share the result of inference rules in TAXII collection": "推論ルールの結果をTAXIIコレクションで共有する",
   "Share with an organization": "組織と共有する",
   "shodan": "Shodan",
   "Show left navigation submenu icons": "左側のナビゲーション サブメニュー アイコンを表示する",

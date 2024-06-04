@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -12,6 +12,8 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
+import Checkbox from '@mui/material/Checkbox';
+import Typography from '@mui/material/Typography';
 import type { Theme } from '../../../../components/Theme';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
@@ -87,6 +89,10 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const [areInferenceRulesResultAdded, setAreInferenceRulesResultAdded] = useState(true);
+
+  const toggleAddInferenceRulesResult = () => setAreInferenceRulesResultAdded((prevState) => !prevState);
+
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -96,7 +102,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters, authorized_members },
+        input: { ...values, filters: jsonFilters, authorized_members, withInferences: areInferenceRulesResultAdded },
       },
       updater: (store: RecordSourceSelectorProxy) => {
         const payload = store.getRootField('taxiiCollectionAdd');
@@ -181,6 +187,10 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   />
                 )}
               </Alert>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+                <Checkbox edge="start" checked={areInferenceRulesResultAdded} onChange={toggleAddInferenceRulesResult} />
+                <Typography>{t_i18n('Share the result of inference rules in TAXII collection')}</Typography>
+              </Box>
               <Box sx={{ paddingTop: 4,
                 display: 'flex',
                 gap: 1 }}

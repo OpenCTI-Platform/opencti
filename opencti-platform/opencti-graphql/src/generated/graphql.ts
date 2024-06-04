@@ -25030,6 +25030,7 @@ export type TaxiiCollectionAddInput = {
   filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
+  withInferences?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type TaxiiCollectionConnection = {

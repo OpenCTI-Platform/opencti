@@ -2184,6 +2184,7 @@
   "severity": "Gravedad",
   "Share": "Compartir",
   "Share as public dashboard": "Compartir como tablero público",
+  "Share the result of inference rules in TAXII collection": "Compartir el resultado de las reglas de inferencia en la colección TAXII",
   "Share with an organization": "Compartir con una organización",
   "shodan": "Shodan",
   "Show left navigation submenu icons": "Mostrar iconos del submenú de navegación izquierdo",

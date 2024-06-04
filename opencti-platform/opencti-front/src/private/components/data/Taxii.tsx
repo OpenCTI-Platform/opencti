@@ -114,6 +114,7 @@ const Taxii = () => {
       margin: 0,
       padding: '0 200px 50px 0',
     }}
+      data-testid="TaxiiCollections"
     >
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>

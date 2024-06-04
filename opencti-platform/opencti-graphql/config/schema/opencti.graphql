@@ -508,6 +508,7 @@ input TaxiiCollectionAddInput {
   filters: String
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
+  withInferences: Boolean
 }
 enum TaxiiCollectionOrdering {
   name
