@@ -1540,6 +1540,7 @@
   "Markdown source": "Markdown source",
   "Marking": "Marking",
   "Marking definition": "Marking definition",
+  "Marking definition levels": "Marking definition levels",
   "Marking definitions": "Marking definitions",
   "Marking definitions to use by the csv mapper...": "Marking definitions used by the CSV mapper only when some marking attributes have the policy set to 'Let the user choose the marking definitions'. If not this Marking definitions is ignored.",
   "Markings": "Markings",

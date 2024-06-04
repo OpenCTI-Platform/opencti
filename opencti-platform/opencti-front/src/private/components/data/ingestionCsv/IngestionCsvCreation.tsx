@@ -14,6 +14,7 @@ import { CsvAuthType } from '@components/data/ingestionCsv/__generated__/Ingesti
 import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -26,6 +27,8 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { CsvMapperRepresentation } from '../csvMapper/representations/Representation';
+import {CsvMapperRepresentationAttributeEdit} from "@components/data/csvMapper/representations/attributes/Attribute";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,6 +68,18 @@ export interface IngestionCsvCreationForm {
   cert?: string
   key?: string
   ca?: string
+  markings: Option[],
+}
+
+function resolveHasUserChoiceCsvMapper(option: Option & {
+  representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
+}) {
+  return option.representations.some(
+    representation => representation.attributes.some(
+      attribute => attribute.key === 'objectMarking' && attribute.default_values.some(
+        ({name}) => name === 'user-choice')
+    )
+  );
 }
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions }) => {
@@ -72,7 +87,11 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
-
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: {key: string, default_values: {name: string}[]}[] }[] }) => {
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+  };
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -102,6 +121,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
+    const userChosenMarkings = values.markings.map((option) => option.value);
     const input = {
       name: values.name,
       description: values.description,
@@ -111,6 +131,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
+      user_chosen_markings: userChosenMarkings ?? [],
     };
     commit({
       variables: {
@@ -155,12 +176,13 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             cert: '',
             key: '',
             ca: '',
+            markings: [],
           }}
           validationSchema={ingestionCsvCreationValidation}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values }) => (
+          {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -200,10 +222,21 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                     <CsvMapperField
                       name="csv_mapper_id"
+                      onChange={onCsvMapperSelection}
                       isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
                       queryRef={queryRef}
                     />
                   </React.Suspense>
+                )
+              }
+              {
+                hasUserChoiceCsvMapper && (
+                  <ObjectMarkingField
+                    name="markings"
+                    label={t_i18n('Marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
                 )
               }
               <Field

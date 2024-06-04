@@ -299,7 +299,10 @@ const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStor
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
-  const csvMapperParsed = parseCsvMapper(csvMapper);
+  const csvMapperParsed = {
+    ...parseCsvMapper(csvMapper),
+    user_chosen_markings: ingestion.user_chosen_markings ?? []
+  };
 
   const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
   const isUnchangedData = bcrypt.compareSync(data.toString(), ingestion.current_state_hash ?? '');

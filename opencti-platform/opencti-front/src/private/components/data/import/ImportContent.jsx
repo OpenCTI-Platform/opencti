@@ -532,7 +532,7 @@ class ImportContentComponent extends Component {
                   onClose={() => handleReset()}
                   fullWidth={true}
                 >
-                  <DialogTitle>{t('Launch an import')}</DialogTitle>
+                  <DialogTitle>{`>>>>>>>>>>>>>>>>>>${t('Launch an import')}`}</DialogTitle>
                   <DialogContent>
                     <Field
                       component={SelectField}
@@ -569,7 +569,6 @@ class ImportContentComponent extends Component {
                           label={t('Configuration')}
                           fullWidth={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
-                          setCsvMapperId={this.setState}
                           handleSetCsvMapperId={this.handleSetCsvMapperId.bind(this)}
                           fromClassComponent={true}
                         >

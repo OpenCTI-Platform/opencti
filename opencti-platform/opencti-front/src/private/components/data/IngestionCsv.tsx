@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
-import React from 'react';
+import React, { useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
@@ -44,6 +44,8 @@ const IngestionCsv = () => {
       symbol: '',
     },
   });
+  const [csvMapperId, setCsvMapperId] = useState('');
+
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, numberOfElements } = viewStorage;
     const dataColumns = {
@@ -119,13 +121,16 @@ const IngestionCsv = () => {
       </div>
     );
   }
+
   return (
     <div className={classes.container}>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu/>
       {renderLines()}
       <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionCsvCreation paginationOptions={paginationOptions} />
+        <IngestionCsvCreation
+          paginationOptions={paginationOptions}
+        />
       </Security>
     </div>
   );

@@ -1540,6 +1540,7 @@
   "Markdown source": "マークダウンソース",
   "Marking": "マーキング",
   "Marking definition": "マーキング定義",
+  "Marking definition levels": "定義レベルのマーキング",
   "Marking definitions": "データマーキング",
   "Marking definitions to use by the csv mapper...": "いくつかのマーキング属性が'ユーザーにマーキング定義を選択させる'にポリシーが設定されている場合にのみ、csvマッパーはマーキング定義を使用します。そうでない場合、このマーキング定義は無視されます。",
   "Markings": "マーキング",

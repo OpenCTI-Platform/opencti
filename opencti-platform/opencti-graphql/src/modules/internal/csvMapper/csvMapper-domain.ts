@@ -44,12 +44,17 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
 
 // -- CRUD --
 
-const buildCompleteCsvMapper = (csvMapper: BasicStoreEntityCsvMapper) => ({
-  ...csvMapper,
-  has_user_choice: JSON.parse(csvMapper.representations).some((representation: {
-    attributes: CsvMapperRepresentationAttributeResolved[]
-  }) => representation.attributes.some((attribute) => attribute.key === 'objectMarking' && attribute?.default_values?.includes('user-choice')))
-});
+const buildCompleteCsvMapper = (csvMapper: BasicStoreEntityCsvMapper) => {
+  if (!csvMapper){
+    return null
+  }
+  return {
+    ...csvMapper,
+    has_user_choice: JSON.parse(csvMapper?.representations).some((representation: { // to be removed
+      attributes: CsvMapperRepresentationAttributeResolved[]
+    }) => representation.attributes.some((attribute) => attribute.key === 'objectMarking' && attribute?.default_values?.includes('user-choice')))
+  }
+};
 
 export const findById = async (context: AuthContext, user: AuthUser, csvMapperId: string) => {
   const csvMapper = await storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);

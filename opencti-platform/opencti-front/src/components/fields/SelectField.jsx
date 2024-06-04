@@ -52,6 +52,7 @@ const SelectField = (props) => {
       if (typeof onChange === 'function') {
         onChange(name, value);
       }
+      // onChange to keep this component generic
       if (typeof setCsvMapperId === 'function' && !fromClassComponent) {
         setCsvMapperId(csvMapperId);
       }

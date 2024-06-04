@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
 interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: Option, value: Option) => boolean;
-  onChange?: (name: string, value: Option) => void;
+  onChange?: (name: string, value: Option & { representations: { attributes: {key: string, default_values: {name: string}[]}[] }[] }) => void;
   queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
 }
 
@@ -40,6 +40,14 @@ export const csvMapperQuery = graphql`
         node {
           id
           name
+          representations {
+            attributes {
+              key
+              default_values {
+                name
+              }
+            }
+          }
         }
       }
     }
@@ -58,6 +66,7 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   const csvMappersPreloaded = (data?.csvMappers?.edges || []).map(({ node }) => ({
     value: node.id,
     label: node.name,
+    representations: node.representations,
   }));
   return (
     <>

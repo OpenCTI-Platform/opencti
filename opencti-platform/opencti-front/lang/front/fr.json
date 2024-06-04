@@ -1540,6 +1540,7 @@
   "Markdown source": "Source markdown",
   "Marking": "Marquage",
   "Marking definition": "Définition du marquage",
+  "Marking definition levels": "Marquage des niveaux de définition",
   "Marking definitions": "Marquages",
   "Marking definitions to use by the csv mapper...": "Les définitions de marquage ne sont utilisées par le mappeur CSV que lorsque certains attributs de marquage ont la politique 'Laisser l'utilisateur choisir les définitions de marquage'. Dans le cas contraire, ces définitions de marquage sont ignorées.",
   "Markings": "Marquages",
