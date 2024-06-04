@@ -51,7 +51,6 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
 
 export const findAll = async (context, user, args) => {
   let types = [];
