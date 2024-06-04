@@ -15,6 +15,8 @@ import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -114,7 +116,9 @@ class FeedLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );

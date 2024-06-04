@@ -1736,6 +1736,7 @@ export enum Capabilities {
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
+  Taxiiapi = 'TAXIIAPI',
   TaxiiapiSetcollections = 'TAXIIAPI_SETCOLLECTIONS',
   VirtualOrganizationAdmin = 'VIRTUAL_ORGANIZATION_ADMIN'
 }

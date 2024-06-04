@@ -60,6 +60,7 @@ enum Capabilities {
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
   SETTINGS_SECURITYACTIVITY
+  TAXIIAPI
   TAXIIAPI_SETCOLLECTIONS
   INGESTION
   INGESTION_SETINGESTIONS
@@ -540,7 +541,7 @@ type Feed {
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
-  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
 }
 
 input FeedMappingInput {
@@ -598,7 +599,7 @@ type StreamCollection {
   filters: String
   stream_live: Boolean
   stream_public: Boolean
-  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
 }
 type StreamCollectionConnection {
   pageInfo: PageInfo!
@@ -11261,7 +11262,7 @@ type Query {
     orderMode: OrderingMode
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
-  schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE])
+  schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
@@ -11273,8 +11274,8 @@ type Query {
     search: String
     filters: FilterGroup
   ): TaxiiCollectionConnection @public # Code protected
-  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  feed(id: String!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI])
+  feed(id: String!): Feed @auth(for: [TAXIIAPI])
   feeds(
     first: Int
     after: ID
