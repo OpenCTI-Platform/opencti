@@ -8,6 +8,8 @@ import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_r
 class StixCyberObservableAddIndicatorsLinesContainer extends Component {
   render() {
     const { data, stixCyberObservableIndicators, stixCyberObservable, indicatorParams } = this.props;
+    console.log('data : ', data);
+    console.log('stixCyberObservableIndicators : ', stixCyberObservableIndicators);
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={stixCyberObservable}

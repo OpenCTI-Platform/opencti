@@ -184,13 +184,12 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                     />
                   </div>
                   <div
-                    // className={classes.bodyItem}
+
                     style={{ ...inlineStyles.observable_value, ...inlineStyles.bodyItem }}
                   >
                     {indicatorEdge.node.name}
                   </div>
                   <div
-                    // className={classes.bodyItem}
                     style={{ ...inlineStyles.created_at, ...inlineStyles.bodyItem }}
                   >
                     {fd(indicatorEdge.node.created_at)}
