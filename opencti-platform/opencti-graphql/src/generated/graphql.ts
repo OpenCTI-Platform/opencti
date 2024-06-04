@@ -22333,7 +22333,7 @@ export type StixCoreObjectEditMutations = {
 
 export type StixCoreObjectEditMutationsAskAnalysisArgs = {
   connectorId?: InputMaybe<Scalars['ID']['input']>;
-  contentSource: Array<Scalars['String']['input']>;
+  contentSource: Scalars['String']['input'];
   contentType: AnalysisContentType;
 };
 

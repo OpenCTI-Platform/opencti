@@ -262,6 +262,8 @@ export const askElementAnalysisForConnector = async (context, user, analyzedId, 
   throw new Error(`Content type ${contentType} not recognized`);
 };
 
+export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
+
 const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
   let connectors = await connectorsForAnalysis(context, user);
   if (connectorId) {
@@ -273,12 +275,13 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     const element = await internalLoadById(context, user, analyzedId);
     const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
 
-    const availableAttributes = Array.from(schemaAttributesDefinition.getAttributes(element.entity_type).values());
-    if (contentSource.some((field) => !availableAttributes.some((attr) => attr.name === field))) {
-      throw new Error(`One ore more field(s) don't exist in entity attributes for contentSource ${contentSource}`);
+    if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
+      throw new Error(`Fields content source not handled: ${contentSource}`);
     }
 
-    const content_fields = contentSource.join(' ');
+    const contentMappingFields = ['description', 'content'];
+    const content_fields = contentMappingFields.join(' ');
+
     const message = {
       internal: {
         work_id: work.id, // Related action for history
@@ -289,6 +292,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
         entity_id: element.standard_id,
         entity_type: element.entity_type,
         content_type: CONTENT_TYPE_FIELDS,
+        content_source: contentSource,
         content_fields,
       },
     };
@@ -301,9 +305,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
 };
 
 const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
-  if (!contentSource || contentSource.length > 1) throw new Error(`Content source ${contentSource} not handled for file analysis`);
-  const fileName = contentSource[0];
-  const file = await loadFile(user, fileName);
+  const file = await loadFile(user, contentSource);
 
   let connectors = await connectorsForAnalysis(context, user, file.metaData.mimetype);
   if (connectorId) {
