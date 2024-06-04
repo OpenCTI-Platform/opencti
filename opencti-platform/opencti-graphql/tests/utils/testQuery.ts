@@ -142,7 +142,7 @@ export const AMBER_GROUP: Group = {
     max_confidence: 100,
     overrides: [],
   },
-  max_shareable_markings: [MARKING_TLP_RED],
+  max_shareable_markings: [MARKING_TLP_GREEN],
 };
 
 export const AMBER_STRICT_GROUP: Group = {

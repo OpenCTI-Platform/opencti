@@ -159,6 +159,11 @@ describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
 
+  let tlpClear;
+  let tlpGreen;
+  let tlpAmber;
+  let tlpRed;
+
   beforeAll(async () => {
     // Create Private dashboard
     const privateDashboard = await queryAsAdmin({
@@ -171,6 +176,14 @@ describe('PublicDashboard resolver', () => {
       },
     });
     privateDashboardInternalId = privateDashboard.data.workspaceAdd.id;
+
+    // Fetch markings.
+    const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
+    const markings = data.markingDefinitions.edges.map((e) => e.node);
+    tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
+    tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
+    tlpAmber = markings.find((m) => m.definition === 'TLP:AMBER');
+    tlpRed = markings.find((m) => m.definition === 'TLP:RED');
   });
 
   afterAll(async () => {
@@ -277,11 +290,6 @@ describe('PublicDashboard resolver', () => {
       });
 
       it('User cannot create public dashboard with marking not in User allowed markings', async () => {
-        // Get marking
-        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
-        const markings = data.markingDefinitions.edges.map((e) => e.node);
-        const tlpRed = markings.find((m) => m.definition === 'TLP:RED');
-
         // Add security user in private dashboard authorizedMembers with admin access right
         const authorizedMembersUpdate = [
           {
@@ -318,6 +326,27 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboardQuery).not.toBeNull();
         expect(publicDashboardQuery.errors.length).toEqual(1);
         expect(publicDashboardQuery.errors.at(0).message).toEqual('Not allowed markings');
+      });
+
+      it('User cannot create public dashboard with marking not in User shareable markings', async () => {
+        // Try to create public dashboard
+        const PUBLIC_DASHBOARD_TO_CREATE = {
+          input: {
+            name: 'public dashboard markings amber',
+            uri_key: 'public-dashboard-markings-amber',
+            dashboard_id: privateDashboardInternalId,
+            allowed_markings_ids: [tlpAmber.id],
+            enabled: true,
+          },
+        };
+
+        const publicDashboardQuery = await editorQuery({
+          query: CREATE_QUERY,
+          variables: PUBLIC_DASHBOARD_TO_CREATE,
+        });
+        expect(publicDashboardQuery).not.toBeNull();
+        expect(publicDashboardQuery.errors.length).toEqual(1);
+        expect(publicDashboardQuery.errors.at(0).message).toEqual('You are not allowed to share these markings.');
       });
 
       it('should publicDashboard created', async () => {
@@ -933,9 +962,6 @@ describe('PublicDashboard resolver', () => {
       let greenPublicDashboardInternalId;
       let clearPublicDashboardInternalId;
 
-      let tlpClear;
-      let tlpGreen;
-
       let spainId;
       let raditzId;
       let vegetaId;
@@ -982,17 +1008,12 @@ describe('PublicDashboard resolver', () => {
       });
 
       beforeAll(async () => {
-        // region Fetch markings.
-        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
-        const markings = data.markingDefinitions.edges.map((e) => e.node);
-        tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
-        tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
         // endregion
         // region Create the publicDashboards.
         const GREEN_PUBLIC_DASHBOARD_TO_CREATE = {
           input: {
             name: 'public dashboard marking green',
-            uri_key: 'public_dashboard_marking_green',
+            uri_key: 'public-dashboard-marking-green',
             dashboard_id: privateDashboardInternalId,
             allowed_markings_ids: [tlpGreen.id],
             enabled: true,
@@ -1002,10 +1023,10 @@ describe('PublicDashboard resolver', () => {
           query: CREATE_QUERY,
           variables: GREEN_PUBLIC_DASHBOARD_TO_CREATE,
         });
-        const CLEAR_PUBLIC_DASHBOARD_TO_CREATE = {
+        const CLEAR_PUBLIC_DASHBOARD_TO_CREATE = { // a dashboard with more a restricted marking
           input: {
             name: 'public dashboard marking clear',
-            uri_key: 'public_dashboard_marking_clear',
+            uri_key: 'public-dashboard-marking-clear',
             dashboard_id: privateDashboardInternalId,
             allowed_markings_ids: [tlpClear.id],
             enabled: true,
@@ -1100,41 +1121,28 @@ describe('PublicDashboard resolver', () => {
       });
 
       it('should return the data for API: SCR Number', async () => {
-        // editor user: tlpRed as max shareable markings
-        const editor_aaa = await editorQuery({
+        const aaa = await queryAsAdmin({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public_dashboard_marking_green',
+            uriKey: 'public-dashboard-marking-green',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        const editor_result = editor_aaa.data.publicStixRelationshipsNumber;
-        expect(editor_result.total).toEqual(2);
-        expect(editor_result.count).toEqual(0);
-
-        // admin with bypass rights: can share everything
-        const admin_aaa = await queryAsAdmin({
-          query: API_SCR_NUMBER_QUERY,
-          variables: {
-            uriKey: 'public_dashboard_marking_clear',
-            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
-          },
-        });
-        const admin_result = admin_aaa.data.publicStixRelationshipsNumber;
-        expect(admin_result.total).toEqual(2);
-        expect(admin_result.count).toEqual(0);
+        const result = aaa.data.publicStixRelationshipsNumber;
+        expect(result.total).toEqual(2);
+        expect(result.count).toEqual(0);
       });
 
       it('should return the data for API: SCR Number with limited max marking', async () => {
-        // participant user has no max shareable markings: he cannot share anything
-        const { data } = await participantQuery({
+        // Same query but with a dashboard with more restrictive markings (clear marking)
+        const aaa = await queryAsAdmin({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public_dashboard_marking_green',
+            uriKey: 'public-dashboard-marking-clear',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        const result = data.publicStixRelationshipsNumber;
+        const result = aaa.data.publicStixRelationshipsNumber;
         expect(result.total).toEqual(0);
         expect(result.count).toEqual(0);
       });

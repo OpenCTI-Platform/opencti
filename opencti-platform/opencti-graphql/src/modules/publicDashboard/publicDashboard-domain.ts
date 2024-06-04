@@ -41,7 +41,7 @@ import {
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findAll as stixRelationships, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
-import { bookmarks, checkUserCanShareMarkings, getAvailableDataSharingMarkings } from '../../domain/user';
+import { bookmarks, checkUserCanShareMarkings } from '../../domain/user';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
@@ -131,6 +131,13 @@ export const addPublicDashboard = async (
     throw ForbiddenAccess();
   }
 
+  // check user allowed markings
+  const userMarkingIds = user.allowed_marking.map((m) => m.id);
+  if (input.allowed_markings_ids?.some((id) => !userMarkingIds.includes(id))) {
+    throw UnsupportedError('Not allowed markings');
+  }
+
+  // check user data sharing max markings
   if (input.allowed_markings_ids && input.allowed_markings_ids.length > 0) {
     const markingLevels = await Promise.all(input.allowed_markings_ids.map((id) => {
       return findMarkingDefinitionById(context, user, id);
@@ -170,18 +177,6 @@ export const addPublicDashboard = async (
     [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     user,
   );
-
-  // check user data sharing max markings
-  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, user)).map((m) => m.id);
-  if (input.allowed_markings_ids?.some((id) => !availableDataSharingMarkingIds.includes(id))) {
-    throw UnsupportedError('Invalid markings');
-  }
-
-  // check user allowed markings
-  const userMarkingIds = user.allowed_marking.map((m) => m.id);
-  if (input.allowed_markings_ids?.some((id) => !userMarkingIds.includes(id))) {
-    throw UnsupportedError('Not allowed markings');
-  }
 
   // Create publicDashboard
   const publicDashboardToCreate = {
