@@ -853,6 +853,9 @@ class IncidentKnowledgeCorrelationComponent extends Component {
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const stixCoreObjectsTypes = R.pipe(
+      R.filter((n) => n.node.entity_type
+          && n.node.entity_type.length > 1
+          && n.node.entity_type[0] !== n.node.entity_type[0].toLowerCase()),
       R.map((n) => R.assoc(
         'tlabel',
         t(
