@@ -6,8 +6,8 @@ import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
-import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -190,6 +190,7 @@ export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityI
       uploadStatus: 'complete',
     };
     await indexFileToDocument(file);
+    logApp.info(`[FILE STORAGE] Copy ${sourceId} to ${targetId} in success`, { document: file });
     return file;
   } catch (err) {
     logApp.error(`[FILE STORAGE] Cannot copy file ${sourceId} to ${targetId} in S3`, { error: err });
@@ -226,51 +227,40 @@ export const storeFileConverter = (file) => {
   };
 };
 
-export const loadFile = async (user, filename, opts = {}) => {
+export const loadFile = async (user, fileS3Path, opts = {}) => {
   const { dontThrow = false } = opts;
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
-      Key: filename
+      Key: fileS3Path
     }));
-    const metaData = {
-      version: object.Metadata.version,
-      description: object.Metadata.description,
-      list_filters: object.Metadata.list_filters,
-      filename: object.Metadata.filename,
-      mimetype: object.Metadata.mimetype,
-      labels_text: object.Metadata.labels_text,
-      labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
-      encoding: object.Metadata.encoding,
-      creator_id: object.Metadata.creator_id,
-      entity_id: object.Metadata.entity_id,
-      external_reference_id: object.Metadata.external_reference_id,
-      messages: object.Metadata.messages,
-      errors: object.Metadata.errors,
-      inCarousel: object.Metadata.inCarousel,
-      order: object.Metadata.order
-    };
+
     return {
-      id: filename,
-      name: decodeURIComponent(object.Metadata.filename || 'unknown'),
+      id: fileS3Path,
+      name: getFileName(fileS3Path),
       size: object.ContentLength,
       information: '',
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
       uploadStatus: 'complete',
-      metaData,
     };
   } catch (err) {
     if (dontThrow) {
-      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename });
+      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
       return undefined;
     }
-    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
+    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
   }
 };
 
+/**
+ * Get (filename + extension) from S3 file full path.
+ * @param fileId
+ * @returns {`${string}${string}`}
+ */
 const getFileName = (fileId) => {
-  return fileId?.includes('/') ? R.last(fileId.split('/')) : fileId;
+  const parsedFilename = path.parse(fileId);
+  return `${parsedFilename.name}${parsedFilename.ext}`;
 };
 
 const guessMimeType = (fileId) => {
@@ -478,13 +468,4 @@ export const streamConverter = (stream) => {
     });
     stream.on('end', () => resolve(data));
   });
-};
-
-// Utilities to use typescript on file-storage-helper.
-export const sendS3Command = (command) => {
-  return s3Client.send(command);
-};
-
-export const openCTIBucket = () => {
-  return bucketName;
 };

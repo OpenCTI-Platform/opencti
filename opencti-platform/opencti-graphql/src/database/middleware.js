@@ -1064,7 +1064,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const { chosenFields = {} } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
-  logApp.info('[OPENCTI] Merging START -----------------------------');
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   // Pre-checks
   // - No self merge
@@ -1103,6 +1102,21 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetEntity.category);
     await updateElasticVocabularyValue(sourceEntities.map((s) => s.name), targetEntity.name, completeCategory);
   }
+
+  // Prepare S3 file move
+  // Merge files on S3 and update x_opencti_files path in source => it will be added to target by the merge operation.
+  logApp.info('[OPENCTI] Copying files on S3 before merging x_opencti_files');
+  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
+
+  for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
+    if (sourceEntitiesWithFiles[i].x_opencti_files) {
+      if (sourceEntitiesWithFiles[i].x_opencti_files.length > 0) {
+        sourceEntitiesWithFiles[i].x_opencti_files = await moveAllFilesFromEntityToAnother(context, user, sourceEntitiesWithFiles[i], targetEntity);
+      }
+    }
+  }
+  logApp.info('[OPENCTI] Copy of files on S3 ended.');
+
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
@@ -1248,19 +1262,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     { concurrency: ES_MAX_CONCURRENCY }
   );
 
-  // Merge files on S3 and update x_opencti_files
-  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
-  let newXOpenctiFiles = [...targetEntity.x_opencti_files];
-
-  for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
-    if (sourceEntitiesWithFiles[i].x_opencti_files) {
-      if (sourceEntitiesWithFiles[i].x_opencti_files.length > 0) {
-        const currentEntityXOpenctiFiles = await moveAllFilesFromEntityToAnother(context, user, sourceEntitiesWithFiles[i], targetEntity);
-        newXOpenctiFiles = [...newXOpenctiFiles, ...currentEntityXOpenctiFiles];
-      }
-    }
-  }
-
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
@@ -1315,10 +1316,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       // Single value. Put the data in the merged field only if empty.
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
-  }
-  // Update x_opencti_files
-  if (newXOpenctiFiles.length > 0) {
-    updateAttributes.push({ key: 'x_opencti_files', value: newXOpenctiFiles, operation: UPDATE_OPERATION_REPLACE });
   }
 
   // eslint-disable-next-line no-use-before-define
@@ -2864,8 +2861,6 @@ export const getExistingEntities = async (context, user, input, type) => {
 };
 
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
-  logApp.info(`ANGIE - createEntityRaw, internal_id:${rawInput.internal_id}`);
-
   // region confidence control
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
@@ -2909,7 +2904,6 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     let dataEntity;
     let dataMessage;
     if (existingEntities.length > 0) {
-      logApp.info(`ANGIE - entity already exists, internal_id:${rawInput.internal_id}`);
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities);
       const entityIds = R.map((i) => i.standard_id, filteredEntities);

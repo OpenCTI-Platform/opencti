@@ -23,7 +23,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         payload_bin: '',
         file: {
           createReadStream: () => Readable.from('This is a file content for the first Artifact.'),
-          filename: 'testing-merge-artifact-1.txt',
+          filename: 'testing merge artifact with spaces 1.txt',
           mimetype: 'plain/text'
         },
         x_opencti_description: 'This is the first Artifact.',
@@ -40,7 +40,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
         payload_bin: '',
         file: {
           createReadStream: () => Readable.from('This is a file content for the second Artifact.'),
-          filename: 'testing-merge-artifact-2.json',
+          filename: 'testing merge artifact 2.json',
           mimetype: 'application/json'
         },
         x_opencti_description: '{ \'key\':\'value for artifact 2\'} }',
@@ -65,7 +65,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
     if (mergedArtifact.x_opencti_files) {
       for (let i = 0; i < mergedArtifact.x_opencti_files?.length; i += 1) {
         const file = mergedArtifact.x_opencti_files[i];
-        expect(file.name).oneOf(['testing-merge-artifact-2.json', 'testing-merge-artifact-1.txt']);
+        expect(file.name).oneOf(['testing merge artifact 2.json', 'testing merge artifact with spaces 1.txt']);
         // All files should be downloadable from S3
         await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
       }
@@ -79,7 +79,7 @@ describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
 
     for (let i = 0; i < listOfFiles.length; i += 1) {
       const file = listOfFiles[i].node;
-      expect(file.name).oneOf(['testing-merge-artifact-2.json', 'testing-merge-artifact-1.txt']);
+      expect(file.name).oneOf(['testing merge artifact 2.json', 'testing merge artifact with spaces 1.txt']);
 
       // All files should be downloadable from S3
       await requestFileFromStorageAsAdmin(file.id); // expect no exception throw
