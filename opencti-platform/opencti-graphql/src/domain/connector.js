@@ -2,7 +2,7 @@ import EventSource from 'eventsource';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
-import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { purgeQueue, registerConnectorQueues, unregisterConnector, unregisterExchanges} from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { now } from '../utils/format';
@@ -65,6 +65,7 @@ export const resetStateConnector = async (context, user, id) => {
     message: `resets \`state\` for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
   });
+  await purgeQueue(user, context);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 export const registerConnector = async (context, user, connectorData) => {

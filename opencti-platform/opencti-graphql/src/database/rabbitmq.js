@@ -51,6 +51,30 @@ export const config = () => {
   };
 };
 
+const amqpHttpClient = async () => {
+  const ssl = USE_SSL_MGMT ? 's' : '';
+  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
+  const httpClientOptions = {
+    baseURL,
+    responseType: 'json',
+    rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
+    auth: {
+      username: USERNAME,
+      password: PASSWORD,
+    },
+  };
+  return getHttpClient(httpClientOptions);
+};
+
+export const purgeQueue = async (user, context) => {
+  const httpClient = await amqpHttpClient();
+  const path = VHOST
+  const currentUser = user
+  const currentContext = context
+  const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
+
+};
+
 const amqpExecute = async (execute) => {
   const connOptions = USE_SSL ? {
     ...amqpCred(),
@@ -101,18 +125,7 @@ export const send = (exchangeName, routingKey, message) => {
 
 export const metrics = async (context, user) => {
   const metricApi = async () => {
-    const ssl = USE_SSL_MGMT ? 's' : '';
-    const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
-    const httpClientOptions = {
-      baseURL,
-      responseType: 'json',
-      rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
-      auth: {
-        username: USERNAME,
-        password: PASSWORD,
-      },
-    };
-    const httpClient = getHttpClient(httpClientOptions);
+    const httpClient = await amqpHttpClient();
     const overview = await httpClient.get('/api/overview').then((response) => response.data);
     const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
     // Compute number of push queues
