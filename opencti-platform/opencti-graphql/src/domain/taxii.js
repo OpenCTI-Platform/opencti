@@ -2,7 +2,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES, READ_DATA_INDICES, READ_STIX_DATA_WITH_INFERRED } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES, READ_STIX_DATA_WITH_INFERRED } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';

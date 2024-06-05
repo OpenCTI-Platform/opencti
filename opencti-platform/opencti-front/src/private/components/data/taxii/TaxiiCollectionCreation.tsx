@@ -12,7 +12,6 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
-import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import type { Theme } from '../../../../components/Theme';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
