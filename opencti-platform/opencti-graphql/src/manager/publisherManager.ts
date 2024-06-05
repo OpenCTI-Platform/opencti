@@ -29,6 +29,7 @@ import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
 import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
+import { extractRepresentative } from '../database/entity-representative';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -45,7 +46,8 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
-    const { name: notification_name, trigger_type } = notification;
+    const { name, trigger_type } = notification;
+    const notification_name = `${name} for instance.name`;
     const { notifier_connector_id, notifier_configuration: configuration } = notifier;
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
@@ -53,7 +55,8 @@ export const internalProcessNotification = async (
       const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
-        const notificationName = eventNotification.name;
+        const { main } = extractRepresentative(instance);
+        const notificationName = main;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];
         } else {

@@ -152,7 +152,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
   };
   return {
     internal_id: `default-trigger-${user.id}`,
-    name: `Default Trigger for ${user.name}`,
+    name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
     event_types: ['create', 'update', 'delete'],

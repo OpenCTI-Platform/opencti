@@ -168,7 +168,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
     description: 'Send notification to the user email',
     notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL,
     notifier_configuration: JSON.stringify({
-      title: '[<%=notification.trigger_type%>] <%=notification.name%>',
+      title: '[<%=notification.trigger_type%>] <%= notification_content[0].title %>',
       template: `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
    <head>
