@@ -17,6 +17,7 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval } from 'rxjs';
+import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectContentFiles, { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
@@ -102,21 +103,6 @@ const styles = () => ({
 });
 
 const interval$ = interval(FIVE_SECONDS);
-
-export const stixDomainObjectContentFieldPatchMutation = graphql`
-  mutation StixCoreObjectContentFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-    $references: [String]
-  ) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
-        ...StixCoreObjectContent_stixCoreObject
-      }
-    }
-  }
-`;
 
 const stixCoreObjectContentUploadExternalReferenceMutation = graphql`
   mutation StixCoreObjectContentUploadExternalReferenceMutation(
@@ -322,7 +308,12 @@ class StixCoreObjectContentComponent extends Component {
 
   handleSelectContent() {
     const { stixCoreObject, t } = this.props;
-    this.setState({ currentFileId: null, changed: false, contentSelected: true, currentContent: stixCoreObject.contentField ?? t('Write something awesome...') }, () => {
+    this.setState({
+      currentFileId: null,
+      changed: false,
+      contentSelected: true,
+      currentContent: stixCoreObject.contentField ?? t('Write something awesome...'),
+    }, () => {
       this.saveView();
     });
   }
@@ -396,21 +387,6 @@ class StixCoreObjectContentComponent extends Component {
         ? stixCoreObjectContentUploadExternalReferenceMutation
         : stixCoreObjectContentFilesUploadStixCoreObjectMutation,
       variables: { file, id: currentId, noTriggerImport: true, fileMarkings },
-      onCompleted: () => this.setState({ changed: false }),
-    });
-  }
-
-  saveContent() {
-    const { id } = this.props.stixCoreObject;
-    const inputValues = [{ key: 'content', value: this.state.currentContent }];
-    // Currently, only containers have a content available, so this mutation targets SDOs only. If content is added to all Stix Core Objects,
-    // this mutation will need to be updated to a stixCoreObjectEdit instead of a stixDomainObjectEdit
-    commitMutation({
-      mutation: stixDomainObjectContentFieldPatchMutation,
-      variables: {
-        id,
-        input: inputValues,
-      },
       onCompleted: () => this.setState({ changed: false }),
     });
   }
@@ -574,6 +550,14 @@ class StixCoreObjectContentComponent extends Component {
           <Loader variant={LoaderVariant.inElement} />
         ) : (
           <>
+            {contentSelected && (
+              <StixCoreObjectMappableContent
+                containerData={stixCoreObject}
+                handleDownloadPdf={this.handleDownloadPdf.bind(this)}
+                askAi={true}
+                editionMode={true}
+              />
+            )}
             {currentFileType === 'text/plain' && (
               <>
                 <StixCoreObjectContentBar
@@ -611,12 +595,12 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {(currentFileType === 'text/html' || contentSelected) && (
+            {(currentFileType === 'text/html') && (
               <>
                 <StixCoreObjectContentBar
                   directDownload={currentGetUrl}
                   handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-                  handleSave={() => (contentSelected ? this.saveContent() : this.saveFile())}
+                  handleSave={() => (this.saveFile())}
                   changed={changed}
                   navOpen={navOpen}
                 />
@@ -729,7 +713,7 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {!currentFile && (
+            {!currentFile && !contentSelected && (
               <div
                 className={
                   navOpen
@@ -785,6 +769,13 @@ const StixCoreObjectContent = createRefetchContainer(
       fragment StixCoreObjectContent_stixCoreObject on StixCoreObject {
         id
         entity_type
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
         ... on Report {
           name
           description

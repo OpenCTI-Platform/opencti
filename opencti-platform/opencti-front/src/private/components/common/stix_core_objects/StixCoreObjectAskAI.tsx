@@ -27,7 +27,7 @@ import {
   StixCoreObjectAskAISummarizeFilesMutation,
   StixCoreObjectAskAISummarizeFilesMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectAskAISummarizeFilesMutation.graphql';
-import { StixCoreObjectContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFieldPatchMutation.graphql';
+import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import {
   StixCoreObjectAskAIContainerReportMutation,
   StixCoreObjectAskAIContainerReportMutation$data,
@@ -41,7 +41,7 @@ import type {
   StixCoreObjectContentFilesUploadStixCoreObjectMutation$data,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
-import { stixDomainObjectContentFieldPatchMutation } from './StixCoreObjectContent';
+import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjectMappableContent';
 import FilesNativeField from '../form/FilesNativeField';
 import { useFormatter } from '../../../../components/i18n';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
@@ -141,7 +141,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
   };
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => setDisplayAskAI(false);
-  const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectContentFieldPatchMutation>(stixDomainObjectContentFieldPatchMutation);
+  const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
   const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
   const [commitMutationSummarizeFiles] = useApiMutation<StixCoreObjectAskAISummarizeFilesMutation>(stixCoreObjectAskAISummarizeFilesMutation);

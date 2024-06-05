@@ -8,7 +8,7 @@ export default class StixDomainObjectContentTabPage {
   }
 
   async selectMainContent() {
-    await this.page.getByRole('button', { name: 'Main content Embedded content' }).click();
+    await this.page.getByRole('button', { name: 'Mappable content Description & Main content' }).click();
     return this.page.getByLabel('Editor editing area: main');
   }
 
