@@ -1,11 +1,11 @@
 import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { elLoadById, elReplace } from '../database/engine';
+import { elList, elLoadById, elReplace } from '../database/engine';
 import { roleCapabilities } from '../domain/user';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
-import { listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] Split data sharing & ingestion into 2 capabilities';
 
@@ -27,23 +27,26 @@ export const up = async (next) => {
   });
 
   // ------ Update roles
-  const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
-  for (let i = 0; i < roles.length; i += 1) {
-    const roleId = roles[i].id;
-    const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
-    // Select 'Access ingestion' if 'Access Data sharing & ingestion' is selected
-    const hasAccessDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI');
-    if (hasAccessDataSharingCapability) {
-      const input = { fromId: roleId, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
-      await createRelation(context, SYSTEM_USER, input);
+  const callback = async (roles) => {
+    for (let i = 0; i < roles.length; i += 1) {
+      const roleId = roles[i].id;
+      const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
+      // Select 'Access ingestion' if 'Access Data sharing & ingestion' is selected
+      const hasAccessDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI');
+      if (hasAccessDataSharingCapability) {
+        const input = { fromId: roleId, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
+        await createRelation(context, SYSTEM_USER, input);
+      }
+      // Select 'Manage ingestion' if 'Manage Data sharing & ingestion' is selected
+      const hasManageDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI_SETCOLLECTIONS');
+      if (hasManageDataSharingCapability) {
+        const input = { fromId: roleId, toId: manageIngestionCapability.id, relationship_type: 'has-capability' };
+        await createRelation(context, SYSTEM_USER, input);
+      }
     }
-    // Select 'Manage ingestion' if 'Manage Data sharing & ingestion' is selected
-    const hasManageDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI_SETCOLLECTIONS');
-    if (hasManageDataSharingCapability) {
-      const input = { fromId: roleId, toId: manageIngestionCapability.id, relationship_type: 'has-capability' };
-      await createRelation(context, SYSTEM_USER, input);
-    }
-  }
+  };
+  const opts = { types: [ENTITY_TYPE_ROLE], callback };
+  await elList(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, opts);
 
   // ------ Update Attribute_order and name of Manage CSV mappers
   const CSVCapability = await elLoadById(context, SYSTEM_USER, 'capability--5407e8a4-0ff9-5253-89b1-c01a92ad9453');
