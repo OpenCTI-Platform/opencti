@@ -184,7 +184,6 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                     />
                   </div>
                   <div
-
                     style={{ ...inlineStyles.observable_value, ...inlineStyles.bodyItem }}
                   >
                     {indicatorEdge.node.name}
@@ -241,7 +240,6 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         handleClose={handleCloseAddIndicatorDrawer}
         stixCyberObservable={stixCyberObservable}
         stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
-        indicatorParams={indicatorParams}
       />
     </div>
   );

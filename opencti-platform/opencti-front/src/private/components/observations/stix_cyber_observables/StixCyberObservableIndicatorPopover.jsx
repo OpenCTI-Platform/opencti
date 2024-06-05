@@ -94,7 +94,7 @@ class StixCyberObservableIndicatorPopover extends Component {
         deleteNodeFromId(
           store,
           this.props.observableId,
-          'Pagination_indicators',
+          'Pagination_stixCyberObservables_indicators',
           {},
           this.props.indicatorId,
         );
