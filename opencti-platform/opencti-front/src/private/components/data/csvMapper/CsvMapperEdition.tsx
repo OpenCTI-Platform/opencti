@@ -49,11 +49,13 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
     data.csvMapperSchemaAttributes,
     computeDefaultValues,
   );
+  console.log('INITIAL VALUES', initialValues);
 
   const onSubmit: FormikConfig<CsvMapperFormData>['onSubmit'] = (
     values,
     { setSubmitting },
   ) => {
+    console.log('SUBMITTED VALUES', values);
     const formattedValues = formDataToCsvMapper(values);
     const input = formikFieldToEditInput(
       {
@@ -65,6 +67,8 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
         representations: JSON.stringify(csvMapper.representations),
       },
     );
+    console.log('formattedValues CSV', formattedValues);
+
     if (input.length > 0) {
       commitUpdateMutation({
         variables: { id: csvMapper.id, input },

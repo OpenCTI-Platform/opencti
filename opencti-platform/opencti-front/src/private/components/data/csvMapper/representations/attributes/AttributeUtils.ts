@@ -116,6 +116,8 @@ export const formDataToCsvMapperAttribute = (
   const default_values = isNotEmptyField(data.default_values)
     ? defaultValuesToStringArray(data.default_values ?? null)
     : null;
+  console.log('isNotEmptyField', name, isNotEmptyField(data.default_values));
+  console.log('defaultValuesToString', name, defaultValuesToStringArray(data.default_values ?? null));
 
   const configuration = isNotEmptyField(data.pattern_date)
     || isNotEmptyField(data.separator)

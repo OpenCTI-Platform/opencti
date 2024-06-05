@@ -109,6 +109,7 @@ const EntitySettingAttributeEdition = ({
   const [commit] = useApiMutation(entitySettingAttributeEditionPatch);
 
   const [membersData, setMembersData] = useState<EntitySettingAttributeEditionMembersQuery$data>();
+  console.log('attribute', attribute);
 
   useEffect(() => {
     if (attribute.name === INPUT_AUTHORIZED_MEMBERS) {
