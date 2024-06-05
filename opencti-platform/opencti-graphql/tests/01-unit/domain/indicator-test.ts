@@ -121,7 +121,7 @@ describe('indicator utils', () => {
     }, FALLBACK_DECAY_RULE.decay_lifetime);
     expect(revoked).toBe(true);
     expect(validFrom.toISOString()).toBe('2023-01-21T17:57:09.266Z');
-    expect(validUntil.toISOString()).toBe('2023-01-21T17:57:09.266Z');
+    expect(validUntil.toISOString()).toBe('2023-01-21T17:57:10.266Z');
   });
   it('should valid_from itself', async () => {
     const { validFrom, validUntil } = await computeValidPeriod({
