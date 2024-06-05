@@ -60,17 +60,12 @@ const Root = () => {
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
                   placeholder={
-                    <Route
-                      path="/"
-                      element={
-                        <Security
-                          needs={[SETTINGS_SETMARKINGS]}
-                          placeholder={<Navigate to="/dashboard/settings" />}
-                        >
-                          <Navigate to="/dashboard/settings/accesses/marking" />
-                        </Security>
-                      }
-                    />
+                    <Security
+                      needs={[SETTINGS_SETMARKINGS]}
+                      placeholder={<Navigate to="/dashboard/settings" />}
+                    >
+                      <Navigate to="/dashboard/settings/accesses/marking" />
+                    </Security>
                   }
                 >
                   <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
