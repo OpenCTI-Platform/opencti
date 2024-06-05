@@ -2,7 +2,6 @@ import conf, { getBaseUrl, logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
 import { DatabaseError } from '../config/errors';
-import { utcDate } from '../utils/format';
 import { isEmptyField } from './utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
