@@ -49,6 +49,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
   return {
     call: (config: AxiosRequestConfig) => caller(config),
     get: async (url: string, opts: any = {}) => caller.get(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpsAgent) }),
-    post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpsAgent) })
+    post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpsAgent) }),
+    delete: async (url: string, opts: any = {}) => caller.delete(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpsAgent) }),
   };
 };

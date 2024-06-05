@@ -21,6 +21,8 @@ const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
 const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
 const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
+const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
+const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const HOSTNAME = conf.get('rabbitmq:hostname');
 const PORT = conf.get('rabbitmq:port');
 const USERNAME = conf.get('rabbitmq:username');
@@ -66,13 +68,17 @@ const amqpHttpClient = async () => {
   return getHttpClient(httpClientOptions);
 };
 
-export const purgeQueue = async (user, context) => {
+/**
+ * Purge listen and push queue when connector state is reset
+ * @param connector All information concerning a specific connector
+ */
+export const purgeConnectorQueues = async (connector) => {
   const httpClient = await amqpHttpClient();
-  const path = VHOST
-  const currentUser = user
-  const currentContext = context
-  const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
+  const pathPushQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
+  const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}`;
 
+  await httpClient.delete(pathPushQueue).then((response) => response);
+  await httpClient.delete(pathListenQueue).then((response) => response);
 };
 
 const amqpExecute = async (execute) => {
