@@ -188,8 +188,8 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 )}
               </Alert>
               <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-                <Checkbox edge="start" checked={areInferenceRulesResultAdded} onChange={toggleAddInferenceRulesResult} />
-                <Typography>{t_i18n('Share the result of inference rules in TAXII collection')}</Typography>
+                <Switch checked={areInferenceRulesResultAdded} onChange={toggleAddInferenceRulesResult} name="toggleAddInferenceRulesResult" />
+                <Typography>{t_i18n('Include inferences')}</Typography>
               </Box>
               <Box sx={{ paddingTop: 4,
                 display: 'flex',
