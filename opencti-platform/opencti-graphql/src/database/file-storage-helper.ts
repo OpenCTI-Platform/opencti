@@ -119,11 +119,12 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
     const folder = ALL_ROOT_FOLDERS[i];
-    const allFiles = await loadedFilesListing(user, `${folder}/`, { recursive: true });
+    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true });
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
-      if (currentFile) {
+      logApp.info(`[FILE STORAGE] preparing for delete ${currentFile}`);
+      if (currentFile && currentFile.id.length > 0) {
         ids.push(currentFile.id);
       }
     }

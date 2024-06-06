@@ -113,8 +113,8 @@ export const storageInit = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
-  const up = await loadFile(user, id);
-  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
+  const up = await loadFile(context, user, id);
+  logApp.info(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -137,7 +137,7 @@ export const deleteFile = async (context, user, id) => {
 };
 
 export const deleteFiles = async (context, user, ids) => {
-  logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
+  logApp.info(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(context, user, id);
@@ -146,6 +146,7 @@ export const deleteFiles = async (context, user, ids) => {
 };
 
 export const downloadFile = async (id) => {
+  console.log('ANGIE - downloadFile:', { id });
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -227,14 +228,17 @@ export const storeFileConverter = (file) => {
   };
 };
 
-export const loadFile = async (user, fileS3Path, opts = {}) => {
+export const loadFile = async (context, user, fileS3Path, opts = {}) => {
+  console.log('ANGIE - loadFile:', { fileS3Path, bucketName });
   const { dontThrow = false } = opts;
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
       Key: fileS3Path
     }));
-
+    console.log('ANGIE - object:', { object });
+    const fileMetadata = await documentFindById(context, user, fileS3Path);
+    console.log('ANGIE - fileMetadata:', { fileMetadata });
     return {
       id: fileS3Path,
       name: getFileName(fileS3Path),
@@ -243,6 +247,7 @@ export const loadFile = async (user, fileS3Path, opts = {}) => {
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
       uploadStatus: 'complete',
+      metaData: fileMetadata.metaData,
     };
   } catch (err) {
     if (dontThrow) {
@@ -289,7 +294,7 @@ const filesAdaptation = (objects) => {
   });
 };
 
-export const loadedFilesListing = async (user, directory, opts = {}) => {
+export const loadedFilesListing = async (context, user, directory, opts = {}) => {
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
@@ -308,7 +313,7 @@ export const loadedFilesListing = async (user, directory, opts = {}) => {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
       const resultFiles = filesAdaptation(response.Contents ?? []);
-      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(user, f.Key, { dontThrow }), { concurrency: 5 });
+      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
       } else {
@@ -327,6 +332,7 @@ export const loadedFilesListing = async (user, directory, opts = {}) => {
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
+  console.log('ANGIE - uploadJobImport:', { context, user, fileId, fileMime, entityId, opts });
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false } = opts;
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
@@ -372,14 +378,18 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
+  console.log(`ANGIE - upload request for:${fileUpload}`);
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  console.log('ANGIE - do we have meta ?', meta);
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
   }
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  console.log('ANGIE - after file upload:', { filename, mimetype, encoding });
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   const key = `${filePath}/${truncatedFileName}`;
+  console.log('ANGIE - key:', { key });
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
     if (utcDate(currentFile.metaData.version).isSameOrAfter(utcDate(metadata.version))) {
@@ -403,6 +413,8 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     creator_id: creatorId,
     entity_id: entity?.internal_id,
   };
+  console.log('ANGIE - fullMetadata:', { fullMetadata });
+  console.log('ANGIE - upload to s3 with:', { bucketName, key });
   const s3Upload = new Upload({
     client: s3Client,
     params: {
@@ -412,7 +424,8 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     }
   });
   await s3Upload.done();
-  const uploadedFile = await loadFile(user, key);
+  console.log('ANGIE - upload done.');
+  const uploadedFile = await loadFile(context, user, key);
 
   // Register in elastic
   const file = {
