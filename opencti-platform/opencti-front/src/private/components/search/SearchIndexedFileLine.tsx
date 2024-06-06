@@ -71,7 +71,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   const { t_i18n } = useFormatter();
   let entityLink = node.entity ? `${resolveLink(node.entity.entity_type)}/${node.entity.id}` : '';
   const isGrantedToFiles = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
-  if (entityLink && isGrantedToFiles) {
+  if (entityLink && isGrantedToFiles && node.entity?.entity_type !== 'External-Reference') {
     entityLink = entityLink.concat('/files');
   }
   return (

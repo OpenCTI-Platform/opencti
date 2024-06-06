@@ -18,6 +18,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/analyses/opinions';
     case 'Report':
       return '/dashboard/analyses/reports';
+    case 'External-Reference':
+      return '/dashboard/analyses/external_references';
     case 'Grouping':
       return '/dashboard/analyses/groupings';
     case 'Course-Of-Action':
