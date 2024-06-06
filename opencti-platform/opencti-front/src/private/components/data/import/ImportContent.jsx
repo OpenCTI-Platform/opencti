@@ -41,6 +41,7 @@ import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -181,9 +182,7 @@ class ImportContentComponent extends Component {
       sortBy: 'name',
       orderAsc: true,
       selectedConnector: null,
-      selectedConfiguration: '',
-      csvMapperId: '',
-      csvMapper: null,
+      hasUserChoiceCsvMapper: false,
     };
   }
 
@@ -197,11 +196,14 @@ class ImportContentComponent extends Component {
     this.subscription.unsubscribe();
   }
 
-  handleSetCsvMapperId(csvMapperId) {
-    this.setState({ csvMapperId });
-    const selectedConfiguration = this.state.selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
-    this.setState({ selectedConfiguration });
-    this.setState({ csvMapper: selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '' });
+  handleSetCsvMapper(_, csvMapper) {
+    const parsedCsvMapper = JSON.parse(csvMapper);
+    const parsedRepresentations = JSON.parse(parsedCsvMapper.representations)
+    const selectedCsvMapper = {
+      ...parsedCsvMapper,
+      representations: [...parsedRepresentations]
+    }
+    this.setState({ hasUserChoiceCsvMapper: resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper)});
   }
 
   handleOpenImport(file) {
@@ -532,7 +534,7 @@ class ImportContentComponent extends Component {
                   onClose={() => handleReset()}
                   fullWidth={true}
                 >
-                  <DialogTitle>{`>>>>>>>>>>>>>>>>>>${t('Launch an import')}`}</DialogTitle>
+                  <DialogTitle>{`${t('Launch an import')}`}</DialogTitle>
                   <DialogContent>
                     <Field
                       component={SelectField}
@@ -569,8 +571,7 @@ class ImportContentComponent extends Component {
                           label={t('Configuration')}
                           fullWidth={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
-                          handleSetCsvMapperId={this.handleSetCsvMapperId.bind(this)}
-                          fromClassComponent={true}
+                          onChange={this.handleSetCsvMapper.bind(this)}
                         >
                         {this.state.selectedConnector.configurations?.map((config) => {
                           return (
@@ -586,7 +587,7 @@ class ImportContentComponent extends Component {
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
                     {this.state.selectedConnector?.name === 'ImportCsv'
-                      && this.state.csvMapper?.has_user_choice
+                      && this.state.hasUserChoiceCsvMapper
                       && (
                         <>
                           <ObjectMarkingField

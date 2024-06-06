@@ -47,6 +47,8 @@ import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import {Option} from "@components/common/form/ReferenceField";
+import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -119,7 +121,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
   );
-  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const handleSelectConnector = (_: string, value: string) => {
     setSelectedConnector(data.connectorsForImport?.find((c) => c?.id === value) ?? null);
@@ -235,8 +236,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
       setSubmitting: undefined,
     });
   };
-  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
-  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: {key: string, default_values: string[]}[] }[] }) => {
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(option);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+  };
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -554,7 +558,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      setCsvMapperId={setCsvMapperId}
+                      onChange={onCsvMapperSelection}
                     >
                     {(selectedConnector?.configurations ?? []).map((config) => {
                       return (
@@ -569,7 +573,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                 }
                 {selectedConnector?.name === 'ImportCsv'
-                    && csvMapper?.has_user_choice
+                    && hasUserChoiceCsvMapper
                     && (
                     <>
                       <ObjectMarkingField

@@ -27,6 +27,8 @@ import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import {Option} from "@components/common/form/ReferenceField";
+import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
 
 const styles = () => ({
   container: {
@@ -242,8 +244,17 @@ const StixCoreObjectFilesAndHistory = ({
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
-  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
-  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (_, option) => {
+    const parsedOption = typeof option === "string" ? JSON.parse(option) : option
+    const parsedRepresentations = JSON.parse(parsedOption.representations)
+    const selectedCsvMapper = {
+      ...parsedOption,
+      representations: [...parsedRepresentations]
+    }
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+  };
   return (
     <div className={classes.container} data-testid="StixCoreObjectFilesAndHistory">
       <Grid
@@ -330,7 +341,7 @@ const StixCoreObjectFilesAndHistory = ({
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      setCsvMapperId={setCsvMapperId}
+                      onChange={(_, value) => onCsvMapperSelection(_, value)}
                     >
                     {selectedConnector.configurations.map((config) => {
                       return (
@@ -345,7 +356,7 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                   }
                 {selectedConnector?.name === 'ImportCsv'
-                  && csvMapper?.has_user_choice
+                  && hasUserChoiceCsvMapper
                   && (
                     <>
                       <ObjectMarkingField

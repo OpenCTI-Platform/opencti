@@ -28,6 +28,7 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
+import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
 
 const styles = () => ({
   container: {
@@ -249,9 +250,17 @@ const FileManager = ({
     'Malware',
   ].includes(entity.entity_type);
 
-  const selectedConfiguration = selectedConnector?.configurations?.find((conf) => conf.id === csvMapperId)?.configuration;
-  const csvMapper = selectedConfiguration?.startsWith('{') ? JSON.parse(selectedConfiguration) : '';
-
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (_, option) => {
+    const parsedOption = typeof option === "string" ? JSON.parse(option) : option
+    const parsedRepresentations = JSON.parse(parsedOption.representations)
+    const selectedCsvMapper = {
+      ...parsedOption,
+      representations: [...parsedRepresentations]
+    }
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+  };
   return (
     <div className={classes.container} data-testid="FileManager">
       <Grid
@@ -338,7 +347,7 @@ const FileManager = ({
                       label={t('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      setCsvMapperId={setCsvMapperId}
+                      onChange={(_, value) => onCsvMapperSelection(_, value)}
                     >
                       {selectedConnector.configurations.map((config) => {
                         return (
@@ -353,7 +362,7 @@ const FileManager = ({
                     </Field>
                   )}
                   {selectedConnector?.name === 'ImportCsv'
-                      && csvMapper?.has_user_choice
+                      && hasUserChoiceCsvMapper
                       && (
                       <>
                         <ObjectMarkingField

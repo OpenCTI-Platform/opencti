@@ -40,9 +40,6 @@ const SelectField = (props) => {
     onChange,
     onFocus,
     onSubmit,
-    setCsvMapperId,
-    handleSetCsvMapperId,
-    fromClassComponent,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -51,13 +48,6 @@ const SelectField = (props) => {
       setFieldValue(name, value);
       if (typeof onChange === 'function') {
         onChange(name, value);
-      }
-      // onChange to keep this component generic
-      if (typeof setCsvMapperId === 'function' && !fromClassComponent) {
-        setCsvMapperId(csvMapperId);
-      }
-      if (typeof handleSetCsvMapperId === 'function') {
-        handleSetCsvMapperId(csvMapperId);
       }
     },
     [setFieldValue, onChange, name],

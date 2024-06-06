@@ -27,8 +27,6 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { CsvMapperRepresentation } from '../csvMapper/representations/Representation';
-import {CsvMapperRepresentationAttributeEdit} from "@components/data/csvMapper/representations/attributes/Attribute";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,9 +69,9 @@ export interface IngestionCsvCreationForm {
   markings: Option[],
 }
 
-function resolveHasUserChoiceCsvMapper(option: Option & {
+const resolveHasUserChoiceCsvMapper = (option: Option & {
   representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
-}) {
+}) => {
   return option.representations.some(
     representation => representation.attributes.some(
       attribute => attribute.key === 'objectMarking' && attribute.default_values.some(
