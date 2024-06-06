@@ -276,7 +276,9 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     input,
     opts
   );
-  if (isEmptyField(stixCyberObservable.pid)) stixCyberObservable.pid = undefined;
+  for (let key in stixCyberObservable) {
+    if (stixCyberObservable[key] === '') delete stixCyberObservable[key];
+  }
   if (input[0].key === 'x_opencti_score') {
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
