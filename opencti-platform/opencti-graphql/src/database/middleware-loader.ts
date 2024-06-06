@@ -468,7 +468,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         key: [INSTANCE_REGARDING_OF],
         values: [
           { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: [relationType] }
+          { key: 'relationship_type', values: relationTypes }
         ]
       }
     ],
@@ -522,7 +522,6 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
         values: [],
         nested: [
           { key: 'internal_id', values: [connectedEntityId] },
-          { key: 'types', values: entityTypes },
           { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
         ],
       }],
@@ -557,7 +556,7 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       filterGroups: [],
     };
   }
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { filters, connectionFormat: false });
+  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationTypes, { filters, connectionFormat: false });
   const relationsEntityMap = new Map();
   connectedRelations.forEach((relation) => {
     if (entityIds.some((i) => i === relation.fromId)) {
