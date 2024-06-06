@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { deleteFile, downloadFile, getFileName, guessMimeType, loadFile } from '../../../src/database/file-storage';
+import { deleteFile, downloadFile, getFileName, guessMimeType, loadFile, streamConverter } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH, FIVE_MINUTES } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
@@ -8,35 +8,9 @@ import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/m
 import { utcDate } from '../../../src/utils/format';
 import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
 
-const streamConverter = (stream) => {
-  return new Promise((resolve) => {
-    let data = '';
-    stream.on('data', (chunk) => {
-      data += chunk.toString();
-    });
-    stream.on('end', () => resolve(data));
-  });
-};
-
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName}`;
 const importFileId = `import/global/${exportFileName}`;
-
-const importOptsLoader = [API_URI, ADMIN_API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
-describe.skip('Database provision', () => {
-  it('Should import creation succeed', async () => {
-    // Inject data
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOptsLoader);
-    expect(execution).not.toBeNull();
-    expect(execution.status).toEqual('success');
-  }, FIVE_MINUTES);
-  // Python lib is fixed but we need to wait for a new release
-  it('Should import update succeed', async () => {
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_importer.py', importOptsLoader);
-    expect(execution).not.toBeNull();
-    expect(execution.status).toEqual('success');
-  }, FIVE_MINUTES);
-});
 
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {

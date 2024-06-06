@@ -269,11 +269,11 @@ export const getFileName = (fileId) => {
 
 export const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
-  const mimeType = mime.lookup(fileName) || 'text/plain';
+  const mimeType = mime.lookup(fileName);
   if (!mimeType && fileName === 'pdf_report') {
     return 'application/pdf';
   }
-  return mimeType;
+  return mimeType || 'text/plain';
 };
 
 export const isFileObjectExcluded = (id) => {
@@ -398,7 +398,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = guessMimeType(key) || mimetype;
+  const fileMime = guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
