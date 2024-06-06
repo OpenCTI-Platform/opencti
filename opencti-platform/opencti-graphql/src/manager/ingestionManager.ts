@@ -444,7 +444,7 @@ const ingestionHandler = async () => {
     await Promise.all(ingestionPromises);
   } catch (e: any) {
     // We dont care about failing to get the lock.
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       logApp.info('[OPENCTI-MODULE] INGESTION - Ingestion manager already in progress by another API');
     } else {
       logApp.error('[OPENCTI-MODULE] INGESTION - Ingestion handlers cannot be started');

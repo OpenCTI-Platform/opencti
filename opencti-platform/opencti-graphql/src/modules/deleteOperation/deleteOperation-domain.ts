@@ -270,7 +270,7 @@ export const confirmDelete = async (context: AuthContext, user: AuthUser, id: st
     lock = await lockResource([id]);
     return await processDeleteOperation(context, user, id, { isRestoring: false });
   } catch (e: any) {
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [id] });
     }
     throw e;
@@ -350,7 +350,7 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
 
     return mainEntityRestoredId;
   } catch (e: any) {
-    if (e.name === TYPE_LOCK_ERROR) {
+    if (e.extensions.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [id] });
     }
     throw e;

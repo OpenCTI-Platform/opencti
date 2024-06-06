@@ -240,7 +240,7 @@ const initPublisherManager = () => {
       }
       logApp.info('[OPENCTI-MODULE] End of publisher manager processing');
     } catch (e: any) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if (e.extensions.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-PUBLISHER] Publisher manager already started by another API');
       } else {
         logApp.error(e, { manager: 'PUBLISHER_MANAGER' });
