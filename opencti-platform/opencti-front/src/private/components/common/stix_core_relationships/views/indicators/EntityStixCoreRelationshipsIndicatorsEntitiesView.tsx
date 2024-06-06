@@ -106,7 +106,13 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     mode: 'and',
     filters: [
       { key: 'entity_type', values: ['Indicator'], mode: 'or', operator: 'eq' },
-      { key: 'indicates', values: [entityId], mode: 'or', operator: 'eq' },
+      {
+        key: 'regardingOf',
+        values: [
+          { key: 'id', values: [entityId] },
+          { key: 'relationship_type', values: ['indicates'] },
+        ],
+      },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
