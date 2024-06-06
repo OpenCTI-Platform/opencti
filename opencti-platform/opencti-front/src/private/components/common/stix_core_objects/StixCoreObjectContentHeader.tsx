@@ -3,7 +3,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import { Link } from 'react-router-dom';
 import { DifferenceOutlined } from '@mui/icons-material';
-import { VectorPolygon } from 'mdi-material-ui';
+import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -33,7 +33,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             selected={currentMode === 'content'}
             value={'content'}
           >
-            <VectorPolygon
+            <HistoryEduIcon
               fontSize="small"
               color={currentMode === 'mapping' ? 'inherit' : 'primary'}
             />
