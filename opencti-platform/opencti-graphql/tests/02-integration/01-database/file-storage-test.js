@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-storage';
+import { deleteFile, downloadFile, getFileName, guessMimeType, loadFile } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH, FIVE_MINUTES } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
@@ -47,7 +47,7 @@ describe('File storage file listing', () => {
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
   });
-  it.skip('should paginate file listing', async () => {
+  it('should paginate file listing', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     let list = await paginatedForPathWithEnrichment(testContext, ADMIN_USER, `export/Malware/${malware.id}`, malware.id, { first: 25 });
     expect(list).not.toBeNull();
@@ -69,7 +69,7 @@ describe('File storage file listing', () => {
     expect(file.size).toEqual(10700);
     expect(file.name).toEqual(exportFileName);
   });
-  it.skip('should all file listing', async () => {
+  it('should all file listing', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const paths = [`export/Malware/${malware.id}`];
     // Global search
@@ -102,7 +102,7 @@ describe('File storage file listing', () => {
     files = await allFilesForPaths(testContext, ADMIN_USER, ['export'], { excludedPaths: ['export/Malware'] });
     expect(files.length).toEqual(0);
   });
-  it.skip('should file download', async () => {
+  it('should file download', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const fileStream = await downloadFile(exportFileId(malware));
     expect(fileStream).not.toBeNull();
@@ -115,9 +115,9 @@ describe('File storage file listing', () => {
     const user = head(jsonData.objects);
     expect(user.name).toEqual('Paradise Ransomware');
   });
-  it.skip('should load file', async () => {
+  it('should load file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const file = await loadFile(testContext, ADMIN_USER, exportFileId(malware));
+    const file = await loadFile(ADMIN_USER, exportFileId(malware));
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
@@ -125,11 +125,28 @@ describe('File storage file listing', () => {
     expect(file.metaData).toBeDefined();
     expect(file.metaData.mimetype).toBe('application/json');
   });
-  it.skip('should delete file', async () => {
+  it('should delete file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     let deleted = await deleteFile(testContext, ADMIN_USER, exportFileId(malware));
     expect(deleted).toBeTruthy();
     deleted = await deleteFile(testContext, ADMIN_USER, importFileId);
     expect(deleted).toBeTruthy();
+  });
+});
+
+describe('File storage utils', () => {
+  it('should guess mimetype correctly', async () => {
+    expect(guessMimeType('path/to/iamajsonfile.json')).toBe('application/json');
+    expect(guessMimeType('path/to/iamapdf.pdf')).toBe('application/pdf');
+    expect(guessMimeType('path/to/i Have space and 💖.txt')).toBe('text/plain');
+    expect(guessMimeType('unknown')).toBe('text/plain');
+    expect(guessMimeType('export/Malware/b4bebef0-7f1b-4212-b09d-f376adb3181a/(ExportFileStix)_Malware-Paradise Ransomware_all.json')).toBe('application/json');
+  });
+
+  it('should find filename correctly', async () => {
+    expect(getFileName('path/to/iamajsonfile.json')).toBe('iamajsonfile.json');
+    expect(getFileName('path/to/iamapdf.pdf')).toBe('iamapdf.pdf');
+    expect(getFileName('unknown')).toBe('unknown');
+    expect(getFileName('path/to/i Have spàcé and 💖.txt')).toBe('i Have spàcé and 💖.txt');
   });
 });
