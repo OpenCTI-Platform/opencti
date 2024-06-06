@@ -172,7 +172,7 @@ const DefaultValueField = ({
     return (
       <Field
         component={ToggleButtonField}
-        items={[{ value: true, content: 'True' }, { value: false, content: 'False' }]}
+        items={[{ value: true, content: t_i18n('True') }, { value: false, content: t_i18n('False') }]}
         name={name}
         label={label}
         containerstyle={fieldSpacingContainerStyle}
