@@ -186,6 +186,9 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
                 this.state.addedStixCoreObjects,
               ),
             });
+            if (typeof onDelete === 'function') {
+              onDelete(stixCoreObject);
+            }
             if (setSubmitting) setSubmitting(false);
             if (resetForm) resetForm(true);
           },

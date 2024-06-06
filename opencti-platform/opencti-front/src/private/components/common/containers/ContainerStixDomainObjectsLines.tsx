@@ -14,6 +14,7 @@ import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const nbOfRowsToLoad = 50;
 
@@ -134,6 +135,8 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   openExports,
   enableReferences,
 }) => {
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixDomainObjectsLinesQuery,
   ContainerStixDomainObjectsLines_container$key
@@ -173,7 +176,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         onToggleEntity={onToggleEntity}
         enableReferences={enableReferences}
       />
-      {container && (
+      {!FABReplaced && container && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={container.id}
