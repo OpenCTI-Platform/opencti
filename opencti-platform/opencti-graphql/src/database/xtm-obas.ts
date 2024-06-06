@@ -2,7 +2,6 @@ import conf, { getBaseUrl, logApp } from '../config/conf';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import type { Label } from '../generated/graphql';
 import { DatabaseError } from '../config/errors';
-import { utcDate } from '../utils/format';
 import { isEmptyField } from './utils';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
@@ -176,19 +175,11 @@ export const getScenarioResult = async (id: string) => {
   }
   const httpClient = buildXTmOpenBasHttpClient();
   try {
-    const { data: scenario } = await httpClient.get(`/scenarios/external_reference/${id}`);
-    if (!scenario || !scenario.scenario_id) {
+    const { data: exercise } = await httpClient.get(`/opencti/v1/exercises/latest/${id}`);
+    if (!exercise || !exercise.exercise_id) {
       return noResult;
     }
-    const { data: exercises } = await httpClient.get(`/scenarios/${scenario.scenario_id}/exercises`);
-    if (exercises.length === 0) {
-      return noResult;
-    }
-    const sortedExercises = exercises.sort(
-      (a: { exercise_start_date: string; }, b: { exercise_start_date: string; }) => utcDate(b.exercise_start_date).diff(utcDate(a.exercise_start_date))
-    );
-    const latestExercise = sortedExercises.at(0);
-    const prevention = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'PREVENTION').at(0);
+    const prevention = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'PREVENTION').at(0);
     const preventionResult = prevention.avgResult === 'UNKNOWN' ? {
       unknown: 1,
       success: 0,
@@ -198,7 +189,7 @@ export const getScenarioResult = async (id: string) => {
       success: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
       failure: prevention.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
     };
-    const detection = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'DETECTION').at(0);
+    const detection = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'DETECTION').at(0);
     const detectionResult = detection.avgResult === 'UNKNOWN' ? {
       unknown: 1,
       success: 0,
@@ -208,7 +199,7 @@ export const getScenarioResult = async (id: string) => {
       success: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Successful').at(0).value,
       failure: detection.distribution?.filter((n: { label: string, value: number }) => n.label === 'Failed').at(0).value
     };
-    const humanResponse = latestExercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'HUMAN_RESPONSE').at(0);
+    const humanResponse = exercise.exercise_global_score.filter((n: { type: string, value: number }) => n.type === 'HUMAN_RESPONSE').at(0);
     const humanResponseResult = humanResponse.avgResult === 'UNKNOWN' ? {
       unknown: 1,
       success: 0,
