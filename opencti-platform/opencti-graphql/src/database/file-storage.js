@@ -237,7 +237,7 @@ export const loadFile = async (user, fileS3Path, opts = {}) => {
       Bucket: bucketName,
       Key: fileS3Path
     }));
-    const mimeTypeResolved = object.Metadata.mimetype || guessMimeType(fileS3Path);
+    const mimeTypeResolved = guessMimeType(fileS3Path);
     return {
       id: fileS3Path,
       name: getFileName(fileS3Path),
@@ -381,7 +381,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   if (!metadata.version) {
     metadata.version = now();
   }
-  const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  const { createReadStream, filename, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   const key = `${filePath}/${truncatedFileName}`;
   const currentFile = await documentFindById(context, user, key);
@@ -398,7 +398,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = mimetype || guessMimeType(key);
+  const fileMime = guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
