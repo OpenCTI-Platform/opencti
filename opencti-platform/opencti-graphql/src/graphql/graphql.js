@@ -1,5 +1,5 @@
 import { ApolloServer, UserInputError } from 'apollo-server-express';
-import { ApolloServerPluginLandingPageGraphQLPlayground, ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
+import { ApolloServerPluginLandingPageDisabled, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
@@ -8,7 +8,7 @@ import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import { constraintDirectiveDocumentation, createApolloQueryValidationPlugin } from 'graphql-constraint-directive';
 import { GraphQLError } from 'graphql/error';
 import createSchema from './schema';
-import conf, { basePath, DEV_MODE, PLAYGROUND_INTROSPECTION_DISABLED, ENABLED_TRACING, PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED, logApp } from '../config/conf';
+import conf, { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_ENABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
@@ -80,11 +80,10 @@ const createApolloServer = () => {
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
   apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
-  const introspectionPatterns = ['__schema {', '__schema(', '__type {', '__type('];
   const secureIntrospectionPlugin = {
     requestDidStart: ({ request, context }) => {
-      // Is schema introspection request
-      if (introspectionPatterns.some((pattern) => request.query.includes(pattern))) {
+      // Is schema have introspection request
+      if (['__schema', '__type'].some((pattern) => request.query.includes(pattern))) {
         // If introspection explicitly disabled or user is not authenticated
         if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !context.user) {
           throw ForbiddenAccess('GraphQL introspection not authorized!');
