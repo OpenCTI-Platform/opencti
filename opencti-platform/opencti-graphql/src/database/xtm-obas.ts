@@ -175,7 +175,7 @@ export const getScenarioResult = async (id: string) => {
   }
   const httpClient = buildXTmOpenBasHttpClient();
   try {
-    const { data: exercise } = await httpClient.get(`/scenarios/external_reference/${id}`);
+    const { data: exercise } = await httpClient.get(`/opencti/v1/exercises/latest/${id}`);
     if (!exercise || !exercise.exercise_id) {
       return noResult;
     }
