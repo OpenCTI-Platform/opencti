@@ -119,7 +119,7 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
     const folder = ALL_ROOT_FOLDERS[i];
-    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true });
+    const allFiles = await loadedFilesListing(user, `${folder}/`, { recursive: true });
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
@@ -161,7 +161,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         if (newFile) {
           await deleteFile(context, user, sourceFileS3Id); // TODO to be removed ? This will be done by merge delete no ?
 
-          const newFileForEntity = storeFileConverter(newFile);
+          const newFileForEntity = storeFileConverter(user, newFile);
           logApp.info(' [FILE STORAGE] Adding x_opencti_file', { newFileForEntity });
           updatedXOpenctiFiles.push(newFileForEntity);
         }

@@ -129,7 +129,7 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
 };
 
 const downloadAllLogFiles = async (context: AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
-  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {});
+  const allSupportFiles = await loadedFilesListing(user, s3Directory, {});
   logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];

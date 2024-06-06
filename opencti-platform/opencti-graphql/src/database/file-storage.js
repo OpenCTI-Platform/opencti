@@ -218,7 +218,7 @@ export const getFileContent = async (id, encoding = 'utf8') => {
 /**
  * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
  */
-export const storeFileConverter = (file) => {
+export const storeFileConverter = (user, file) => {
   return {
     id: file.id,
     name: file.name,
@@ -293,7 +293,7 @@ const filesAdaptation = (objects) => {
   });
 };
 
-export const loadedFilesListing = async (context, user, directory, opts = {}) => {
+export const loadedFilesListing = async (user, directory, opts = {}) => {
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {

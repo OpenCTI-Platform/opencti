@@ -2485,7 +2485,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
     const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: element });
-    const convertedFile = storeFileConverter(file);
+    const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
@@ -2986,7 +2986,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
         const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings });
-        additionalInputs = { x_opencti_files: [storeFileConverter(file)] };
+        additionalInputs = { x_opencti_files: [storeFileConverter(user, file)] };
         // Add external references from files if necessary
         if (entitySetting?.platform_entity_files_ref) {
           // Create external ref + link to current entity
