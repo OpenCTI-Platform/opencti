@@ -79,7 +79,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  const paddingRight = getPaddingRight(location, dataSource?.id, '/dashboard/techniques/data_sources');
+  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources');
   return (
     <>
       {dataSource ? (
@@ -101,7 +101,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(location, dataSource.id, '/dashboard/techniques/data_sources')}
+              value={getCurrentTab(location.pathname, dataSource.id, '/dashboard/techniques/data_sources')}
             >
               <Tab
                 component={Link}

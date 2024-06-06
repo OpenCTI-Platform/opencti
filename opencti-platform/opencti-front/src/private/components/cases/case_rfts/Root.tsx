@@ -90,7 +90,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
-  const paddingRight = getPaddingRight(location, caseData?.id, '/dashboard/cases/rfts');
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfts');
   return (
     <>
       {caseData ? (
@@ -116,7 +116,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, caseData.id, '/dashboard/cases/rfts')}
+              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfts')}
             >
               <Tab
                 component={Link}

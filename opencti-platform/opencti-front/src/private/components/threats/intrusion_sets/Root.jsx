@@ -130,7 +130,7 @@ class RootIntrusionSet extends Component {
               if (props.intrusionSet) {
                 const { intrusionSet } = props;
                 const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
-                const paddingRight = getPaddingRight(location, intrusionSet.id, '/dashboard/threats/intrusion_sets');
+                const paddingRight = getPaddingRight(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets');
                 return (
                   <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
                     <Breadcrumbs variant="object" elements={[
@@ -154,7 +154,7 @@ class RootIntrusionSet extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
+                        value={getCurrentTab(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
                       >
                         <Tab
                           component={Link}

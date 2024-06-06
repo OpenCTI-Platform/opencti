@@ -154,7 +154,7 @@ class RootOrganization extends Component {
             if (props) {
               if (props.organization) {
                 const { organization } = props;
-                const paddingRight = getPaddingRight(location, organization.id, '/dashboard/entities/organizations');
+                const paddingRight = getPaddingRight(location.pathname, organization.id, '/dashboard/entities/organizations');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -181,7 +181,7 @@ class RootOrganization extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, organization.id, '/dashboard/entities/organizations')}
+                        value={getCurrentTab(location.pathname, organization.id, '/dashboard/entities/organizations')}
                       >
                         <Tab
                           component={Link}

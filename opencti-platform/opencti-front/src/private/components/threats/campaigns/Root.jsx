@@ -124,7 +124,7 @@ class RootCampaign extends Component {
               if (props.campaign) {
                 const { campaign } = props;
                 const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaign.id}`;
-                const paddingRight = getPaddingRight(location, campaign.id, '/dashboard/threats/campaigns');
+                const paddingRight = getPaddingRight(location.pathname, campaign.id, '/dashboard/threats/campaigns');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -147,7 +147,7 @@ class RootCampaign extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, campaign.id, '/dashboard/threats/campaigns')}
+                        value={getCurrentTab(location.pathname, campaign.id, '/dashboard/threats/campaigns')}
                       >
                         <Tab
                           component={Link}

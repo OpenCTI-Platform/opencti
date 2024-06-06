@@ -79,7 +79,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
-  const paddingRight = getPaddingRight(location, city.id, '/dashboard/locations/cities');
+  const paddingRight = getPaddingRight(location.pathname, city.id, '/dashboard/locations/cities');
   return (
     <>
       {city ? (
@@ -106,7 +106,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, city.id, '/dashboard/locations/cities')}
+              value={getCurrentTab(location.pathname, city.id, '/dashboard/locations/cities')}
             >
               <Tab
                 component={Link}

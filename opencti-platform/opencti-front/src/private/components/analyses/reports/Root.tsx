@@ -98,7 +98,7 @@ const RootReport = () => {
             if (props.report) {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              const paddingRight = getPaddingRight(location, reportId, '/dashboard/analyses/reports');
+              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports');
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -126,7 +126,7 @@ const RootReport = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(location, report.id, '/dashboard/analyses/reports')}
+                      value={getCurrentTab(location.pathname, report.id, '/dashboard/analyses/reports')}
                     >
                       <Tab
                         component={Link}

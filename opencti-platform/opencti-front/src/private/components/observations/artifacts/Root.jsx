@@ -96,7 +96,7 @@ class RootArtifact extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                const paddingRight = getPaddingRight(location, stixCyberObservable.id, '/dashboard/observations/artifacts');
+                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -117,7 +117,7 @@ class RootArtifact extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, stixCyberObservable.id, '/dashboard/observations/artifacts')}
+                        value={getCurrentTab(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts')}
                       >
                         <Tab
                           component={Link}

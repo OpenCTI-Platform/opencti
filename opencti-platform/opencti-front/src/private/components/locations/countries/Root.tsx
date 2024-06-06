@@ -81,7 +81,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
-  const paddingRight = getPaddingRight(location, country?.id, '/dashboard/analyses/groupings');
+  const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/analyses/groupings');
   return (
     <>
       {country ? (
@@ -108,7 +108,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, country.id, '/dashboard/locations/countries')}
+              value={getCurrentTab(location.pathname, country.id, '/dashboard/locations/countries')}
             >
               <Tab
                 component={Link}

@@ -117,7 +117,7 @@ class RootSector extends Component {
             if (props) {
               if (props.sector) {
                 const { sector } = props;
-                const paddingRight = getPaddingRight(location, sector.id, '/dashboard/entities/sectors');
+                const paddingRight = getPaddingRight(location.pathname, sector.id, '/dashboard/entities/sectors');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -142,7 +142,7 @@ class RootSector extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, sector.id, '/dashboard/entities/sectors')}
+                        value={getCurrentTab(location.pathname, sector.id, '/dashboard/entities/sectors')}
                       >
                         <Tab
                           component={Link}

@@ -97,7 +97,7 @@ const RootThreatActorIndividualComponent = ({
   );
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
   const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
-  const paddingRight = getPaddingRight(location, data.id, '/dashboard/threats/threat_actors_individual');
+  const paddingRight = getPaddingRight(location.pathname, data.id, '/dashboard/threats/threat_actors_individual');
   return (
     <>
       <Routes>
@@ -148,7 +148,7 @@ const RootThreatActorIndividualComponent = ({
               sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >
               <Tabs
-                value={getCurrentTab(location, data.id, '/dashboard/threats/threat_actors_individual')}
+                value={getCurrentTab(location.pathname, data.id, '/dashboard/threats/threat_actors_individual')}
               >
                 <Tab
                   component={Link}

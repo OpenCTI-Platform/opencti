@@ -116,7 +116,7 @@ class RootChannel extends Component {
             if (props) {
               if (props.channel) {
                 const { channel } = props;
-                const paddingRight = getPaddingRight(location, channel.id, '/dashboard/arsenal/channels');
+                const paddingRight = getPaddingRight(location.pathname, channel.id, '/dashboard/arsenal/channels');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -139,7 +139,7 @@ class RootChannel extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, channel.id, '/dashboard/arsenal/channels')}
+                        value={getCurrentTab(location.pathname, channel.id, '/dashboard/arsenal/channels')}
                       >
                         <Tab
                           component={Link}

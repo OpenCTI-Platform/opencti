@@ -85,7 +85,7 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
-  const paddingRight = getPaddingRight(location, administrativeArea?.id, '/dashboard/locations/administrative_areas');
+  const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
     <>
       {administrativeArea ? (
@@ -114,7 +114,7 @@ const RootAdministrativeAreaComponent = ({
             }}
           >
             <Tabs
-              value={getCurrentTab(location, administrativeArea.id, '/dashboard/locations/administrative_areas')}
+              value={getCurrentTab(location.pathname, administrativeArea.id, '/dashboard/locations/administrative_areas')}
             >
               <Tab
                 component={Link}

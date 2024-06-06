@@ -151,7 +151,7 @@ class RootIndividual extends Component {
             if (props) {
               if (props.individual) {
                 const { individual } = props;
-                const paddingRight = getPaddingRight(location, individual.id, '/dashboard/entities/individuals');
+                const paddingRight = getPaddingRight(location.pathname, individual.id, '/dashboard/entities/individuals');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -178,7 +178,7 @@ class RootIndividual extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, individual.id, '/dashboard/entities/individuals')}
+                        value={getCurrentTab(location.pathname, individual.id, '/dashboard/entities/individuals')}
                       >
                         <Tab
                           component={Link}

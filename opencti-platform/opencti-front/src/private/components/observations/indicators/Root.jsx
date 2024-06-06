@@ -96,7 +96,7 @@ class RootIndicator extends Component {
             if (props) {
               if (props.indicator) {
                 const { indicator } = props;
-                const paddingRight = getPaddingRight(location, indicator.id, '/dashboard/observations/indicators');
+                const paddingRight = getPaddingRight(location.pathname, indicator.id, '/dashboard/observations/indicators');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -119,7 +119,7 @@ class RootIndicator extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, indicator.id, '/dashboard/observations/indicators')}
+                        value={getCurrentTab(location.pathname, indicator.id, '/dashboard/observations/indicators')}
                       >
                         <Tab
                           component={Link}

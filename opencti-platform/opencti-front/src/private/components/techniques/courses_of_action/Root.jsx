@@ -92,7 +92,7 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                const paddingRight = getPaddingRight(location, courseOfAction.id, '/dashboard/techniques/courses_of_action');
+                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -116,7 +116,7 @@ class RootCourseOfAction extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, courseOfAction.id, '/dashboard/techniques/courses_of_action')}
+                        value={getCurrentTab(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action')}
                       >
                         <Tab
                           component={Link}

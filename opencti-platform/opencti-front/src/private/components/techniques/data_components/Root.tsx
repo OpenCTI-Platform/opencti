@@ -88,7 +88,7 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
-              const paddingRight = getPaddingRight(location, dataComponent.id, '/dashboard/techniques/data_components');
+              const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -113,7 +113,7 @@ const RootDataComponent = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(location, dataComponent.id, '/dashboard/arsenal/techniques')}
+                      value={getCurrentTab(location.pathname, dataComponent.id, '/dashboard/arsenal/techniques')}
                     >
                       <Tab
                         component={Link}

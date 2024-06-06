@@ -119,7 +119,7 @@ class RootAttackPattern extends Component {
             if (props) {
               if (props.attackPattern) {
                 const { attackPattern } = props;
-                const paddingRight = getPaddingRight(location, attackPattern.id, '/dashboard/techniques/attack_patterns');
+                const paddingRight = getPaddingRight(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -142,7 +142,7 @@ class RootAttackPattern extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, attackPattern.id, '/dashboard/techniques/attack_patterns')}
+                        value={getCurrentTab(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns')}
                       >
                         <Tab
                           component={Link}

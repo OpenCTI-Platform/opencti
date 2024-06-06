@@ -118,7 +118,7 @@ class RootTool extends Component {
             if (props) {
               if (props.tool) {
                 const { tool } = props;
-                const paddingRight = getPaddingRight(location, tool.id, '/dashboard/arsenal/tools');
+                const paddingRight = getPaddingRight(location.pathname, tool.id, '/dashboard/arsenal/tools');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -141,7 +141,7 @@ class RootTool extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, tool.id, '/dashboard/arsenal/tools')}
+                        value={getCurrentTab(location.pathname, tool.id, '/dashboard/arsenal/tools')}
                       >
                         <Tab
                           component={Link}

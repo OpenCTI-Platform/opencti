@@ -117,7 +117,7 @@ class RootVulnerability extends Component {
             if (props) {
               if (props.vulnerability) {
                 const { vulnerability } = props;
-                const paddingRight = getPaddingRight(location, vulnerability.id, '/dashboard/arsenal/vulnerabilities');
+                const paddingRight = getPaddingRight(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -141,7 +141,7 @@ class RootVulnerability extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
+                        value={getCurrentTab(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
                       >
                         <Tab
                           component={Link}

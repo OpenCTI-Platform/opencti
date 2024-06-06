@@ -92,7 +92,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
-  const paddingRight = getPaddingRight(location, caseData?.id, '/dashboard/cases/incidents');
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents');
   return (
     <>
       {caseData ? (
@@ -118,7 +118,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, caseData.id, '/dashboard/cases/incidents')}
+              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/incidents')}
             >
               <Tab
                 component={Link}

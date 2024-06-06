@@ -116,7 +116,7 @@ class RootNarrative extends Component {
             if (props) {
               if (props.narrative) {
                 const { narrative } = props;
-                const paddingRight = getPaddingRight(location, narrative.id, '/dashboard/techniques/narratives');
+                const paddingRight = getPaddingRight(location.pathname, narrative.id, '/dashboard/techniques/narratives');
                 return (
                   <div style={{ paddingRight }} >
                     <Breadcrumbs variant="object" elements={[
@@ -139,7 +139,7 @@ class RootNarrative extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, narrative.id, '/dashboard/techniques/narratives')}
+                        value={getCurrentTab(location.pathname, narrative.id, '/dashboard/techniques/narratives')}
                       >
                         <Tab
                           component={Link}

@@ -99,7 +99,7 @@ const RootGrouping = () => {
             if (props.grouping) {
               const { grouping } = props;
               const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
-              const paddingRight = getPaddingRight(location, grouping.id, '/dashboard/analyses/groupings');
+              const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -124,7 +124,7 @@ const RootGrouping = () => {
                     }}
                   >
                     <Tabs
-                      value={getCurrentTab(location, grouping.id, '/dashboard/analyses/groupings')}
+                      value={getCurrentTab(location.pathname, grouping.id, '/dashboard/analyses/groupings')}
                     >
                       <Tab
                         component={Link}

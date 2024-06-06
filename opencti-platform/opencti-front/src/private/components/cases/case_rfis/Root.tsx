@@ -92,7 +92,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
 
-  const paddingRight = getPaddingRight(location, caseData?.id, '/dashboard/cases/rfis');
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfis');
 
   return (
     <>
@@ -119,7 +119,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, caseData.id, '/dashboard/cases/rfis')}
+              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfis')}
             >
               <Tab
                 component={Link}

@@ -127,7 +127,7 @@ class RootThreatActorGroup extends Component {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
                 const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
-                const paddingRight = getPaddingRight(location, threatActorGroup.id, '/dashboard/threats/threat_actors_group');
+                const paddingRight = getPaddingRight(location.pathname, threatActorGroup.id, '/dashboard/threats/threat_actors_group');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -150,7 +150,7 @@ class RootThreatActorGroup extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, threatActorGroup, '/dashboard/threats/threat_actors_group')}
+                        value={getCurrentTab(location.pathname, threatActorGroup, '/dashboard/threats/threat_actors_group')}
                       >
                         <Tab
                           component={Link}

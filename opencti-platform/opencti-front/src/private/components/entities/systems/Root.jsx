@@ -148,7 +148,7 @@ class RootSystem extends Component {
             if (props) {
               if (props.system) {
                 const { system } = props;
-                const paddingRight = getPaddingRight(location, system.id, '/dashboard/entities/systems');
+                const paddingRight = getPaddingRight(location.pathname, system.id, '/dashboard/entities/systems');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -175,7 +175,7 @@ class RootSystem extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, system.id, '/dashboard/entities/systems')}
+                        value={getCurrentTab(location.pathname, system.id, '/dashboard/entities/systems')}
                       >
                         <Tab
                           component={Link}

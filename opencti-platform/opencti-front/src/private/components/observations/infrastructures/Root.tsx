@@ -107,7 +107,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(location, infrastructure.id, '/dashboard/observations/infrastructures/')}
+              value={getCurrentTab(location.pathname, infrastructure.id, '/dashboard/observations/infrastructures/')}
             >
               <Tab
                 component={Link}

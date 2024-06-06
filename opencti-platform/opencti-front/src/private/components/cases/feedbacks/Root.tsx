@@ -110,7 +110,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
-  const paddingRight = getPaddingRight(location, feedbackData?.id, '/dashboard/cases/feedbacks');
+  const paddingRight = getPaddingRight(location.pathname, feedbackData?.id, '/dashboard/cases/feedbacks');
   const canManage = feedbackData?.currentUserAccessRight === 'admin';
   return (
     <>
@@ -140,7 +140,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, feedbackData.id, '/dashboard/incidents/feedbacks')}
+              value={getCurrentTab(location.pathname, feedbackData.id, '/dashboard/incidents/feedbacks')}
             >
               <Tab
                 component={Link}

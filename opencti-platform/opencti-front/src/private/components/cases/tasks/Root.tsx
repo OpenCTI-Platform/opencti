@@ -77,7 +77,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
-  const paddingRight = getPaddingRight(location, data?.id, '/dashboard/cases/tasks');
+  const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
   return (
     <>
       {data ? (
@@ -102,7 +102,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             }}
           >
             <Tabs
-              value={getCurrentTab(location, data.id, '/dashboard/cases/tasks')}
+              value={getCurrentTab(location.pathname, data.id, '/dashboard/cases/tasks')}
             >
               <Tab
                 component={Link}

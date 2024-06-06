@@ -117,7 +117,7 @@ class RootEvent extends Component {
             if (props) {
               if (props.event) {
                 const { event } = props;
-                const paddingRight = getPaddingRight(location, event.id, '/dashboard/entities/events');
+                const paddingRight = getPaddingRight(location.pathname, event.id, '/dashboard/entities/events');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -140,7 +140,7 @@ class RootEvent extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location, event.id, '/dashboard/entities/events')}
+                        value={getCurrentTab(location.pathname, event.id, '/dashboard/entities/events')}
                       >
                         <Tab
                           component={Link}
