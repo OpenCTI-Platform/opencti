@@ -6,7 +6,6 @@ import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, Query
 import * as PropTypes from 'prop-types';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import * as R from 'ramda';
-import { RelayNetworkLayer, urlMiddleware, } from 'react-relay-network-modern';
 import { createClient } from 'graphql-ws';
 import uploadMiddleware from './uploadMiddleware';
 
