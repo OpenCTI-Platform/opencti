@@ -11351,7 +11351,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixMetaObjectConnection @auth(for: [KNOWLEDGE])
-  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
+  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE, SETTINGS_SETMARKINGS])
   markingDefinitions(
     first: Int
     after: ID
@@ -11360,7 +11360,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
+  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS])
   label(id: String!): Label @auth(for: [KNOWLEDGE])
   labels(
     first: Int
