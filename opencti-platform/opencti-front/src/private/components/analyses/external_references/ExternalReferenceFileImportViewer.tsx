@@ -70,6 +70,7 @@ const importValidation = (t: (value: string) => string, configurations: boolean)
     return Yup.object().shape({
       ...shape,
       configuration: Yup.string().required(t('This field is required')),
+      objectMarking: Yup.array().required(t('This field is required')),
     });
   }
   return Yup.object().shape(shape);
@@ -99,22 +100,23 @@ ExternalReferenceFileImportViewerBaseProps
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
-  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
   const importConnsPerFormat = scopesConn(connectorsImport);
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string }>['onSubmit'] = (
+  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string, objectMarking: Option[] }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
+    const userChosenMarkings = values.objectMarking.map((option) => option.value);
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
         fileName: fileToImport?.id,
         connectorId: values.connector_id,
         configuration: values.configuration,
+        user_chosen_markings: userChosenMarkings ?? [],
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -226,7 +228,7 @@ ExternalReferenceFileImportViewerBaseProps
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '' }}
+          initialValues={{ connector_id: '', configuration: '', objectMarking: [] as Option[] }}
           validationSchema={importValidation(t_i18n, (selectedConnector?.configurations?.length ?? 0) > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
