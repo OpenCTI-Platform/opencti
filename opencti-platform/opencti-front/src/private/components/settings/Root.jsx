@@ -1,15 +1,18 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import {
+import useGranted, {
   isOnlyOrganizationAdmin,
   VIRTUAL_ORGANIZATION_ADMIN,
   SETTINGS,
   SETTINGS_SETACCESSES,
+  SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
   SETTINGS_SECURITYACTIVITY,
-  SETTINGS_FILEINDEXING, SETTINGS_SUPPORT,
+  SETTINGS_FILEINDEXING,
+  SETTINGS_SUPPORT,
+  SETTINGS_SETPARAMETERS,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -49,12 +52,40 @@ const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
 
+  const urlWithCapabilities = () => {
+    const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
+    const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
+    const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
+    const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
+    const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
+    const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+    if (isGrantedToSecurity) return '/dashboard/settings/accesses';
+    if (isGrantedToCustomization) return '/dashboard/settings/customization';
+    if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
+    if (isGrantedToActivity) return '/dashboard/settings/activity';
+    if (isGrantedToFileIndexing) return '/dashboard/settings/file_indexing';
+    if (isGrantedToSupport) return '/dashboard/settings/support';
+    return '/dashboard';
+  };
+
   return (
     <div data-testid="settings-page">
       <Suspense fallback={<Loader />}>
         <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to="/dashboard" />}>
           <Routes>
-            <Route path="/" Component={boundaryWrapper(Settings)} />
+            <Route
+              path="/"
+              element={
+                <Security
+                  needs={[SETTINGS_SETPARAMETERS]}
+                  placeholder={
+                    <Navigate to={urlWithCapabilities()} />
+                  }
+                >
+                  <Settings />
+                </Security>
+              }
+            />
             <Route
               path="/accesses"
               element={
@@ -224,7 +255,9 @@ const Root = () => {
             <Route
               path="/customization"
               element={
-                <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
+                </Security>
               }
             />
             <Route

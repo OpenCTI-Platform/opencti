@@ -88,8 +88,8 @@ import useGranted, {
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
+  SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETMARKINGS,
-  SETTINGS_SETTAXONOMIES,
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
   TAXIIAPI_SETCOLLECTIONS,
@@ -217,12 +217,12 @@ const LeftBar = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-  const isGrantedToTaxonomies = useGranted([SETTINGS_SETTAXONOMIES]);
+  const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
-  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const anchors = {
@@ -924,7 +924,7 @@ const LeftBar = () => {
                 [
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
                   { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
-                  { granted: isGrantedToLabels, link: '/dashboard/settings/customization', label: 'Customization' },
+                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
                   { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
                   { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
                   { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },

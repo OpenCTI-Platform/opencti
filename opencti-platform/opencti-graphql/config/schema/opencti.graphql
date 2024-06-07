@@ -60,8 +60,8 @@ enum Capabilities {
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
+  SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
-  SETTINGS_SETTAXONOMIES
   SETTINGS_FILEINDEXING
   SETTINGS_SUPPORT
   TAXIIAPI
@@ -11192,7 +11192,7 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  subType(id: String!): SubType @auth(for: [KNOWLEDGE])
+  subType(id: String!): SubType @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   subTypes(
     first: Int
     after: ID
@@ -11253,7 +11253,7 @@ type Query {
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES])
+  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   work(id: ID!): Work @auth(for: [MODULES])
   works(
     first: Int
@@ -11325,9 +11325,9 @@ type Query {
     includeAuthorities: Boolean
     filters: FilterGroup
     search: String
-  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
+  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
-  rules: [Rule] @auth(for: [KNOWLEDGE])
+  rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
   synchronizer(id: String!): Synchronizer @auth(for: [SETTINGS])
   synchronizers(
@@ -11361,7 +11361,7 @@ type Query {
     search: String
     toStix: Boolean
   ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS])
-  label(id: String!): Label @auth(for: [KNOWLEDGE])
+  label(id: String!): Label @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   labels(
     first: Int
     after: ID
@@ -11369,7 +11369,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LabelConnection @auth(for: [KNOWLEDGE])
+  ): LabelConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
   externalReferences(
     first: Int
@@ -11379,7 +11379,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
-  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE])
+  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   killChainPhases(
     first: Int
     after: ID
@@ -11387,7 +11387,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
+  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
 
   ######## STIX CORE OBJECT ENTITIES
 
@@ -11511,14 +11511,14 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixDomainObjectsNumber(
     dateAttribute: String
     types: [String]
     endDate: DateTime
     onlyInferred: Boolean
     filters: FilterGroup
-    search: String): Number @auth(for: [KNOWLEDGE, EXPLORE])
+    search: String): Number @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixDomainObjectsDistribution(
     objectId: [String]
     relationship_type: [String]
@@ -12000,7 +12000,7 @@ type Query {
     filters: FilterGroup
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixRelationshipsMultiTimeSeries(
     operation: StatsOperation!
     startDate: DateTime!
@@ -12054,7 +12054,7 @@ type Query {
     filters: FilterGroup
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
-  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth
   schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]! @auth
   filterKeysSchema: [FilterKeysSchema!]! @auth
