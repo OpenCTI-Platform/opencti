@@ -110,7 +110,7 @@ class StixCyberObservableIndicatorPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
-          data-testid="stixCyberObserbleIndicatorItemPopoverButton"
+          aria-label="stix cyber observable indicator popover button"
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
