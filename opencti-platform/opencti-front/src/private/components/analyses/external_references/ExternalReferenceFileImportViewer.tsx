@@ -110,13 +110,18 @@ ExternalReferenceFileImportViewerBaseProps
     { setSubmitting, resetForm },
   ) => {
     const userChosenMarkings = values.objectMarking.map((option) => option.value);
+    const parsedConfig = JSON.parse(values.configuration);
+    let configuration = '';
+    if (typeof parsedConfig === 'object') {
+      parsedConfig.user_chosen_markings = [...userChosenMarkings];
+      configuration = JSON.stringify(parsedConfig);
+    }
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
       variables: {
         fileName: fileToImport?.id,
         connectorId: values.connector_id,
-        configuration: values.configuration,
-        user_chosen_markings: userChosenMarkings ?? [],
+        configuration: configuration,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -242,7 +247,7 @@ ExternalReferenceFileImportViewerBaseProps
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
-                <DialogTitle>{`>>>> ${t_i18n('Launch an import')}`}</DialogTitle>
+                <DialogTitle>{`${t_i18n('Launch an import')}`}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}
