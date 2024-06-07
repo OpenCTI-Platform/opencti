@@ -17,6 +17,7 @@ import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnow
 import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
 import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -262,7 +263,7 @@ class CaseRfiKnowledgeComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
           link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}
@@ -295,6 +296,26 @@ class CaseRfiKnowledgeComponent extends Component {
                 }}
               />
           }
+          />
+          <Route
+            path="/content"
+            element={
+              <QueryRenderer
+                query={containerContentQuery}
+                variables={{ id: caseData.id }}
+                render={({ props }) => {
+                  if (props && props.container) {
+                    return <ContainerContent containerData={props.container} />;
+                  }
+                  return (
+                    <Loader
+                      variant={LoaderVariant.inElement}
+                      withTopMargin={true}
+                    />
+                  );
+                }}
+              />
+              }
           />
           <Route
             path="/timeline"

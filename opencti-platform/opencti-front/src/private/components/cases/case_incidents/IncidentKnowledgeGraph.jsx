@@ -1017,6 +1017,7 @@ class IncidentKnowledgeGraphComponent extends Component {
                 link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
                 modes={[
                   'graph',
+                  'content',
                   'timeline',
                   'correlation',
                   'matrix',

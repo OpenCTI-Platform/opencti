@@ -1016,6 +1016,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 link={`/dashboard/analyses/reports/${report.id}/knowledge`}
                 modes={[
                   'graph',
+                  'content',
                   'timeline',
                   'correlation',
                   'matrix',

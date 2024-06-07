@@ -1016,6 +1016,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
                 link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
                 modes={[
                   'graph',
+                  'content',
                   'timeline',
                   'correlation',
                   'matrix',

@@ -1017,6 +1017,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
                 link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
                 modes={[
                   'graph',
+                  'content',
                   'timeline',
                   'correlation',
                   'matrix',

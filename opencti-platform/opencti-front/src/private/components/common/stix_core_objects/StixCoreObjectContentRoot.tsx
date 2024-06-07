@@ -7,6 +7,7 @@ import { ContainerContentQuery$data } from '@components/common/containers/__gene
 import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixCoreObjectContentRootProps {
   stixCoreObject: StixCoreObjectContent_stixCoreObject$data;
@@ -19,12 +20,16 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
   const { pathname } = useLocation();
   const currentMode = pathname.endsWith('/mapping') ? 'mapping' : 'content';
   const modes = isContainer ? ['content', 'mapping'] : [];
+  const { isFeatureEnable } = useHelper();
+  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   return (
     <>
-      <StixCoreObjectContentHeader
-        currentMode={currentMode}
-        modes={modes}
-      />
+      {contentMappingFeatureFlag && (
+        <StixCoreObjectContentHeader
+          currentMode={currentMode}
+          modes={modes}
+        />)
+      }
       <Routes>
         <Route
           path="/mapping"
