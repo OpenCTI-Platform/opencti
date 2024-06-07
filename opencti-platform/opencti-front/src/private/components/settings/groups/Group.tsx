@@ -368,6 +368,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     {markingTypes.map((type) => {
                       const marking = maxShareableMarkingsByType.get(type);
                       if (marking) {
+                        const isMarkingAllowed = allowedMarkings.some((m) => m.definition_type === marking.definition_type && m.x_opencti_order >= marking.x_opencti_order);
                         return (
                           <ListItem
                             key={marking.id}
@@ -387,7 +388,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             <ListItemText
                               primary={truncate(marking.definition, 40)}
                             />
-                            {!allowedMarkings.map((m) => m.id).includes(marking.id)
+                            {!isMarkingAllowed
                               && <Tooltip
                                 title={t_i18n(
                                   'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
