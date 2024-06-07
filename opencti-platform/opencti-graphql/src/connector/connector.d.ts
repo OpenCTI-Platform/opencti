@@ -1,7 +1,6 @@
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
-import type { StoreEntityConnection } from '../types/store';
 
 export interface ConnectorConfig {
   id: string;
@@ -21,7 +20,7 @@ export interface Connector {
   connector_type: string;
   name: string;
   built_in: boolean;
-  connector_schema_runtime_fn: <T extends BasicStoreEntityCsvMapper> (context: AuthContext, user: AuthUser) => Promise<T[] | StoreEntityConnection<BasicStoreEntityCsvMapper> | undefined>;
+  connector_schema_runtime_fn: <T extends BasicStoreEntityCsvMapper> (context: AuthContext, user: AuthUser) => Promise<T[]>;
 }
 
 export interface BasicStoreEntityConnector extends Connector, BasicStoreEntity {
