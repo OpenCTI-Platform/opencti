@@ -143,7 +143,7 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
         externalReferences: input.externalReferences,
         update: true,
       };
-      return addIndicator(context, user, indicatorToCreate);
+      return await addIndicator(context, user, indicatorToCreate);
     }
     logApp.warn('Cannot create indicator - cant generate pattern', { key, value });
   } catch (err) {
