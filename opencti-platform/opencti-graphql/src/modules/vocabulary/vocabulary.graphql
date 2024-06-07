@@ -117,7 +117,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): VocabularyConnection @auth(for: [KNOWLEDGE])
+  ): VocabularyConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
 }
 
 # Mutations

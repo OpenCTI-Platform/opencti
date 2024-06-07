@@ -11143,7 +11143,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [KNOWLEDGE])
+  ): LogConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
   audits(
     first: Int
     after: ID
@@ -11360,7 +11360,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
+  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
   label(id: String!): Label @auth(for: [KNOWLEDGE])
   labels(
     first: Int
