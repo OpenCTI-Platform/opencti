@@ -15,6 +15,7 @@ import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 export const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
@@ -73,19 +74,21 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Height (${lengthPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: individualHeightMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'height',
-                              value: [heightToPivotFormat(measure)],
-                              object_path: `/height/${height.index}/measure`,
-                              operation: 'replace',
+                        if (isNotEmptyField(measure)) {
+                          commitMutation({
+                            ...defaultCommitMutation,
+                            mutation: individualHeightMutation,
+                            variables: {
+                              id,
+                              input: {
+                                key: 'height',
+                                value: [heightToPivotFormat(measure)],
+                                object_path: `/height/${height.index}/measure`,
+                                operation: 'replace',
+                              },
                             },
-                          },
-                        });
+                          });
+                        }
                       }}
                     />
                     <Field
@@ -93,19 +96,21 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                       id={`height_date_${index}`}
                       name={`${name}.${index}.date_seen`}
                       onSubmit={(_: string, date_seen: string) => {
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: individualHeightMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'height',
-                              value: [date_seen],
-                              object_path: `/height/${height.index}/date_seen`,
-                              operation: 'replace',
+                        if (isNotEmptyField(date_seen)) {
+                          commitMutation({
+                            ...defaultCommitMutation,
+                            mutation: individualHeightMutation,
+                            variables: {
+                              id,
+                              input: {
+                                key: 'height',
+                                value: [date_seen],
+                                object_path: `/height/${height.index}/date_seen`,
+                                operation: 'replace',
+                              },
                             },
-                          },
-                        });
+                          });
+                        }
                       }}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
@@ -154,6 +159,8 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
               aria-label="Add"
               id="addHeight"
               onClick={() => {
+                const newHeight = { measure: 0, date_seen: new Date().toISOString() };
+                arrayHelpers.push(newHeight);
                 commitMutation({
                   ...defaultCommitMutation,
                   mutation: individualHeightMutation,
@@ -161,7 +168,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                     id,
                     input: {
                       key: 'height',
-                      value: [{ measure: null, date_seen: null }],
+                      value: [newHeight],
                       operation: 'add',
                     },
                   },
@@ -251,7 +258,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {
-                  arrayHelpers.push({ date_seen: null });
+                  arrayHelpers.push({ measure: 0, date_seen: new Date().toISOString() });
                 }}
                 style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
               >

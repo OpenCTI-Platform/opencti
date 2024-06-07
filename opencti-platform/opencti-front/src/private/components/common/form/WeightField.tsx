@@ -15,6 +15,7 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { GenericContext } from '../model/GenericContextModel';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
@@ -99,7 +100,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
               aria-label="Add"
               id="addHeight"
               onClick={() => {
-                arrayHelpers.push({ date_seen: null });
+                arrayHelpers.push({ measure: 0, date_seen: new Date().toISOString() });
               }}
               style={{ marginTop: (values?.length ?? 0) > 0 ? 20 : 0 }}
             >
@@ -160,19 +161,21 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       name={`${name}.${index}.measure`}
                       label={t_i18n(`Weight (${weightPrimaryUnit})`)}
                       onSubmit={(_: string, measure: string) => {
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: individualWeightMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'weight',
-                              value: [weightToPivotFormat(measure)],
-                              object_path: `/weight/${weight.index}/measure`,
-                              operation: 'replace',
+                        if (isNotEmptyField(measure)) {
+                          commitMutation({
+                            ...defaultCommitMutation,
+                            mutation: individualWeightMutation,
+                            variables: {
+                              id,
+                              input: {
+                                key: 'weight',
+                                value: [weightToPivotFormat(measure)],
+                                object_path: `/weight/${weight.index}/measure`,
+                                operation: 'replace',
+                              },
                             },
-                          },
-                        });
+                          });
+                        }
                       }}
                     />
                     <Field
@@ -180,19 +183,21 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                       name={`${name}.${index}.date_seen`}
                       id={`weight_date_${index}`}
                       onSubmit={(_: string, date_seen: string) => {
-                        commitMutation({
-                          ...defaultCommitMutation,
-                          mutation: individualWeightMutation,
-                          variables: {
-                            id,
-                            input: {
-                              key: 'weight',
-                              value: [date_seen],
-                              object_path: `/weight/${weight.index}/date_seen`,
-                              operation: 'replace',
+                        if (isNotEmptyField(date_seen)) {
+                          commitMutation({
+                            ...defaultCommitMutation,
+                            mutation: individualWeightMutation,
+                            variables: {
+                              id,
+                              input: {
+                                key: 'weight',
+                                value: [date_seen],
+                                object_path: `/weight/${weight.index}/date_seen`,
+                                operation: 'replace',
+                              },
                             },
-                          },
-                        });
+                          });
+                        }
                       }}
                       textFieldProps={{
                         label: t_i18n('Date Seen'),
@@ -241,6 +246,8 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
               aria-label="Add"
               id="addHeight"
               onClick={() => {
+                const newWeight = { measure: 0, date_seen: new Date().toISOString() };
+                arrayHelpers.push(newWeight);
                 commitMutation({
                   ...defaultCommitMutation,
                   mutation: individualWeightMutation,
@@ -248,7 +255,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                     id,
                     input: {
                       key: 'weight',
-                      value: [{ measure: null, date_seen: null }],
+                      value: [newWeight],
                       operation: 'add',
                     },
                   },
