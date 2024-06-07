@@ -217,7 +217,7 @@ const CaseTemplateTasks = () => {
       description: {
         label: 'Description',
         width: '65%',
-        isSortable: true,
+        isSortable: false,
         render: (node: CaseTemplateTasksLine_node$data) => node.description,
       },
     };

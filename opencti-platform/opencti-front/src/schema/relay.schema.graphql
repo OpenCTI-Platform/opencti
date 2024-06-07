@@ -530,7 +530,6 @@ input TaxiiCollectionAddInput {
 
 enum TaxiiCollectionOrdering {
   name
-  description
   id
   _score
 }
@@ -640,7 +639,6 @@ input StreamCollectionAddInput {
 
 enum StreamCollectionOrdering {
   name
-  description
   stream_public
   id
   stream_live
@@ -3381,7 +3379,6 @@ input IndividualAddInput {
 
 enum SectorsOrdering {
   name
-  description
   created
   modified
   created_at
@@ -4018,7 +4015,6 @@ input PositionAddInput {
 
 enum CitiesOrdering {
   name
-  description
   aliases
   created
   modified
@@ -4123,7 +4119,6 @@ input CityAddInput {
 
 enum CountriesOrdering {
   name
-  description
   created
   modified
   created_at
@@ -4224,7 +4219,6 @@ input CountryAddInput {
 
 enum RegionsOrdering {
   name
-  description
   created
   modified
   created_at

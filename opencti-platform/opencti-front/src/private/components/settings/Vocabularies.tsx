@@ -102,7 +102,7 @@ const Vocabularies = () => {
       description: {
         label: 'Description',
         width: '25%',
-        isSortable: true,
+        isSortable: false,
         render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
       },
       usages: {

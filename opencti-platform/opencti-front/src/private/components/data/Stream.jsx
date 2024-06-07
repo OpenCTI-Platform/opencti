@@ -66,7 +66,7 @@ class Stream extends Component {
       description: {
         label: 'Description',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       id: {
         label: 'Stream ID',

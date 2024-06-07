@@ -47,7 +47,7 @@ const CaseTemplates = () => {
       description: {
         label: 'Description',
         width: '40%',
-        isSortable: true,
+        isSortable: false,
         render: (data: CaseTemplateLine_node$data) => data.description,
       },
       tasks: {

@@ -511,7 +511,6 @@ input TaxiiCollectionAddInput {
 }
 enum TaxiiCollectionOrdering {
   name
-  description
   id
   _score
 }
@@ -617,7 +616,6 @@ input StreamCollectionAddInput {
 }
 enum StreamCollectionOrdering {
   name
-  description
   stream_public
   id
   stream_live
@@ -4100,7 +4098,6 @@ input IndividualAddInput {
 ################ Sectors
 enum SectorsOrdering {
   name
-  description
   created
   modified
   created_at
@@ -5081,7 +5078,6 @@ input PositionAddInput {
 ################ Cities
 enum CitiesOrdering {
   name
-  description
   aliases
   created
   modified
@@ -5243,7 +5239,6 @@ input CityAddInput {
 
 enum CountriesOrdering {
   name
-  description
   created
   modified
   created_at
@@ -5402,7 +5397,6 @@ input CountryAddInput {
 ################ Regions
 enum RegionsOrdering {
   name
-  description
   created
   modified
   created_at
@@ -9836,7 +9830,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-    # StixCoreObject
+  # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -9946,7 +9940,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-    # StixCoreObject
+  # StixCoreObject
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -12916,7 +12910,7 @@ type Mutation {
     Text: TextAddInput
     UserAgent: UserAgentAddInput
     BankAccount: BankAccountAddInput
-Credential: CredentialAddInput
+    Credential: CredentialAddInput
     TrackingNumber: TrackingNumberAddInput
     PhoneNumber: PhoneNumberAddInput
     PaymentCard: PaymentCardAddInput

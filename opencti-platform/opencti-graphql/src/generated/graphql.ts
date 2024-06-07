@@ -3099,7 +3099,6 @@ export enum CitiesOrdering {
   Aliases = 'aliases',
   Created = 'created',
   CreatedAt = 'created_at',
-  Description = 'description',
   Modified = 'modified',
   Name = 'name',
   ObjectLabel = 'objectLabel',
@@ -3712,7 +3711,6 @@ export enum CountriesOrdering {
   Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
-  Description = 'description',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -20878,7 +20876,6 @@ export enum RegionsOrdering {
   Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
-  Description = 'description',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -21671,7 +21668,6 @@ export enum SectorsOrdering {
   Score = '_score',
   Created = 'created',
   CreatedAt = 'created_at',
-  Description = 'description',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
@@ -24148,7 +24144,6 @@ export type StreamCollectionEditMutationsFieldPatchArgs = {
 
 export enum StreamCollectionOrdering {
   Score = '_score',
-  Description = 'description',
   Id = 'id',
   Name = 'name',
   StreamLive = 'stream_live',
@@ -25058,7 +25053,6 @@ export type TaxiiCollectionEditMutationsFieldPatchArgs = {
 
 export enum TaxiiCollectionOrdering {
   Score = '_score',
-  Description = 'description',
   Id = 'id',
   Name = 'name'
 }

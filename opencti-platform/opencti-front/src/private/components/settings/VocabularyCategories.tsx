@@ -57,7 +57,7 @@ const VocabularyCategories = () => {
       description: {
         label: 'Description',
         width: '45%',
-        isSortable: true,
+        isSortable: false,
         render: (node: VocabularyDefinition) => node.description,
       },
     };
