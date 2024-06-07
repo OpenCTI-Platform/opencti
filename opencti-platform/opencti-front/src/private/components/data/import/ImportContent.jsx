@@ -41,7 +41,7 @@ import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -198,12 +198,12 @@ class ImportContentComponent extends Component {
 
   handleSetCsvMapper(_, csvMapper) {
     const parsedCsvMapper = JSON.parse(csvMapper);
-    const parsedRepresentations = JSON.parse(parsedCsvMapper.representations)
+    const parsedRepresentations = JSON.parse(parsedCsvMapper.representations);
     const selectedCsvMapper = {
       ...parsedCsvMapper,
-      representations: [...parsedRepresentations]
-    }
-    this.setState({ hasUserChoiceCsvMapper: resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper)});
+      representations: [...parsedRepresentations],
+    };
+    this.setState({ hasUserChoiceCsvMapper: resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper) });
   }
 
   handleOpenImport(file) {

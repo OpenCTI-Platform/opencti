@@ -27,8 +27,7 @@ import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {Option} from "@components/common/form/ReferenceField";
-import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
 
 const styles = () => ({
   container: {
@@ -142,7 +141,6 @@ const StixCoreObjectFilesAndHistory = ({
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
-  const [csvMapperId, setCsvMapperId] = useState('');
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -246,12 +244,12 @@ const StixCoreObjectFilesAndHistory = ({
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (_, option) => {
-    const parsedOption = typeof option === "string" ? JSON.parse(option) : option
-    const parsedRepresentations = JSON.parse(parsedOption.representations)
+    const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+    const parsedRepresentations = JSON.parse(parsedOption.representations);
     const selectedCsvMapper = {
       ...parsedOption,
-      representations: [...parsedRepresentations]
-    }
+      representations: [...parsedRepresentations],
+    };
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };

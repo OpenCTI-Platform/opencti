@@ -73,12 +73,13 @@ const resolveHasUserChoiceCsvMapper = (option: Option & {
   representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
 }) => {
   return option.representations.some(
-    representation => representation.attributes.some(
-      attribute => attribute.key === 'objectMarking' && attribute.default_values.some(
-        ({name}) => name === 'user-choice')
-    )
+    (representation) => representation.attributes.some(
+      (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
+        ({ name }) => name === 'user-choice',
+      ),
+    ),
   );
-}
+};
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
@@ -86,7 +87,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: {key: string, default_values: {name: string}[]}[] }[] }) => {
+  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };

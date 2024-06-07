@@ -28,6 +28,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { Option } from '@components/common/form/ReferenceField';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
@@ -47,8 +48,7 @@ import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {Option} from "@components/common/form/ReferenceField";
-import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -237,7 +237,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: {key: string, default_values: string[]}[] }[] }) => {
+  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };

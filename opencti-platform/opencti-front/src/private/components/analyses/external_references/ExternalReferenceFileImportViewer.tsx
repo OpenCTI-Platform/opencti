@@ -19,6 +19,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
+import { Option } from '@components/common/form/ReferenceField';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
@@ -30,8 +31,7 @@ import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/E
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {Option} from "@components/common/form/ReferenceField";
-import {resolveHasUserChoiceParsedCsvMapper} from "../../../../utils/__generated__/csvMapperUtils";
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -154,13 +154,13 @@ ExternalReferenceFileImportViewerBaseProps
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_: string, option: string | Option & { representations: { attributes: {key: string, default_values: {name: string}[]}[] }[] }) => {
-    const parsedOption = typeof option === "string" ? JSON.parse(option) : option
-    const parsedRepresentations = JSON.parse(parsedOption.representations)
+  const onCsvMapperSelection = (_: string, option: string | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => {
+    const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+    const parsedRepresentations = JSON.parse(parsedOption.representations);
     const selectedCsvMapper = {
       ...parsedOption,
-      representations: [...parsedRepresentations]
-    }
+      representations: [...parsedRepresentations],
+    };
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
@@ -242,7 +242,7 @@ ExternalReferenceFileImportViewerBaseProps
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
-                <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
+                <DialogTitle>{`>>>> ${t_i18n('Launch an import')}`}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}
@@ -278,7 +278,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_: string, value: Option & { representations: { attributes: {key: string, default_values: {name: string}[]}[] }[] }) => onCsvMapperSelection(_, value)}
+                        onChange={(_: string, value: Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => onCsvMapperSelection(_, value)}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (
