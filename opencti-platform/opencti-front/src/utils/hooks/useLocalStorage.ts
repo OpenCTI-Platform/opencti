@@ -287,7 +287,7 @@ export const usePaginationLocalStorage = <U>(
                 ...viewStorage.filters,
                 filters: [
                   ...viewStorage.filters.filters
-                    .filter((f: Filter) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
                 ],
               };
               setValue((c) => ({
