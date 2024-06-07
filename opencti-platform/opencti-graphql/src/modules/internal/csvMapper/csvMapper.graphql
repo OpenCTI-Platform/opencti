@@ -119,7 +119,7 @@ type Query {
     configuration: String!
     content: String!
   ): CsvMapperTestResult @auth(for: [INGESTION_SETCSVMAPPERS])
-  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE])
+  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, INGESTION_SETCSVMAPPERS])
 }
 
 # Mutations
