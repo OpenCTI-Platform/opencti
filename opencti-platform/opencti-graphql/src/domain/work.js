@@ -22,7 +22,7 @@ export const workToExportFile = (work) => {
     size: 0,
     lastModified: moment(work.updated_at).toDate(),
     lastModifiedSinceMin,
-    uploadStatus: isWorkActive ? work.status : 'timeout',
+    uploadStatus: (isWorkActive || work.status === 'complete') ? work.status : 'timeout',
     metaData: {
       messages: work.messages,
       errors: work.errors,
