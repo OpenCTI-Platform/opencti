@@ -15,7 +15,7 @@ import {
   PLATFORM_VERSION,
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -398,7 +398,9 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: organizationId, entity_type: ENTITY_TYPE_USER, input }
   });
+
   await userSessionRefresh(userId);
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return user;
 };
 
@@ -951,7 +953,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   }
 
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
-  if (to.authorized_authorities.includes(userId)) {
+  if (to.authorized_authorities?.includes(userId)) {
     const indexOfMember = to.authorized_authorities.indexOf(userId);
     to.authorized_authorities.splice(indexOfMember, 1);
     const patch = { authorized_authorities: to.authorized_authorities };
@@ -970,6 +972,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
