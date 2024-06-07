@@ -7,7 +7,8 @@ import {
   findAllSync,
   findSyncById,
   patchSync,
-  pingConnector, queueDetails,
+  pingConnector,
+  queueDetails,
   registerConnector,
   registerSync,
   resetStateConnector,
@@ -15,7 +16,7 @@ import {
   syncDelete,
   syncEditContext,
   syncEditField,
-  testSync,
+  testSync
 } from '../domain/connector';
 import {
   createWork,
