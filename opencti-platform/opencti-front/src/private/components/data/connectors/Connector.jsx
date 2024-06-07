@@ -158,7 +158,7 @@ class ConnectorComponent extends Component {
         id: this.props.connector.id,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector state has been reset');
+        MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
         this.setState({ resetting: false, displayResetState: false });
       },
     });
@@ -193,7 +193,7 @@ class ConnectorComponent extends Component {
   }
 
   render() {
-    const { classes, connector, t, nsdt } = this.props;
+    const { classes, connector, t: t_i18n, nsdt } = this.props;
     const optionsInProgress = {
       count: 50,
       filters: {
@@ -228,11 +228,11 @@ class ConnectorComponent extends Component {
           </Typography>
           <ItemBoolean
             status={connector.active}
-            label={connector.active ? t('Active') : t('Inactive')}
+            label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
           />
           <div className={classes.popover}>
             <Security needs={[MODULES_MODMANAGE]}>
-              <Tooltip title={t('Reset the connector state')}>
+              <Tooltip title={t_i18n('Reset the connector state')}>
                 <IconButton
                   onClick={this.handleOpenResetState.bind(this, connector.id)}
                   aria-haspopup="true"
@@ -243,7 +243,7 @@ class ConnectorComponent extends Component {
                   <LayersRemove />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={t('Clear all works')}>
+              <Tooltip title={t_i18n('Clear all works')}>
                 <IconButton
                   onClick={this.handleOpenClearWorks.bind(this, connector.id)}
                   aria-haspopup="true"
@@ -253,7 +253,7 @@ class ConnectorComponent extends Component {
                   <DeleteSweepOutlined />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={t('Clear this connector')}>
+              <Tooltip title={t_i18n('Clear this connector')}>
                 <IconButton
                   onClick={this.handleOpenDelete.bind(this, connector.id)}
                   aria-haspopup="true"
@@ -275,13 +275,13 @@ class ConnectorComponent extends Component {
         >
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Basic information')}
+              {t_i18n('Basic information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Type')}
+                    {t_i18n('Type')}
                   </Typography>
                   <Button
                     style={{ cursor: 'default' }}
@@ -293,13 +293,13 @@ class ConnectorComponent extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Last update')}
+                    {t_i18n('Last update')}
                   </Typography>
                   {nsdt(connector.updated_at)}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Only contextual')}
+                    {t_i18n('Only contextual')}
                   </Typography>
                   <ItemBoolean
                     status={
@@ -308,12 +308,12 @@ class ConnectorComponent extends Component {
                         ? connector.auto
                         : null
                     }
-                    label={connector.only_contextual ? t('Yes') : t('No')}
+                    label={connector.only_contextual ? t_i18n('Yes') : t_i18n('No')}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Automatic trigger')}
+                    {t_i18n('Automatic trigger')}
                   </Typography>
                   <ItemBoolean
                     status={
@@ -322,12 +322,12 @@ class ConnectorComponent extends Component {
                         ? connector.auto
                         : null
                     }
-                    label={connector.auto ? t('Yes') : t('No')}
+                    label={connector.auto ? t_i18n('Yes') : t_i18n('No')}
                   />
                 </Grid>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Scope')}
+                    {t_i18n('Scope')}
                   </Typography>
                   {connector.connector_scope.map((scope) => (
                     <Chip
@@ -342,13 +342,13 @@ class ConnectorComponent extends Component {
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Details')}
+              {t_i18n('Details')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('State')}
+                    {t_i18n('State')}
                   </Typography>
                   <Tooltip title={connector.connector_state}>
                     <pre>
@@ -361,13 +361,13 @@ class ConnectorComponent extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Listen queue')}
+                    {t_i18n('Listen queue')}
                   </Typography>
                   <pre>{connector.config.listen}</pre>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Push queue')}
+                    {t_i18n('Push queue')}
                   </Typography>
                   <pre>{connector.config.push}</pre>
                 </Grid>
@@ -384,7 +384,7 @@ class ConnectorComponent extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this connector?')}
+              {t_i18n('Do you want to delete this connector?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -392,14 +392,14 @@ class ConnectorComponent extends Component {
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t_i18n('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -412,7 +412,10 @@ class ConnectorComponent extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to reset the state of this connector?')}
+              {t_i18n('Do you want to reset the state and purge messages queue of this connector? ')}
+            </DialogContentText>
+            <DialogContentText>
+              {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -420,14 +423,14 @@ class ConnectorComponent extends Component {
               onClick={this.handleCloseResetState.bind(this)}
               disabled={this.state.resetting}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={this.submitResetState.bind(this)}
               color="secondary"
               disabled={this.state.resetting}
             >
-              {t('Reset')}
+              {t_i18n('Reset')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -440,7 +443,7 @@ class ConnectorComponent extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to clear the works of this connector?')}
+              {t_i18n('Do you want to clear the works of this connector?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -448,19 +451,19 @@ class ConnectorComponent extends Component {
               onClick={this.handleCloseClearWorks.bind(this)}
               disabled={this.state.clearing}
             >
-              {t('Cancel')}
+              {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={this.submitClearWorks.bind(this)}
               color="secondary"
               disabled={this.state.clearing}
             >
-              {t('Clear')}
+              {t_i18n('Clear')}
             </Button>
           </DialogActions>
         </Dialog>
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 60 }}>
-          {t('In progress works')}
+          {t_i18n('In progress works')}
         </Typography>
         <QueryRenderer
           query={connectorWorksQuery}
@@ -475,7 +478,7 @@ class ConnectorComponent extends Component {
           }}
         />
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
-          {t('Completed works')}
+          {t_i18n('Completed works')}
         </Typography>
         <QueryRenderer
           query={connectorWorksQuery}
@@ -495,7 +498,7 @@ class ConnectorComponent extends Component {
 ConnectorComponent.propTypes = {
   connector: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
+  t_i18n: PropTypes.func,
   navigate: PropTypes.func,
 };
 
@@ -522,6 +525,10 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        connector_queue_details {
+          messages_number
+          messages_size
+        }
         updated_at
         created_at
         config {
