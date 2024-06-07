@@ -60,7 +60,6 @@ type CsvMapper implements InternalObject & BasicObject {
   # CsvMapper
   name: String! @auth
   has_header: Boolean! @auth
-  has_user_choice: Boolean! @auth
   separator: String! @auth
   skipLineChar: String @auth
   representations: [CsvMapperRepresentation!]! @auth
@@ -109,8 +108,6 @@ type CsvMapperSchemaAttributes {
 type Query {
   csvMapper(id: String!): CsvMapper @auth(for: [CSVMAPPERS])
   csvMappers(
-    all: Boolean
-    connectionFormat: Boolean
     first: Int
     after: ID
     orderBy: CsvMapperOrdering

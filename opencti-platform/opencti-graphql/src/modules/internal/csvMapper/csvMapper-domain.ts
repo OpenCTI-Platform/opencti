@@ -1,11 +1,6 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import {
-  type BasicStoreEntityCsvMapper,
-  type CsvMapperRepresentationAttributeResolved,
-  ENTITY_TYPE_CSV_MAPPER,
-  type StoreEntityCsvMapper
-} from './csvMapper-types';
+import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { bundleProcess } from '../../../parser/csv-bundler';
@@ -22,7 +17,6 @@ import { schemaTypesDefinition } from '../../../schema/schema-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT } from '../../../schema/general';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
-import type { StoreEntityConnection } from '../../../types/store';
 
 // -- UTILS --
 
@@ -44,43 +38,12 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
 
 // -- CRUD --
 
-const buildCompleteCsvMapper = (csvMapper: BasicStoreEntityCsvMapper) => {
-  if (!csvMapper){
-    return null
-  }
-  return {
-    ...csvMapper,
-    has_user_choice: JSON.parse(csvMapper?.representations).some((representation: { // to be removed
-      attributes: CsvMapperRepresentationAttributeResolved[]
-    }) => representation.attributes.some((attribute) => attribute.key === 'objectMarking' && attribute?.default_values?.includes('user-choice')))
-  }
-};
-
 export const findById = async (context: AuthContext, user: AuthUser, csvMapperId: string) => {
-  const csvMapper = await storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
-  return buildCompleteCsvMapper(csvMapper);
+  return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
-  const { all, connectionFormat = true } = opts;
-  if (all) {
-    if (connectionFormat) {
-      const allCsvMappers: StoreEntityConnection<BasicStoreEntityCsvMapper> = await listAllEntities<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], { ...opts, connectionFormat });
-      allCsvMappers.edges = allCsvMappers.edges.map((edge) => ({
-        ...edge,
-        node: buildCompleteCsvMapper(edge.node)
-      }));
-      return allCsvMappers;
-    }
-    const allCsvMappers = await listAllEntities<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], { ...opts, connectionFormat });
-    return allCsvMappers.map((csvMapper) => buildCompleteCsvMapper(csvMapper));
-  }
-  const allPaginatedCsvMappers = await listEntitiesPaginated<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
-  allPaginatedCsvMappers.edges = allPaginatedCsvMappers.edges.map((edge) => ({
-    ...edge,
-    node: buildCompleteCsvMapper(edge.node)
-  }));
-  return allPaginatedCsvMappers;
+export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
+  return listEntitiesPaginated<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {

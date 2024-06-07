@@ -4859,7 +4859,6 @@ export type CsvMapper = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   errors?: Maybe<Scalars['String']['output']>;
   has_header: Scalars['Boolean']['output'];
-  has_user_choice: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -18520,8 +18519,6 @@ export type QueryCsvMapperTestArgs = {
 
 export type QueryCsvMappersArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
-  all?: InputMaybe<Scalars['Boolean']['input']>;
-  connectionFormat?: InputMaybe<Scalars['Boolean']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<CsvMapperOrdering>;
@@ -31838,7 +31835,6 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   errors?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  has_user_choice?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
