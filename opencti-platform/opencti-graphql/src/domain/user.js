@@ -72,6 +72,7 @@ import { extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
+import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -340,7 +341,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
     );
   }
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
-  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: uniq(maxShareableMarkings.flat()) };
+  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: (await cleanMarkings(context, maxShareableMarkings)) ?? [] };
 };
 
 export const getRoles = async (context, userGroups) => {

@@ -490,6 +490,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
+    max_shareable_marking: [],
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
     account_status: ACCOUNT_STATUS_ACTIVE,

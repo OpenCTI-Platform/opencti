@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDa
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { UnsupportedError } from '../../config/errors';
-import { computeAvailableMarkings, getAvailableDataSharingMarkings } from '../../domain/user';
+import { computeAvailableMarkings } from '../../domain/user';
 import type { StoreMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
@@ -28,7 +28,7 @@ export const findWidgetsMaxMarkings = async (
   // - Max markings of the user who created it.
   // (The last case is necessary if the user has lost markings between the time they create the public
   // dashboard and the time someone access the public dashboard).
-  const dataSharingMaxMarkings = await getAvailableDataSharingMarkings(context, userAuthorPublicDashboard);
+  const dataSharingMaxMarkings = userAuthorPublicDashboard.max_shareable_marking;
   const dashboardMaxMarkings = publicDashboard.allowed_markings;
   // Call of cleanMarkings to keep only the max for each type.
   const userMaxMarkings = await cleanMarkings(context, userAuthorPublicDashboard.allowed_marking);
