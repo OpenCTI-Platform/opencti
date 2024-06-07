@@ -65,6 +65,13 @@ export const getPaddingRight = (locationPath: string, entity_id: string, entity_
     }
     if (
       locationPath.includes(
+        `${entity_type_path}/${entity_id}/knowledge`,
+      )
+    ) {
+      paddingRight = 200;
+    }
+    if (
+      locationPath.includes(
         `${entity_type_path}/${entity_id}/content`,
       )
     ) {
