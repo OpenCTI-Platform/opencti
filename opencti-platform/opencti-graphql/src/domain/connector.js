@@ -3,6 +3,7 @@ import { createEntity, deleteElementById, internalDeleteElementById, patchAttrib
 import { getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import {
+  getConnectorQueueDetails,
   purgeConnectorQueues,
   registerConnectorQueues,
   unregisterConnector,
@@ -67,7 +68,7 @@ export const resetStateConnector = async (context, user, id) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `resets \`state\` and queues purge for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
+    message: `resets \`state\` and purge queues for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
   });
   await purgeConnectorQueues(element);
@@ -282,3 +283,11 @@ export const deleteQueues = async (context, user) => {
   try { await unregisterExchanges(); } catch (e) { /* nothing */ }
 };
 // endregion
+
+export const queueDetails = async (connectorId) => {
+  const queue = await getConnectorQueueDetails(connectorId);
+  return {
+    messages_number: queue.messages,
+    messages_size: queue.message_bytes
+  };
+};

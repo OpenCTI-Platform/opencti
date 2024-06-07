@@ -7,7 +7,7 @@ import {
   findAllSync,
   findSyncById,
   patchSync,
-  pingConnector,
+  pingConnector, queueDetails,
   registerConnector,
   registerSync,
   resetStateConnector,
@@ -53,6 +53,7 @@ const connectorResolvers = {
   },
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
+    connector_queue_details: (cn) => queueDetails(cn.id),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),

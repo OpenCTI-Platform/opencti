@@ -1,12 +1,12 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
-import { DatabaseError } from '../config/errors';
-import { SYSTEM_USER } from '../utils/access';
-import { telemetry } from '../config/tracing';
-import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX } from './utils';
-import { getHttpClient } from '../utils/http-client';
+import {SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION} from '@opentelemetry/semantic-conventions';
+import conf, {booleanConf, configureCA, loadCert, logApp} from '../config/conf';
+import {DatabaseError} from '../config/errors';
+import {SYSTEM_USER} from '../utils/access';
+import {telemetry} from '../config/tracing';
+import {INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX} from './utils';
+import {getHttpClient} from '../utils/http-client';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -77,8 +77,15 @@ export const purgeConnectorQueues = async (connector) => {
   const pathPushQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
   const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}`;
 
-  await httpClient.delete(pathPushQueue).then((response) => response);
-  await httpClient.delete(pathListenQueue).then((response) => response);
+  await httpClient.delete(pathPushQueue).then((response) => response.data);
+  await httpClient.delete(pathListenQueue).then((response) => response.data);
+};
+
+export const getConnectorQueueDetails = async (connectorId) => {
+  const httpClient = await amqpHttpClient();
+  const pathRabbit = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+
+  return await httpClient.get(pathRabbit).then((response) => response.data);
 };
 
 const amqpExecute = async (execute) => {
