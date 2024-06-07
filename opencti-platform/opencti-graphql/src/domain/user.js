@@ -341,7 +341,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
     );
   }
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
-  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: (await cleanMarkings(context, maxShareableMarkings)) ?? [] };
+  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
 export const getRoles = async (context, userGroups) => {
