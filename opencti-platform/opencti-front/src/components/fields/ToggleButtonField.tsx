@@ -16,12 +16,18 @@ const ToggleButtonField = ({
   field,
   items,
 }: ToggleButtonFieldProps) => {
+  const { setFieldValue } = form;
+  const { value, name } = field;
   return (
-    <ToggleButtonGroup size="small" aria-label="Small sizes">
-      {items.map((item, index) => <ToggleButton value={item.value} key={index}>
-        {item.content}
-      </ToggleButton>)}
-
+    <ToggleButtonGroup value={value} exclusive size="small">
+      {items.map((item, index) => (
+        <ToggleButton
+          value={item.value}
+          key={index}
+          onClick={() => setFieldValue(name, (item.value === value) ? null : item.value)}
+        >
+          {item.content}
+        </ToggleButton>))}
     </ToggleButtonGroup>
 
   );

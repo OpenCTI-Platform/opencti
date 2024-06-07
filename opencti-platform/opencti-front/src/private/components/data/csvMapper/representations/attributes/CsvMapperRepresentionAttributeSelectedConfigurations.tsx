@@ -13,7 +13,8 @@ const containerStyle = { gridColumnStart: 2, gridColumnEnd: 4 };
 const CsvMapperRepresentionAttributeSelectedConfigurations:
 FunctionComponent<CsvMapperRepresentionAttributSelectedConfigurationsProps> = ({ configuration }) => {
   const { t_i18n } = useFormatter();
-  const hasDefaultValues = configuration?.default_values && JSON.stringify(configuration.default_values) !== '[]';
+  console.log('configuration.default_values', configuration?.default_values);
+  const hasDefaultValues = configuration?.default_values !== null && configuration?.default_values !== undefined && JSON.stringify(configuration.default_values) !== '[]';
   if (!configuration?.pattern_date && !configuration?.separator && !hasDefaultValues) {
     return null;
   }
@@ -37,7 +38,7 @@ FunctionComponent<CsvMapperRepresentionAttributSelectedConfigurationsProps> = ({
       {
         hasDefaultValues
         && <div style={flexStyle}>
-          <SubdirectoryArrowRight /> {t_i18n('Default values set')}
+          <SubdirectoryArrowRight/> {t_i18n('Has a default value')}
         </div>
       }
     </div>
