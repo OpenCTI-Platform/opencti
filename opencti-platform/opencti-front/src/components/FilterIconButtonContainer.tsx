@@ -9,15 +9,15 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, Filter, FilterGroup, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
-import { handleFilterHelpers } from '../utils/hooks/useLocalStorage';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
+import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

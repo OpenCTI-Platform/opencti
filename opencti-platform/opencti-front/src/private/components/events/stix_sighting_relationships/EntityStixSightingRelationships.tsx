@@ -12,7 +12,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FilterGroup, emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 

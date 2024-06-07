@@ -10,7 +10,6 @@ import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import {
-  Filter,
   FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
@@ -22,10 +21,10 @@ import {
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
-import { handleFilterHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
+import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface FilterChipMenuProps {
   handleClose: () => void;

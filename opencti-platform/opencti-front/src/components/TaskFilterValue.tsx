@@ -7,10 +7,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from './i18n';
-import { convertOperatorToIcon, FilterGroup } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

@@ -8,6 +8,8 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
+import { generateUniqueItemsArray } from '../utils';
+import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -17,25 +19,6 @@ export interface FilterSearchContext {
   entityTypes: string[]
   elementId?: string[]
 }
-
-// usually string, but can be a combined filter like regardingOf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FilterValue = any;
-
-export type FilterGroup = {
-  mode: string;
-  filters: Filter[];
-  filterGroups: FilterGroup[];
-};
-
-// TODO: import from graphql generated types
-export type Filter = {
-  id?: string;
-  key: string; // key is a string in front
-  values: FilterValue[];
-  operator?: string;
-  mode?: string;
-};
 
 export type FiltersRestrictions = {
   preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
@@ -661,6 +644,11 @@ export const getAvailableOperatorForFilter = (
   return getAvailableOperatorForFilterKey(filterDefinition);
 };
 
+export const useFetchFilterKeysSchema = () => {
+  const { filterKeysSchema } = useAuth().schema;
+  return filterKeysSchema;
+};
+
 export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
   const { filterKeysSchema } = useAuth().schema;
   // 1. case one entity type
@@ -862,4 +850,18 @@ export const convertOperatorToIcon = (operator: string) => {
     default:
       return null;
   }
+};
+
+export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: FilterGroup) => {
+  const allFilters: Filter[] = [];
+  allFilters.push(...filters.filters);
+  filters.filterGroups.forEach((filterGroup) => extractAllFilters(filterGroup));
+  return allFilters;
+};
+
+export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
+  const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
+  const allListedFilters = extractAllFilters(filters);
+  const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
+  filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
 };

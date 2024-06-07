@@ -1,0 +1,30 @@
+const indicatorFilterKeys: string[] = [
+  'created_at',
+  'updated_at',
+  'creator_id',
+  'created',
+  'confidence',
+  'revoked',
+  'name',
+  'description',
+  'pattern_type',
+  'pattern',
+  'indicator_types',
+  'valid_from',
+  'valid_until',
+  'x_opencti_score',
+  'x_opencti_detection',
+  'x_opencti_main_observable_type',
+  'x_mitre_platforms',
+  'createdBy',
+  'objectMarking',
+  'objectLabel',
+  'externalReferences',
+  'killChainPhases',
+  'regardingOf',
+  'computed_reliability',
+  'objects',
+  'workflow_id'
+];
+
+export  default indicatorFilterKeys;

@@ -27,7 +27,8 @@ import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__gen
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
-import { FilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

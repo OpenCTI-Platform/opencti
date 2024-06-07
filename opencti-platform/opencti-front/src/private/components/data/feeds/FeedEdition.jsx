@@ -29,9 +29,15 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  cleanFilters,
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+  useBuildFilterKeysMapFromEntityType,
+  useFetchFilterKeysSchema,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { isNotEmptyField } from '../../../../utils/utils';
+import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -136,7 +142,7 @@ const feedValidation = (t) => Yup.object().shape({
   separator: Yup.string().required(t('This field is required')),
   feed_date_attribute: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
-  feed_types: Yup.array().required(t('This field is required')),
+  feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
   feed_public: Yup.bool().nullable(),
   authorized_members: Yup.array().nullable(),
 });
@@ -150,8 +156,13 @@ const FeedEditionContainer = (props) => {
     ...feed.feed_attributes.map((n) => R.assoc('mappings', R.indexBy(R.prop('type'), n.mappings), n)),
   });
 
+  const completeFilterKeysMap = useFetchFilterKeysSchema();
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
+  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []).filter((k) => k !== 'entity_type');
+
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);
+    cleanFilters(filters, helpers, types, completeFilterKeysMap);
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
@@ -337,8 +348,8 @@ const FeedEditionContainer = (props) => {
                     />
                     <Alert
                       icon={false}
-                      classes={{ root: classes.alert, message: classes.message,
-                      }}severity="warning"
+                      classes={{ root: classes.alert, message: classes.message }}
+                      severity="warning"
                       variant="outlined"
                       style={{ position: 'relative' }}
                     >
@@ -357,7 +368,8 @@ const FeedEditionContainer = (props) => {
                           label={'Accessible for'}
                           style={fieldSpacingContainerStyle}
                           multiple={true}
-                          helpertext={t('Let the field empty to grant all authenticated users')}name="authorized_members"
+                          helpertext={t('Let the field empty to grant all authenticated users')}
+                          name="authorized_members"
                         />
                       )}
                     </Alert>
@@ -434,26 +446,9 @@ const FeedEditionContainer = (props) => {
                       gap: 1 }}
                     >
                       <Filters
-                        availableFilterKeys={[
-                          'workflow_id',
-                          'objectAssignee',
-                          'objects',
-                          'objectMarking',
-                          'objectLabel',
-                          'creator_id',
-                          'createdBy',
-                          'priority',
-                          'severity',
-                          'x_opencti_score',
-                          'x_opencti_detection',
-                          'x_opencti_main_observable_type',
-                          'revoked',
-                          'confidence',
-                          'indicator_types',
-                          'pattern_type',
-                        ]}
+                        availableFilterKeys={availableFilterKeys}
                         helpers={helpers}
-                        searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                        searchContext={{ entityTypes: selectedTypes }}
                       />
                     </Box>
                     <FilterIconButton
@@ -461,7 +456,7 @@ const FeedEditionContainer = (props) => {
                       helpers={helpers}
                       styleNumber={2}
                       redirection
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                      searchContext={{ entityTypes: selectedTypes }}
                     />
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>

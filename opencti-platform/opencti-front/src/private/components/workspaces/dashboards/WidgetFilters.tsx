@@ -3,9 +3,10 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
 import { uniq } from 'ramda';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { FilterGroup, isFilterGroupNotEmpty, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 interface DataSelection {
   label: string;

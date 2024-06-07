@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
-import { emptyFilterGroup, Filter, FilterGroup, FilterValue, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
+import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 import { MESSAGING$ } from '../../relay/environment';
 import {
@@ -17,20 +17,8 @@ import {
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useAuth from './useAuth';
+import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
 
-export interface handleFilterHelpers {
-  handleSwitchGlobalMode: () => void;
-  handleSwitchLocalMode: (filter: Filter) => void;
-  handleRemoveRepresentationFilter: (id: string, valueId: string) => void;
-  handleRemoveFilterById: (id: string) => void;
-  handleChangeOperatorFilters: HandleOperatorFilter;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string) => void;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
-  handleClearAllFilters: (filters?: Filter[]) => void;
-  getLatestAddFilterId: () => string | undefined;
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
-}
 export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleSearch: (value: string) => void;
   handleRemoveFilter: (key: string, op?: string, id?: string) => void;
@@ -87,11 +75,6 @@ export type HandleAddFilter = (
   id: string,
   op?: string,
   event?: SyntheticEvent
-) => void;
-
-export type HandleOperatorFilter = (
-  id: string,
-  op: string,
 ) => void;
 
 export type UseLocalStorage = [

@@ -1,8 +1,8 @@
 import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
+import { maxNumberOfObservablesToCopy } from '@components/data/ToolBar';
 import { fetchQuery, MESSAGING$ } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
-import { maxNumberOfObservablesToCopy } from '../../private/components/data/ToolBar';
-import { FilterGroup } from '../filters/filtersUtils';
+import { FilterGroup } from '../filters/filtersHelpers-types';
 
 interface UseCopyProps<T> {
   filters?: FilterGroup;
