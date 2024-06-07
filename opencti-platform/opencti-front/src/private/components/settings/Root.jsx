@@ -9,7 +9,7 @@ import {
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
   SETTINGS_SECURITYACTIVITY,
-  SETTINGS_FILEINDEXING,
+  SETTINGS_FILEINDEXING, SETTINGS_SUPPORT,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -215,7 +215,11 @@ const Root = () => {
             />
             <Route
               path="/support"
-              element={<SupportPackage />}
+              element={
+                <Security needs={[SETTINGS_SUPPORT]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <SupportPackage />
+                </Security>
+              }
             />
             <Route
               path="/customization"
