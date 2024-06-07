@@ -11,7 +11,7 @@ import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../.
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../src/schema/identifier';
+import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
