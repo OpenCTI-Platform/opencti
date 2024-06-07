@@ -45,7 +45,6 @@ import { Form, Formik } from 'formik';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
-import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
@@ -60,6 +59,7 @@ import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relat
 import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
 
 const styles = () => ({
   bottomNav: {
@@ -892,7 +892,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                     }}
                   >
                     {onAdd && (
-                      <ContainerAddStixCoreObjects
+                      <ContainerAddStixCoreObjectsInGraph
                         containerId={caseData.id}
                         containerStixCoreObjects={caseData.objects.edges}
                         knowledgeGraph={true}

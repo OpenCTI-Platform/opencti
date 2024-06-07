@@ -1,6 +1,7 @@
-import { Button, Typography } from '@mui/material';
+import { Button, IconButton, Tooltip, Typography } from '@mui/material';
 import React, { FunctionComponent, useRef, useState } from 'react';
 import { useLazyLoadQuery } from 'react-relay';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
@@ -30,6 +31,23 @@ const ControlledDial = ({ onOpen }: { onOpen: () => void }) => {
   );
 };
 
+const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <Tooltip title={t_i18n('Add an entity to this container')}>
+      <IconButton
+        color="primary"
+        aria-label="Add"
+        onClick={() => onOpen()}
+        size="large"
+      >
+        <Add/>
+      </IconButton>
+    </Tooltip>
+  );
+};
+
 type scoEdge = {
   types: string[],
   node: {
@@ -42,6 +60,11 @@ interface ContainerAddStixCoreObjectsInLineProps {
   targetStixCoreObjectTypes: string[],
   paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables,
   containerStixCoreObjects: unknown[],
+  onAdd?: (node: { id: string }) => void,
+  onDelete?: (node: { id: string }) => void,
+  confidence?: number,
+  defaultCreatedBy?: unknown,
+  defaultMarkingDefinitions?: unknown[],
   selectedText?: string,
   enableReferences?: boolean,
   knowledgeGraph?: boolean,
@@ -54,6 +77,11 @@ ContainerAddStixCoreObjectsInLineProps
   targetStixCoreObjectTypes,
   paginationOptions: linesPaginationOptions,
   containerStixCoreObjects,
+  onAdd,
+  onDelete,
+  confidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
   selectedText,
   enableReferences = false,
   knowledgeGraph = false,
@@ -93,9 +121,11 @@ ContainerAddStixCoreObjectsInLineProps
       ...selectedElements,
       { node, types: ['manual'] },
     ]);
+    if (typeof onAdd === 'function') onAdd(node);
   };
   const handleDeselect = (node: { id: string }) => {
     setSelectedElements(selectedElements.filter((e) => e.node.id !== node.id));
+    if (typeof onDelete === 'function') onDelete(node);
   };
   const keyword = (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
   const buildColumns = () => {
@@ -160,7 +190,7 @@ ContainerAddStixCoreObjectsInLineProps
             size='small'
             aria-label={t_i18n('Create an entity')}
             onClick={() => setOpenCreateEntity(true)}
-          >{t_i18n('Create an entity')}</Button>}
+                              >{t_i18n('Create an entity')}</Button>}
           {showSCOCreation && <Button
             style={{ fontSize: 'small', marginLeft: '3px' }}
             variant='contained'
@@ -168,7 +198,7 @@ ContainerAddStixCoreObjectsInLineProps
             size='small'
             aria-label={t_i18n('Create an observable')}
             onClick={() => setOpenCreateObservable(true)}
-          >{t_i18n('Create an observable')}</Button>}
+                              >{t_i18n('Create an observable')}</Button>}
         </div>
       </div>
       <StixDomainObjectCreation
@@ -178,9 +208,9 @@ ContainerAddStixCoreObjectsInLineProps
         open={openCreateEntity}
         handleClose={() => setOpenCreateEntity(false)}
         creationCallback={undefined}
-        confidence={undefined}
-        defaultCreatedBy={undefined}
-        defaultMarkingDefinitions={undefined}
+        confidence={confidence}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
         stixDomainObjectTypes={targetStixCoreObjectTypes}
         paginationKey={'Pagination_stixCoreObjects'}
         paginationOptions={searchPaginationOptions}
@@ -202,7 +232,7 @@ ContainerAddStixCoreObjectsInLineProps
   return (
     <Drawer
       title={''} // Defined in custom header prop
-      controlledDial={ControlledDial}
+      controlledDial={knowledgeGraph ? GraphControlledDial : ControlledDial}
       header={<Header />}
     >
       <ListLines
