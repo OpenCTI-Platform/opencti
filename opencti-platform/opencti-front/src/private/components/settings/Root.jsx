@@ -9,6 +9,7 @@ import {
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
   SETTINGS_SECURITYACTIVITY,
+  SETTINGS_FILEINDEXING,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -206,7 +207,11 @@ const Root = () => {
             />
             <Route
               path="/file_indexing"
-              element={<FileIndexing />}
+              element={
+                <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <FileIndexing />
+                </Security>
+              }
             />
             <Route
               path="/support"
