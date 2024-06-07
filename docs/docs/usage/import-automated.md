@@ -54,6 +54,10 @@ TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collection
 2. TAXII collection: Enter the ID of the TAXII collection to be ingested. For collections from another OpenCTI instance, the ID follows the format `426e3acb-db50-4118-be7e-648fab67c16c`.
 3. Authentication type (if necessary): Enter the authentication type. For non-public collections from another OpenCTI instance, the authentication type is "Bearer token." Enter the token of a user with access to the collection (similar to the point 2 of the Live streams configuration above).
 
+!!! note "TAXII root API URL"
+
+    Many ISAC TAXII configuration instructions will provide the URL for the collection or discovery service. In these cases, remove the last path segment from the TAXII Server URL in order to use it in OpenCTI. eg. use https://[domain]/tipapi/tip21, and not https://[domain]/tipapi/tip21/collections.
+
 Additional configuration options:
 
 - User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
