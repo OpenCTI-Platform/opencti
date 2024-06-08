@@ -48,7 +48,7 @@ import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
+import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

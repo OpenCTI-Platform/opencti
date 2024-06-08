@@ -31,7 +31,7 @@ import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/E
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
+import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
 
 const interval$ = interval(TEN_SECONDS);
 

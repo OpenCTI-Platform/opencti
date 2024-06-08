@@ -28,7 +28,7 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
+import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
 
 const styles = () => ({
   container: {

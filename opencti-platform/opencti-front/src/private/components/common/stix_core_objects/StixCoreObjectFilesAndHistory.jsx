@@ -27,7 +27,7 @@ import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/__generated__/csvMapperUtils';
+import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
 
 const styles = () => ({
   container: {
