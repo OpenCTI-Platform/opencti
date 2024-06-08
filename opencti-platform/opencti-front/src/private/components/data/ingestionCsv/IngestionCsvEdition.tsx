@@ -176,7 +176,18 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | Option[] | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] } | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: Option |
+    Option[] |
+    Option & {
+      representations: {
+        attributes: {
+          key: string, default_values: { name: string }[]
+        }[]
+      }[]
+    } | string | string[] | number | number[] | null,
+  ) => {
     let finalValue = value as string;
     if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
