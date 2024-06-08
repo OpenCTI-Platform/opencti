@@ -4,7 +4,7 @@ import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
@@ -229,6 +229,11 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
 
+  const defaultMarkingOptions = me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? [];
+  const updateObjectMarkingField = async (setFieldValue: (field: string, value: any, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>, values: IngestionCsvEditionForm) => {
+    const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
+    await setFieldValue('markings', markings);
+  };
   return (
     <Formik<IngestionCsvEditionForm>
       enableReinitialize={true}
@@ -289,28 +294,27 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 <CsvMapperField
                   name="csv_mapper_id"
                   isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
-                  onChange={handleSubmitField}
+                  onChange={(_, option) => {
+                    updateObjectMarkingField(setFieldValue, values).then();
+                    handleSubmitField(_, option);
+                  }}
                   queryRef={queryRef}
                 />
               </React.Suspense>
             )
           }
-          {
-            hasUserChoiceCsvMapper && (
-              <ObjectMarkingField
-                name="markings"
-                isOptionEqualToValue={(option: Option, value: string) => option.value === value }
-                label={t_i18n('Marking definition levels')}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                onChange={(name, value) => {
-                  if (value.length) {
-                    handleSubmitField(name, value.map((csvMapper) => csvMapper.value));
-                  }
-                }}
-              />
-            )
-          }
+          <ObjectMarkingField
+            name="markings"
+            isOptionEqualToValue={(option: Option, value: string) => option.value === value }
+            label={t_i18n('Marking definition levels')}
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            onChange={(name, value) => {
+              if (value.length) {
+                handleSubmitField(name, value.map((csvMapper) => csvMapper.value));
+              }
+            }}
+          />
           <Field
             component={SelectField}
             variant="standard"
