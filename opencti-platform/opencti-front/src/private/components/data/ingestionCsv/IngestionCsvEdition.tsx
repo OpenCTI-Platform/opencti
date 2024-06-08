@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import makeStyles from '@mui/styles/makeStyles';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -28,6 +29,7 @@ import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,12 +64,21 @@ const ingestionCsvEditionFragment = graphql`
     csvMapper {
       id
       name
+        representations {
+          attributes {
+            key
+            default_values {
+              name
+            }
+          }
+        }
     }
     user {
       id
       entity_type
       name
     }
+    markings
   }
 `;
 
@@ -88,8 +99,21 @@ interface IngestionCsvEditionForm {
   current_state_date: Date | null
   ingestion_running?: boolean | null,
   csv_mapper_id: string | Option,
-  user_id: string | Option
+  user_id: string | Option,
+  markings: Option[],
 }
+
+const resolveHasUserChoiceCsvMapper = (option: Option & {
+  representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
+}) => {
+  return option.representations.some(
+    (representation) => representation.attributes.some(
+      (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
+        ({ name }) => name === 'user-choice',
+      ),
+    ),
+  );
+};
 
 const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   ingestionCsv,
@@ -100,6 +124,15 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(ingestionCsvData.csvMapper.representations.some(
+    (representation) => representation.attributes.some(
+      (attribute) => attribute.key === 'objectMarking' && attribute?.default_values?.some(
+        ({ name }) => name === 'user-choice',
+      ),
+    ),
+  ));
+
+  const { me } = useAuth();
   const basicShape = {
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -116,6 +149,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
     csv_mapper_id: Yup.mixed().required(t_i18n('This field is required')),
+    markings: Yup.array().required(),
   };
 
   const ingestionCsvValidator = useSchemaEditionValidation('IngestionCsv', basicShape);
@@ -142,10 +176,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: Option | Option[] | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] } | string | string[] | number | number[] | null) => {
     let finalValue = value as string;
     if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
+    }
+    if (name === 'csv_mapper_id') {
+      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] });
+      setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
     }
     ingestionCsvValidator
       .validateAt(name, { [name]: value })
@@ -153,7 +191,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
         commitUpdate({
           variables: {
             id: ingestionCsvData.id,
-            input: { key: name, value: finalValue || '' },
+            input: [{ key: name, value: finalValue || '' }],
           },
         });
       })
@@ -170,6 +208,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
     references: undefined,
+    markings: me.allowed_marking?.filter(
+      (marking) => ingestionCsvData.markings?.includes(marking.id),
+    ).map((marking) => ({
+      label: marking.definition ?? '',
+      value: marking.id,
+    })) ?? [],
   };
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
@@ -238,6 +282,22 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   queryRef={queryRef}
                 />
               </React.Suspense>
+            )
+          }
+          {
+            hasUserChoiceCsvMapper && (
+              <ObjectMarkingField
+                name="markings"
+                isOptionEqualToValue={(option: Option, value: string) => option.value === value }
+                label={t_i18n('Marking definition levels')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                onChange={(name, value) => {
+                  if (value.length) {
+                    handleSubmitField(name, value.map((csvMapper) => csvMapper.value));
+                  }
+                }}
+              />
             )
           }
           <Field

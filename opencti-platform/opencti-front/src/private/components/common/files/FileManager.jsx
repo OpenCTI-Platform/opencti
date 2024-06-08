@@ -162,7 +162,7 @@ const FileManager = ({
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
-        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
+        parsedConfig.markings = objectMarking.map((marking) => marking.value);
         config = JSON.stringify(parsedConfig);
       }
     }

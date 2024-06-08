@@ -301,7 +301,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = {
     ...parseCsvMapper(csvMapper),
-    user_chosen_markings: ingestion.user_chosen_markings ?? []
+    markings: ingestion.markings ?? []
   };
 
   const { data, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);

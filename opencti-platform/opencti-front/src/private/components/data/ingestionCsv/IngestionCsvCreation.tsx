@@ -120,7 +120,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
-    const userChosenMarkings = values.markings.map((option) => option.value);
+    const markings = values.markings.map((option) => option.value);
     const input = {
       name: values.name,
       description: values.description,
@@ -130,7 +130,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
-      user_chosen_markings: userChosenMarkings ?? [],
+      markings: markings ?? [],
     };
     commit({
       variables: {

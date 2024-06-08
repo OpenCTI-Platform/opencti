@@ -109,11 +109,11 @@ ExternalReferenceFileImportViewerBaseProps
     values,
     { setSubmitting, resetForm },
   ) => {
-    const userChosenMarkings = values.objectMarking.map((option) => option.value);
+    const markings = values.objectMarking.map((option) => option.value);
     const parsedConfig = JSON.parse(values.configuration);
     let configuration = '';
     if (typeof parsedConfig === 'object') {
-      parsedConfig.user_chosen_markings = [...userChosenMarkings];
+      parsedConfig.markings = [...markings];
       configuration = JSON.stringify(parsedConfig);
     }
     commitMutation({
@@ -121,7 +121,7 @@ ExternalReferenceFileImportViewerBaseProps
       variables: {
         fileName: fileToImport?.id,
         connectorId: values.connector_id,
-        configuration: configuration,
+        configuration,
       },
       onCompleted: () => {
         setSubmitting(false);

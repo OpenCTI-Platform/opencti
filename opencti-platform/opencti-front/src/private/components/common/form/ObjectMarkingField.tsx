@@ -56,6 +56,7 @@ interface ObjectMarkingFieldProps {
     values: Option[],
     operation?: string | undefined,
   ) => void;
+  isOptionEqualToValue?: (option: Option, value: string) => boolean;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;
@@ -79,6 +80,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   setFieldValue,
   limitToMaxSharing = false,
   filterTargetIds,
+  isOptionEqualToValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -168,6 +170,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         }}
         noOptionsText={t_i18n('No available options')}
         options={optionSorted}
+        isOptionEqualToValue={isOptionEqualToValue}
         onChange={handleOnChange}
         renderOption={renderOption}
       />
