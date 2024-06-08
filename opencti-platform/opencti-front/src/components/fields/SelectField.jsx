@@ -44,7 +44,6 @@ const SelectField = (props) => {
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
-      const csvMapperId = value?.startsWith('{') ? JSON.parse(value)?.id : '';
       setFieldValue(name, value);
       if (typeof onChange === 'function') {
         onChange(name, value);

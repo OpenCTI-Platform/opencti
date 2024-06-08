@@ -229,8 +229,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
 
-  const defaultMarkingOptions = me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? [];
-  const updateObjectMarkingField = async (setFieldValue: (field: string, value: any, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>, values: IngestionCsvEditionForm) => {
+  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
+  const updateObjectMarkingField = async (setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>, values: IngestionCsvEditionForm) => {
     const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
   };

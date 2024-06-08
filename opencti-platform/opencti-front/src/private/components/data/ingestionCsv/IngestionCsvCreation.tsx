@@ -89,6 +89,11 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
+  const updateObjectMarkingField = async (setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>, values: IngestionCsvCreationForm) => {
+    const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
+    await setFieldValue('markings', markings);
+  };
   const onCsvMapperSelection = (
     _: string,
     option: Option & {
@@ -98,7 +103,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       setFieldValue,
       values,
     }:{
-      setFieldValue: ((field: string, value: any, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>);
+      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>);
       values: IngestionCsvCreationForm
     },
   ) => {
@@ -168,12 +173,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-
-  const defaultMarkingOptions = me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? [];
-  const updateObjectMarkingField = async (setFieldValue: (field: string, value: any, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>, values: IngestionCsvCreationForm) => {
-    const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
-    await setFieldValue('markings', markings);
-  };
   return (
     <Drawer
       title={t_i18n('Create a CSV ingester')}
