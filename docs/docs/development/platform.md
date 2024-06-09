@@ -48,7 +48,7 @@ cd ~/docker
 docker-compose -f ./docker-compose-dev.yml up -d
 ```
 
-You have now all the dependencies of OpenCTI running and waiting for product to run.
+You now have all the dependencies of OpenCTI running and waiting for product to run.
 
 ## Backend / API
 
@@ -70,9 +70,9 @@ deactivate
 ### Development configuration
 
 The API can be specifically configured with files depending on the starting profile.
-By default, the default.json file is used and will be correctly configured for local usage **except for admin password**
+By default, the default.json file is used and will be correctly configured for local usage **except for admin password**.
 
-So you need to create a development profile file. You can duplicate the default file and adapt if for you need.
+So you need to create a development profile file. You can duplicate the default file and adapt if you need.
 ```bash
 cd ~/opencti/opencti-platform/opencti-graphql/config
 cp default.json development.json
@@ -248,22 +248,22 @@ $ yarn build
 ```
 
 After the build you can start the production build with yarn serv.
-**This build will use the production.json configuration file**
+**This build will use the production.json configuration file**.
 
 ```bash
 $ cd ../opencti-graphql
 $ yarn serv
 ```
 
-## Continous Integration and features cross repository
+## Continuous Integration and features cross repository
 
-When a feature requires changes in two or more repository in opencti, connectors and client-python; then some specific convention must be use to have the continuous integration build them all together.
+When a feature requires changes in two or more repositories in opencti, connectors and client-python; then some specific convention must be used to have the continuous integration build them all together.
 
 ### Naming convention of branch
 
 The Pull Request on ***opencti*** repository should be (issue or bug)/number + optional, example: `issue/7062-contributing`
 
-The pull request on ***connector*** or ***client-python*** should refer to opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
+The pull request on ***connector*** or ***client-python*** should refer to the opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
 
 Note that if there are several matches, the first one is taken. So for example having `issue/7062-contributing` and `issue/7062` that are both marked as "multi-repository" is not a good idea.
 

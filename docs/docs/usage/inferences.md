@@ -43,4 +43,4 @@ OpenCTI will apply this rule to existing data. If it finds an Intrusion Set ("En
 ## Additional resources
 
 - **Administration:** To find out about existing inference rules and enable/disable them, refer to the [Rules engine](../administration/reasoning.md) page in the Administration section of the documentation.
-- **Playbooks:** [OpenCTI playbooks](automation.md) are highly customizable automation scenarios. This seamless integration allows for further automation, making your threat intelligence processes even more efficient and tailored to your specific needs. More information in our [blog post](https://blog.filigran.io/introducing-threat-intelligence-automation-and-playbooks-in-opencti-b9e2f9483aba)
+- **Playbooks:** [OpenCTI playbooks](automation.md) are highly customizable automation scenarios. This seamless integration allows for further automation, making your threat intelligence processes even more efficient and tailored to your specific needs. More information in our [blog post](https://blog.filigran.io/introducing-threat-intelligence-automation-and-playbooks-in-opencti-b9e2f9483aba).

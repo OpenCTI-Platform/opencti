@@ -1,6 +1,6 @@
 # Delete and restore knowledge
 
-Knowledge can be deleted from OpenCTI either in an overview of an object or using [background tasks](background-tasks.md)
+Knowledge can be deleted from OpenCTI either in an overview of an object or using [background tasks](background-tasks.md).
 When an object is deleted, all its relationships and references to other objects are also deleted. 
 
 The deletion event is written to the [stream](../reference/streaming.md), to trigger automated [playbooks](./automation.md) or synchronize another platform.

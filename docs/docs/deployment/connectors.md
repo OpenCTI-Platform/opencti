@@ -41,7 +41,7 @@ All connectors have to be able to access the OpenCTI API. To allow this connecti
     
     Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to [**create a specific user for each of them**](../administration/users.md).
 
-    Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they impersonate the user requesting the export to avoid data leak.
+    Also, if all connectors users can run with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they impersonate the user requesting the export to avoid data leak.
 
     | Type                 | Required role       | Used permissions                                       |
     | :------------------- | :------------------ | :----------------------------------------------------- |
@@ -77,7 +77,7 @@ connector:
 
 ### Advanced parameters
 
-By default, connector are connecting to `RabbitMQ` using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
+By default, connectors are connecting to `RabbitMQ` using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
 
 ```yaml
 - MQ_HOST=rabbit.mydomain.com
@@ -163,7 +163,7 @@ For instance, to enable the MISP connector, you can add a new service to your `d
 
 ### Launch a standalone connector
 
-To launch standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just download the latest [release](https://github.com/OpenCTI-Platform/connectors/releases) and start the connector:
+To launch a standalone connector, you can use the `docker-compose.yml` file of the connector itself. Just download the latest [release](https://github.com/OpenCTI-Platform/connectors/releases) and start the connector:
 
 ```
 $ wget https://github.com/OpenCTI-Platform/connectors/archive/{RELEASE_VERSION}.zip
@@ -216,4 +216,4 @@ The connector status can be displayed in the dedicated section of the platform a
 
 !!! bug "Problem"
 
-    If you encounter problems deploying OpenCTI or connectors, you can consult the [troubleshooting page](troubleshooting.md) page.
+    If you encounter problems deploying OpenCTI or connectors, you can consult the [troubleshooting page](troubleshooting.md).

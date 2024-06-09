@@ -97,7 +97,7 @@ By default, wrapping is applied to entities having triggered the playbook. You c
 
 #### Share with organizations
 
-Will share every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform need to have declared a platform main organization in Settings/Parameters.
+Will share every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
 
 #### Apply predefined rule
 

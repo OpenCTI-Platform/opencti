@@ -26,12 +26,12 @@ The connectors are third-party pieces of software (Python processes) that can pl
 roles on the platform:
 
 | Type                 | Description                                                                                       | Examples                                              |
-|:---------------------|:--------------------------------------------------------------------------------------------------|:------------------------------------------------------|
-| EXTERNAL_IMPORT      | Pull data from remote sources, convert it to STIX2 and insert it on the OpenCTI platform.         | MITRE Datasets, MISP, CVE, AlienVault, Mandiant, etc. |
-| INTERNAL_ENRICHMENT  | Listen for new OpenCTI entities or users requests, pull data from remote sources to enrich.       | Shodan, DomainTools, IpInfo, etc.                     |
-| INTERNAL_IMPORT_FILE | [Extract data from files](../usage/import-files.md) uploaded on OpenCTI trough the UI or the API. | STIX 2.1, PDF, Text, HTML, etc.                       |
-| INTERNAL_EXPORT_FILE | [Generate export](../usage/export.md) from OpenCTI data, based on a single object or a list.      | STIX 2.1, CSV, PDF, etc.                              |
-| STREAM               | Consume a platform [data stream](../usage/feeds.md) an _do_ something with events.                | Splunk, Elastic Security, Q-Radar, etc.               |
+|:---------------------|:---------------------------------------------------------------------------------------------------|:------------------------------------------------------|
+| EXTERNAL_IMPORT      | Pull data from remote sources, convert it to STIX2 and insert it on the OpenCTI platform.          | MITRE Datasets, MISP, CVE, AlienVault, Mandiant, etc. |
+| INTERNAL_ENRICHMENT  | Listen for new OpenCTI entities or users requests, pull data from remote sources to enrich.        | Shodan, DomainTools, IpInfo, etc.                     |
+| INTERNAL_IMPORT_FILE | [Extract data from files](../usage/import-files.md) uploaded on OpenCTI through the UI or the API. | STIX 2.1, PDF, Text, HTML, etc.                       |
+| INTERNAL_EXPORT_FILE | [Generate export](../usage/export.md) from OpenCTI data, based on a single object or a list.       | STIX 2.1, CSV, PDF, etc.                              |
+| STREAM               | Consume a platform [data stream](../usage/feeds.md) and _do_ something with events.                | Splunk, Elastic Security, Q-Radar, etc.               |
 
 !!! note "List of connectors"
     

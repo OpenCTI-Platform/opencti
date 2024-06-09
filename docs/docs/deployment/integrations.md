@@ -26,7 +26,7 @@ When creating a CSV feed, you need to select one or multiple types of entities t
 
 ### TAXII collections
 
-Most of the modern cybersecurity systems such as SIEMs, EDRs, XDRs and even firewalls supports the [TAXII protocol](https://oasis-open.github.io/cti-documentation/taxii/intro.html) which is basically a paginated HTTP STIX feed. OpenCTI implements a [TAXII 2.1](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html) server with the ability to create as many TAXII collections as needed in Data > Data sharing > TAXII Collections.
+Most of the modern cybersecurity systems such as SIEMs, EDRs, XDRs and even firewalls support the [TAXII protocol](https://oasis-open.github.io/cti-documentation/taxii/intro.html) which is basically a paginated HTTP STIX feed. OpenCTI implements a [TAXII 2.1](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html) server with the ability to create as many TAXII collections as needed in Data > Data sharing > TAXII Collections.
 
 TAXII collections are a sub-selection of the knowledge available in the platform and rely on filters. For instance, it is possible to create TAXII collections for pieces of malware with a given label, for indicators with a score greater than *n*, etc.
 
@@ -41,7 +41,7 @@ After implementing CSV feeds and TAXII collections, we figured out that those 2 
 * Partial update for huge entities such as report (i.e. just having the *update* event).
 * Delete events when necessary (i.e. to handle indicators expiration in third party systems for instance).
 
-That's why we've developed the live streams. They are available in Data > Data sharing > Live streams. As TAXII collections, it is possible to create as many streams as needed using filters.
+That's why we've developed the live streams. They are available in Data > Data sharing > Live streams. As with TAXII collections, it is possible to create as many streams as needed using filters.
 
 ![Streams](assets/streams.png)
 

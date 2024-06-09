@@ -10,7 +10,7 @@ Each connector must implement a long-running process that can be launched just b
 
 ## Getting started
 
-In the beginning first think about your use-case to choose and appropriate connector type - what do want to achieve with your connector? The following table gives you an overview of the current connector types and some typical use-cases:
+In the beginning first think about your use-case to choose an appropriate connector type - what do want to achieve with your connector? The following table gives you an overview of the current connector types and some typical use-cases:
 
 **Connector types**
 
@@ -130,7 +130,7 @@ class TemplateConnector:
 
 Since there are some basic differences in the tasks of the different connector classes, the structure is also a bit class dependent. While the external-import and the stream connector run independently in a regular interval or constantly, the other 3 connector classes only run when being requested by the OpenCTI platform.
 
-The self-triggered connectors run independently, but the OpenCTI need to define a callback function, which can be executed for the connector to start its work. This is done via         `self.helper.listen(self._process_message)` . In the appended examples, the difference of the setup can be seen.
+The self-triggered connectors run independently, but the OpenCTI need to define a callback function, which can be executed for the connector to start its work. This is done via         `self.helper.listen(self._process_message)`. In the appended examples, the difference of the setup can be seen.
 
 Self-triggered Connectors
 
@@ -242,7 +242,7 @@ entity = self.helper.api.vulnerability.read(
 )
 ```
 
-If you want to add the found entity via `objects_refs` to another SDO, simple add a list of `stix_ids` to the SDO. Here's an example using the entity from the code snippet above:
+If you want to add the found entity via `objects_refs` to another SDO, simply add a list of `stix_ids` to the SDO. Here's an example using the entity from the code snippet above:
 
 ```python
 from stix2 import Report
@@ -257,7 +257,7 @@ report = Report(
 
 ### Logging
 
-When something crashes at a user's, you as a developer want to know as much as possible about this incident to easily improve your code and remove this issue. To do so, it is very helpful if your connector documents what it does. Use `info` messages for big changes like the beginning or the finishing of an operation, but to facilitate your bug removal attempts, implement `debug` messages for minor operation changes to document different steps in your code.
+When something crashes for a user, you as a developer want to know as much as possible about this incident to easily improve your code and remove this issue. To do so, it is very helpful if your connector documents what it does. Use `info` messages for big changes like the beginning or the finishing of an operation, but to facilitate your bug removal attempts, implement `debug` messages for minor operation changes to document different steps in your code.
 
 When encountering a crash, the connector's user can easily restart the troubling connector with the debug logging activated.
 
@@ -285,7 +285,7 @@ Please make sure that the debug messages rich of useful information, but that th
 
 ### Additional implementations
 
-If you are still unsure about how to implement certain things in your connector, we advise you to have a look at the code of other connectors of the same type. Maybe they are already using approach which is suitable for addressing to your problem.
+If you are still unsure about how to implement certain things in your connector, we advise you to have a look at the code of other connectors of the same type. Maybe they are already using an approach which is suitable for addressing to your problem.
 
 ### OpenCTI triggered Connector - Special cases
 
@@ -295,8 +295,6 @@ OpenCTI sends the connector a few instructions via the `data` dictionary in the 
 
 Internal Import Connector
 
-Internal Enrichment Connector
-
 ```json
 { 
   "file_id": "<fileId>",
@@ -305,6 +303,8 @@ Internal Enrichment Connector
   "entity_id": "report--82843863-6301-59da-b783-fe98249b464e", // Context of the upload
 }
 ```
+
+Internal Enrichment Connector
 
 ```json
 { 
@@ -435,7 +435,7 @@ class TemplateConnector:
 
 ## Running the connector
 
-For development purposes, it is easier to simply run the python script locally until everything works as it sould.
+For development purposes, it is easier to simply run the python script locally until everything works as it should.
 
 ```bash
 $ virtualenv env
