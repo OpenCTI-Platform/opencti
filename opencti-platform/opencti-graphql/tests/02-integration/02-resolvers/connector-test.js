@@ -112,7 +112,6 @@ const DELETE_CONNECTOR_QUERY = gql`
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
 
 beforeAll(async () => {
-  console.log('ANGIE before all');
   const CONNECTOR_TO_CREATE = {
     input: {
       id: TEST_CN_ID,

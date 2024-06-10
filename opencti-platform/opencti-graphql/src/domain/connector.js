@@ -279,9 +279,5 @@ export const deleteQueues = async (context, user) => {
 // endregion
 
 export const queueDetails = async (connectorId) => {
-  const queue = await getConnectorQueueDetails(connectorId);
-  return {
-    messages_number: queue.messages || 0,
-    messages_size: queue.message_bytes || 0
-  };
+  return await getConnectorQueueDetails(connectorId);
 };

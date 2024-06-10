@@ -69,7 +69,7 @@ const amqpHttpClient = async () => {
 };
 
 /**
- * Purge listen and push queue when connector state is reset
+ * Purge listen and push queue when connector state is reset using rabbit HTTP api management.
  * @param connector All information concerning a specific connector
  */
 export const purgeConnectorQueues = async (connector) => {
@@ -87,7 +87,10 @@ export const getConnectorQueueDetails = async (connectorId) => {
 
   const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
   logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
-  return queueDetailResponse;
+  return {
+    messages_number: queueDetailResponse.messages || 0,
+    messages_size: queueDetailResponse.message_bytes || 0
+  };
 };
 
 const amqpExecute = async (execute) => {
