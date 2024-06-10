@@ -9,7 +9,7 @@ import type {
   NumericAttribute,
   RefAttribute,
   StringAttribute,
-  VocabAttribute
+  VocabAttribute,
 } from '../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -30,7 +30,7 @@ import {
   OBJECT_CONTAINS_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
@@ -41,7 +41,7 @@ import { isEmptyField } from '../database/utils';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -346,6 +346,16 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    });
+  }
+  if (isStixRelationshipExceptRef(type)) {
+    filterDefinitionsMap.set(WORKFLOW_FILTER, {
+      filterKey: WORKFLOW_FILTER,
+      type: 'id',
+      label: 'Status',
+      multiple: false,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
     });
   }
 };
