@@ -60,129 +60,10 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on BasicObject {
           entity_type
         }
-        ... on AttackPattern {
-          name
-          description
-          x_mitre_id
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-            name
-            description
-        }
-        ... on Channel {
-            name
-            description
-        }
-        ... on Narrative {
-            name
-            description
-        }
-        ... on Language {
-            name
-        }
-        ... on DataComponent {
-            name
-        }
-        ... on DataSource {
-            name
-        }
-        ... on Case {
-            name
-        }
-        ... on StixCyberObservable {
-            observable_value
-        }
-        ... on MarkingDefinition {
-            definition_type
-            definition
-        }
-        ... on Creator {
-            name
-        }
-        ... on Report {
-            name
-        }
-        ... on Grouping {
-            name
-        }
-        ... on Note {
-            attribute_abstract
-            content
-        }
-        ... on Opinion {
-            opinion
+        ... on StixObject {
+          representative {
+            main
+          }
         }
       }
     }
@@ -256,12 +137,17 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                 data,
               },
             ];
-            const redirectionUtils = (field === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
-              (n) => ({
-                id: n.label,
-                entity_type: n.entity?.entity_type,
-              }),
-            ) : null;
+            let redirectionUtils = null;
+            if (field === 'internal_id') {
+              redirectionUtils = props.stixCoreRelationshipsDistribution
+                .map(
+                  (n) => ({
+                    id: n.label,
+                    name: n.entity?.representative?.main,
+                    entity_type: n.entity?.entity_type,
+                  }),
+                );
+            }
             return (
               <Chart
                 options={horizontalBarsChartOptions(
