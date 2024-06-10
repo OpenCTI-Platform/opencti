@@ -281,7 +281,7 @@ export const deleteQueues = async (context, user) => {
 export const queueDetails = async (connectorId) => {
   const queue = await getConnectorQueueDetails(connectorId);
   return {
-    messages_number: queue.messages,
-    messages_size: queue.message_bytes
+    messages_number: queue.messages || 0,
+    messages_size: queue.message_bytes || 0
   };
 };

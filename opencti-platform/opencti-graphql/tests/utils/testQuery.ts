@@ -112,6 +112,26 @@ export const ROLE_SECURITY: Role = {
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
 };
 
+// Maybe one day to be replaced by the connector built-in group
+export const ROLE_TEST_CONNECTOR: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Test connector role' }),
+  name: 'Test connector role',
+  description: 'Access knowledge CRUD + connector, bypass ref, set marking, set labels',
+  capabilities: [
+    'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPLOAD',
+    'KNOWLEDGE_KNASKIMPORT',
+    'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
+    'KNOWLEDGE_KNENRICHMENT',
+    'CONNECTORAPI',
+    'BYPASSREFERENCE',
+    'MODULES_MODMANAGE',
+    'TAXIIAPI',
+    'SETTINGS_SETMARKINGS',
+    'SETTINGS_SETLABELS',
+  ]
+};
+
 // Groups
 interface Group {
   id: string,
@@ -155,6 +175,17 @@ export const AMBER_STRICT_GROUP: Group = {
     overrides: [],
   },
   max_shareable_markings: [],
+};
+
+export const CONNECTOR_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'TEST CONNECTOR GROUP' }),
+  name: 'TEST CONNECTOR GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_TEST_CONNECTOR],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  }
 };
 
 // Organization
@@ -237,6 +268,15 @@ export const USER_SECURITY: User = {
   client: createHttpClient('security@opencti.io', 'security')
 };
 TESTING_USERS.push(USER_SECURITY);
+
+export const USER_CONNECTOR: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'connector@opencti.io' }),
+  email: 'connector@opencti.io',
+  password: 'connector',
+  groups: [CONNECTOR_GROUP],
+  client: createHttpClient('connector@opencti.io', 'connector')
+};
+TESTING_USERS.push(USER_CONNECTOR);
 
 // region group management
 const GROUP_CREATION_MUTATION = `

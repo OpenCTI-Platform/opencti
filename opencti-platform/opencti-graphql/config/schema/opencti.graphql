@@ -1709,7 +1709,7 @@ type Connector implements BasicObject & InternalObject {
   connector_schema_ui: String
   connector_state_reset: Boolean
   connector_user_id: ID
-  connector_queue_details: ConnectorQueueDetails!
+  connectorQueueDetails: ConnectorQueueDetails!
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig

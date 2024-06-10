@@ -85,7 +85,9 @@ export const getConnectorQueueDetails = async (connectorId) => {
   const httpClient = await amqpHttpClient();
   const pathRabbit = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
 
-  return await httpClient.get(pathRabbit).then((response) => response.data);
+  const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
+  logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
+  return queueDetailResponse;
 };
 
 const amqpExecute = async (execute) => {
