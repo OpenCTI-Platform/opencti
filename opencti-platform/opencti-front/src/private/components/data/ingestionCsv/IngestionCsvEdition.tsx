@@ -309,6 +309,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             label={t_i18n('Marking definition levels')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
+            disabled={!hasUserChoiceCsvMapper}
             onChange={(name, value) => {
               if (value.length) {
                 handleSubmitField(name, value.map((csvMapper) => csvMapper.value));
