@@ -30,14 +30,14 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import {
+  useAvailableFilterKeysForEntityTypes,
   cleanFilters,
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
-  useBuildFilterKeysMapFromEntityType,
   useFetchFilterKeysSchema,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { generateUniqueItemsArray, isNotEmptyField } from '../../../../utils/utils';
+import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -157,8 +157,7 @@ const FeedEditionContainer = (props) => {
   });
 
   const completeFilterKeysMap = useFetchFilterKeysSchema();
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(selectedTypes);
-  const availableFilterKeys = generateUniqueItemsArray(filterKeysMap.keys() ?? []).filter((k) => k !== 'entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);

@@ -62,15 +62,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     view,
   } = viewStorage;
 
-  const availableFilterKeys = [
-    'objectMarking',
-    'confidence',
-    'objectLabel',
-    'createdBy',
-    'creator_id',
-    'created',
-  ];
-
   const { platformModuleHelpers } = useAuth();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
@@ -187,7 +178,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         selectAll={selectAll}
         numberOfElements={numberOfElements}
         filters={filters}
-        availableFilterKeys={availableFilterKeys}
         availableEntityTypes={stixCoreObjectTypes}
         availableRelationshipTypes={relationshipTypes}
         handleToggleExports={storageHelpers.handleToggleExports}
@@ -201,6 +191,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         paginationOptions={paginationOptions}
         enableEntitiesView={true}
         currentView={finalView}
+        entityTypes={['stix-core-relationship']}
       >
         <QueryRenderer
           query={
