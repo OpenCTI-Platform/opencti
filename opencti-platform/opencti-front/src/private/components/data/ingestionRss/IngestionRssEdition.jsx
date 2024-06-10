@@ -136,6 +136,7 @@ const IngestionRssEditionContainer = ({
               label={t('User responsible for data creation (empty = System)')}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
+              showConfidence
             />
             <Field
               component={DateTimePickerField}

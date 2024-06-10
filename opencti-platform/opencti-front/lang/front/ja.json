@@ -1,6 +1,7 @@
 {
   " (reversed)": "(逆)",
   " & ": "&；",
+  "+ N override(s)": "+ {count} オーバーライド（複数可）",
   "0 equals no maximum": "0 は最大値なし",
   "24 hours": "24時間",
   "24h": "24時間",

@@ -286,11 +286,9 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               )}
               <CreatorField
                 name="user_id"
-                label={t_i18n(
-                  'User responsible for data creation (empty = System)',
-                )}
-                isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+                label={t_i18n('User responsible for data creation (empty = System)')}
                 containerStyle={fieldSpacingContainerStyle}
+                showConfidence
               />
               <Box sx={{ width: '100%', marginTop: 5 }}>
                 <Alert

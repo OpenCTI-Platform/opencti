@@ -94,6 +94,12 @@ const userResolvers = {
       }
       return (ENABLED_DEMO_MODE && context.user.id !== current.id) ? REDACTED_USER.name : current.name;
     },
+    effective_confidence_level: (current, _, context) => {
+      if (current.entity_type === ENTITY_TYPE_USER) {
+        return getUserEffectiveConfidenceLevel(current, context);
+      }
+      return null;
+    },
   },
   MeUser: {
     language: (current) => current.language ?? 'auto',

@@ -12383,7 +12383,9 @@ export type MediaContentAddInput = {
 
 export type Member = {
   __typename?: 'Member';
+  effective_confidence_level?: Maybe<EffectiveConfidenceLevel>;
   entity_type: Scalars['String']['output'];
+  group_confidence_level?: Maybe<ConfidenceLevel>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
 };
@@ -34331,7 +34333,9 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type MemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['Member'] = ResolversParentTypes['Member']> = ResolversObject<{
+  effective_confidence_level?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevel']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

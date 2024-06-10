@@ -235,6 +235,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             label={t_i18n('User responsible for data creation (empty = System)')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
+            showConfidence
           />
           <Field
             component={DateTimePickerField}

@@ -1330,7 +1330,12 @@ type Member {
   id: ID! # internal_id
   name: String!
   entity_type: String!
+  # entity_type == User
+  effective_confidence_level: EffectiveConfidenceLevel
+  # entity_type == Group
+  group_confidence_level: ConfidenceLevel
 }
+
 type MemberAccess {
   id: ID! # internal_id
   name: String!

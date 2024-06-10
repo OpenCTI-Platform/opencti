@@ -153,6 +153,7 @@ const IngestionRssCreation = (props) => {
                 name="user_id"
                 label={t('User responsible for data creation (empty = System)')}
                 containerStyle={fieldSpacingContainerStyle}
+                showConfidence
               />
               <Field
                 component={DateTimePickerField}

@@ -1391,6 +1391,8 @@ type Member {
   id: ID!
   name: String!
   entity_type: String!
+  effective_confidence_level: EffectiveConfidenceLevel
+  group_confidence_level: ConfidenceLevel
 }
 
 type MemberAccess {

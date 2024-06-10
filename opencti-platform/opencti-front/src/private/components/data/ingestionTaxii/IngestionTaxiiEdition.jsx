@@ -319,6 +319,7 @@ const IngestionTaxiiEditionContainer = ({
               label={t('User responsible for data creation (empty = System)')}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
+              showConfidence
             />
           </Form>
         )}

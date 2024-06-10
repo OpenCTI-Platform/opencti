@@ -1,6 +1,7 @@
 {
   " (reversed)": " (reversed)",
   " & ": " & ",
+  "+ N override(s)": "+ {count} override(s)",
   "0 equals no maximum": "0 equals no maximum",
   "24 hours": "24 hours",
   "24h": "24h",
