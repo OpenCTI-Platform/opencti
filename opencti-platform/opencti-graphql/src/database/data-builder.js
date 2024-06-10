@@ -13,6 +13,7 @@ import {
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -273,6 +274,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...buildInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
     relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
     relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
