@@ -92,6 +92,8 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
 
   const toggleAddInferenceRulesResult = () => setAreInferenceRulesResultAdded((prevState) => !prevState);
 
+  const resetAreInferenceRulesResultAdded = () => setAreInferenceRulesResultAdded(true);
+
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -116,6 +118,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       },
       onCompleted: () => {
         setSubmitting(false);
+        resetAreInferenceRulesResultAdded();
         resetForm();
       },
       optimisticUpdater: undefined,
@@ -129,7 +132,10 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
     <Drawer
       title={t_i18n('Create a TAXII collection')}
       variant={DrawerVariant.createWithPanel}
-      onClose={helpers.handleClearAllFilters}
+      onClose={() => {
+        helpers.handleClearAllFilters();
+        resetAreInferenceRulesResultAdded();
+      }}
     >
       {({ onClose }) => (
         <Formik
