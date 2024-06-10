@@ -41,11 +41,11 @@ import {
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findAll as stixRelationships, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
-import { bookmarks } from '../../domain/user';
+import { bookmarks, checkUserCanShareMarkings } from '../../domain/user';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
-import { getAvailableDataSharingMarkings } from '../../domain/settings';
+import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 
 export const findById = (
   context: AuthContext,
@@ -128,7 +128,21 @@ export const addPublicDashboard = async (
 
   const access = getUserAccessRight(user, dashboard);
   if (access !== MEMBER_ACCESS_RIGHT_ADMIN) {
-    throw ForbiddenAccess('You are not allowed to do this.');
+    throw ForbiddenAccess();
+  }
+
+  // check user allowed markings
+  const userMarkingIds = user.allowed_marking.map((m) => m.id);
+  if (input.allowed_markings_ids?.some((id) => !userMarkingIds.includes(id))) {
+    throw UnsupportedError('Not allowed markings');
+  }
+
+  // check user data sharing max markings
+  if (input.allowed_markings_ids && input.allowed_markings_ids.length > 0) {
+    const markingLevels = await Promise.all(input.allowed_markings_ids.map((id) => {
+      return findMarkingDefinitionById(context, user, id);
+    }));
+    await checkUserCanShareMarkings(context, user, markingLevels);
   }
 
   const uriKey = input.uri_key.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-');
@@ -163,18 +177,6 @@ export const addPublicDashboard = async (
     [{ id: user.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }],
     user,
   );
-
-  // check platform data sharing max markings
-  const availableDataSharingMarkingIds = (await getAvailableDataSharingMarkings(context, SYSTEM_USER)).map((m) => m.id);
-  if (input.allowed_markings_ids?.some((id) => !availableDataSharingMarkingIds.includes(id))) {
-    throw UnsupportedError('Invalid markings');
-  }
-
-  // check user allowed markings
-  const userMarkingIds = user.allowed_marking.map((m) => m.id);
-  if (input.allowed_markings_ids?.some((id) => !userMarkingIds.includes(id))) {
-    throw UnsupportedError('Not allowed markings');
-  }
 
   // Create publicDashboard
   const publicDashboardToCreate = {

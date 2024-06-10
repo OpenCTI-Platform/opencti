@@ -8,6 +8,7 @@ export const RELATION_ALLOWED_BY = 'allowed-by';
 export const RELATION_HAS_ROLE = 'has-role';
 export const RELATION_HAS_CAPABILITY = 'has-capability';
 export const RELATION_ACCESSES_TO = 'accesses-to';
+export const RELATION_CAN_SHARE = 'can-share';
 export const INTERNAL_RELATIONSHIPS = [
   RELATION_MIGRATES,
   RELATION_MEMBER_OF,
@@ -16,6 +17,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_CAPABILITY,
   RELATION_ACCESSES_TO,
   RELATION_PARTICIPATE_TO,
+  RELATION_CAN_SHARE,
 ];
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
 export const isInternalRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_RELATIONSHIP)

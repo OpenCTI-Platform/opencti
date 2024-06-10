@@ -11,7 +11,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_CAN_SHARE, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -45,6 +45,10 @@ export const findAll = async (context, user, args) => {
 
 export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+};
+
+export const groupMaxShareableMarkings = async (context, user, groupId) => {
+  return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {

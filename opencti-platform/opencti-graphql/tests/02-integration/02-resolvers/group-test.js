@@ -26,6 +26,9 @@ const READ_QUERY = gql`
       default_dashboard {
         name
       }
+      max_shareable_marking {
+        id
+      }
     }
   }
 `;
@@ -206,6 +209,11 @@ describe('Group resolver standard behavior', () => {
       variables: { id: groupInternalId, input: { key: 'name', value: ['Group - test'] } },
     });
     expect(queryResult.data.groupEdit.fieldPatch.name).toEqual('Group - test');
+  });
+  it('should have nothing shareable at the group creation', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+    const maxMarkings = queryResult.data.group.max_shareable_marking;
+    expect(maxMarkings).toEqual([]);
   });
   it('should update group confidence level', async () => {
     const UPDATE_QUERY = gql`

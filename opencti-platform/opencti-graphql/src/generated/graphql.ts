@@ -7546,6 +7546,7 @@ export type Group = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   group_confidence_level?: Maybe<ConfidenceLevel>;
   id: Scalars['ID']['output'];
+  max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
   members?: Maybe<UserConnection>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -12151,6 +12152,7 @@ export type MeUser = BasicObject & InternalObject & {
   individual_id?: Maybe<Scalars['String']['output']>;
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
+  max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
   name: Scalars['String']['output'];
   objectOrganization?: Maybe<MeOrganizationConnection>;
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
@@ -21718,7 +21720,6 @@ export type Settings = BasicObject & InternalObject & {
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
   platform_consent_message?: Maybe<Scalars['String']['output']>;
   platform_critical_alerts: Array<PlatformCriticalAlert>;
-  platform_data_sharing_max_markings?: Maybe<Array<MarkingDefinition>>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_favicon?: Maybe<Scalars['String']['output']>;
@@ -32705,6 +32706,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -34253,6 +34255,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['MeOrganizationConnection']>, ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36536,7 +36539,6 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
-  platform_data_sharing_max_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

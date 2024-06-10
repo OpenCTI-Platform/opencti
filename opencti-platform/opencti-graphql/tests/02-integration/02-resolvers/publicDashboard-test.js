@@ -1,10 +1,9 @@
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
 import { toBase64 } from '../../../src/database/utils';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 
 const LIST_QUERY = gql`
@@ -137,32 +136,33 @@ const MARKINGS_QUERY = gql`
   }
 `;
 
-const READ_MAX_MARKINGS_QUERY = gql`
-  query settingsMaxMarkings {
-    settings {
-      id
-    }
-  }
-`;
-
-const EDIT_MAX_MARKINGS_QUERY = gql`
-  mutation edtSettingsMaxMarkings($id: ID!, $input: [EditInput]!) {
-    settingsEdit(id: $id) {
-      fieldPatch(input: $input) {
-        platform_data_sharing_max_markings {
-          id
-          definition
-          definition_type
-          x_opencti_order
+const API_SCR_NUMBER_QUERY = gql`
+    query PublicStixRelationshipsNumber(
+        $startDate: DateTime
+        $endDate: DateTime
+        $uriKey: String!
+        $widgetId : String!
+    ) {
+        publicStixRelationshipsNumber(
+            startDate: $startDate
+            endDate: $endDate
+            uriKey: $uriKey
+            widgetId : $widgetId
+        ) {
+            total
+            count
         }
-      }
     }
-  }
 `;
 
 describe('PublicDashboard resolver', () => {
   let privateDashboardInternalId;
   const publicDashboardName = 'publicDashboard';
+
+  let tlpClear;
+  let tlpGreen;
+  let tlpAmber;
+  let tlpRed;
 
   beforeAll(async () => {
     // Create Private dashboard
@@ -176,6 +176,14 @@ describe('PublicDashboard resolver', () => {
       },
     });
     privateDashboardInternalId = privateDashboard.data.workspaceAdd.id;
+
+    // Fetch markings.
+    const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
+    const markings = data.markingDefinitions.edges.map((e) => e.node);
+    tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
+    tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
+    tlpAmber = markings.find((m) => m.definition === 'TLP:AMBER');
+    tlpRed = markings.find((m) => m.definition === 'TLP:RED');
   });
 
   afterAll(async () => {
@@ -282,26 +290,6 @@ describe('PublicDashboard resolver', () => {
       });
 
       it('User cannot create public dashboard with marking not in User allowed markings', async () => {
-        // Get marking
-        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
-        const markings = data.markingDefinitions.edges.map((e) => e.node);
-        const tlpRed = markings.find((m) => m.definition === 'TLP:RED');
-
-        // Set max markings
-        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
-        const settingsId = settingsResult.data.settings.id;
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpRed.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-
         // Add security user in private dashboard authorizedMembers with admin access right
         const authorizedMembersUpdate = [
           {
@@ -338,18 +326,27 @@ describe('PublicDashboard resolver', () => {
         expect(publicDashboardQuery).not.toBeNull();
         expect(publicDashboardQuery.errors.length).toEqual(1);
         expect(publicDashboardQuery.errors.at(0).message).toEqual('Not allowed markings');
+      });
 
-        // Reset max markings.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: []
-            }
+      it('User cannot create public dashboard with marking not in User shareable markings', async () => {
+        // Try to create public dashboard
+        const PUBLIC_DASHBOARD_TO_CREATE = {
+          input: {
+            name: 'public dashboard markings amber',
+            uri_key: 'public-dashboard-markings-amber',
+            dashboard_id: privateDashboardInternalId,
+            allowed_markings_ids: [tlpAmber.id],
+            enabled: true,
           },
+        };
+
+        const publicDashboardQuery = await editorQuery({
+          query: CREATE_QUERY,
+          variables: PUBLIC_DASHBOARD_TO_CREATE,
         });
+        expect(publicDashboardQuery).not.toBeNull();
+        expect(publicDashboardQuery.errors.length).toEqual(1);
+        expect(publicDashboardQuery.errors.at(0).message).toEqual('You are not allowed to share these markings.');
       });
 
       it('should publicDashboard created', async () => {
@@ -683,24 +680,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         it('should return the data for API: SCR Number', async () => {
-          const API_SCR_NUMBER_QUERY = gql`
-            query PublicStixRelationshipsNumber(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixRelationshipsNumber(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                total
-                count
-              }
-            }
-          `;
           const { data } = await queryAsAdmin({
             query: API_SCR_NUMBER_QUERY,
             variables: {
@@ -980,50 +959,14 @@ describe('PublicDashboard resolver', () => {
     });
 
     describe('Tests widgets API with markings', () => {
-      const API_SCR_NUMBER_QUERY = gql`
-        query PublicStixRelationshipsNumber(
-          $startDate: DateTime
-          $endDate: DateTime
-          $uriKey: String!
-          $widgetId : String!
-        ) {
-          publicStixRelationshipsNumber(
-            startDate: $startDate
-            endDate: $endDate
-            uriKey: $uriKey
-            widgetId : $widgetId
-          ) {
-            total
-            count
-          }
-        }
-      `;
-
-      let publicDashboardInternalId;
-
-      let tlpClear;
-      let tlpGreen;
-      let tlpRed;
+      let greenPublicDashboardInternalId;
+      let clearPublicDashboardInternalId;
 
       let spainId;
       let raditzId;
       let vegetaId;
 
-      let settingsId;
-
       afterAll(async () => {
-        // region Reset max markings.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: []
-            }
-          },
-        });
-        // endregion
         // region Delete areas.
         const DELETE_AREA = gql`
           mutation administrativeAreaDelete($id: ID!) {
@@ -1052,53 +995,50 @@ describe('PublicDashboard resolver', () => {
           variables: { id: vegetaId },
         });
         // endregion
-        // region Delete the publicDashboard.
+        // region Delete the publicDashboards.
         await queryAsAdmin({
           query: DELETE_QUERY,
-          variables: { id: publicDashboardInternalId },
+          variables: { id: greenPublicDashboardInternalId },
+        });
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: clearPublicDashboardInternalId },
         });
         // endregion
       });
 
       beforeAll(async () => {
-        // region Fetch markings.
-        const { data } = await queryAsAdmin({ query: MARKINGS_QUERY, variables: {} });
-        const markings = data.markingDefinitions.edges.map((e) => e.node);
-        tlpClear = markings.find((m) => m.definition === 'TLP:CLEAR');
-        tlpGreen = markings.find((m) => m.definition === 'TLP:GREEN');
-        tlpRed = markings.find((m) => m.definition === 'TLP:RED');
         // endregion
-        // region Set max markings
-        const settingsResult = await queryAsAdmin({ query: READ_MAX_MARKINGS_QUERY, variables: {} });
-        settingsId = settingsResult.data.settings.id;
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpRed.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-        // endregion
-        // region Create the publicDashboard.
-        const PUBLIC_DASHBOARD_TO_CREATE = {
+        // region Create the publicDashboards.
+        const GREEN_PUBLIC_DASHBOARD_TO_CREATE = {
           input: {
-            name: 'public dashboard markings',
-            uri_key: 'public-dashboard-markings',
+            name: 'public dashboard marking green',
+            uri_key: 'public-dashboard-marking-green',
             dashboard_id: privateDashboardInternalId,
             allowed_markings_ids: [tlpGreen.id],
             enabled: true,
           },
         };
-        const publicDashboard = await editorQuery({
+        const greenPublicDashboard = await editorQuery({
           query: CREATE_QUERY,
-          variables: PUBLIC_DASHBOARD_TO_CREATE,
+          variables: GREEN_PUBLIC_DASHBOARD_TO_CREATE,
+        });
+        const CLEAR_PUBLIC_DASHBOARD_TO_CREATE = { // a dashboard with more a restricted marking
+          input: {
+            name: 'public dashboard marking clear',
+            uri_key: 'public-dashboard-marking-clear',
+            dashboard_id: privateDashboardInternalId,
+            allowed_markings_ids: [tlpClear.id],
+            enabled: true,
+          },
+        };
+        const clearPublicDashboard = await editorQuery({
+          query: CREATE_QUERY,
+          variables: CLEAR_PUBLIC_DASHBOARD_TO_CREATE,
         });
         resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
-        publicDashboardInternalId = publicDashboard.data.publicDashboardAdd.id;
+        greenPublicDashboardInternalId = greenPublicDashboard.data.publicDashboardAdd.id;
+        clearPublicDashboardInternalId = clearPublicDashboard.data.publicDashboardAdd.id;
         // endregion
         // region Create some areas.
         const CREATE_AREA = gql`
@@ -1184,7 +1124,7 @@ describe('PublicDashboard resolver', () => {
         const aaa = await queryAsAdmin({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public-dashboard-markings',
+            uriKey: 'public-dashboard-marking-green',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
@@ -1194,27 +1134,15 @@ describe('PublicDashboard resolver', () => {
       });
 
       it('should return the data for API: SCR Number with limited max marking', async () => {
-        // Change the max marking to something more restrictive.
-        await queryAsAdmin({
-          query: EDIT_MAX_MARKINGS_QUERY,
-          variables: {
-            id: settingsId,
-            input: {
-              key: 'platform_data_sharing_max_markings',
-              value: [tlpClear.id]
-            }
-          },
-        });
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-
-        const { data } = await queryAsAdmin({
+        // Same query but with a dashboard with more restrictive markings (clear marking)
+        const aaa = await queryAsAdmin({
           query: API_SCR_NUMBER_QUERY,
           variables: {
-            uriKey: 'public-dashboard-markings',
+            uriKey: 'public-dashboard-marking-clear',
             widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
           },
         });
-        const result = data.publicStixRelationshipsNumber;
+        const result = aaa.data.publicStixRelationshipsNumber;
         expect(result.total).toEqual(0);
         expect(result.count).toEqual(0);
       });

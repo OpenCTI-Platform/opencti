@@ -1,6 +1,6 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
-  addMarkingDefinition,
+  addAllowedMarkingDefinition,
   findAll,
   findById,
   markingDefinitionCleanContext,
@@ -29,7 +29,7 @@ const markingDefinitionResolvers = {
       contextPatch: ({ input }) => markingDefinitionEditContext(context, context.user, id, input),
       contextClean: () => markingDefinitionCleanContext(context, context.user, id),
     }),
-    markingDefinitionAdd: (_, { input }, context) => addMarkingDefinition(context, context.user, input),
+    markingDefinitionAdd: (_, { input }, context) => addAllowedMarkingDefinition(context, context.user, input),
   },
   Subscription: {
     markingDefinition: {

@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
+import { isEmptyField } from '../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -86,13 +87,12 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
 
-  const { me, settings } = useAuth();
+  const { me } = useAuth();
   let allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
   if (limitToMaxSharing) {
-    const { platform_data_sharing_max_markings } = settings;
     allowedMarkingDefinitions = allowedMarkingDefinitions.filter((def) => {
-      const maxMarking = platform_data_sharing_max_markings?.find((marking) => marking.definition_type === def.definition_type);
-      return !!maxMarking && maxMarking.x_opencti_order >= def.x_opencti_order;
+      const maxMarkingsOfType = me.max_shareable_marking?.filter((marking) => marking.definition_type === def.definition_type);
+      return !isEmptyField(maxMarkingsOfType) && maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order >= def.x_opencti_order);
     });
   }
   const filteredAllowedMarkingDefinitionsOut = filterTargetIds

@@ -1125,7 +1125,6 @@ type Settings implements InternalObject & BasicObject {
   parent_types: [String!]! @auth
   # Settings
   platform_organization: Organization
-  platform_data_sharing_max_markings: [MarkingDefinition!]
   platform_title: String
   platform_favicon: String
   platform_email: String @auth
@@ -1245,6 +1244,7 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
+  max_shareable_marking: [MarkingDefinition!]
   default_hidden_types: [String!]
   group_confidence_level: ConfidenceLevel
   # Technical
@@ -1455,6 +1455,7 @@ type MeUser implements BasicObject & InternalObject {
   effective_confidence_level: EffectiveConfidenceLevel
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
+  max_shareable_marking: [MarkingDefinition!]
   otp_mandatory: Boolean
   groups(
     orderBy: GroupsOrdering
@@ -10407,7 +10408,7 @@ type InternalRelationship implements BasicRelationship {
   creators: [Creator!]
 }
 input InternalRelationshipAddInput {
-  relationship_type: String! # Will be check by code
+  relationship_type: String! # Will be checked by code
   fromId: ID
   toId: ID
 }

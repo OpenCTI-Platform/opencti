@@ -9,7 +9,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
-import { addMarkingDefinition } from '../domain/markingDefinition';
+import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
@@ -107,31 +107,31 @@ export const CAPABILITIES = [
 
 const createMarkingDefinitions = async (context) => {
   // Create marking defs for TLP
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:AMBER+STRICT',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'TLP',
     definition: 'TLP:RED',
     x_opencti_color: '#c62828',
@@ -139,25 +139,25 @@ const createMarkingDefinitions = async (context) => {
   });
 
   // Creation markings for PAP
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'PAP',
     definition: 'PAP:CLEAR',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'PAP',
     definition: 'PAP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'PAP',
     definition: 'PAP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  await addMarkingDefinition(context, SYSTEM_USER, {
+  await addAllowedMarkingDefinition(context, SYSTEM_USER, {
     definition_type: 'PAP',
     definition: 'PAP:RED',
     x_opencti_color: '#c62828',

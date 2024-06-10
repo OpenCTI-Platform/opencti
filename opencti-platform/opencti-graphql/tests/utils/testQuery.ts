@@ -118,7 +118,8 @@ interface Group {
   name: string,
   markings: string[],
   roles: Role[],
-  group_confidence_level: ConfidenceLevel
+  group_confidence_level: ConfidenceLevel,
+  max_shareable_markings: string[],
 }
 
 export const GREEN_GROUP: Group = {
@@ -129,7 +130,8 @@ export const GREEN_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 50,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [],
 };
 export const AMBER_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
@@ -139,7 +141,8 @@ export const AMBER_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 100,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [MARKING_TLP_GREEN],
 };
 
 export const AMBER_STRICT_GROUP: Group = {
@@ -150,7 +153,8 @@ export const AMBER_STRICT_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 80,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [],
 };
 
 // Organization
@@ -203,7 +207,8 @@ export const ADMIN_USER: AuthUser = {
   user_confidence_level: {
     max_confidence: 100,
     overrides: [],
-  }
+  },
+  max_shareable_marking: [],
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -253,6 +258,18 @@ const GROUP_EDITION_MARKINGS_MUTATION = `
     }
   }
 `;
+const GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION = `
+  mutation groupEdition($groupId: ID!, $toId: ID) {
+    groupEdit(id: $groupId) {
+      relationAdd(input: {
+        toId: $toId
+        relationship_type: "can-share"
+      }) {
+        id
+      }
+    }
+  }
+`;
 const GROUP_EDITION_ROLES_MUTATION = `
   mutation groupEdition($groupId: ID!, $toId: ID) {
     groupEdit(id: $groupId) {
@@ -284,6 +301,10 @@ const createGroup = async (input: Group): Promise<string> => {
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
     await internalAdminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+  }
+  for (let index = 0; index < input.max_shareable_markings.length; index += 1) {
+    const maxMarking = input.max_shareable_markings[index];
+    await internalAdminQuery(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: maxMarking });
   }
   for (let index = 0; index < input.roles.length; index += 1) {
     const role = input.roles[index];
@@ -469,6 +490,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
+    max_shareable_marking: [],
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
     account_status: ACCOUNT_STATUS_ACTIVE,

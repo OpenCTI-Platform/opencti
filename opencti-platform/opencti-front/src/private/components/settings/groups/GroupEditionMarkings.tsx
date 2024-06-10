@@ -10,6 +10,8 @@ import Alert from '@mui/lab/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
+import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
+import { uniq } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -87,6 +89,8 @@ const GroupEditionMarkingsComponent = ({
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
+  const groupMaxShareableMarkings = group.max_shareable_marking || [];
+  const maxShareableMarkingsIds = groupMaxShareableMarkings.map((v) => v.id);
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
     groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
@@ -95,9 +99,9 @@ const GroupEditionMarkingsComponent = ({
 
   const [commitAdd] = useApiMutation(groupMutationRelationAdd);
   const [commitDelete] = useApiMutation(groupMutationRelationDelete);
-  const [commitPatch] = useApiMutation(groupMutationPatchDefaultValues);
+  const [commitDefaultValues] = useApiMutation(groupMutationPatchDefaultValues);
 
-  const handleToggle = (
+  const handleToggleAllowedMarkings = (
     markingDefinitionId: string,
     groupMarkingDefinition:
     | {
@@ -122,7 +126,7 @@ const GroupEditionMarkingsComponent = ({
         const ids = globalDefaultMarking
           .map((m) => m.id)
           .filter((id) => id !== markingDefinitionId);
-        commitPatch({
+        commitDefaultValues({
           variables: {
             id: group.id,
             input: {
@@ -144,7 +148,7 @@ const GroupEditionMarkingsComponent = ({
   };
   const handleToggleDefaultValues = (values: Option[]) => {
     const ids = values.map((v) => v.value);
-    commitPatch({
+    commitDefaultValues({
       variables: {
         id: group.id,
         input: {
@@ -152,6 +156,33 @@ const GroupEditionMarkingsComponent = ({
           values: ids,
         },
       },
+    });
+  };
+
+  const handleToggleMaxShareableMarkings = (markingIds: string[]) => {
+    markingIds.forEach((markingId) => {
+      if (!maxShareableMarkingsIds.includes(markingId)) {
+        commitAdd({
+          variables: {
+            id: group.id,
+            input: {
+              toId: markingId,
+              relationship_type: 'can-share',
+            },
+          },
+        });
+      }
+    });
+    maxShareableMarkingsIds.forEach((shareableMarkingId) => {
+      if (!markingIds.includes(shareableMarkingId)) {
+        commitDelete({
+          variables: {
+            id: group.id,
+            toId: shareableMarkingId,
+            relationship_type: 'can-share',
+          },
+        });
+      }
     });
   };
 
@@ -164,14 +195,6 @@ const GroupEditionMarkingsComponent = ({
 
   return (
     <div>
-      <Typography variant="h2" style={{ marginTop: 35 }}>
-        {t_i18n('Allowed marking definitions')}
-      </Typography>
-      <Alert severity="warning" variant="outlined" style={{ marginBottom: 10 }}>
-        {t_i18n(
-          'All users of this group will be able to view entities and relationships marked with checked marking definitions, including statements and special markings.',
-        )}
-      </Alert>
       <QueryRenderer
         query={markingDefinitionsLinesSearchQuery}
         variables={{ search: '' }}
@@ -193,8 +216,22 @@ const GroupEditionMarkingsComponent = ({
               globalDefaultMarking,
               markingDefinitionsConverted,
             );
+            const resolvedMaxShareableMarkingDefinitions = retrieveMarking(
+              groupMaxShareableMarkings,
+              markingDefinitionsConverted,
+            );
+            const proposedShareableMarkings = uniq((resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)
+              .concat((resolvedMaxShareableMarkingDefinitions ?? []).map((m) => m?.entity)));
             return (
               <>
+                <Typography variant="h2" style={{ marginTop: 35 }}>
+                  {t_i18n('Allowed marking definitions')}
+                </Typography>
+                <Alert severity="warning" variant="outlined" style={{ marginBottom: 10 }}>
+                  {t_i18n(
+                    'All users of this group will be able to view entities and relationships marked with checked marking definitions, including statements and special markings.',
+                  )}
+                </Alert>
                 <List>
                   {markingDefinitions.map((markingDefinition) => {
                     const groupMarkingDefinition = groupMarkingDefinitions.find(
@@ -211,7 +248,7 @@ const GroupEditionMarkingsComponent = ({
                         <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
                           <Checkbox
-                            onChange={(event) => handleToggle(
+                            onChange={(event) => handleToggleAllowedMarkings(
                               markingDefinition.id,
                               groupMarkingDefinition,
                               event,
@@ -224,32 +261,33 @@ const GroupEditionMarkingsComponent = ({
                     );
                   })}
                 </List>
-                <Typography variant="h2" style={{ marginTop: 30 }}>
-                  {t_i18n('Default marking definitions')}
-                </Typography>
-                <Alert
-                  severity="info"
-                  variant="outlined"
-                  style={{ marginBottom: 10 }}
-                >
-                  {t_i18n(
-                    'The default marking definitions of a group will be used as default marking when this feature is explicitly enabled in the customization of an entity type.',
-                  )}
-                  <br />
-                  <br />
-                  {t_i18n(
-                    'Please note that only the marking definition with the highest level on each definition type is kept.',
-                  )}
-                </Alert>
                 <Formik
                   enableReinitialize={true}
                   initialValues={{
                     defaultMarkings: resolvedGroupDefaultMarkingDefinitions,
+                    shareableMarkings: maxShareableMarkingsIds,
                   }}
                   onSubmit={() => {}}
                 >
                   {() => (
                     <Form>
+                      <Typography variant="h2" style={{ marginTop: 30 }}>
+                        {t_i18n('Default marking definitions')}
+                      </Typography>
+                      <Alert
+                        severity="info"
+                        variant="outlined"
+                        style={{ marginBottom: 10 }}
+                      >
+                        {t_i18n(
+                          'The default marking definitions of a group will be used as default marking when this feature is explicitly enabled in the customization of an entity type.',
+                        )}
+                        <br />
+                        <br />
+                        {t_i18n(
+                          'Please note that only the marking definition with the highest level on each definition type is kept.',
+                        )}
+                      </Alert>
                       <Field
                         component={AutocompleteField}
                         style={fieldSpacingContainerStyle}
@@ -281,6 +319,24 @@ const GroupEditionMarkingsComponent = ({
                         onChange={(name: string, values: Option[]) => handleToggleDefaultValues(values)
                         }
                       />
+                      <Typography variant="h2" style={{ marginTop: 30 }}>
+                        {t_i18n('Maximum shareable marking definitions')}
+                      </Typography>
+                      <Alert
+                        severity="info"
+                        variant="outlined"
+                        style={{ marginBottom: 10 }}
+                      >
+                        {t_i18n(
+                          'The maximum shareable marking definitions of a group are the maximum markings authorized in shared public dashboards and file exports.',
+                        )}
+                      </Alert>
+                      <Field
+                        component={MarkingsSelectField}
+                        markingDefinitions={proposedShareableMarkings}
+                        name="shareableMarkings"
+                        onChange={(markingIds: string[]) => handleToggleMaxShareableMarkings(markingIds)}
+                      />
                     </Form>
                   )}
                 </Formik>
@@ -304,6 +360,12 @@ const GroupEditionMarkings = createFragmentContainer(
         default_assignation
         allowed_marking {
           id
+        }
+        max_shareable_marking {
+          id
+          definition
+          definition_type
+          x_opencti_order
         }
         default_marking {
           entity_type

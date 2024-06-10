@@ -1,6 +1,6 @@
 import { describe, expect, it, afterAll, beforeAll } from 'vitest';
 import { testContext } from '../../utils/testQuery';
-import { addMarkingDefinition, markingDefinitionDelete } from '../../../src/domain/markingDefinition';
+import { addAllowedMarkingDefinition, markingDefinitionDelete } from '../../../src/domain/markingDefinition';
 import { cleanMarkings, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
@@ -51,7 +51,7 @@ const markings = [
 const createMarking = async (marking) => {
   const { definition_type, definition, x_opencti_order, x_opencti_color } = marking;
   // Create the markingDefinition
-  return await addMarkingDefinition(testContext, SYSTEM_USER, {
+  return await addAllowedMarkingDefinition(testContext, SYSTEM_USER, {
     definition_type,
     definition,
     x_opencti_color,

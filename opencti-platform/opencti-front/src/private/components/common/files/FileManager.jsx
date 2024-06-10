@@ -448,6 +448,7 @@ const FileManager = ({
                             onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
+                            limitToMaxSharing
                           />
                           <ObjectMarkingField
                             name="fileMarkings"

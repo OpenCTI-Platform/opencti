@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import * as settingsModule from '../../../src/domain/settings';
 import { testContext } from '../../utils/testQuery';
 import { findWidgetsMaxMarkings } from '../../../src/modules/publicDashboard/publicDashboard-utils';
 import type { PublicDashboardCached } from '../../../src/modules/publicDashboard/publicDashboard-types';
@@ -52,14 +51,13 @@ const PUBLIC_DASHBOARD = {
 
 const AUTHOR_DASHBOARD = {
   name: 'Jean',
-  allowed_marking: [TLP_GREEN, TEST_GREEN]
+  allowed_marking: [TLP_GREEN, TEST_GREEN],
+  max_shareable_marking: [TLP_GREEN, TEST_GREEN],
 } as unknown as AuthUser;
 
 describe('publicDashboard-utils', () => {
   describe('findWidgetsMaxMarkings', () => {
     beforeAll(() => {
-      vi.spyOn(settingsModule, 'getDataSharingMaxMarkings')
-        .mockImplementation(async () => [TLP_GREEN, TEST_GREEN]);
       vi.spyOn(cacheModule, 'getEntitiesListFromCache')
         .mockImplementation(async () => [
           TLP_AMBER, TLP_GREEN, TLP_CLEAR,
