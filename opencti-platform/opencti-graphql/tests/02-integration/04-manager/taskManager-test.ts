@@ -1,13 +1,18 @@
-import { afterAll, describe, expect, it } from 'vitest';
-import { executeReplace } from '../../../src/manager/taskManager';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
+import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
+import { executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace } from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
-import { ADMIN_USER, TEST_ORGANIZATION } from '../../utils/testQuery';
-import { MARKING_TLP_CLEAR, MARKING_TLP_AMBER } from '../../../src/schema/identifier';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
 import { addReport, findById as findReportById } from '../../../src/domain/report';
 import { findById as findMarkingById } from '../../../src/domain/markingDefinition';
 import { addOrganization, findById as findOrganizationById } from '../../../src/modules/organization/organization-domain';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type OrganizationAddInput } from '../../../src/generated/graphql';
+import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
+import { promoteObservableInput, promoteIndicatorInput, promoteReportInput } from './taskManager-promote-values/promoteValues';
 
 describe('TaskManager executeReplace tests ', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
@@ -272,6 +277,89 @@ describe('TaskManager executeReplace tests ', () => {
       if (description) {
         expect(description).toEqual('description');
       }
+    });
+  });
+});
+
+describe('TaskManager executePromote tests', () => {
+  const prepareTestContext = async () => {
+    const createdIndicator = await addIndicator(testContext, ADMIN_USER, promoteIndicatorInput);
+    const createObservable = await addStixCyberObservable(testContext, ADMIN_USER, promoteObservableInput);
+    const createdReport = await addReport(testContext, ADMIN_USER, { ...promoteReportInput, objects: [createObservable.id, createdIndicator.id] });
+    return { createdIndicator, createObservable, createdReport };
+  };
+
+  const resetTestContext = async (stixCyberObservableIds: string[], stixDomainObjectIds: string[]) => {
+    for (let i = 0; i < stixCyberObservableIds.length; i += 1) {
+      await stixCyberObservableDelete(testContext, ADMIN_USER, stixCyberObservableIds[i]);
+    }
+    for (let i = 0; i < stixDomainObjectIds.length; i += 1) {
+      await stixDomainObjectDelete(testContext, ADMIN_USER, stixDomainObjectIds[i]);
+    }
+  };
+
+  describe('PROMOTE IN CONTAINER', () => {
+    let reportObjectCount = 0;
+    let indicatorId = '';
+    let observableId = '';
+    let containerId = '';
+
+    beforeAll(async () => {
+      const { createdIndicator, createObservable, createdReport } = await prepareTestContext();
+
+      indicatorId = createdIndicator.id;
+      observableId = createObservable.id;
+      containerId = createdReport.id;
+
+      reportObjectCount = createdReport[RELATION_OBJECT].length;
+    });
+
+    afterAll(async () => {
+      await resetTestContext([observableId], [indicatorId, containerId]);
+    });
+
+    it('PROMOTE indicator to observable', async () => {
+      await executePromoteIndicatorToObservables(testContext, ADMIN_USER, { internal_id: indicatorId }, containerId);
+      const report = await findReportById(testContext, ADMIN_USER, containerId) as BasicStoreEntity;
+      expect(report[RELATION_OBJECT].length).greaterThan(reportObjectCount);
+    });
+
+    it('PROMOTE observable to indicator', async () => {
+      await executePromoteObservableToIndicator(testContext, ADMIN_USER, { internal_id: observableId }, containerId);
+      const report = await findReportById(testContext, ADMIN_USER, containerId) as BasicStoreEntity;
+      expect(report[RELATION_OBJECT].length).greaterThan(reportObjectCount);
+    });
+  });
+
+  describe('PROMOTE', () => {
+    let indicatorId = '';
+    let observableId = '';
+    let containerId = '';
+    let createdIndicatorId = '';
+    let createdObservableId: string[] = [];
+
+    beforeAll(async () => {
+      const { createdIndicator, createObservable, createdReport } = await prepareTestContext();
+
+      indicatorId = createdIndicator.id;
+      observableId = createObservable.id;
+      containerId = createdReport.id;
+    });
+
+    afterAll(async () => {
+      await resetTestContext([observableId, ...createdObservableId], [indicatorId, createdIndicatorId, containerId]);
+    });
+
+    it('PROMOTE observable to indicator', async () => {
+      const createdIndicator = await promoteObservableToIndicator(testContext, ADMIN_USER, observableId);
+      expect(createdIndicator).not.toBeUndefined();
+      createdIndicatorId = createdIndicator.id;
+    });
+
+    it('PROMOTE indicator to observable', async () => {
+      const createdObservables = await promoteIndicatorToObservables(testContext, ADMIN_USER, indicatorId);
+      expect(createdObservables.length).greaterThan(0);
+      createdObservableId = createdObservables.map(({ id }) => id);
     });
   });
 });

@@ -293,6 +293,7 @@ class ToolBar extends Component {
       enrichConnectors: [],
       enrichSelected: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
+      promoteToContainer: true,
     };
   }
 
@@ -606,7 +607,7 @@ class ToolBar extends Component {
 
   submitTask(availableFilterKeys) {
     this.setState({ processing: true });
-    const { actions, mergingElement, scope } = this.state;
+    const { actions, mergingElement, scope, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -615,12 +616,14 @@ class ToolBar extends Component {
       deSelectedElements,
       numberOfSelectedElements,
       handleClearSelectedElements,
+      container,
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
+
     const finalActions = R.map(
       (n) => ({
         type: n.type,
@@ -630,9 +633,11 @@ class ToolBar extends Component {
             values: R.map((o) => o.id || o.value || o, n.context.values),
           }
           : null,
+        containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
       }),
       actions,
     );
+
     if (selectAll) {
       commitMutation({
         mutation: toolBarQueryTaskAddMutation,
@@ -1217,6 +1222,10 @@ class ToolBar extends Component {
     return true;
   }
 
+  togglePromoteToContainer() {
+    this.setState((prevState) => ({ promoteToContainer: !prevState.promoteToContainer }));
+  }
+
   render() {
     const {
       t,
@@ -1240,7 +1249,7 @@ class ToolBar extends Component {
       warning,
       warningMessage,
     } = this.props;
-    const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
+    const { actions, keptEntityId, mergingElement, actionsInputs, navOpen, promoteToContainer } = this.state;
     const isOpen = numberOfSelectedElements > 0;
     const selectedTypes = R.uniq(
       R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1360,6 +1369,7 @@ class ToolBar extends Component {
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
           const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
+          const isContainer = !!container?.id;
           // endregion
           return (
             <Drawer
@@ -2121,6 +2131,9 @@ class ToolBar extends Component {
                 onClose={this.handleClosePromote.bind(this)}
                 isOnlyStixCyberObservablesTypes={isOnlyStixCyberObservablesTypes}
                 onSubmit={this.handleLaunchPromote.bind(this)}
+                isContainer={isContainer}
+                promoteToContainer={promoteToContainer}
+                togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
               />
               <Drawer
                 open={this.state.displayRescan}
