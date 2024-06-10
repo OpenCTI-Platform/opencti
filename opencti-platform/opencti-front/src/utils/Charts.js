@@ -396,6 +396,9 @@ export const horizontalBarsChartOptions = (
       xAxisLabelClick: (event, chartContext, config) => {
         if (redirectionUtils) {
           const { labelIndex } = config;
+          if (redirectionUtils[labelIndex].name === 'Restricted') {
+            return;
+          }
           const entityType = redirectionUtils[labelIndex].entity_type;
           const link = resolveLink(entityType);
           if (link) {
@@ -450,6 +453,9 @@ export const horizontalBarsChartOptions = (
                 }
               }
             } else {
+              if (redirectionUtils[dataPointIndex].name === 'Restricted') {
+                return;
+              }
               const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
               if (link) {
                 const entityId = redirectionUtils[dataPointIndex].id;
