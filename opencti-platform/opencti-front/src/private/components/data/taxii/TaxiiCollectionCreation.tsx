@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { availableFilterKeysForEntityType, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
@@ -119,7 +119,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       setSubmitting,
     });
   };
-  const availableFilterKeys = availableFilterKeysForEntityType(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   return (
     <Drawer
       title={t_i18n('Create a TAXII collection')}

@@ -35,7 +35,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { availableFilterKeysForEntityType, cleanFilters, emptyFilterGroup, serializeFilterGroupForBackend, useFetchFilterKeysSchema } from '../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, cleanFilters, emptyFilterGroup, serializeFilterGroupForBackend, useFetchFilterKeysSchema } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -154,7 +154,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const completeFilterKeysMap: Map<string, Map<string, FilterDefinition>> = useFetchFilterKeysSchema();
-  const availableFilterKeys = availableFilterKeysForEntityType(selectedTypes).filter((k) => k !== 'entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
 
   // TODO: typing this state properly implies deep refactoring
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

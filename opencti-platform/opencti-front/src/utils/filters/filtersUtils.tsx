@@ -678,13 +678,13 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
-export const availableFilterKeysForEntityType = (entityTypes: string[]) => {
+export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
 };
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
-  const availableFilterKeys = availableFilterKeysForEntityType(entityTypes).concat('entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat('entity_type');
   if (!filters) {
     return undefined;
   }

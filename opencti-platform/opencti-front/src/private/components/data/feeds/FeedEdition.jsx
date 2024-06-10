@@ -30,7 +30,7 @@ import { stixCyberObservablesLinesAttributesQuery } from '../../observations/sti
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import {
-  availableFilterKeysForEntityType,
+  useAvailableFilterKeysForEntityTypes,
   cleanFilters,
   deserializeFilterGroupForFrontend,
   serializeFilterGroupForBackend,
@@ -157,7 +157,7 @@ const FeedEditionContainer = (props) => {
   });
 
   const completeFilterKeysMap = useFetchFilterKeysSchema();
-  const availableFilterKeys = availableFilterKeysForEntityType(selectedTypes).filter((k) => k !== 'entity_type');
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(selectedTypes).filter((k) => k !== 'entity_type');
 
   const handleSelectTypes = (types) => {
     setSelectedTypes(types);

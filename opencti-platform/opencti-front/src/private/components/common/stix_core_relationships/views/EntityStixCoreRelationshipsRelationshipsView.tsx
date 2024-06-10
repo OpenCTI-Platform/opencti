@@ -13,7 +13,7 @@ import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
@@ -62,14 +62,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     view,
   } = viewStorage;
 
-  const availableFilterKeys = [
-    'objectMarking',
-    'confidence',
-    'objectLabel',
-    'createdBy',
-    'creator_id',
-    'created',
-  ];
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['stix-core-relationship']);
 
   const { platformModuleHelpers } = useAuth();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
