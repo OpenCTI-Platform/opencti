@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { addMarkingDefinition } from '../../../src/domain/markingDefinition';
+import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { collectionQuery, taxiiCollectionEditField } from '../../../src/domain/taxii';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../../../src/schema/internalObject';
@@ -65,7 +65,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
       x_opencti_color: '#ffffff',
       x_opencti_order: 1,
     };
-    const marking1 = await addMarkingDefinition(testContext, ADMIN_USER, marking1Input);
+    const marking1 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking1Input);
     marking1StixId = marking1.standard_id;
     marking1Id = marking1.id;
     // Create the taxii collection

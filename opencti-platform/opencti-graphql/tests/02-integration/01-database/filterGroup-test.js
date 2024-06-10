@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { addMarkingDefinition } from '../../../src/domain/markingDefinition';
+import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
@@ -133,10 +133,10 @@ describe('Complex filters combinations for elastic queries', () => {
       definition: 'TEST:2',
       x_opencti_order: 2,
     };
-    const marking1 = await addMarkingDefinition(testContext, ADMIN_USER, marking1Input);
+    const marking1 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking1Input);
     marking1StixId = marking1.standard_id;
     marking1Id = marking1.id;
-    const marking2 = await addMarkingDefinition(testContext, ADMIN_USER, marking2Input);
+    const marking2 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking2Input);
     marking2StixId = marking2.standard_id;
     marking2Id = marking2.id;
     // Create the reports

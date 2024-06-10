@@ -6,7 +6,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
-import { RELATION_ACCESSES_TO, RELATION_CAN_SHARE } from '../schema/internalRelationship';
+import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { groupAddRelation } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
@@ -18,7 +18,8 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
-export const addMarkingDefinition = async (context, user, markingDefinition) => {
+// add the given marking definitions in the allowed markings of the user groups
+export const addAllowedMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
   const result = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
@@ -36,14 +37,6 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
         groups.map((group) => {
           return groupAddRelation(context, SYSTEM_USER, group.id, {
             relationship_type: RELATION_ACCESSES_TO,
-            toId: element.id,
-          });
-        })
-      );
-      await Promise.all(
-        groups.map((group) => {
-          return groupAddRelation(context, SYSTEM_USER, group.id, {
-            relationship_type: RELATION_CAN_SHARE,
             toId: element.id,
           });
         })
