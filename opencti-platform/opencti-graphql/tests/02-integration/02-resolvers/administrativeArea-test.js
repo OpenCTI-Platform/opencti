@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, participantQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query administrativeAreas(
@@ -68,13 +69,10 @@ describe('AdministrativeArea resolver standard behavior', () => {
         description: 'Administrative-Area description',
       },
     };
-    const queryResult = await participantQuery({
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
       query: CREATE_QUERY,
       variables: ADMINISTRATIVEAREA_TO_CREATE,
     });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).extensions?.code).toEqual('FORBIDDEN_ACCESS');
   });
   it('Editor should fail administrativeArea creation', async () => {
     const CREATE_QUERY = gql`
@@ -101,7 +99,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).extensions?.code).toEqual('MISSING_REFERENCE_ERROR');
+    expect(queryResult.errors.at(0).extensions.code).toEqual('MISSING_REFERENCE_ERROR');
   });
   it('should administrativeArea created', async () => {
     const CREATE_QUERY = gql`

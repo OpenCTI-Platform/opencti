@@ -102,7 +102,7 @@ describe('EntitySetting resolver standard behavior', () => {
       variables: { ids: [entitySettingIdNote], input: { key: 'enforce_reference', value: ['true'] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
-    expect(queryResult.errors[0].extensions.message).toEqual('This setting is not available for this entity');
+    expect(queryResult.errors[0].message).toEqual('This setting is not available for this entity');
   });
   it('should update entity settings by ids - valid mandatory attributes', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'attribute_abstract', mandatory: true }]);

@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, participantQuery, queryAsAdmin, USER_PARTICIPATE } from '../../utils/testQuery';
-import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
+import { ADMIN_USER, queryAsAdmin, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -190,8 +190,9 @@ describe('CSV ingestion resolver standard behavior', () => {
         user_id: USER_PARTICIPATE.id
       }
     };
-    const participantCreateResult = await participantQuery({
-      query: gql`
+    await queryAsUserIsExpectedForbidden(
+      USER_PARTICIPATE.client,
+      { query: gql`
         mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
           ingestionCsvAdd(input: $input) {
             id
@@ -201,14 +202,16 @@ describe('CSV ingestion resolver standard behavior', () => {
         },
       `,
       variables: CSV_FEED_INGESTER_TO_CREATE
-    });
-    expect(participantCreateResult.errors.length, 'CSVMAPPERS should be required to create csv mapper.').toBe(1);
-    expect(participantCreateResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
+      },
+      'CSVMAPPERS should be required to create csv mapper.'
+    );
   });
 
   it('should participant forbidden to list csv mapper', async () => {
-    const participantListResult = await participantQuery({
-      query: gql`
+    await queryAsUserIsExpectedForbidden(
+      USER_PARTICIPATE.client,
+      {
+        query: gql`
         query listCsvMappers(
           $first: Int
           $after: ID
@@ -231,8 +234,8 @@ describe('CSV ingestion resolver standard behavior', () => {
           }
         }
       `
-    });
-    expect(participantListResult.errors.length, 'CSVMAPPERS should be required to list csv mapper.').toBe(1);
-    expect(participantListResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
+      },
+      'CSVMAPPERS should be required to list csv mapper.'
+    );
   });
 });
