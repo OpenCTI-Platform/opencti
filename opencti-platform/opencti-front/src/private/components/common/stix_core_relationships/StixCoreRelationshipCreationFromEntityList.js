@@ -173,19 +173,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
           ...VulnerabilitySoftwares_vulnerability
         }
         ... on StixCyberObservable {
-          id
-          indicators(first: 200) {
-            edges {
-              node {
-                id
-                entity_type
-                name
-                created_at
-                updated_at
-                pattern_type
-              }
-            }
-          }
+          ...StixCyberObservableIndicators_stixCyberObservable
         }
       }
     }
