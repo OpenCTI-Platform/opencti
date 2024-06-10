@@ -66,7 +66,7 @@ const Taxii = () => {
       description: {
         label: 'Description',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
       id: {
         label: 'Collection',
