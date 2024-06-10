@@ -95,7 +95,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     await setFieldValue('markings', markings);
   };
   const onCsvMapperSelection = (
-    _: string,
     option: Option & {
       representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
     },
@@ -240,7 +239,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
                       <CsvMapperField
                         name="csv_mapper_id"
-                        onChange={(_, option) => onCsvMapperSelection(_, option, { setFieldValue, values })}
+                        onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
                         isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
                         queryRef={queryRef}
                       />

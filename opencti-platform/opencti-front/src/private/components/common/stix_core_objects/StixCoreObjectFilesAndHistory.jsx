@@ -243,7 +243,7 @@ const StixCoreObjectFilesAndHistory = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_, option) => {
+  const onCsvMapperSelection = (option) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
     const parsedRepresentations = JSON.parse(parsedOption.representations);
     const selectedCsvMapper = {
@@ -339,7 +339,7 @@ const StixCoreObjectFilesAndHistory = ({
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(_, value)}
+                      onChange={(_, value) => onCsvMapperSelection(value)}
                     >
                     {selectedConnector.configurations.map((config) => {
                       return (

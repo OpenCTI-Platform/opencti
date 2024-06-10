@@ -159,7 +159,7 @@ ExternalReferenceFileImportViewerBaseProps
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_: string, option: string | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => {
+  const onCsvMapperSelection = (option: string | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
     const parsedRepresentations = JSON.parse(parsedOption.representations);
     const selectedCsvMapper = {
@@ -283,7 +283,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_: string, value: Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => onCsvMapperSelection(_, value)}
+                        onChange={(value: Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => onCsvMapperSelection(value)}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (

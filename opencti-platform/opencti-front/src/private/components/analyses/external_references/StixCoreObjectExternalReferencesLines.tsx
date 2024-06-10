@@ -237,7 +237,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (_: string, option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => {
+  const onCsvMapperSelection = (option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
@@ -558,7 +558,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={onCsvMapperSelection}
+                      onChange={(_: string, option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => onCsvMapperSelection(option)}
                     >
                     {(selectedConnector?.configurations ?? []).map((config) => {
                       return (
