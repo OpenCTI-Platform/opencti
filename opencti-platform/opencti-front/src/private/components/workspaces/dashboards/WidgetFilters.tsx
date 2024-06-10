@@ -1,9 +1,8 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
 import { Box } from '@mui/material';
-import { uniq } from 'ramda';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { isFilterGroupNotEmpty, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import { availableFilterKeysForEntityType, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -54,15 +53,13 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     ];
     searchContext = { entityTypes: ['Stix-Core-Object'] };
   }
-  const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
-  let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
+  let availableFilterKeys = availableFilterKeysForEntityType(searchContext.entityTypes);
   if (perspective !== 'relationships') {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
   } else {
     availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter
   }
-  const entitiesFilterKeysMap = useBuildFilterKeysMapFromEntityType(['Stix-Core-Object']);
-  const entitiesFilters = uniq(Array.from(entitiesFilterKeysMap.keys() ?? []));
+  const entitiesFilters = availableFilterKeysForEntityType(['Stix-Core-Object']);
 
   return <><Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
     <Box sx={{ display: 'flex', gap: 1 }}>

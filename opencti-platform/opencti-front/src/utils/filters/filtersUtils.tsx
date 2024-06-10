@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { uniq } from 'ramda';
 import React from 'react';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
@@ -679,9 +678,13 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
   return filterKeysMap;
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const availableFilterKeysForEntityType = (entityTypes: string[]) => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  const availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []).concat('entity_type'));
+  return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
+};
+
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+  const availableFilterKeys = availableFilterKeysForEntityType(entityTypes).concat('entity_type');
   if (!filters) {
     return undefined;
   }
