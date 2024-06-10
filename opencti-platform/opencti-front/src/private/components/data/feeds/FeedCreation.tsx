@@ -35,7 +35,13 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { useAvailableFilterKeysForEntityTypes, cleanFilters, emptyFilterGroup, serializeFilterGroupForBackend, useFetchFilterKeysSchema } from '../../../../utils/filters/filtersUtils';
+import {
+  useAvailableFilterKeysForEntityTypes,
+  cleanFilters,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+  useFetchFilterKeysSchema,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
