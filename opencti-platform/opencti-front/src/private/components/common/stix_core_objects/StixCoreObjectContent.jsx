@@ -438,7 +438,10 @@ class StixCoreObjectContentComponent extends Component {
     const htmlData = currentContent
       .replaceAll('id="undefined" ', '')
       .replaceAll(regex, '');
-    const ret = htmlToPdfmake(htmlData, { imagesByReference: true });
+    const ret = htmlToPdfmake(htmlData, {
+      imagesByReference: true,
+      ignoreStyles: ['font-family'],
+    });
     Promise.all(
       R.pipe(
         R.toPairs,
