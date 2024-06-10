@@ -126,9 +126,9 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(ingestionCsvData.csvMapper.representations.some(
     (representation) => representation.attributes.some(
-      (attribute) => attribute.key === 'objectMarking' && attribute?.default_values?.some(
+      (attribute) => attribute.key === 'objectMarking' && (attribute.default_values && attribute.default_values?.some(
         ({ name }) => name === 'user-choice',
-      ),
+      )),
     ),
   ));
 
