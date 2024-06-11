@@ -90,11 +90,15 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
-  const updateObjectMarkingField = async (setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>, values: IngestionCsvCreationForm) => {
-    const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
+  const updateObjectMarkingField = async (
+    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>,
+    values: IngestionCsvCreationForm,
+    newHasUserChoiceCsvMapper: boolean,
+  ) => {
+    const markings = newHasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
   };
-  const onCsvMapperSelection = (
+  const onCsvMapperSelection = async (
     option: Option & {
       representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
     },
@@ -108,7 +112,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   ) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
-    updateObjectMarkingField(setFieldValue, values).then();
+    await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
   };
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),

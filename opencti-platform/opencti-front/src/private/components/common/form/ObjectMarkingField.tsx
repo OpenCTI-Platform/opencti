@@ -56,7 +56,7 @@ interface ObjectMarkingFieldProps {
     values: Option[],
     operation?: string | undefined,
   ) => void;
-  isOptionEqualToValue?: (option: Option, value: string) => boolean;
+  isOptionEqualToValue?: (option: Option, value: Option) => boolean;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;

@@ -11,7 +11,7 @@ import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
-import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
+import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import makeStyles from '@mui/styles/makeStyles';
@@ -103,10 +103,8 @@ interface IngestionCsvEditionForm {
   markings: Option[],
 }
 
-const resolveHasUserChoiceCsvMapper = (option: Option & {
-  representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
-}) => {
-  return option.representations.some(
+const resolveHasUserChoiceCsvMapper = (option: CsvMapperFieldOption) => {
+  return option?.representations?.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
         ({ name }) => name === 'user-choice',
@@ -178,22 +176,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (
     name: string,
-    value: Option |
-    Option[] |
-    Option & {
-      representations: {
-        attributes: {
-          key: string, default_values: { name: string }[]
-        }[]
-      }[]
-    } | string | string[] | number | number[] | null,
+    value: Option | Option[] | CsvMapperFieldOption | string | string[] | number | number[] | null,
   ) => {
     let finalValue = value as string;
     if (name === 'csv_mapper_id' || name === 'user_id') {
       finalValue = (value as Option).value;
     }
     if (name === 'csv_mapper_id') {
-      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] });
+      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as CsvMapperFieldOption);
       setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
     }
     ingestionCsvValidator
@@ -230,9 +220,20 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
 
   const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
-  const updateObjectMarkingField = async (setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>, values: IngestionCsvEditionForm) => {
-    const markings = hasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
+  const updateCsvMapper = async (
+    setFieldValue: (field: string, option: Option, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
+    option: CsvMapperFieldOption,
+  ) => {
+    await setFieldValue('csv_mapper_id', option);
+  };
+  const updateObjectMarkingField = async (
+    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
+    values: IngestionCsvEditionForm,
+    newHasUserChoiceCsvMapper: boolean,
+  ) => {
+    const markings = newHasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
+    handleSubmitField('markings', markings.map(({ value }: Option) => value));
   };
   return (
     <Formik<IngestionCsvEditionForm>
@@ -293,10 +294,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                 <CsvMapperField
                   name="csv_mapper_id"
-                  isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
-                  onChange={(_, option) => {
-                    updateObjectMarkingField(setFieldValue, values).then();
-                    handleSubmitField(_, option);
+                  isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value }
+                  onChange={async (_, option) => {
+                    handleSubmitField('csv_mapper_id', option);
+                    await updateCsvMapper(setFieldValue, option);
+                    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option as CsvMapperFieldOption);
+                    await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
                   }}
                   queryRef={queryRef}
                 />
@@ -305,14 +308,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           }
           <ObjectMarkingField
             name="markings"
-            isOptionEqualToValue={(option: Option, value: string) => option.value === value }
+            isOptionEqualToValue={(option: Option, value : Option) => option.value === value.value}
             label={t_i18n('Marking definition levels')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             disabled={!hasUserChoiceCsvMapper}
             onChange={(name, value) => {
               if (value.length) {
-                handleSubmitField(name, value.map((csvMapper) => csvMapper.value));
+                handleSubmitField(name, value.map((marking) => marking.value));
               }
             }}
           />

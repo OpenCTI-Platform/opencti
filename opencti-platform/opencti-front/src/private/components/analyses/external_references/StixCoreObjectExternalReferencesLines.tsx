@@ -28,7 +28,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { Option } from '@components/common/form/ReferenceField';
+import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
@@ -237,7 +237,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => {
+  const onCsvMapperSelection = (option: CsvMapperFieldOption) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
@@ -558,7 +558,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       label={t_i18n('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_: string, option: Option & { representations: { attributes: { key: string, default_values: string[] }[] }[] }) => onCsvMapperSelection(option)}
+                      onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
                     >
                     {(selectedConnector?.configurations ?? []).map((config) => {
                       return (

@@ -20,6 +20,7 @@ import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import { Option } from '@components/common/form/ReferenceField';
+import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
@@ -159,7 +160,7 @@ ExternalReferenceFileImportViewerBaseProps
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (option: string | Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => {
+  const onCsvMapperSelection = (option: string | CsvMapperFieldOption) => {
     const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
     const parsedRepresentations = JSON.parse(parsedOption.representations);
     const selectedCsvMapper = {
@@ -283,7 +284,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(value: Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] }) => onCsvMapperSelection(value)}
+                        onChange={(value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (
