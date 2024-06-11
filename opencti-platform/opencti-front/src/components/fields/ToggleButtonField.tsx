@@ -1,6 +1,8 @@
 import { FieldProps } from 'formik';
 import React, { ReactNode } from 'react';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FormLabel, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import { useFormatter } from '../i18n';
 
 interface ToggleButtonFieldProps extends FieldProps<boolean> {
   items: Item[]
@@ -16,20 +18,23 @@ const ToggleButtonField = ({
   field,
   items,
 }: ToggleButtonFieldProps) => {
+  const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { value, name } = field;
   return (
-    <ToggleButtonGroup value={value} exclusive size="small">
-      {items.map((item, index) => (
-        <ToggleButton
-          value={item.value}
-          key={index}
-          onClick={() => setFieldValue(name, (item.value === value) ? null : item.value)}
-        >
-          {item.content}
-        </ToggleButton>))}
-    </ToggleButtonGroup>
-
+    <FormControl>
+      <FormLabel>{t_i18n('Default Value')}</FormLabel>
+      <ToggleButtonGroup value={value} exclusive size="small" sx={{ paddingTop: 1 }}>
+        {items.map((item, index) => (
+          <ToggleButton
+            value={item.value}
+            key={index}
+            onClick={() => setFieldValue(name, (item.value === value) ? null : item.value)}
+          >
+            {item.content}
+          </ToggleButton>))}
+      </ToggleButtonGroup>
+    </FormControl>
   );
 };
 

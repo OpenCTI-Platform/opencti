@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -12,21 +12,22 @@ import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationDialogOptionProps {
   children: ReactNode
-  value?: CsvMapperRepresentationAttributeFormData
+  configuration?: CsvMapperRepresentationAttributeFormData
 }
 
-const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children, value }) => {
+const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
   const [open, setOpen] = React.useState(false);
   const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
-  const [invisible, setInvisible] = useState(true);
-
-  useEffect(() => {
-    const hasDefaultValues = value?.default_values !== null && value?.default_values !== undefined && JSON.stringify(value.default_values) !== '[]';
-    setInvisible(!hasDefaultValues);
-  }, [value]);
+  const visible = useMemo(() => {
+    const hasDefaultValues = configuration?.default_values !== null && configuration?.default_values !== undefined && JSON.stringify(configuration.default_values) !== '[]';
+    const hasDatePattern = !!configuration?.pattern_date;
+    const hasSeparator = !!configuration?.separator;
+    console.log('configuration', configuration);
+    return hasDefaultValues || hasDatePattern || hasSeparator;
+  }, [configuration]);
 
   const handleClose = () => {
     setOpen(false);
@@ -39,7 +40,7 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         onClick={handleClickOpen}
         size="large"
       >
-        <Badge color="secondary" variant="dot" invisible={invisible}>
+        <Badge color="secondary" variant="dot" invisible={!visible}>
           <CogOutline/>
         </Badge>
       </IconButton>
