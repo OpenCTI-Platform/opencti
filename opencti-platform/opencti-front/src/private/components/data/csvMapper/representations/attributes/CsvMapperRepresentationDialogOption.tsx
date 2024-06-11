@@ -22,10 +22,9 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
     setOpen(true);
   };
   const visible = useMemo(() => {
-    const hasDefaultValues = configuration?.default_values !== null && configuration?.default_values !== undefined && JSON.stringify(configuration.default_values) !== '[]';
+    const hasDefaultValues = (!!configuration?.default_values || configuration?.default_values === false) && JSON.stringify(configuration.default_values) !== '[]';
     const hasDatePattern = !!configuration?.pattern_date;
     const hasSeparator = !!configuration?.separator;
-    console.log('configuration', configuration);
     return hasDefaultValues || hasDatePattern || hasSeparator;
   }, [configuration]);
 

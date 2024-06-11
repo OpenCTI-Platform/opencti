@@ -23,7 +23,7 @@ const ToggleButtonField = ({
   const { value, name } = field;
   return (
     <FormControl>
-      <FormLabel>{t_i18n('Default Value')}</FormLabel>
+      <FormLabel>{t_i18n('Default value')}</FormLabel>
       <ToggleButtonGroup value={value} exclusive size="small" sx={{ paddingTop: 1 }}>
         {items.map((item, index) => (
           <ToggleButton
