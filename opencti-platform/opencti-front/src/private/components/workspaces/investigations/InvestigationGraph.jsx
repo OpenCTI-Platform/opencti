@@ -344,14 +344,10 @@ const investigationGraphCountRelToQuery = graphql`
 
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
-    $fromOrToId: String!
-    $relationship_type: [String]
-    $elementWithTargetTypes: [String]
+    $filters: FilterGroup
   ) {
     stixRelationships(
-      fromOrToId: $fromOrToId
-      relationship_type: $relationship_type
-      elementWithTargetTypes: $elementWithTargetTypes
+      filters: $filters
     ) {
       edges {
         node {
@@ -1823,9 +1819,30 @@ class InvestigationGraphComponent extends Component {
       const newElements = await fetchQuery(
         investigationGraphStixRelationshipsQuery,
         {
-          fromOrToId: n,
-          relationship_type: filters.relationship_types.map((o) => o.value),
-          elementWithTargetTypes: filters.entity_types.map((o) => o.value),
+          filters: {
+            mode: 'or',
+            filterGroups: [
+              {
+                mode: 'and',
+                filterGroups: [],
+                filters: [
+                  { key: 'fromId', values: [n] },
+                  { key: 'toTypes', values: filters.entity_types.map((o) => o.value) },
+                  { key: 'relationship_type', values: filters.relationship_types.map((o) => o.value) },
+                ],
+              },
+              {
+                mode: 'and',
+                filterGroups: [],
+                filters: [
+                  { key: 'toId', values: [n] },
+                  { key: 'fromTypes', values: filters.entity_types.map((o) => o.value) },
+                  { key: 'relationship_type', values: filters.relationship_types.map((o) => o.value) },
+                ],
+              },
+            ],
+            filters: [],
+          },
         },
       )
         .toPromise()
