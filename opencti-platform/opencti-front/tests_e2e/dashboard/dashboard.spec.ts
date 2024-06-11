@@ -99,11 +99,12 @@ test('Dashboard CRUD', async ({ page }) => {
   await expect(dashboardForm.getUpdateTitle()).toBeVisible();
   await dashboardForm.nameField.fill(updateDashboardName);
   await dashboardForm.descriptionField.fill('New description');
+  await dashboardForm.nameField.get().click(); // Need to click outside the description field to update.
   await dashboardForm.getCloseButton().click();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Update').click();
-  // expect(await dashboardForm.descriptionField.value()).toEqual('New description');
+  expect(await dashboardForm.descriptionField.value()).toEqual('New description');
   await dashboardForm.getCloseButton().click();
 
   // ---------
