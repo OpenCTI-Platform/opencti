@@ -38,6 +38,21 @@ const useStyles = makeStyles(() => ({
 const filesNativeFieldQuery = graphql`
   query FilesNativeFieldQuery($id: String!) {
     stixCoreObject(id: $id) {
+      externalReferences {
+        edges {
+          node {
+            id
+            importFiles {
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
       importFiles {
         edges {
           node {
@@ -69,20 +84,26 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
     fetchQuery(filesNativeFieldQuery, { id: stixCoreObjectId })
       .toPromise()
       .then((data) => {
-        const newFiles = (
+        const importFiles = (
           (data as FilesNativeFieldQuery$data)?.stixCoreObject?.importFiles?.edges ?? []
         ).map((n) => ({
           label: n?.node.name ?? '',
           value: n?.node.id ?? '',
         }));
-        const templateValues = [...files, ...newFiles];
+        const externalReferencesFiles = (
+          (data as FilesNativeFieldQuery$data)?.stixCoreObject?.externalReferences?.edges ?? []
+        ).flatMap(({ node }) => node?.importFiles?.edges ?? []).map((n) => ({
+          label: n?.node.name ?? '',
+          value: n?.node.id ?? '',
+        }));
+        const allFiles = [...importFiles, ...externalReferencesFiles];
         // Keep only the unique list of options
-        const uniqTemplates = templateValues.filter((item, index) => {
+        const uniqFiles = allFiles.filter((item, index) => {
           return (
-            templateValues.findIndex((e) => e.value === item.value) === index
+            allFiles.findIndex((e) => e.value === item.value) === index
           );
         });
-        setFiles(uniqTemplates);
+        setFiles(uniqFiles);
       });
   };
   return (
