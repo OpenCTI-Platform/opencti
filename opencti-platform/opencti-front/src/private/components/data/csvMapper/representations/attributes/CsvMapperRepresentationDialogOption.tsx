@@ -26,7 +26,6 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
   useEffect(() => {
     const hasDefaultValues = value?.default_values !== null && value?.default_values !== undefined && JSON.stringify(value.default_values) !== '[]';
     setInvisible(!hasDefaultValues);
-    console.log('Has a default value', hasDefaultValues);
   }, [value]);
 
   const handleClose = () => {

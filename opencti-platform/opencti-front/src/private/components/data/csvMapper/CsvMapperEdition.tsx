@@ -65,7 +65,6 @@ const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({
         representations: JSON.stringify(csvMapper.representations),
       },
     );
-
     if (input.length > 0) {
       commitUpdateMutation({
         variables: { id: csvMapper.id, input },

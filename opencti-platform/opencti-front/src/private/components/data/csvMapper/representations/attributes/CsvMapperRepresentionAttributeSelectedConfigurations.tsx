@@ -13,7 +13,6 @@ const containerStyle = { gridColumnStart: 2, gridColumnEnd: 4 };
 const CsvMapperRepresentationAttributeSelectedConfigurations:
 FunctionComponent<CsvMapperRepresentationAttributeSelectedConfigurationsProps> = ({ configuration }) => {
   const { t_i18n } = useFormatter();
-
   const hasDefaultValues = configuration?.default_values !== null && configuration?.default_values !== undefined && JSON.stringify(configuration.default_values) !== '[]';
   if (!configuration?.pattern_date && !configuration?.separator && !hasDefaultValues) {
     return null;
