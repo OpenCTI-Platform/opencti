@@ -3,17 +3,17 @@ import { SubdirectoryArrowRight } from 'mdi-material-ui';
 import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
 
-interface CsvMapperRepresentionAttributSelectedConfigurationsProps {
+interface CsvMapperRepresentationAttributeSelectedConfigurationsProps {
   configuration?: CsvMapperRepresentationAttributeFormData
 }
 
 const flexStyle = { display: 'flex', alignItems: 'end', gap: '4px' };
 const containerStyle = { gridColumnStart: 2, gridColumnEnd: 4 };
 
-const CsvMapperRepresentionAttributeSelectedConfigurations:
-FunctionComponent<CsvMapperRepresentionAttributSelectedConfigurationsProps> = ({ configuration }) => {
+const CsvMapperRepresentationAttributeSelectedConfigurations:
+FunctionComponent<CsvMapperRepresentationAttributeSelectedConfigurationsProps> = ({ configuration }) => {
   const { t_i18n } = useFormatter();
-  console.log('configuration.default_values', configuration?.default_values);
+
   const hasDefaultValues = configuration?.default_values !== null && configuration?.default_values !== undefined && JSON.stringify(configuration.default_values) !== '[]';
   if (!configuration?.pattern_date && !configuration?.separator && !hasDefaultValues) {
     return null;
@@ -35,14 +35,8 @@ FunctionComponent<CsvMapperRepresentionAttributSelectedConfigurationsProps> = ({
           <span>{configuration.separator}</span>
         </div>
       }
-      {
-        hasDefaultValues
-        && <div style={flexStyle}>
-          <SubdirectoryArrowRight/> {t_i18n('Has a default value')}
-        </div>
-      }
     </div>
   );
 };
 
-export default CsvMapperRepresentionAttributeSelectedConfigurations;
+export default CsvMapperRepresentationAttributeSelectedConfigurations;
