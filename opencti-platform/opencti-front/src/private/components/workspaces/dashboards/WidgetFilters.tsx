@@ -150,6 +150,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             helpers={helpers}
             searchContext={searchContext}
             availableEntityTypes={availableEntityTypes}
+            entityTypes={searchContext.entityTypes}
           />
         </>
       ) }
