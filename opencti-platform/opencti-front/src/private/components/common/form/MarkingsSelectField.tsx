@@ -11,7 +11,7 @@ export type EntityMarkingDefinition = {
   x_opencti_order: number
 };
 
-type MarkingsSelectFieldValue = string[];
+type MarkingsSelectFieldValue = EntityMarkingDefinition[];
 
 interface MarkingsSelectFieldInternalValue {
   [key: string]: string
@@ -19,10 +19,11 @@ interface MarkingsSelectFieldInternalValue {
 
 interface MarkingsSelectFieldProps extends FieldProps<MarkingsSelectFieldValue> {
   markingDefinitions: EntityMarkingDefinition[]
-  onChange?: (val: MarkingsSelectFieldValue) => void
+  onChange?: (type: string, val: string) => void
 }
 
-const NOT_SHAREABLE_ID = 'not_shareable';
+const ALL_ID = 'all';
+const NOT_SHAREABLE_ID = 'none';
 
 const MarkingsSelectField = ({
   form,
@@ -37,25 +38,24 @@ const MarkingsSelectField = ({
   const markingTypes = Array.from(new Set(
     markingDefinitions.map((m) => m.definition_type),
   ));
-
-  const initialValues = markingTypes.reduce((acc, type) => ({
-    ...acc,
-    [type]: value.find((defId) => {
-      const marking = markingDefinitions.find((def) => def.id === defId);
-      return marking?.definition_type === type;
-    }) ?? NOT_SHAREABLE_ID,
-  }), {});
+  const initialValues: Record<string, string> = {};
+  markingTypes.forEach((type) => {
+    if (!value.find((v) => v.definition_type === type)) {
+      initialValues[type] = ALL_ID;
+    } else if (value.find((v) => v.definition_type === type && v.id === 'none')) {
+      initialValues[type] = NOT_SHAREABLE_ID;
+    } else {
+      const val = value.find((v) => v.definition_type === type);
+      if (val) {
+        initialValues[type] = val.id;
+      }
+    }
+  });
 
   const changeMarking = (type: string, markingId: string) => {
-    const newValue = value.filter((defId) => {
-      const marking = markingDefinitions.find((def) => def.id === defId);
-      return marking?.definition_type !== type;
-    });
-    if (markingId !== NOT_SHAREABLE_ID) {
-      newValue.push(markingId);
-    }
+    const newValue = [...Object.entries(initialValues).filter(([definition_type]) => definition_type !== type).map(([_, v]) => v), { id: markingId, definition_type: type }];
     setFieldValue(name, newValue);
-    onChange?.(newValue);
+    onChange?.(type, markingId);
   };
 
   return (
@@ -76,6 +76,9 @@ const MarkingsSelectField = ({
             onChange={changeMarking}
             displ
           >
+            <MenuItem value={ALL_ID} key={ALL_ID}>
+              {t_i18n('All')}
+            </MenuItem>
             <MenuItem value={NOT_SHAREABLE_ID} key={NOT_SHAREABLE_ID}>
               {t_i18n('Not shareable')}
             </MenuItem>

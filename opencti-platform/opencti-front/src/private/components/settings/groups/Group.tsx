@@ -108,6 +108,7 @@ const groupFragment = graphql`
       x_opencti_color
       x_opencti_order
     }
+    not_shareable_marking
     max_shareable_marking {
       id
       definition
@@ -399,6 +400,22 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             }
                           </ListItem>
                         );
+                      } if (group.not_shareable_marking.includes(type)) {
+                        return (
+                          <ListItem
+                            key={type}
+                            dense={true}
+                            divider={true}
+                            button={false}
+                          >
+                            <Typography variant="h3" gutterBottom={true} width={100}>
+                              {truncate(type, 40)}
+                            </Typography>
+                            <ListItemText
+                              primary={t_i18n('Not shareable')}
+                            />
+                          </ListItem>
+                        );
                       }
                       return (
                         <ListItem
@@ -411,7 +428,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText
-                            primary={t_i18n('not shareable')}
+                            primary={t_i18n('All')}
                           />
                         </ListItem>
                       );

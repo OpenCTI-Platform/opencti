@@ -261,9 +261,9 @@ const GROUP_EDITION_MARKINGS_MUTATION = `
 const GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION = `
   mutation groupEdition($groupId: ID!, $toId: ID) {
     groupEdit(id: $groupId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "can-share"
+      fieldPatch(input: {
+        key: 'max_shareable_markings',
+        value: $toId
       }) {
         id
       }

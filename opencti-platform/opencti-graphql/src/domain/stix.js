@@ -30,7 +30,6 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
-import { getExportContentMarkings } from '../utils/getExportContentMarkings';
 import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -74,9 +73,8 @@ export const askListExport = async (context, user, exportContext, format, select
   };
 
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
 
-  const { markingFilter, mainFilter } = await getExportFilter({ markingList, contentMaxMarkings, objectIdsList: selectedIds });
+  const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: selectedIds });
 
   const baseEvent = {
     format, // extension mime type
@@ -86,7 +84,6 @@ export const askListExport = async (context, user, exportContext, format, select
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type, // Exported entity type
     // All the params needed to execute the export on python connector
-    content_markings,
     file_markings: fileMarkings,
     main_filter: mainFilter,
     access_filter: markingFilter
@@ -152,9 +149,8 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   };
 
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  const content_markings = await getExportContentMarkings(markingList, contentMaxMarkings);
 
-  const { markingFilter, mainFilter } = await getExportFilter({ markingList, contentMaxMarkings, objectIdsList: [entity.id] });
+  const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [entity.id] });
 
   const baseEvent = {
     format,
@@ -163,7 +159,6 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type
     export_type: type, // Simple or full
-    content_markings,
     file_markings: fileMarkings,
     main_filter: mainFilter,
     access_filter: markingFilter

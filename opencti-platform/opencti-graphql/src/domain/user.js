@@ -41,7 +41,6 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
-  RELATION_CAN_SHARE,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
@@ -321,27 +320,31 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
-  let userMarkingsPromise;
-  let maxShareableMarkingsPromise;
   let userMarkings;
-  let markings;
-  let defaultMarkings;
   let maxShareableMarkings;
+  const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
+
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
-    [markings, defaultMarkings] = await Promise.all(
-      [allMarkingsPromise, defaultGroupMarkingsPromise]
-    );
-    userMarkings = markings;
-    maxShareableMarkings = markings;
+    userMarkings = all;
+    maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
-    userMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-    maxShareableMarkingsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
-    [userMarkings, markings, defaultMarkings, maxShareableMarkings] = await Promise.all(
-      [userMarkingsPromise, allMarkingsPromise, defaultGroupMarkingsPromise, maxShareableMarkingsPromise]
+    userMarkings = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+
+    const notShareableMarkings = userGroups.flatMap(
+      ({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none')
+        .map(({ type }) => type)
     );
+
+    maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
+
+    const allShareableMarkings = all.filter(({ definition_type }) => (
+      !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }) => type === definition_type)
+    )).filter(({ id }) => userMarkings.some((m) => m.id === id)).map(({ id }) => id);
+    maxShareableMarkings = [...maxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
   }
-  const computedMarkings = computeAvailableMarkings(userMarkings, markings);
-  return { user: computedMarkings, all: markings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
+
+  const computedMarkings = computeAvailableMarkings(userMarkings, all);
+  return { user: computedMarkings, all, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
 export const getRoles = async (context, userGroups) => {

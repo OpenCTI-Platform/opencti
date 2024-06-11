@@ -11,7 +11,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_CAN_SHARE, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -47,8 +47,13 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const groupMaxShareableMarkings = async (context, user, groupId) => {
-  return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_CAN_SHARE, ENTITY_TYPE_MARKING_DEFINITION);
+export const groupNotShareableMarkings = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
+  .map(({ type }) => type) ?? [];
+
+export const groupMaxShareableMarkings = async (context, user, group) => {
+  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return group.max_shareable_markings?.filter(({ value }) => value !== 'none')
+    .map(({ value }) => markings.get(value)) ?? [];
 };
 
 export const defaultMarkingDefinitions = async (context, group) => {
@@ -134,7 +139,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   // on editing the group confidence level, all memebers might have changed their effective level
-  if (input.find((i) => i.key === 'group_confidence_level')) {
+  if (input.find((i) => ['group_confidence_level', 'max_shareable_markings'].includes(i.key))) {
     await groupSessionRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);

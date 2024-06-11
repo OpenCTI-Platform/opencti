@@ -80,6 +80,19 @@ const groupMutationPatchDefaultValues = graphql`
   }
 `;
 
+const groupMutationFieldPatch = graphql`
+  mutation GroupEditionMarkingsMarkingDefinitionsFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    groupEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...GroupEditionMarkings_group
+      }
+    }
+  }
+`;
+
 const GroupEditionMarkingsComponent = ({
   group,
 }: {
@@ -90,7 +103,7 @@ const GroupEditionMarkingsComponent = ({
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
   const groupMaxShareableMarkings = group.max_shareable_marking || [];
-  const maxShareableMarkingsIds = groupMaxShareableMarkings.map((v) => v.id);
+  const maxShareableMarkings = [...groupMaxShareableMarkings, ...group.not_shareable_marking.map((t) => ({ definition_type: t, id: 'none' }))];
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
     groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
@@ -100,6 +113,7 @@ const GroupEditionMarkingsComponent = ({
   const [commitAdd] = useApiMutation(groupMutationRelationAdd);
   const [commitDelete] = useApiMutation(groupMutationRelationDelete);
   const [commitDefaultValues] = useApiMutation(groupMutationPatchDefaultValues);
+  const [commitFieldPatch] = useApiMutation(groupMutationFieldPatch);
 
   const handleToggleAllowedMarkings = (
     markingDefinitionId: string,
@@ -159,30 +173,23 @@ const GroupEditionMarkingsComponent = ({
     });
   };
 
-  const handleToggleMaxShareableMarkings = (markingIds: string[]) => {
-    markingIds.forEach((markingId) => {
-      if (!maxShareableMarkingsIds.includes(markingId)) {
-        commitAdd({
-          variables: {
-            id: group.id,
-            input: {
-              toId: markingId,
-              relationship_type: 'can-share',
-            },
-          },
-        });
-      }
-    });
-    maxShareableMarkingsIds.forEach((shareableMarkingId) => {
-      if (!markingIds.includes(shareableMarkingId)) {
-        commitDelete({
-          variables: {
-            id: group.id,
-            toId: shareableMarkingId,
-            relationship_type: 'can-share',
-          },
-        });
-      }
+  const handleToggleMaxShareableMarkings = (type: string, markingId: string) => {
+    const currentMarkings = [
+      ...group.max_shareable_marking.map((m) => ({ type: m.definition_type, value: m.id })),
+      ...group.not_shareable_marking.map((t) => ({ type: t, value: 'none' })),
+    ];
+    const finalMarkings = [
+      ...currentMarkings.filter(({ type: t }) => t !== type),
+      ...(markingId !== 'all' ? [{ type, value: markingId }] : []),
+    ];
+    commitFieldPatch({
+      variables: {
+        id: group.id,
+        input: {
+          key: 'max_shareable_markings',
+          value: finalMarkings,
+        },
+      },
     });
   };
 
@@ -265,9 +272,10 @@ const GroupEditionMarkingsComponent = ({
                   enableReinitialize={true}
                   initialValues={{
                     defaultMarkings: resolvedGroupDefaultMarkingDefinitions,
-                    shareableMarkings: maxShareableMarkingsIds,
+                    shareableMarkings: maxShareableMarkings,
                   }}
-                  onSubmit={() => {}}
+                  onSubmit={() => {
+                  }}
                 >
                   {() => (
                     <Form>
@@ -335,7 +343,7 @@ const GroupEditionMarkingsComponent = ({
                         component={MarkingsSelectField}
                         markingDefinitions={proposedShareableMarkings}
                         name="shareableMarkings"
-                        onChange={(markingIds: string[]) => handleToggleMaxShareableMarkings(markingIds)}
+                        onChange={(type: string, markingId: string) => handleToggleMaxShareableMarkings(type, markingId)}
                       />
                     </Form>
                   )}
@@ -361,6 +369,7 @@ const GroupEditionMarkings = createFragmentContainer(
         allowed_marking {
           id
         }
+        not_shareable_marking
         max_shareable_marking {
           id
           definition

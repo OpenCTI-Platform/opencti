@@ -801,7 +801,6 @@ type FileMetadata {
   entity: StixObject
   labels_text: String
   labels: [String]
-  content_markings: [String]
   file_markings: [String]
   creator_id: String
   external_reference_id: String
@@ -1244,7 +1243,8 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  max_shareable_marking: [MarkingDefinition!]
+  not_shareable_marking: [String!]!
+  max_shareable_marking: [MarkingDefinition!]!
   default_hidden_types: [String!]
   group_confidence_level: ConfidenceLevel
   # Technical

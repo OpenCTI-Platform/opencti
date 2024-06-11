@@ -7431,7 +7431,6 @@ export type FileEdge = {
 
 export type FileMetadata = {
   __typename?: 'FileMetadata';
-  content_markings?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   creator?: Maybe<Creator>;
   creator_id?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -7546,9 +7545,10 @@ export type Group = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   group_confidence_level?: Maybe<ConfidenceLevel>;
   id: Scalars['ID']['output'];
-  max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
+  max_shareable_marking: Array<MarkingDefinition>;
   members?: Maybe<UserConnection>;
   name: Scalars['String']['output'];
+  not_shareable_marking: Array<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   roles?: Maybe<RoleConnection>;
   standard_id: Scalars['String']['output'];
@@ -32639,7 +32639,6 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
-  content_markings?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32708,9 +32707,10 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  max_shareable_marking?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  not_shareable_marking?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Maybe<ResolversTypes['RoleConnection']>, ParentType, ContextType, Partial<GroupRolesArgs>>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
