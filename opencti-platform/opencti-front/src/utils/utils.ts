@@ -44,42 +44,42 @@ export const getFileUri = (id: string) => {
 
 export const generateUniqueItemsArray = <T>(submittedArray: IterableIterator<T> | Array<T>) => Array.from(new Set(submittedArray));
 
-export const getCurrentTab = (locationPath: string, entity_id: string, entity_type_path: string) => {
-  if (locationPath.includes(`${entity_type_path}/${entity_id}/knowledge`)) return `${entity_type_path}/${entity_id}/knowledge`;
-  if (locationPath.includes(`${entity_type_path}/${entity_id}/content`)) return `${entity_type_path}/${entity_id}/content`;
+export const getCurrentTab = (locationPath: string, entityId: string, entityTypePath: string) => {
+  if (locationPath.includes(`${entityTypePath}/${entityId}/knowledge`)) return `${entityTypePath}/${entityId}/knowledge`;
+  if (locationPath.includes(`${entityTypePath}/${entityId}/content`)) return `${entityTypePath}/${entityId}/content`;
   return locationPath;
 };
 
-export const getPaddingRight = (locationPath: string, entity_id: string, entity_type_path: string) => {
+export const getPaddingRight = (locationPath: string, entityId: string, entityTypePath: string, isContainer = false) => {
   let paddingRight = 0;
-  if (entity_id) {
+  if (entityId) {
     if (
       locationPath.includes(
-        `${entity_type_path}/${entity_id}/entities`,
+        `${entityTypePath}/${entityId}/entities`,
       )
       || locationPath.includes(
-        `${entity_type_path}/${entity_id}/observables`,
+        `${entityTypePath}/${entityId}/observables`,
       )
     ) {
       paddingRight = 250;
     }
     if (
-      locationPath.includes(
-        `${entity_type_path}/${entity_id}/knowledge`,
+      !isContainer && locationPath.includes(
+        `${entityTypePath}/${entityId}/knowledge`,
       )
     ) {
       paddingRight = 200;
     }
     if (
       locationPath.includes(
-        `${entity_type_path}/${entity_id}/content`,
+        `${entityTypePath}/${entityId}/content`,
       )
     ) {
       paddingRight = 350;
     }
     if (
       locationPath.includes(
-        `${entity_type_path}/${entity_id}/content/mapping`,
+        `${entityTypePath}/${entityId}/content/mapping`,
       )
     ) {
       paddingRight = 0;

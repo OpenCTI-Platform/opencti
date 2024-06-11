@@ -92,7 +92,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
 
-  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfis');
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfis', true);
 
   return (
     <>

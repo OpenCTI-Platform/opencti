@@ -98,7 +98,7 @@ const RootReport = () => {
             if (props.report) {
               const { report } = props;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports');
+              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', true);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
