@@ -490,6 +490,7 @@ type TaxiiCollection {
   name: String
   description: String
   filters: String
+  include_inferences: Boolean
   taxii_public: Boolean
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
@@ -508,7 +509,7 @@ input TaxiiCollectionAddInput {
   filters: String
   taxii_public: Boolean
   authorized_members: [MemberAccessInput!]
-  withInferences: Boolean
+  include_inferences: Boolean
 }
 enum TaxiiCollectionOrdering {
   name

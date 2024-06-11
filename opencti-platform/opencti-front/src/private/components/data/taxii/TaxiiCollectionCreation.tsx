@@ -103,7 +103,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters, authorized_members, withInferences: areInferenceRulesResultAdded },
+        input: { ...values, filters: jsonFilters, authorized_members, include_inferences: areInferenceRulesResultAdded },
       },
       updater: (store: RecordSourceSelectorProxy) => {
         const payload = store.getRootField('taxiiCollectionAdd');

@@ -60,6 +60,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
+  include_inferences: Yup.bool().nullable(),
 });
 
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
@@ -70,6 +71,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     description: taxiiCollection.description ?? '',
     taxii_public: taxiiCollection.taxii_public,
     authorized_members: convertAuthorizedMembers(taxiiCollection),
+    include_inferences: taxiiCollection.include_inferences,
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: Option[] | string) => {
@@ -185,6 +187,12 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               />
             )}
           </Alert>
+          <FormControlLabel
+            control={<Switch defaultChecked={!!initialValues.include_inferences}/>}
+            style={{ marginLeft: 1, marginTop: '20px' }}
+            onChange={(_, checked) => handleSubmitField('include_inferences', checked.toString())}
+            label={t_i18n('Include inferences')}
+          />
           <Box sx={{ paddingTop: 4,
             display: 'flex',
             gap: 1 }}
@@ -218,6 +226,7 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         description
         filters
         taxii_public
+        include_inferences
         authorized_members {
           id
           name

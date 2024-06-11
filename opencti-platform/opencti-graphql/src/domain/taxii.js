@@ -128,7 +128,7 @@ export const collectionQuery = async (context, user, collection, args) => {
   options.first = maxSize;
   if (type) options.types = type.split(',');
   if (id) options.ids = id.split(',');
-  const currentIndex = collection.withInferences ? READ_STIX_DATA_WITH_INFERRED : READ_STIX_INDICES;
+  const currentIndex = collection.include_inferences ? READ_STIX_DATA_WITH_INFERRED : READ_STIX_INDICES;
   return elPaginate(context, user, currentIndex, options);
 };
 export const restCollectionStix = async (context, user, collection, args) => {
