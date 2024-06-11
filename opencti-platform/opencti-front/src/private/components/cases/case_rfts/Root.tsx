@@ -90,7 +90,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
-  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfts', true);
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfts', false);
   return (
     <>
       {caseData ? (

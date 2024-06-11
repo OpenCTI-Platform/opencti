@@ -96,7 +96,7 @@ class RootIndicator extends Component {
             if (props) {
               if (props.indicator) {
                 const { indicator } = props;
-                const paddingRight = getPaddingRight(location.pathname, indicator.id, '/dashboard/observations/indicators');
+                const paddingRight = getPaddingRight(location.pathname, indicator.id, '/dashboard/observations/indicators', false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[

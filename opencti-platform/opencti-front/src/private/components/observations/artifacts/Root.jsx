@@ -96,7 +96,7 @@ class RootArtifact extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts');
+                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts', false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[

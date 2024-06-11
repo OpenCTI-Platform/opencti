@@ -98,7 +98,7 @@ class RootStixCyberObservable extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/observables');
+                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/observables', false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[

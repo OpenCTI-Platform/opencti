@@ -50,7 +50,7 @@ export const getCurrentTab = (locationPath: string, entityId: string, entityType
   return locationPath;
 };
 
-export const getPaddingRight = (locationPath: string, entityId: string, entityTypePath: string, isContainer = false) => {
+export const getPaddingRight = (locationPath: string, entityId: string, entityTypePath: string, applyKnowledgePadding = true) => {
   let paddingRight = 0;
   if (entityId) {
     if (
@@ -64,7 +64,7 @@ export const getPaddingRight = (locationPath: string, entityId: string, entityTy
       paddingRight = 250;
     }
     if (
-      !isContainer && locationPath.includes(
+      applyKnowledgePadding && locationPath.includes(
         `${entityTypePath}/${entityId}/knowledge`,
       )
     ) {
