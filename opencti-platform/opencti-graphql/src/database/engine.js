@@ -1351,7 +1351,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       }
       const query = {
         index: computedIndices,
-        size: workingIds.length + 1 < ES_MAX_PAGINATION ? workingIds.length + 1 : ES_MAX_PAGINATION,
+        size: ES_MAX_PAGINATION,
         _source: baseData ? baseFields : true,
         body,
       };
