@@ -150,7 +150,7 @@ class RootThreatActorGroup extends Component {
                       }}
                     >
                       <Tabs
-                        value={getCurrentTab(location.pathname, threatActorGroup, '/dashboard/threats/threat_actors_group')}
+                        value={getCurrentTab(location.pathname, threatActorGroup.id, '/dashboard/threats/threat_actors_group')}
                       >
                         <Tab
                           component={Link}

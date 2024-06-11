@@ -111,7 +111,7 @@ const RootIncidentComponent = ({ queryRef }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={getCurrentTab(location.pathname, incident.id, '/dashboard/events/incidents/')}
+              value={getCurrentTab(location.pathname, incident.id, '/dashboard/events/incidents')}
             >
               <Tab
                 component={Link}
