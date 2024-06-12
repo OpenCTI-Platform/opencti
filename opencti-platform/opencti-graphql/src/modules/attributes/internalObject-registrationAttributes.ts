@@ -25,6 +25,7 @@ import {
   ENTITY_TYPE_WORK
 } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: ['authentication', 'read', 'mutation', 'file', 'command'], editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -239,10 +240,10 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       editDefault: false,
       multiple: true,
       upsert: false,
-      isFilterable: false,
+      isFilterable: true,
       mappings: [
         { name: 'type', label: 'Marking Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-        { name: 'value', label: 'Marking', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+        { name: 'value', label: 'Marking', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       ],
     },
     { name: 'group_confidence_level',
