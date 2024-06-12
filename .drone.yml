@@ -13,6 +13,9 @@ steps:
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh ${DRONE_SOURCE_BRANCH} $(pwd) ${DRONE_PULL_REQUEST}
       - ls -lart
+      - cd "$DRONE_WORKSPACE/client-python"
+      - echo "[INFO] using client-python on branch $(git branch --show-current)"
+      - pip3 install --upgrade --force .
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -50,9 +53,6 @@ steps:
       - yarn build
       - yarn check-ts
       - yarn lint
-      - cd "$DRONE_WORKSPACE/client-python"
-      - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - pip3 install --upgrade --force .
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
@@ -207,9 +207,6 @@ services:
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/raw-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -238,9 +235,6 @@ services:
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/live-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -269,9 +263,6 @@ services:
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/direct-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -289,9 +280,6 @@ services:
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/direct-start-worker
       - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -320,9 +308,6 @@ services:
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/restore-start-platform/opencti-graphql
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-e2e-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
@@ -352,9 +337,6 @@ services:
       - yarn install
       - yarn install:python
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip3 install --upgrade --force .
-      - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn build:dev
       - yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
