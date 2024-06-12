@@ -9,7 +9,7 @@ import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { logApp } from '../../../src/config/conf';
 
-describe('Testing Artifact merge with files on S3 (see issue 6258)', () => {
+describe('Testing Artifact merge with files on S3', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'stixCyberObservableDomain-test', otp_mandatory: false };
   let artifact1Id = '';
   let artifact1: any;

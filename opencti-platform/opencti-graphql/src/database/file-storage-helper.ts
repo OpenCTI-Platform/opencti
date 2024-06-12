@@ -123,7 +123,7 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
-      logApp.info(`[FILE STORAGE] preparing for delete ${currentFile}`);
+      logApp.info('[FILE STORAGE] preparing for delete', { currentFile });
       if (currentFile?.id) {
         ids.push(currentFile.id);
       }
@@ -167,7 +167,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         }
       }
     } catch (err) {
-      logApp.error(`[FILE STORAGE] Merge of files failed`, { cause: err, user_id: user.id, sourceEntity, targetEntity, folder: ${ALL_MERGEABLE_FOLDERS[folderI]} });
+      logApp.error('[FILE STORAGE] Merge of files failed', { cause: err, user_id: user.id, sourceEntity, targetEntity, folder: ALL_MERGEABLE_FOLDERS[folderI] });
     }
   }
 

@@ -190,10 +190,10 @@ export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityI
       uploadStatus: 'complete',
     };
     await indexFileToDocument(file);
-    logApp.info(`[FILE STORAGE] Copy ${sourceId} to ${targetId} in success`, { document: file });
+    logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
     return file;
   } catch (err) {
-    logApp.error(`[FILE STORAGE] Cannot copy file ${sourceId} to ${targetId} in S3`, { error: err });
+    logApp.error('[FILE STORAGE] Cannot copy file in S3', { error: err, sourceId, targetId });
     return null;
   }
 };
