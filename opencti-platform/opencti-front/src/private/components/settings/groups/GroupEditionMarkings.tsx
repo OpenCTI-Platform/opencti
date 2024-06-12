@@ -11,7 +11,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MarkingsSelectField from '@components/common/form/MarkingsSelectField';
-import { uniq } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -23,6 +22,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -197,7 +197,7 @@ const GroupEditionMarkingsComponent = ({
     markingIds: readonly { readonly id: string }[] | null,
     markingDefinitions: Option[],
   ) => {
-    return markingIds?.map((g) => markingDefinitions.find((m) => m.value === g.id));
+    return markingIds?.map((g) => markingDefinitions.find((m) => m.value === g.id)) ?? [];
   };
 
   return (
@@ -218,7 +218,7 @@ const GroupEditionMarkingsComponent = ({
             const resolvedGroupMarkingDefinitions = retrieveMarking(
               groupMarkingDefinitions,
               markingDefinitionsConverted,
-            );
+            ).filter((m) => !!m) as Option[];
             const resolvedGroupDefaultMarkingDefinitions = retrieveMarking(
               globalDefaultMarking,
               markingDefinitionsConverted,
@@ -227,8 +227,9 @@ const GroupEditionMarkingsComponent = ({
               groupMaxShareableMarkings,
               markingDefinitionsConverted,
             );
-            const proposedShareableMarkings = uniq((resolvedGroupMarkingDefinitions ?? []).map((m) => m?.entity)
-              .concat((resolvedMaxShareableMarkingDefinitions ?? []).map((m) => m?.entity)));
+            const proposedShareableMarkings = markingDefinitions
+              .filter((m) => checkIsMarkingAllowed(m, resolvedGroupMarkingDefinitions)
+                || resolvedMaxShareableMarkingDefinitions.some((maxMarking) => maxMarking?.id === m.id));
             return (
               <>
                 <Typography variant="h2" style={{ marginTop: 35 }}>

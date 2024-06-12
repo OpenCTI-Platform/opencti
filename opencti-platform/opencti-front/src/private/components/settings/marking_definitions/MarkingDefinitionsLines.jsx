@@ -16,6 +16,7 @@ export const markingDefinitionsLinesSearchQuery = graphql`
           definition_type
           definition
           x_opencti_color
+          x_opencti_order
         }
       }
     }

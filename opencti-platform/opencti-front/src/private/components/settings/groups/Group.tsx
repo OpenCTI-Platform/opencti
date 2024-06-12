@@ -29,6 +29,7 @@ import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -369,7 +370,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     {markingTypes.map((type) => {
                       const marking = maxShareableMarkingsByType.get(type);
                       if (marking) {
-                        const isMarkingAllowed = allowedMarkings.some((m) => m.definition_type === type && m.x_opencti_order >= marking.x_opencti_order);
+                        const isMarkingAllowed = checkIsMarkingAllowed(marking, allowedMarkings);
                         return (
                           <ListItem
                             key={marking.id}

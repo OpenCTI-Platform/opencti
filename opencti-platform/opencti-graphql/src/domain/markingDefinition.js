@@ -1,14 +1,13 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { groupAddRelation, groupEditField } from './group';
-import { findAll as findAllGroups } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -63,7 +62,7 @@ export const markingDefinitionDelete = async (context, user, markingDefinitionId
     groupsWithMarkingInShareableMarkings.forEach((group) => {
       const type = markingDefinition.definition_type;
       const value = (group.max_shareable_markings ?? []).filter(({ type: t, value: v }) => t !== type && v !== 'none');
-      editShareableMarkingsPromises.push(groupEditField(context, SYSTEM_USER, group.id, [{ key: 'max_shareable_markings', value }]));
+      editShareableMarkingsPromises.push(groupEditField(context, user, group.id, [{ key: 'max_shareable_markings', value }]));
     });
     await Promise.all(editShareableMarkingsPromises);
   }
