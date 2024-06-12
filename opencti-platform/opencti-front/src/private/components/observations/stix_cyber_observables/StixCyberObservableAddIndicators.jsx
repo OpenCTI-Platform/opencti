@@ -75,6 +75,7 @@ class StixCyberObservableAddIndicators extends Component {
       stixCyberObservableIndicators,
       open,
       handleClose,
+      indicatorParams,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -129,6 +130,7 @@ class StixCyberObservableAddIndicators extends Component {
                       stixCyberObservableIndicators
                     }
                     data={props}
+                    indicatorParams={indicatorParams}
                   />
                 );
               }}
@@ -149,6 +151,7 @@ StixCyberObservableAddIndicators.propTypes = {
   fld: PropTypes.func,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
+  indicatorParams: PropTypes.object,
 };
 
 export default compose(
