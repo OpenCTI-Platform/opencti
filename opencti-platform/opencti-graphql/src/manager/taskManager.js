@@ -53,7 +53,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
-import { indicatorEditField, promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
+import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
@@ -72,6 +72,7 @@ import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
+import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -288,14 +289,41 @@ const executeEnrichment = async (context, user, actionContext, element) => {
     await askElementEnrichmentForConnector(context, user, element.standard_id, connector.internal_id);
   }, { concurrency: ES_MAX_CONCURRENCY });
 };
-const executePromote = async (context, user, element) => {
+
+export const executePromoteIndicatorToObservables = async (context, user, element, containerId) => {
+  const createdObservables = await promoteIndicatorToObservables(context, user, element.internal_id);
+  if (containerId && createdObservables.length > 0) {
+    await Promise.all(
+      createdObservables.map((observable) => {
+        const relationInput = {
+          toId: observable.id,
+          relationship_type: 'object'
+        };
+        return stixDomainObjectAddRelation(context, user, containerId, relationInput);
+      })
+    );
+  }
+};
+
+export const executePromoteObservableToIndicator = async (context, user, element, containerId) => {
+  const createdIndicator = await promoteObservableToIndicator(context, user, element.internal_id);
+  if (containerId && createdIndicator) {
+    const relationInput = {
+      toId: createdIndicator.id,
+      relationship_type: 'object'
+    };
+    await stixDomainObjectAddRelation(context, user, containerId, relationInput);
+  }
+};
+
+export const executePromote = async (context, user, element, containerId) => {
   // If indicator, promote to observable
   if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-    await promoteIndicatorToObservable(context, user, element.internal_id);
+    await executePromoteIndicatorToObservables(context, user, element, containerId);
   }
   // If observable, promote to indicator
   if (isStixCyberObservable(element.entity_type)) {
-    await promoteObservableToIndicator(context, user, element.internal_id);
+    await executePromoteObservableToIndicator(context, user, element, containerId);
   }
 };
 const executeRuleApply = async (context, user, actionContext, element) => {
@@ -382,7 +410,7 @@ const executeUnshareMultiple = async (context, user, actionContext, element) => 
 const executeProcessing = async (context, user, job) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
-    const { type, context: actionContext } = job.actions[index];
+    const { type, context: actionContext, containerId } = job.actions[index];
     const { field, values, options } = actionContext ?? {};
     // Containers specific operations
     // Can be done in one shot patch modification.
@@ -453,7 +481,7 @@ const executeProcessing = async (context, user, job) => {
             await executeMerge(context, user, actionContext, element);
           }
           if (type === ACTION_TYPE_PROMOTE) {
-            await executePromote(context, user, element);
+            await executePromote(context, user, element, containerId);
           }
           if (type === ACTION_TYPE_ENRICHMENT) {
             await executeEnrichment(context, user, actionContext, element);
