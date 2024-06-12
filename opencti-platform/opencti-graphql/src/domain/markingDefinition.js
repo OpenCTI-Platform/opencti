@@ -62,7 +62,7 @@ export const markingDefinitionDelete = async (context, user, markingDefinitionId
     const editShareableMarkingsPromises = [];
     groupsWithMarkingInShareableMarkings.forEach((group) => {
       const type = markingDefinition.definition_type;
-      const value = group.max_shareable_markings.filter(({ type: t, value: v }) => t !== type && v !== 'none');
+      const value = (group.max_shareable_markings ?? []).filter(({ type: t, value: v }) => t !== type && v !== 'none');
       editShareableMarkingsPromises.push(groupEditField(context, SYSTEM_USER, group.id, [{ key: 'max_shareable_markings', value }]));
     });
     await Promise.all(editShareableMarkingsPromises);
