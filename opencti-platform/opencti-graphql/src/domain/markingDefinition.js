@@ -1,13 +1,13 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { groupAddRelation } from './group';
+import { groupAddRelation, groupEditField } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -47,6 +47,25 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
 };
 
 export const markingDefinitionDelete = async (context, user, markingDefinitionId) => {
+  // remove the marking from the groups max shareable markings config if needed
+  const groupsWithMarkingInShareableMarkings = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], {
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'max_shareable_markings.value', values: [markingDefinitionId], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    }
+  });
+  if (groupsWithMarkingInShareableMarkings.length > 0) {
+    const markingDefinition = await findById(context, user, markingDefinitionId);
+    const editShareableMarkingsPromises = [];
+    groupsWithMarkingInShareableMarkings.forEach((group) => {
+      const type = markingDefinition.definition_type;
+      const value = (group.max_shareable_markings ?? []).filter(({ type: t, value: v }) => t !== type && v !== 'none');
+      editShareableMarkingsPromises.push(groupEditField(context, user, group.id, [{ key: 'max_shareable_markings', value }]));
+    });
+    await Promise.all(editShareableMarkingsPromises);
+  }
+  // delete the marking
   await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
   return markingDefinitionId;
 };

@@ -29,6 +29,7 @@ import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -108,6 +109,7 @@ const groupFragment = graphql`
       x_opencti_color
       x_opencti_order
     }
+    not_shareable_marking_types
     max_shareable_marking {
       id
       definition
@@ -368,7 +370,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     {markingTypes.map((type) => {
                       const marking = maxShareableMarkingsByType.get(type);
                       if (marking) {
-                        const isMarkingAllowed = allowedMarkings.some((m) => m.definition_type === marking.definition_type && m.x_opencti_order >= marking.x_opencti_order);
+                        const isMarkingAllowed = checkIsMarkingAllowed(marking, allowedMarkings);
                         return (
                           <ListItem
                             key={marking.id}
@@ -379,24 +381,47 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             <Typography variant="h3" gutterBottom={true} width={100}>
                               {truncate(type, 40)}
                             </Typography>
-                            <ListItemIcon>
-                              <ItemIcon
-                                type="Marking-Definition"
-                                color={marking.x_opencti_color ?? undefined}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={truncate(marking.definition, 40)}
-                            />
+                            {isMarkingAllowed
+                              ? <>
+                                <ListItemIcon>
+                                  <ItemIcon
+                                    type="Marking-Definition"
+                                    color={marking.x_opencti_color ?? undefined}
+                                  />
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={truncate(marking.definition, 40)}
+                                />
+                              </>
+                              : <ListItemText
+                                  primary={t_i18n('No restrictions')}
+                                />
+                            }
                             {!isMarkingAllowed
                               && <Tooltip
                                 title={t_i18n(
-                                  'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
+                                  'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
                                 )}
                                  >
                                 <WarningOutlined color="warning"/>
                               </Tooltip>
                             }
+                          </ListItem>
+                        );
+                      } if (group.not_shareable_marking_types.includes(type)) {
+                        return (
+                          <ListItem
+                            key={type}
+                            dense={true}
+                            divider={true}
+                            button={false}
+                          >
+                            <Typography variant="h3" gutterBottom={true} width={100}>
+                              {truncate(type, 40)}
+                            </Typography>
+                            <ListItemText
+                              primary={t_i18n('Not shareable')}
+                            />
                           </ListItem>
                         );
                       }
@@ -411,7 +436,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText
-                            primary={t_i18n('not shareable')}
+                            primary={t_i18n('No restrictions')}
                           />
                         </ListItem>
                       );

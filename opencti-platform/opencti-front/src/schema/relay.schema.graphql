@@ -838,7 +838,6 @@ type FileMetadata {
   entity: StixObject
   labels_text: String
   labels: [String]
-  content_markings: [String]
   file_markings: [String]
   creator_id: String
   external_reference_id: String
@@ -1291,7 +1290,8 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  max_shareable_marking: [MarkingDefinition!]
+  not_shareable_marking_types: [String!]!
+  max_shareable_marking: [MarkingDefinition!]!
   default_hidden_types: [String!]
   group_confidence_level: ConfidenceLevel
   editContext: [EditUserContext!]
@@ -7349,7 +7349,7 @@ type Query {
   indexedFilesMetrics: FilesMetrics
   settings: Settings!
   group(id: String!): Group
-  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   me: MeUser!
   otpGeneration: OtpElement

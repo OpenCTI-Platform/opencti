@@ -42,7 +42,6 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'order', label: 'Carousel order', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'file_markings', label: 'File markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-      { name: 'content_markings', label: 'Content markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     ]
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place

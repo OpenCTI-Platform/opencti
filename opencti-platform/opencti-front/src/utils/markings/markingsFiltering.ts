@@ -21,3 +21,10 @@ export function filterMarkingsOutFor(selectedOptions: MarkingDefinition[], marki
       || selectedOptions.every((selectedOption) => selectedOption.entity.definition_type !== entity.definition_type),
   );
 }
+
+export const checkIsMarkingAllowed = (
+  marking: { readonly x_opencti_order: number, readonly definition_type: string | null | undefined },
+  allowedMarkings: { readonly x_opencti_order: number, readonly definition_type: string | null | undefined }[],
+) => {
+  return allowedMarkings.some((m) => m.definition_type === marking.definition_type && m.x_opencti_order >= marking.x_opencti_order);
+};

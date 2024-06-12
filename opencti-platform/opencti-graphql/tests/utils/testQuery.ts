@@ -259,12 +259,9 @@ const GROUP_EDITION_MARKINGS_MUTATION = `
   }
 `;
 const GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION = `
-  mutation groupEdition($groupId: ID!, $toId: ID) {
+  mutation groupEdition($groupId: ID!, $input: [EditInput]!) {
     groupEdit(id: $groupId) {
-      relationAdd(input: {
-        toId: $toId
-        relationship_type: "can-share"
-      }) {
+      fieldPatch(input: $input) {
         id
       }
     }
@@ -304,7 +301,11 @@ const createGroup = async (input: Group): Promise<string> => {
   }
   for (let index = 0; index < input.max_shareable_markings.length; index += 1) {
     const maxMarking = input.max_shareable_markings[index];
-    await internalAdminQuery(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: maxMarking });
+    await internalAdminQuery(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, { groupId: data.groupAdd.id,
+      input: {
+        key: 'max_shareable_markings',
+        value: [{ type: 'TLP', value: maxMarking }]
+      } });
   }
   for (let index = 0; index < input.roles.length; index += 1) {
     const role = input.roles[index];
