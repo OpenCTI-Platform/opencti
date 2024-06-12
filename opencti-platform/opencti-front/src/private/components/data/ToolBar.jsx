@@ -1279,14 +1279,6 @@ class ToolBar extends Component {
         && entityTypeFilterValues.length === 1
         && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
         && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-
-    // console.log('selectAll', selectAll);
-    // console.log('isManualEnrichSelect', isManualEnrichSelect);
-    // console.log('entityTypeFilterValues', entityTypeFilterValues);
-    // console.log('notEnrichableTypes', notEnrichableTypes);
-    // console.log('isAllEnrichSelect', isAllEnrichSelect);
-    console.log('selectedTypes', selectedTypes);
-
     const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
         || (entityTypeFilterValues.length === 1
             && notEnrichableTypes.includes(entityTypeFilterValues[0]))
