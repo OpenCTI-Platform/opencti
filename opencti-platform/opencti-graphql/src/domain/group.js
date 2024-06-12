@@ -47,7 +47,7 @@ export const groupAllowedMarkings = async (context, user, groupId) => {
   return listAllToEntitiesThroughRelations(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const groupNotShareableMarkings = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
+export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')
   .map(({ type }) => type) ?? [];
 
 export const groupMaxShareableMarkings = async (context, user, group) => {

@@ -7548,7 +7548,7 @@ export type Group = BasicObject & InternalObject & {
   max_shareable_marking: Array<MarkingDefinition>;
   members?: Maybe<UserConnection>;
   name: Scalars['String']['output'];
-  not_shareable_marking: Array<Scalars['String']['output']>;
+  not_shareable_marking_types: Array<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   roles?: Maybe<RoleConnection>;
   standard_id: Scalars['String']['output'];
@@ -32710,7 +32710,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   max_shareable_marking?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  not_shareable_marking?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  not_shareable_marking_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Maybe<ResolversTypes['RoleConnection']>, ParentType, ContextType, Partial<GroupRolesArgs>>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

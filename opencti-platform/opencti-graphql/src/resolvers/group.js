@@ -18,7 +18,7 @@ import {
   groupEditField,
   membersPaginated,
   rolesPaginated,
-  groupNotShareableMarkings
+  groupNotShareableMarkingTypes
 } from '../domain/group';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
@@ -34,7 +34,7 @@ const groupResolvers = {
   Group: {
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     allowed_marking: (group, _, context) => groupAllowedMarkings(context, context.user, group.id),
-    not_shareable_marking: (group) => groupNotShareableMarkings(group),
+    not_shareable_marking_types: (group) => groupNotShareableMarkingTypes(group),
     max_shareable_marking: (group, _, context) => groupMaxShareableMarkings(context, context.user, group),
     roles: (group, args, context) => rolesPaginated(context, context.user, group.id, args),
     members: (group, args, context) => membersPaginated(context, context.user, group.id, args),

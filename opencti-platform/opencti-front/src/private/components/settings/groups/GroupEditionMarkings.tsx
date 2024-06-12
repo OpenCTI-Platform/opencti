@@ -103,7 +103,7 @@ const GroupEditionMarkingsComponent = ({
   const groupMarkingDefinitions = group.allowed_marking || [];
   const groupDefaultMarkingDefinitions = group.default_marking || [];
   const groupMaxShareableMarkings = group.max_shareable_marking || [];
-  const maxShareableMarkings = [...groupMaxShareableMarkings, ...group.not_shareable_marking.map((t) => ({ definition_type: t, id: 'none' }))];
+  const maxShareableMarkings = [...groupMaxShareableMarkings, ...group.not_shareable_marking_types.map((t) => ({ definition_type: t, id: 'none' }))];
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (
     groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')
@@ -176,7 +176,7 @@ const GroupEditionMarkingsComponent = ({
   const handleToggleMaxShareableMarkings = (type: string, markingId: string) => {
     const currentMarkings = [
       ...group.max_shareable_marking.map((m) => ({ type: m.definition_type, value: m.id })),
-      ...group.not_shareable_marking.map((t) => ({ type: t, value: 'none' })),
+      ...group.not_shareable_marking_types.map((t) => ({ type: t, value: 'none' })),
     ];
     const finalMarkings = [
       ...currentMarkings.filter(({ type: t }) => t !== type),
@@ -369,7 +369,7 @@ const GroupEditionMarkings = createFragmentContainer(
         allowed_marking {
           id
         }
-        not_shareable_marking
+        not_shareable_marking_types
         max_shareable_marking {
           id
           definition

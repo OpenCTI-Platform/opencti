@@ -108,7 +108,7 @@ const groupFragment = graphql`
       x_opencti_color
       x_opencti_order
     }
-    not_shareable_marking
+    not_shareable_marking_types
     max_shareable_marking {
       id
       definition
@@ -400,7 +400,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             }
                           </ListItem>
                         );
-                      } if (group.not_shareable_marking.includes(type)) {
+                      } if (group.not_shareable_marking_types.includes(type)) {
                         return (
                           <ListItem
                             key={type}
