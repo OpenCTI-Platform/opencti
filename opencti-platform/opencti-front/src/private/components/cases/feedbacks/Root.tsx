@@ -181,7 +181,6 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
               element={
                 <StixCoreObjectContentRoot
                   stixCoreObject={feedbackData}
-                  isContainer={true}
                 />
               }
             />
