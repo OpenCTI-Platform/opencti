@@ -73,6 +73,7 @@ This configuration allows to define, for each type of marking definitions, until
 we allow to share data externally (via Public dashboard or file export).
 
 The marking definitions that can be shared by a group are the ones
+
 - that are allowed for this group
 - and whose order are inferior or equal to the order of the maximum shareable markings defined for each marking type.
 
