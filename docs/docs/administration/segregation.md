@@ -77,9 +77,9 @@ The marking definitions that can be shared by a group are the ones
 - that are allowed for this group
 - and whose order are inferior or equal to the order of the maximum shareable markings defined for each marking type.
 
-Note that users with the Bypass capability can share all the markings.
+Users with the Bypass capability can share all the markings.
 
-> For now this max marking definitions is used only for Public dashboard.
+By default, every marking of a given marking type is shareable.
 
 For example in the capture below, for the type of marking `TLP`, only data  with a marking
 definition that is allowed and has a level equal or below `GREEN` will be shareable. And no data with marking

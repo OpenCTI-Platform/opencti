@@ -51,8 +51,10 @@ marking definition.
 Also note that the list of marking definitions you can see is based on your current marking
 access on the platform **and the maximum sharable marking definitions** defined in your groups.
 
-> As a platform administrator, you can define, for each group and for each type of marking definition, [Maximum marking definitions shareable](../administration/segregation.md) to be 
-shared through Public Dashboard, regardless of the definition set by users in their public dashboard.
+!!! note "Define maximum shareable markings in groups"
+
+    As a platform administrator, you can define, for each group and for each type of marking definition, [Maximum marking definitions shareable](../administration/segregation.md) to be 
+    shared through Public Dashboard, regardless of the definition set by users in their public dashboard.
 
 ![Share dashboard markings](assets/share-dashboard-markings.png)
 
