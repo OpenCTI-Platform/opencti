@@ -577,9 +577,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   // Parse json data and transform it into MappedAnalysis object
   const entitiesToResolve = analysisParsedContent.map((d) => d.value);
   const entitiesToFinds = R.uniq(entitiesToResolve.filter((u) => isNotEmptyField(u)));
-  const entitiesResolved = await elFindByIds(context, user, entitiesToFinds);
+  const entitiesResolved = await elFindByIds(context, user, entitiesToFinds, { toMap: true, mapWithAllIds: true });
   const analysisDataConverted = (mappedData) => {
-    const entityResolved = entitiesResolved.find((e) => e.id === mappedData.value || e.standard_id === mappedData.value);
+    const entityResolved = entitiesResolved[mappedData.value];
     return { matchedString: mappedData.key, matchedEntity: entityResolved };
   };
 
