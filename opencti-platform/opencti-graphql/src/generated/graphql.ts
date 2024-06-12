@@ -18697,6 +18697,7 @@ export type QueryGroupingsTimeSeriesArgs = {
 
 export type QueryGroupsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;

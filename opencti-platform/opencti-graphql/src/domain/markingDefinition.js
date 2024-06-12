@@ -48,14 +48,13 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
 
 export const markingDefinitionDelete = async (context, user, markingDefinitionId) => {
   // remove the marking from the groups max shareable markings config if needed
-  const groupsWithMarkingInShareableMarkingsEdges = await findAllGroups(context, user, {
+  const groupsWithMarkingInShareableMarkings = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], {
     filters: {
       mode: 'and',
-      filters: [{ key: 'max_shareable_markings.value', value: [markingDefinitionId], operator: 'eq', mode: 'or' }],
+      filters: [{ key: 'max_shareable_markings.value', values: [markingDefinitionId], operator: 'eq', mode: 'or' }],
       filterGroups: [],
     }
   });
-  const groupsWithMarkingInShareableMarkings = groupsWithMarkingInShareableMarkingsEdges.edges.map((n) => n.node);
   if (groupsWithMarkingInShareableMarkings.length > 0) {
     const markingDefinition = await findById(context, user, markingDefinitionId);
     const editShareableMarkingsPromises = [];

@@ -7350,7 +7350,7 @@ type Query {
   indexedFilesMetrics: FilesMetrics
   settings: Settings!
   group(id: String!): Group
-  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   me: MeUser!
   otpGeneration: OtpElement
