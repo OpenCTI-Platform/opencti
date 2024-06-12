@@ -137,7 +137,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#ff6f00';
       }
-      return '#ffc107';
+      return '#b69007';
     case 'Infrastructure':
       if (dark) {
         return '#512da8';
@@ -147,7 +147,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#bf360c';
       }
-      return '#ff5722';
+      return '#ff5622';
     case 'City':
       if (dark) {
         return '#004d40';
@@ -157,7 +157,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#1a237e';
       }
-      return '#3f51b5';
+      return '#283593';
     case 'Region':
       if (dark) {
         return '#33691e';
@@ -177,7 +177,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#e65100';
       }
-      return '#ff9800';
+      return '#d68100';
     case 'Malware-Analysis':
       if (dark) {
         return '#00838f';
@@ -197,7 +197,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#1b5e20';
       }
-      return '#4caf50';
+      return '#986937';
     case 'Channel':
       if (dark) {
         return '#ad1457';
@@ -207,7 +207,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#558b2f';
       }
-      return '#8bc34a';
+      return '#689f38';
     case 'Language':
       if (dark) {
         return '#afb42b';

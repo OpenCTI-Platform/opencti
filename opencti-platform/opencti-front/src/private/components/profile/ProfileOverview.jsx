@@ -449,8 +449,8 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
-              {isMonochromeFeatureEnabled &&
-                <ListItem style={{ padding: '10px 0 0 0' }}>
+              {isMonochromeFeatureEnabled
+                && <ListItem style={{ padding: '10px 0 0 0' }}>
                   <ListItemText
                     primary={t('Monochrome labels and entity types')}
                   />

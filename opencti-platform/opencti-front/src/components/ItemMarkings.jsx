@@ -106,10 +106,12 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
   const { isFeatureEnable } = useHelper();
   const isMonochromeFeatureEnabled = isFeatureEnable('MONOCHROME_LABELS');
 
-  const monochromeStyle = (color) => ({
-    backgroundColor: `${color}33`, // 20% opacity
+  const monochromeStyle = (color, isTooltip = false) => ({
+    backgroundColor: isTooltip
+      ? `${color}`
+      : `${color}33`, // 20% opacity
     color: theme.palette.text.primary,
-    border: `1px solid ${color}`,
+    border: `2px solid ${color}`,
   });
 
   const renderChip = (markingDefinition, isTooltip = false) => {
@@ -120,7 +122,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
       className = classes.chipInList;
     }
     if (markingDefinition.x_opencti_color) {
-      const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color);
+      const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color, isTooltip);
       let backgroundColor = markingDefinition.x_opencti_color;
       let textColor = theme.palette.text.primary;
       let border = '0';
@@ -133,7 +135,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
         if (backgroundColor.startsWith('#ffffff')) {
           backgroundColor = '#ffffff';
           textColor = '#2b2b2b';
-          border = '1px solid #2b2b2b';
+          border = '2px solid #2b2b2b';
         } else if (!isMonochromeFeatureEnabled) {
           textColor = '#ffffff';
         }

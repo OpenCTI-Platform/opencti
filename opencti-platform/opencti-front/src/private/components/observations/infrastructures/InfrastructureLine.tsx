@@ -49,6 +49,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     float: 'left',
     width: 120,
+    borderRadius: 4,
+    backgroundColor: theme.palette.background.default,
+    color: theme.palette.chip.main,
+    border: `1px solid ${theme.palette.primary.main}`,
   },
 }));
 
@@ -168,8 +172,6 @@ export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentPr
             >
               <Chip
                 classes={{ root: classes.chipInList }}
-                color="primary"
-                variant="outlined"
                 label={data.infrastructure_types?.at(0) ?? t_i18n('Unknown')}
               />
             </div>
