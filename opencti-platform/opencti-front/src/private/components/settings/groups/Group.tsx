@@ -393,7 +393,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                                 />
                               </>
                               : <ListItemText
-                                  primary={t_i18n('All')}
+                                  primary={t_i18n('No restrictions')}
                                 />
                             }
                             {!isMarkingAllowed
@@ -435,7 +435,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText
-                            primary={t_i18n('All')}
+                            primary={t_i18n('No restrictions')}
                           />
                         </ListItem>
                       );
