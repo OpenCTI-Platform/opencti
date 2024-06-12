@@ -151,7 +151,10 @@ class RootIndividual extends Component {
             if (props) {
               if (props.individual) {
                 const { individual } = props;
-                const paddingRight = getPaddingRight(location.pathname, individual.id, '/dashboard/entities/individuals');
+                let paddingRight = 0;
+                if (viewAs === 'knowledge') {
+                  paddingRight = getPaddingRight(location.pathname, individual.id, '/dashboard/entities/individuals');
+                }
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
