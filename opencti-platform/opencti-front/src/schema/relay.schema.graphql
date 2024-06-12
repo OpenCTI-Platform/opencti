@@ -10979,7 +10979,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   ingestion_running: Boolean
   current_state_hash: String
   current_state_date: DateTime
-  markings: [String!]!
+  markings: [String!]
 }
 
 enum IngestionCsvOrdering {
@@ -11011,7 +11011,7 @@ input IngestionCsvAddInput {
   csv_mapper_id: String!
   ingestion_running: Boolean
   user_id: String!
-  markings: [String!]!
+  markings: [String!]
 }
 
 enum IndicatorsOrdering {
