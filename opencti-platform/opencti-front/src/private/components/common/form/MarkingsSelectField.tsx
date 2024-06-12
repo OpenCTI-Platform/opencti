@@ -77,7 +77,7 @@ const MarkingsSelectField = ({
             displ
           >
             <MenuItem value={ALL_ID} key={ALL_ID}>
-              {t_i18n('All')}
+              {t_i18n('No restrictions')}
             </MenuItem>
             <MenuItem value={NOT_SHAREABLE_ID} key={NOT_SHAREABLE_ID}>
               {t_i18n('Not shareable')}
