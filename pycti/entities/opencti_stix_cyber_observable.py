@@ -1865,6 +1865,7 @@ class StixCyberObservable:
     def promote_to_indicator(self, **kwargs):
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        with_files = kwargs.get("withFiles", False)
         if id is not None:
             self.opencti.app_logger.info("Promoting Stix-Observable", {"id": id})
             query = (
@@ -1876,12 +1877,7 @@ class StixCyberObservable:
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else (
-                        """
-                        id
-                        entity_type
-                        """
-                    )
+                    else (self.properties_with_files if with_files else self.properties)
                 )
                 + """
                             }
