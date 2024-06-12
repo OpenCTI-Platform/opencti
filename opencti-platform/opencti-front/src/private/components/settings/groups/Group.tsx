@@ -369,7 +369,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     {markingTypes.map((type) => {
                       const marking = maxShareableMarkingsByType.get(type);
                       if (marking) {
-                        const isMarkingAllowed = allowedMarkings.some((m) => m.definition_type === marking.definition_type && m.x_opencti_order >= marking.x_opencti_order);
+                        const isMarkingAllowed = allowedMarkings.some((m) => m.definition_type === type && m.x_opencti_order >= marking.x_opencti_order);
                         return (
                           <ListItem
                             key={marking.id}
@@ -380,19 +380,26 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             <Typography variant="h3" gutterBottom={true} width={100}>
                               {truncate(type, 40)}
                             </Typography>
-                            <ListItemIcon>
-                              <ItemIcon
-                                type="Marking-Definition"
-                                color={marking.x_opencti_color ?? undefined}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={truncate(marking.definition, 40)}
-                            />
+                            {isMarkingAllowed
+                              ? <>
+                                <ListItemIcon>
+                                  <ItemIcon
+                                    type="Marking-Definition"
+                                    color={marking.x_opencti_color ?? undefined}
+                                  />
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={truncate(marking.definition, 40)}
+                                />
+                              </>
+                              : <ListItemText
+                                  primary={t_i18n('All')}
+                                />
+                            }
                             {!isMarkingAllowed
                               && <Tooltip
                                 title={t_i18n(
-                                  'This marking is not allowed for this group: users of this group can only share their allowed markings that are less restricted than this one.',
+                                  'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
                                 )}
                                  >
                                 <WarningOutlined color="warning"/>
