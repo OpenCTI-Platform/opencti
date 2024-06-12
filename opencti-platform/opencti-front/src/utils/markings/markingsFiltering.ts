@@ -23,8 +23,8 @@ export function filterMarkingsOutFor(selectedOptions: MarkingDefinition[], marki
 }
 
 export const checkIsMarkingAllowed = (
-  marking: { x_opencti_order: number, definition_type: string | null | undefined },
-  allowedMarkings: { x_opencti_order: number, definition_type: string | null }[],
+  marking: { readonly x_opencti_order: number, readonly definition_type: string | null | undefined },
+  allowedMarkings: { readonly x_opencti_order: number, readonly definition_type: string | null | undefined }[],
 ) => {
   return allowedMarkings.some((m) => m.definition_type === marking.definition_type && m.x_opencti_order >= marking.x_opencti_order);
 };

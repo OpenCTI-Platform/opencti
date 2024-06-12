@@ -195,9 +195,12 @@ const GroupEditionMarkingsComponent = ({
 
   const retrieveMarking = (
     markingIds: readonly { readonly id: string }[] | null,
-    markingDefinitions: Option[],
+    markingDefinitions: ReturnType<typeof convertMarking>[],
   ) => {
-    return markingIds?.map((g) => markingDefinitions.find((m) => m.value === g.id)) ?? [];
+    return (markingIds ?? []).flatMap((g) => {
+      const def = markingDefinitions.find((m) => m.value === g.id);
+      return def || [];
+    });
   };
 
   return (
@@ -218,7 +221,7 @@ const GroupEditionMarkingsComponent = ({
             const resolvedGroupMarkingDefinitions = retrieveMarking(
               groupMarkingDefinitions,
               markingDefinitionsConverted,
-            ).filter((m) => !!m) as Option[];
+            );
             const resolvedGroupDefaultMarkingDefinitions = retrieveMarking(
               globalDefaultMarking,
               markingDefinitionsConverted,
@@ -229,7 +232,7 @@ const GroupEditionMarkingsComponent = ({
             );
             const proposedShareableMarkings = markingDefinitions
               .filter((m) => checkIsMarkingAllowed(m, resolvedGroupMarkingDefinitions)
-                || resolvedMaxShareableMarkingDefinitions.some((maxMarking) => maxMarking?.id === m.id));
+                || resolvedMaxShareableMarkingDefinitions.some((maxMarking) => maxMarking?.entity.id === m.id));
             return (
               <>
                 <Typography variant="h2" style={{ marginTop: 35 }}>
