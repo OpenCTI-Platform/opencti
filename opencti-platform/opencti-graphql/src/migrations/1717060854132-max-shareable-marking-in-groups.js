@@ -43,7 +43,7 @@ export const up = async (next) => {
       const markingId = sortedShareableMarkings.length > 0 ? sortedShareableMarkings[0].id : 'none';
       groupMaxShareableMarkingsToSet.push({ type, value: markingId });
     });
-    groupMaxMarkingRelationCreationsPromises.push(groupEditField(context, context.user, group.id, [{ key: 'max_shareable_markings', groupMaxShareableMarkings: groupMaxShareableMarkingsToSet }]));
+    groupMaxMarkingRelationCreationsPromises.push(groupEditField(context, context.user, group.id, [{ key: 'max_shareable_markings', value: groupMaxShareableMarkingsToSet }]));
   }
 
   await Promise.all(groupMaxMarkingRelationCreationsPromises);
