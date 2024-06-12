@@ -59,7 +59,7 @@ export interface CsvMapperRepresentationAttributeResolved {
   key: string
   column?: AttributeColumn
   based_on?: AttributeBasedOn
-  default_values?: { id:string, name:string }[] | string[]
+  default_values?: { id:string, name:string }[]
   ref?: AttributeRef
 }
 export interface CsvMapperRepresentationResolved {
