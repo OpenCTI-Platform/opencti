@@ -37,7 +37,7 @@ export const up = async (next) => {
         const platformMaxMarkingIdForType = platformMaxMarkingForType.id;
         // case 1.1: if it is allowed, keep the platform max marking of this type
         if (allowedMarkings.map((m) => m.id).includes(platformMaxMarkingIdForType)) {
-          const value = { type, value: platformMaxMarkingIdForType };
+          const value = [{ type, value: platformMaxMarkingIdForType }];
           groupMaxMarkingRelationCreationsPromises.push(groupEditField(context, context.user, group.id, { key: 'max_shareable_markings', value }));
         }
         // case 1.2: if not allowed
@@ -45,7 +45,7 @@ export const up = async (next) => {
         // - not shareable if it doesnt exist
         const sortedShareableMarkings = sortedAllowedMarkingsOfType.filter((m) => m.x_opencti_order <= platformMaxMarkingForType.x_opencti_order);
         const markingId = sortedShareableMarkings.length > 0 ? sortedShareableMarkings[0].id : 'none';
-        const value = { type, value: markingId };
+        const value = [{ type, value: markingId }];
         groupMaxMarkingRelationCreationsPromises.push(groupEditField(context, context.user, group.id, { key: 'max_shareable_markings', value }));
       }
       // case 2 : no marking defined for this type -> all the markings of this type should be shareable, so nothing to do
