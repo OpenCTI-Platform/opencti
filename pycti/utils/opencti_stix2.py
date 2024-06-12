@@ -1661,19 +1661,6 @@ class OpenCTIStix2:
         objects_to_get = []
         relations_to_get = []
 
-        # Container
-        if "objects" in entity and len(entity["objects"]) > 0:
-            object_ids = list(map(lambda e: e["standard_id"], entity["objects"]))
-            export_query_filter = self.prepare_id_filters_export(
-                id=object_ids, access_filter=access_filter
-            )
-            filtered_objects = (
-                self.opencti.opencti_stix_object_or_stix_relationship.list(
-                    filters=export_query_filter, getAll=True
-                )
-            )
-            entity["objects"] = filtered_objects
-
         # CreatedByRef
         if (
             not no_custom_attributes
