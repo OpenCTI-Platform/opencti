@@ -13,7 +13,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import DialogContentText from '@mui/material/DialogContentText';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
