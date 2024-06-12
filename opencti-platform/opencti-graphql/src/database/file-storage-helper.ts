@@ -124,7 +124,7 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
       logApp.info(`[FILE STORAGE] preparing for delete ${currentFile}`);
-      if (currentFile && currentFile.id.length > 0) {
+      if (currentFile?.id) {
         ids.push(currentFile.id);
       }
     }
@@ -137,7 +137,7 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
 };
 
 /**
- * Move all file from source entity to target entity and then delete cleanup directories on S3.
+ * Move all file from source entity to target entity and then cleanup directories on S3.
  * @param context
  * @param user
  * @param sourceEntity
@@ -156,7 +156,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         const sourceFileDocument = importFilesToMove[fileI];
         const sourceFileS3Id = `${sourcePath}/${sourceFileDocument.name}`;
         const targetFileS3Id = `${targetPath}/${sourceFileDocument.name}`;
-        logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to :${targetFileS3Id}`);
+        logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
         const newFile = await copyFile(sourceFileS3Id, targetFileS3Id, sourceFileDocument, targetEntity.internal_id);
         if (newFile) {
           await deleteFile(context, user, sourceFileS3Id); // TODO to be removed ? This will be done by merge delete no ?
@@ -167,10 +167,9 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         }
       }
     } catch (err) {
-      logApp.error(`[FILE STORAGE] Merge of files failed in ${ALL_MERGEABLE_FOLDERS[folderI]}`, { cause: err, user_id: user.id, sourceEntity, targetEntity });
+      logApp.error(`[FILE STORAGE] Merge of files failed`, { cause: err, user_id: user.id, sourceEntity, targetEntity, folder: ${ALL_MERGEABLE_FOLDERS[folderI]} });
     }
   }
 
-  logApp.info('[FILE STORAGE] At the end, updatedXOpenctiFiles =>', { updatedXOpenctiFiles });
   return updatedXOpenctiFiles;
 };

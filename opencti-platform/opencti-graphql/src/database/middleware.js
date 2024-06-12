@@ -1109,7 +1109,8 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
 
   for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
-    if (sourceEntitiesWithFiles[i].x_opencti_files) {
+    const entity = sourceEntitiesWithFiles[i];
+    if (entity.x_opencti_files) {
       if (sourceEntitiesWithFiles[i].x_opencti_files.length > 0) {
         sourceEntitiesWithFiles[i].x_opencti_files = await moveAllFilesFromEntityToAnother(context, user, sourceEntitiesWithFiles[i], targetEntity);
       }
