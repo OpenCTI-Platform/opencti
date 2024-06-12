@@ -25,9 +25,9 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(31);
       expect(createEventsByTypes.location.length).toBe(15);
-      expect(createEventsByTypes.relationship.length).toBe(136);
+      expect(createEventsByTypes.relationship.length).toBe(132);
       expect(createEventsByTypes.sighting.length).toBe(4);
-      expect(createEventsByTypes.indicator.length).toBe(36);
+      expect(createEventsByTypes.indicator.length).toBe(33);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
       expect(createEventsByTypes['threat-actor'].length).toBe(13);
       expect(createEventsByTypes['observed-data'].length).toBe(1);
@@ -42,7 +42,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.file.length).toBe(4);
       expect(createEventsByTypes.campaign.length).toBe(5);
       expect(createEventsByTypes.incident.length).toBe(2);
-      expect(createEventsByTypes.report.length).toBe(33);
+      expect(createEventsByTypes.report.length).toBe(31);
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(335); // 328 created at init + 2 created in tests + 5 vocabulary organizations types
       expect(createEventsByTypes.vulnerability.length).toBe(7);
