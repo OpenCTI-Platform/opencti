@@ -2786,6 +2786,7 @@
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "このバックグラウンドタスクで1000以上のエンティティをターゲットにしています。実行内容を確認してください。",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。",
   "Your confidence level is insufficient to edit this object.": "このオブジェクトを編集するためには、最大の自信レベルが不足しています。",
+  "Your max shareable markings will be applied to the content max markings": "共有可能な最大マークは、コンテンツの最大マークに適用されます。",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "お使いのURLには廃止された形式のフィルタが含まれており、URLに保存されていたパラメータが削除されました。",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",

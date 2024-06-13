@@ -5,7 +5,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import { Add } from '@mui/icons-material';
+import { Add, InfoOutlined } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
@@ -162,7 +162,12 @@ const StixCoreObjectsExportCreationComponent = ({
                     fullWidth={true}
                     data-testid="StixCoreObjectsExportCreationDialog"
                   >
-                    <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
+                    <DialogTitle>
+                      {t_i18n('Generate an export')}
+                      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                        <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                      </Tooltip>
+                    </DialogTitle>
                     <QueryRenderer
                       query={markingDefinitionsLinesSearchQuery}
                       variables={{ first: 200 }}

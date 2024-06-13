@@ -21,6 +21,7 @@ import { MarkingDefinitionsLinesSearchQuery$data } from '@components/settings/ma
 import { scopesConn } from '@components/common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { Option } from '@components/common/form/ReferenceField';
+import { InfoOutlined } from '@mui/icons-material';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -183,7 +184,12 @@ const StixCoreObjectFileExportComponent = ({
               fullWidth={true}
               data-testid="StixCoreObjectFileExportDialog"
             >
-              <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
+              <DialogTitle>
+                {t_i18n('Generate an export')}
+                <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                  <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                </Tooltip>
+              </DialogTitle>
               {/* Duplicate code for displaying list of marking in select input. TODO a component */}
               <QueryRenderer
                 query={markingDefinitionsLinesSearchQuery}
