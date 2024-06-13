@@ -269,10 +269,9 @@ class ContainerStixCoreObjectPopover extends Component {
 
   submitReference(values, { setSubmitting, resetForm }) {
     const { displayRemove, displayDeleteMapping } = this.state;
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    if (displayRemove) this.submitRemove(commitMessage, references, setSubmitting, resetForm);
-    else if (displayDeleteMapping) this.submitDeleteMapping(commitMessage, references, setSubmitting, resetForm);
+    const references = (values.references || []).map((ref) => ref.value);
+    if (displayRemove) this.submitRemove(values.message, references, setSubmitting, resetForm);
+    else if (displayDeleteMapping) this.submitDeleteMapping(values.message, references, setSubmitting, resetForm);
   }
 
   render() {

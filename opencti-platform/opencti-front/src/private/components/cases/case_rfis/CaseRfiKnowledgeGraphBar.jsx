@@ -316,10 +316,9 @@ class CaseRfiKnowledgeGraphBar extends Component {
   submitReference(values, { setSubmitting, resetForm }) {
     const { handleDeleteSelected } = this.props;
     const { deleteObject } = this.state;
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
+    const references = (values.references || []).map((ref) => ref.value);
     this.handleCloseRemove();
-    handleDeleteSelected(deleteObject, commitMessage, references, setSubmitting, resetForm);
+    handleDeleteSelected(deleteObject, values.message, references, setSubmitting, resetForm);
   }
 
   handleSubmitRemoveElements() {
