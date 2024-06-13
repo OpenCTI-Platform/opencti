@@ -357,6 +357,17 @@ const WorkspaceHeader = ({
             </div>
           </Security>
         )}
+        {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
+          <Security
+            needs={[EXPLORE_EXUPDATE]}
+            hasAccess={userCanEdit}
+          >
+            <div style={{marginTop: "-8px", float: "right"}}>
+              <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
+            </div>
+          </Security>
+
+        )}
         {isFeatureEnable('PUBLIC_DASHBOARD') && variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
             <div style={{ margin: '-8px 0 0 4px', float: 'right' }}>
@@ -591,15 +602,6 @@ const WorkspaceHeader = ({
             </Dialog>
           </Security>
         </div>
-        {variant === 'dashboard' && isFeatureEnable('FAB_REPLACEMENT') && (
-          <Security
-            needs={[EXPLORE_EXUPDATE]}
-            hasAccess={userCanEdit}
-          >
-            <WidgetConfig onComplete={handleAddWidget} workspace={workspace}></WidgetConfig>
-          </Security>
-
-        )}
         {variant === 'investigation' && (
           <WorkspaceTurnToContainerDialog
             workspace={workspace}
