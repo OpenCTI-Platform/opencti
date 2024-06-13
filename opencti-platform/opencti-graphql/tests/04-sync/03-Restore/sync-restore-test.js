@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'node:path';
 import {
   ADMIN_USER,
-  ADMIN_API_TOKEN,
+  API_TOKEN,
   createHttpClient,
   DATA_FILE_TEST,
   executeExternalQuery,
@@ -21,7 +21,7 @@ const backupFiles = async () => {
   const BACKUP_CONFIG = {
     opencti: {
       url: SYNC_TEST_REMOTE_URI,
-      token: ADMIN_API_TOKEN,
+      token: API_TOKEN,
     },
     connector: {
       id: uuidv4(),
@@ -54,7 +54,7 @@ const restoreFile = async () => {
   const RESTORE_CONFIG = {
     opencti: {
       url: SYNC_RESTORE_START_REMOTE_URI,
-      token: ADMIN_API_TOKEN,
+      token: API_TOKEN,
     },
     connector: {
       id: uuidv4(),
