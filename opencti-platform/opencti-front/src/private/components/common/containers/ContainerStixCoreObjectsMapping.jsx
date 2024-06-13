@@ -23,10 +23,14 @@ const ContainerStixCoreObjectsMapping = ({
   height,
   addMapping,
   contentMappingData,
-  contentMapping,
+  contentMappingCount,
   openDrawer,
   selectedText,
   handleClose,
+  handleSwitchView,
+  handleClearMapping,
+  currentView,
+  mappingCount,
 }) => {
   const classes = useStyles();
   const {
@@ -49,7 +53,9 @@ const ContainerStixCoreObjectsMapping = ({
       sortBy: 'name',
       orderAsc: false,
       openExports: false,
+      view: 'mapping',
     },
+    true,
   );
   const {
     numberOfElements,
@@ -91,12 +97,12 @@ const ContainerStixCoreObjectsMapping = ({
     },
     objectMarking: {
       label: 'Marking',
-      width: '10%',
+      width: '12%',
       isSortable: isRuntimeSort,
     },
     mapping: {
       label: 'Mapping',
-      width: '10%',
+      width: '8%',
       isSortable: false,
     },
   };
@@ -118,6 +124,7 @@ const ContainerStixCoreObjectsMapping = ({
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
         handleSwitchLocalMode={handleSwitchLocalMode}
+        handleChangeView={handleSwitchView}
         iconExtension={false}
         filters={filters}
         availableEntityTypes={['Stix-Core-Object']}
@@ -125,6 +132,11 @@ const ContainerStixCoreObjectsMapping = ({
         secondaryAction={true}
         numberOfElements={numberOfElements}
         noPadding={true}
+        handleClearMapping={handleClearMapping}
+        enableMappingView
+        disableCards
+        currentView={currentView}
+        mappingCount={mappingCount}
       >
         {queryRef && (
         <React.Suspense
@@ -150,7 +162,7 @@ const ContainerStixCoreObjectsMapping = ({
             setNumberOfElements={handleSetNumberOfElements}
             height={height}
             contentMappingData={contentMappingData}
-            contentMapping={contentMapping}
+            contentMappingCount={contentMappingCount}
           />
         </React.Suspense>
         )}

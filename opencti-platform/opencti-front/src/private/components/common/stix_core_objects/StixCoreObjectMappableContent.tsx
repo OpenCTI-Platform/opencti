@@ -38,6 +38,7 @@ interface StixCoreObjectMappableContentProps {
   askAi: boolean;
   editionMode: boolean;
   mappedStrings?: string[];
+  suggestedMappedStrings?: string[];
 }
 
 interface StixCoreObjectMappableContentValues {
@@ -54,6 +55,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   askAi,
   editionMode,
   mappedStrings = [],
+  suggestedMappedStrings = [],
 }) => {
   const { t_i18n } = useFormatter();
   let { description, contentField } = containerData;
@@ -77,7 +79,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
-  const editorAdjustedHeight = editionMode ? 580 : 620;
+  const editorAdjustedHeight = 580;
   const enrichedEditorHeight = innerHeight - editorAdjustedHeight;
 
   const [commit] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
@@ -165,6 +167,20 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     );
   }
 
+  for (const suggestedMappedString of suggestedMappedStrings) {
+    const escapedMappedString = suggestedMappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const descriptionRegex = new RegExp(escapedMappedString, 'ig');
+    description = (description || '').replace(
+      descriptionRegex,
+      (match) => `==${matchCase(escapedMappedString, match)}==`,
+    );
+    const contentRegex = new RegExp(escapedMappedString, 'ig');
+    contentField = (contentField || '').replace(
+      contentRegex,
+      (match) => `<mark class="marker-yellow">${matchCase(escapedMappedString, match)}</mark>`,
+    );
+  }
+
   const initialValues = {
     description: description || '',
     content: contentField || '',
@@ -176,7 +192,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
         height: '100%',
         minHeight: '100%',
         padding: '15px',
-        borderRadius: 4 }}
+      }}
       variant="outlined"
     >
       <Formik

@@ -8,7 +8,18 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import {
+  ArrowDropDown,
+  ArrowDropUp,
+  CheckCircleOutlined,
+  DifferenceOutlined,
+  FileDownloadOutlined,
+  LayersClearOutlined,
+  LibraryBooksOutlined,
+  SettingsOutlined,
+  ViewListOutlined,
+  ViewModuleOutlined,
+} from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -24,6 +35,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import { Badge } from '@mui/material';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';
@@ -111,6 +124,9 @@ const styles = (theme) => ({
   info: {
     paddingTop: 10,
   },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
 });
 
 class ListLines extends Component {
@@ -196,6 +212,11 @@ class ListLines extends Component {
       enableNestedView,
       enableEntitiesView,
       enableContextualView,
+      enableMappingView,
+      handleAskNewSuggestedMapping,
+      handleValidateSuggestedMapping,
+      handleClearMapping,
+      mappingCount,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
@@ -276,7 +297,10 @@ class ListLines extends Component {
                       handleToggleExports();
                     } else if (value && value === 'settings') {
                       this.handleOpenSettings();
-                    } else if (value && value !== 'export-csv') {
+                    } else if (value && value !== 'export-csv' && value !== 'clearMapping'
+                      && value !== 'askNewSuggestedMapping'
+                      && value !== 'validateSuggestedMapping'
+                    ) {
                       handleChangeView(value);
                     }
                   }}
@@ -285,7 +309,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && !disableCards && (
                     <ToggleButton value="cards" aria-label="cards">
                       <Tooltip title={t('Cards view')}>
-                        <ViewModuleOutlined fontSize="small" color="primary" />
+                        <ViewModuleOutlined fontSize="small" color="primary"/>
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -322,7 +346,7 @@ class ListLines extends Component {
                     </ToggleButton>
                   )}
                   {typeof handleChangeView === 'function'
-                    && !enableEntitiesView && (
+                    && !enableEntitiesView && !enableMappingView && (
                       <ToggleButton value="lines" aria-label="lines">
                         <Tooltip title={t('Lines view')}>
                           <ViewListOutlined
@@ -339,7 +363,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
                       <Tooltip title={t('Graph view')}>
-                        <VectorPolygon fontSize="small" color="primary" />
+                        <VectorPolygon fontSize="small" color="primary"/>
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -347,7 +371,7 @@ class ListLines extends Component {
                     && enableNestedView && (
                       <ToggleButton value="nested" aria-label="nested">
                         <Tooltip title={t('Nested view')}>
-                          <FormatListGroup fontSize="small" color="primary" />
+                          <FormatListGroup fontSize="small" color="primary"/>
                         </Tooltip>
                       </ToggleButton>
                   )}
@@ -368,63 +392,123 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                  {handleSwitchRedirectionMode && (
-                    <ToggleButton
-                      size="small"
-                      value="settings"
-                      aria-label="settings"
-                    >
-                      <Tooltip title={t('List settings')}>
-                        <SettingsOutlined fontSize="small" color="primary" />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleToggleExports === 'function'
-                    && !exportDisabled && (
-                      <ToggleButton value="export" aria-label="export">
-                        <Tooltip title={t('Open export panel')}>
-                          <FileDownloadOutlined
+                  <div
+                    style={{ padding: '0px 20px 0 0' }}
+                  >
+                    {typeof handleChangeView === 'function'
+                      && enableMappingView && (
+                        <ToggleButton value="mapping" aria-label="mapping">
+                          <Tooltip title={t('Mapping view')}>
+                            <DifferenceOutlined
+                              fontSize="small"
+                              color={currentView === 'mapping' ? 'primary' : 'inherit'}
+                            />
+                          </Tooltip>
+                        </ToggleButton>
+                    )}
+                    {typeof handleChangeView === 'function'
+                      && enableMappingView && (
+                        <ToggleButton value="suggestedMapping" aria-label="suggested mapping">
+                          <Tooltip title={t('Suggested mapping view')}>
+                            <Badge badgeContent={mappingCount} color="primary">
+                              <PlaylistPlayIcon
+                                fontSize="small"
+                                color={currentView !== 'mapping' ? 'primary' : 'inherit'}
+                              />
+                            </Badge>
+                          </Tooltip>
+                        </ToggleButton>
+                    )}
+                  </div>
+                    {handleAskNewSuggestedMapping && (
+                    <Tooltip title={t('Suggest new mapping')}>
+                      <Button
+                        variant="contained"
+                        classes={{ root: classes.button }}
+                        onClick={() => handleAskNewSuggestedMapping()}
+                      >
+                        {t('Suggest new mapping')}
+                      </Button>
+                    </Tooltip>
+                    )}
+                    {handleValidateSuggestedMapping && (
+                    <Tooltip title={t('Validate suggested mapping')}>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        classes={{ root: classes.button }}
+                        onClick={() => handleValidateSuggestedMapping()}
+                        startIcon={<CheckCircleOutlined />}
+                        size="small"
+                      >
+                        {t('Validate')}
+                      </Button>
+                    </Tooltip>
+                    )}
+                    {handleClearMapping && (
+                      <ToggleButton value="clearMapping" aria-label="Clear mapping" onClick={() => handleClearMapping()}>
+                        <Tooltip title={t('Clear mapping')}>
+                          <LayersClearOutlined fontSize="small" color="primary"/>
+                        </Tooltip>
+                      </ToggleButton>
+                    )}
+                    {handleSwitchRedirectionMode && (
+                      <ToggleButton
+                        size="small"
+                        value="settings"
+                        aria-label="settings"
+                      >
+                        <Tooltip title={t('List settings')}>
+                          <SettingsOutlined fontSize="small" color="primary"/>
+                        </Tooltip>
+                      </ToggleButton>
+                    )}
+                    {typeof handleToggleExports === 'function'
+                      && !exportDisabled && (
+                        <ToggleButton value="export" aria-label="export">
+                          <Tooltip title={t('Open export panel')}>
+                            <FileDownloadOutlined
+                              fontSize="small"
+                              color={openExports ? 'secondary' : 'primary'}
+                            />
+                          </Tooltip>
+                        </ToggleButton>
+                    )}
+                    {typeof handleExportCsv === 'function' && !exportDisabled && (
+                      <ToggleButton
+                        value="export-csv"
+                        onClick={() => handleExportCsv()}
+                        aria-label="export"
+                      >
+                        <Tooltip title={t('Export first 5000 rows in CSV')}>
+                          <FileDelimitedOutline
                             fontSize="small"
-                            color={openExports ? 'secondary' : 'primary'}
+                            color="primary"
                           />
                         </Tooltip>
                       </ToggleButton>
-                  )}
-                  {typeof handleExportCsv === 'function' && !exportDisabled && (
-                    <ToggleButton
-                      value="export-csv"
-                      onClick={() => handleExportCsv()}
-                      aria-label="export"
-                    >
-                      <Tooltip title={t('Export first 5000 rows in CSV')}>
-                        <FileDelimitedOutline
-                          fontSize="small"
-                          color="primary"
-                        />
-                      </Tooltip>
-                    </ToggleButton>
-                  )}
-                  {typeof handleToggleExports === 'function'
-                    && exportDisabled && (
-                      <Tooltip
-                        title={`${
-                          t(
-                            'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                          ) + export_max_size
-                        })`}
-                      >
-                        <span>
-                          <ToggleButton
-                            size="small"
-                            value="export"
-                            aria-label="export"
-                            disabled={true}
-                          >
-                            <FileDownloadOutlined fontSize="small" />
-                          </ToggleButton>
-                        </span>
-                      </Tooltip>
-                  )}
+                    )}
+                    {typeof handleToggleExports === 'function'
+                      && exportDisabled && (
+                        <Tooltip
+                          title={`${
+                            t(
+                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                            ) + export_max_size
+                          })`}
+                        >
+                          <span>
+                            <ToggleButton
+                              size="small"
+                              value="export"
+                              aria-label="export"
+                              disabled={true}
+                            >
+                              <FileDownloadOutlined fontSize="small"/>
+                            </ToggleButton>
+                          </span>
+                        </Tooltip>
+                    )}
                 </ToggleButtonGroup>
               )}
               {/*

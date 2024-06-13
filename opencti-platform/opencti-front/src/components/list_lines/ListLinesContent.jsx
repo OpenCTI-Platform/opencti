@@ -140,7 +140,7 @@ class ListLinesContent extends Component {
       connectionKey,
       isTo,
       redirectionMode,
-      contentMapping,
+      contentMappingCount,
       contentMappingData,
       bypassEditionRestriction,
     } = this.props;
@@ -182,7 +182,7 @@ class ListLinesContent extends Component {
             onToggleShiftEntity={this._onRowShiftClick.bind(this)}
             index={index}
             redirectionMode={redirectionMode}
-            contentMapping={contentMapping}
+            contentMappingCount={contentMappingCount}
             contentMappingData={contentMappingData}
             bypassEditionRestriction={bypassEditionRestriction}
           />
@@ -207,7 +207,7 @@ class ListLinesContent extends Component {
             onToggleShiftEntity: this._onRowShiftClick.bind(this),
             index,
             redirectionMode,
-            contentMapping,
+            contentMappingCount,
             contentMappingData,
             bypassEditionRestriction,
           })
@@ -348,7 +348,7 @@ ListLinesContent.propTypes = {
   redirectionMode: PropTypes.string,
   addedElements: PropTypes.object,
   containerRef: PropTypes.object,
-  contentMapping: PropTypes.object,
+  contentMappingCount: PropTypes.object,
   contentMappingData: PropTypes.object,
   bypassEditionRestriction: PropTypes.bool,
 };

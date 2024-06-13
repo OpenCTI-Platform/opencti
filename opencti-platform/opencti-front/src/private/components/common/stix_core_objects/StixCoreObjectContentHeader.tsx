@@ -10,11 +10,13 @@ import { useFormatter } from '../../../../components/i18n';
 interface StixCoreObjectContentHeaderProps {
   currentMode?: string;
   modes: string[];
+  disabled: boolean;
 }
 
 const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeaderProps> = ({
   currentMode,
   modes,
+  disabled,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -47,6 +49,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             to='mapping'
             selected={currentMode === 'mapping'}
             value={'mapping'}
+            disabled={disabled}
           >
             <DifferenceOutlined
               fontSize="small"

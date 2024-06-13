@@ -1,31 +1,28 @@
-import React from 'react';
-import * as R from 'ramda';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert } from '@mui/icons-material';
+import { DeleteOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
+import {
+  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
+} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-
+import { DataColumns } from '../../../../components/list_lines';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: any) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -55,130 +52,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ContainerStixCoreObjectLineComponent = (props) => {
-  const {
-    node,
-    types,
-    dataColumns,
-    contentMappingCount,
-    containerId,
-    paginationOptions,
-    contentMappingData,
-  } = props;
-  const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
-  const refTypes = types ?? ['manual'];
-  const isThroughInference = refTypes.includes('inferred');
-  const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-  const mappedString = Object.keys(contentMappingData).find((key) => contentMappingData[key] === node.standard_id);
-  return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={true}
-      component={Link}
-      to={`${resolveLink(node.entity_type)}/${node.id}`}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
-                  color: itemColor(node.entity_type),
-                  border: `1px solid ${itemColor(node.entity_type)}`,
-                }}
-                label={t_i18n(`entity_${node.entity_type}`)}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              {node.x_mitre_id
-                ? `[${node.x_mitre_id}] ${node.name}`
-                : getMainRepresentative(node)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              {R.pathOr('', ['createdBy', 'name'], node)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              {fd(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitions={node.objectMarking ?? []}
-                limit={1}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.mapping.width }}
-            >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                label={
-                  contentMappingCount[mappedString]
-                    ? contentMappingCount[mappedString]
-                    : t_i18n('0')
-                }
-              />
-            </div>
-          </>
-        }
-      />
-      <ListItemSecondaryAction>
-        {isOnlyThroughInference ? (
-          <Tooltip title={t_i18n('Inferred knowledge')}>
-            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-          </Tooltip>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ContainerStixCoreObjectPopover
-              containerId={containerId}
-              toId={node.id}
-              toStandardId={node.standard_id}
-              relationshipType="object"
-              paginationKey="Pagination_objects"
-              paginationOptions={paginationOptions}
-              contentMappingData={contentMappingData}
-              mapping={contentMappingCount[mappedString]}
-            />
-          </Security>
-        )}
-      </ListItemSecondaryAction>
-    </ListItem>
-  );
-};
+interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
+  dataColumns: DataColumns;
+  node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key;
+  contentMappingCount: Record<string, number>;
+  handleRemoveSuggestedMappingLine: (matchedId: string) => void;
+}
 
-export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
-  ContainerStixCoreObjectLineComponent,
-  {
-    node: graphql`
-      fragment ContainerStixCoreObjectsMappingLine_node on StixCoreObject {
+const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
+    fragment ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity on MappedEntity {
+      matchedString
+      matchedEntity{
         id
         standard_id
         entity_type
-        parent_types
-        created_at
         ... on AttackPattern {
           name
           x_mitre_id
@@ -279,13 +166,6 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
         ... on StixCyberObservable {
           observable_value
         }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
         objectMarking {
           id
           definition_type
@@ -293,12 +173,110 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
           x_opencti_order
           x_opencti_color
         }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
       }
-    `,
-  },
-);
+    }
+  `;
 
-export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
+export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
+ContainerStixCoreObjectsSuggestedMappingLineComponentProps
+> = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
+  const { matchedString, matchedEntity } = mappedEntityData;
+  return (
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type={matchedEntity.entity_type} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                style={{
+                  backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
+                  color: itemColor(matchedEntity.entity_type),
+                  border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
+                }}
+                label={t_i18n(`entity_${matchedEntity.entity_type}`)}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.matched_text.width }}
+            >
+              {matchedString}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {matchedEntity.createdBy?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              {matchedEntity.x_mitre_id
+                ? `[${matchedEntity.x_mitre_id}] ${matchedEntity.name}`
+                : getMainRepresentative(matchedEntity)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectMarking.width }}
+            >
+              <ItemMarkings
+                variant="inList"
+                markingDefinitions={matchedEntity.objectMarking ?? []}
+                limit={1}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.mapping.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                label={
+                    contentMappingCount[matchedString]
+                      ? contentMappingCount[matchedString]
+                      : t_i18n('0')
+                  }
+              />
+            </div>
+          </>
+        }
+      />
+      <ListItemSecondaryAction>
+        <IconButton
+          onClick={() => handleRemoveSuggestedMappingLine(matchedEntity.id)}
+        >
+          <DeleteOutlined />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>
+  );
+};
+
+export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps) => {
   const classes = useStyles();
   const { dataColumns } = props;
   return (
@@ -322,29 +300,18 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.matched_text.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton
                 animation="wave"
@@ -380,7 +347,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
+          <MoreVert/>
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>

@@ -8,24 +8,24 @@ import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import * as Yup from 'yup';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { LayersClearOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import StixCoreObjectMappableContent from '../stix_core_objects/StixCoreObjectMappableContent';
-import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
-import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { QueryRenderer } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
+import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
+import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from './ContainerStixCoreObjectsSuggestedMapping';
+import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useFormatter } from '../../../../components/i18n';
+import StixCoreObjectMappableContent from '../stix_core_objects/StixCoreObjectMappableContent';
+import Loader from '../../../../components/Loader';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -48,6 +48,31 @@ export const contentMutationFieldPatch = graphql`
   }
 `;
 
+const addSuggestedMappingRelationsMutation = graphql`
+  mutation ContainerContentAddSuggestedMappingRelationsMutation(
+    $id: ID!
+    $input: StixRefRelationshipsAddInput!
+    $commitMessage: String
+    $references: [String]
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      relationsAdd(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
+        ...ContainerContent_container
+      }
+    }
+  }
+`;
+
+// TODO: add stixCoreObjectEdit analysisClear mutation
+const clearSuggestedMappingMutation = {};
+
+// TODO: add stixCoreObjectEdit askAnalysis mutation
+const askSuggestedMappingMutation = {};
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
@@ -64,10 +89,6 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 4,
   },
-  clearButton: {
-    float: 'right',
-    marginTop: -15,
-  },
 }));
 
 const ContainerContentComponent = ({ containerData }) => {
@@ -75,6 +96,7 @@ const ContainerContentComponent = ({ containerData }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openClearMapping, setOpenClearMapping] = useState(false);
+  const [currentView, setCurrentView] = useState('mapping');
   const [selectedText, setSelectedText] = useState(null);
   const [clearing, setClearing] = useState(false);
   useEffect(() => {
@@ -116,11 +138,19 @@ const ContainerContentComponent = ({ containerData }) => {
     validator,
   );
 
+  const [commitRelationsAdd] = useApiMutation(addSuggestedMappingRelationsMutation);
+  // const [commitAnalysisClear] = useApiMutation(clearSuggestedMappingMutation);
+  // const [commitAnalysisAsk] = useApiMutation(askSuggestedMappingMutation);
+
   const handleTextSelection = (text) => {
-    if (text && text.length > 2) {
+    if (currentView === 'mapping' && text && text.length > 2) {
       setSelectedText(text.trim());
       OPEN$.next({ action: 'OpenMapping' });
     }
+  };
+
+  const handleSwitchView = (view) => {
+    setCurrentView(view);
   };
 
   const addMapping = (stixCoreObject) => {
@@ -144,6 +174,7 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
+
   const clearMapping = () => {
     setClearing(true);
     editor.fieldPatch({
@@ -160,106 +191,214 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
+  // TODO replace hard coded mock value by real suggested mapping value
+  const mappingCount = 7;
+
+  const handleAskNewSuggestedMapping = () => {
+    // commitAnalysisAsk({
+    //   mutation: askSuggestedMappingMutation,
+    //   variables: {
+    //     id: containerData.id,
+    //     contentSource: '',
+    //     contentType: '',
+    //   },
+    // });
+  };
+
+  const addSuggestedMappingEntitiesToContainer = (suggestedMappingEntities) => {
+    commitRelationsAdd({
+      mutation: addSuggestedMappingRelationsMutation,
+      variables: {
+        id: containerData.id,
+        input: {
+          relationship_type: 'object',
+          toIds: suggestedMappingEntities,
+        },
+      },
+    });
+  };
+
+  const addSuggestedMappingToCurrentMapping = (suggestedMappings) => {
+    const { content_mapping } = containerData;
+    let newMappingData = decodeMappingData(content_mapping);
+    for (let i = 0; i < suggestedMappings.length; i += 1) {
+      const suggestedMapping = suggestedMappings[i];
+      newMappingData = {
+        ...newMappingData,
+        [suggestedMapping.matchedString]: suggestedMapping.matchedEntityId,
+      };
+    }
+    editor.fieldPatch({
+      variables: {
+        id: containerData.id,
+        input: {
+          key: 'content_mapping',
+          value: encodeMappingData(newMappingData),
+        },
+      },
+    });
+  };
+
+  // TODO: add correct input
+  const clearSuggestedMapping = () => {
+    // commitAnalysisClear({
+    //   mutation: clearSuggestedMappingMutation,
+    //   variables: {
+    //     id: containerData.id,
+    //     contentSource: '',
+    //     contentType: '',
+    //   },
+    // });
+  };
+
+  const handleValidateSuggestedMapping = (suggestedMapping) => {
+    const suggestedMappingEntities = suggestedMapping.map((m) => m.matchedEntityId);
+    addSuggestedMappingEntitiesToContainer(suggestedMappingEntities);
+    addSuggestedMappingToCurrentMapping(suggestedMapping);
+    clearSuggestedMapping();
+  };
+
+  const { description, contentField } = containerData;
+
+  const countMappingMatch = (mappedStrings) => {
+    if (!mappedStrings) return {};
+    const contentMapping = {};
+    for (const mappedString of mappedStrings) {
+      const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const descriptionRegex = new RegExp(escapedMappedString, 'ig');
+      const descriptionCount = (
+        (description || '').match(descriptionRegex) || []
+      ).length;
+      const contentRegex = new RegExp(escapedMappedString, 'ig');
+      const contentCount = ((contentField || '').match(contentRegex) || []).length;
+      contentMapping[mappedString] = descriptionCount + contentCount;
+    }
+    return contentMapping;
+  };
 
   const { content_mapping } = containerData;
   const contentMappingData = decodeMappingData(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
-  const { description, contentField } = containerData;
-  const contentMapping = {};
-  for (const mappedString of mappedStrings) {
-    const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const descriptionRegex = new RegExp(escapedMappedString, 'ig');
-    const descriptionCount = (
-      (description || '').match(descriptionRegex) || []
-    ).length;
-    const contentRegex = new RegExp(escapedMappedString, 'ig');
-    const contentCount = ((contentField || '').match(contentRegex) || []).length;
-    contentMapping[contentMappingData[escapedMappedString]] = descriptionCount + contentCount;
-  }
+  const mappedStringsCount = countMappingMatch(mappedStrings);
+
   return (
     <div className={classes.container}>
-      <Grid
-        container
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
-        <Grid item={true} xs={6} style={{ marginTop: -15 }}>
-          <Typography
-            variant="h4"
-            gutterBottom
-            style={{ float: 'left' }}
-          >
-            {t_i18n('Content')}
-          </Typography>
-          <Tooltip title={t_i18n('Clear mappings')}>
-            <IconButton
-              color="primary"
-              aria-label="Apply"
-              onClick={() => setOpenClearMapping(true)}
-              classes={{ root: classes.clearButton }}
-              size="large"
-            >
-              <LayersClearOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={openClearMapping}
-            keepMounted
-            TransitionComponent={Transition}
-            onClose={() => setOpenClearMapping(false)}
-          >
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('Do you want to delete the mapping of this content?')}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={() => setOpenClearMapping(false)}
-                disabled={clearing}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                color="secondary"
-                onClick={() => clearMapping()}
-                disabled={clearing}
-              >
-                {t_i18n('Clear')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <div className="clearfix" />
-          <StixCoreObjectMappableContent
-            containerData={containerData}
-            handleTextSelection={handleTextSelection}
-            askAi={false}
-            editionMode={false}
-            mappedStrings={mappedStrings}
-          />
-        </Grid>
-        <Grid item xs={6} style={{ marginTop: -15 }}>
-          <Typography variant="h4" gutterBottom>
-            {t_i18n('Mapping')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <ContainerStixCoreObjectsMapping
-              container={containerData}
-              height={listHeight}
-              selectedText={selectedText}
-              openDrawer={open}
-              handleClose={() => {
-                setOpen(false);
-                setSelectedText(null);
-              }}
-              addMapping={addMapping}
-              contentMappingData={contentMappingData}
-              contentMapping={contentMapping}
+      {currentView === 'mapping' && (
+        <Grid
+          container
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+        >
+          <Grid item={true} xs={6} style={{ marginTop: 0 }}>
+            <StixCoreObjectMappableContent
+              containerData={containerData}
+              handleTextSelection={handleTextSelection}
+              askAi={false}
+              editionMode={false}
+              mappedStrings={mappedStrings}
+              suggest
             />
-          </Paper>
+          </Grid>
+          <Grid item xs={6} style={{ marginTop: -10 }}>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={openClearMapping}
+              keepMounted
+              TransitionComponent={Transition}
+              onClose={() => setOpenClearMapping(false)}
+            >
+              <DialogContent>
+                <DialogContentText>
+                  {t_i18n('Do you want to delete the mapping of this content?')}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => setOpenClearMapping(false)}
+                  disabled={clearing}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => clearMapping()}
+                  disabled={clearing}
+                >
+                  {t_i18n('Clear')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <ContainerStixCoreObjectsMapping
+                container={containerData}
+                height={listHeight}
+                selectedText={selectedText}
+                openDrawer={open}
+                handleClose={() => {
+                  setOpen(false);
+                  setSelectedText(null);
+                }}
+                addMapping={addMapping}
+                contentMappingData={contentMappingData}
+                contentMappingCount={mappedStringsCount}
+                handleSwitchView={handleSwitchView}
+                handleClearMapping={() => setOpenClearMapping(true)}
+                currentView={currentView}
+                mappingCount={mappingCount}
+              />
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
+      {currentView === 'suggestedMapping' && (
+      <QueryRenderer
+        query={containerStixCoreObjectsSuggestedMappingQuery}
+        variables={{ id: containerData.id, contentSource: 'content_mapping', contentType: 'fields' }}
+        render={({ props }) => {
+          if (!props) return <Loader variant="inElement"/>;
+          const suggestedMappedStrings = props?.stixCoreObjectAnalysis?.mappedEntities?.map((e) => e?.matchedString);
+          const suggestedMappingCount = countMappingMatch(suggestedMappedStrings);
+          return (
+            <Grid
+              container
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+            >
+              <Grid item={true} xs={6} style={{ marginTop: 0 }}>
+                <StixCoreObjectMappableContent
+                  containerData={containerData}
+                  handleTextSelection={handleTextSelection}
+                  askAi={false}
+                  editionMode={false}
+                  suggestedMappedStrings={suggestedMappedStrings}
+                  suggest
+                />
+              </Grid>
+              <Grid item xs={6} style={{ marginTop: -10 }}>
+                <Paper classes={{ root: classes.paper }} variant="outlined">
+                  <ContainerStixCoreObjectsSuggestedMapping
+                    container={containerData}
+                    suggestedMapping={props}
+                    suggestedMappingCount={suggestedMappingCount}
+                    height={listHeight}
+                    selectedText={selectedText}
+                    openDrawer={open}
+                    handleClose={() => {
+                      setOpen(false);
+                      setSelectedText(null);
+                    }}
+                    handleSwitchView={handleSwitchView}
+                    handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
+                    handleValidateSuggestedMapping={handleValidateSuggestedMapping}
+                    currentView={currentView}
+                  />
+                </Paper>
+              </Grid>
+            </Grid>
+          );
+        }}
+      />
+      )}
     </div>
   );
 };

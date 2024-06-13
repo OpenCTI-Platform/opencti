@@ -314,12 +314,14 @@ class StixCoreObjectContentComponent extends Component {
       contentSelected: true,
       currentContent: stixCoreObject.contentField ?? t('Write something awesome...'),
     }, () => {
+      this.props.setMappingHeaderDisabled(false);
       this.saveView();
     });
   }
 
   handleSelectFile(fileId) {
     this.setState({ currentFileId: fileId, changed: false, contentSelected: false }, () => {
+      this.props.setMappingHeaderDisabled(true);
       this.loadFileContent();
       this.saveView();
     });
@@ -749,6 +751,7 @@ class StixCoreObjectContentComponent extends Component {
 
 StixCoreObjectContentComponent.propTypes = {
   stixCoreObject: PropTypes.object,
+  setMappingHeaderDisabled: PropTypes.function,
   theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

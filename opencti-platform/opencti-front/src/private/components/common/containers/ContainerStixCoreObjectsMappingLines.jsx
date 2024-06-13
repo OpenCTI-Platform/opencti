@@ -83,7 +83,7 @@ const ContainerStixCoreObjectsMappingLines = ({
   paginationOptions,
   dataColumns,
   height,
-  contentMapping,
+  contentMappingCount,
   contentMappingData,
   setNumberOfElements,
 }) => {
@@ -115,7 +115,7 @@ const ContainerStixCoreObjectsMappingLines = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       height={height}
-      contentMapping={contentMapping}
+      contentMappingCount={contentMappingCount}
       contentMappingData={contentMappingData}
     />
   );
