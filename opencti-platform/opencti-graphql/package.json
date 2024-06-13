@@ -20,7 +20,7 @@
     "start:cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,poisonivy",
-    "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e",
+    "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy",
     "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-integration/00-inject/loader-test.ts",
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",

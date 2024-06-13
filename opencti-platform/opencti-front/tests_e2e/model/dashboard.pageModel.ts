@@ -1,30 +1,29 @@
 import { Page } from '@playwright/test';
 
 export default class DashboardPage {
-  constructor(private page: Page) {
-  }
+  constructor(private page: Page) {}
 
   getPage() {
     return this.page.getByTestId('dashboard-page');
   }
 
-  openButtonModal() {
+  getPageTitle() {
+    return this.page.getByLabel('Workspace');
+  }
+
+  getCreateMenuButton() {
     return this.page.getByLabel('Create', { exact: true });
   }
 
-  addNewDashboard() {
+  getImportButton() {
+    return this.page.getByLabel('Import dashboard', { exact: true });
+  }
+
+  getAddNewButton() {
     return this.page.getByLabel('Create dashboard', { exact: true });
   }
 
-  getDashboardNameInput() {
-    return this.page.getByLabel('Name');
-  }
-
-  getCreateDashboardButton() {
-    return this.page.getByRole('button', { name: 'Create' });
-  }
-
   getItemFromList(name: string) {
-    return this.page.getByRole('link', { name }).first();
+    return this.page.getByText(name, { exact: true });
   }
 }

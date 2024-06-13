@@ -116,11 +116,11 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         size="large"
         style={{ marginTop: 3 }}
         color="primary"
-        data-testid="popover"
+        aria-label={t_i18n('Workspace popover of actions')}
       >
         <MoreVert />
       </IconButton>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Workspace menu">
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         {workspace.type === 'dashboard' && [
           <MenuItem key="menu_duplicate" onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>,

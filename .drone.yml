@@ -356,7 +356,7 @@ services:
       - pip3 install --upgrade --force .
       - cd /tmp/e2e-start-platform/opencti-graphql
       - yarn build:dev
-      - yarn wait-api && yarn insert:dev &
+      - yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
 volumes:

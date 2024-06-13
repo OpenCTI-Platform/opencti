@@ -1,8 +1,12 @@
 import { Page } from '@playwright/test';
+import SelectFieldPageModel from './field/SelectField.pageModel';
+import DateFieldPageModel from './field/DateField.pageModel';
 
 export default class DashboardDetailsPage {
-  constructor(private page: Page) {
-  }
+  accessSelect = new SelectFieldPageModel(this.page, 'Relative time', false);
+  startDateField = new DateFieldPageModel(this.page, 'Start date');
+
+  constructor(private page: Page) {}
 
   getDashboardDetailsPage() {
     return this.page.getByTestId('dashboard-details-page');
@@ -12,27 +16,19 @@ export default class DashboardDetailsPage {
     return this.page.getByRole('heading', { name });
   }
 
-  openPopUpButton() {
-    return this.page.getByTestId('popover');
+  getActionsPopover() {
+    return this.page.getByLabel('Workspace popover of actions');
   }
 
-  getEditButton() {
-    return this.page.getByRole('menuitem', { name: 'Update' });
+  getActionButton(name: string) {
+    return this.page.getByRole('menuitem', { name });
   }
 
   getDeleteButton() {
-    return this.page.getByRole('menuitem', { name: 'Delete' });
-  }
-
-  getDelete() {
     return this.page.getByRole('button', { name: 'Delete' });
   }
 
-  addNewDashboardTag() {
-    return this.page.getByLabel('Add tag');
-  }
-
-  getTag(name: string) {
-    return this.page.getByRole('button', { name });
+  getDuplicateButton() {
+    return this.page.getByRole('button', { name: 'Duplicate' });
   }
 }
