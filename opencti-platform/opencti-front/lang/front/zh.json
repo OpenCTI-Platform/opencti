@@ -2786,6 +2786,7 @@
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "您正在使用此后台任务针对超过1000个实体，请确保您正在执行的操作!",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "您的账户已过期。如果您希望重新激活您的账户，请联系您的管理员。",
   "Your confidence level is insufficient to edit this object.": "您的置信度不足以编辑此对象。",
+  "Your max shareable markings will be applied to the content max markings": "您的最大可共享标记将应用于内容最大标记",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "您的 URL 包含已弃用的格式的筛选器，URL 中存储的参数已被删除。",
   "Zoom": "放大",
   "Zoom in": "放大",

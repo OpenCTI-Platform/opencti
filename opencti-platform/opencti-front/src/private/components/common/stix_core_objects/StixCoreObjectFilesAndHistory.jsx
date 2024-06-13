@@ -14,6 +14,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
+import { InfoOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
@@ -392,7 +394,12 @@ const StixCoreObjectFilesAndHistory = ({
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
               >
-                <DialogTitle>{t_i18n('Generate an export')}</DialogTitle>
+                <DialogTitle>
+                  {t_i18n('Generate an export')}
+                  <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                    <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                  </Tooltip>
+                </DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}

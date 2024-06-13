@@ -2786,6 +2786,7 @@
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "¡Estás seleccionando más de 1000 entidades en esta tarea en segundo plano así que estáte seguro de que sabes lo que haces!",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Su cuenta ha expirado. Si desea reactivar su cuenta, comuníquese con su administrador.",
   "Your confidence level is insufficient to edit this object.": "Tu nivel de confianza es insuficiente para editar este objeto.",
+  "Your max shareable markings will be applied to the content max markings": "Tus marcas máximas compartibles se aplicarán a las marcas máximas del contenido",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Su URL contiene filtros en un formato obsoleto, los parámetros almacenados en la URL han sido eliminados.",
   "Zoom": "Zoom",
   "Zoom in": "Ampliar",

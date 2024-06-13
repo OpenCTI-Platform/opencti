@@ -378,7 +378,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             divider={true}
                             button={false}
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} width={150}>
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed

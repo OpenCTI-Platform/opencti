@@ -8,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
-import { Add } from '@mui/icons-material';
+import { Add, InfoOutlined } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
@@ -199,7 +199,12 @@ class StixDomainObjectsExportCreationComponent extends Component {
                       fullWidth={true}
                       data-testid="StixDomainObjectsExportCreationDialog"
                     >
-                      <DialogTitle>{t('Generate an export')}</DialogTitle>
+                      <DialogTitle>
+                        {t('Generate an export')}
+                        <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                          <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
+                        </Tooltip>
+                      </DialogTitle>
                       <DialogContent>
                         <Field
                           component={SelectField}
