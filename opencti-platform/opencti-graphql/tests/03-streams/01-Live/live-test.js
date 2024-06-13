@@ -9,7 +9,7 @@ import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 
-describe.skip('Live streams tests', () => {
+describe('Live streams tests', () => {
   const getElementsCounting = async () => {
     const data = {};
     const stixCoreAgg = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });

@@ -104,7 +104,7 @@ describe('Raw streams tests', () => {
       }
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
-      expect(mergeEvents.length).toBe(7);
+      expect(mergeEvents.length).toBe(8);
       for (let mergeIndex = 0; mergeIndex < mergeEvents.length; mergeIndex += 1) {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
         const { context } = insideData;

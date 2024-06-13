@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ADMIN_USER,
-  API_TOKEN,
-  API_URI,
-  FIFTEEN_MINUTES,
-  PYTHON_PATH,
-  SYNC_LIVE_EVENTS_SIZE,
-  SYNC_LIVE_START_REMOTE_URI,
-  testContext,
-} from '../../utils/testQuery';
+import { ADMIN_USER, ADMIN_API_TOKEN, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, SYNC_LIVE_EVENTS_SIZE, SYNC_LIVE_START_REMOTE_URI, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { FROM_START, now } from '../../../src/utils/format';
 import { checkPostSyncContent, checkPreSyncContent } from '../sync-utils';
@@ -22,9 +13,9 @@ describe('Database sync live', () => {
       // Sync
       const syncOpts = [
         API_URI,
-        API_TOKEN,
+        ADMIN_API_TOKEN,
         SYNC_LIVE_START_REMOTE_URI,
-        API_TOKEN,
+        ADMIN_API_TOKEN,
         SYNC_LIVE_EVENTS_SIZE,
         FROM_START,
         now(),
