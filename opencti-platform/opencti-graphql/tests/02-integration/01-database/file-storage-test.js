@@ -1,22 +1,12 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { deleteFile, downloadFile, loadFile } from '../../../src/database/file-storage';
+import { deleteFile, downloadFile, getFileName, guessMimeType, loadFile, streamConverter } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { ADMIN_USER, testContext, API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { allFilesForPaths, paginatedForPathWithEnrichment } from '../../../src/modules/internal/document/document-domain';
 import { utcDate } from '../../../src/utils/format';
 import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
-
-const streamConverter = (stream) => {
-  return new Promise((resolve) => {
-    let data = '';
-    stream.on('data', (chunk) => {
-      data += chunk.toString();
-    });
-    stream.on('end', () => resolve(data));
-  });
-};
 
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName}`;
@@ -25,7 +15,7 @@ const importFileId = `import/global/${exportFileName}`;
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const importOpts = [API_URI, API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
+    const importOpts = [API_URI, ADMIN_API_TOKEN, malware.id, exportFileName, [MARKING_TLP_AMBER_STRICT]];
     // local exporter create an export and also upload the file as an import
     const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_exporter.py', importOpts);
     expect(execution).not.toBeNull();
@@ -106,6 +96,8 @@ describe('File storage file listing', () => {
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10700);
+    expect(file.metaData).toBeDefined();
+    expect(file.metaData.mimetype).toBe('application/json');
   });
   it('should delete file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
@@ -113,5 +105,22 @@ describe('File storage file listing', () => {
     expect(deleted).toBeTruthy();
     deleted = await deleteFile(testContext, ADMIN_USER, importFileId);
     expect(deleted).toBeTruthy();
+  });
+});
+
+describe('File storage utils', () => {
+  it('should guess mimetype correctly', async () => {
+    expect(guessMimeType('path/to/iamajsonfile.json')).toBe('application/json');
+    expect(guessMimeType('path/to/iamapdf.pdf')).toBe('application/pdf');
+    expect(guessMimeType('path/to/i Have space and 💖.txt')).toBe('text/plain');
+    expect(guessMimeType('unknown')).toBe('text/plain');
+    expect(guessMimeType('export/Malware/b4bebef0-7f1b-4212-b09d-f376adb3181a/(ExportFileStix)_Malware-Paradise Ransomware_all.json')).toBe('application/json');
+  });
+
+  it('should find filename correctly', async () => {
+    expect(getFileName('path/to/iamajsonfile.json')).toBe('iamajsonfile.json');
+    expect(getFileName('path/to/iamapdf.pdf')).toBe('iamapdf.pdf');
+    expect(getFileName('unknown')).toBe('unknown');
+    expect(getFileName('path/to/i Have spàcé and 💖.txt')).toBe('i Have spàcé and 💖.txt');
   });
 });

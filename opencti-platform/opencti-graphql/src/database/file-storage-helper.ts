@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { join } from 'node:path';
 import fs from 'node:fs';
-import { deleteFiles, loadedFilesListing, upload } from './file-storage';
+import { copyFile, deleteFile, deleteFiles, loadedFilesListing, storeFileConverter, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
@@ -22,6 +22,26 @@ interface FileUploadData {
   createReadStream: () => Readable,
   filename: string,
   mimeType?: string,
+}
+
+interface S3File {
+  id: string,
+  name: string,
+  size: number,
+  information: string,
+  lastModified: Date,
+  lastModifiedSinceMin: Date,
+  metaData: {
+    entity_id?: string
+    mimetype: string
+    order?: number
+    description?: string
+    inCarousel?: boolean
+    filename?: string
+    file_markings?: string[]
+    version?: string
+  }
+  uploadStatus: string,
 }
 
 /**
@@ -54,7 +74,7 @@ export const IMPORT_STORAGE_PATH = 'import';
 export const EXPORT_STORAGE_PATH = 'export';
 
 export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
-
+export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH];
 /**
  * Delete all files in storage that relates to an element.
  * @param context
@@ -103,7 +123,8 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
-      if (currentFile) {
+      logApp.info('[FILE STORAGE] preparing for delete', { currentFile });
+      if (currentFile?.id) {
         ids.push(currentFile.id);
       }
     }
@@ -113,4 +134,42 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
 
   // Once all files are deleted, then bucket can be removed.
   // await deleteBucket();
+};
+
+/**
+ * Move all file from source entity to target entity and then cleanup directories on S3.
+ * @param context
+ * @param user
+ * @param sourceEntity
+ * @param targetEntity
+ */
+export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user: AuthUser, sourceEntity: BasicStoreBase, targetEntity: BasicStoreBase) => {
+  const updatedXOpenctiFiles: Partial<S3File> [] = [];
+
+  for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
+    try {
+      const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;
+      const targetPath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${targetEntity.entity_type}/${targetEntity.internal_id}`;
+      const importFilesToMove = await allFilesForPaths(context, user, [sourcePath]);
+
+      for (let fileI = 0; fileI < importFilesToMove.length; fileI += 1) {
+        const sourceFileDocument = importFilesToMove[fileI];
+        const sourceFileS3Id = `${sourcePath}/${sourceFileDocument.name}`;
+        const targetFileS3Id = `${targetPath}/${sourceFileDocument.name}`;
+        logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
+        const newFile = await copyFile(sourceFileS3Id, targetFileS3Id, sourceFileDocument, targetEntity.internal_id);
+        if (newFile) {
+          await deleteFile(context, user, sourceFileS3Id); // TODO to be removed ? This will be done by merge delete no ?
+
+          const newFileForEntity = storeFileConverter(user, newFile);
+          logApp.info(' [FILE STORAGE] Adding x_opencti_file', { newFileForEntity });
+          updatedXOpenctiFiles.push(newFileForEntity);
+        }
+      }
+    } catch (err) {
+      logApp.error('[FILE STORAGE] Merge of files failed', { cause: err, user_id: user.id, sourceEntity, targetEntity, folder: ALL_MERGEABLE_FOLDERS[folderI] });
+    }
+  }
+
+  return updatedXOpenctiFiles;
 };

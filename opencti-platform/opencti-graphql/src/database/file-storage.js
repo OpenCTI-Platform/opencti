@@ -6,6 +6,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
+import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
@@ -113,7 +114,7 @@ export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
   const up = await loadFile(user, id);
-  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
+  logApp.info(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
@@ -136,7 +137,7 @@ export const deleteFile = async (context, user, id) => {
 };
 
 export const deleteFiles = async (context, user, ids) => {
-  logApp.debug(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
+  logApp.info(`[FILE STORAGE] delete files ${ids} by ${user.user_email}`);
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(context, user, id);
@@ -153,6 +154,46 @@ export const downloadFile = async (id) => {
     return object.Body;
   } catch (err) {
     logApp.info('[FILE STORAGE] Cannot retrieve file from S3', { error: err });
+    return null;
+  }
+};
+
+/**
+ * - Copy file from a place to another in S3
+ * - Store file in documents
+ * @param sourceId
+ * @param targetId
+ * @param sourceDocument
+ * @param targetEntityId
+ * @returns {Promise<null|void>} the document entity on success, null on errors.
+ */
+export const copyFile = async (sourceId, targetId, sourceDocument, targetEntityId) => {
+  try {
+    const input = {
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${sourceId}`, // CopySource must start with bucket name, but not Key
+      Key: targetId
+    };
+    const command = new CopyObjectCommand(input);
+    await s3Client.send(command);
+    // Register in elastic
+    const targetMetadata = { ...sourceDocument.metaData, entity_id: targetEntityId };
+
+    const file = {
+      id: targetId,
+      name: sourceDocument.name,
+      size: sourceDocument.size,
+      information: '',
+      lastModified: new Date(),
+      lastModifiedSinceMin: sinceNowInMinutes(new Date()),
+      metaData: targetMetadata,
+      uploadStatus: 'complete',
+    };
+    await indexFileToDocument(file);
+    logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
+    return file;
+  } catch (err) {
+    logApp.error('[FILE STORAGE] Cannot copy file in S3', { error: err, sourceId, targetId });
     return null;
   }
 };
@@ -174,6 +215,9 @@ export const getFileContent = async (id, encoding = 'utf8') => {
   return streamToString(object.Body, encoding);
 };
 
+/**
+ * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
+ */
 export const storeFileConverter = (user, file) => {
   return {
     id: file.id,
@@ -183,60 +227,53 @@ export const storeFileConverter = (user, file) => {
   };
 };
 
-export const loadFile = async (user, filename, opts = {}) => {
+/**
+ * Get S3 metadata information of file like size (calling HEAD on S3 file).
+ */
+export const loadFile = async (user, fileS3Path, opts = {}) => {
   const { dontThrow = false } = opts;
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
-      Key: filename
+      Key: fileS3Path
     }));
-    const metaData = {
-      version: object.Metadata.version,
-      description: object.Metadata.description,
-      list_filters: object.Metadata.list_filters,
-      filename: object.Metadata.filename,
-      mimetype: object.Metadata.mimetype,
-      labels_text: object.Metadata.labels_text,
-      labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
-      encoding: object.Metadata.encoding,
-      creator_id: object.Metadata.creator_id,
-      entity_id: object.Metadata.entity_id,
-      external_reference_id: object.Metadata.external_reference_id,
-      messages: object.Metadata.messages,
-      errors: object.Metadata.errors,
-      inCarousel: object.Metadata.inCarousel,
-      order: object.Metadata.order
-    };
+    const mimeTypeResolved = guessMimeType(fileS3Path);
     return {
-      id: filename,
-      name: decodeURIComponent(object.Metadata.filename || 'unknown'),
+      id: fileS3Path,
+      name: getFileName(fileS3Path),
       size: object.ContentLength,
       information: '',
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
       uploadStatus: 'complete',
-      metaData,
+      metaData: { mimetype: mimeTypeResolved },
     };
   } catch (err) {
     if (dontThrow) {
-      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename });
+      logApp.error('[FILE STORAGE] Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
       return undefined;
     }
-    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename });
+    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
   }
 };
 
-const getFileName = (fileId) => {
-  return fileId?.includes('/') ? R.last(fileId.split('/')) : fileId;
+/**
+ * Get (filename + extension) from S3 file full path.
+ * @param fileId
+ * @returns {`${string}${string}`}
+ */
+export const getFileName = (fileId) => {
+  const parsedFilename = path.parse(fileId);
+  return `${parsedFilename.name}${parsedFilename.ext}`;
 };
 
-const guessMimeType = (fileId) => {
+export const guessMimeType = (fileId) => {
   const fileName = getFileName(fileId);
-  const mimeType = mime.lookup(fileName) || null;
+  const mimeType = mime.lookup(fileName);
   if (!mimeType && fileName === 'pdf_report') {
     return 'application/pdf';
   }
-  return mimeType;
+  return mimeType || 'text/plain';
 };
 
 export const isFileObjectExcluded = (id) => {
@@ -344,7 +381,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   if (!metadata.version) {
     metadata.version = now();
   }
-  const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
+  const { createReadStream, filename, encoding = '' } = await fileUpload;
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   const key = `${filePath}/${truncatedFileName}`;
   const currentFile = await documentFindById(context, user, key);
@@ -361,7 +398,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = guessMimeType(key) || mimetype;
+  const fileMime = guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
@@ -375,8 +412,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     params: {
       Bucket: bucketName,
       Key: key,
-      Body: readStream,
-      Metadata: fullMetadata
+      Body: readStream
     }
   });
   await s3Upload.done();

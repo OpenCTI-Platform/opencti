@@ -199,7 +199,7 @@ import {
   controlUserConfidenceAgainstElement
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
-import { deleteAllObjectFiles, uploadToStorage } from './file-storage-helper';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
 import { storeFileConverter } from './file-storage';
 
 // region global variables
@@ -1102,6 +1102,22 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetEntity.category);
     await updateElasticVocabularyValue(sourceEntities.map((s) => s.name), targetEntity.name, completeCategory);
   }
+
+  // Prepare S3 file move
+  // Merge files on S3 and update x_opencti_files path in source => it will be added to target by the merge operation.
+  logApp.info('[OPENCTI] Copying files on S3 before merging x_opencti_files');
+  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
+
+  for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
+    const entity = sourceEntitiesWithFiles[i];
+    if (entity.x_opencti_files) {
+      if (sourceEntitiesWithFiles[i].x_opencti_files.length > 0) {
+        sourceEntitiesWithFiles[i].x_opencti_files = await moveAllFilesFromEntityToAnother(context, user, sourceEntitiesWithFiles[i], targetEntity);
+      }
+    }
+  }
+  logApp.info('[OPENCTI] Copy of files on S3 ended.');
+
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
@@ -1246,6 +1262,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     },
     { concurrency: ES_MAX_CONCURRENCY }
   );
+
   // Take care of relations deletions to prevent duplicate marking definitions.
   const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
@@ -1301,6 +1318,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
+
   // eslint-disable-next-line no-use-before-define
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
