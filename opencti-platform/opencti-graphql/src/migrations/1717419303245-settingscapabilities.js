@@ -43,7 +43,7 @@ export const up = async (next) => {
     for (let i = 0; i < roles.length; i += 1) {
       const roleId = roles[i].id;
       const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
-      const hasAdminCapability = capabilities.some((capability) => capability.name === 'SETTINGS');
+      const hasAdminCapability = capabilities.some((capability) => capability.name.startsWith('SETTINGS'));
       if (hasAdminCapability) {
         // Select 'Access Administration Parameters'
         const parametersInput = { fromId: roleId, toId: parametersCapability.id, relationship_type: 'has-capability' };
