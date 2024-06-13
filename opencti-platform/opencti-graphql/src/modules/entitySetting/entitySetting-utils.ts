@@ -12,7 +12,7 @@ import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isEmptyField } from '../../database/utils';
 import type { MandatoryType } from '../../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
@@ -149,8 +149,12 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
           isMultiple = refDef.multiple;
         }
         const defaultValue = getDefaultValues(attr, isMultiple);
+
         const isNumeric = isNumericAttribute(attr.name);
-        const parsedValue = isNumeric ? Number(defaultValue) : defaultValue;
+        const isBoolean = isBooleanAttribute(attr.name);
+        let parsedValue: any = defaultValue;
+        if (isNumeric) parsedValue = Number(defaultValue);
+        if (isBoolean) parsedValue = defaultValue === 'true';
 
         if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
           const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
