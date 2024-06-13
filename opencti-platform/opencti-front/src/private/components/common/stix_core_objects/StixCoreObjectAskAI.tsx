@@ -250,40 +250,41 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({ inst
           });
         },
       });
+    } else if (destination === 'file') {
+      let fileName = newFileName ?? instanceName;
+      if (format === 'text') {
+        fileName += '.txt';
+      } else if (format === 'html') {
+        fileName += '.html';
+      } else if (format === 'markdown') {
+        fileName += '.md';
+      } else if (format === 'json') {
+        fileName += '.json';
+      }
+      const blob = new Blob([acceptedResult ?? ''], {
+        type,
+      });
+      const file = new File([blob], fileName, {
+        type,
+      });
+      const fileMarkings = instanceMarkings ?? [];
+      commitMutationCreateFile({
+        variables: {
+          id: instanceId,
+          file,
+          fileMarkings,
+          noTriggerImport: false,
+        },
+        onCompleted: (response: StixCoreObjectContentFilesUploadStixCoreObjectMutation$data) => {
+          setAcceptedResult(null);
+          setIsSubmitting(false);
+          navigate({
+            pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' && format !== 'json' ? 'content' : 'files'}`,
+            search: `${createSearchParams({ forceFile: 'true', currentFileId: response?.stixCoreObjectEdit?.importPush?.id ?? '' })}`,
+          });
+        },
+      });
     }
-    let fileName = newFileName ?? instanceName;
-    if (format === 'text') {
-      fileName += '.txt';
-    } else if (format === 'html') {
-      fileName += '.html';
-    } else if (format === 'markdown') {
-      fileName += '.md';
-    } else if (format === 'json') {
-      fileName += '.json';
-    }
-    const blob = new Blob([acceptedResult ?? ''], {
-      type,
-    });
-    const file = new File([blob], fileName, {
-      type,
-    });
-    const fileMarkings = instanceMarkings ?? [];
-    commitMutationCreateFile({
-      variables: {
-        id: instanceId,
-        file,
-        fileMarkings,
-        noTriggerImport: false,
-      },
-      onCompleted: (response: StixCoreObjectContentFilesUploadStixCoreObjectMutation$data) => {
-        setAcceptedResult(null);
-        setIsSubmitting(false);
-        navigate({
-          pathname: `${resolveLink(instanceType)}/${instanceId}/${type === 'container' && format !== 'json' ? 'content' : 'files'}`,
-          search: `${createSearchParams({ forceFile: 'true', currentFileId: response?.stixCoreObjectEdit?.importPush?.id ?? '' })}`,
-        });
-      },
-    });
   };
   return (
     <>
