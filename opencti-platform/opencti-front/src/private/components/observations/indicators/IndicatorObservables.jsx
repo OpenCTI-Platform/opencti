@@ -10,14 +10,13 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import IndicatorAddObservables from './IndicatorAddObservables';
 import IndicatorObservablePopover from './IndicatorObservablePopover';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 const styles = (theme) => ({
   itemHead: {
@@ -46,14 +45,6 @@ const styles = (theme) => ({
   sortIcon: {
     float: 'left',
     margin: '-5px 0 0 15px',
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 });
 
@@ -136,20 +127,7 @@ class IndicatorObservablesComponent extends Component {
                       className={classes.bodyItem}
                       style={inlineStyles.entity_type}
                     >
-                      <Chip
-                        classes={{ root: classes.chipInList }}
-                        style={{
-                          backgroundColor: hexToRGB(
-                            itemColor(observable.entity_type),
-                            0.08,
-                          ),
-                          color: itemColor(observable.entity_type),
-                          border: `1px solid ${itemColor(
-                            observable.entity_type,
-                          )}`,
-                        }}
-                        label={t(`entity_${observable.entity_type}`)}
-                      />
+                      <ItemEntityType entityType={observable.entity_type} />
                     </div>
                     <div
                       className={classes.bodyItem}

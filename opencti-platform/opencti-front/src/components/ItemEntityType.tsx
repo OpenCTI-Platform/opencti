@@ -9,6 +9,7 @@ import useHelper from '../utils/hooks/useHelper';
 import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
+import { truncate } from '../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,6 +34,7 @@ const useStyles = makeStyles(() => ({
 
 interface ItemEntityTypeProps {
   entityType: string;
+  maxLength?: number;
   variant?: string;
   showIcon?: boolean;
   isRestricted?: boolean;
@@ -41,6 +43,7 @@ interface ItemEntityTypeProps {
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   variant = 'inList',
+  maxLength,
   entityType,
   showIcon = false,
   isRestricted = false,
@@ -94,7 +97,9 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   };
   const getLabel = () => {
     if (isRestricted) return t_i18n('Restricted');
-    return t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
+    const label = t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
+    if (maxLength) return truncate(label, maxLength);
+    return label;
   };
 
   return (

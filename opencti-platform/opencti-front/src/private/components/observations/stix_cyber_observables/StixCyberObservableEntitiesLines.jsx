@@ -12,7 +12,6 @@ import withStyles from '@mui/styles/withStyles';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import inject18n from '../../../../components/i18n';
@@ -22,7 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -58,13 +57,6 @@ const styles = (theme) => ({
     display: 'inline-block',
     height: '1em',
     backgroundColor: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 });
 
@@ -136,12 +128,9 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '10%' }}
                         >
-                          <Chip
-                            variant="outlined"
-                            classes={{ root: classes.chipInList }}
-                            style={{ width: 120 }}
-                            color="primary"
-                            label={t(`relationship_${node.relationship_type}`)}
+                          <ItemEntityType
+                            entityType={node.relationship_type}
+                            styles={{ width: 120 }}
                           />
                         </div>
                       )}
@@ -149,74 +138,15 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                         className={classes.bodyItem}
                         style={{ width: '10%' }}
                       >
-                        <Chip
-                          classes={{ root: classes.chipInList }}
-                          style={{
-                            width: 140,
-                            backgroundColor: hexToRGB(
-                              itemColor(
-                                // eslint-disable-next-line no-nested-ternary
-                                !restricted
-                                  ? targetEntity.entity_type
-                                      === 'stix_relation'
-                                    || targetEntity.entity_type === 'stix-relation'
-                                    ? targetEntity.parent_types[0]
-                                    : targetEntity.entity_type
-                                  : 'Restricted',
-                              ),
-                              0.08,
-                            ),
-                            color: itemColor(
-                              // eslint-disable-next-line no-nested-ternary
-                              !restricted
-                                ? targetEntity.entity_type
-                                    === 'stix_relation'
-                                  || targetEntity.entity_type === 'stix-relation'
-                                  ? targetEntity.parent_types[0]
-                                  : targetEntity.entity_type
-                                : 'Restricted',
-                            ),
-                            border: `1px solid ${itemColor(
-                              // eslint-disable-next-line no-nested-ternary
-                              !restricted
-                                ? targetEntity.entity_type
-                                    === 'stix_relation'
-                                  || targetEntity.entity_type === 'stix-relation'
-                                  ? targetEntity.parent_types[0]
-                                  : targetEntity.entity_type
-                                : 'Restricted',
-                            )}`,
-                          }}
-                          label={
-                            <>
-                              <ItemIcon
-                                variant="inline"
-                                type={
-                                  // eslint-disable-next-line no-nested-ternary
-                                  !restricted
-                                    ? targetEntity.entity_type
-                                        === 'stix_relation'
-                                      || targetEntity.entity_type
-                                        === 'stix-relation'
-                                      ? targetEntity.parent_types[0]
-                                      : targetEntity.entity_type
-                                    : 'Restricted'
-                                }
-                              />
-                              {!restricted
-                                ? t(
-                                  `entity_${
-                                    targetEntity.entity_type
-                                        === 'stix_relation'
-                                      || targetEntity.entity_type
-                                        === 'stix-relation'
-                                      ? targetEntity.parent_types[0]
-                                      : targetEntity.entity_type
-                                  }`,
-                                )
-                                : t('Restricted')}
-                            </>
-                          }
+                        <ItemEntityType
+                          entityType={targetEntity.entity_type
+                              === 'stix_relation'
+                            || targetEntity.entity_type === 'stix-relation'
+                            ? targetEntity.parent_types[0]
+                            : targetEntity.entity_type}
+                          isRestricted={restricted}
+                          styles={{ width: 140 }}
+                          showIcon
                         />
                       </div>
                       <div

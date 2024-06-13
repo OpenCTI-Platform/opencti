@@ -52,6 +52,10 @@ const styles = (theme) => ({
     height: 20,
     float: 'left',
     width: 120,
+    borderRadius: 4,
+    backgroundColor: theme.palette.background.default,
+    color: theme.palette.chip.main,
+    border: `1px solid ${theme.palette.primary.main}`,
   },
 });
 

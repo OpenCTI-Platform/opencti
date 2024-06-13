@@ -12,13 +12,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 const styles = (theme) => ({
   paper: {
@@ -50,13 +49,6 @@ const styles = (theme) => ({
   itemIconDisabled: {
     marginRight: 0,
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 });
 
@@ -381,23 +373,7 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                                     className={classes.bodyItem}
                                     style={{ width: '12%' }}
                                   >
-                                    <Chip
-                                      classes={{ root: classes.chipInList }}
-                                      style={{
-                                        width: 120,
-                                        backgroundColor: hexToRGB(
-                                          itemColor(container.entity_type),
-                                          0.08,
-                                        ),
-                                        color: itemColor(container.entity_type),
-                                        border: `1px solid ${itemColor(
-                                          container.entity_type,
-                                        )}`,
-                                      }}
-                                      label={t(
-                                        `entity_${container.entity_type}`,
-                                      )}
-                                    />
+                                    <ItemEntityType entityType={container.entity_type} />
                                   </div>
                                   <Tooltip title={container.name}>
                                     <div
