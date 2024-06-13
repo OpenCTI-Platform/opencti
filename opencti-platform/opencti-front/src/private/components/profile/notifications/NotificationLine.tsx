@@ -217,7 +217,7 @@ NotificationLineProps
     }
   };
   const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
-  const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id);
+  const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
   const isClickableLine = isDigest || isLinkAvailable;
   return (
     <div>
