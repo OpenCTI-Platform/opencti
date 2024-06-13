@@ -168,7 +168,11 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
     description: 'Send notification to the user email',
     notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL,
     notifier_configuration: JSON.stringify({
-      title: '[<%=notification.trigger_type%>] <%=notification.name%>',
+      title: '<% if(notification.trigger_type === \'live\'){ %>\n'
+        + '[<%=notification.trigger_type%>] <%= notification_content[0].title %>'
+        + ' <% } else{ %>  \n'
+        + '[<%=notification.trigger_type%>] <%= notification.name%>'
+        + '<% } %>',
       template: `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
    <head>
@@ -263,7 +267,6 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
                                                             </tr>
                                                          </tbody>
                                                       </table>
-                                                      <h2 style="font-size: 18px; font-weight: 400; margin: 0; text-align: center">Automatic digest subscription</h2>
                                                       <table border="0" cellpadding="0" cellspacing="0" width="100%"style="font-size: 0; height: 30px; width: 100%; min-width: 100%; line-height: 0;">
                                                          <tbody>
                                                             <tr>

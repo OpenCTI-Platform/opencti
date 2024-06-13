@@ -151,6 +151,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     filterGroups: []
   };
   return {
+    internal_id: `default-trigger-${user.id}`,
     name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
