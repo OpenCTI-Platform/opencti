@@ -139,7 +139,7 @@
     "passport-google-oauth": "2.0.0",
     "passport-ldapauth": "3.0.1",
     "passport-local": "1.0.0",
-    "passport-saml": "3.2.4",
+    "@node-saml/passport-saml": "4.0.4",
     "prom-client": "15.1.0",
     "python-shell": "5.0.0",
     "ramda": "0.29.1",
