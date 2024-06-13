@@ -75,7 +75,7 @@ const amqpHttpClient = async () => {
 export const purgeConnectorQueues = async (connector) => {
   const httpClient = await amqpHttpClient();
   const pathPushQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
-  const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}`;
+  const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}/contents`;
 
   await httpClient.delete(pathPushQueue).then((response) => response.data);
   await httpClient.delete(pathListenQueue).then((response) => response.data);
