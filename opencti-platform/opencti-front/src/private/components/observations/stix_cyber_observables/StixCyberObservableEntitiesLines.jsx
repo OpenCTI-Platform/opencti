@@ -89,6 +89,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             const { node } = stixCoreRelationshipEdge;
             let restricted = false;
             let targetEntity = null;
+            let targetEntityType = null;
             if (node.from && node.from.id === stixCyberObservableId) {
               targetEntity = node.to;
             } else if (node.to && node.to.id === stixCyberObservableId) {
@@ -98,6 +99,13 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             }
             if (targetEntity === null) {
               restricted = true;
+            } else if (targetEntity.entity_type === 'stix_relation'
+                || targetEntity.entity_type === 'stix-relation'
+            ) {
+              const [parentType] = targetEntity.parent_types;
+              targetEntityType = parentType;
+            } else {
+              targetEntityType = targetEntity.entity_type;
             }
             // eslint-disable-next-line no-nested-ternary
             const link = !restricted
@@ -139,11 +147,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                         style={{ width: '10%' }}
                       >
                         <ItemEntityType
-                          entityType={targetEntity.entity_type
-                              === 'stix_relation'
-                            || targetEntity.entity_type === 'stix-relation'
-                            ? targetEntity.parent_types[0]
-                            : targetEntity.entity_type}
+                          entityType={targetEntityType}
                           isRestricted={restricted}
                           styles={{ width: 140 }}
                           showIcon
