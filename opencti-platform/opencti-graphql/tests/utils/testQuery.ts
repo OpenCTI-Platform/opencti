@@ -195,7 +195,8 @@ export const CONNECTOR_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 100,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [],
 };
 TESTING_GROUPS.push(CONNECTOR_GROUP);
 
