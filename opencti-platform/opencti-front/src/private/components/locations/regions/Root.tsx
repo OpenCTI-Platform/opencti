@@ -9,7 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -26,6 +26,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -81,21 +82,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { region, connectorsForImport, connectorsForExport } = data;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/regions/${region.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/regions/${region.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
+  const paddingRight = getPaddingRight(location.pathname, region?.id, '/dashboard/locations/regions');
   return (
     <>
       {region ? (
@@ -122,13 +109,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/locations/regions/${region.id}/knowledge`,
-                )
-                  ? `/dashboard/locations/regions/${region.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, region.id, '/dashboard/locations/regions')}
             >
               <Tab
                 component={Link}
@@ -190,12 +171,12 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
               element={<RegionKnowledge regionData={region} />}
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={region}
                 />
-              )}
+              }
             />
             <Route
               path="/analyses"

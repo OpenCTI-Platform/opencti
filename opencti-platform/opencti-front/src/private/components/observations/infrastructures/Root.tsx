@@ -9,9 +9,9 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import InfrastructurePopover from './InfrastructurePopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -24,6 +24,7 @@ import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -78,17 +79,17 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
+  const paddingRightValue = () => {
+    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return 200;
+    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return 350;
+    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content/mapping`)) return 0;
+    return 0;
+  };
   return (
     <>
       {infrastructure ? (
         <div
-          style={{
-            paddingRight: location.pathname.includes(
-              `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`,
-            )
-              ? 200
-              : 0,
-          }}
+          style={{ paddingRight: paddingRightValue() }}
         >
           <Breadcrumbs variant="object" elements={[
             { label: t_i18n('Observations') },
@@ -106,13 +107,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`,
-                )
-                  ? `/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, infrastructure.id, '/dashboard/observations/infrastructures')}
             >
               <Tab
                 component={Link}
@@ -156,7 +151,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
 
             <Route
               path="/"
-              element={<Infrastructure data={infrastructure} />}
+              element={<Infrastructure data={infrastructure}/>}
             />
             <Route
               path="/knowledge"
@@ -165,19 +160,19 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                   replace={true}
                   to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
                 />
-              )}
+                  )}
             />
             <Route
               path="/knowledge/*"
-              element={<InfrastructureKnowledge infrastructure={infrastructure} />}
+              element={<InfrastructureKnowledge infrastructure={infrastructure}/>}
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={infrastructure}
                 />
-              )}
+                  }
             />
             <Route
               path="/analyses/*"
@@ -206,7 +201,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound />
+        <ErrorNotFound/>
       )}
     </>
   );

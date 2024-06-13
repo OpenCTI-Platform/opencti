@@ -6,12 +6,12 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -87,6 +88,7 @@ class RootTool extends Component {
       location,
       params: { toolId },
     } = this.props;
+
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <>
@@ -116,21 +118,7 @@ class RootTool extends Component {
             if (props) {
               if (props.tool) {
                 const { tool } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/tools/${tool.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/tools/${tool.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, tool.id, '/dashboard/arsenal/tools');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -153,13 +141,7 @@ class RootTool extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/arsenal/tools/${tool.id}/knowledge`,
-                          )
-                            ? `/dashboard/arsenal/tools/${tool.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, tool.id, '/dashboard/arsenal/tools')}
                       >
                         <Tab
                           component={Link}
@@ -222,12 +204,12 @@ class RootTool extends Component {
                         )}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={tool}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses/*"

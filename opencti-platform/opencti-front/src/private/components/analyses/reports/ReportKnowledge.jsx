@@ -310,7 +310,7 @@ class ReportKnowledgeComponent extends Component {
                   );
                 }}
               />
-            )}
+              )}
           />
           <Route
             path="/timeline"

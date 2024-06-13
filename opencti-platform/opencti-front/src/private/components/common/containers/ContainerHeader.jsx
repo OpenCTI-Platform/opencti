@@ -44,6 +44,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -469,6 +470,8 @@ const ContainerHeader = (props) => {
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
+  const { isFeatureEnable } = useHelper();
+  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
     (o) => [
@@ -814,7 +817,7 @@ const ContainerHeader = (props) => {
                   </ToggleButton>
                 </Tooltip>
               )}
-              {modes.includes('content') && (
+              {!contentMappingFeatureFlag && modes.includes('content') && (
                 <Tooltip title={t_i18n('Content mapping view')}>
                   <ToggleButton
                     component={Link}

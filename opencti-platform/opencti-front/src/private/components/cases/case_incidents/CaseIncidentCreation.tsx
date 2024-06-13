@@ -32,6 +32,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,6 +104,8 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
+  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -152,9 +155,15 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          navigate(
-            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/knowledge/content`,
-          );
+          if (contentMappingFeatureFlag) {
+            navigate(
+              `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
+            );
+          } else {
+            navigate(
+              `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/knowledge/content`,
+            );
+          }
         }
       },
     });

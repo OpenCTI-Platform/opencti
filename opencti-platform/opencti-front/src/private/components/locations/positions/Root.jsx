@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Position from './Position';
@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -85,6 +86,7 @@ class RootPosition extends Component {
       params: { positionId },
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
+
     return (
       <>
         <Routes>
@@ -119,21 +121,7 @@ class RootPosition extends Component {
             if (props) {
               if (props.position) {
                 const { position } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/locations/positions/${position.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/locations/positions/${position.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, position.id, '/dashboard/locations/positions');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -158,13 +146,7 @@ class RootPosition extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/locations/positions/${position.id}/knowledge`,
-                          )
-                            ? `/dashboard/locations/positions/${position.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, position.id, '/dashboard/locations/positions')}
                       >
                         <Tab
                           component={Link}
@@ -230,12 +212,12 @@ class RootPosition extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={position}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

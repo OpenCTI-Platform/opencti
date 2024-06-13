@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
@@ -19,6 +19,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -81,6 +82,7 @@ class RootCourseOfAction extends Component {
       location,
       params: { courseOfActionId },
     } = this.props;
+
     return (
       <div>
         <QueryRenderer
@@ -90,21 +92,7 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -128,13 +116,7 @@ class RootCourseOfAction extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`,
-                          )
-                            ? `/dashboard/techniques/courses_of_action/${courseOfAction.id}`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action')}
                       >
                         <Tab
                           component={Link}
@@ -176,12 +158,12 @@ class RootCourseOfAction extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={courseOfAction}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/files"

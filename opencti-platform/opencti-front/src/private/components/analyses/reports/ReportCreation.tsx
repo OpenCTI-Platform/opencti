@@ -105,6 +105,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
+  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
@@ -163,9 +165,15 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          navigate(
-            `/dashboard/analyses/reports/${response.reportAdd?.id}/knowledge/content`,
-          );
+          if (contentMappingFeatureFlag) {
+            navigate(
+              `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
+            );
+          } else {
+            navigate(
+              `/dashboard/analyses/reports/${response.reportAdd?.id}/knowledge/content`,
+            );
+          }
         }
       },
     });

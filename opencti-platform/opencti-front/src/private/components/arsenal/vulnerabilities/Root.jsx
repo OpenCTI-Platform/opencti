@@ -6,12 +6,12 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
@@ -21,6 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -116,21 +117,7 @@ class RootVulnerability extends Component {
             if (props) {
               if (props.vulnerability) {
                 const { vulnerability } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -154,13 +141,7 @@ class RootVulnerability extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`,
-                          )
-                            ? `/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
                       >
                         <Tab
                           component={Link}
@@ -227,12 +208,12 @@ class RootVulnerability extends Component {
                         )}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={vulnerability}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

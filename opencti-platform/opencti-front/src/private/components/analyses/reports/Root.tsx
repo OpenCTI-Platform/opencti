@@ -9,6 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
@@ -22,11 +23,11 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -86,6 +87,7 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+
   return (
     <>
       <QueryRenderer
@@ -95,25 +97,8 @@ const RootReport = () => {
           if (props) {
             if (props.report) {
               const { report } = props;
-              let paddingRight = 0;
               const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/entities`,
-                )
-                || location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/observables`,
-                )
-              ) {
-                paddingRight = 250;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/reports/${report.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
+              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs variant="object" elements={[
@@ -141,13 +126,7 @@ const RootReport = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                        location.pathname.includes(
-                          `/dashboard/analyses/reports/${report.id}/knowledge`,
-                        )
-                          ? `/dashboard/analyses/reports/${report.id}/knowledge`
-                          : location.pathname
-                      }
+                      value={getCurrentTab(location.pathname, report.id, '/dashboard/analyses/reports')}
                     >
                       <Tab
                         component={Link}
@@ -225,10 +204,11 @@ const RootReport = () => {
                       )}
                     />
                     <Route
-                      path="/content"
+                      path="/content/*"
                       element={
-                        <StixCoreObjectContent
+                        <StixCoreObjectContentRoot
                           stixCoreObject={report}
+                          isContainer={true}
                         />
                       }
                     />

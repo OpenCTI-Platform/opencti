@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -17,7 +18,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
 import CaseIncidentPopover from './CaseIncidentPopover';
@@ -28,6 +28,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -84,32 +85,14 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+
   const {
     caseIncident: caseData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
-  let paddingRight = 0;
-  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData.id}`;
-  if (caseData) {
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/entities`,
-      )
-      || location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/observables`,
-      )
-    ) {
-      paddingRight = 250;
-    }
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/incidents/${caseData.id}/content`,
-      )
-    ) {
-      paddingRight = 350;
-    }
-  }
+  const isOverview = location.pathname === `/dashboard/cases/incidents/${caseData?.id}`;
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/incidents', false);
   return (
     <>
       {caseData ? (
@@ -135,13 +118,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/cases/incidents/${caseData.id}/knowledge`,
-                )
-                  ? `/dashboard/cases/incidents/${caseData.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/incidents')}
             >
               <Tab
                 component={Link}
@@ -214,11 +191,13 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 />}
             />
             <Route
-              path="/content"
+              path="/content/*"
               element={
-                <StixCoreObjectContent
+                <StixCoreObjectContentRoot
                   stixCoreObject={caseData}
-                />}
+                  isContainer={true}
+                />
+              }
             />
             <Route
               path="/knowledge/*"

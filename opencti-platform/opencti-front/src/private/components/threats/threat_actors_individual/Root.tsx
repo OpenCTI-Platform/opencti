@@ -9,8 +9,8 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -26,6 +26,7 @@ import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -96,21 +97,7 @@ const RootThreatActorIndividualComponent = ({
   );
   const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${data.id}`;
   const link = `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/threats/threat_actors_individual/${data.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
+  const paddingRight = getPaddingRight(location.pathname, data.id, '/dashboard/threats/threat_actors_individual');
   return (
     <>
       <Routes>
@@ -161,13 +148,7 @@ const RootThreatActorIndividualComponent = ({
               sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
             >
               <Tabs
-                value={
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`,
-                  )
-                    ? `/dashboard/threats/threat_actors_individual/${data.id}/knowledge`
-                    : location.pathname
-                }
+                value={getCurrentTab(location.pathname, data.id, '/dashboard/threats/threat_actors_individual')}
               >
                 <Tab
                   component={Link}
@@ -230,12 +211,12 @@ const RootThreatActorIndividualComponent = ({
                 }
               />
               <Route
-                path="/content"
-                element={(
-                  <StixCoreObjectContent
+                path="/content/*"
+                element={
+                  <StixCoreObjectContentRoot
                     stixCoreObject={data}
                   />
-                )}
+                }
               />
               <Route
                 path="/analyses"

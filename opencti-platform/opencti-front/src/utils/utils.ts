@@ -43,3 +43,47 @@ export const getFileUri = (id: string) => {
 };
 
 export const generateUniqueItemsArray = <T>(submittedArray: IterableIterator<T> | Array<T>) => Array.from(new Set(submittedArray));
+
+export const getCurrentTab = (locationPath: string, entityId: string, entityTypePath: string) => {
+  if (locationPath.includes(`${entityTypePath}/${entityId}/knowledge`)) return `${entityTypePath}/${entityId}/knowledge`;
+  if (locationPath.includes(`${entityTypePath}/${entityId}/content`)) return `${entityTypePath}/${entityId}/content`;
+  return locationPath;
+};
+
+export const getPaddingRight = (locationPath: string, entityId: string, entityTypePath: string, applyKnowledgePadding = true) => {
+  let paddingRight = 0;
+  if (entityId) {
+    if (
+      locationPath.includes(
+        `${entityTypePath}/${entityId}/entities`,
+      )
+      || locationPath.includes(
+        `${entityTypePath}/${entityId}/observables`,
+      )
+    ) {
+      paddingRight = 250;
+    }
+    if (
+      applyKnowledgePadding && locationPath.includes(
+        `${entityTypePath}/${entityId}/knowledge`,
+      )
+    ) {
+      paddingRight = 200;
+    }
+    if (
+      locationPath.includes(
+        `${entityTypePath}/${entityId}/content`,
+      )
+    ) {
+      paddingRight = 350;
+    }
+    if (
+      locationPath.includes(
+        `${entityTypePath}/${entityId}/content/mapping`,
+      )
+    ) {
+      paddingRight = 0;
+    }
+  }
+  return paddingRight;
+};

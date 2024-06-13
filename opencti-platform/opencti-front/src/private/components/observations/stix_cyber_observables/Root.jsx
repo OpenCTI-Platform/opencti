@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -22,6 +22,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import FileManager from '../../common/files/FileManager';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -86,6 +87,7 @@ class RootStixCyberObservable extends Component {
       location,
       params: { observableId },
     } = this.props;
+
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
       <>
@@ -96,8 +98,9 @@ class RootStixCyberObservable extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
+                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/observables', false);
                 return (
-                  <>
+                  <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
                       { label: t('Observations') },
                       { label: t('Observables'), link: '/dashboard/observations/observables' },
@@ -115,13 +118,7 @@ class RootStixCyberObservable extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`,
-                          )
-                            ? `/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, stixCyberObservable.id, '/dashboard/observations/observables')}
                       >
                         <Tab
                           component={Link}
@@ -174,7 +171,7 @@ class RootStixCyberObservable extends Component {
                           <StixCyberObservable
                             stixCyberObservable={props.stixCyberObservable}
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/knowledge"
@@ -182,25 +179,25 @@ class RootStixCyberObservable extends Component {
                           <StixCyberObservableKnowledge
                             stixCyberObservable={props.stixCyberObservable}
                           />
-                        }
+                                }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
-                            stixCoreObject={props.stixCyberObservable}
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
+                            stixCoreObject={stixCyberObservable}
                           />
-                        )}
+                                }
                       />
                       <Route
                         path="/analyses"
                         element={
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             stixDomainObjectOrStixCoreRelationship={
-                              props.stixCyberObservable
-                            }
+                                            props.stixCyberObservable
+                                        }
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/sightings"
@@ -221,7 +218,7 @@ class RootStixCyberObservable extends Component {
                               'System',
                             ]}
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/files"
@@ -232,7 +229,7 @@ class RootStixCyberObservable extends Component {
                             connectorsExport={props.connectorsForExport}
                             entity={props.stixCyberObservable}
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/history"
@@ -240,7 +237,7 @@ class RootStixCyberObservable extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -248,7 +245,7 @@ class RootStixCyberObservable extends Component {
                           <StixCoreRelationship
                             entityId={observableId}
                           />
-                        }
+                                }
                       />
                       <Route
                         path="/sightings/:sightingId"
@@ -256,13 +253,13 @@ class RootStixCyberObservable extends Component {
                           <StixSightingRelationship
                             entityId={observableId}
                           />
-                        }
+                                }
                       />
                     </Routes>
-                  </>
+                  </div>
                 );
               }
-              return <ErrorNotFound />;
+              return <ErrorNotFound/>;
             }
             return <Loader />;
           }}

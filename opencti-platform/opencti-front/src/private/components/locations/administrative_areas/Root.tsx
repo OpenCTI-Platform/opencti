@@ -8,7 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -25,6 +25,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -84,21 +85,7 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/administrative_areas/${administrativeArea.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
+  const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
     <>
       {administrativeArea ? (
@@ -127,13 +114,7 @@ const RootAdministrativeAreaComponent = ({
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`,
-                )
-                  ? `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, administrativeArea.id, '/dashboard/locations/administrative_areas')}
             >
               <Tab
                 component={Link}
@@ -193,18 +174,18 @@ const RootAdministrativeAreaComponent = ({
               }
             />
             <Route
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
+                  stixCoreObject={administrativeArea}
+                />
+              }
+            />
+            <Route
               path="/knowledge/*"
               element={
                 <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
               }
-            />
-            <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
-                  stixCoreObject={administrativeArea}
-                />
-              )}
             />
             <Route
               path="/analyses"

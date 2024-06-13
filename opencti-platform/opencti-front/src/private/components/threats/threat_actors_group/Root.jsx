@@ -6,8 +6,8 @@ import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSimulationResult from '../../common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import ThreatActorGroup from './ThreatActorGroup';
@@ -22,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -126,21 +127,7 @@ class RootThreatActorGroup extends Component {
               if (props.threatActorGroup) {
                 const { threatActorGroup } = props;
                 const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroup.id}`;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, threatActorGroup.id, '/dashboard/threats/threat_actors_group');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -163,13 +150,7 @@ class RootThreatActorGroup extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`,
-                          )
-                            ? `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, threatActorGroup.id, '/dashboard/threats/threat_actors_group')}
                       >
                         <Tab
                           component={Link}
@@ -232,12 +213,12 @@ class RootThreatActorGroup extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
-                            stixCoreObject={props.threatActorGroup}
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
+                            stixCoreObject={threatActorGroup}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses"

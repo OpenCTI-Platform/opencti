@@ -14,8 +14,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
@@ -210,7 +210,7 @@ class GroupingKnowledgeComponent extends Component {
                   );
                 }}
               />
-            }
+              }
           />
           <Route
             path="/correlation"

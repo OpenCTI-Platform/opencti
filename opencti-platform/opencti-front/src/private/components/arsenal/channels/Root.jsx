@@ -6,11 +6,11 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import FileManager from '../../common/files/FileManager';
 import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
@@ -21,6 +21,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import inject18n from '../../../../components/i18n';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -115,21 +116,7 @@ class RootChannel extends Component {
             if (props) {
               if (props.channel) {
                 const { channel } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/channels/${channel.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/arsenal/channels/${channel.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, channel.id, '/dashboard/arsenal/channels');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -152,13 +139,7 @@ class RootChannel extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/arsenal/channels/${channel.id}/knowledge`,
-                          )
-                            ? `/dashboard/arsenal/channels/${channel.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, channel.id, '/dashboard/arsenal/channels')}
                       >
                         <Tab
                           component={Link}
@@ -223,12 +204,12 @@ class RootChannel extends Component {
                         )}
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
-                            stixCoreObject={props.channel}
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
+                            stixCoreObject={channel}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses/*"

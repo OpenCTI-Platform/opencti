@@ -7,7 +7,7 @@ import * as R from 'ramda';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import System from './System';
@@ -24,6 +24,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -115,6 +116,7 @@ class RootSystem extends Component {
     } = this.props;
     const { viewAs } = this.state;
     const link = `/dashboard/entities/systems/${systemId}/knowledge`;
+
     return (
       <>
         <Routes>
@@ -146,21 +148,7 @@ class RootSystem extends Component {
             if (props) {
               if (props.system) {
                 const { system } = props;
-                let paddingRight = 0;
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/systems/${system.id}/knowledge`,
-                  )
-                ) {
-                  paddingRight = 200;
-                }
-                if (
-                  location.pathname.includes(
-                    `/dashboard/entities/systems/${system.id}/content`,
-                  )
-                ) {
-                  paddingRight = 350;
-                }
+                const paddingRight = getPaddingRight(location.pathname, system.id, '/dashboard/entities/systems');
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs variant="object" elements={[
@@ -187,13 +175,7 @@ class RootSystem extends Component {
                       }}
                     >
                       <Tabs
-                        value={
-                          location.pathname.includes(
-                            `/dashboard/entities/systems/${system.id}/knowledge`,
-                          )
-                            ? `/dashboard/entities/systems/${system.id}/knowledge`
-                            : location.pathname
-                        }
+                        value={getCurrentTab(location.pathname, system.id, '/dashboard/entities/systems')}
                       >
                         <Tab
                           component={Link}
@@ -268,12 +250,12 @@ class RootSystem extends Component {
                         }
                       />
                       <Route
-                        path="/content"
-                        element={(
-                          <StixCoreObjectContent
+                        path="/content/*"
+                        element={
+                          <StixCoreObjectContentRoot
                             stixCoreObject={system}
                           />
-                        )}
+                        }
                       />
                       <Route
                         path="/analyses/*"

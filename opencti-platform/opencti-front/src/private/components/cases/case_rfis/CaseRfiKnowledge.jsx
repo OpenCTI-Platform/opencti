@@ -315,7 +315,7 @@ class CaseRfiKnowledgeComponent extends Component {
                   );
                 }}
               />
-          }
+              }
           />
           <Route
             path="/timeline"

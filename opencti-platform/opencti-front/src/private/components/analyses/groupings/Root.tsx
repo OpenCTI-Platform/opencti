@@ -11,7 +11,7 @@ import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingPopover from './GroupingPopover';
@@ -26,6 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -87,6 +88,7 @@ const RootGrouping = () => {
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+
   return (
     <>
       <QueryRenderer
@@ -96,25 +98,8 @@ const RootGrouping = () => {
           if (props) {
             if (props.grouping) {
               const { grouping } = props;
-              let paddingRight = 0;
               const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/groupings/${grouping.id}/entities`,
-                )
-                      || location.pathname.includes(
-                        `/dashboard/analyses/groupings/${grouping.id}/observables`,
-                      )
-              ) {
-                paddingRight = 250;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/analyses/groupings/${grouping.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
+              const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings', false);
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -139,13 +124,7 @@ const RootGrouping = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                                location.pathname.includes(
-                                  `/dashboard/analyses/groupings/${grouping.id}/knowledge`,
-                                )
-                                  ? `/dashboard/analyses/groupings/${grouping.id}/knowledge`
-                                  : location.pathname
-                              }
+                      value={getCurrentTab(location.pathname, grouping.id, '/dashboard/analyses/groupings')}
                     >
                       <Tab
                         component={Link}
@@ -214,10 +193,11 @@ const RootGrouping = () => {
                       }
                     />
                     <Route
-                      path="/content"
+                      path="/content/*"
                       element={
-                        <StixCoreObjectContent
+                        <StixCoreObjectContentRoot
                           stixCoreObject={grouping}
+                          isContainer={true}
                         />
                       }
                     />

@@ -9,11 +9,11 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseRft from './CaseRft';
@@ -26,6 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -83,29 +84,13 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([BYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+
   const {
     caseRft: caseData,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
-  let paddingRight = 0;
-  if (caseData) {
-    if (
-      location.pathname.includes(
-        `/dashboard/cases/rfts/${caseData.id}/entities`,
-      )
-      || location.pathname.includes(
-        `/dashboard/cases/rfts/${caseData.id}/observables`,
-      )
-    ) {
-      paddingRight = 250;
-    }
-    if (
-      location.pathname.includes(`/dashboard/cases/rfts/${caseData.id}/content`)
-    ) {
-      paddingRight = 350;
-    }
-  }
+  const paddingRight = getPaddingRight(location.pathname, caseData?.id, '/dashboard/cases/rfts', false);
   return (
     <>
       {caseData ? (
@@ -131,13 +116,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/cases/rfts/${caseData.id}/knowledge`,
-                )
-                  ? `/dashboard/cases/rfts/${caseData.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfts')}
             >
               <Tab
                 component={Link}
@@ -201,12 +180,13 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               )}
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={caseData}
+                  isContainer={true}
                 />
-              )}
+              }
             />
             <Route
               path="/knowledge"

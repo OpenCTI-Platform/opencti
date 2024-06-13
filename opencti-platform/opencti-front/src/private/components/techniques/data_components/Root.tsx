@@ -9,7 +9,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -23,6 +23,7 @@ import DataComponentKnowledge from './DataComponentKnowledge';
 import { RootDataComponentSubscription } from './__generated__/RootDataComponentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -87,21 +88,7 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
-              let paddingRight = 0;
-              if (
-                location.pathname.includes(
-                  `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
-                )
-              ) {
-                paddingRight = 200;
-              }
-              if (
-                location.pathname.includes(
-                  `/dashboard/techniques/data_components/${dataComponent.id}/content`,
-                )
-              ) {
-                paddingRight = 350;
-              }
+              const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components');
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs variant="object" elements={[
@@ -126,13 +113,7 @@ const RootDataComponent = () => {
                     }}
                   >
                     <Tabs
-                      value={
-                        location.pathname.includes(
-                          `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`,
-                        )
-                          ? `/dashboard/techniques/data_components/${dataComponent.id}/knowledge`
-                          : location.pathname
-                      }
+                      value={getCurrentTab(location.pathname, dataComponent.id, '/dashboard/arsenal/techniques')}
                     >
                       <Tab
                         component={Link}
@@ -174,12 +155,12 @@ const RootDataComponent = () => {
                       }
                     />
                     <Route
-                      path="/content"
-                      element={(
-                        <StixCoreObjectContent
+                      path="/content/*"
+                      element={
+                        <StixCoreObjectContentRoot
                           stixCoreObject={dataComponent}
                         />
-                      )}
+                      }
                     />
                     <Route
                       path="/files"

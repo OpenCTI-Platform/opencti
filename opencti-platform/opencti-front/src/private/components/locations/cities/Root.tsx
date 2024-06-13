@@ -8,7 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectContent from '../../common/stix_core_objects/StixCoreObjectContent';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import City from './City';
 import CityKnowledge from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -25,6 +25,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import CityPopover from './CityPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -78,21 +79,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
-  let paddingRight = 0;
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/cities/${city.id}/knowledge`,
-    )
-  ) {
-    paddingRight = 200;
-  }
-  if (
-    location.pathname.includes(
-      `/dashboard/locations/cities/${city.id}/content`,
-    )
-  ) {
-    paddingRight = 350;
-  }
+  const paddingRight = getPaddingRight(location.pathname, city.id, '/dashboard/locations/cities');
   return (
     <>
       {city ? (
@@ -119,13 +106,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             }}
           >
             <Tabs
-              value={
-                location.pathname.includes(
-                  `/dashboard/locations/cities/${city.id}/knowledge`,
-                )
-                  ? `/dashboard/locations/cities/${city.id}/knowledge`
-                  : location.pathname
-              }
+              value={getCurrentTab(location.pathname, city.id, '/dashboard/locations/cities')}
             >
               <Tab
                 component={Link}
@@ -187,12 +168,12 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
               element={<CityKnowledge cityData={city} />}
             />
             <Route
-              path="/content"
-              element={(
-                <StixCoreObjectContent
+              path="/content/*"
+              element={
+                <StixCoreObjectContentRoot
                   stixCoreObject={city}
                 />
-              )}
+              }
             />
             <Route
               path="/analyses"
