@@ -320,7 +320,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       label: 'Related entity',
       multiple: true,
       subEntityTypes,
-      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
+      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_USER, ENTITY_TYPE_GROUP],
     });
     // add members filters
     filterDefinitionsMap.set(MEMBERS_USER_FILTER, {

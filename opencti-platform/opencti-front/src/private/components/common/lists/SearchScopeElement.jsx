@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import { PaletteOutlined } from '@mui/icons-material';
@@ -29,8 +28,26 @@ const SearchScopeElement = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const { stixCoreObjectTypes: entityTypes } = useAttributes();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState();
+  const { stixCoreObjectTypes: entityTypes } = useAttributes();
+  if (name === 'contextEntityId') {
+    entityTypes.push('User');
+    entityTypes.push('Group');
+  }
+  const entitiesTypes = entityTypes
+    .filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
+      ? availableRelationFilterTypes[name].includes(n)
+      : true))
+    .map((n) => {
+      return {
+        label: t_i18n(n.toString()[0] === n.toString()[0].toUpperCase()
+          ? `entity_${n.toString()}`
+          : `relationship_${n.toString()}`),
+        value: n,
+        type: n,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
   const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
   const handleToggleSearchScope = (key, value) => {
@@ -41,21 +58,6 @@ const SearchScopeElement = ({
         : [...(searchScope[key] || []), value],
     }));
   };
-  const entitiesTypes = R.pipe(
-    R.filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
-      ? availableRelationFilterTypes[name].includes(n)
-      : true)),
-    R.map((n) => ({
-      label: t_i18n(
-        n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`,
-      ),
-      value: n,
-      type: n,
-    })),
-    R.sortWith([R.ascend(R.prop('label'))]),
-  )(entityTypes);
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
       <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
