@@ -239,6 +239,7 @@ const createBasicRolesAndCapabilities = async (context) => {
       'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
       'MODULES_MODMANAGE',
       'TAXIIAPI',
+      'INGESTION',
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETLABELS',
     ],
