@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin, TESTING_ROLES } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -66,7 +66,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should list roles', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.roles.edges.length).toEqual(7);
+    expect(queryResult.data.roles.edges.length).toEqual(TESTING_ROLES.length + 4);
   });
   it('should list capabilities', async () => {
     const LIST_CAPABILITIES_QUERY = gql`
