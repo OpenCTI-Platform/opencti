@@ -42,6 +42,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
+import { isNumericAttribute } from '../schema/schema-attributes';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -276,8 +277,9 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     input,
     opts
   );
+  // Delete the key when updating a numeric field with an empty value (e.g. to delete this value) to avoid a schema error
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
-    if (value === '') delete stixCyberObservable[key];
+    if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
   if (input[0].key === 'x_opencti_score') {
     const indicators = await listAllFromEntitiesThroughRelations(
