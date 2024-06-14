@@ -12,7 +12,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
-import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
@@ -24,6 +24,7 @@ export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ENTITY_TYPE_CASE_TEMPLATE,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_DELETE_OPERATION,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
 ];
 
 export const MAX_TASK_ELEMENTS = 500;
