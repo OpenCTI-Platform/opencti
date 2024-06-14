@@ -34,6 +34,15 @@ export interface ElementContextData {
   workspace_type?: string
   labels_ids?: string[]
 }
+export interface UserAnalyzeActionContextData extends ElementContextData {
+  connector_id: string
+  connector_name: string
+}
+export interface UserAnalyzeAction extends BasicUserAction {
+  event_type: 'command'
+  event_scope: 'analyze'
+  context_data: UserAnalyzeActionContextData
+}
 export interface UserEnrichActionContextData extends ElementContextData {
   connector_id: string
   connector_name: string
@@ -128,7 +137,7 @@ export interface UserLogoutAction extends BasicUserAction {
 }
 // endregion
 
-export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserImportAction |
+export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction |
 UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction;
 
 export interface ActionListener {
