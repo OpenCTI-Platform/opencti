@@ -5,8 +5,8 @@ import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { BellPlusOutline, BellRemoveOutline, BellCogOutline, BellOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
-import { CheckCircleOutlined, UnpublishedOutlined, DeleteOutlined } from '@mui/icons-material';
+import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -23,6 +23,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
+import DialogContentText from '@mui/material/DialogContentText';
 import { DataColumns } from '../../../../components/list_lines';
 import { NotificationLine_node$data, NotificationLine_node$key } from './__generated__/NotificationLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -161,6 +162,7 @@ NotificationLineProps
   const [commitDelete] = useApiMutation(
     notificationLineNotificationDeleteMutation,
   );
+  const [displayDelete, setDisplayDelete] = useState(false);
   const handleRead = (read: boolean) => {
     setUpdating(true);
     return commitMarkRead({
@@ -186,6 +188,14 @@ NotificationLineProps
         setUpdating(false);
       },
     });
+  };
+
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+  };
+
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
   };
   const eventTypes: Record<string, string> = {
     create: t_i18n('Creation'),
@@ -295,16 +305,43 @@ NotificationLineProps
           >
             {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
           </IconButton>
-          <IconButton
-            disabled={updating}
-            onClick={() => handleDelete()}
-            size="large"
-            color="primary"
-          >
-            <DeleteOutlined />
-          </IconButton>
+          <Tooltip title={t_i18n('Delete this notification')}>
+            <span>
+              <IconButton
+                disabled={updating}
+                onClick={() => handleOpenDelete()}
+                size="large"
+                color="primary"
+              >
+                <DeleteOutlined/>
+              </IconButton>
+            </span>
+          </Tooltip>
         </ListItemSecondaryAction>
       </ListItem>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayDelete}
+        TransitionComponent={Transition}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to delete this notification?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleDelete}
+            color="secondary"
+          >
+            {t_i18n('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         open={open}
         TransitionComponent={Transition}
