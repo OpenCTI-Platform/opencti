@@ -129,7 +129,10 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
       )),
     ),
   ));
-
+  const [creatorId, setCreatorId] = useState(ingestionCsvData.user?.id);
+  const onCreatorSelection = async (option: Option) => {
+    setCreatorId(option.value);
+  };
   const { me } = useAuth();
   const basicShape = {
     name: Yup.string().required(t_i18n('This field is required')),
@@ -185,6 +188,9 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     if (name === 'csv_mapper_id') {
       const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as CsvMapperFieldOption);
       setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+    }
+    if (name === 'user_id') {
+      onCreatorSelection(value as Option).then();
     }
     ingestionCsvValidator
       .validateAt(name, { [name]: value })
@@ -320,6 +326,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
                 label={t_i18n('Marking definition levels')}
                 style={fieldSpacingContainerStyle}
+                allowedMarkingOwnerId={creatorId}
                 setFieldValue={setFieldValue}
                 onChange={(name, value) => {
                   if (value.length) {

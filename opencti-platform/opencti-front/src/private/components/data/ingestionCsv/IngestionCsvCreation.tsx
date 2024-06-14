@@ -27,7 +27,6 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useAuth from '../../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -88,7 +87,11 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
+  const [creatorId, setCreatorId] = useState('');
+
+  const onCreatorSelection = async (option: Option) => {
+    setCreatorId(option.value);
+  };
   const updateObjectMarkingField = async (
     setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>,
     values: IngestionCsvCreationForm,
@@ -260,6 +263,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     name="markings"
                     label={t_i18n('Marking definition levels')}
                     style={fieldSpacingContainerStyle}
+                    allowedMarkingOwnerId={creatorId}
                     setFieldValue={setFieldValue}
                   />
                 )
