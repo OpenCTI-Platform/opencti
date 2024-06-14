@@ -12,7 +12,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { INGESTION_SETCSVMAPPERS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { INGESTION_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 
@@ -124,7 +124,7 @@ const IngestionCsv = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu/>
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE, INGESTION_SETCSVMAPPERS]}>
+      <Security needs={[INGESTION_SETCSVMAPPERS]}>
         <IngestionCsvCreation paginationOptions={paginationOptions} />
       </Security>
     </div>
