@@ -84,7 +84,6 @@ const resolveHasUserChoiceCsvMapper = (option: Option & {
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const { me } = useAuth();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
@@ -93,10 +92,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const updateObjectMarkingField = async (
     setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>,
     values: IngestionCsvCreationForm,
-    newHasUserChoiceCsvMapper: boolean,
   ) => {
-    const markings = newHasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
-    await setFieldValue('markings', markings);
+    await setFieldValue('markings', values.markings);
   };
   const onCsvMapperSelection = async (
     option: Option & {
@@ -112,7 +109,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   ) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
-    await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
+    await updateObjectMarkingField(setFieldValue, values);
   };
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -238,6 +235,13 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
+              <CreatorField
+                name="user_id"
+                label={t_i18n('User responsible for data creation (empty = System)')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(_, option) => onCreatorSelection(option)}
+                showConfidence
+              />
               {
                   queryRef && (
                     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
@@ -250,13 +254,16 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     </React.Suspense>
                   )
                 }
-              <ObjectMarkingField
-                name="markings"
-                label={t_i18n('Marking definition levels')}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                disabled={!hasUserChoiceCsvMapper}
-              />
+              {
+                hasUserChoiceCsvMapper && (
+                  <ObjectMarkingField
+                    name="markings"
+                    label={t_i18n('Marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
+                )
+              }
               <Field
                 component={SelectField}
                 variant="standard"
@@ -335,12 +342,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 />
               </>
               )}
-              <CreatorField
-                name="user_id"
-                label={t_i18n('User responsible for data creation (empty = System)')}
-                containerStyle={fieldSpacingContainerStyle}
-                showConfidence
-              />
               <Box sx={{ width: '100%', marginTop: 5 }}>
                 <Alert
                   severity="info"

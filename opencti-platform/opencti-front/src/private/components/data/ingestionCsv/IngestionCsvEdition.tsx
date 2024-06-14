@@ -289,6 +289,13 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               style: { marginTop: 20 },
             }}
           />
+          <CreatorField
+            name="user_id"
+            label={t_i18n('User responsible for data creation (empty = System)')}
+            onChange={handleSubmitField}
+            containerStyle={fieldSpacingContainerStyle}
+            showConfidence
+          />
           {
             queryRef && (
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -306,19 +313,22 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               </React.Suspense>
             )
           }
-          <ObjectMarkingField
-            name="markings"
-            isOptionEqualToValue={(option: Option, value : Option) => option.value === value.value}
-            label={t_i18n('Marking definition levels')}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            disabled={!hasUserChoiceCsvMapper}
-            onChange={(name, value) => {
-              if (value.length) {
-                handleSubmitField(name, value.map((marking) => marking.value));
-              }
-            }}
-          />
+          {
+            hasUserChoiceCsvMapper && (
+              <ObjectMarkingField
+                name="markings"
+                isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
+                label={t_i18n('Marking definition levels')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                onChange={(name, value) => {
+                  if (value.length) {
+                    handleSubmitField(name, value.map((marking) => marking.value));
+                  }
+                }}
+              />
+            )
+          }
           <Field
             component={SelectField}
             variant="standard"
@@ -402,13 +412,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
             </>
           )}
-          <CreatorField
-            name="user_id"
-            label={t_i18n('User responsible for data creation (empty = System)')}
-            onChange={handleSubmitField}
-            containerStyle={fieldSpacingContainerStyle}
-            showConfidence
-          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
