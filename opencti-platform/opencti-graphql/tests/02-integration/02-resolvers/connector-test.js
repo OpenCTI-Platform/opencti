@@ -86,7 +86,7 @@ const READ_CONNECTOR_QUERY = gql`
       connector_type
       connector_scope
       connector_state
-      connectorQueueDetails {
+      connector_queue_details {
         messages_number
         messages_size
       }
@@ -199,9 +199,9 @@ describe('Connector resolver standard behaviour', () => {
 
   it('should get connector details', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
-    expect(queryResult.data.connector.connectorQueueDetails).toBeDefined();
-    expect(queryResult.data.connector.connectorQueueDetails.messages_number).toBe(0);
-    expect(queryResult.data.connector.connectorQueueDetails.messages_size).toBe(0);
+    expect(queryResult.data.connector.connector_queue_details).toBeDefined();
+    expect(queryResult.data.connector.connector_queue_details.messages_number).toBe(0);
+    expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
   });
 });
 
