@@ -3398,7 +3398,7 @@ export type Connector = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   config?: Maybe<ConnectorConfig>;
   configurations?: Maybe<Array<ConnectorConfiguration>>;
-  connectorQueueDetails: ConnectorQueueDetails;
+  connector_queue_details: ConnectorQueueDetails;
   connector_schema?: Maybe<Scalars['String']['output']>;
   connector_schema_ui?: Maybe<Scalars['String']['output']>;
   connector_scope?: Maybe<Array<Scalars['String']['output']>>;
@@ -31253,7 +31253,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   config?: Resolver<Maybe<ResolversTypes['ConnectorConfig']>, ParentType, ContextType>;
   configurations?: Resolver<Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, ParentType, ContextType>;
-  connectorQueueDetails?: Resolver<ResolversTypes['ConnectorQueueDetails'], ParentType, ContextType>;
+  connector_queue_details?: Resolver<ResolversTypes['ConnectorQueueDetails'], ParentType, ContextType>;
   connector_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_schema_ui?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_scope?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;

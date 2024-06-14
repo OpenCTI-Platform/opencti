@@ -525,7 +525,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
-        connectorQueueDetails {
+        connector_queue_details {
           messages_number
           messages_size
         }
