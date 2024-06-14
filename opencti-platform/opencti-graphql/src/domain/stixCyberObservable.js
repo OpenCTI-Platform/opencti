@@ -6,6 +6,7 @@ import unzipper from 'unzipper';
 import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
 import { fileTypeFromBuffer } from 'file-type';
 import { v4 as uuidv4 } from 'uuid';
+import { UserInputError } from 'apollo-server-express';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities, updateAttribute } from '../database/middleware';
 import {
@@ -117,7 +118,7 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
   }
   return { key, value };
 };
-const createIndicatorFromObservable = async (context, user, input, observable) => {
+export const createIndicatorFromObservable = async (context, user, input, observable) => {
   try {
     let entityType = observable.entity_type;
     const indicatorName = observableValue(observable);
@@ -155,6 +156,9 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
 
 export const promoteObservableToIndicator = async (context, user, observableId) => {
   const observable = await storeLoadByIdWithRefs(context, user, observableId);
+  if (!observable) {
+    throw new UserInputError('Observable not found', { id: observableId });
+  }
   controlUserConfidenceAgainstElement(user, observable);
   const objectLabel = (observable[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);

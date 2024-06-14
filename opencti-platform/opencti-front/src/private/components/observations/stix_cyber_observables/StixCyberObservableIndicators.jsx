@@ -63,7 +63,7 @@ const stixCyberObservableIndicatorsPromoteMutation = graphql`
     $id: ID!
   ) {
     stixCyberObservableEdit(id: $id) {
-      promote {
+      promoteToIndicator {
         id
         entity_type
         parent_types

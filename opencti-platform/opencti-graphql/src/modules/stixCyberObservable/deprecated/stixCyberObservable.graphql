@@ -1,0 +1,4 @@
+# this will be merged into the base StixCyberObservableEditMutations
+type StixCyberObservableEditMutations {
+  promote: StixCyberObservable  @auth(for: [KNOWLEDGE_KNUPDATE]) @deprecated(reason: "[>=6.2 & <6.5]. Use `promoteToIndicator`.")
+}

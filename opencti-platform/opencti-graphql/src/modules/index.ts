@@ -61,6 +61,7 @@ import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './deleteOperation/deleteOperation';
 import './support/support';
+import './stixCyberObservable/stixCyberObservable';
 // endregion
 
 // region graphql registration
