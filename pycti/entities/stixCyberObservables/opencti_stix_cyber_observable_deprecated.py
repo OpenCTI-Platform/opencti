@@ -1,4 +1,3 @@
-
 # dommage c'est du python 3.13, sinon deprecation lib
 # from warnings import deprecated
 
@@ -14,24 +13,32 @@ class StixCyberObservableDeprecated:
         :param id: the Stix-Observable id
         :return the observable
     """
+
     def promote_to_indicator(self, **kwargs):
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.app_logger.info("Promoting Stix-Observable", {"id": id, "withFiles": with_files, "customAttributes": custom_attributes})
+            self.opencti.app_logger.info(
+                "Promoting Stix-Observable",
+                {
+                    "id": id,
+                    "withFiles": with_files,
+                    "customAttributes": custom_attributes,
+                },
+            )
             query = (
-                    """
+                """
                         mutation StixCyberObservableEdit($id: ID!) {
                             stixCyberObservableEdit(id: $id) {
                                 promote {
                                     """
-                    + (
-                        custom_attributes
-                        if custom_attributes is not None
-                        else (self.properties_with_files if with_files else self.properties)
-                    )
-                    + """
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else (self.properties_with_files if with_files else self.properties)
+                )
+                + """
                             }
                         }
                     }
