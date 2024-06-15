@@ -13,13 +13,16 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 obs1 = opencti_api_client.stix_cyber_observable.create(
     simple_observable_key="IPv4-Addr.value", simple_observable_value="55.55.55.55"
 )
-observable = opencti_api_client.stix_cyber_observable.promote_to_indicator(id=obs1.get("id"))
+observable = opencti_api_client.stix_cyber_observable.promote_to_indicator(
+    id=obs1.get("id")
+)
 print("promoted observable, original observable is", observable)
 
 # Please use promote_to_indicator_v2
 obs2 = opencti_api_client.stix_cyber_observable.create(
     simple_observable_key="IPv4-Addr.value", simple_observable_value="55.55.55.99"
 )
-indicator = opencti_api_client.stix_cyber_observable.promote_to_indicator_v2(id=obs2.get("id"))
-print("promoted observable, indicator is",indicator)
-
+indicator = opencti_api_client.stix_cyber_observable.promote_to_indicator_v2(
+    id=obs2.get("id")
+)
+print("promoted observable, indicator is", indicator)
