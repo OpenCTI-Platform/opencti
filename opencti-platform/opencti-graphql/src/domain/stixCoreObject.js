@@ -32,7 +32,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, getFileContent, storeFileConverter } from '../database/file-storage';
-import { findById as documentFindById , paginatedForPathWithEnrichment} from '../modules/internal/document/document-domain';
+import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
@@ -293,6 +293,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
         content_type: CONTENT_TYPE_FIELDS,
         content_source: contentSource,
         content_fields,
+        analysis_name: getAnalysisFileName(contentSource, CONTENT_TYPE_FIELDS),
       },
     };
 
@@ -325,9 +326,11 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
         entity_id: element.standard_id,
         entity_type: element.entity_type,
         content_type: CONTENT_TYPE_FILE,
+        content_source: contentSource,
         file_id: file.id,
         file_mime: file.metaData.mimetype,
         file_fetch: `/storage/get/${file.id}`, // Path to get the file
+        analysis_name: getAnalysisFileName(file.name, CONTENT_TYPE_FILE),
       },
     };
 
@@ -336,6 +339,10 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
     return work;
   }
   throw new Error('No connector found for analysis');
+};
+
+const getAnalysisFileName = (contentSource, contentType) => {
+  return `${contentType}_analysis_${contentSource}.analysis`;
 };
 
 const publishAnalysisAction = async (user, analyzedId, connector, element) => {
@@ -515,7 +522,7 @@ export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) 
   }
   const { file, contentSource, contentType, analysisType } = args;
   const meta = { analysis_content_source: contentSource, analysis_content_type: contentType, analysis_type: analysisType };
-  const path = `analysis/${entity.entity_type}/${entityId}`;
+  const path = `analysis/${entity.entity_type}/${entity.id}`;
   const { upload: up } = await uploadToStorage(context, user, path, file, { entity, meta });
   const contextData = buildContextDataForFile(entity, path, up.name);
   await publishUserAction({
@@ -575,15 +582,15 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   const analysisParsedContent = JSON.parse(analysisContent);
 
   // Parse json data and transform it into MappedAnalysis object
-  const entitiesToResolve = analysisParsedContent.map((d) => d.value);
-  const entitiesToFinds = R.uniq(entitiesToResolve.filter((u) => isNotEmptyField(u)));
-  const entitiesResolved = await elFindByIds(context, user, entitiesToFinds, { toMap: true, mapWithAllIds: true });
-  const analysisDataConverted = (mappedData) => {
-    const entityResolved = entitiesResolved[mappedData.value];
-    return { matchedString: mappedData.key, matchedEntity: entityResolved };
+  const entitiesToResolve = Object.values(analysisParsedContent).filter((i) => isNotEmptyField(i));
+  const entitiesResolved = await elFindByIds(context, user, entitiesToResolve, { toMap: true, mapWithAllIds: true });
+  const analysisDataConverted = (analysisKey) => {
+    const analysisId = analysisParsedContent[analysisKey];
+    const entityResolved = entitiesResolved[analysisId];
+    return { matchedString: analysisKey, matchedEntity: entityResolved };
   };
 
-  const mappedEntities = analysisParsedContent.map((d) => analysisDataConverted(d)).filter((e) => e.matchedEntity);
+  const mappedEntities = Object.keys(analysisParsedContent).map((d) => analysisDataConverted(d)).filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities };
 };

@@ -850,6 +850,9 @@ type FileMetadata {
   description: String
   order: Int
   inCarousel: Boolean
+  analysis_content_source: String
+  analysis_content_type: String
+  analysis_type: String
 }
 
 type File {
@@ -7417,6 +7420,7 @@ type Query {
   killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): KillChainPhaseConnection
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
+  stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRegardingOf(entityId: ID, relationshipTypes: [String], first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
@@ -7797,6 +7801,27 @@ enum AnalysisContentType {
   file
 }
 
+union Analysis = MappingAnalysis
+
+input MappingAnalysisInput {
+  mappedEntities: [MappedEntityInput]
+}
+
+type MappingAnalysis {
+  analysisType: String!
+  mappedEntities: [MappedEntity]
+}
+
+input MappedEntityInput {
+  matchedString: String!
+  matchedEntityId: String!
+}
+
+type MappedEntity {
+  matchedString: String!
+  matchedEntity: StixCoreObject!
+}
+
 type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -7805,6 +7830,8 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
+  analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
+  analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
