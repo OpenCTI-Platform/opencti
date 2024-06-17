@@ -130,7 +130,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
-        <Formik
+        <Formik<TaxiiCollectionCreationForm>
           initialValues={{
             name: '',
             description: '',
