@@ -4,8 +4,9 @@ import { elList, elLoadById, elReplace } from '../database/engine';
 import { roleCapabilities } from '../domain/user';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
-import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { generateStandardId } from '../schema/identifier';
 
 const message = '[MIGRATION] Split data sharing & ingestion into 2 capabilities';
 
