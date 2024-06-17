@@ -61,6 +61,8 @@ jobs:
 
       - name: Build into Alpine
         run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
           cd opencti-platform/opencti-front
           yarn install
           yarn build
