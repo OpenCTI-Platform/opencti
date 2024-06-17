@@ -50,8 +50,14 @@ export const up = async (next) => {
 
   // ------ Update Attribute_order and name of Manage CSV mappers
   const CSVCapability = await elLoadById(context, SYSTEM_USER, 'capability--5407e8a4-0ff9-5253-89b1-c01a92ad9453');
-  const CSVCapabilityPatch = { name: 'INGESTION_SETCSVMAPPERS', attribute_order: 2620 };
-  await elReplace(CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
+  if (CSVCapability) {
+    const CSVCapabilityPatch = {
+      name: 'INGESTION_SETCSVMAPPERS',
+      attribute_order: 2620,
+      standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'INGESTION_SETCSVMAPPERS' }),
+    };
+    await elReplace(CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
+  }
 
   // ------ Update description of Access data sharing & ingestion => Access data sharing
   const accessDataCapability = await elLoadById(context, SYSTEM_USER, 'capability--d258afde-7a8a-5917-8b4b-83119d3f8e52');
@@ -65,8 +71,15 @@ export const up = async (next) => {
 
   // ------ Update name + description + attribute_order of BYPASSREFERENCE
   const byPassRefCapability = await elLoadById(context, SYSTEM_USER, 'capability--7ad2a72e-8dcd-569c-8d3f-469dce6fa6b0');
-  const byPassRefCapabilityPatch = { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 };
-  await elReplace(byPassRefCapability._index, byPassRefCapability.internal_id, { doc: byPassRefCapabilityPatch });
+  if (byPassRefCapability) {
+    const byPassRefCapabilityPatch = {
+      name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
+      description: 'Bypass enforced reference',
+      attribute_order: 320,
+      standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE' }),
+    };
+    await elReplace(byPassRefCapability._index, byPassRefCapability.internal_id, { doc: byPassRefCapabilityPatch });
+  }
 
   // ------ Update attribute_order of Connector API usage
   const connectorAPICapability = await elLoadById(context, SYSTEM_USER, 'capability--3b45a9ef-b336-5539-be9a-58e3509648e9');
