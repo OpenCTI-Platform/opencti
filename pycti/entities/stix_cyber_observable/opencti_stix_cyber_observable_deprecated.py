@@ -1,10 +1,7 @@
 # dommage c'est du python 3.13, sinon deprecation lib
 # from warnings import deprecated
 
-
-class StixCyberObservableDeprecated:
-    def __init__(self):
-        pass
+class StixCyberObservableDeprecatedMixin:
 
     """
         deprecated >=6.2 & <6.5. Use `promote_to_indicator_v2`
@@ -28,17 +25,17 @@ class StixCyberObservableDeprecated:
                 },
             )
             query = (
-                """
+                    """
                         mutation StixCyberObservableEdit($id: ID!) {
                             stixCyberObservableEdit(id: $id) {
                                 promote {
                                     """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
+                    + (
+                        custom_attributes
+                        if custom_attributes is not None
+                        else (self.properties_with_files if with_files else self.properties)
+                    )
+                    + """
                             }
                         }
                     }

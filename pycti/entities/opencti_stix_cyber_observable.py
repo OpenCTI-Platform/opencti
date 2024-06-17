@@ -6,18 +6,18 @@ import os
 
 import magic
 
-from pycti.entities.stixCyberObservables.opencti_stix_cyber_observable_deprecated import (
-    StixCyberObservableDeprecated,
+from pycti.entities.stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
+    StixCyberObservableDeprecatedMixin,
 )
-from pycti.entities.stixCyberObservables.opencti_stix_cyber_observable_properties import (
+from pycti.entities.stix_cyber_observable.opencti_stix_cyber_observable_properties import (
     SCO_PROPERTIES,
     SCO_PROPERTIES_WITH_FILES,
 )
 
 
-class StixCyberObservable(StixCyberObservableDeprecated):
+class StixCyberObservable(StixCyberObservableDeprecatedMixin):
     def __init__(self, opencti, file):
-        StixCyberObservableDeprecated.__init__(self)
+
 
         self.opencti = opencti
         self.file = file
