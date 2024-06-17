@@ -385,12 +385,21 @@ const SearchBulk = () => {
       subscription.unsubscribe();
     };
   });
+
+  useEffect(() => {
+    if (sortBy) {
+      const sort = R.sortWith(
+        orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
+      );
+      setResolvedEntities(sort(resolvedEntities));
+    }
+  }, [sortBy, orderAsc]);
   useEffect(() => {
     SEARCH$.next({ action: 'Search' });
   }, [textFieldValue, setResolvedEntities]);
   const reverseBy = (field) => {
     setSortBy(field);
-    setOrderAsc(!orderAsc);
+    setOrderAsc((prevOrderAsc) => !prevOrderAsc);
   };
   const SortHeader = (field, label, isSortable) => {
     const sortComponent = orderAsc ? (
@@ -428,12 +437,6 @@ const SearchBulk = () => {
         .join('\n'),
     );
   };
-  const sort = R.sortWith(
-    orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-  );
-  const sortedResolvedEntities = sortBy
-    ? sort(resolvedEntities)
-    : resolvedEntities;
   return (
     <>
       <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
@@ -547,7 +550,7 @@ const SearchBulk = () => {
                 &nbsp;
                 </ListItemIcon>
               </ListItem>
-              {sortedResolvedEntities.map((entity) => {
+              {resolvedEntities.map((entity) => {
                 const inPlatform = entity.in_platform;
                 const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
                 const linkAnalyses = `${link}/analyses`;
