@@ -437,5 +437,5 @@ export const indicatorsDistributionByEntity = async (context: AuthContext, user:
 // endregion
 
 export const observablesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, false, args);
 };

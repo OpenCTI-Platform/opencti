@@ -26,7 +26,7 @@ export const dataSourceAdd = async (context: AuthContext, user: AuthUser, dataSo
 };
 
 export const dataComponentsPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, dataSourceId: string, opts: QueryDataSourcesArgs) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, opts);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, dataSourceId, RELATION_DATA_SOURCE, ENTITY_TYPE_DATA_COMPONENT, true, false, opts);
 };
 
 export const dataSourceDataComponentAdd = async (context: AuthContext, user: AuthUser, dataSourceId: string, dataComponentId: string) => {

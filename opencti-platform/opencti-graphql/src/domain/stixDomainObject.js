@@ -60,7 +60,7 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
 };
 
 export const assigneesPaginated = async (context, user, stixDomainObjectId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, false, args);
 };
 
 // region time series

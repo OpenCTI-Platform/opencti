@@ -23,11 +23,11 @@ export const addNarrative = async (context: AuthContext, user: AuthUser, narrati
 };
 
 export const parentNarrativesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, narrativeId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, false, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, false, false, args);
 };
 
 export const childNarrativesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, narrativeId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, true, args);
+  return listEntitiesThroughRelationsPaginated<T>(context, user, narrativeId, RELATION_SUBNARRATIVE_OF, ENTITY_TYPE_NARRATIVE, true, false, args);
 };
 
 export const isSubNarrative = async (context: AuthContext, user: AuthUser, narrativeId: string) => {

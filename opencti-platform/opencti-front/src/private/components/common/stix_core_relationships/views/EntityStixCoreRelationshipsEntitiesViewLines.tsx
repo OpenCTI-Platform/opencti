@@ -32,6 +32,8 @@ interface EntityStixCoreRelationshipsEntitiesProps {
 const entityStixCoreRelationshipsEntitiesFragment = graphql`
   fragment EntityStixCoreRelationshipsEntitiesViewLines_data on Query
   @argumentDefinitions(
+    entityId: { type: "ID" }
+    relationshipTypes: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -41,7 +43,9 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     types: { type: "[String]" }
   )
   @refetchable(queryName: "EntityStixCoreRelationshipsEntities_refetch") {
-    stixCoreObjects(
+    stixCoreObjectsRegardingOf(
+      entityId: $entityId
+      relationshipTypes: $relationshipTypes
       search: $search
       first: $count
       after: $cursor
@@ -49,7 +53,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       orderMode: $orderMode
       filters: $filters
       types: $types
-    ) @connection(key: "Pagination_stixCoreObjects") {
+    ) @connection(key: "Pagination_stixCoreObjectsRegardingOf") {
       edges {
         node {
           id
@@ -67,6 +71,8 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 
 export const entityStixCoreRelationshipsEntitiesQuery = graphql`
   query EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery(
+    $entityId: ID
+    $relationshipTypes: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -77,6 +83,8 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
   ) {
     ...EntityStixCoreRelationshipsEntitiesViewLines_data
     @arguments(
+      entityId: $entityId
+      relationshipTypes: $relationshipTypes
       search: $search
       count: $count
       cursor: $cursor
@@ -109,7 +117,7 @@ EntityStixCoreRelationshipsEntitiesProps
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
     linesFragment: entityStixCoreRelationshipsEntitiesFragment,
-    nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
+    nodePath: ['stixCoreObjectsRegardingOf', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -118,9 +126,9 @@ EntityStixCoreRelationshipsEntitiesProps
       loadMore={loadMore}
       hasMore={hasMore}
       isLoading={isLoadingMore}
-      dataList={data?.stixCoreObjects?.edges ?? []}
+      dataList={data?.stixCoreObjectsRegardingOf?.edges ?? []}
       globalCount={
-        data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+        data?.stixCoreObjectsRegardingOf?.pageInfo?.globalCount ?? nbOfRowsToLoad
       }
       LineComponent={EntityStixCoreRelationshipsEntitiesViewLine}
       DummyLineComponent={EntityStixCoreRelationshipsEntitiesLineDummy}

@@ -54,7 +54,7 @@ export const objects = async (context, user, containerId, args) => {
     while (hasNextPage) {
       // Force options to prevent connection format and manage search after
       const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
-      const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
+      const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, false, paginateOpts);
       const noMoreElements = currentPagination.edges.length === 0 || currentPagination.edges.length < paginateOpts.first;
       if (noMoreElements) {
         hasNextPage = false;
@@ -69,7 +69,7 @@ export const objects = async (context, user, containerId, args) => {
     }
     return paginatedElements;
   }
-  return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
+  return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, false, baseOpts);
 };
 
 // List first 1000 objects of this container

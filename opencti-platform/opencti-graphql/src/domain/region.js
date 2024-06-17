@@ -16,19 +16,19 @@ export const findAll = (context, user, args) => {
 };
 
 export const parentRegionsPaginated = async (context, user, regionId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, false, false, args);
 };
 
 export const childRegionsPaginated = async (context, user, regionId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION, true, false, args);
 };
 
 export const countriesPaginated = async (context, user, elementId, args) => {
   const element = await findById(context, user, elementId);
   if (element) {
-    return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, args);
+    return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true, false, args);
   }
-  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, elementId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, false, false, args);
 };
 
 export const addRegion = async (context, user, region) => {

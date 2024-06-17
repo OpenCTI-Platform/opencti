@@ -405,15 +405,15 @@ export const artifactImport = async (context, user, args) => {
 };
 
 export const indicatorsPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR, true, false, args);
 };
 
 export const vulnerabilitiesPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_HAS, ENTITY_TYPE_VULNERABILITY, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_HAS, ENTITY_TYPE_VULNERABILITY, false, false, args);
 };
 
 export const serviceDllsPaginated = async (context, user, stixCyberObservableId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, stixCyberObservableId, RELATION_SERVICE_DLL, ENTITY_HASHED_OBSERVABLE_STIX_FILE, false, false, args);
 };
 
 export const stixFileObsArtifact = async (context, user, stixCyberObservableId) => {

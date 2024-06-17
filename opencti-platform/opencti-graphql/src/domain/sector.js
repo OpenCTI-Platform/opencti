@@ -18,11 +18,11 @@ export const findAll = (context, user, args) => {
 };
 
 export const parentSectorsPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, args);
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, false, false, args);
 };
 
 export const childSectorsPaginated = async (context, user, groupId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, true, args);
+  return listEntitiesThroughRelationsPaginated(context, user, groupId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR, true, false, args);
 };
 
 export const isSubSector = async (context, user, sectorId) => {
