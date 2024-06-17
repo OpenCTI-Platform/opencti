@@ -135,6 +135,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             name: '',
             description: '',
             authorized_members: [],
+            taxii_public: false,
             include_inferences: true,
           }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
@@ -175,7 +176,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   onChange={(_, checked) => setFieldValue('taxii_public', checked)}
                   label={t_i18n('Public collection')}
                 />
-                {!values?.taxii_public && (
+                {!values.taxii_public && (
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
