@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "实例触发器创建成功。您可以再次按两下铃以编辑选项。",
   "instance_trigger": "实例触发器",
   "intermediate": "中间",
+  "INTERNAL_ANALYSIS": "分析",
   "INTERNAL_ENRICHMENT": "丰富",
   "INTERNAL_EXPORT_FILE": "导出文件",
   "INTERNAL_IMPORT_FILE": "导入文件",

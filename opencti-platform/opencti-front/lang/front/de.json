@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Instanz-Trigger erfolgreich erstellt. Sie können erneut auf die Glocke klicken, um die Optionen zu bearbeiten.",
   "instance_trigger": "Instanz-Trigger",
   "intermediate": "intermediate",
+  "INTERNAL_ANALYSIS": "Analyse",
   "INTERNAL_ENRICHMENT": "Anreicherung",
   "INTERNAL_EXPORT_FILE": "Dateien exportieren",
   "INTERNAL_IMPORT_FILE": "Dateien importieren",

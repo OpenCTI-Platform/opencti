@@ -51,7 +51,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
   const triggers = await getLiveActivityNotifications(context);
   for (let index = 0; index < events.length; index += 1) {
     // type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
-    // event_scope: 'read' | 'create' | 'update' | 'delete' | 'merge' | 'login' | 'logout' | 'unauthorized' | 'export' | 'import' | 'enrich'
+    // event_scope: 'read' | 'create' | 'update' | 'delete' | 'merge' | 'login' | 'logout' | 'unauthorized' | 'export' | 'import' | 'enrich' | 'analyze'
     // status: 'error' | 'success'
     const event = events[index];
     const { message, data, origin, event_scope } = event.data;

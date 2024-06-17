@@ -1591,6 +1591,7 @@ enum ConnectorType {
   EXTERNAL_IMPORT
   INTERNAL_IMPORT_FILE
   INTERNAL_ENRICHMENT
+  INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
 }
@@ -11234,6 +11235,7 @@ type Query {
   connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
+  connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES])
   work(id: ID!): Work @auth(for: [MODULES])
   works(
@@ -12424,6 +12426,11 @@ type KillChainPhaseEditMutations {
 
 ######## STIX CORE OBJECT ENTITIES
 
+enum AnalysisContentType {
+  fields
+  file
+}
+
 type StixCoreObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -12435,6 +12442,7 @@ type StixCoreObjectEditMutations {
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES

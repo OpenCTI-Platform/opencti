@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Desencadenador de instancia creado correctamente. Puede hacer clic de nuevo en la campana para editar las opciones.",
   "instance_trigger": "Desencadenador de instancia",
   "intermediate": "Intermedia",
+  "INTERNAL_ANALYSIS": "Análisis",
   "INTERNAL_ENRICHMENT": "Enriquecimiento",
   "INTERNAL_EXPORT_FILE": "Exportación de ficheros",
   "INTERNAL_IMPORT_FILE": "Importación de ficheros",

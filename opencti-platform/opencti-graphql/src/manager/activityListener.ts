@@ -197,6 +197,11 @@ const initActivityManager = () => {
           const message = `asks for \`${entity_name}\` enrichment with connector \`${connector_name}\``;
           await activityLogger(action, message);
         }
+        if (action.event_scope === 'analyze') {
+          const { entity_name, connector_name } = action.context_data;
+          const message = `asks for \`${entity_name}\` analysis with connector \`${connector_name}\``;
+          await activityLogger(action, message);
+        }
       }
       if (action.event_type === 'mutation') {
         if (action.event_scope === 'unauthorized') {

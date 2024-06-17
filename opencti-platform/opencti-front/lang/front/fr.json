@@ -1287,6 +1287,7 @@
   "Instance trigger successfully created. You can click again on the bell to edit the options.": "Déclencheur d’instance créé avec succès. Vous pouvez cliquer à nouveau sur la cloche pour modifier les options.",
   "instance_trigger": "Déclencheur d’instance",
   "intermediate": "intermédiaire",
+  "INTERNAL_ANALYSIS": "Analyse",
   "INTERNAL_ENRICHMENT": "Enrichissement",
   "INTERNAL_EXPORT_FILE": "Export de fichiers",
   "INTERNAL_IMPORT_FILE": "Import de fichiers",

@@ -2,7 +2,7 @@ import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
+import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { listEntities, storeLoadById } from './middleware-loader';
 import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
@@ -89,6 +89,10 @@ export const connectorsEnrichment = (instances, scope, onlyAlive = false, onlyAu
 
 export const connectorsForImport = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
+};
+
+export const connectorsForAnalysis = async (context, user, scope = null, onlyAlive = true, onlyAuto = false, onlyContextual = false) => {
+  return connectorsFor(context, user, CONNECTOR_INTERNAL_ANALYSIS, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 
 export const connectorsForNotification = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
