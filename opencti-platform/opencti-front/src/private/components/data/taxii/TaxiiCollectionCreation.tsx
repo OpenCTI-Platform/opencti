@@ -32,9 +32,10 @@ interface TaxiiCollectionCreationProps {
 
 interface TaxiiCollectionCreationForm {
   authorized_members: Option[]
-  taxii_public?: boolean
-  name: string
   description: string
+  include_inferences?: boolean
+  name: string
+  taxii_public?: boolean
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -70,6 +71,7 @@ const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.obje
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
+  include_inferences: Yup.bool().nullable(),
 });
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
@@ -88,11 +90,6 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
-  const [areInferenceRulesResultAdded, setAreInferenceRulesResultAdded] = useState(true);
-
-  const toggleAddInferenceRulesResult = () => setAreInferenceRulesResultAdded((prevState) => !prevState);
-
-  const resetAreInferenceRulesResultAdded = () => setAreInferenceRulesResultAdded(true);
 
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -103,7 +100,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters, authorized_members, include_inferences: areInferenceRulesResultAdded },
+        input: { ...values, filters: jsonFilters, authorized_members },
       },
       updater: (store: RecordSourceSelectorProxy) => {
         const payload = store.getRootField('taxiiCollectionAdd');
@@ -118,7 +115,6 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       },
       onCompleted: () => {
         setSubmitting(false);
-        resetAreInferenceRulesResultAdded();
         resetForm();
       },
       optimisticUpdater: undefined,
@@ -132,10 +128,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
     <Drawer
       title={t_i18n('Create a TAXII collection')}
       variant={DrawerVariant.createWithPanel}
-      onClose={() => {
-        helpers.handleClearAllFilters();
-        resetAreInferenceRulesResultAdded();
-      }}
+      onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
         <Formik
@@ -143,6 +136,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             name: '',
             description: '',
             authorized_members: [],
+            include_inferences: true,
           }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
@@ -193,8 +187,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 )}
               </Alert>
               <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
-                <Switch checked={areInferenceRulesResultAdded} onChange={toggleAddInferenceRulesResult} name="toggleAddInferenceRulesResult" />
-                <Typography>{t_i18n('Include inferences')}</Typography>
+                <FormControlLabel
+                  control={<Switch />}
+                  style={{ marginLeft: 1 }}
+                  checked={values.include_inferences}
+                  name="include_inferences"
+                  onChange={(_, checked) => setFieldValue('include_inferences', checked)}
+                  label={t_i18n('Include inferences')}
+                />
               </Box>
               <Box sx={{ paddingTop: 4,
                 display: 'flex',
