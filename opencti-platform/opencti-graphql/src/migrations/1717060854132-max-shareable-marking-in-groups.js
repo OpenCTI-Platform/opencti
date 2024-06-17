@@ -48,11 +48,11 @@ export const up = async (next) => {
 
   await Promise.all(groupMaxMarkingRelationCreationsPromises);
 
-  // remove platform_data_sharing_max_markings from settings
+  // set platform_data_sharing_max_markings to null in settings
   const updateQuery = {
     script: {
-      params: { null: null },
-      source: 'ctx._source.platform_data_sharing_max_markings = params.null',
+      params: { fieldToRemove: 'platform_data_sharing_max_markings' },
+      source: 'ctx._source.remove(params.fieldToRemove)',
     },
     query: {
       bool: {
@@ -64,11 +64,10 @@ export const up = async (next) => {
   };
   await elUpdateByQueryForMigration(
     message,
-    [READ_INDEX_INTERNAL_OBJECTS],
+    READ_INDEX_INTERNAL_OBJECTS,
     updateQuery
   );
 
-  // do your migration
   logApp.info(`${message} > done`);
   next();
 };
