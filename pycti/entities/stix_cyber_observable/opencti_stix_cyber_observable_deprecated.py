@@ -1,14 +1,14 @@
 # dommage c'est du python 3.13, sinon deprecation lib
 # from warnings import deprecated
 
+
 class StixCyberObservableDeprecatedMixin:
-
     """
-        deprecated >=6.2 & <6.5. Use `promote_to_indicator_v2`
-        Promote a Stix-Observable to an Indicator
+    deprecated >=6.2 & <6.5. Use `promote_to_indicator_v2`
+    Promote a Stix-Observable to an Indicator
 
-        :param id: the Stix-Observable id
-        :return the observable
+    :param id: the Stix-Observable id
+    :return the observable
     """
 
     def promote_to_indicator(self, **kwargs):
@@ -25,17 +25,17 @@ class StixCyberObservableDeprecatedMixin:
                 },
             )
             query = (
-                    """
+                """
                         mutation StixCyberObservableEdit($id: ID!) {
                             stixCyberObservableEdit(id: $id) {
                                 promote {
                                     """
-                    + (
-                        custom_attributes
-                        if custom_attributes is not None
-                        else (self.properties_with_files if with_files else self.properties)
-                    )
-                    + """
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else (self.properties_with_files if with_files else self.properties)
+                )
+                + """
                             }
                         }
                     }
