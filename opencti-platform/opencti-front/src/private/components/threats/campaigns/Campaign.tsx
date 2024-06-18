@@ -2,9 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import CampaignDetails from './CampaignDetails';
-import CampaignEdition from './CampaignEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,6 +10,10 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import CampaignEdition from './CampaignEdition';
 
 const campaignFragment = graphql`
   fragment Campaign_campaign on Campaign {
@@ -73,6 +74,8 @@ const CampaignComponent = ({
 }) => {
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -144,9 +147,11 @@ const CampaignComponent = ({
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CampaignEdition campaignId={campaign.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CampaignEdition campaignId={campaign.id} />
+        </Security>
+      )}
     </>
   );
 };

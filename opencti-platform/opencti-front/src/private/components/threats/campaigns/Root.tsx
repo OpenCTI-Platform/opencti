@@ -23,6 +23,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import CampaignEdition from './CampaignEdition';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -82,7 +86,8 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   useSubscription<RootCampaignSubscription>(subConfig);
 
   const {
@@ -136,6 +141,11 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               entityType="Campaign"
               stixDomainObject={campaign}
               PopoverComponent={<CampaignPopover />}
+              EditComponent={isFABReplaced && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <CampaignEdition campaignId={campaign.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
             />
             <Box

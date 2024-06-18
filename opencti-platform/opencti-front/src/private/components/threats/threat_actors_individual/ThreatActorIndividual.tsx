@@ -12,12 +12,13 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import ThreatActorIndividualBiographics from './ThreatActorIndividualBiographics';
 import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographics';
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
-import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import {
   ThreatActorIndividual_ThreatActorIndividual$data,
   ThreatActorIndividual_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
+import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 
 export const threatActorIndividualFragment = graphql`
   fragment ThreatActorIndividual_ThreatActorIndividual on ThreatActorIndividual {
@@ -142,6 +143,8 @@ interface ThreatActorIndividualProps {
 }
 
 const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
     threatActorIndividualFragment,
     threatActorIndividualData,
@@ -243,11 +246,13 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorIndividualEdition
-          threatActorIndividualId={threatActorIndividual.id}
-        />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ThreatActorIndividualEdition
+            threatActorIndividualId={threatActorIndividual.id}
+          />
+        </Security>
+      )}
     </>
   );
 };

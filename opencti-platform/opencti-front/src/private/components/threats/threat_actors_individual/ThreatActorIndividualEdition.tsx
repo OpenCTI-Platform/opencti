@@ -6,6 +6,7 @@ import { ThreatActorIndividualEditionOverviewFocusMutation } from './__generated
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import { ThreatActorIndividualEditionOverviewFocus } from './ThreatActorIndividualEditionOverview';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const ThreatActorIndividualEdition = ({
   threatActorIndividualId,
@@ -34,6 +35,7 @@ const ThreatActorIndividualEdition = ({
           <ThreatActorIndividualEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}
