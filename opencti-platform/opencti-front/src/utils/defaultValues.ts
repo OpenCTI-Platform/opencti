@@ -31,7 +31,7 @@ export const defaultValuesToStringArray = (
   attributeName?: string,
 ): string[] | null => {
   let default_values: string[] | null = null;
-  if (!defaultValues) return default_values;
+  if (defaultValues === null || defaultValues === '') return default_values;
 
   if (Array.isArray(defaultValues)) {
     if (attributeName === INPUT_AUTHORIZED_MEMBERS) {

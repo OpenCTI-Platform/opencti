@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -6,18 +6,27 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { CogOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
+import { Badge } from '@mui/material';
+import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationDialogOptionProps {
   children: ReactNode
+  configuration?: CsvMapperRepresentationAttributeFormData
 }
 
-const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children }) => {
+const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
   const [open, setOpen] = React.useState(false);
   const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
+  const visible = useMemo(() => {
+    const hasDefaultValues = (!!configuration?.default_values || configuration?.default_values === false) && JSON.stringify(configuration.default_values) !== '[]';
+    const hasDatePattern = !!configuration?.pattern_date;
+    const hasSeparator = !!configuration?.separator;
+    return hasDefaultValues || hasDatePattern || hasSeparator;
+  }, [configuration]);
 
   const handleClose = () => {
     setOpen(false);
@@ -30,7 +39,9 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         onClick={handleClickOpen}
         size="large"
       >
-        <CogOutline/>
+        <Badge color="secondary" variant="dot" invisible={!visible}>
+          <CogOutline/>
+        </Badge>
       </IconButton>
       <Dialog
         open={open}

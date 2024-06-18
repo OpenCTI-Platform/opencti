@@ -17,6 +17,7 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import ToggleButtonField from '../../../../components/fields/ToggleButtonField';
 
 interface DefaultValueFieldProps {
   name: string,
@@ -170,8 +171,8 @@ const DefaultValueField = ({
   if (attribute.type === 'boolean') {
     return (
       <Field
-        component={SwitchField}
-        type="checkbox"
+        component={ToggleButtonField}
+        items={[{ value: true, content: t_i18n('true') }, { value: false, content: t_i18n('false') }]}
         name={name}
         label={label}
         containerstyle={fieldSpacingContainerStyle}

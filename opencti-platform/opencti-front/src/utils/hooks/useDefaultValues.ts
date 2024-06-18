@@ -70,7 +70,13 @@ export const useComputeDefaultValues = () => {
     }
     // Handle boolean
     if (type === 'boolean') {
-      return Boolean(head(defaultValues)?.id);
+      if ((defaultValues)[0]?.id === 'true') {
+        return true;
+      }
+      if ((defaultValues)[0]?.id === 'false') {
+        return false;
+      }
+      return null;
     }
 
     // Handle single numeric & single string
