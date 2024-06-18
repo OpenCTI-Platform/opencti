@@ -30,6 +30,7 @@ import { bundleProcess } from '../parser/csv-bundler';
 import { createWork, updateExpectationsNumber } from '../domain/work';
 import { IMPORT_CSV_CONNECTOR } from '../connector/importCsv/importCsv';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
+import { findById as findUserById } from '../domain/user';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -286,7 +287,8 @@ const taxiiExecutor = async (context: AuthContext) => {
 
 // region Csv ingestion
 const csvDataToObjects = async (csvBuffer: Buffer | string, ingestion: BasicStoreEntityIngestionCsv, csvMapper: CsvMapperParsed, context: AuthContext) => {
-  const { objects } = await bundleProcess(context, context.user ?? SYSTEM_USER, csvBuffer, csvMapper);
+  const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+  const { objects } = await bundleProcess(context, ingestionUser, csvBuffer, csvMapper);
   if (objects === undefined) {
     const error = UnknownError('Undefined CSV objects', { data: csvBuffer.toString() });
     logApp.error(error, { name: ingestion.name, context: 'CSV transform' });
