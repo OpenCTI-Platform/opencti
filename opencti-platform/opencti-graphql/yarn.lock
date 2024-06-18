@@ -6891,10 +6891,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-parse@npm:5.5.5":
-  version: 5.5.5
-  resolution: "csv-parse@npm:5.5.5"
-  checksum: 10/759ca2e5f3977cac7cbf3b1992dd507c6dd458163ab60671e7959d7aefd5b367d7043db65d55ed77ec56aeba2ecfa0881a2c416a44341edcfd266c3d29a424f0
+"csv-parse@npm:5.5.6":
+  version: 5.5.6
+  resolution: "csv-parse@npm:5.5.6"
+  checksum: 10/8682bd3846d8159eb6f686423d16493fffeceeef742d947e39ea3a3fb9b4a243b41a4cfbac56d721a2f7825b01335ba9b993bf68c4817e7abee0bd20754ee78d
   languageName: node
   linkType: hard
 
@@ -11220,7 +11220,7 @@ __metadata:
     content-disposition: "npm:0.5.4"
     cors: "npm:2.8.5"
     cross-env: "npm:7.0.3"
-    csv-parse: "npm:5.5.5"
+    csv-parse: "npm:5.5.6"
     dataloader: "npm:2.2.2"
     domino: "npm:2.1.6"
     dot-object: "npm:2.1.5"
