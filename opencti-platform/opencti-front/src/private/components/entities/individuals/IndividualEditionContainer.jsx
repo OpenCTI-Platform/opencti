@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import IndividualEditionOverview from './IndividualEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const IndividualEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, individual, open } = props;
+  const { handleClose, individual, open, controlledDial } = props;
   const { editContext } = individual;
 
   return (
@@ -16,8 +19,9 @@ const IndividualEditionContainer = (props) => {
       title={t_i18n('Update a individual')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <IndividualEditionOverview
         individual={individual}

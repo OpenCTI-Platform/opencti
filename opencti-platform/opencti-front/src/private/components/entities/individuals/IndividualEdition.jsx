@@ -5,6 +5,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import IndividualEditionContainer from './IndividualEditionContainer';
 import { individualEditionOverviewFocus } from './IndividualEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const individualEditionQuery = graphql`
   query IndividualEditionContainerQuery($id: String!) {
@@ -34,7 +35,11 @@ class IndividualEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <IndividualEditionContainer individual={props.individual} handleClose={this.handleClose.bind(this)} />
+              <IndividualEditionContainer
+                individual={props.individual}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
+              />
             );
           }
           return <Loader variant="inElement" />;
