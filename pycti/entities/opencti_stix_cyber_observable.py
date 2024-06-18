@@ -6,6 +6,7 @@ import os
 
 import magic
 
+from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
     StixCyberObservableDeprecatedMixin,
 )
@@ -1283,12 +1284,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else (
-                        """
-                            id
-                            entity_type
-                            """
-                    )
+                    else (INDICATOR_PROPERTIES)
                 )
                 + """
                             }
