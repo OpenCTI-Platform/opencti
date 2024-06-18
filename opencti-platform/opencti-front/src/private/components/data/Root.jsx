@@ -42,7 +42,7 @@ const Root = () => {
           path="/ingestion"
           element={
             <Security
-              needs={[SETTINGS, INGESTION]}
+              needs={[INGESTION]}
               placeholder={(
                 <Security
                   needs={[MODULES]}
