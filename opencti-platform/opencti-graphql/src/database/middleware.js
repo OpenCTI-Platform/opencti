@@ -99,7 +99,6 @@ import {
   ID_STANDARD,
   IDS_STIX,
   INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INTERNAL_IDS_ALIASES,
@@ -111,6 +110,7 @@ import { isAnId } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
@@ -2982,22 +2982,20 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       // Create the object
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
       // If file directly attached
-      let additionalInputs;
       if (!isEmptyField(resolvedInput.file)) {
         const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
         const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings });
-        additionalInputs = { x_opencti_files: [storeFileConverter(user, file)] };
+        dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
         // Add external references from files if necessary
         if (entitySetting?.platform_entity_files_ref) {
           // Create external ref + link to current entity
           const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
           const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
-          const newExternalRefs = [...(resolvedInput[INPUT_EXTERNAL_REFS] ?? []), externalRef];
-          additionalInputs = { ...additionalInputs, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+          const newRefRel = buildInnerRelation(dataEntity.element, externalRef, RELATION_EXTERNAL_REFERENCE);
+          dataEntity.relations.push(...newRefRel);
         }
       }
-      dataEntity.element = { ...dataEntity.element, ...additionalInputs };
       if (opts.restore === true) {
         dataMessage = generateRestoreMessage(dataEntity.element);
       } else {
