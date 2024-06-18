@@ -1,18 +1,18 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
+import React from 'react';
+import {Link} from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose, map } from 'ramda';
+import {KeyboardArrowRightOutlined} from '@mui/icons-material';
+import {map} from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
-import inject18n from '../../../../components/i18n';
+import {useFormatter} from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import makeStyles from '@mui/styles/makeStyles';
+import {ListItemButton} from '@mui/material';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   item: {},
   itemNested: {
     paddingLeft: theme.spacing(4),
@@ -44,17 +44,17 @@ const styles = (theme) => ({
     position: 'absolute',
     right: -10,
   },
-});
+}));
 
-class NarrativeLineComponent extends Component {
-  render() {
-    const { classes, subNarratives, node, isSubNarrative, t } = this.props;
+export const NarrativeLine = ({ subNarratives, node, isSubNarrative }) => {
+
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
     return (
       <div>
-        <ListItem
+        <ListItemButton
           classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
           divider={true}
-          button={true}
           component={Link}
           to={`/dashboard/techniques/narratives/${node.id}`}
         >
@@ -71,7 +71,7 @@ class NarrativeLineComponent extends Component {
                 <div className={classes.description}>
                   {node.description?.length > 0
                     ? node.description
-                    : t('This narrative does not have any description.')}
+                    : t_i18n('This narrative does not have any description.')}
                 </div>
               </>
             }
@@ -79,7 +79,7 @@ class NarrativeLineComponent extends Component {
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
-        </ListItem>
+        </ListItemButton>
         {subNarratives && subNarratives.length > 0 && (
           <List style={{ margin: 0, padding: 0 }}>
             {map(
@@ -98,57 +98,36 @@ class NarrativeLineComponent extends Component {
       </div>
     );
   }
-}
 
-NarrativeLineComponent.propTypes = {
-  node: PropTypes.object,
-  isSubNarrative: PropTypes.bool,
-  subNarratives: PropTypes.array,
-  classes: PropTypes.object,
-  fd: PropTypes.func,
-};
+export const NarrativeLineDummy = () => {
 
-export const NarrativeLine = compose(
-  inject18n,
-  withStyles(styles),
-)(NarrativeLineComponent);
+  const classes = useStyles();
 
-class NarrativeLineDummyComponent extends Component {
-  render() {
-    const { classes } = this.props;
-    return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+  return (
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
+        />
+      </ListItemIcon>
+      <ListItemText
+        primary={
           <Skeleton
             animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
+            variant="rectangular"
+            width="90%"
+            height={20}
           />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              height={20}
-            />
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined color="disabled" />
-        </ListItemIcon>
-      </ListItem>
-    );
-  }
+        }
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined color="disabled" />
+      </ListItemIcon>
+    </ListItem>
+  );
 }
 
-NarrativeLineDummyComponent.propTypes = {
-  classes: PropTypes.object,
-};
 
-export const NarrativeLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(NarrativeLineDummyComponent);
