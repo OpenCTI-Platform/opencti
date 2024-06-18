@@ -4,6 +4,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
@@ -34,6 +35,7 @@ const IndicatorEdition = ({ indicatorId }) => {
             <IndicatorEditionContainer
               indicator={props.indicator}
               handleClose={handleClose}
+              controlledDial={EditEntityControlledDial}
             />
           );
         }
