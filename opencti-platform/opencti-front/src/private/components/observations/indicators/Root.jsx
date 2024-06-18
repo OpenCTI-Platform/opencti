@@ -24,6 +24,9 @@ import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import IndicatorEdition from './IndicatorEdition';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -109,6 +112,9 @@ class RootIndicator extends Component {
                       entityType="Indicator"
                       stixDomainObject={indicator}
                       PopoverComponent={<IndicatorPopover/>}
+                      EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IndicatorEdition indicatorId={indicator.id} />
+                      </Security>}
                       noAliases={true}
                     />
                     <Box
@@ -168,7 +174,7 @@ class RootIndicator extends Component {
                     <Routes>
                       <Route
                         path="/"
-                        element={(<Indicator indicator={indicator}/>)}
+                        element={(<Indicator indicatorData={indicator}/>)}
                       />
                       <Route
                         path="/content/*"

@@ -25,6 +25,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import InfrastructureEdition from './InfrastructureEdition';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -101,6 +104,9 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
             PopoverComponent={InfrastructurePopover}
+            EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <InfrastructureEdition infrastructureId={infrastructure.id} />
+            </Security>}
             enableQuickSubscription={true}
           />
           <Box

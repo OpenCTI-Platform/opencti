@@ -5,6 +5,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const InfrastructureEdition = ({ infrastructureId }: { infrastructureId: string }) => {
   const [commit] = useApiMutation(infrastructureEditionOverviewFocus);
@@ -31,6 +32,7 @@ const InfrastructureEdition = ({ infrastructureId }: { infrastructureId: string 
           <InfrastructureEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}

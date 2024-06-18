@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import IndicatorEditionOverview from './IndicatorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const IndicatorEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, indicator, open } = props;
+  const { handleClose, indicator, open, controlledDial } = props;
   const { editContext } = indicator;
 
   return (
@@ -16,8 +19,9 @@ const IndicatorEditionContainer = (props) => {
       title={t_i18n('Update an indicator')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <IndicatorEditionOverview
         indicator={indicator}
