@@ -5,6 +5,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ToolEditionContainer from './ToolEditionContainer';
 import { toolEditionOverviewFocus } from './ToolEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const toolEditionQuery = graphql`
   query ToolEditionContainerQuery($id: String!) {
@@ -34,7 +35,11 @@ class ToolEdition extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <ToolEditionContainer tool={props.tool} handleClose={this.handleClose.bind(this)} />
+              <ToolEditionContainer
+                tool={props.tool}
+                handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
+              />
             );
           }
           return <Loader variant="inElement" />;
