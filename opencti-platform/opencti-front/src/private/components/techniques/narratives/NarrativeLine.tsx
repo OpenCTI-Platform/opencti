@@ -1,18 +1,18 @@
-import React from 'react';
+import React, {FunctionComponent} from 'react';
 import {Link} from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import {KeyboardArrowRightOutlined} from '@mui/icons-material';
-import {map} from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import {useFormatter} from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import makeStyles from '@mui/styles/makeStyles';
 import {ListItemButton} from '@mui/material';
+import {Theme} from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {},
   itemNested: {
     paddingLeft: theme.spacing(4),
@@ -46,7 +46,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const NarrativeLine = ({ subNarratives, node, isSubNarrative }) => {
+interface NarrativeLineProps {
+  subNarratives?: any[],
+  node: any,
+  isSubNarrative: boolean,
+}
+export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({ subNarratives, node, isSubNarrative }) => {
 
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -82,7 +87,7 @@ export const NarrativeLine = ({ subNarratives, node, isSubNarrative }) => {
         </ListItemButton>
         {subNarratives && subNarratives.length > 0 && (
           <List style={{ margin: 0, padding: 0 }}>
-            {map(
+            {subNarratives.map(
               (subNarrative) => (
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 <NarrativeLine
@@ -90,8 +95,7 @@ export const NarrativeLine = ({ subNarratives, node, isSubNarrative }) => {
                   node={subNarrative}
                   isSubNarrative={true}
                 />
-              ),
-              subNarratives,
+              )
             )}
           </List>
         )}
