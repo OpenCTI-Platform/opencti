@@ -4,18 +4,22 @@ import { useFormatter } from '../../../../components/i18n';
 import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { handleClose, position, open } = props;
+  const { isFeatureEnable } = useHelper();
+  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
   return (
     <Drawer
       title={t_i18n('Update a position')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={FABReplaced ? controlledDial : undefined}
     >
       <PositionEditionOverview
         position={position}

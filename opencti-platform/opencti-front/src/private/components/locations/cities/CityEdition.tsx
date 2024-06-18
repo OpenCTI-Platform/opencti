@@ -5,6 +5,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const CityEdition = ({ cityId }: { cityId: string }) => {
   const [commit] = useApiMutation(cityEditionOverviewFocus);
@@ -29,6 +30,7 @@ const CityEdition = ({ cityId }: { cityId: string }) => {
           <CityEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}

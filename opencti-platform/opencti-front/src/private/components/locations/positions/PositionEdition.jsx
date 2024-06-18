@@ -5,6 +5,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import PositionEditionContainer from './PositionEditionContainer';
 import { positionEditionOverviewFocus } from './PositionEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const positionEditionQuery = graphql`
   query PositionEditionContainerQuery($id: String!) {
@@ -37,6 +38,7 @@ class PositionEdition extends Component {
               <PositionEditionContainer
                 position={props.position}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }

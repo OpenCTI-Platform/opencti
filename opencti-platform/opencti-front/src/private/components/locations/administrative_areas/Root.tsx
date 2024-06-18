@@ -26,6 +26,9 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import AdministrativeAreaEdition from './AdministrativeAreaEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -131,6 +134,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               PopoverComponent={
                 <AdministrativeAreaPopover id={administrativeArea.id} />
             }
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <AdministrativeAreaEdition
+                    administrativeAreaId={administrativeArea.id}
+                  />
+                </Security>
+              )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

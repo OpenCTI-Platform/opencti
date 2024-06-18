@@ -26,6 +26,9 @@ import { useFormatter } from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import CountryEdition from './CountryEdition';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -129,6 +132,11 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               disableSharing={true}
               stixDomainObject={country}
               PopoverComponent={<CountryPopover id={country.id} />}
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <CountryEdition countryId={country.id} />
+                </Security>
+              )}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />
