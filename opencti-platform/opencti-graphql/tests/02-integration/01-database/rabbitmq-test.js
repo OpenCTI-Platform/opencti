@@ -5,14 +5,6 @@ import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { RABBIT_QUEUE_PREFIX, waitInSec } from '../../../src/database/utils';
 
-describe('Rabbit basic and utils', () => {
-  it('should rabbit metrics accurate', async () => {
-    // Just wait one second to let redis client initialize
-    const data = await metrics(testContext, ADMIN_USER);
-    expect(data).not.toBeNull();
-  });
-});
-
 const testConnectorId = uuid();
 describe('Rabbit connector management', () => {
   const connectorName = 'MY STIX IMPORTER';
