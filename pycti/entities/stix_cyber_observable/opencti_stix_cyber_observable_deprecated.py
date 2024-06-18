@@ -1,5 +1,4 @@
-# dommage c'est du python 3.13, sinon deprecation lib
-# from warnings import deprecated
+import deprecation
 
 
 class StixCyberObservableDeprecatedMixin:
@@ -11,6 +10,11 @@ class StixCyberObservableDeprecatedMixin:
     :return the observable
     """
 
+    @deprecation.deprecated(
+        deprecated_in="6.2",
+        removed_in="6.5",
+        details="Use promote_to_indicator_v2 instead.",
+    )
     def promote_to_indicator(self, **kwargs):
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
