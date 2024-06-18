@@ -5,6 +5,7 @@ import { dataComponentEditionOverviewFocus } from './DataComponentEditionOvervie
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const DataComponentEdition: FunctionComponent<{ dataComponentId: string }> = ({
   dataComponentId,
@@ -34,6 +35,7 @@ const DataComponentEdition: FunctionComponent<{ dataComponentId: string }> = ({
           <DataComponentEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
           />
         </React.Suspense>
       )}
