@@ -51,6 +51,14 @@ const subscription = graphql`
     }
 `;
 
+const classes = {
+  dialog: {
+    '.MuiDialogContent-root': {
+      paddingTop: '15px',
+    },
+  },
+};
+
 const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   id,
   isOpen,
@@ -110,6 +118,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         }}
         fullWidth={true}
         maxWidth="lg"
+        sx={classes.dialog}
       >
         <DialogTitle>{t_i18n('Ask AI')}</DialogTitle>
         <DialogContent>
