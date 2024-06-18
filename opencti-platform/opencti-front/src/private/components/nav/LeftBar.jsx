@@ -77,7 +77,7 @@ import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
-  EXPLORE,
+  EXPLORE, INVESTIGATION,
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
@@ -771,7 +771,7 @@ const LeftBar = () => {
             )}
           </MenuList>
         </Security>
-        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
+        <Security needs={[EXPLORE, INVESTIGATION, MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
@@ -794,6 +794,8 @@ const LeftBar = () => {
                   )}
                 </MenuItem>
               </StyledTooltip>
+            </Security>
+            <Security needs={[INVESTIGATION]}>
               <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
                 <MenuItem
                   component={Link}

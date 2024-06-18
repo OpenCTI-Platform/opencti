@@ -49,7 +49,7 @@ type WorkspaceConnection {
 
 # Queries
 type Query {
-    workspace(id: String!): Workspace @auth(for: [EXPLORE])
+    workspace(id: String!): Workspace @auth(for: [EXPLORE, INVESTIGATION])
     workspaces(
         first: Int
         after: ID
@@ -58,7 +58,7 @@ type Query {
         filters: FilterGroup
         includeAuthorities: Boolean
         search: String
-    ): WorkspaceConnection @auth(for: [EXPLORE, SETTINGS_SETACCESSES])
+    ): WorkspaceConnection @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
 }
 
 type WorkspaceEdge {
@@ -96,18 +96,18 @@ input ImportWidgetInput {
 }
 
 type Mutation {
-    workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
-    workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceContextPatch(id: ID!, input: EditContext!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE])
-    workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE])
+    workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceContextPatch(id: ID!, input: EditContext!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
 }
 
 # Subscriptions
 type Subscription {
-    workspace(id: ID!): Workspace @auth(for: [EXPLORE])
+    workspace(id: ID!): Workspace @auth(for: [EXPLORE, INVESTIGATION])
 }

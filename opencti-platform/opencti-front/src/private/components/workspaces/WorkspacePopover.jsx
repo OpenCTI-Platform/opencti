@@ -16,7 +16,7 @@ import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
 import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
@@ -126,7 +126,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           <MenuItem key="menu_duplicate" onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>,
           <MenuItem key="menu_export" onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>,
         ]}
-        <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
+        <Security needs={[EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE]} hasAccess={userCanManage}>
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
