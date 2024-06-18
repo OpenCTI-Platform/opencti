@@ -4,11 +4,14 @@ import { useFormatter } from '../../../../components/i18n';
 import ChannelEditionOverview from './ChannelEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const ChannelEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  const { handleClose, channel, open } = props;
+  const { handleClose, channel, open, controlledDial } = props;
   const { editContext } = channel;
 
   return (
@@ -16,8 +19,9 @@ const ChannelEditionContainer = (props) => {
       title={t_i18n('Update a channel')}
       open={open}
       onClose={handleClose}
-      variant={open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <ChannelEditionOverview
         channel={channel}
