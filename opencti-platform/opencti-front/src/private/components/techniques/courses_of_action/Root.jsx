@@ -20,6 +20,9 @@ import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import CourseOfActionEdition from './CourseOfActionEdition';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -105,6 +108,11 @@ class RootCourseOfAction extends Component {
                       entityType="Course-Of-Action"
                       stixDomainObject={courseOfAction}
                       PopoverComponent={<CourseOfActionPopover/>}
+                      EditComponent={(
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+                        </Security>
+                      )}
                       isOpenctiAlias={true}
                     />
                     <Box

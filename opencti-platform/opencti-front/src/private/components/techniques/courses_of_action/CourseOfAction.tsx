@@ -13,6 +13,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const courssOfActionFragment = graphql`
   fragment CourseOfAction_courseOfAction on CourseOfAction {
@@ -73,6 +74,8 @@ interface CourseOfActionProps {
 const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) => {
   const courseOfAction = useFragment<CourseOfAction_courseOfAction$key>(courssOfActionFragment, courseOfActionData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(courseOfAction.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -144,9 +147,11 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+        </Security>
+      )}
     </>
   );
 };

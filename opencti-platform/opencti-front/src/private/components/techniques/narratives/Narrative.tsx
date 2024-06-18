@@ -13,6 +13,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const narrativeFragment = graphql`
   fragment Narrative_narrative on Narrative {
@@ -73,6 +74,8 @@ interface NarrativeProps {
 const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
   const narrative = useFragment<Narrative_narrative$key>(narrativeFragment, narrativeData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(narrative.entity_type);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -144,9 +147,11 @@ const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
           })
         }
       </Grid>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <NarrativeEdition narrativeId={narrative.id} />
-      </Security>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NarrativeEdition narrativeId={narrative.id} />
+        </Security>
+      )}
     </>
   );
 };
