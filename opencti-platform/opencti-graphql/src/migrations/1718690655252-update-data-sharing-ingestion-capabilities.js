@@ -32,8 +32,8 @@ export const up = async (next) => {
     for (let i = 0; i < roles.length; i += 1) {
       const roleId = roles[i].id;
       const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
-      // Select 'Access ingestion' if 'Access Data sharing & ingestion' is selected
-      const hasAccessDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI');
+      // Select 'Access ingestion' if 'Access Data sharing & ingestion' or 'Access administration' is selected
+      const hasAccessDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI' || capability.name === 'SETTINGS');
       if (hasAccessDataSharingCapability) {
         const input = { fromId: roleId, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
         await createRelation(context, SYSTEM_USER, input);
