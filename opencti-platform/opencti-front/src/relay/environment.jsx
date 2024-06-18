@@ -57,6 +57,11 @@ const subscribeFn = (request, variables) => {
 const fetchMiddleware = urlMiddleware({
   url: `${APP_BASE_PATH}/graphql`,
   credentials: 'same-origin',
+  // --- to add when we enable csrfPrevention in ApolloServer ---
+  // headers: (request) => {
+  //   return { 'x-apollo-operation-name': request.operation.operationKind };
+  // },
+  // -----------
 });
 const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn,

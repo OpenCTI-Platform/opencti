@@ -102,6 +102,7 @@ const createApolloServer = () => {
     introspection: true, // Will be disabled by plugin if needed
     persistedQueries: false,
     validationRules: apolloValidationRules,
+    csrfPrevention: false, // CSRF is handled by helmet
     async context({ req, res }) {
       const executeContext = executionContext('api');
       executeContext.req = req;
