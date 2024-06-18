@@ -8,6 +8,7 @@ import inject18n from '../../../../components/i18n';
 import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
 import { ThreatActorGroupEditionOverviewFocus } from './ThreatActorGroupEditionOverview';
 import Loader from '../../../../components/Loader';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const styles = () => ({
   editButton: {
@@ -48,6 +49,7 @@ class ThreatActorGroupEdition extends Component {
               <ThreatActorGroupEditionContainer
                 threatActorGroup={props.threatActorGroup}
                 handleClose={this.handleClose.bind(this)}
+                controlledDial={EditEntityControlledDial}
               />
             );
           }
