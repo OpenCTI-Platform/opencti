@@ -11,6 +11,7 @@ cachetools~=5.3.0
 prometheus-client~=0.20.0
 opentelemetry-api~=1.22.0
 opentelemetry-sdk~=1.22.0
+deprecation~=2.1.0
 # OpenCTI
 filigran-sseclient~=1.0.0
 stix2~=3.0.1
