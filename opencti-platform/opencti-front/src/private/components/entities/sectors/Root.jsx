@@ -23,6 +23,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import SectorEdition from './SectorEdition';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -142,6 +145,11 @@ class RootSector extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<SectorPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <SectorEdition sectorId={sector.id} />
+                          </Security>
+                        )}
                       />
                       <Box
                         sx={{
@@ -201,7 +209,7 @@ class RootSector extends Component {
                         <Route
                           path="/"
                           element={(
-                            <Sector sector={sector} />
+                            <Sector sectorData={sector} />
                         )}
                         />
                         <Route

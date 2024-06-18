@@ -25,6 +25,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import OrganizationEdition from './OrganizationEdition';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -176,6 +179,11 @@ class RootOrganization extends Component {
                         isOpenctiAlias={true}
                         enableQuickSubscription={true}
                         PopoverComponent={<OrganizationPopover />}
+                        EditComponent={(
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <OrganizationEdition organizationId={organization.id} />
+                          </Security>
+                        )}
                         onViewAs={this.handleChangeViewAs.bind(this)}
                         viewAs={viewAs}
                       />
@@ -238,7 +246,7 @@ class RootOrganization extends Component {
                           path="/"
                           element={
                             <Organization
-                              organization={props.organization}
+                              organizationData={props.organization}
                               viewAs={viewAs}
                             />
                         }
