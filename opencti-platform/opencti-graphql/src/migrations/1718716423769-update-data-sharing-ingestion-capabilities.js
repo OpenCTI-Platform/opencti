@@ -38,8 +38,8 @@ export const up = async (next) => {
         const input = { fromId: roleId, toId: accessIngestionCapability.id, relationship_type: 'has-capability' };
         await createRelation(context, SYSTEM_USER, input);
       }
-      // Select 'Manage ingestion' if 'Manage Data sharing & ingestion' is selected
-      const hasManageDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI_SETCOLLECTIONS');
+      // Select 'Manage ingestion' if 'Manage Data sharing & ingestion' or 'Access administration' is selected
+      const hasManageDataSharingCapability = capabilities.some((capability) => capability.name === 'TAXIIAPI_SETCOLLECTIONS' || capability.name === 'SETTINGS');
       if (hasManageDataSharingCapability) {
         const input = { fromId: roleId, toId: manageIngestionCapability.id, relationship_type: 'has-capability' };
         await createRelation(context, SYSTEM_USER, input);
