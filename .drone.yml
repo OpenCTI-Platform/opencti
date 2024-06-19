@@ -55,10 +55,10 @@ steps:
       - yarn check-ts
       - yarn lint
       - # Healthcheck, keep linter before healthcheck to give time to services to start
-      - curl -fsS -o /dev/null http://opencti-raw-start:4100/health?health_access_key=testHealth$?
-      - curl -fsS -o /dev/null http://opencti-live-start:4200/health?health_access_key=testHealth$?
-      - curl -fsS -o /dev/null http://opencti-direct-start:4300/health?health_access_key=testHealth$?
-      - curl -fsS -o /dev/null http://opencti-restore-start:4400/health?health_access_key=testHealth$?
+      - curl --max-time 30 -fsS -o /dev/null http://opencti-raw-start:4100/health?health_access_key=testHealth
+      - curl --max-time 30 -fsS -o /dev/null http://opencti-live-start:4200/health?health_access_key=testHealth
+      - curl --max-time 30 -fsS -o /dev/null http://opencti-direct-start:4300/health?health_access_key=testHealth
+      - curl --max-time 30 -fsS -o /dev/null http://opencti-restore-start:4400/health?health_access_key=testHealth
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
@@ -106,7 +106,7 @@ steps:
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional curl
-      - curl -fsS -o /dev/null  http://opencti-e2e-start:4500/health?health_access_key=testHealth$?
+      - curl --max-time 30 -fsS -o /dev/null  http://opencti-e2e-start:4500/health?health_access_key=testHealth
       - cd opencti-platform/opencti-front
       - yarn install
       - npx playwright install --with-deps chromium
