@@ -2829,6 +2829,7 @@
   "Yes": "是",
   "you": "你",
   "You are about to change the marking with another rank.": "您即将用另一个级别更改标记。",
+  "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "您将要下载一个与人工制品（或二进制文件）相关的文件。它可能是恶意文件。您可以下载加密存档（密码：\"已感染\"），以保护您的工作站并安全共享。",
   "You are not allowed to do this.": "您这样操作不被允许。",
   "You are not authorized to see this data.": "您无权查看此数据。",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "您正尝试使用 OpenBAS 平台，根据这套威胁情报知识检查贵组织的安全态势。",

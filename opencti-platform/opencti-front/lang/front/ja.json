@@ -2828,6 +2828,7 @@
   "Yes": "はい",
   "you": "君",
   "You are about to change the marking with another rank.": "別のランクにマークを変更しようとしています。",
+  "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "アーティファクト（またはバイナリ）に関連するファイルをダウンロードしようとしています。それは悪意のあるものかもしれません。ワークステーションを保護し、安全に共有するために、暗号化アーカイブ（パスワード: \"infected\"）としてダウンロードすることができます。",
   "You are not allowed to do this.": "この操作を行う権限がありません。",
   "You are not authorized to see this data.": "このデータを見る権限がありません。",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "あなたは、OpenBASプラットフォームを使用して、この脅威インテリジェンスセットの知識に対して組織のセキュリティ態勢をチェックしようとしています。",
