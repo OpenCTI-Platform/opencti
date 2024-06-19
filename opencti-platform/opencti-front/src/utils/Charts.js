@@ -861,11 +861,13 @@ export const donutChartOptions = (
 /**
  *
  * @param {Theme} theme
+ * @param {function} formatter
  * @param {string} legendPosition
  * @param {boolean} distributed
  */
 export const treeMapOptions = (
   theme,
+  formatter = null,
   legendPosition = 'bottom',
   distributed = false,
 ) => {
@@ -887,6 +889,11 @@ export const treeMapOptions = (
     ],
     fill: {
       opacity: 1,
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => (formatter ? formatter(value) : value),
+      },
     },
     states: {
       hover: {
