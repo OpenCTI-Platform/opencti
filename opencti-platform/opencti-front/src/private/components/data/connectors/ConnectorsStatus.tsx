@@ -163,7 +163,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [connectorIdToReset, setConnectorIdToReset] = useState<string>();
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
-  const isGrantedManage = useGranted([MODULES_MODMANAGE]);
 
   const data = usePreloadedFragment<
   ConnectorsStatusQuery,
