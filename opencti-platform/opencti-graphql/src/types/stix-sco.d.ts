@@ -594,7 +594,7 @@ export interface StixFinancialAccount extends StixCyberObject {
 // Custom object extension - Financial Asset
 // value
 export interface StixFinancialAsset extends StixCyberObject {
-  name: string;
+  asset_name: string;
   asset_type: string;
   asset_value: number;
   currency_code: string;

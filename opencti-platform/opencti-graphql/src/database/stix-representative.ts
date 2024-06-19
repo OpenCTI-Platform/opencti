@@ -211,7 +211,7 @@ export const extractStixRepresentative = (
     return (stix as SCO.StixFinancialAccount).account_number ?? 'Unknown';
   }
   if (entityType === ENTITY_FINANCIAL_ASSET) {
-    return (stix as SCO.StixFinancialAsset).name ?? 'Unknown';
+    return (stix as SCO.StixFinancialAsset).asset_name ?? 'Unknown';
   }
   if (entityType === ENTITY_FINANCIAL_TRANSACTION) {
     return (stix as SCO.StixFinancialTransaction).transaction_value.toString()
