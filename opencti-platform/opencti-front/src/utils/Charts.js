@@ -516,7 +516,7 @@ export const horizontalBarsChartOptions = (
   },
   yaxis: {
     labels: {
-      formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      formatter: (value) => (yFormatter && typeof value === 'number' ? yFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
@@ -550,6 +550,7 @@ export const horizontalBarsChartOptions = (
 
 /**
  * @param {Theme} theme
+ * @param {function} xFormatter
  * @param {string[]} labels
  * @param {string[]} chartColors
  * @param {boolean} legend
@@ -557,6 +558,7 @@ export const horizontalBarsChartOptions = (
  */
 export const radarChartOptions = (
   theme,
+  xFormatter = null,
   labels,
   chartColors = [],
   legend = false,
@@ -629,6 +631,9 @@ export const radarChartOptions = (
   },
   yaxis: {
     show: false,
+    labels: {
+      formatter: (value) => (xFormatter ? xFormatter(value) : value),
+    },
   },
   plotOptions: {
     radar: {
