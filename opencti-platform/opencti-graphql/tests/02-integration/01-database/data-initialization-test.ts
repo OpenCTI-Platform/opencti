@@ -12,8 +12,8 @@ describe('Data initialization test', () => {
     const allExpectedNames = [
       'BYPASS',
       'CONNECTORAPI',
-      'EXPLORE',
       'CSVMAPPERS',
+      'EXPLORE',
       'EXPLORE_EXUPDATE',
       'EXPLORE_EXUPDATE_EXDELETE',
       'EXPLORE_EXUPDATE_PUBLISH',
