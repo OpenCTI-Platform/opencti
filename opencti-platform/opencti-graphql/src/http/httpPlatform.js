@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
 import archiver from 'archiver';
+import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
@@ -440,9 +441,11 @@ const createApp = async (app) => {
     const settingFavicon = settings?.platform_favicon;
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? settingsTitle : 'OpenCTI - Cyber Threat Intelligence Platform')
-      .replace(/%APP_DESCRIPTION%/g, description)
-      .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? settingFavicon : `${basePath}/static/ext/favicon.png`)
+      .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? validator.escape(settingsTitle)
+        : 'OpenCTI - Cyber Threat Intelligence Platform')
+      .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
+      .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? validator.escape(settingFavicon)
+        : `${basePath}/static/ext/favicon.png`)
       .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
     res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.set('Expires', '-1');
