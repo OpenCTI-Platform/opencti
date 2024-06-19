@@ -494,6 +494,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   priority: string;
   owner_sid: string;
   window_title: string;
+  asset_name: string;
   asset_type: string;
   currency_code: string;
   // date

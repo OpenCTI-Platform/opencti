@@ -259,7 +259,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           currency_code
         }
         ... on FinancialAsset {
-          name
+          asset_name
           asset_type
           asset_value
           currency_code

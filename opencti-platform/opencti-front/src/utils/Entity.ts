@@ -294,7 +294,7 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
       );
     case 'Financial-Asset'.toLowerCase():
       return (
-        stixCyberObservable.name
+        stixCyberObservable.asset_name
         || stixCyberObservable.asset_type
         || 'Unknown'
       );

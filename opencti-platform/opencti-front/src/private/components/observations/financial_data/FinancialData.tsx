@@ -103,7 +103,7 @@ const financialAssetFragment = graphql`
       value
       color
     }
-    name
+    asset_name
     asset_type
     asset_value
     currency_code
