@@ -116,7 +116,7 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-      - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=35; else ID=26; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
+      - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=21; else ID=20; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
       - name: deploy via awx
         uses: certara/github-action-ansible-tower-awx@master
         with:
