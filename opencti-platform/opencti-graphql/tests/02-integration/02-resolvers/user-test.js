@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { ADMIN_USER, adminQuery, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, editorQuery, queryAsAdmin, testContext, TESTING_GROUPS, TESTING_USERS } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const LIST_QUERY = gql`
@@ -252,7 +252,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.users.edges.length).toEqual(6);
+    expect(queryResult.data.users.edges.length).toEqual(TESTING_USERS.length + 3);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -598,9 +598,9 @@ describe('User resolver standard behavior', () => {
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY, variables: { first: 20 } });
-    expect(queryResult.data.members.edges.length).toEqual(16);
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(4);
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(5);
+    expect(queryResult.data.members.edges.length).toEqual(18);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 2); // 2 built-in groups
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(7);
   });
 });

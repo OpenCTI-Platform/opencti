@@ -91,19 +91,21 @@ interface Role {
   description: string,
   capabilities: string[]
 }
-
+export const TESTING_ROLES: Role[] = [];
 const ROLE_PARTICIPATE: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and participate' }),
   name: 'Access knowledge and participate',
   description: 'Only participate',
   capabilities: ['KNOWLEDGE_KNPARTICIPATE']
 };
+TESTING_ROLES.push(ROLE_PARTICIPATE);
 export const ROLE_EDITOR: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration and edit/delete' }),
   name: 'Access knowledge/exploration and edit/delete',
   description: 'Knowledge/exploration edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'EXPLORE_EXUPDATE_PUBLISH']
 };
+TESTING_ROLES.push(ROLE_EDITOR);
 
 export const ROLE_SECURITY: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
@@ -111,6 +113,28 @@ export const ROLE_SECURITY: Role = {
   description: 'Knowledge/exploration/settings edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
 };
+TESTING_ROLES.push(ROLE_SECURITY);
+
+// Maybe one day to be replaced by the connector built-in group
+export const ROLE_TEST_CONNECTOR: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Test connector role' }),
+  name: 'Test connector role',
+  description: 'Access knowledge CRUD + connector, bypass ref, set marking, set labels',
+  capabilities: [
+    'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPLOAD',
+    'KNOWLEDGE_KNASKIMPORT',
+    'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
+    'KNOWLEDGE_KNENRICHMENT',
+    'CONNECTORAPI',
+    'BYPASSREFERENCE',
+    'MODULES_MODMANAGE',
+    'TAXIIAPI',
+    'SETTINGS_SETMARKINGS',
+    'SETTINGS_SETLABELS',
+  ]
+};
+TESTING_ROLES.push(ROLE_TEST_CONNECTOR);
 
 // Groups
 interface Group {
@@ -121,6 +145,8 @@ interface Group {
   group_confidence_level: ConfidenceLevel,
   max_shareable_markings: string[],
 }
+
+export const TESTING_GROUPS: Group[] = [];
 
 export const GREEN_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
@@ -133,6 +159,8 @@ export const GREEN_GROUP: Group = {
   },
   max_shareable_markings: [],
 };
+TESTING_GROUPS.push(GREEN_GROUP);
+
 export const AMBER_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
   name: 'AMBER GROUP',
@@ -144,6 +172,7 @@ export const AMBER_GROUP: Group = {
   },
   max_shareable_markings: [MARKING_TLP_GREEN],
 };
+TESTING_GROUPS.push(AMBER_GROUP);
 
 export const AMBER_STRICT_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER STRICT GROUP' }),
@@ -156,6 +185,20 @@ export const AMBER_STRICT_GROUP: Group = {
   },
   max_shareable_markings: [],
 };
+TESTING_GROUPS.push(AMBER_STRICT_GROUP);
+
+export const CONNECTOR_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'TEST CONNECTOR GROUP' }),
+  name: 'TEST CONNECTOR GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_TEST_CONNECTOR],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  max_shareable_markings: [],
+};
+TESTING_GROUPS.push(CONNECTOR_GROUP);
 
 // Organization
 interface Organization {
@@ -210,7 +253,7 @@ export const ADMIN_USER: AuthUser = {
   },
   max_shareable_marking: [],
 };
-const TESTING_USERS: User[] = [];
+export const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
@@ -237,6 +280,15 @@ export const USER_SECURITY: User = {
   client: createHttpClient('security@opencti.io', 'security')
 };
 TESTING_USERS.push(USER_SECURITY);
+
+export const USER_CONNECTOR: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'connector@opencti.io' }),
+  email: 'connector@opencti.io',
+  password: 'connector',
+  groups: [CONNECTOR_GROUP],
+  client: createHttpClient('connector@opencti.io', 'connector')
+};
+TESTING_USERS.push(USER_CONNECTOR);
 
 // region group management
 const GROUP_CREATION_MUTATION = `

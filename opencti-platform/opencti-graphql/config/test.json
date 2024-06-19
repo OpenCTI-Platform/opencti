@@ -44,7 +44,7 @@
   },
   "http_proxy": "http://proxy.opencti.io:2000",
   "https_proxy": "https://proxy.opencti.io:2100",
-  "no_proxy": "localhost,127.0.0.0/8,internal.opencti.io",
+  "no_proxy": "localhost,127.0.0.0/8,internal.opencti.io,rabbitmq",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
   "redis": {

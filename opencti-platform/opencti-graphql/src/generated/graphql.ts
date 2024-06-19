@@ -3403,6 +3403,7 @@ export type Connector = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   config?: Maybe<ConnectorConfig>;
   configurations?: Maybe<Array<ConnectorConfiguration>>;
+  connector_queue_details: ConnectorQueueDetails;
   connector_schema?: Maybe<Scalars['String']['output']>;
   connector_schema_ui?: Maybe<Scalars['String']['output']>;
   connector_scope?: Maybe<Array<Scalars['String']['output']>>;
@@ -3448,6 +3449,12 @@ export type ConnectorConfiguration = {
 export type ConnectorMetadata = {
   __typename?: 'ConnectorMetadata';
   configuration: Scalars['String']['output'];
+};
+
+export type ConnectorQueueDetails = {
+  __typename?: 'ConnectorQueueDetails';
+  messages_number: Scalars['Int']['output'];
+  messages_size: Scalars['Int']['output'];
 };
 
 export enum ConnectorType {
@@ -28782,6 +28789,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
+  ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorType: ConnectorType;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
@@ -29576,6 +29584,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
   ConnectorMetadata: ConnectorMetadata;
+  ConnectorQueueDetails: ConnectorQueueDetails;
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
   Container: ResolversInterfaceTypes<ResolversParentTypes>['Container'];
@@ -31274,6 +31283,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   config?: Resolver<Maybe<ResolversTypes['ConnectorConfig']>, ParentType, ContextType>;
   configurations?: Resolver<Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, ParentType, ContextType>;
+  connector_queue_details?: Resolver<ResolversTypes['ConnectorQueueDetails'], ParentType, ContextType>;
   connector_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_schema_ui?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_scope?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -31314,6 +31324,12 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 
 export type ConnectorMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorMetadata'] = ResolversParentTypes['ConnectorMetadata']> = ResolversObject<{
   configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ConnectorQueueDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorQueueDetails'] = ResolversParentTypes['ConnectorQueueDetails']> = ResolversObject<{
+  messages_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  messages_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38926,6 +38942,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
+  ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;
   ConstraintNumber?: GraphQLScalarType;
   ConstraintString?: GraphQLScalarType;
   Container?: ContainerResolvers<ContextType>;

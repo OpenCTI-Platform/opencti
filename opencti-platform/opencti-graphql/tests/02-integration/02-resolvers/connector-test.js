@@ -1,6 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -79,6 +80,25 @@ const READ_CONNECTOR_QUERY = gql`
     connector(id: $id) {
       id
       name
+      active
+      auto
+      only_contextual
+      connector_type
+      connector_scope
+      connector_state
+      connector_queue_details {
+        messages_number
+        messages_size
+      }
+      updated_at
+      created_at
+      config {
+        listen
+        listen_exchange
+        push
+        push_exchange
+      }
+      built_in
     }
   }
 `;
@@ -89,36 +109,38 @@ const DELETE_CONNECTOR_QUERY = gql`
   }
 `;
 
+const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
+
+beforeAll(async () => {
+  const CONNECTOR_TO_CREATE = {
+    input: {
+      id: TEST_CN_ID,
+      name: 'TestConnector',
+      type: 'EXTERNAL_IMPORT',
+      scope: 'Observable',
+      auto: true,
+      only_contextual: true,
+    },
+  };
+  const connector = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    query: CREATE_CONNECTOR_QUERY,
+    variables: CONNECTOR_TO_CREATE,
+  });
+  expect(connector).not.toBeNull();
+  expect(connector.data.registerConnector).not.toBeNull();
+  expect(connector.data.registerConnector.name).toEqual('TestConnector');
+  expect(connector.data.registerConnector.id).toEqual(TEST_CN_ID);
+});
+
 describe('Connector resolver standard behaviour', () => {
   let workId;
-  let testConnectorId;
-  it('should create connector', async () => {
-    const CONNECTOR_TO_CREATE = {
-      input: {
-        id: '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695',
-        name: 'TestConnector',
-        type: 'EXTERNAL_IMPORT',
-        scope: 'Observable',
-        auto: true,
-        only_contextual: true,
-      },
-    };
-    const connector = await queryAsAdmin({
-      query: CREATE_CONNECTOR_QUERY,
-      variables: CONNECTOR_TO_CREATE,
-    });
-    expect(connector).not.toBeNull();
-    expect(connector.data.registerConnector).not.toBeNull();
-    expect(connector.data.registerConnector.name).toEqual('TestConnector');
-    testConnectorId = connector.data.registerConnector.id;
-  });
   it('should create work', async () => {
     const WORK_TO_CREATE = {
-      connectorId: testConnectorId,
+      connectorId: TEST_CN_ID,
       friendlyName: 'TestConnector',
     };
 
-    const work = await queryAsAdmin({
+    const work = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
       query: CREATE_WORK_QUERY,
       variables: WORK_TO_CREATE,
     });
@@ -130,12 +152,12 @@ describe('Connector resolver standard behaviour', () => {
   });
   it('should list works', async () => {
     // List all works for connector
-    const queryResult = await queryAsAdmin({
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
       query: LIST_WORK_QUERY,
       variables: {
         filters: {
           mode: 'and',
-          filters: [{ key: 'connector_id', values: [testConnectorId] }],
+          filters: [{ key: 'connector_id', values: [TEST_CN_ID] }],
           filterGroups: [],
         },
       },
@@ -145,12 +167,12 @@ describe('Connector resolver standard behaviour', () => {
   });
   it('should update work from progress to complete', async () => {
     // Read work
-    let queryResult = await queryAsAdmin({ query: READ_WORK_QUERY, variables: { id: workId } });
+    let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.work.status).toEqual('progress');
 
     // Update work and declare as finished
-    queryResult = await queryAsAdmin({
+    queryResult = await queryAsAdminWithSuccess({
       query: UPDATE_WORK_QUERY,
       variables: { id: workId, message: 'Finished', inError: false },
     });
@@ -158,28 +180,46 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.workEdit.toProcessed).toEqual(workId);
 
     // Read work and verify status
-    queryResult = await queryAsAdmin({ query: READ_WORK_QUERY, variables: { id: workId } });
+    queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.work.status).toEqual('complete');
   });
   it('should delete work', async () => {
     // Delete the work
-    await queryAsAdmin({
+    await queryAsUserWithSuccess(USER_CONNECTOR.client, {
       query: DELETE_WORK_QUERY,
       variables: { id: workId },
     });
 
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_WORK_QUERY, variables: { id: workId } });
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.work).toBeNull();
   });
-  it('should delete connector', async () => {
-    // Delete the connector
-    await queryAsAdmin({ query: DELETE_CONNECTOR_QUERY, variables: { id: '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695' } });
-    // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695' } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.connector).toBeNull();
+
+  it('should get connector details', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data.connector.connector_queue_details).toBeDefined();
+    expect(queryResult.data.connector.connector_queue_details.messages_number).toBe(0);
+    expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
   });
+});
+
+describe('Capability checks', () => {
+  it('Editor user should not be allowed to see connector details', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+  });
+
+  it('Participate user should not be allowed to delete connector', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, { query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+  });
+});
+
+afterAll(async () => {
+  // Delete the connector
+  await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+  // Verify is no longer found
+  const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+  expect(queryResult).not.toBeNull();
+  expect(queryResult.data.connector).toBeNull();
 });

@@ -1,6 +1,6 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin, TESTING_GROUPS } from '../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 const LIST_QUERY = gql`
@@ -191,7 +191,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.groups.edges.length).toEqual(7);
+    expect(queryResult.data.groups.edges.length).toEqual(TESTING_GROUPS.length + 4);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`

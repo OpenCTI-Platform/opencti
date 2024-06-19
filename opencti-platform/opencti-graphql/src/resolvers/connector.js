@@ -8,6 +8,7 @@ import {
   findSyncById,
   patchSync,
   pingConnector,
+  queueDetails,
   registerConnector,
   registerSync,
   resetStateConnector,
@@ -15,7 +16,7 @@ import {
   syncDelete,
   syncEditContext,
   syncEditField,
-  testSync,
+  testSync
 } from '../domain/connector';
 import {
   createWork,
@@ -54,6 +55,7 @@ const connectorResolvers = {
   },
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
+    connector_queue_details: (cn) => queueDetails(cn.id),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),

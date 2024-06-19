@@ -3,6 +3,11 @@ import { interval } from 'rxjs';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import { ExtensionOutlined, DeleteOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
@@ -16,6 +21,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -153,6 +159,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
+  const [connectorIdToReset, setConnectorIdToReset] = useState<string>();
+  const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
+  const [resetting, setResetting] = useState<boolean>(false);
 
   const data = usePreloadedFragment<
   ConnectorsStatusQuery,
@@ -174,7 +183,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   }, []);
 
   // eslint-disable-next-line class-methods-use-this
-  const handleResetState = (connectorId: string) => {
+  const submitResetState = (connectorId: string | undefined) => {
+    if (connectorId === undefined) return;
+    setResetting(true);
     commitMutation({
       mutation: connectorResetStateMutation,
       variables: {
@@ -182,6 +193,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
+        setResetting(false);
+        setConnectorIdToReset(undefined);
       },
       updater: undefined,
       optimisticResponse: undefined,
@@ -255,140 +268,177 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   });
 
   return (
-    <Card variant="outlined">
-      <CardHeader
-        avatar={<ExtensionOutlined className={classes.icon} />}
-        title={t_i18n('Registered connectors')}
-        style={{ paddingBottom: 0 }}
-      />
-      <CardContent style={{ paddingTop: 0 }}>
-        <List classes={{ root: classes.linesContainer }}>
-          <ListItem
-            classes={{ root: classes.itemHead }}
-            divider={false}
-            style={{ paddingTop: 0 }}
+    <>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={!!connectorIdToReset}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setConnectorIdToReset(undefined)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to reset the state and purge messages queue of this connector? ')}
+          </DialogContentText>
+          <DialogContentText>
+            {t_i18n('Number of messages: ') + connectorMessages}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConnectorIdToReset(undefined)}
+            disabled={resetting}
           >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                #
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                  <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                  <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                  <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                  <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                </div>
-                }
-            />
-            <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-          </ListItem>
-          {sortedConnectors && sortedConnectors.map((connector) => (
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={() => {
+              submitResetState(connectorIdToReset);
+            }}
+            color="secondary"
+            disabled={resetting}
+          >
+            {t_i18n('Reset')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Card variant="outlined">
+        <CardHeader
+          avatar={<ExtensionOutlined className={classes.icon} />}
+          title={t_i18n('Registered connectors')}
+          style={{ paddingBottom: 0 }}
+        />
+        <CardContent style={{ paddingTop: 0 }}>
+          <List classes={{ root: classes.linesContainer }}>
             <ListItem
-              key={connector.id}
-              classes={{ root: classes.item }}
-              divider={true}
-              button={true}
-              component={Link}
-              to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+              classes={{ root: classes.itemHead }}
+              divider={false}
+              style={{ paddingTop: 0 }}
             >
-              <ListItemIcon
-                style={{ color: connector.active ? '#4caf50' : '#f44336' }}
-              >
-                <ExtensionOutlined />
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  #
+                </span>
               </ListItemIcon>
               <ListItemText
                 primary={
                   <div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.name}
-                    >
-                      {connector.name}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.connector_type}
-                    >
-                      {t_i18n(connector.connector_type)}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.auto}
-                    >
-                      <ItemBoolean
-                        label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
-                        status={
-                            connector.connector_type
-                              === 'INTERNAL_ENRICHMENT'
-                            || connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                              ? connector.auto
-                              : null
-                          }
-                        variant="inList"
-                      />
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.messages}
-                    >
-                      {n(connector.messages)}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.updated_at}
-                    >
-                      {nsdt(connector.updated_at)}
-                    </div>
+                    <SortConnectorsHeader field="name" label="Name" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="connector_type" label="Type" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="auto" label="Automatic trigger" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                    <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   </div>
                   }
               />
-              <ListItemSecondaryAction>
-                <Security needs={[MODULES_MODMANAGE]}>
-                  <>
-                    <Tooltip title={t_i18n('Reset the connector state')}>
-                      <IconButton
-                        onClick={() => {
-                          if (connector.id) handleResetState(connector.id);
-                        }}
-                        aria-haspopup="true"
-                        color="primary"
-                        size="large"
-                        disabled={!!connector.built_in}
-                      >
-                        <PlaylistRemoveOutlined />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title={t_i18n('Clear this connector')}>
-                      <IconButton
-                        onClick={() => {
-                          if (connector.id) handleDelete(connector.id);
-                        }}
-                        aria-haspopup="true"
-                        color="primary"
-                        disabled={!!connector.active}
-                        size="large"
-                      >
-                        <DeleteOutlined />
-                      </IconButton>
-                    </Tooltip>
-                  </>
-                </Security>
-              </ListItemSecondaryAction>
+              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
-          ))}
-        </List>
-      </CardContent>
-    </Card>
+
+            {sortedConnectors && sortedConnectors.map((connector) => (
+              <ListItem
+                key={connector.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+              >
+                <ListItemIcon
+                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
+                >
+                  <ExtensionOutlined />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.name}
+                      >
+                        {connector.name}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.connector_type}
+                      >
+                        {t_i18n(connector.connector_type)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.auto}
+                      >
+                        <ItemBoolean
+                          label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
+                          status={
+                              connector.connector_type
+                                === 'INTERNAL_ENRICHMENT'
+                              || connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                                ? connector.auto
+                                : null
+                            }
+                          variant="inList"
+                        />
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.messages}
+                      >
+                        {n(connector.messages)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.updated_at}
+                      >
+                        {nsdt(connector.updated_at)}
+                      </div>
+                    </div>
+                    }
+                />
+                <ListItemSecondaryAction>
+                  <Security needs={[MODULES_MODMANAGE]}>
+                    <>
+                      <Tooltip title={t_i18n('Reset the connector state')}>
+                        <IconButton
+                          onClick={() => {
+                            setConnectorIdToReset(connector.id);
+                            setConnectorMessages(connector.messages);
+                          }}
+                          aria-haspopup="true"
+                          color="primary"
+                          size="large"
+                          disabled={!!connector.built_in}
+                        >
+                          <PlaylistRemoveOutlined />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title={t_i18n('Clear this connector')}>
+                        <IconButton
+                          onClick={() => {
+                            if (connector.id) handleDelete(connector.id);
+                          }}
+                          aria-haspopup="true"
+                          color="primary"
+                          disabled={!!connector.active}
+                          size="large"
+                        >
+                          <DeleteOutlined />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  </Security>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

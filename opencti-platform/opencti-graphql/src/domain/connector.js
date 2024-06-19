@@ -2,7 +2,7 @@ import EventSource from 'eventsource';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
-import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { now } from '../utils/format';
@@ -62,9 +62,10 @@ export const resetStateConnector = async (context, user, id) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `resets \`state\` for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
+    message: `resets \`state\` and purge queues for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
   });
+  await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 export const registerConnector = async (context, user, connectorData) => {
@@ -277,3 +278,7 @@ export const deleteQueues = async (context, user) => {
   try { await unregisterExchanges(); } catch (e) { /* nothing */ }
 };
 // endregion
+
+export const queueDetails = async (connectorId) => {
+  return await getConnectorQueueDetails(connectorId);
+};

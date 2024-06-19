@@ -21,6 +21,8 @@ const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
 const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
 const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
+const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
+const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const HOSTNAME = conf.get('rabbitmq:hostname');
 const PORT = conf.get('rabbitmq:port');
 const USERNAME = conf.get('rabbitmq:username');
@@ -48,6 +50,46 @@ export const config = () => {
     port: PORT,
     user: USERNAME,
     pass: PASSWORD,
+  };
+};
+
+const amqpHttpClient = async () => {
+  const ssl = USE_SSL_MGMT ? 's' : '';
+  const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
+  const httpClientOptions = {
+    baseURL,
+    responseType: 'json',
+    rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
+    auth: {
+      username: USERNAME,
+      password: PASSWORD,
+    },
+  };
+  return getHttpClient(httpClientOptions);
+};
+
+/**
+ * Purge listen and push queue when connector state is reset using rabbit HTTP api management.
+ * @param connector All information concerning a specific connector
+ */
+export const purgeConnectorQueues = async (connector) => {
+  const httpClient = await amqpHttpClient();
+  const pathPushQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
+  const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}/contents`;
+
+  await httpClient.delete(pathPushQueue).then((response) => response.data);
+  await httpClient.delete(pathListenQueue).then((response) => response.data);
+};
+
+export const getConnectorQueueDetails = async (connectorId) => {
+  const httpClient = await amqpHttpClient();
+  const pathRabbit = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+
+  const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
+  logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
+  return {
+    messages_number: queueDetailResponse.messages || 0,
+    messages_size: queueDetailResponse.message_bytes || 0
   };
 };
 
@@ -101,18 +143,7 @@ export const send = (exchangeName, routingKey, message) => {
 
 export const metrics = async (context, user) => {
   const metricApi = async () => {
-    const ssl = USE_SSL_MGMT ? 's' : '';
-    const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
-    const httpClientOptions = {
-      baseURL,
-      responseType: 'json',
-      rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED,
-      auth: {
-        username: USERNAME,
-        password: PASSWORD,
-      },
-    };
-    const httpClient = getHttpClient(httpClientOptions);
+    const httpClient = await amqpHttpClient();
     const overview = await httpClient.get('/api/overview').then((response) => response.data);
     const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
     // Compute number of push queues
@@ -272,7 +303,10 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                 }
               }, { noAck: true }, (consumeError) => {
                 if (consumeError) {
-                  logApp.error(DatabaseError('[QUEUEING] Consumption fail', { connectorId, cause: consumeError }));
+                  logApp.error(DatabaseError('[QUEUEING] Consumption fail', {
+                    connectorId,
+                    cause: consumeError
+                  }));
                 }
               });
             }
