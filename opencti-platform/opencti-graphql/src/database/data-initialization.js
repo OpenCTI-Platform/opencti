@@ -103,9 +103,13 @@ export const CAPABILITIES = [
     description: 'Access ingestion',
     dependencies: [
       { name: 'SETINGESTIONS', description: 'Manage ingestion', attribute_order: 2610 },
-      { name: 'SETCSVMAPPERS', description: 'Manage CSV mappers', attribute_order: 2620 }
     ]
   },
+  {
+    name: 'CSVMAPPERS',
+    description: 'Manage CSV mappers',
+    attribute_order: 2700
+  }
 ];
 // endregion
 

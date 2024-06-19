@@ -15,7 +15,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
-import { INGESTION_SETCSVMAPPERS } from '../../../../utils/hooks/useGranted';
+import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -113,7 +113,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
         }
       />
       <ListItemSecondaryAction>
-        <Security needs={[INGESTION_SETCSVMAPPERS]}>
+        <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionCsvPopover
             ingestionCsvId={data.id}
             paginationOptions={paginationOptions}

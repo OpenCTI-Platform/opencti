@@ -89,7 +89,7 @@ import useGranted, {
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
   TAXIIAPI_SETCOLLECTIONS,
-  INGESTION_SETCSVMAPPERS,
+  CSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
   INGESTION,
   INGESTION_SETINGESTIONS,
@@ -209,7 +209,7 @@ const LeftBar = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, INGESTION_SETCSVMAPPERS]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToSettings = useGranted([SETTINGS]);
   const isGrantedToIngestion = useGranted([SETTINGS, MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -763,7 +763,7 @@ const LeftBar = () => {
             )}
           </MenuList>
         </Security>
-        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI, INGESTION]}>
+        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
@@ -806,7 +806,7 @@ const LeftBar = () => {
                 </MenuItem>
               </StyledTooltip>
             </Security>
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, INGESTION]}>
+            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
                 selected={!navOpen && location.pathname.includes('/dashboard/data')}

@@ -1711,12 +1711,12 @@ export enum CampaignsOrdering {
 
 export enum Capabilities {
   Connectorapi = 'CONNECTORAPI',
+  Csvmappers = 'CSVMAPPERS',
   Explore = 'EXPLORE',
   ExploreExupdate = 'EXPLORE_EXUPDATE',
   ExploreExupdateExdelete = 'EXPLORE_EXUPDATE_EXDELETE',
   ExploreExupdatePublish = 'EXPLORE_EXUPDATE_PUBLISH',
   Ingestion = 'INGESTION',
-  IngestionSetcsvmappers = 'INGESTION_SETCSVMAPPERS',
   IngestionSetingestions = 'INGESTION_SETINGESTIONS',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',

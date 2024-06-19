@@ -17,7 +17,7 @@ describe('Data initialization test', () => {
       'EXPLORE_EXUPDATE_EXDELETE',
       'EXPLORE_EXUPDATE_PUBLISH',
       'INGESTION',
-      'INGESTION_SETCSVMAPPERS',
+      'CSVMAPPERS',
       'INGESTION_SETINGESTIONS',
       'KNOWLEDGE',
       'KNOWLEDGE_KNASKIMPORT',
