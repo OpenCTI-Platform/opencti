@@ -558,8 +558,8 @@ export const horizontalBarsChartOptions = (
  */
 export const radarChartOptions = (
   theme,
-  xFormatter = null,
   labels,
+  xFormatter = null,
   chartColors = [],
   legend = false,
   offset = false,

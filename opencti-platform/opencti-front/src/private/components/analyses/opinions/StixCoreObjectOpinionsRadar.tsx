@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
 import { generateGreenToRedColors } from '../../../../utils/Colors';
 import { StixCoreObjectOpinionsRadarDistributionQuery } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
   query StixCoreObjectOpinionsRadarDistributionQuery(
@@ -77,7 +78,7 @@ StixCoreObjectOpinionsRadarProps
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
-      options={radarChartOptions(theme, labels, colors, true, true)}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, true)}
       series={chartData}
       type="radar"
       width="100%"
