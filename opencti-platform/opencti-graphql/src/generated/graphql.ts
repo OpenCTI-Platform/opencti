@@ -7372,6 +7372,7 @@ export type FinancialAccountAddInput = {
 
 export type FinancialAsset = BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'FinancialAsset';
+  asset_name?: Maybe<Scalars['String']['output']>;
   asset_type?: Maybe<Scalars['String']['output']>;
   asset_value?: Maybe<Scalars['Float']['output']>;
   cases?: Maybe<CaseConnection>;
@@ -7393,7 +7394,6 @@ export type FinancialAsset = BasicObject & HashedObservable & StixCoreObject & S
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
-  name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -7559,11 +7559,11 @@ export type FinancialAssetStixCoreRelationshipsDistributionArgs = {
 };
 
 export type FinancialAssetAddInput = {
+  asset_name?: InputMaybe<Scalars['String']['input']>;
   asset_type?: InputMaybe<Scalars['String']['input']>;
   asset_value?: InputMaybe<Scalars['Float']['input']>;
   currency_code?: InputMaybe<Scalars['String']['input']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
-  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FinancialTransaction = BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject & {
@@ -33016,6 +33016,7 @@ export type FinancialAccountResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FinancialAssetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FinancialAsset'] = ResolversParentTypes['FinancialAsset']> = ResolversObject<{
+  asset_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   asset_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   asset_value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FinancialAssetCasesArgs>>;
@@ -33037,7 +33038,6 @@ export type FinancialAssetResolvers<ContextType = any, ParentType extends Resolv
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<FinancialAssetIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<FinancialAssetJobsArgs>>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<FinancialAssetNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;

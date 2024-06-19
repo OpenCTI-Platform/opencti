@@ -5537,7 +5537,7 @@ type FinancialAsset implements BasicObject & StixObject & StixCoreObject & StixC
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   hashes: [Hash]
-  name: String
+  asset_name: String
   asset_type: String
   asset_value: Float
   currency_code: String
@@ -5610,7 +5610,7 @@ input FinancialAccountAddInput {
 
 input FinancialAssetAddInput {
   hashes: [HashInput]
-  name: String
+  asset_name: String
   asset_type: String
   asset_value: Float
   currency_code: String

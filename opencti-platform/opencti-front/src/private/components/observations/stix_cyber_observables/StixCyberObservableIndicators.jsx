@@ -17,6 +17,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import { filter, includes } from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
@@ -158,7 +159,13 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       </Security>
       <div className="clearfix" />
       <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
-        {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
+        {/* TODO: FIX ME  */}
+        {/* {stixCyberObservable.indicators.edges.map((indicatorEdge) => ( */}
+        {filter(
+          (n) => !includes(n.node.id, this.state.deleted),
+          // stixCyberObservable.indicators.edges,
+          stixCyberObservable.indicators?.edges ?? [],
+        ).map((indicatorEdge) => (
           <ListItem
             aria-label={'stix cyber observable indicators item'}
             key={indicatorEdge.node.id}
@@ -238,7 +245,8 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         open={isAddIndicatorDrawerOpen}
         handleClose={handleCloseAddIndicatorDrawer}
         stixCyberObservable={stixCyberObservable}
-        stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
+        // stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
+        stixCyberObservableIndicators={stixCyberObservable.indicators?.edges ?? []}
       />
     </div>
   );
