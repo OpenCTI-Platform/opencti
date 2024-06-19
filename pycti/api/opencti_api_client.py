@@ -382,7 +382,7 @@ class OpenCTIApiClient:
             headers=self.request_headers,
             verify=self.ssl_verify,
             cert=self.cert,
-            proxies=self.proxies
+            proxies=self.proxies,
         )
         if binary:
             if serialize:
