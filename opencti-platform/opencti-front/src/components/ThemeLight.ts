@@ -165,14 +165,14 @@ const ThemeLight = (
             WebkitTextFillColor: '#000000 !important',
             caretColor: 'transparent !important',
             WebkitBoxShadow:
-              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+                '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
-            background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
+            background: `${accent || THEME_LIGHT_DEFAULT_BACKGROUND} !important`,
             borderRadius: 4,
           },
           'pre.light': {
@@ -183,7 +183,7 @@ const ThemeLight = (
           code: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
-            background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
+            background: `${accent || THEME_LIGHT_DEFAULT_BACKGROUND} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
