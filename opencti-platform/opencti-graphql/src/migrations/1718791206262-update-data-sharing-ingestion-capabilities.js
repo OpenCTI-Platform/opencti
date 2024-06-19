@@ -53,9 +53,9 @@ export const up = async (next) => {
   const CSVCapability = await elLoadById(context, SYSTEM_USER, 'capability--5407e8a4-0ff9-5253-89b1-c01a92ad9453');
   if (CSVCapability) {
     const CSVCapabilityPatch = {
-      name: 'INGESTION_SETCSVMAPPERS',
-      attribute_order: 2620,
-      standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'INGESTION_SETCSVMAPPERS' }),
+      name: 'CSVMAPPERS',
+      attribute_order: 2700,
+      standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'CSVMAPPERS' }),
     };
     await elReplace(CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
   }
