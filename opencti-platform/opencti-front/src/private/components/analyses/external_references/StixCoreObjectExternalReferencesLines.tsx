@@ -395,6 +395,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             isExternalReferenceAttachment={isFileAttached}
                             handleRemove={() => handleOpenDialog(externalReferenceEdge)
                             }
+                            objectId={stixCoreObjectId}
                           />
                         </Security>
                       </ListItemSecondaryAction>
