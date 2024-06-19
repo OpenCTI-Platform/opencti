@@ -1236,6 +1236,7 @@
   "Incidents": "安全事件",
   "Include files not related to any knowledge (data import)": "包含与任何知识无关的文件（数据导入）",
   "Include headers in the feed": "在提要中包含标题",
+  "Include inferences": "包括推论",
   "Include knowledge": "包括知识",
   "independent": "独立研究员",
   "Indexed files": "索引文件",

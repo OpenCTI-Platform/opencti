@@ -31,9 +31,10 @@ interface TaxiiCollectionCreationProps {
 
 interface TaxiiCollectionCreationForm {
   authorized_members: Option[]
-  taxii_public?: boolean
-  name: string
   description: string
+  include_inferences?: boolean
+  name: string
+  taxii_public?: boolean
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -69,6 +70,7 @@ const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.obje
   description: Yup.string().nullable(),
   authorized_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
+  include_inferences: Yup.bool().nullable(),
 });
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
@@ -87,6 +89,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
+
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -127,11 +130,13 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (
-        <Formik
+        <Formik<TaxiiCollectionCreationForm>
           initialValues={{
             name: '',
             description: '',
             authorized_members: [],
+            taxii_public: false,
+            include_inferences: true,
           }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
@@ -171,7 +176,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   onChange={(_, checked) => setFieldValue('taxii_public', checked)}
                   label={t_i18n('Public collection')}
                 />
-                {!values?.taxii_public && (
+                {!values.taxii_public && (
                   <ObjectMembersField
                     label={'Accessible for'}
                     style={fieldSpacingContainerStyle}
@@ -181,6 +186,16 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   />
                 )}
               </Alert>
+              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+                <FormControlLabel
+                  control={<Switch />}
+                  style={{ marginLeft: 1 }}
+                  checked={values.include_inferences}
+                  name="include_inferences"
+                  onChange={(_, checked) => setFieldValue('include_inferences', checked)}
+                  label={t_i18n('Include inferences')}
+                />
+              </Box>
               <Box sx={{ paddingTop: 4,
                 display: 'flex',
                 gap: 1 }}

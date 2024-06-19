@@ -2,7 +2,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES, READ_STIX_DATA_WITH_INFERRED } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
@@ -128,7 +128,8 @@ export const collectionQuery = async (context, user, collection, args) => {
   options.first = maxSize;
   if (type) options.types = type.split(',');
   if (id) options.ids = id.split(',');
-  return elPaginate(context, user, READ_STIX_INDICES, options);
+  const currentIndex = collection.include_inferences ? READ_STIX_DATA_WITH_INFERRED : READ_STIX_INDICES;
+  return elPaginate(context, user, currentIndex, options);
 };
 export const restCollectionStix = async (context, user, collection, args) => {
   const { edges, pageInfo } = await collectionQuery(context, user, collection, args);

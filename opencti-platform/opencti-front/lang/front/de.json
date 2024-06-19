@@ -1236,6 +1236,7 @@
   "Incidents": "Vorfälle",
   "Include files not related to any knowledge (data import)": "Dateien einschließen, die sich nicht auf einen Wissensstand beziehen (Datenimport)",
   "Include headers in the feed": "Kopfzeilen in den Feed einbeziehen",
+  "Include inferences": "Schlussfolgerungen einbeziehen",
   "Include knowledge": "Wissen einbeziehen",
   "independent": "unabhängig",
   "Indexed files": "Indizierte Dateien",

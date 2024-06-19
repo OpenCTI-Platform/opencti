@@ -25056,6 +25056,7 @@ export type TaxiiCollection = {
   description?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  include_inferences?: Maybe<Scalars['Boolean']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
 };
@@ -25064,6 +25065,7 @@ export type TaxiiCollectionAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
+  include_inferences?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -37747,6 +37749,7 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  include_inferences?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
