@@ -49,7 +49,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NarrativeLineProps {
   subNarratives?: any[],
   node: any,
-  isSubNarrative: boolean,
+  isSubNarrative?: boolean,
 }
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({ subNarratives, node, isSubNarrative }) => {
   const classes = useStyles();
