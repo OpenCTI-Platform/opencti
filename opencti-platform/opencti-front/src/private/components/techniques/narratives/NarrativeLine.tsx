@@ -1,16 +1,16 @@
-import React, {FunctionComponent} from 'react';
-import {Link} from 'react-router-dom';
+import React, { FunctionComponent } from 'react';
+import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {KeyboardArrowRightOutlined} from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
-import {useFormatter} from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 import makeStyles from '@mui/styles/makeStyles';
-import {ListItemButton} from '@mui/material';
-import {Theme} from '../../../../components/Theme';
+import { ListItemButton } from '@mui/material';
+import { Theme } from '@mui/material/styles/createTheme';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {},
@@ -52,59 +52,57 @@ interface NarrativeLineProps {
   isSubNarrative: boolean,
 }
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({ subNarratives, node, isSubNarrative }) => {
-
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-    return (
-      <div>
-        <ListItemButton
-          classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
-          divider={true}
-          component={Link}
-          to={`/dashboard/techniques/narratives/${node.id}`}
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon
-              type="Narrative"
-              size={isSubNarrative ? 'small' : 'medium'}
-            />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <>
-                <div className={classes.name}>{node.name}</div>
-                <div className={classes.description}>
-                  {node.description?.length > 0
-                    ? node.description
-                    : t_i18n('This narrative does not have any description.')}
-                </div>
-              </>
-            }
+  return (
+    <div>
+      <ListItemButton
+        classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
+        divider={true}
+        component={Link}
+        to={`/dashboard/techniques/narratives/${node.id}`}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon
+            type="Narrative"
+            size={isSubNarrative ? 'small' : 'medium'}
           />
-          <ListItemIcon classes={{ root: classes.goIcon }}>
-            <KeyboardArrowRightOutlined />
-          </ListItemIcon>
-        </ListItemButton>
-        {subNarratives && subNarratives.length > 0 && (
-          <List style={{ margin: 0, padding: 0 }}>
-            {subNarratives.map(
-              (subNarrative) => (
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                <NarrativeLine
-                  key={subNarrative.id}
-                  node={subNarrative}
-                  isSubNarrative={true}
-                />
-              )
-            )}
-          </List>
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <>
+              <div className={classes.name}>{node.name}</div>
+              <div className={classes.description}>
+                {node.description?.length > 0
+                  ? node.description
+                  : t_i18n('This narrative does not have any description.')}
+              </div>
+            </>
+            }
+        />
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
+      </ListItemButton>
+      {subNarratives && subNarratives.length > 0 && (
+      <List style={{ margin: 0, padding: 0 }}>
+        {subNarratives.map(
+          (subNarrative) => (
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            <NarrativeLine
+              key={subNarrative.id}
+              node={subNarrative}
+              isSubNarrative={true}
+            />
+          ),
         )}
-      </div>
-    );
-  }
+      </List>
+      )}
+    </div>
+  );
+};
 
 export const NarrativeLineDummy = () => {
-
   const classes = useStyles();
 
   return (
@@ -132,6 +130,4 @@ export const NarrativeLineDummy = () => {
       </ListItemIcon>
     </ListItem>
   );
-}
-
-
+};
