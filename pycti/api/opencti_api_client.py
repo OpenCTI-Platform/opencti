@@ -377,7 +377,13 @@ class OpenCTIApiClient:
         :rtype: str or bytes
         """
 
-        r = self.session.get(fetch_uri, headers=self.request_headers)
+        r = self.session.get(
+            fetch_uri,
+            headers=self.request_headers,
+            verify=self.ssl_verify,
+            cert=self.cert,
+            proxies=self.proxies,
+        )
         if binary:
             if serialize:
                 return base64.b64encode(r.content).decode("utf-8")
