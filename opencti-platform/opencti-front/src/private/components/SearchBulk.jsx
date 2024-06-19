@@ -346,7 +346,7 @@ const SearchBulk = () => {
                           value: getMainRepresentative(resolvedStixCoreObject),
                           labels: resolvedStixCoreObject.objectLabel,
                           markings: resolvedStixCoreObject.objectMarking,
-                          containersNumber: resolvedStixCoreObject.containersNumber,
+                          analyses: resolvedStixCoreObject.containersNumber.total,
                           updated_at: resolvedStixCoreObject.updated_at,
                           author: R.pathOr(
                             '',
@@ -387,19 +387,23 @@ const SearchBulk = () => {
   });
 
   useEffect(() => {
-    if (sortBy) {
-      const sort = R.sortWith(
-        orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-      );
-      setResolvedEntities(sort(resolvedEntities));
-    }
-  }, [sortBy, orderAsc]);
-  useEffect(() => {
     SEARCH$.next({ action: 'Search' });
   }, [textFieldValue, setResolvedEntities]);
   const reverseBy = (field) => {
     setSortBy(field);
     setOrderAsc((prevOrderAsc) => !prevOrderAsc);
+    console.log('field', field);
+    console.log('resolvedEntities', resolvedEntities);
+    const newOrder = !orderAsc;
+    const sort = (a, b) => {
+      if (a[field] < b[field]) {
+        return newOrder ? -1 : 1;
+      } if (a[field] > b[field]) {
+        return newOrder ? 1 : -1;
+      }
+      return 0;
+    };
+    setResolvedEntities(resolvedEntities.sort(sort));
   };
   const SortHeader = (field, label, isSortable) => {
     const sortComponent = orderAsc ? (
@@ -645,12 +649,12 @@ const SearchBulk = () => {
                                 ].includes(entity.type) ? (
                                   <Chip
                                     classes={{ root: classes.chipNoLink }}
-                                    label={n(entity.containersNumber.total)}
+                                    label={n(entity.analyses)}
                                   />
                                   ) : (
                                     <Chip
                                       classes={{ root: classes.chip }}
-                                      label={n(entity.containersNumber.total)}
+                                      label={n(entity.analyses)}
                                       component={Link}
                                       to={linkAnalyses}
                                     />
