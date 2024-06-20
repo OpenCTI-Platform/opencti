@@ -31,6 +31,7 @@ import { hexToRGB, itemColor } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
 import { export_max_size } from '../../utils/utils';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -263,6 +264,8 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t_i18n, nsd, n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Bulk Search'));
   const isGrantedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');

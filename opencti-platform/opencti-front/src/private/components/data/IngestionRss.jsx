@@ -13,6 +13,7 @@ import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
 
@@ -28,6 +29,8 @@ const useStyles = makeStyles(() => ({
 const IngestionRss = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Ingestion: RSS Feeds | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
