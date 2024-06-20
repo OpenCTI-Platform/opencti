@@ -248,7 +248,7 @@ ExternalReferenceFileImportViewerBaseProps
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
-                <DialogTitle>{`${t_i18n('Launch an import')}`}</DialogTitle>
+                <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={SelectField}
