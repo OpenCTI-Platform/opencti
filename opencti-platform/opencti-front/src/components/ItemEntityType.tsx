@@ -2,10 +2,9 @@ import Chip from '@mui/material/Chip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
-import { hexToRGB, itemColor } from '../utils/Colors';
+import { itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
 import useSchema from '../utils/hooks/useSchema';
-import useHelper from '../utils/hooks/useHelper';
 import ThemeLight from './ThemeLight';
 import ThemeDark from './ThemeDark';
 import ItemIcon from './ItemIcon';
@@ -60,27 +59,18 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   const theme = mode === 'dark'
     ? ThemeDark()
     : ThemeLight();
-  const { isFeatureEnable } = useHelper();
-  const isMonochromeFeatureEnabled = isFeatureEnable('MONOCHROME_LABELS');
   const getStyle = () => {
     if (isRestricted) {
       const restrictedColor = itemColor('Restricted');
       return {
-        backgroundColor: isMonochromeFeatureEnabled ? theme.palette.background.default : hexToRGB(restrictedColor),
-        color: isMonochromeFeatureEnabled ? theme.palette.chip.main : restrictedColor,
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.chip.main,
         border: `1px solid ${restrictedColor}`,
       };
     }
-    if (isMonochromeFeatureEnabled) {
-      return {
-        backgroundColor: theme.palette.background.default,
-        color: isRelationship ? theme.palette.primary.main : theme.palette.chip.main,
-        border: `1px solid ${isRelationship ? theme.palette.primary.main : itemColor(entityType)}`,
-      };
-    }
     return {
-      backgroundColor: hexToRGB(itemColor(entityType), 0.08),
-      color: isRelationship ? theme.palette.primary.main : itemColor(entityType),
+      backgroundColor: theme.palette.background.default,
+      color: isRelationship ? theme.palette.primary.main : theme.palette.chip.main,
       border: `1px solid ${isRelationship ? theme.palette.primary.main : itemColor(entityType)}`,
     };
   };

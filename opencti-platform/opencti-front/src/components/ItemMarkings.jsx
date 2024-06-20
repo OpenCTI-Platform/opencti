@@ -8,7 +8,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import EnrichedTooltip from './EnrichedTooltip';
 import { useFormatter } from './i18n';
-import useHelper from '../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,8 +102,6 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isMonochromeFeatureEnabled = isFeatureEnable('MONOCHROME_LABELS');
 
   const monochromeStyle = (color, isTooltip = false) => ({
     backgroundColor: isTooltip
@@ -123,21 +120,14 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
     }
     if (markingDefinition.x_opencti_color) {
       const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color, isTooltip);
-      let backgroundColor = markingDefinition.x_opencti_color;
-      let textColor = theme.palette.text.primary;
-      let border = '0';
-      if (isMonochromeFeatureEnabled) {
-        backgroundColor = monochromeStyles.backgroundColor;
-        textColor = monochromeStyles.color;
-        border = monochromeStyles.border;
-      }
+      let { backgroundColor } = monochromeStyles;
+      let textColor = monochromeStyles.color;
+      let { border } = monochromeStyles;
       if (theme.palette.mode === 'light') {
         if (backgroundColor.startsWith('#ffffff')) {
           backgroundColor = '#ffffff';
           textColor = '#2b2b2b';
           border = '2px solid #2b2b2b';
-        } else if (!isMonochromeFeatureEnabled) {
-          textColor = '#ffffff';
         }
       } else if (backgroundColor.startsWith('#ffffff')) {
         textColor = '#2b2b2b';
@@ -169,9 +159,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={isMonochromeFeatureEnabled
-              ? monochromeStyle(inlineStyles.red.backgroundColor)
-              : inlineStyles.red}
+            style={monochromeStyle(inlineStyles.red.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -180,9 +168,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={isMonochromeFeatureEnabled
-              ? monochromeStyle(inlineStyles.orange.backgroundColor)
-              : inlineStyles.orange}
+            style={monochromeStyle(inlineStyles.orange.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -192,9 +178,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={isMonochromeFeatureEnabled
-              ? monochromeStyle(inlineStyles.green.backgroundColor)
-              : inlineStyles.green}
+            style={monochromeStyle(inlineStyles.green.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -203,9 +187,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={isMonochromeFeatureEnabled
-              ? monochromeStyle(inlineStyles.blue.backgroundColor)
-              : inlineStyles.blue}
+            style={monochromeStyle(inlineStyles.blue.backgroundColor)}
             label={markingDefinition.definition}
           />
         );

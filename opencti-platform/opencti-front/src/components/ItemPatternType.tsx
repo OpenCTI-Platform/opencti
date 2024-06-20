@@ -4,7 +4,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
 import ThemeDark from './ThemeDark';
 import ThemeLight from './ThemeLight';
-import useHelper from '../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -104,19 +103,15 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
   const theme = mode === 'dark'
     ? ThemeDark()
     : ThemeLight();
-  const { isFeatureEnable } = useHelper();
-  const isMonochromeFeatureEnabled = isFeatureEnable('MONOCHROME_LABELS');
   const hasPredefinedStyle = Object.keys(inlineStyles).includes(label);
   let style: React.CSSProperties = hasPredefinedStyle
     ? inlineStyles[label]
     : inlineStyles.stix;
-  if (isMonochromeFeatureEnabled) {
-    style = {
-      ...style,
-      backgroundColor: theme.palette.background.default,
-      color: theme.palette.chip.main,
-    };
-  }
+  style = {
+    ...style,
+    backgroundColor: theme.palette.background.default,
+    color: theme.palette.chip.main,
+  };
   return (
     <Chip
       className={className}
