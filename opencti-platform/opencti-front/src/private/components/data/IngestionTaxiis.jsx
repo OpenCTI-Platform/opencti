@@ -13,6 +13,7 @@ import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -28,6 +29,8 @@ const useStyles = makeStyles(() => ({
 const IngestionTaxii = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Ingestion: TAXII Feeds | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
