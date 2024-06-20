@@ -4,41 +4,23 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import { ListItemButton } from '@mui/material';
 import { Theme } from '@mui/material/styles/createTheme';
+import { graphql, useFragment } from 'react-relay';
+import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
+import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import { DataColumns } from '../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  item: {},
-  itemNested: {
-    paddingLeft: theme.spacing(4),
+  item: {
+    paddingLeft: 10,
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
-  },
-  name: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  description: {
-    width: '70%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
   },
   goIcon: {
     position: 'absolute',
@@ -46,63 +28,106 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const narrativeLineFragment = graphql`
+  fragment NarrativeLine_node on Narrative {
+    id
+    name
+    created
+    modified
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
 interface NarrativeLineProps {
-  subNarratives?: any[],
-  node: any,
-  isSubNarrative?: boolean,
+  node: NarrativeLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void;
 }
-export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({ subNarratives, node, isSubNarrative }) => {
+export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
+  dataColumns,
+  node,
+  onLabelClick,
+}) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { fd } = useFormatter();
+  const data = useFragment(narrativeLineFragment, node);
   return (
-    <div>
-      <ListItemButton
-        classes={{ root: isSubNarrative ? classes.itemNested : classes.item }}
-        divider={true}
-        component={Link}
-        to={`/dashboard/techniques/narratives/${node.id}`}
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon
-            type="Narrative"
-            size={isSubNarrative ? 'small' : 'medium'}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div className={classes.name}>{node.name}</div>
-              <div className={classes.description}>
-                {node.description?.length > 0
-                  ? node.description
-                  : t_i18n('This narrative does not have any description.')}
-              </div>
-            </>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      component={Link}
+      to={`/dashboard/techniques/narratives/${data.id}`}
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ItemIcon type="Narrative" />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              {data.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.description.width }}
+            >
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={data.objectLabel}
+                onClick={onLabelClick}
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
+              {fd(data.created)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
+              {fd(data.modified)}
+            </div>
+          </>
             }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemIcon>
-      </ListItemButton>
-      {subNarratives && subNarratives.length > 0 && (
-      <List style={{ margin: 0, padding: 0 }}>
-        {subNarratives.map(
-          (subNarrative) => (
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            <NarrativeLine
-              key={subNarrative.id}
-              node={subNarrative}
-              isSubNarrative={true}
-            />
-          ),
-        )}
-      </List>
-      )}
-    </div>
+      />
+      <ListItemIcon classes={{ root: classes.goIcon }}>
+        <KeyboardArrowRightOutlined />
+      </ListItemIcon>
+    </ListItem>
   );
 };
 
-export const NarrativeLineDummy = () => {
+export const NarrativeLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
 
   return (
@@ -117,12 +142,63 @@ export const NarrativeLineDummy = () => {
       </ListItemIcon>
       <ListItemText
         primary={
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="90%"
-            height={20}
-          />
+          <>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.description.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

@@ -16,7 +16,7 @@ const LOCAL_STORAGE_KEY = 'narratives';
 
 const Narratives = () => {
   const { t_i18n } = useFormatter();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage < NarrativesLinesPaginationQuery$variables > (
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage < NarrativesLinesPaginationQuery$variables >(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -28,7 +28,7 @@ const Narratives = () => {
         number: 0,
         symbol: '',
       },
-    }
+    },
   );
   const renderLines = () => {
     const {
@@ -66,9 +66,9 @@ const Narratives = () => {
         isSortable: true,
       },
     };
-    const queryRef = useQueryLoading < NarrativesLinesPaginationQuery > (
+    const queryRef = useQueryLoading < NarrativesLinesPaginationQuery >(
       narrativesLinesQuery,
-      paginationOptions
+      paginationOptions,
     );
     return (
       <ListLines
@@ -106,6 +106,7 @@ const Narratives = () => {
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
+              onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
           </React.Suspense>
