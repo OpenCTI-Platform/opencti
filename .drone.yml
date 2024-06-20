@@ -44,7 +44,7 @@ steps:
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
     commands:
-      - apk add build-base git libffi-dev cargo curl
+      - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - echo "DRONE_WORKSPACE=$DRONE_WORKSPACE"
       - echo "DRONE_WORKSPACE=${DRONE_WORKSPACE}"
@@ -99,8 +99,7 @@ steps:
       TEAMS_WEBHOOK: teams-webhook-url
     commands:
       - apt-get update
-      - apt-get -y install netcat-traditional curl
-      - curl --max-time 30 http://opencti-e2e-start:4500/health?health_access_key=testHealth
+      - apt-get -y install netcat-traditional
       - cd opencti-platform/opencti-front
       - yarn install
       - npx playwright install --with-deps chromium
