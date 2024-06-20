@@ -89,7 +89,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_EMAIL_MESSAGE]: [
     { name: 'is_multipart', label: 'Multipart', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'attribute_date', label: 'Date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'attribute_date', label: 'Email date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_type', label: 'Content type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'message_id', label: 'Message ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'subject', label: 'Subject', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },

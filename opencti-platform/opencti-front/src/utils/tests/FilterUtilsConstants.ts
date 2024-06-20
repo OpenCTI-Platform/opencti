@@ -2799,7 +2799,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'attribute_date',
     {
       filterKey: 'attribute_date',
-      label: 'Date',
+      label: 'Email date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
