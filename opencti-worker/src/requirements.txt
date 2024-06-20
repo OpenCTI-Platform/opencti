@@ -1,4 +1,4 @@
-pycti==6.1.11
+pycti==6.1.12
 opentelemetry-api==1.22.0
 opentelemetry-sdk==1.22.0
 opentelemetry-exporter-prometheus==0.43b0
