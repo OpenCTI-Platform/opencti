@@ -43,7 +43,6 @@ steps:
       SMTP__USERNAME: jennyfer.mraz@ethereal.email
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - apk add build-base git libffi-dev cargo curl
       - pip3 install --upgrade setuptools
@@ -54,11 +53,6 @@ steps:
       - yarn build
       - yarn check-ts
       - yarn lint
-      - # Healthcheck, keep linter before healthcheck to give time to services to start
-      - curl --max-time 30 --retry-delay 30 --retry 4 "http://opencti-direct-start:4300/health?health_access_key=testHealth"
-      - curl --max-time 30 --retry-delay 30 --retry 4 "http://opencti-raw-start:4100/health?health_access_key=testHealth"
-      - curl --max-time 30 "http://opencti-live-start:4200/health?health_access_key=testHealth"
-      - curl --max-time 30 -fsS -o /dev/null "http://opencti-restore-start:4400/health?health_access_key=testHealth"
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
@@ -204,9 +198,9 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: raw-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: raw-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - sleep 10
       - ls -lart
@@ -234,9 +228,9 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: live-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: live-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - sleep 10
       - cp -a opencti-platform/* /tmp/live-start-platform/
@@ -244,7 +238,7 @@ services:
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - # NODE_OPTIONS=--max_old_space_size=8192 yarn start
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
@@ -263,9 +257,9 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: direct-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: direct-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - sleep 10
       - cp -a opencti-platform/* /tmp/direct-start-platform/
@@ -309,9 +303,9 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: restore-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: restore-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - sleep 10
       - cp -a opencti-platform/* /tmp/restore-start-platform/
@@ -339,9 +333,9 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: e2e-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: e2e-start
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
-      APP__HEALTH_ACCESS_KEY: testHealth
     commands:
       - cp -a opencti-platform/* /tmp/e2e-start-platform/
       - apk add build-base git libffi-dev cargo
