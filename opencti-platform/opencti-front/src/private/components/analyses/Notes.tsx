@@ -17,11 +17,14 @@ import NoteCreation from './notes/NoteCreation';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useDynamicHeader from '../../../utils/hooks/useDynamicHeader';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
 const Notes: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useDynamicHeader();
+  setTitle(t_i18n('OpenCTI - Analyses: Notes'));
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const {

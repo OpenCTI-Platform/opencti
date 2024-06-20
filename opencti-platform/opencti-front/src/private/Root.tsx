@@ -16,6 +16,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
+import useDynamicHeader from '../utils/hooks/useDynamicHeader';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -271,6 +272,10 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       return [n.entity_type, filtersSchema];
     })),
   };
+  const { setLang } = useDynamicHeader();
+  let lang = me.language;
+  if (!lang || lang === 'auto' || lang === 'au') lang = navigator.language;
+  setLang(lang.split('-')[0]);
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
