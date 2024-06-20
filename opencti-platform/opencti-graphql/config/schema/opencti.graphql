@@ -11219,7 +11219,7 @@ type Query {
   settings: Settings! @public # Some inner information are public
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
-  @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
@@ -11484,7 +11484,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 

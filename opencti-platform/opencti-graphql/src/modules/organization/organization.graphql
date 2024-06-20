@@ -165,7 +165,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
+  ): OrganizationConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY])
 }
 
 # Mutations
