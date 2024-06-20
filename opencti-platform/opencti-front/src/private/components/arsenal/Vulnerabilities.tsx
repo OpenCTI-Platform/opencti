@@ -17,11 +17,14 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import useHelper from '../../../utils/hooks/useHelper';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
 const Vulnerabilities = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Vulnerabilities | Arsenal'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

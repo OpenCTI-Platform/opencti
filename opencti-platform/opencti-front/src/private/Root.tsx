@@ -298,7 +298,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       return [n.entity_type, filtersSchema];
     })),
   };
-
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);

@@ -32,7 +32,7 @@ interface ExternalReferencesProps {
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('External references | Analyses'));
+  setTitle(t_i18n('External References | Analyses'));
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {

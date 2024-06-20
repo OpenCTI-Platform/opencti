@@ -17,6 +17,7 @@ import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLine
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -26,6 +27,8 @@ export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Requests for Information | Cases'));
   const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },

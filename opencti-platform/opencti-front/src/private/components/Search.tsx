@@ -20,6 +20,7 @@ import useEnterpriseEdition from '../../utils/hooks/useEnterpriseEdition';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword, handleSearchByKeyword } from '../../utils/SearchUtils';
 import { useFormatter } from '../../components/i18n';
+import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'search';
 
@@ -30,6 +31,8 @@ const Search = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Knowledge Search | Advanced Search'));
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
 

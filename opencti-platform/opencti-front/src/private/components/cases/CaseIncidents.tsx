@@ -20,6 +20,7 @@ import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/C
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -29,6 +30,11 @@ export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Incident Responses | Cases'));
+  const { isFeatureEnable } = useHelper();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Incident Responses | Cases'));
   const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },

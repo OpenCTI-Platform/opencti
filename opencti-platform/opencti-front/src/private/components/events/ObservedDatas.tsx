@@ -17,12 +17,15 @@ import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Observed Data | Events'));
   const {
     viewStorage,
     helpers: storageHelpers,

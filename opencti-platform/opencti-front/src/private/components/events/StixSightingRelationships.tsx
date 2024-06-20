@@ -14,6 +14,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const dataColumns = {
   x_opencti_negative: {
@@ -66,6 +67,8 @@ const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Sightings | Events'));
   const {
     viewStorage,
     paginationOptions,

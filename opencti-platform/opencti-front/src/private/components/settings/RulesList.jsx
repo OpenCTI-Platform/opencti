@@ -29,6 +29,7 @@ import Transition from '../../../components/Transition';
 import { areaChartOptions } from '../../../utils/Charts';
 import { simpleNumberFormat } from '../../../utils/Number';
 import ItemNumberDifference from '../../../components/ItemNumberDifference';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -195,6 +196,8 @@ export const rulesListQuery = graphql`
 const RulesListComponent = ({ relay, data, keyword }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, md, n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Customization: Rules Engine | Settings'));
   const theme = useTheme();
   const [displayDisable, setDisplayDisable] = useState(false);
   const [displayEnable, setDisplayEnable] = useState(false);

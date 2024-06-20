@@ -14,11 +14,14 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'organizations';
 
 const Organizations = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Organizations | Entities'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<OrganizationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {

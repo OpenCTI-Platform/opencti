@@ -17,11 +17,17 @@ import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
 const Indicators = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Indicators | Observations'));
+  const { isFeatureEnable } = useHelper();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Indicators | Observations'));
   const { isFeatureEnable } = useHelper();
   const {
     viewStorage,

@@ -13,6 +13,7 @@ import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_n
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -22,6 +23,8 @@ export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Feedbacks | Cases'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

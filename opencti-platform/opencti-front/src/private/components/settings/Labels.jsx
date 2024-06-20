@@ -9,11 +9,14 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'Labels';
 
 const Labels = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Labels | Settings'));
 
   const {
     viewStorage: { searchTerm, sortBy, orderAsc, numberOfElements },

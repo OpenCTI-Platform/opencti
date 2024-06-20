@@ -31,6 +31,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -124,6 +125,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const [commitField] = useApiMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Security: Policies | Settings'));
   const handleSubmitField = (name: string, value: string | string[] | Option) => {
     policiesValidation()
       .validateAt(name, { [name]: value })

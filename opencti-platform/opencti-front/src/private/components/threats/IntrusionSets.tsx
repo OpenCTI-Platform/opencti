@@ -20,6 +20,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useHelper from '../../../utils/hooks/useHelper';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
@@ -33,6 +34,8 @@ const IntrusionSets = () => {
     filters: emptyFilterGroup,
     view: 'cards',
   };
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Intrusion Sets | Threats'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IntrusionSetsCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,

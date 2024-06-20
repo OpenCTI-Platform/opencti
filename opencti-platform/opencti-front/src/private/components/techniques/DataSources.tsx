@@ -11,11 +11,14 @@ import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
 const DataSources: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Data Sources | Techniques'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     {

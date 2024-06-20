@@ -15,6 +15,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -30,6 +31,8 @@ const useStyles = makeStyles(() => ({
 const IngestionCsv = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Ingestion: CSV Feeds | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,

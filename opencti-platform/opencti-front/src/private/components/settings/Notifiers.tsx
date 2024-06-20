@@ -14,6 +14,7 @@ import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -29,6 +30,8 @@ const useStyles = makeStyles<Theme>(() => ({
 const Notifiers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Customization: Notifiers | Settings'));
   const {
     viewStorage,
     paginationOptions,

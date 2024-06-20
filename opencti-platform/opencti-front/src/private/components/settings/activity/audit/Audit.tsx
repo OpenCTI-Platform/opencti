@@ -36,6 +36,7 @@ import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
+import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,6 +106,8 @@ const Audit = () => {
   );
   const knowledgeCapability = useGranted([KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Activity: Events | Settings'));
 
   const {
     viewStorage,
