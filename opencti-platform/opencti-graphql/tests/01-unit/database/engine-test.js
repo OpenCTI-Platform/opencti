@@ -8,7 +8,7 @@ describe('prepareElementForIndexing testing', () => {
   });
   it('should inner trim applied', () => {
     const element = prepareElementForIndexing({ num: 10, data: { test: '  spacing   ' } });
-    expect(element.num).toBe(3); // FIXME test if this fail fast
+    expect(element.num).toBe(10);
     expect(element.data.test).toBe('spacing');
   });
   it('should array trim applied', () => {
