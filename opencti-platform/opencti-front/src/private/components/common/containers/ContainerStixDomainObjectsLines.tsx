@@ -106,6 +106,7 @@ export const containerStixDomainObjectsLinesFragment = graphql`
           node {
             ... on BasicObject {
               id
+              entity_type
             }
             ...ContainerStixDomainObjectLine_node
           }
