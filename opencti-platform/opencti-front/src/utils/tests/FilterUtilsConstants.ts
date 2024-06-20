@@ -1210,7 +1210,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'published',
     {
       filterKey: 'published',
-      label: 'Publication date',
+      label: 'Report publication date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -2090,7 +2090,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'analysis_started',
     {
       filterKey: 'analysis_started',
-      label: 'Analysis started',
+      label: 'Analysis start date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -2104,7 +2104,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'analysis_ended',
     {
       filterKey: 'analysis_ended',
-      label: 'Analysis ended',
+      label: 'Analysis end date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -2799,7 +2799,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'attribute_date',
     {
       filterKey: 'attribute_date',
-      label: 'Date',
+      label: 'Email date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -3637,7 +3637,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'start',
     {
       filterKey: 'start',
-      label: 'Start date',
+      label: 'Network traffic start date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -3651,7 +3651,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'end',
     {
       filterKey: 'end',
-      label: 'End date',
+      label: 'Network traffic end date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
@@ -4676,7 +4676,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'publication_date',
     {
       filterKey: 'publication_date',
-      label: 'Publication date',
+      label: 'Media publication date',
       type: 'date',
       multiple: false,
       subEntityTypes: [
