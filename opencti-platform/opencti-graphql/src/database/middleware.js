@@ -2983,12 +2983,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
       // If file directly attached
       if (!isEmptyField(resolvedInput.file)) {
+        const { filename } = await resolvedInput.file;
+        const isAutoExternal = entitySetting?.platform_entity_files_ref;
         const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
+        const key = `${path}/${filename}`;
+        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
         const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
-        const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings });
+        const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
         dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
         // Add external references from files if necessary
-        if (entitySetting?.platform_entity_files_ref) {
+        if (isAutoExternal) {
           // Create external ref + link to current entity
           const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
           const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
