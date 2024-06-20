@@ -11019,6 +11019,7 @@ input StixSightingRelationshipAddInput {
   externalReferences: [String]
   clientMutationId: String
   update: Boolean
+  x_opencti_workflow_id: String
 }
 
 ############## StixRefRelationships
