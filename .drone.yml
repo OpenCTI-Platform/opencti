@@ -106,7 +106,7 @@ steps:
     commands:
       - apt-get update
       - apt-get -y install netcat-traditional curl
-      - curl --max-time 30 -fsS -o /dev/null  http://opencti-e2e-start:4500/health?health_access_key=testHealth
+      - curl --max-time 30 http://opencti-e2e-start:4500/health?health_access_key=testHealth
       - cd opencti-platform/opencti-front
       - yarn install
       - npx playwright install --with-deps chromium
