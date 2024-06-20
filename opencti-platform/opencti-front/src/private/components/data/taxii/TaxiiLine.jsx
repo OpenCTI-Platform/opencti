@@ -16,6 +16,8 @@ import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -126,10 +128,12 @@ class TaxiiLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <TaxiiPopover
-            taxiiCollectionId={node.id}
-            paginationOptions={paginationOptions}
-          />
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <TaxiiPopover
+              taxiiCollectionId={node.id}
+              paginationOptions={paginationOptions}
+            />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );

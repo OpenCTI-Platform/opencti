@@ -25,7 +25,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
@@ -85,7 +85,7 @@ const RootGrouping = () => {
     [groupingId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Grouping') && !useGranted([BYPASSREFERENCE]);
+  const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 

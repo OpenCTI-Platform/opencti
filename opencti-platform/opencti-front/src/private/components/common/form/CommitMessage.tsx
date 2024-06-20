@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
-import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -67,13 +67,13 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
 
   // 2 behaviors possible
   // - "normal" behavior --> open a dialog with a ref selector and a commit message
-  // - BYPASSREFERENCE capa is defined --> user is able to bypass the ref selection + commit message, no dialog
+  // - KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE capa is defined --> user is able to bypass the ref selection + commit message, no dialog
 
   return (
     <>
       {!handleClose && (
         <div className={classes.buttons}>
-          <Security needs={[BYPASSREFERENCE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
               variant="contained"
               color="warning"

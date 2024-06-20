@@ -106,7 +106,7 @@ type CsvMapperSchemaAttributes {
 
 # Queries
 type Query {
-  csvMapper(id: String!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  csvMapper(id: String!): CsvMapper @auth(for: [CSVMAPPERS])
   csvMappers(
     first: Int
     after: ID
@@ -114,12 +114,12 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): CsvMapperConnection @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  ): CsvMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
   csvMapperTest(
     configuration: String!
     content: String!
-  ): CsvMapperTestResult @auth(for: [TAXIIAPI_SETCSVMAPPERS])
-  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE])
+  ): CsvMapperTestResult @auth(for: [CSVMAPPERS])
+  csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]! @auth(for: [KNOWLEDGE, CSVMAPPERS])
 }
 
 # Mutations
@@ -175,7 +175,7 @@ input CsvMapperAddInput {
 }
 
 type Mutation {
-  csvMapperAdd(input: CsvMapperAddInput!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
-  csvMapperDelete(id: ID!): ID @auth(for: [TAXIIAPI_SETCSVMAPPERS])
-  csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  csvMapperAdd(input: CsvMapperAddInput!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
+  csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [CSVMAPPERS])
 }

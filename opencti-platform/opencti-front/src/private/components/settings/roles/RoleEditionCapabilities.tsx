@@ -6,7 +6,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Checkbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
-import ListSubheader from '@mui/material/ListSubheader';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
@@ -105,20 +104,7 @@ RoleEditionCapabilitiesComponentProps
 
   if (capabilities && capabilities.edges) {
     return (
-      <List
-        dense={true}
-        subheader={
-          <ListSubheader
-            component="div"
-            sx={{
-              paddingLeft: 0,
-              backgroundColor: 'transparent',
-            }}
-          >
-            {t_i18n('Capabilities')}
-          </ListSubheader>
-        }
-      >
+      <List dense={true}>
         {capabilities.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {

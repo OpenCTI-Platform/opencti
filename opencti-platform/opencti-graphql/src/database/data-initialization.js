@@ -1,6 +1,6 @@
 import { logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
-import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -21,10 +21,9 @@ const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilitie
 export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
   attribute_order: 2500,
-  description: 'Access data sharing & ingestion',
+  description: 'Access data sharing',
   dependencies: [
-    { name: 'SETCOLLECTIONS', description: 'Manage data sharing & ingestion', attribute_order: 2510 },
-    { name: 'SETCSVMAPPERS', description: 'Manage CSV mappers', attribute_order: 2520 }
+    { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
   ],
 };
 const KNOWLEDGE_CAPABILITIES = {
@@ -41,6 +40,7 @@ const KNOWLEDGE_CAPABILITIES = {
         { name: 'KNORGARESTRICT', attribute_order: 290, description: 'Restrict organization access' },
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 },
         { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
+        { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
       ],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
@@ -70,16 +70,16 @@ export const CAPABILITIES = [
   KNOWLEDGE_CAPABILITIES,
   {
     name: 'EXPLORE',
-    description: 'Access Dashboards and investigations',
+    description: 'Access dashboards and investigations',
     attribute_order: 1000,
     dependencies: [
       {
         name: 'EXUPDATE',
-        description: 'Create / Update Dashboards and investigations',
+        description: 'Create / Update dashboards and investigations',
         attribute_order: 1100,
         dependencies: [
-          { name: 'EXDELETE', description: 'Delete Dashboards and investigations', attribute_order: 1200 },
-          { name: 'PUBLISH', description: 'Manage Public Dashboards', attribute_order: 1300 },
+          { name: 'EXDELETE', description: 'Delete dashboards and investigations', attribute_order: 1200 },
+          { name: 'PUBLISH', description: 'Manage public dashboards', attribute_order: 1300 },
         ],
       },
     ],
@@ -98,10 +98,18 @@ export const CAPABILITIES = [
     description: 'Connectors API usage: register, ping, export push ...',
   },
   {
-    name: BYPASS_REFERENCE,
-    attribute_order: 6000,
-    description: 'Bypass mandatory references if any',
+    name: 'INGESTION',
+    attribute_order: 2600,
+    description: 'Access ingestion',
+    dependencies: [
+      { name: 'SETINGESTIONS', description: 'Manage ingestion', attribute_order: 2610 },
+    ]
   },
+  {
+    name: 'CSVMAPPERS',
+    description: 'Manage CSV mappers',
+    attribute_order: 2700
+  }
 ];
 // endregion
 
@@ -232,9 +240,10 @@ const createBasicRolesAndCapabilities = async (context) => {
       'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
       'KNOWLEDGE_KNENRICHMENT',
       'CONNECTORAPI',
-      'BYPASSREFERENCE',
+      'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
       'MODULES_MODMANAGE',
       'TAXIIAPI',
+      'INGESTION',
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETLABELS',
     ],

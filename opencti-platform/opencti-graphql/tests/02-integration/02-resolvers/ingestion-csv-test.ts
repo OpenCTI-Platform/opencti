@@ -202,7 +202,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       `,
       variables: CSV_FEED_INGESTER_TO_CREATE
     });
-    expect(participantCreateResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to create csv mapper.').toBe(1);
+    expect(participantCreateResult.errors.length, 'CSVMAPPERS should be required to create csv mapper.').toBe(1);
     expect(participantCreateResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
   });
 
@@ -232,7 +232,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       `
     });
-    expect(participantListResult.errors.length, 'TAXIIAPI_SETCSVMAPPERS should be required to list csv mapper.').toBe(1);
+    expect(participantListResult.errors.length, 'CSVMAPPERS should be required to list csv mapper.').toBe(1);
     expect(participantListResult.errors[0].name).toBe(FORBIDDEN_ACCESS);
   });
 });

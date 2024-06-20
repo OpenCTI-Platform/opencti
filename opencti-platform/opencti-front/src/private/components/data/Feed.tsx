@@ -11,6 +11,8 @@ import SharingMenu from './SharingMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const Feed = () => {
   const { t_i18n } = useFormatter();
@@ -118,7 +120,9 @@ const Feed = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <SharingMenu/>
       {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <FeedCreation paginationOptions={paginationOptions}/>
+      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+        <FeedCreation paginationOptions={paginationOptions} />
+      </Security>
     </Box>
   );
 };

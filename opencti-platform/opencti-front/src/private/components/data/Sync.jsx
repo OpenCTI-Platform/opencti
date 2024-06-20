@@ -12,6 +12,8 @@ import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Security from '../../../utils/Security';
+import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'sync';
 
@@ -118,7 +120,9 @@ const Sync = () => {
           )}
         />
       </ListLines>
-      <SyncCreation paginationOptions={paginationOptions}/>
+      <Security needs={[INGESTION_SETINGESTIONS]}>
+        <SyncCreation paginationOptions={paginationOptions} />
+      </Security>
     </div>
   );
 };

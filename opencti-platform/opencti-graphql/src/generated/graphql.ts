@@ -1711,10 +1711,13 @@ export enum CampaignsOrdering {
 
 export enum Capabilities {
   Connectorapi = 'CONNECTORAPI',
+  Csvmappers = 'CSVMAPPERS',
   Explore = 'EXPLORE',
   ExploreExupdate = 'EXPLORE_EXUPDATE',
   ExploreExupdateExdelete = 'EXPLORE_EXUPDATE_EXDELETE',
   ExploreExupdatePublish = 'EXPLORE_EXUPDATE_PUBLISH',
+  Ingestion = 'INGESTION',
+  IngestionSetingestions = 'INGESTION_SETINGESTIONS',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
@@ -1733,8 +1736,8 @@ export enum Capabilities {
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
   SettingsSetlabels = 'SETTINGS_SETLABELS',
   SettingsSetmarkings = 'SETTINGS_SETMARKINGS',
+  Taxiiapi = 'TAXIIAPI',
   TaxiiapiSetcollections = 'TAXIIAPI_SETCOLLECTIONS',
-  TaxiiapiSetcsvmappers = 'TAXIIAPI_SETCSVMAPPERS',
   VirtualOrganizationAdmin = 'VIRTUAL_ORGANIZATION_ADMIN'
 }
 

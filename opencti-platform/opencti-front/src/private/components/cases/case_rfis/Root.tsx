@@ -26,7 +26,7 @@ import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
@@ -82,7 +82,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([BYPASSREFERENCE]);
+  const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 

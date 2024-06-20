@@ -16,6 +16,8 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
+import Security from '../../../../utils/Security';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -140,10 +142,12 @@ class StreamLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StreamPopover
-            streamCollection={node}
-            paginationOptions={paginationOptions}
-          />
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <StreamPopover
+              streamCollection={node}
+              paginationOptions={paginationOptions}
+            />
+          </Security>
         </ListItemSecondaryAction>
       </ListItem>
     );

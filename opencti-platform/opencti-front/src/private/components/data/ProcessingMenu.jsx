@@ -9,7 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -34,7 +34,7 @@ const ProcessingMenu = () => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isCsvMapperUpdater = useGranted([TAXIIAPI_SETCSVMAPPERS]);
+  const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
   return (
     <Drawer
       variant="permanent"

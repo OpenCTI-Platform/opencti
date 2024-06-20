@@ -11,6 +11,8 @@ import SharingMenu from './SharingMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const Taxii = () => {
   const { t_i18n } = useFormatter();
@@ -119,7 +121,9 @@ const Taxii = () => {
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>
       {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
-      <TaxiiCollectionCreation paginationOptions={paginationOptions}/>
+      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+        <TaxiiCollectionCreation paginationOptions={paginationOptions} />
+      </Security>
     </Box>
   );
 };

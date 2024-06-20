@@ -12,6 +12,8 @@ import StreamCollectionCreation from './stream/StreamCollectionCreation';
 import SharingMenu from './SharingMenu';
 import withRouter from '../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -128,7 +130,9 @@ class Stream extends Component {
         <Breadcrumbs variant="list" elements={[{ label: t('Data') }, { label: t('Data sharing') }, { label: t('Live streams'), current: true }]} />
         <SharingMenu/>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StreamCollectionCreation paginationOptions={paginationOptions}/>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <StreamCollectionCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

@@ -89,8 +89,11 @@ import useGranted, {
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
   TAXIIAPI_SETCOLLECTIONS,
-  TAXIIAPI_SETCSVMAPPERS,
+  CSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
+  INGESTION,
+  INGESTION_SETINGESTIONS,
+  TAXIIAPI,
 } from '../../../utils/hooks/useGranted';
 import { fileUri, MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -206,10 +209,10 @@ const LeftBar = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS]);
-  const isGrantedToSharing = useGranted([TAXIIAPI_SETCOLLECTIONS]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
+  const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToSettings = useGranted([SETTINGS]);
-  const isGrantedToIngestion = useGranted([SETTINGS, MODULES]);
+  const isGrantedToIngestion = useGranted([SETTINGS, MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
@@ -760,7 +763,7 @@ const LeftBar = () => {
             )}
           </MenuList>
         </Security>
-        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, TAXIIAPI_SETCSVMAPPERS]}>
+        <Security needs={[EXPLORE, MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Divider />
           <MenuList component="nav">
             <Security needs={[EXPLORE]}>
@@ -803,7 +806,7 @@ const LeftBar = () => {
                 </MenuItem>
               </StyledTooltip>
             </Security>
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS, TAXIIAPI_SETCSVMAPPERS]}>
+            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
                 selected={!navOpen && location.pathname.includes('/dashboard/data')}

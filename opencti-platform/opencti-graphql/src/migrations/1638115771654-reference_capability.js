@@ -1,4 +1,4 @@
-import { BYPASS_REFERENCE, executionContext } from '../utils/access';
+import { executionContext } from '../utils/access';
 import { createCapabilities } from '../database/data-initialization';
 
 export const up = async (next) => {
@@ -6,7 +6,7 @@ export const up = async (next) => {
   // Create labels capabilities
   await createCapabilities(context, [
     {
-      name: BYPASS_REFERENCE,
+      name: 'BYPASS_REFERENCE',
       attribute_order: 6000,
       description: 'Bypass mandatory references if any',
     },

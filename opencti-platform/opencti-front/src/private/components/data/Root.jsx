@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, SETTINGS_SETACCESSES, TAXIIAPI_SETCSVMAPPERS } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, MODULES, SETTINGS_SETACCESSES, INGESTION, CSVMAPPERS } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -42,7 +42,7 @@ const Root = () => {
           path="/ingestion"
           element={
             <Security
-              needs={[SETTINGS]}
+              needs={[INGESTION]}
               placeholder={(
                 <Security
                   needs={[MODULES]}
@@ -109,7 +109,7 @@ const Root = () => {
               needs={[SETTINGS_SETACCESSES]}
               placeholder={(
                 <Security
-                  needs={[TAXIIAPI_SETCSVMAPPERS]}
+                  needs={[CSVMAPPERS]}
                   placeholder={<Navigate to="/dashboard/data/processing/tasks" />}
                 >
                   <Navigate to="/dashboard/data/processing/csv_mapper" />
@@ -132,7 +132,7 @@ const Root = () => {
           path="/processing/csv_mapper"
           element={
             <Security
-              needs={[TAXIIAPI_SETCSVMAPPERS]}
+              needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
               <CsvMappers/>

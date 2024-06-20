@@ -46,7 +46,7 @@ type IngestionCsvEdge {
 
 # Queries
 type Query {
-    ingestionCsv(id: String!): IngestionCsv @auth(for: [SETTINGS])
+    ingestionCsv(id: String!): IngestionCsv @auth(for: [INGESTION])
     ingestionCsvs(
         first: Int
         after: ID
@@ -55,7 +55,7 @@ type Query {
         filters: FilterGroup
         includeAuthorities: Boolean
         search: String
-    ): IngestionCsvConnection @auth(for: [SETTINGS])
+    ): IngestionCsvConnection @auth(for: [INGESTION])
 }
 
 # Mutations
@@ -72,8 +72,8 @@ input IngestionCsvAddInput {
 }
 
 type Mutation {
-    ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [SETTINGS])
-    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [SETTINGS])
-    ingestionCsvDelete(id: ID!): ID @auth(for: [SETTINGS])
-    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [SETTINGS])
+    ingestionCsvTester(input: IngestionCsvAddInput!): CsvMapperTestResult @auth(for: [CSVMAPPERS])
+    ingestionCsvAdd(input: IngestionCsvAddInput!): IngestionCsv @auth(for: [CSVMAPPERS])
+    ingestionCsvDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
+    ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv @auth(for: [CSVMAPPERS])
 }
