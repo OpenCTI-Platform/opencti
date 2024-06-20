@@ -13,9 +13,12 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const Taxii = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Data sharing: TAXII Collections | Data'));
   const LOCAL_STORAGE_KEY = 'taxii';
   const navigate = useNavigate();
   const location = useLocation();

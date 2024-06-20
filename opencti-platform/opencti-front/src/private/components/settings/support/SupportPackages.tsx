@@ -21,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import { SETTINGS_SUPPORT } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
@@ -39,6 +40,8 @@ export const supportPackageAddMutation = graphql`
 
 const SupportPackages = () => {
   const { t_i18n, nsdt } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Support Packages | Settings'));
   const [commitSupportPackageAdd] = useApiMutation(supportPackageAddMutation);
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SupportPackageLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
