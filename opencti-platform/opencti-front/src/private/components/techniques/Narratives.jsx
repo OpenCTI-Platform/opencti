@@ -1,94 +1,127 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
+import React from 'react';
+import { NarrativeLineDummy } from './narratives/NarrativeLine';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
-import NarrativeCreation from './narratives/NarrativeCreation';
-import SearchInput from '../../../components/SearchInput';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import withRouter from '../../../utils/compat-router/withRouter';
+import NarrativeCreation from './narratives/NarrativeCreation';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
-const styles = () => ({
-  parameters: {
-    float: 'left',
-    marginTop: -10,
-  },
-});
-
-class Narratives extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.navigate,
-      props.location,
-      LOCAL_STORAGE_KEY,
-    );
-    this.state = {
-      searchTerm: propOr('', 'searchTerm', params),
+const Narratives = () => {
+  const { t_i18n } = useFormatter();
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage < NarrativesLinesPaginationQuery$variables > (
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
       openExports: false,
+      filters: emptyFilterGroup,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    }
+  );
+  const renderLines = () => {
+    const {
+      searchTerm,
+      sortBy,
+      orderAsc,
+      filters,
+      openExports,
+      numberOfElements,
+    } = viewStorage;
+    const dataColumns = {
+      name: {
+        label: 'Name',
+        width: '20%',
+        isSortable: true,
+      },
+      description: {
+        label: 'Description',
+        width: '20%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created: {
+        label: 'Original creation date',
+        width: '20%',
+        isSortable: true,
+      },
+      modified: {
+        label: 'Modification date',
+        width: '20%',
+        isSortable: true,
+      },
     };
-  }
-
-  saveView() {
-    saveViewParameters(
-      this.props.navigate,
-      this.props.location,
-      LOCAL_STORAGE_KEY,
-      this.state,
+    const queryRef = useQueryLoading < NarrativesLinesPaginationQuery > (
+      narrativesLinesQuery,
+      paginationOptions
     );
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
-
-  handleToggleExports() {
-    this.setState({ openExports: !this.state.openExports });
-  }
-
-  render() {
-    const { searchTerm } = this.state;
-    const { t, classes } = this.props;
     return (
-      <>
-        <Breadcrumbs variant="list" elements={[{ label: t('Techniques') }, { label: t('Narratives'), current: true }]} />
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={searchTerm}
+      <ListLines
+        helpers={helpers}
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportContext={{ entity_type: 'Narrative' }}
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <NarrativeLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+                  }
+          >
+            <NarrativesLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
             />
-          </div>
-        </div>
-        <div className="clearfix" />
-        <QueryRenderer
-          query={narrativesLinesQuery}
-          variables={{ count: 500 }}
-          render={({ props }) => (
-            <NarrativesLines data={props} keyword={searchTerm} />
-          )}
-        />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <NarrativeCreation />
-        </Security>
-      </>
+          </React.Suspense>
+        )}
+      </ListLines>
     );
-  }
-}
+  };
+  return (
+    <>
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
+      {renderLines()}
 
-Narratives.propTypes = {
-  t: PropTypes.func,
-  navigate: PropTypes.func,
-  location: PropTypes.object,
-  classes: PropTypes.object,
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <NarrativeCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
+  );
 };
-
-export default compose(inject18n, withRouter, withStyles(styles))(Narratives);
+export default Narratives;

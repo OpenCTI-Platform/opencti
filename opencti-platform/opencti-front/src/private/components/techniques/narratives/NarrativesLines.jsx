@@ -50,7 +50,7 @@ const narrativeFragment = graphql`
   }
 `;
 
-export const NarrativesLines = ({ data, keyword }) => {
+const NarrativesLines = ({ data, keyword }) => {
   const narrativeData = useFragment(narrativeFragment, data);
   const classes = useStyles();
   const filterSubnarrative = (n) => n.isSubNarrative === false;
