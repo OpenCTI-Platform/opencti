@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { NarrativeLineDummy } from './narratives/NarrativeLine';
 import NarrativesLines, { narrativesLinesQuery } from './narratives/NarrativesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -14,7 +14,7 @@ import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variable
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
-const Narratives = () => {
+const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage < NarrativesLinesPaginationQuery$variables >(
     LOCAL_STORAGE_KEY,

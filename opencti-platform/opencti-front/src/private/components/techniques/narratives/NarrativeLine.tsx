@@ -13,6 +13,7 @@ import { NarrativeLine_node$key } from '@components/techniques/narratives/__gene
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -21,6 +22,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+  },
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   goIcon: {
     position: 'absolute',
@@ -52,12 +62,7 @@ const narrativeLineFragment = graphql`
 interface NarrativeLineProps {
   node: NarrativeLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   dataColumns,

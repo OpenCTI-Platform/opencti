@@ -39,7 +39,7 @@ export const narrativesLinesQuery = graphql`
   }
 `;
 
-const narrativesLineFragment = graphql`
+const narrativesLinesFragment = graphql`
   fragment NarrativesLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
@@ -87,7 +87,7 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
   NarrativesLines_data$key
   >({
     linesQuery: narrativesLinesQuery,
-    linesFragment: narrativesLineFragment,
+    linesFragment: narrativesLinesFragment,
     queryRef,
     nodePath: ['narratives', 'pageInfo', 'globalCount'],
     setNumberOfElements,
@@ -105,6 +105,7 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
+      onLabelClick={onLabelClick}
     />
   );
 };
