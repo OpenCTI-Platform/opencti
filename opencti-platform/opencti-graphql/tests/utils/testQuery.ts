@@ -150,8 +150,8 @@ export const ROLE_DISINFORMATION_ANALYST: Role = {
     'EXPLORE_EXUPDATE',
     // FIXME : create/update investigation
     'TAXIIAPI_SETCOLLECTIONS',
-    // FIXME : manage ingestion
-    'TAXIIAPI_SETCSVMAPPERS',
+    'INGESTION_SETINGESTION',
+    'CSVMAPPERS',
     'SETTINGS_SETTAXONOMIES'
   ]
 };
@@ -243,7 +243,8 @@ export const GREEN_DISINFORMATION_ANALYST_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 100,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [],
 };
 
 export const PLATFORM_ADMIN_GROUP: Group = {
@@ -254,7 +255,8 @@ export const PLATFORM_ADMIN_GROUP: Group = {
   group_confidence_level: {
     max_confidence: 10,
     overrides: [],
-  }
+  },
+  max_shareable_markings: [],
 };
 
 // Organization

@@ -17,7 +17,7 @@ export const up = async (next) => {
   const parametersCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SETPARAMETERS',
     attribute_order: 3100,
-    description: 'Access Administration Parameters'
+    description: 'Access administration parameters'
   });
   // ------ Create Manage customization
   const customizationCapability = await addCapability(context, SYSTEM_USER, {

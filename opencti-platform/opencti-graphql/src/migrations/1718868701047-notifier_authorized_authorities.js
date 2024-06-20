@@ -1,7 +1,7 @@
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { elDeleteElements, elList, elReplace } from '../database/engine';
+import { elList, elReplace } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] update authorized authorities for notifiers';

@@ -11234,7 +11234,7 @@ type Query {
     filters: FilterGroup,
     filterMode: FilterMode,
     entityTypes: [MemberType!]
-  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
+  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS, INGESTION_SETINGESTIONS])
   users(
     first: Int
     after: ID
@@ -11337,7 +11337,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): SynchronizerConnection @auth(for: [SETTINGS, INGESTION, INGESTION_SETINGESTIONS])
-  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS])
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS, INGESTION_SETINGESTIONS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -11484,7 +11484,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -11737,7 +11737,7 @@ type Query {
     search: String
     filters: FilterGroup
     toStix: Boolean
-  ): IdentityConnection @auth(for: [KNOWLEDGE])
+  ): IdentityConnection @auth(for: [KNOWLEDGE, INGESTION_SETINGESTIONS])
   individual(id: String!): Individual @auth(for: [KNOWLEDGE])
   individuals(
     first: Int
@@ -12760,7 +12760,7 @@ type Mutation {
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
-  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
+  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI, INGESTION_SETINGESTIONS])
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [CONNECTORAPI, MODULES_MODMANAGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])

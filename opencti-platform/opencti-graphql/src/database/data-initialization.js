@@ -64,7 +64,7 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETCUSTOMIZATION', description: 'Manage customization', attribute_order: 3350 },
     { name: 'SETLABELS', description: 'Manage taxonomies', attribute_order: 3400 },
-    { name: 'SECURITYACTIVITY', description: 'Access Security Activity', attribute_order: 3500 },
+    { name: 'SECURITYACTIVITY', description: 'Access security activity', attribute_order: 3500 },
     { name: 'FILEINDEXING', description: 'Access to file indexing', attribute_order: 3600 },
     { name: 'SUPPORT', description: 'Access to support data', attribute_order: 3700 },
   ],
