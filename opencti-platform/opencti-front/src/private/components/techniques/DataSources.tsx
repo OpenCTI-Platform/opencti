@@ -13,6 +13,7 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
@@ -107,6 +108,8 @@ const DataSources: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Data Sources | Techniques'));
 
   const initialValues = {
     searchTerm: '',

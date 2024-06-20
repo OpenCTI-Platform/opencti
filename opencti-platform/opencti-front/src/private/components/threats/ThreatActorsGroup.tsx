@@ -23,6 +23,7 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useHelper from '../../../utils/hooks/useHelper';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'threatActorsGroups';
 
@@ -36,6 +37,8 @@ const ThreatActorsGroup = () => {
     openExports: false,
     view: 'cards',
   };
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Threat Actors (Group) | Threats'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsGroupCardsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,

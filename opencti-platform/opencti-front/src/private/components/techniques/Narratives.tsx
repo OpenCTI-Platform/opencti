@@ -27,6 +27,7 @@ import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import type { Theme } from '../../../components/Theme';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -35,6 +36,8 @@ const Narratives: FunctionComponent = () => {
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme<Theme>();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Narratives | Techniques'));
 
   const initialValues = {
     searchTerm: '',

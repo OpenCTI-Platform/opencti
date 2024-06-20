@@ -13,6 +13,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useHelper from '../../../utils/hooks/useHelper';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'tools';
 
@@ -104,6 +105,8 @@ const Tools = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Tools | Arsenal'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',

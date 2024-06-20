@@ -34,6 +34,7 @@ import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInpu
 import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import { maskString } from '../../../utils/String';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const styles = () => ({
   container: {
@@ -217,6 +218,9 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings } = props;
   const theme = useTheme();
   const { external, otp_activated: useOtp } = me;
+  const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
   const [showToken, setShowToken] = useState(false);

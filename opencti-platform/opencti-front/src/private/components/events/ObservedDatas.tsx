@@ -14,6 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
@@ -125,6 +126,8 @@ const observedDatasLinesFragment = graphql`
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Observed Data | Events'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

@@ -15,6 +15,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
@@ -102,6 +103,8 @@ const AttackPatterns = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Attack Patterns | Techniques'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',

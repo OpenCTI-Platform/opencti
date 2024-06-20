@@ -13,6 +13,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import ItemDueDate from '../../../components/ItemDueDate';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const tasksLinesQuery = graphql`
   query TasksLinesPaginationQuery(
@@ -73,6 +74,8 @@ export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
 const Tasks = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Tasks | Cases'));
 
   const initialValues = {
     searchTerm: '',

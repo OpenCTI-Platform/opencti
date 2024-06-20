@@ -11,6 +11,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -123,6 +124,8 @@ export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Feedbacks | Cases'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();

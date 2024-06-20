@@ -10,6 +10,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
@@ -97,6 +98,8 @@ const Labels = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Taxonomies: Labels | Settings'));
   const initialValues = {
     sortBy: 'value',
     orderAsc: true,

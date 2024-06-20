@@ -14,6 +14,7 @@ import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'sync';
 
@@ -30,6 +31,8 @@ const Sync = () => {
   const theme = useTheme();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Ingestion: Remote OCTI Streams | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,

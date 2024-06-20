@@ -14,6 +14,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { truncate } from '../../../utils/String';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const stixSightingsLineFragment = graphql`
   fragment StixSightingRelationshipsLine_node on StixSightingRelationship {
@@ -275,6 +276,8 @@ const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Sightings | Events'));
 
   const initialValues = {
     filters: {
