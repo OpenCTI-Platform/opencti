@@ -10,6 +10,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import ProcessingMenu from './ProcessingMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -22,6 +23,8 @@ const useStyles = makeStyles(() => ({
 
 const Tasks = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Processing: Tasks | Data'));
   const classes = useStyles();
   const { platformModuleHelpers } = useAuth();
   const optionsInProgress = {

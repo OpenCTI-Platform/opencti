@@ -261,7 +261,6 @@ const computeBannerSettings = (settings: RootSettings$data) => {
     sessionLimit,
   };
 };
-
 interface RootComponentProps {
   queryRef: PreloadedQuery<RootPrivateQuery>;
 }

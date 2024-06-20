@@ -9,11 +9,14 @@ import TriggerCreation from './triggers/TriggerCreation';
 import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'triggers';
 
 const Triggers: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Triggers'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_TRIGGERS,
     {

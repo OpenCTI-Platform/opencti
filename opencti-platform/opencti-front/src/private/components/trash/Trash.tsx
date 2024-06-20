@@ -14,11 +14,14 @@ import type { DeleteOperationsLinesPaginationQuery, DeleteOperationsLinesPaginat
 import { DataColumns } from '../../../components/list_lines';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'trash';
 
 const Trash: React.FC = () => {
   const { t_i18n } = useFormatter();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Trash'));
   const {
     viewStorage,
     paginationOptions,
