@@ -5410,6 +5410,7 @@ export type DataSourceAddInput = {
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type DataSourceConnection = {

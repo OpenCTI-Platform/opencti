@@ -172,6 +172,7 @@ input DataSourceAddInput {
     collection_layers: [String!]
     dataComponents: [String]
     file: Upload
+    x_opencti_workflow_id: String
 }
 
 type Mutation {
