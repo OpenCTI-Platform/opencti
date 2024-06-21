@@ -87,6 +87,7 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
             ... on StixCyberObservable {
               id
               observable_value
+              entity_type
             }
             ...ContainerStixCyberObservableLine_node
           }

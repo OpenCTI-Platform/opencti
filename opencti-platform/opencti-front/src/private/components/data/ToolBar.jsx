@@ -1242,9 +1242,9 @@ class ToolBar extends Component {
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
-    const selectedTypes = R.uniq(
-      R.map((o) => o.entity_type, R.values(selectedElements || {})),
-    );
+    const selectedTypes = [...new Set(Object.values(selectedElements || {})
+      .map((o) => o.entity_type)
+      .filter((entity_type) => entity_type !== undefined))];
     const typesAreDifferent = selectedTypes.length > 1;
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
@@ -1276,13 +1276,13 @@ class ToolBar extends Component {
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll
-      && entityTypeFilterValues.length === 1
-      && R.head(entityTypeFilterValues) !== 'Stix-Cyber-Observable'
-      && R.head(entityTypeFilterValues) !== 'Stix-Domain-Object';
-    const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))
-      || (entityTypeFilterValues.length === 1
-        && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-      || (!isManualEnrichSelect && !isAllEnrichSelect);
+        && entityTypeFilterValues.length === 1
+        && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+        && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+    const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
+        || (entityTypeFilterValues.length === 1
+            && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+        || (!isManualEnrichSelect && !isAllEnrichSelect);
     // endregion
     const typesAreNotMergable = R.includes(
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
