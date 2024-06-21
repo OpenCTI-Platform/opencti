@@ -42,12 +42,12 @@ const Narratives: FunctionComponent = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '30%',
+        width: '25%',
         isSortable: true,
       },
       description: {
         label: 'Description',
-        width: '30%',
+        width: '25%',
         isSortable: false,
       },
       objectLabel: {
@@ -57,12 +57,12 @@ const Narratives: FunctionComponent = () => {
       },
       created: {
         label: 'Original creation date',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       modified: {
         label: 'Modification date',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
     };

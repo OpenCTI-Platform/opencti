@@ -101,7 +101,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
-              <code>{emptyFilled(data.description)}</code>
+              {emptyFilled(data.description)}
             </div>
             <div
               className={classes.bodyItem}
