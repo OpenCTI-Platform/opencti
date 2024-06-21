@@ -7809,7 +7809,7 @@ input MappingAnalysisInput {
 
 type MappingAnalysis {
   analysisType: String!
-  mappedEntities: [MappedEntity]
+  mappedEntities: [MappedEntity!]
 }
 
 input MappedEntityInput {
