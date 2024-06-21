@@ -516,7 +516,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
 };
 
 export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) => {
-  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  const entity = await internalLoadById(context, user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
@@ -536,7 +536,7 @@ export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) 
 };
 
 export const analysisClear = async (context, user, entityId, contentSource, contentType) => {
-  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  const entity = await internalLoadById(context, user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant clear analysis on none existing element', { entityId });
   }
@@ -547,7 +547,7 @@ export const analysisClear = async (context, user, entityId, contentSource, cont
     const analysisFile = analysisFilesNodes[i];
     if (analysisFile?.metaData?.analysis_content_source === contentSource && analysisFile?.metaData?.analysis_content_type === contentType) {
       const upDelete = await deleteFile(context, context.user, analysisFile?.id);
-      const contextData = buildContextDataForFile(null, analysisFile?.id, upDelete.name);
+      const contextData = buildContextDataForFile(entity, analysisFile?.id, upDelete.name);
       await publishUserAction({
         user,
         event_type: 'file',
@@ -562,7 +562,7 @@ export const analysisClear = async (context, user, entityId, contentSource, cont
 };
 
 export const stixCoreAnalysis = async (context, user, entityId, contentSource, contentType) => {
-  const entity = await storeLoadByIdWithRefs(context, user, entityId);
+  const entity = await internalLoadById(context, user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant get analysis on none existing element', { entityId });
   }
