@@ -590,7 +590,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     return { matchedString: analysisKey, matchedEntity: entityResolved };
   };
 
-  const mappedEntities = Object.keys(analysisParsedContent).map((d) => analysisDataConverted(d)).filter((e) => e.matchedEntity);
+  const mappedEntities = Object.keys(analysisParsedContent)
+    .map((d) => analysisDataConverted(d))
+    .filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities };
 };
