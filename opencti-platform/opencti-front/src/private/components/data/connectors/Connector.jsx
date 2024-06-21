@@ -543,9 +543,6 @@ const ConnectorComponent = ({ connector, relay }) => {
 
 ConnectorComponent.propTypes = {
   connector: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  navigate: PropTypes.func,
 };
 
 export const connectorQuery = graphql`
