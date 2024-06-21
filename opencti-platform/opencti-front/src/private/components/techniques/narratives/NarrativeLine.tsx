@@ -14,6 +14,8 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import {emptyFilled} from "../../../../utils/String";
+import Tooltip from "@mui/material/Tooltip";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -86,18 +88,19 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
       <ListItemText
         primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-              title={data.name.length > 70 ? data.name : undefined}
-            >
-              {data.name}
-            </div>
+            <Tooltip title={data.name}>
+              <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+              >
+                {data.name}
+              </div>
+            </Tooltip>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
-              {data.description ? data.description : 'This narrative does not have any description.'}
+              <code>{emptyFilled(data.description)}</code>
             </div>
             <div
               className={classes.bodyItem}
