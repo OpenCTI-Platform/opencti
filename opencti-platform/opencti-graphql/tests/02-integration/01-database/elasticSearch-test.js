@@ -624,8 +624,9 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'group_confidence_level',
       orderMode: 'desc',
     });
-    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 4); // there are 2 built-in groups in initialization
+    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 2); // there are 2 built-in groups in initialization
 
+    let previousConfidenceLevel = 100;
     for (let i = 0; i < data.edges.length; i += 1) {
       const groupData = data.edges[i].node;
       const currentGroupInTestGroups = TESTING_GROUPS.find((testGroup) => testGroup.name === groupData.name);
@@ -635,6 +636,8 @@ describe('Elasticsearch pagination', () => {
         // Built groups in have 100
         expect(groupData.group_confidence_level.max_confidence).toBe(100);
       }
+      expect(groupData.group_confidence_level.max_confidence).lessThanOrEqual(previousConfidenceLevel);
+      previousConfidenceLevel = groupData.group_confidence_level.max_confidence;
     }
   });
   it('should entity paginate with object ordering (asc)', async () => {
@@ -648,13 +651,21 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'group_confidence_level',
       orderMode: 'asc',
     });
-    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 4); // there are 2 built-in groups in initialization
-    const groups = R.map((e) => e.node.group_confidence_level.max_confidence, data.edges);
-    expect(groups[0]).toEqual(50);
-    expect(groups[1]).toEqual(80);
-    expect(groups[2]).toEqual(100);
-    expect(groups[3]).toEqual(100);
-    expect(groups[4]).toEqual(100);
+    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 2); // there are 2 built-in groups in initialization
+
+    let previousConfidenceLevel = 0;
+    for (let i = 0; i < data.edges.length; i += 1) {
+      const groupData = data.edges[i].node;
+      const currentGroupInTestGroups = TESTING_GROUPS.find((testGroup) => testGroup.name === groupData.name);
+      if (currentGroupInTestGroups) {
+        expect(groupData.group_confidence_level.max_confidence).toBe(currentGroupInTestGroups.group_confidence_level.max_confidence);
+      } else {
+        // Built groups in have 100
+        expect(groupData.group_confidence_level.max_confidence).toBe(100);
+      }
+      expect(groupData.group_confidence_level.max_confidence).greaterThanOrEqual(previousConfidenceLevel);
+      previousConfidenceLevel = groupData.group_confidence_level.max_confidence;
+    }
   });
   it('should relation paginate everything', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });

@@ -127,7 +127,7 @@ export const ROLE_TEST_CONNECTOR: Role = {
     'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
     'KNOWLEDGE_KNENRICHMENT',
     'CONNECTORAPI',
-    'BYPASSREFERENCE',
+    'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE',
     'MODULES_MODMANAGE',
     'TAXIIAPI',
     'SETTINGS_SETMARKINGS',
@@ -150,11 +150,12 @@ export const ROLE_DISINFORMATION_ANALYST: Role = {
     'EXPLORE_EXUPDATE',
     // FIXME : create/update investigation
     'TAXIIAPI_SETCOLLECTIONS',
-    'INGESTION_SETINGESTION',
+    'INGESTION_SETINGESTIONS',
     'CSVMAPPERS',
-    'SETTINGS_SETTAXONOMIES'
+    'SETTINGS_SETLABELS'
   ]
 };
+TESTING_ROLES.push(ROLE_DISINFORMATION_ANALYST);
 
 export const ROLE_PLATFORM_ADMIN: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Platform configuration, connector configuration, manage public dashboard' }),
@@ -170,6 +171,7 @@ export const ROLE_PLATFORM_ADMIN: Role = {
     'EXPLORE_EXUPDATE_PUBLISH'
   ]
 };
+TESTING_ROLES.push(ROLE_PLATFORM_ADMIN);
 
 // Groups
 interface Group {
@@ -246,6 +248,7 @@ export const GREEN_DISINFORMATION_ANALYST_GROUP: Group = {
   },
   max_shareable_markings: [],
 };
+TESTING_GROUPS.push(GREEN_DISINFORMATION_ANALYST_GROUP);
 
 export const PLATFORM_ADMIN_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'Platform admin group' }),
@@ -258,6 +261,7 @@ export const PLATFORM_ADMIN_GROUP: Group = {
   },
   max_shareable_markings: [],
 };
+TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 
 // Organization
 interface Organization {

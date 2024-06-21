@@ -30,6 +30,6 @@ export default class RoleFormPage {
   }
 
   getAccessAdministrationCheckbox() {
-    return this.page.getByRole('list').locator('li').filter({ hasText: 'Access administration' }).getByRole('checkbox');
+    return this.page.getByRole('list').locator('li').filter({ hasText: 'Access to admin functionalities' }).getByRole('checkbox');
   }
 }
