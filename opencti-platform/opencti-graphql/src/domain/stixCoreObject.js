@@ -250,119 +250,6 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   return work;
 };
 
-export const CONTENT_TYPE_FIELDS = 'fields';
-export const CONTENT_TYPE_FILE = 'file';
-
-export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
-  logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
-
-  if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
-  if (contentType === CONTENT_TYPE_FILE) return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
-  throw new Error(`Content type ${contentType} not recognized`);
-};
-
-export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
-
-const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
-  let connectors = await connectorsForAnalysis(context, user);
-  if (connectorId) {
-    connectors = R.filter((n) => n.id === connectorId, connectors);
-  }
-  if (connectors.length > 0) {
-    // If a connectorId was specified, we use it, otherwise we get the first available connector by default. This way query can be called even without specifiying connectorId
-    const connector = connectors[0];
-    const element = await internalLoadById(context, user, analyzedId);
-    const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
-
-    if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
-      throw new Error(`Fields content source not handled: ${contentSource}`);
-    }
-
-    const contentMappingFields = ['description', 'content'];
-    const content_fields = contentMappingFields.join(' ');
-
-    const message = {
-      internal: {
-        work_id: work.id, // Related action for history
-        applicant_id: null, // No specific user asking for the analysis
-      },
-      event: {
-        event_type: CONNECTOR_INTERNAL_ANALYSIS,
-        entity_id: element.standard_id,
-        entity_type: element.entity_type,
-        content_type: CONTENT_TYPE_FIELDS,
-        content_source: contentSource,
-        content_fields,
-        analysis_name: getAnalysisFileName(contentSource, CONTENT_TYPE_FIELDS),
-      },
-    };
-
-    await pushToConnector(connector.internal_id, message);
-    await publishAnalysisAction(user, analyzedId, connector, element);
-    return work;
-  }
-  throw new Error('No connector found for analysis');
-};
-
-const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
-  const file = await loadFile(user, contentSource);
-
-  let connectors = await connectorsForAnalysis(context, user, file.metaData.mimetype);
-  if (connectorId) {
-    connectors = R.filter((n) => n.id === connectorId, connectors);
-  }
-  if (connectors.length > 0) {
-    const connector = connectors[0];
-    const element = await internalLoadById(context, user, analyzedId);
-    const work = await createWork(context, user, connector, 'Content file analysis', element.standard_id);
-
-    const message = {
-      internal: {
-        work_id: work.id, // Related action for history
-        applicant_id: null, // No specific user asking for the analysis
-      },
-      event: {
-        event_type: CONNECTOR_INTERNAL_ANALYSIS,
-        entity_id: element.standard_id,
-        entity_type: element.entity_type,
-        content_type: CONTENT_TYPE_FILE,
-        content_source: contentSource,
-        file_id: file.id,
-        file_mime: file.metaData.mimetype,
-        file_fetch: `/storage/get/${file.id}`, // Path to get the file
-        analysis_name: getAnalysisFileName(file.name, CONTENT_TYPE_FILE),
-      },
-    };
-
-    await pushToConnector(connector.internal_id, message);
-    await publishAnalysisAction(user, analyzedId, connector, element);
-    return work;
-  }
-  throw new Error('No connector found for analysis');
-};
-
-const getAnalysisFileName = (contentSource, contentType) => {
-  return `${contentType}_analysis_${contentSource}.analysis`;
-};
-
-const publishAnalysisAction = async (user, analyzedId, connector, element) => {
-  const baseData = {
-    id: analyzedId,
-    connector_id: connector.id,
-    connector_name: connector.name,
-    entity_name: extractEntityRepresentativeName(element),
-    entity_type: element.entity_type
-  };
-  const contextData = completeContextDataForEntity(baseData, element);
-  await publishUserAction({
-    user,
-    event_access: 'extended',
-    event_type: 'command',
-    event_scope: 'analyze',
-    context_data: contextData,
-  });
-};
-
 // region stats
 export const stixCoreObjectsTimeSeries = (context, user, args) => {
   let types = [];
@@ -513,6 +400,119 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     context_data: contextData
   });
   return true;
+};
+
+export const CONTENT_TYPE_FIELDS = 'fields';
+export const CONTENT_TYPE_FILE = 'file';
+
+export const askElementAnalysisForConnector = async (context, user, analyzedId, contentSource, contentType, connectorId) => {
+  logApp.debug(`[JOBS] ask analysis for content type ${contentType} and content source ${contentSource}`);
+
+  if (contentType === CONTENT_TYPE_FIELDS) return await askFieldsAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
+  if (contentType === CONTENT_TYPE_FILE) return await askFileAnalysisForConnector(context, user, analyzedId, contentSource, connectorId);
+  throw new Error(`Content type ${contentType} not recognized`);
+};
+
+export const CONTENT_SOURCE_CONTENT_MAPPING = 'content_mapping';
+
+const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
+  let connectors = await connectorsForAnalysis(context, user);
+  if (connectorId) {
+    connectors = R.filter((n) => n.id === connectorId, connectors);
+  }
+  if (connectors.length > 0) {
+    // If a connectorId was specified, we use it, otherwise we get the first available connector by default. This way query can be called even without specifiying connectorId
+    const connector = connectors[0];
+    const element = await internalLoadById(context, user, analyzedId);
+    const work = await createWork(context, user, connector, 'Content fields analysis', element.standard_id);
+
+    if (contentSource !== CONTENT_SOURCE_CONTENT_MAPPING) {
+      throw new Error(`Fields content source not handled: ${contentSource}`);
+    }
+
+    const contentMappingFields = ['description', 'content'];
+    const content_fields = contentMappingFields.join(' ');
+
+    const message = {
+      internal: {
+        work_id: work.id, // Related action for history
+        applicant_id: null, // No specific user asking for the analysis
+      },
+      event: {
+        event_type: CONNECTOR_INTERNAL_ANALYSIS,
+        entity_id: element.standard_id,
+        entity_type: element.entity_type,
+        content_type: CONTENT_TYPE_FIELDS,
+        content_source: contentSource,
+        content_fields,
+        analysis_name: getAnalysisFileName(contentSource, CONTENT_TYPE_FIELDS),
+      },
+    };
+
+    await pushToConnector(connector.internal_id, message);
+    await publishAnalysisAction(user, analyzedId, connector, element);
+    return work;
+  }
+  throw new Error('No connector found for analysis');
+};
+
+const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
+  const file = await loadFile(user, contentSource);
+
+  let connectors = await connectorsForAnalysis(context, user, file.metaData.mimetype);
+  if (connectorId) {
+    connectors = R.filter((n) => n.id === connectorId, connectors);
+  }
+  if (connectors.length > 0) {
+    const connector = connectors[0];
+    const element = await internalLoadById(context, user, analyzedId);
+    const work = await createWork(context, user, connector, 'Content file analysis', element.standard_id);
+
+    const message = {
+      internal: {
+        work_id: work.id, // Related action for history
+        applicant_id: null, // No specific user asking for the analysis
+      },
+      event: {
+        event_type: CONNECTOR_INTERNAL_ANALYSIS,
+        entity_id: element.standard_id,
+        entity_type: element.entity_type,
+        content_type: CONTENT_TYPE_FILE,
+        content_source: contentSource,
+        file_id: file.id,
+        file_mime: file.metaData.mimetype,
+        file_fetch: `/storage/get/${file.id}`, // Path to get the file
+        analysis_name: getAnalysisFileName(file.name, CONTENT_TYPE_FILE),
+      },
+    };
+
+    await pushToConnector(connector.internal_id, message);
+    await publishAnalysisAction(user, analyzedId, connector, element);
+    return work;
+  }
+  throw new Error('No connector found for analysis');
+};
+
+const getAnalysisFileName = (contentSource, contentType) => {
+  return `${contentType}_analysis_${contentSource}.analysis`;
+};
+
+const publishAnalysisAction = async (user, analyzedId, connector, element) => {
+  const baseData = {
+    id: analyzedId,
+    connector_id: connector.id,
+    connector_name: connector.name,
+    entity_name: extractEntityRepresentativeName(element),
+    entity_type: element.entity_type
+  };
+  const contextData = completeContextDataForEntity(baseData, element);
+  await publishUserAction({
+    user,
+    event_access: 'extended',
+    event_type: 'command',
+    event_scope: 'analyze',
+    context_data: contextData,
+  });
 };
 
 export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) => {

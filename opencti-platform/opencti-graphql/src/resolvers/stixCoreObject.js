@@ -158,11 +158,11 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
+      askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),
       analysisPush: (args) => stixCoreObjectAnalysisPush(context, context.user, id, args),
       analysisClear: ({ contentSource, contentType }) => analysisClear(context, context.user, id, contentSource, contentType),
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
-      askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
