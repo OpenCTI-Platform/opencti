@@ -305,6 +305,17 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
           {
             queryRef && (
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <Box sx={{ width: '100%', marginTop: 5 }}>
+                  <Alert
+                    severity="info"
+                    variant="outlined"
+                    style={{ padding: '0px 10px 0px 10px' }}
+                  >
+                    {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
+                    <br/>
+                    {t_i18n('Given the default markings use configuration, the markings field will not show up. And the default markings of the user responsible for data creation are applied to the ingested entities')}<br/>
+                  </Alert>
+                </Box>
                 <CsvMapperField
                   name="csv_mapper_id"
                   isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value }
