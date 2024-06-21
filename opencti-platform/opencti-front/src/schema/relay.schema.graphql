@@ -7830,12 +7830,12 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
+  askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
-  askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
 }
 
 input StixDomainObjectFileEditInput {
