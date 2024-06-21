@@ -48,7 +48,7 @@ const Narratives: FunctionComponent = () => {
       description: {
         label: 'Description',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       objectLabel: {
         label: 'Labels',

@@ -42,6 +42,7 @@ const narrativeLineFragment = graphql`
   fragment NarrativeLine_node on Narrative {
     id
     name
+    description
     created
     modified
     objectMarking {
@@ -95,6 +96,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.description.width }}
             >
+              {data.description ? data.description : 'This narrative does not have any description.'}
             </div>
             <div
               className={classes.bodyItem}
