@@ -6,6 +6,7 @@ import { radarChartOptions } from '../../utils/Charts';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
+import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetRadarProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +36,7 @@ const WidgetRadar = ({
   const labels = buildWidgetLabelsOption(data, groupBy);
   return (
     <Chart
-      options={radarChartOptions(theme, labels, [], true, false) as ApexOptions}
+      options={radarChartOptions(theme, labels, simpleNumberFormat, [], true, false) as ApexOptions}
       series={chartData}
       type="radar"
       width="100%"

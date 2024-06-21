@@ -42,7 +42,7 @@ const WidgetHorizontalBars = ({
         theme,
         true,
         simpleNumberFormat,
-        undefined,
+        simpleNumberFormat,
         distributed,
         navigate,
         redirectionUtils,

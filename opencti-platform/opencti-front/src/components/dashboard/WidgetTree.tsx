@@ -5,6 +5,7 @@ import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
 import { treeMapOptions } from '../../utils/Charts';
 import { getMainRepresentative, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
+import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +42,7 @@ const WidgetTree = ({
     <Chart
       options={treeMapOptions(
         theme,
+        simpleNumberFormat,
         'bottom',
         isDistributed,
       ) as ApexOptions}

@@ -516,7 +516,7 @@ export const horizontalBarsChartOptions = (
   },
   yaxis: {
     labels: {
-      formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      formatter: (value) => (yFormatter && typeof value === 'number' ? yFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
@@ -550,6 +550,7 @@ export const horizontalBarsChartOptions = (
 
 /**
  * @param {Theme} theme
+ * @param {function} xFormatter
  * @param {string[]} labels
  * @param {string[]} chartColors
  * @param {boolean} legend
@@ -558,6 +559,7 @@ export const horizontalBarsChartOptions = (
 export const radarChartOptions = (
   theme,
   labels,
+  xFormatter = null,
   chartColors = [],
   legend = false,
   offset = false,
@@ -629,6 +631,9 @@ export const radarChartOptions = (
   },
   yaxis: {
     show: false,
+    labels: {
+      formatter: (value) => (xFormatter ? xFormatter(value) : value),
+    },
   },
   plotOptions: {
     radar: {
@@ -856,11 +861,13 @@ export const donutChartOptions = (
 /**
  *
  * @param {Theme} theme
+ * @param {function} formatter
  * @param {string} legendPosition
  * @param {boolean} distributed
  */
 export const treeMapOptions = (
   theme,
+  formatter = null,
   legendPosition = 'bottom',
   distributed = false,
 ) => {
@@ -882,6 +889,11 @@ export const treeMapOptions = (
     ],
     fill: {
       opacity: 1,
+    },
+    yaxis: {
+      labels: {
+        formatter: (value) => (formatter ? formatter(value) : value),
+      },
     },
     states: {
       hover: {
