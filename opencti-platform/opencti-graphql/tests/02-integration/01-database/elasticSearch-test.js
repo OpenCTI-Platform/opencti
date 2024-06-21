@@ -624,7 +624,7 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'group_confidence_level',
       orderMode: 'desc',
     });
-    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 2); // there are 2 built-in groups in initialization
+    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 4); // there are 2 built-in groups in initialization
 
     for (let i = 0; i < data.edges.length; i += 1) {
       const groupData = data.edges[i].node;
@@ -648,7 +648,7 @@ describe('Elasticsearch pagination', () => {
       orderBy: 'group_confidence_level',
       orderMode: 'asc',
     });
-    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 2); // there are 2 built-in groups in initialization
+    expect(data.edges.length).toEqual(TESTING_GROUPS.length + 4); // there are 2 built-in groups in initialization
     const groups = R.map((e) => e.node.group_confidence_level.max_confidence, data.edges);
     expect(groups[0]).toEqual(50);
     expect(groups[1]).toEqual(80);
@@ -672,14 +672,14 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['external-reference'].length).toEqual(7);
     expect(metaByEntityType['object-marking'].length).toEqual(28);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
-    expect(data.edges.length).toEqual(218);
+    expect(data.edges.length).toEqual(242);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(218);
+    expect(data.length).toEqual(242);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

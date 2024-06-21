@@ -98,7 +98,7 @@ export const CAPABILITIES = [
   SETTINGS_CAPABILITIES,
   {
     name: 'CONNECTORAPI',
-    attribute_order: 4000,
+    attribute_order: 2300,
     description: 'Connectors API usage: register, ping, export push ...',
   },
   {
