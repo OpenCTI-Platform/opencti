@@ -283,7 +283,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to reset the state and purge messages queue of this connector? ')}
+            {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
           </DialogContentText>
           <DialogContentText>
             {t_i18n('Number of messages: ') + connectorMessages}
