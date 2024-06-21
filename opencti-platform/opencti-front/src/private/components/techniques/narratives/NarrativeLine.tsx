@@ -10,12 +10,12 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import {emptyFilled} from "../../../../utils/String";
-import Tooltip from "@mui/material/Tooltip";
+import { emptyFilled } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -33,6 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    color: theme.palette.text.primary,
   },
   goIcon: {
     position: 'absolute',
@@ -90,8 +91,8 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
           <>
             <Tooltip title={data.name}>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
               >
                 {data.name}
               </div>
