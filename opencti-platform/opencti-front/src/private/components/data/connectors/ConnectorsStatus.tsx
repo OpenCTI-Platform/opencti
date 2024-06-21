@@ -28,6 +28,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
+import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import type { Theme } from '../../../../components/Theme';
@@ -116,6 +117,7 @@ const connectorsStatusFragment = graphql`
           name
           active
           auto
+          connector_trigger_filters
           connector_type
           connector_scope
           updated_at
@@ -230,14 +232,16 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
-    const queueName = connector?.connector_type === 'INTERNAL_ENRICHMENT'
-      ? `listen_${connector?.id}`
-      : `push_${connector?.id}`;
+    const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
+      ? `listen_${connector.id}`
+      : `push_${connector.id}`;
     const queue = queues.find((o) => o?.name?.includes(queueName));
     const messagesCount = queue ? queue.messages : 0;
+    const connectorTriggerStatus = getConnectorTriggerStatus(connector as unknown as Connector);
     return {
       ...connector,
       messages: messagesCount,
+      connectorTriggerStatus,
     };
   }) || [];
 
@@ -279,7 +283,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
       >
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to reset the state and purge messages queue of this connector? ')}
+            {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
           </DialogContentText>
           <DialogContentText>
             {t_i18n('Number of messages: ') + connectorMessages}
@@ -374,14 +378,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         style={inlineStyles.auto}
                       >
                         <ItemBoolean
-                          label={connector.auto ? t_i18n('Automatic') : t_i18n('Manual')}
-                          status={
-                            connector.connector_type
-                              === 'INTERNAL_ENRICHMENT'
-                            || connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                              ? connector.auto
-                              : null
-                          }
+                          label={connector.connectorTriggerStatus.label}
+                          status={connector.connectorTriggerStatus.status}
                           variant="inList"
                         />
                       </div>

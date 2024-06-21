@@ -28,7 +28,7 @@ const useFiltersState = (initFilters: FilterGroup = emptyFilterGroup, defaultCle
     handleAddFilterWithEmptyValue: (filter: Filter) => {
       setFiltersState((prevState) => ({
         ...prevState,
-        filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters, filter }),
+        filters: handleAddFilterWithEmptyValueUtil({ filters: prevState.filters ?? emptyFilterGroup, filter }),
         latestAddFilterId: filter.id,
       }));
     },

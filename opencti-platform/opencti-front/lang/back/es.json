@@ -100,6 +100,7 @@
   "Connector name": "Nombre del conector",
   "Connector scope": "Ámbito del conector",
   "Connector state": "Estado del conector",
+  "Connector trigger filters": "Filtros de activación de conectores",
   "Connector type": "Tipo de conector",
   "Connectors": "Conectores",
   "Consent confirm text": "Texto de confirmación del consentimiento",

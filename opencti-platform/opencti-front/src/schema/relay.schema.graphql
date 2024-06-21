@@ -1769,6 +1769,7 @@ type Connector implements BasicObject & InternalObject {
   auto: Boolean
   only_contextual: Boolean
   playbook_compatible: Boolean
+  connector_trigger_filters: String
   connector_type: String
   connector_scope: [String!]
   connector_state: String
@@ -7375,7 +7376,7 @@ type Query {
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
   connector(id: String!): Connector
-  connectors: [Connector]
+  connectors: [Connector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]
@@ -8152,6 +8153,7 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!
+  updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID!
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!

@@ -100,6 +100,7 @@
   "Connector name": "Name des Verbinders",
   "Connector scope": "Konnektorumfang",
   "Connector state": "Zustand des Verbinders",
+  "Connector trigger filters": "Anschluss Triggerfilter",
   "Connector type": "Steckertyp",
   "Connectors": "Verbinder",
   "Consent confirm text": "Text zur Bestätigung der Zustimmung",

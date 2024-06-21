@@ -3412,6 +3412,7 @@ export type Connector = BasicObject & InternalObject & {
   connector_scope?: Maybe<Array<Scalars['String']['output']>>;
   connector_state?: Maybe<Scalars['String']['output']>;
   connector_state_reset?: Maybe<Scalars['Boolean']['output']>;
+  connector_trigger_filters?: Maybe<Scalars['String']['output']>;
   connector_type?: Maybe<Scalars['String']['output']>;
   connector_user_id?: Maybe<Scalars['ID']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12777,6 +12778,7 @@ export type Mutation = {
   triggerKnowledgeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
+  updateConnectorTrigger?: Maybe<Connector>;
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
   userAdd?: Maybe<User>;
@@ -14605,6 +14607,12 @@ export type MutationTriggerKnowledgeFieldPatchArgs = {
 
 export type MutationTriggerKnowledgeLiveAddArgs = {
   input: TriggerLiveAddInput;
+};
+
+
+export type MutationUpdateConnectorTriggerArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
 };
 
 
@@ -17831,7 +17839,7 @@ export type Query = {
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
   connector?: Maybe<Connector>;
-  connectors?: Maybe<Array<Maybe<Connector>>>;
+  connectors?: Maybe<Array<Connector>>;
   connectorsForAnalysis?: Maybe<Array<Maybe<Connector>>>;
   connectorsForExport?: Maybe<Array<Maybe<Connector>>>;
   connectorsForImport?: Maybe<Array<Maybe<Connector>>>;
@@ -31294,6 +31302,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   connector_scope?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   connector_state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_state_reset?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  connector_trigger_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -34752,6 +34761,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
+  updateConnectorTrigger?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorTriggerArgs, 'id' | 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
@@ -35826,7 +35836,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
+  connectors?: Resolver<Maybe<Array<ResolversTypes['Connector']>>, ParentType, ContextType>;
   connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForImport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;

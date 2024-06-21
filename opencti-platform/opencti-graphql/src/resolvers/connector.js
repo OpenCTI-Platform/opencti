@@ -3,6 +3,7 @@ import {
   connectorDelete,
   connectorForWork,
   connectorsForExport,
+  connectorTriggerUpdate,
   fetchRemoteStreams,
   findAllSync,
   findSyncById,
@@ -70,6 +71,7 @@ const connectorResolvers = {
     registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state }, context) => pingConnector(context, context.user, id, state),
+    updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {
       const connectorEntity = await connector(context, context.user, connectorId);

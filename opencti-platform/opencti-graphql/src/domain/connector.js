@@ -5,6 +5,8 @@ import { completeConnector, connector, connectors, connectorsFor } from '../data
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
+import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
@@ -131,6 +133,41 @@ export const connectorDelete = async (context, user, connectorId) => {
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   return element.internal_id;
+};
+
+export const connectorTriggerUpdate = async (context, user, connectorId, input) => {
+  const conn = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  if (!conn) {
+    throw FunctionalError('Cant find element to update', { id: connectorId, type: ENTITY_TYPE_CONNECTOR });
+  }
+  if (!['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'].includes(conn.connector_type)) {
+    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types');
+  }
+  const supportedInputKeys = ['connector_trigger_filters'];
+  if (input.some((item) => !supportedInputKeys.includes(item.key))) {
+    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`);
+  }
+  const filtersItem = input.find((item) => item.key === 'connector_trigger_filters');
+  if (filtersItem?.value) {
+    const jsonFilters = JSON.parse(filtersItem.value);
+    if (isFilterGroupNotEmpty(jsonFilters)) {
+      // our stix matching is currently limited, we need to validate the input filters
+      validateFilterGroupForStixMatch(jsonFilters);
+    } else {
+      filtersItem.value = ''; // empty filter
+    }
+  }
+  const { element } = await updateAttribute(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
+  });
+  // Notify configuration change for caching system
+  return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
 };
 // endregion
 
