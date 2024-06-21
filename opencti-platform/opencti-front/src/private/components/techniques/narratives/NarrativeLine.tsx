@@ -89,6 +89,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
+              title={data.name.length > 70 ? data.name : undefined}
             >
               {data.name}
             </div>
