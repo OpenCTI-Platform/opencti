@@ -338,12 +338,10 @@ const mapRecord = async (
   return filledInput;
 };
 
-export const mappingProcess = async (
+export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed,
-  record: string[]
-): Promise<Record<string, InputType>[]> => {
+  mapper: CsvMapperParsed) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
   const refIdsToResolve = new Set(representations.flatMap((representation) => {
@@ -358,7 +356,8 @@ export const mappingProcess = async (
       return [];
     });
   }));
-  const refEntities = await internalFindByIdsMapped(
+
+  return await internalFindByIdsMapped(
     context,
     user,
     [
@@ -367,6 +366,17 @@ export const mappingProcess = async (
       ...(user_chosen_markings || []),
     ]
   );
+}
+
+export const mappingProcess = async (
+  context: AuthContext,
+  user: AuthUser,
+  mapper: CsvMapperParsed,
+  record: string[],
+  refEntities: Record<string, BasicStoreObject>,
+): Promise<Record<string, InputType>[]> => {
+  // Resolution des representations & markings - refIds = default values for representation attributes
+  const { representations, user_chosen_markings } = mapper;
 
   const representationEntities = representations
     .filter((r) => r.type === CsvMapperRepresentationType.Entity)
