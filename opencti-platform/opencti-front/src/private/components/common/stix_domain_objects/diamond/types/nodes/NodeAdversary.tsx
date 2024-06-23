@@ -61,7 +61,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const classes = useStyles();
   const { stixDomainObject, entityLink } = data;
   const isArsenal = ['Malware', 'Tool', 'Channel'].includes(stixDomainObject.entity_type);
-  const aliases = stixDomainObject.aliases.slice(0, 5).join(', ');
+  const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
   const attributedTo = (stixDomainObject.attributedTo?.edges ?? [])
     .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name)
     .join(', ');

@@ -47,6 +47,10 @@ const narrativeQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Narrative_narrative
       ...NarrativeKnowledge_narrative
       ...FileImportViewer_entity
@@ -90,25 +94,6 @@ class RootNarrative extends Component {
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <>
-        <Routes>
-          <Route
-            path="/knowledge/*"
-            element={
-              <StixCoreObjectKnowledgeBar
-                stixCoreObjectLink={link}
-                availableSections={[
-                  'threat_actors',
-                  'intrusion_sets',
-                  'campaigns',
-                  'incidents',
-                  'channels',
-                  'observables',
-                  'sightings',
-                ]}
-              />
-            }
-          />
-        </Routes>
         <QueryRenderer
           query={narrativeQuery}
           variables={{ id: narrativeId }}
@@ -118,119 +103,141 @@ class RootNarrative extends Component {
                 const { narrative } = props;
                 const paddingRight = getPaddingRight(location.pathname, narrative.id, '/dashboard/techniques/narratives');
                 return (
-                  <div style={{ paddingRight }} >
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Techniques') },
-                      { label: t('Narratives'), link: '/dashboard/techniques/narratives' },
-                      { label: narrative.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Narrative"
-                      disableSharing={true}
-                      stixDomainObject={props.narrative}
-                      PopoverComponent={<NarrativePopover />}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, narrative.id, '/dashboard/techniques/narratives')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/knowledge/overview`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/content`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/files`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/narratives/${narrative.id}/history`}
-                          value={`/dashboard/techniques/narratives/${narrative.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <Narrative narrative={props.narrative} />
-                        }
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
-                        }
-                      />
                       <Route
                         path="/knowledge/*"
                         element={
-                          <NarrativeKnowledge narrative={props.narrative} />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={narrative}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'channels',
+                              'observables',
+                              'sightings',
+                            ]}
+                            stixCoreObjectsDistribution={narrative.stixCoreObjectsDistribution}
                           />
-                        }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={
-                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.narrative} />
-                        }
-                      />
-                      <Route
-                        path="/files"
-                        element={
-                          <FileManager
-                            id={narrativeId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.narrative}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
                         }
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }} >
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Techniques') },
+                        { label: t('Narratives'), link: '/dashboard/techniques/narratives' },
+                        { label: narrative.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Narrative"
+                        disableSharing={true}
+                        stixDomainObject={props.narrative}
+                        PopoverComponent={<NarrativePopover />}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, narrative.id, '/dashboard/techniques/narratives')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}/knowledge/overview`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}/content`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}/files`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/narratives/${narrative.id}/history`}
+                            value={`/dashboard/techniques/narratives/${narrative.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <Narrative narrative={props.narrative} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={
+                            <NarrativeKnowledge narrative={props.narrative} />
+                        }
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={narrative}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={
+                            <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.narrative} />
+                        }
+                        />
+                        <Route
+                          path="/files"
+                          element={
+                            <FileManager
+                              id={narrativeId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={props.narrative}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/history"
+                          element={
+                            <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
+                        }
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;

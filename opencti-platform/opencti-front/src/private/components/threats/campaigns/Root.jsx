@@ -130,7 +130,7 @@ class RootCampaign extends Component {
                             stixCoreObjectsDistribution={campaign.stixCoreObjectsDistribution}
                             attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                           />
-                       }
+                        }
                       />
                     </Routes>
                     <div style={{ paddingRight }}>

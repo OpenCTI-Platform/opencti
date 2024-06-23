@@ -47,6 +47,10 @@ const vulnerabilityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
@@ -88,28 +92,7 @@ class RootVulnerability extends Component {
     } = this.props;
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
-      <div>
-        <Routes>
-          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'threats',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'tools',
-              'attack_patterns',
-              'indicators',
-              'observables',
-              'sightings',
-              'infrastructures',
-            ]}
-                                              />}
-          >
-          </Route>
-        </Routes>
+      <>
         <QueryRenderer
           query={vulnerabilityQuery}
           variables={{ id: vulnerabilityId }}
@@ -119,131 +102,158 @@ class RootVulnerability extends Component {
                 const { vulnerability } = props;
                 const paddingRight = getPaddingRight(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Arsenal') },
-                      { label: t('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
-                      { label: vulnerability.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Vulnerability"
-                      stixDomainObject={vulnerability}
-                      PopoverComponent={<VulnerabilityPopover />}
-                      enableQuickSubscription={true}
-                      isOpenctiAlias={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge/overview`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/files`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/history`}
-                          value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
                       <Route
-                        path="/"
-                        element={(
-                          <Vulnerability
-                            vulnerability={vulnerability}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={(
-                          <Navigate
-                            replace={true}
-                            to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
-                          />
-                        )}
-                      />
-                      <Route
                         path="/knowledge/*"
-                        element={(
-                          <VulnerabilityKnowledge
-                            vulnerability={vulnerability}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/content/*"
                         element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={vulnerability}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'threats',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'tools',
+                              'attack_patterns',
+                              'indicators',
+                              'observables',
+                              'sightings',
+                              'infrastructures',
+                            ]}
+                            stixCoreObjectsDistribution={vulnerability.stixCoreObjectsDistribution}
                           />
                         }
                       />
-                      <Route
-                        path="/analyses"
-                        element={(
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            stixDomainObjectOrStixCoreRelationship={vulnerability}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
-                          <FileManager
-                            id={vulnerabilityId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={vulnerability}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={(
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={vulnerabilityId}
-                          />
-                        )}
-                      />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Arsenal') },
+                        { label: t('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
+                        { label: vulnerability.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Vulnerability"
+                        stixDomainObject={vulnerability}
+                        PopoverComponent={<VulnerabilityPopover />}
+                        enableQuickSubscription={true}
+                        isOpenctiAlias={true}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, vulnerability.id, '/dashboard/arsenal/vulnerabilities')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge/overview`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/files`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/history`}
+                            value={`/dashboard/arsenal/vulnerabilities/${vulnerability.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={(
+                            <Vulnerability
+                              vulnerability={vulnerability}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={(
+                            <Navigate
+                              replace={true}
+                              to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={(
+                            <VulnerabilityKnowledge
+                              vulnerability={vulnerability}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={vulnerability}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={(
+                            <StixCoreObjectOrStixCoreRelationshipContainers
+                              stixDomainObjectOrStixCoreRelationship={vulnerability}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/files"
+                          element={(
+                            <FileManager
+                              id={vulnerabilityId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={vulnerability}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/history"
+                          element={(
+                            <StixCoreObjectHistory
+                              stixCoreObjectId={vulnerabilityId}
+                            />
+                        )}
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;
@@ -251,7 +261,7 @@ class RootVulnerability extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

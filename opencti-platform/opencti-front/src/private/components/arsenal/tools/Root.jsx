@@ -48,6 +48,10 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Tool_tool
       ...ToolKnowledge_tool
       ...FileImportViewer_entity
@@ -92,27 +96,6 @@ class RootTool extends Component {
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <>
-        <Routes>
-          <Route path="/knowledge/*" element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'vulnerabilities',
-                'indicators',
-                'observables',
-                'sightings',
-              ]}
-            />}
-          >
-          </Route>
-        </Routes>
         <QueryRenderer
           query={toolQuery}
           variables={{ id: toolId }}
@@ -122,126 +105,152 @@ class RootTool extends Component {
                 const { tool } = props;
                 const paddingRight = getPaddingRight(location.pathname, tool.id, '/dashboard/arsenal/tools');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Arsenal') },
-                      { label: t('Tools'), link: '/dashboard/arsenal/tools' },
-                      { label: tool.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Tool"
-                      stixDomainObject={tool}
-                      PopoverComponent={<ToolPopover />}
-                      enableQuickSubscription={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, tool.id, '/dashboard/arsenal/tools')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}`}
-                          value={`/dashboard/arsenal/tools/${tool.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/knowledge/overview`}
-                          value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/content`}
-                          value={`/dashboard/arsenal/tools/${tool.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/analyses`}
-                          value={`/dashboard/arsenal/tools/${tool.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/files`}
-                          value={`/dashboard/arsenal/tools/${tool.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/arsenal/tools/${tool.id}/history`}
-                          value={`/dashboard/arsenal/tools/${tool.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
                       <Route
-                        path="/"
-                        element={ (
-                          <Tool tool={tool} />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate
-                            replace={true}
-                            to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
-                          />
-                        }
-                      />
-                      <Route
                         path="/knowledge/*"
-                        element={(
-                          <ToolKnowledge tool={tool} />
-                        )}
-                      />
-                      <Route
-                        path="/content/*"
                         element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={tool}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'threats',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'attack_patterns',
+                              'vulnerabilities',
+                              'indicators',
+                              'observables',
+                              'sightings',
+                            ]}
+                            stixCoreObjectsDistribution={tool.stixCoreObjectsDistribution}
                           />
                         }
-                      />
-                      <Route
-                        path="/analyses/*"
-                        element={(
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            stixDomainObjectOrStixCoreRelationship={tool}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
-                          <FileManager
-                            id={toolId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={tool}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={ (
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={toolId}
-                          />
-                        )}
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Arsenal') },
+                        { label: t('Tools'), link: '/dashboard/arsenal/tools' },
+                        { label: tool.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Tool"
+                        stixDomainObject={tool}
+                        PopoverComponent={<ToolPopover />}
+                        enableQuickSubscription={true}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, tool.id, '/dashboard/arsenal/tools')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}`}
+                            value={`/dashboard/arsenal/tools/${tool.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}/knowledge/overview`}
+                            value={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}/content`}
+                            value={`/dashboard/arsenal/tools/${tool.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}/analyses`}
+                            value={`/dashboard/arsenal/tools/${tool.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}/files`}
+                            value={`/dashboard/arsenal/tools/${tool.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/arsenal/tools/${tool.id}/history`}
+                            value={`/dashboard/arsenal/tools/${tool.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={ (
+                            <Tool tool={tool} />
+                        )}
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate
+                              replace={true}
+                              to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={(
+                            <ToolKnowledge tool={tool} />
+                        )}
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={tool}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses/*"
+                          element={(
+                            <StixCoreObjectOrStixCoreRelationshipContainers
+                              stixDomainObjectOrStixCoreRelationship={tool}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/files"
+                          element={(
+                            <FileManager
+                              id={toolId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={tool}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/history"
+                          element={ (
+                            <StixCoreObjectHistory
+                              stixCoreObjectId={toolId}
+                            />
+                        )}
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;
