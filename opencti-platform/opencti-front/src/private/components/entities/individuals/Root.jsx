@@ -49,6 +49,10 @@ const individualQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }  
       ...Individual_individual
       ...IndividualKnowledge_individual
       ...FileImportViewer_entity
@@ -121,29 +125,6 @@ class RootIndividual extends Component {
 
     return (
       <>
-        <Routes>
-          <Route
-            path="/knowledge/*"
-            element={viewAs === 'knowledge' && (
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'organizations',
-                'locations',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-            />)}
-          >
-          </Route>
-        </Routes>
         <QueryRenderer
           query={individualQuery}
           variables={{ id: individualId }}
@@ -156,154 +137,180 @@ class RootIndividual extends Component {
                   paddingRight = getPaddingRight(location.pathname, individual.id, '/dashboard/entities/individuals');
                 }
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Entities') },
-                      { label: t('Individuals'), link: '/dashboard/entities/individuals' },
-                      { label: individual.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Individual"
-                      disableSharing={true}
-                      stixDomainObject={individual}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<IndividualPopover />}
-                      onViewAs={this.handleChangeViewAs.bind(this)}
-                      viewAs={viewAs}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, individual.id, '/dashboard/entities/individuals')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}`}
-                          value={`/dashboard/entities/individuals/${individual.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
-                          value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/content`}
-                          value={`/dashboard/entities/individuals/${individual.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/analyses`}
-                          value={`/dashboard/entities/individuals/${individual.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/sightings`}
-                          value={`/dashboard/entities/individuals/${individual.id}/sightings`}
-                          label={t('Sightings')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/files`}
-                          value={`/dashboard/entities/individuals/${individual.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/individuals/${individual.id}/history`}
-                          value={`/dashboard/entities/individuals/${individual.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
                       <Route
-                        path="/"
-                        element={
-                          <Individual
-                            individual={individual}
-                            viewAs={viewAs}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate
-                            replace={true}
-                            to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
-                          />
-                        }
-                      />
-                      <Route
                         path="/knowledge/*"
-                        element={
-                          <IndividualKnowledge
-                            individual={individual}
-                            viewAs={viewAs}
+                        element={viewAs === 'knowledge' && (
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'organizations',
+                              'locations',
+                              'threats',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'attack_patterns',
+                              'tools',
+                              'observables',
+                            ]}
+                            stixCoreObjectsDistribution={individual.stixCoreObjectsDistribution}
                           />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={individual}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={
-                          <IndividualAnalysis
-                            individual={individual}
-                            viewAs={viewAs}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/sightings"
-                        element={
-                          <EntityStixSightingRelationships
-                            entityId={individual.id}
-                            entityLink={link}
-                            noPadding={true}
-                            isTo={true}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/files"
-                        element={
-                          <FileManager
-                            id={individualId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={individual}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={individualId}
-                          />
-                        }
+                        )}
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Entities') },
+                        { label: t('Individuals'), link: '/dashboard/entities/individuals' },
+                        { label: individual.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Individual"
+                        disableSharing={true}
+                        stixDomainObject={individual}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<IndividualPopover />}
+                        onViewAs={this.handleChangeViewAs.bind(this)}
+                        viewAs={viewAs}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, individual.id, '/dashboard/entities/individuals')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}`}
+                            value={`/dashboard/entities/individuals/${individual.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/knowledge/overview`}
+                            value={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/content`}
+                            value={`/dashboard/entities/individuals/${individual.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/analyses`}
+                            value={`/dashboard/entities/individuals/${individual.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/sightings`}
+                            value={`/dashboard/entities/individuals/${individual.id}/sightings`}
+                            label={t('Sightings')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/files`}
+                            value={`/dashboard/entities/individuals/${individual.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/individuals/${individual.id}/history`}
+                            value={`/dashboard/entities/individuals/${individual.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <Individual
+                              individual={individual}
+                              viewAs={viewAs}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate
+                              replace={true}
+                              to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={
+                            <IndividualKnowledge
+                              individual={individual}
+                              viewAs={viewAs}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={individual}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={
+                            <IndividualAnalysis
+                              individual={individual}
+                              viewAs={viewAs}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/sightings"
+                          element={
+                            <EntityStixSightingRelationships
+                              entityId={individual.id}
+                              entityLink={link}
+                              noPadding={true}
+                              isTo={true}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/files"
+                          element={
+                            <FileManager
+                              id={individualId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={individual}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/history"
+                          element={
+                            <StixCoreObjectHistory
+                              stixCoreObjectId={individualId}
+                            />
+                        }
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;

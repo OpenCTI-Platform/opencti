@@ -138,27 +138,27 @@ class RootOrganization extends Component {
                       <Route
                         path="/knowledge/*"
                         element={viewAs === 'knowledge' && (
-                        <StixCoreObjectKnowledgeBar
-                          stixCoreObjectLink={link}
-                          availableSections={[
-                            'sectors',
-                            'organizations',
-                            'individuals',
-                            'locations',
-                            'used_tools',
-                            'threats',
-                            'threat_actors',
-                            'intrusion_sets',
-                            'campaigns',
-                            'incidents',
-                            'malwares',
-                            'attack_patterns',
-                            'tools',
-                            'vulnerabilities',
-                            'observables',
-                          ]}
-                          stixCoreObjectsDistribution={organization.stixCoreObjectsDistribution}
-                        />
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'sectors',
+                              'organizations',
+                              'individuals',
+                              'locations',
+                              'used_tools',
+                              'threats',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'attack_patterns',
+                              'tools',
+                              'vulnerabilities',
+                              'observables',
+                            ]}
+                            stixCoreObjectsDistribution={organization.stixCoreObjectsDistribution}
+                          />
                         )}
                       />
                     </Routes>

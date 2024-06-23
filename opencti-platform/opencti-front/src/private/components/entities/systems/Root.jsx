@@ -136,7 +136,7 @@ class RootSystem extends Component {
                     <Routes>
                       <Route
                         path="/knowledge/*"
-                        element = {viewAs === 'knowledge' && (
+                        element={viewAs === 'knowledge' && (
                           <StixCoreObjectKnowledgeBar
                             stixCoreObjectLink={link}
                             availableSections={[
