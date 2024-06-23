@@ -95,6 +95,7 @@ class RootChannel extends Component {
               stixCoreObjectLink={link}
               availableSections={[
                 'victimology',
+                'threats',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',
@@ -106,7 +107,8 @@ class RootChannel extends Component {
                 'sightings',
                 'channels',
               ]}
-                      />}
+                      />
+          }
           ></Route>
         </Routes>
         <QueryRenderer

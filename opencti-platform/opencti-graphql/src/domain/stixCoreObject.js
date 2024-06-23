@@ -10,6 +10,7 @@ import { findById as findStatusById } from './status';
 import {
   ABSTRACT_BASIC_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
   CONNECTOR_INTERNAL_ANALYSIS,
@@ -37,7 +38,7 @@ import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
-import { RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -432,7 +433,11 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { objectId, types, filters } = args;
+  const { objectId, types, filters = {
+    mode: 'and',
+    filters: [],
+    filterGroups: [],
+  } } = args;
   let finalFilters = filters;
   // Here, we need to force regardingOf ID = objectID
   // Check if filter is already present and replace id
@@ -451,7 +456,7 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
   } else {
     finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
       { key: 'id', values: [objectId] },
-      { key: 'type', values: [RELATION_RELATED_TO] }
+      { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] }
     ]);
   }
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters: finalFilters });

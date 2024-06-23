@@ -17847,6 +17847,7 @@ export type Query = {
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
   containers?: Maybe<ContainerConnection>;
+  containersNumber?: Maybe<Number>;
   containersObjectsOfObject?: Maybe<StixObjectOrStixRelationshipConnection>;
   countries?: Maybe<CountryConnection>;
   country?: Maybe<Country>;
@@ -18413,6 +18414,12 @@ export type QueryContainersArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryContainersNumberArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  objectId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -35844,6 +35851,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<QueryContainersArgs>>;
+  containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryContainersNumberArgs>>;
   containersObjectsOfObject?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryContainersObjectsOfObjectArgs, 'id'>>;
   countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType, Partial<QueryCountriesArgs>>;
   country?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<QueryCountryArgs>>;

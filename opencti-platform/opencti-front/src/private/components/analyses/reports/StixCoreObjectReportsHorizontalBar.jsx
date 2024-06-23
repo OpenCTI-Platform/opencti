@@ -16,65 +16,64 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 
 const styles = () => ({
   paper: {
-    height: 300,
-    minHeight: 300,
-    maxHeight: 300,
-    margin: '10px 0 0 0',
-    padding: '0 10px 0 0',
+    height: 150,
+    minHeight: 150,
+    maxHeight: 150,
+    margin: '10px 0 20px 0',
+    padding: '0 10px 10px 0',
     borderRadius: 4,
   },
 });
 
-const stixCoreObjectReportsHorizontalBarsDistributionQuery = graphql`
-    query StixCoreObjectReportsHorizontalBarsDistributionQuery(
-        $objectId: String
-        $field: String!
-        $operation: StatsOperation!
-        $limit: Int
+const stixCoreObjectReportsHorizontalBarDistributionQuery = graphql`
+  query StixCoreObjectReportsHorizontalBarDistributionQuery(
+    $objectId: String
+    $field: String!
+    $operation: StatsOperation!
+    $limit: Int
+  ) {
+    reportsDistribution(
+      objectId: $objectId
+      field: $field
+      operation: $operation
+      limit: $limit
     ) {
-        reportsDistribution(
-            objectId: $objectId
-            field: $field
-            operation: $operation
-            limit: $limit
-        ) {
-            label
-            value
-            entity {
-                ... on StixObject {
-                    representative {
-                        main
-                    }
-                }
-            }
+      label
+      value
+      entity {
+        ... on StixObject {
+          representative {
+            main
+          }
         }
+      }
     }
+  }
 `;
 
-class StixCoreObjectReportsHorizontalBars extends Component {
+class StixCoreObjectReportsHorizontalBar extends Component {
   renderContent() {
     const { t, stixCoreObjectId, field, theme } = this.props;
     const reportsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'report_types',
       operation: 'count',
-      limit: 8,
+      limit: 20,
     };
     return (
       <QueryRenderer
-        query={stixCoreObjectReportsHorizontalBarsDistributionQuery}
+        query={stixCoreObjectReportsHorizontalBarDistributionQuery}
         variables={reportsDistributionVariables}
         render={({ props }) => {
           if (
             props
-                        && props.reportsDistribution
-                        && props.reportsDistribution.length > 0
+            && props.reportsDistribution
+            && props.reportsDistribution.length > 0
           ) {
-            const data = props.reportsDistribution.map((n) => ({
-              x: getMainRepresentative(n.entity) || n.label,
-              y: n.value,
+            const chartData = props.reportsDistribution.map((n) => ({
+              name: getMainRepresentative(n.entity) || n.label,
+              data: [n.value],
             }));
-            const chartData = [{ name: t('Number of reports'), data }];
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -82,7 +81,14 @@ class StixCoreObjectReportsHorizontalBars extends Component {
                   true,
                   simpleNumberFormat,
                   null,
+                  false,
+                  undefined,
+                  null,
                   true,
+                  false,
+                  ['Number of reports'],
+                  true,
+                  '100%',
                 )}
                 series={chartData}
                 type="bar"
@@ -149,7 +155,7 @@ class StixCoreObjectReportsHorizontalBars extends Component {
   }
 }
 
-StixCoreObjectReportsHorizontalBars.propTypes = {
+StixCoreObjectReportsHorizontalBar.propTypes = {
   stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
   field: PropTypes.string,
@@ -162,4 +168,4 @@ export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixCoreObjectReportsHorizontalBars);
+)(StixCoreObjectReportsHorizontalBar);

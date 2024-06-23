@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Routes } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
@@ -38,7 +38,7 @@ class NarrativeKnowledgeComponent extends Component {
           <Route
             path="/overview"
             element={
-              <StixDomainObjectThreatKnowledge
+              <StixDomainObjectKnowledge
                 stixDomainObjectId={narrative.id}
                 stixDomainObjectType="Narrative"
               />

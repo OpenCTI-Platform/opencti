@@ -93,21 +93,23 @@ class RootTool extends Component {
     return (
       <>
         <Routes>
-          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'vulnerabilities',
-              'indicators',
-              'observables',
-              'sightings',
-            ]}
-                                              />}
+          <Route path="/knowledge/*" element={
+            <StixCoreObjectKnowledgeBar
+              stixCoreObjectLink={link}
+              availableSections={[
+                'threats',
+                'threat_actors',
+                'intrusion_sets',
+                'campaigns',
+                'incidents',
+                'malwares',
+                'attack_patterns',
+                'vulnerabilities',
+                'indicators',
+                'observables',
+                'sightings',
+              ]}
+            />}
           >
           </Route>
         </Routes>

@@ -68,6 +68,25 @@ class ChannelKnowledgeComponent extends Component {
             }
           />
           <Route
+            path="/threats"
+            element={
+              <EntityStixCoreRelationships
+                entityId={channel.id}
+                relationshipTypes={['uses']}
+                isRelationReversed={true}
+                entityLink={link}
+                stixCoreObjectTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Incident',
+                  'Malware',
+                  'Tool',
+                ]}
+              />
+            }
+          />
+          <Route
             path="/threat_actors"
             element={
               <EntityStixCoreRelationships

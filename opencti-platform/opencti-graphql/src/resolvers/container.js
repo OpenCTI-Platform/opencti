@@ -1,4 +1,14 @@
-import { containersObjectsOfObject, findAll, findById, knowledgeAddFromInvestigation, objects, relatedContainers } from '../domain/container';
+import {
+  containersObjectsOfObject,
+  findAll,
+  findById,
+  knowledgeAddFromInvestigation,
+  objects,
+  relatedContainers,
+  containersNumber,
+  containersNumberByAuthor,
+  containersNumberByEntity
+} from '../domain/container';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,6 +24,15 @@ const containerResolvers = {
     container: (_, { id }, context) => findById(context, context.user, id),
     containers: (_, args, context) => findAll(context, context.user, args),
     containersObjectsOfObject: (_, args, context) => containersObjectsOfObject(context, context.user, args),
+    containersNumber: (_, args, context) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return containersNumberByEntity(context, context.user, args);
+      }
+      if (args.authorId && args.authorId.length > 0) {
+        return containersNumberByAuthor(context, context.user, args);
+      }
+      return containersNumber(context, context.user, args);
+    },
   },
   Container: {
     __resolveType(obj) {

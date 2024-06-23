@@ -11575,6 +11575,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
+  containersNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int

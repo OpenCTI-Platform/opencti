@@ -18,8 +18,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  StixDomainObjectThreatKnowledgeReportsNumberQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeReportsNumberQuery.graphql';
+  StixDomainObjectThreatKnowledgeContainersNumberQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeContainersNumberQuery.graphql';
 import {
   StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery.graphql';
@@ -27,13 +27,14 @@ import {
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data,
   StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery.graphql';
+import { stixDomainObjectThreatDiamondQuery } from '@components/common/stix_domain_objects/StixDomainObjectThreatDiamondQuery';
+import { StixDomainObjectThreatDiamondQuery$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectThreatDiamondQuery.graphql';
+import StixDomainObjectDiamond from '@components/common/stix_domain_objects/StixDomainObjectDiamond';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import StixCoreObjectReportsHorizontalBars from '../../analyses/reports/StixCoreObjectReportsHorizontalBars';
-import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -46,11 +47,12 @@ import {
   emptyFilterGroup,
   getDefaultFilterObject,
   isFilterGroupNotEmpty,
-  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
   useFilterDefinition,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,12 +98,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
-  query StixDomainObjectThreatKnowledgeReportsNumberQuery(
+const stixDomainObjectThreatKnowledgeContainersNumberQuery = graphql`
+  query StixDomainObjectThreatKnowledgeContainersNumberQuery(
     $objectId: String
     $endDate: DateTime
   ) {
-    reportsNumber(objectId: $objectId, endDate: $endDate) {
+    containersNumber(objectId: $objectId, endDate: $endDate) {
       total
       count
     }
@@ -146,7 +148,7 @@ StixDomainObjectThreatKnowledgeProps
 > = ({ stixDomainObjectId, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
   const { n, t_i18n } = useFormatter();
-  const [viewType, setViewType] = useState('timeline');
+  const [viewType, setViewType] = useState('diamond');
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);
@@ -266,7 +268,7 @@ StixDomainObjectThreatKnowledgeProps
             style={{ height: 120 }}
           >
             <QueryRenderer
-              query={stixDomainObjectThreatKnowledgeReportsNumberQuery}
+              query={stixDomainObjectThreatKnowledgeContainersNumberQuery}
               variables={{
                 objectId: stixDomainObjectId,
                 endDate: monthsAgo(1),
@@ -274,14 +276,14 @@ StixDomainObjectThreatKnowledgeProps
               render={({
                 props,
               }: {
-                props: StixDomainObjectThreatKnowledgeReportsNumberQuery$data;
+                props: StixDomainObjectThreatKnowledgeContainersNumberQuery$data;
               }) => {
-                if (props && props.reportsNumber) {
-                  const { total } = props.reportsNumber;
-                  const difference = total - props.reportsNumber.count;
+                if (props && props.containersNumber) {
+                  const { total } = props.containersNumber;
+                  const difference = total - props.containersNumber.count;
                   return (
                     <CardContent>
-                      <div className={classes.title}>{t_i18n('Total reports')}</div>
+                      <div className={classes.title}>{t_i18n('Total analyses')}</div>
                       <div className={classes.number}>{n(total)}</div>
                       <ItemNumberDifference
                         difference={difference}
@@ -409,25 +411,11 @@ StixDomainObjectThreatKnowledgeProps
           </Card>
         </Grid>
       </Grid>
-      <Grid container={true} spacing={3} style={{ marginTop: -10 }}>
-        <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
-          <StixCoreObjectReportsHorizontalBars
-            stixCoreObjectId={stixDomainObjectId}
-            field="created-by.internal_id"
-            title={t_i18n('Distribution of sources')}
-          />
-        </Grid>
-        <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
-          <StixCoreObjectStixCoreRelationshipsCloud
-            stixCoreObjectId={stixDomainObjectId}
-            stixCoreObjectType="Stix-Core-Object"
-            relationshipType="stix-core-relationship"
-            title={t_i18n('Distribution of relations')}
-            field="entity_type"
-            noDirection={true}
-          />
-        </Grid>
-      </Grid>
+      <StixCoreObjectReportsHorizontalBar
+        stixCoreObjectId={stixDomainObjectId}
+        field="created-by.internal_id"
+        title={t_i18n('Distribution of reports')}
+      />
       <Tabs
         value={viewType}
         indicatorColor="primary"
@@ -435,67 +423,70 @@ StixDomainObjectThreatKnowledgeProps
         onChange={(_, value) => handleChangeViewType(value)}
         style={{ float: 'left' }}
       >
+        <Tab label={t_i18n('Diamond')} value="diamond" />
         <Tab label={t_i18n('Timeline')} value="timeline" />
         <Tab label={t_i18n('Global kill chain')} value="killchain" />
       </Tabs>
-      <div className={classes.filters}>
-        <Filters
-          helpers={helpers}
-          availableFilterKeys={[
-            'elementWithTargetTypes',
-            'objectMarking',
-            'createdBy',
-            'objectLabel',
-            'created',
-            'toId',
-          ]}
-          handleAddFilter={helpers.handleAddFilter}
-          searchContext={{ entityTypes: ['stix-core-relationship'] }}
-        />
-        <IconButton color="primary" onClick={handleOpenTimeField} size="small">
-          <SettingsOutlined fontSize="small" />
-        </IconButton>
-        <Popover
-          classes={{ paper: classes.container }}
-          open={openTimeField}
-          anchorEl={anchorEl}
-          onClose={handleCloseTimeField}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-          elevation={1}
-        >
-          <FormControl style={{ width: '100%' }}>
-            <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
-            <Select
-              labelId="timeField"
-              value={timeField === null ? '' : timeField}
-              onChange={handleChangeTimeField}
-              fullWidth={true}
-            >
-              <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
-              <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControlLabel
-            style={{ marginTop: 20 }}
-            control={
-              <Switch
-                checked={nestedRelationships}
-                onChange={handleChangeNestedRelationships}
-                name="nested-relationships"
-                color="primary"
-              />
-            }
-            label={t_i18n('Display nested relationships')}
+      {viewType !== 'diamond' && (
+        <div className={classes.filters}>
+          <Filters
+            helpers={helpers}
+            availableFilterKeys={[
+              'elementWithTargetTypes',
+              'objectMarking',
+              'createdBy',
+              'objectLabel',
+              'created',
+              'toId',
+            ]}
+            handleAddFilter={helpers.handleAddFilter}
+            searchContext={{ entityTypes: ['stix-core-relationship'] }}
           />
-        </Popover>
-      </div>
+          <IconButton color="primary" onClick={handleOpenTimeField} size="small">
+            <SettingsOutlined fontSize="small" />
+          </IconButton>
+          <Popover
+            classes={{ paper: classes.container }}
+            open={openTimeField}
+            anchorEl={anchorEl}
+            onClose={handleCloseTimeField}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center',
+            }}
+            elevation={1}
+          >
+            <FormControl style={{ width: '100%' }}>
+              <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
+              <Select
+                labelId="timeField"
+                value={timeField === null ? '' : timeField}
+                onChange={handleChangeTimeField}
+                fullWidth={true}
+              >
+                <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
+                <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControlLabel
+              style={{ marginTop: 20 }}
+              control={
+                <Switch
+                  checked={nestedRelationships}
+                  onChange={handleChangeNestedRelationships}
+                  name="nested-relationships"
+                  color="primary"
+                />
+              }
+              label={t_i18n('Display nested relationships')}
+            />
+          </Popover>
+        </div>
+      )}
       <div className={classes.export}>
         <ExportButtons
           domElementId="container"
@@ -505,46 +496,67 @@ StixDomainObjectThreatKnowledgeProps
         />
       </div>
       <div className="clearfix" />
-      <FilterIconButton
-        helpers={helpers}
-        filters={filters}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        entityTypes={['stix-core-relationship']}
-      />
-      <QueryRenderer
-        query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
-        variables={{ first: 500, ...queryPaginationOptions }}
-        render={({
-          props,
-        }: {
-          props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
-        }) => {
-          if (props) {
-            if (viewType === 'killchain') {
+      {viewType !== 'diamond' && (
+        <FilterIconButton
+          helpers={helpers}
+          filters={filters}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          entityTypes={['stix-core-relationship']}
+        />
+      )}
+      {viewType === 'diamond' ? (
+        <QueryRenderer
+          query={stixDomainObjectThreatDiamondQuery}
+          variables={{ id: stixDomainObjectId }}
+          render={({
+            props,
+          }: {
+            props: StixDomainObjectThreatDiamondQuery$data;
+          }) => {
+            if (props) {
               return (
-                <StixDomainObjectGlobalKillChain
+                <StixDomainObjectDiamond data={props} entityLink={link} />
+              );
+            }
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      ) : (
+        <QueryRenderer
+          query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
+          variables={{ first: 500, ...queryPaginationOptions }}
+          render={({
+            props,
+          }: {
+            props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
+          }) => {
+            if (props) {
+              if (viewType === 'killchain') {
+                return (
+                  <StixDomainObjectGlobalKillChain
+                    data={props}
+                    entityLink={link}
+                    paginationOptions={queryPaginationOptions}
+                    stixDomainObjectId={stixDomainObjectId}
+                  />
+                );
+              }
+              return (
+                <StixDomainObjectTimeline
                   data={props}
                   entityLink={link}
                   paginationOptions={queryPaginationOptions}
                   stixDomainObjectId={stixDomainObjectId}
+                  timeField={timeField}
                 />
               );
             }
-            return (
-              <StixDomainObjectTimeline
-                data={props}
-                entityLink={link}
-                paginationOptions={queryPaginationOptions}
-                stixDomainObjectId={stixDomainObjectId}
-                timeField={timeField}
-              />
-            );
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      )}
     </>
   );
 };

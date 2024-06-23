@@ -7444,6 +7444,7 @@ type Query {
   container(id: String): Container
   containers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ContainerConnection
   containersObjectsOfObject(id: String!, types: [String], filters: FilterGroup, search: String): StixObjectOrStixRelationshipConnection
+  containersNumber(objectId: String, endDate: DateTime): Number
   note(id: String): Note
   notes(first: Int, after: ID, orderBy: NotesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): NoteConnection
   notesNumber(objectId: String, endDate: DateTime): Number

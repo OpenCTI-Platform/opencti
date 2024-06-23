@@ -32,6 +32,7 @@ const useStyles = makeStyles<Theme>(() => ({
     maxHeight: '60%',
     padding: '60px 0 20px 20px',
     zIndex: 900,
+    borderRadius: 4,
   },
   external: {
     marginTop: -2,

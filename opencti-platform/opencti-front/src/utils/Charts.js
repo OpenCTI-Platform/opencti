@@ -369,6 +369,7 @@ export const verticalBarsChartOptions = (
  * @param {boolean} total
  * @param {string[]} categories
  * @param {boolean} legend
+ * @param {string} stackType
  */
 export const horizontalBarsChartOptions = (
   theme,
@@ -382,6 +383,7 @@ export const horizontalBarsChartOptions = (
   total = false,
   categories = null,
   legend = false,
+  stackType = 'normal',
 ) => ({
   events: ['xAxisLabelClick'],
   chart: {
@@ -390,6 +392,7 @@ export const horizontalBarsChartOptions = (
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
+    stackType,
     width: '100%',
     height: '100%',
     events: {
@@ -471,7 +474,7 @@ export const horizontalBarsChartOptions = (
     mode: theme.palette.mode,
   },
   dataLabels: {
-    enabled: false,
+    enabled: stackType === '100%',
   },
   colors: [
     theme.palette.primary.main,
@@ -486,6 +489,7 @@ export const horizontalBarsChartOptions = (
     },
   },
   grid: {
+    show: stackType !== '100%',
     borderColor:
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, .1)'
@@ -504,6 +508,7 @@ export const horizontalBarsChartOptions = (
   xaxis: {
     categories: categories ?? [],
     labels: {
+      show: stackType !== '100%',
       formatter: (value) => (xFormatter ? xFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
@@ -515,7 +520,9 @@ export const horizontalBarsChartOptions = (
     tickAmount: adjustTicks ? 1 : undefined,
   },
   yaxis: {
+    show: stackType !== '100%',
     labels: {
+      show: stackType !== '100%',
       formatter: (value) => (yFormatter && typeof value === 'number' ? yFormatter(value) : value),
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',

@@ -53,6 +53,10 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -100,37 +104,38 @@ const RootThreatActorIndividualComponent = ({
   const paddingRight = getPaddingRight(location.pathname, data.id, '/dashboard/threats/threat_actors_individual');
   return (
     <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'victimology',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'organizations',
-                'malwares',
-                'attack_patterns',
-                'channels',
-                'narratives',
-                'tools',
-                'vulnerabilities',
-                'indicators',
-                'observables',
-                'infrastructures',
-                'sightings',
-                'countries',
-              ]}
+      {data ? (
+        <>
+          <Routes>
+            <Route
+              path="/knowledge/*"
+              element={
+                <StixCoreObjectKnowledgeBar
+                  stixCoreObjectLink={link}
+                  availableSections={[
+                    'victimology',
+                    'threat_actors',
+                    'intrusion_sets',
+                    'campaigns',
+                    'incidents',
+                    'organizations',
+                    'malwares',
+                    'attack_patterns',
+                    'channels',
+                    'narratives',
+                    'tools',
+                    'vulnerabilities',
+                    'indicators',
+                    'observables',
+                    'infrastructures',
+                    'sightings',
+                    'countries',
+                  ]}
+                  stixCoreObjectsDistribution={data.stixCoreObjectsDistribution}
+                />
+             }
             />
-          }
-        />
-      </Routes>
-      <>
-        {data ? (
+          </Routes>
           <div style={{ paddingRight }}>
             <Breadcrumbs variant="object" elements={[
               { label: t_i18n('Threats') },
@@ -188,7 +193,7 @@ const RootThreatActorIndividualComponent = ({
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={data.id} type="threat" />
+              <StixCoreObjectSimulationResult id={data.id} type="threat" />
               )}
             </Box>
             <Routes>
@@ -243,10 +248,10 @@ const RootThreatActorIndividualComponent = ({
               />
             </Routes>
           </div>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+        </>
+      ) : (
+        <ErrorNotFound />
+      )}
     </>
   );
 };

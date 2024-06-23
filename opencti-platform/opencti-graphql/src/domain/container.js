@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { listAllThings } from '../database/middleware';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { listAllThings, timeSeriesEntities } from '../database/middleware';
 import { internalFindByIds, internalLoadById, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -70,6 +70,68 @@ export const objects = async (context, user, containerId, args) => {
     return paginatedElements;
   }
   return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, false, baseOpts);
+};
+
+export const containersNumber = (context, user, args) => {
+  return {
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { ...args, types: [ENTITY_TYPE_CONTAINER] }),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] }
+    ),
+  };
+};
+
+export const containersTimeSeriesByEntity = (context, user, args) => {
+  const { objectId } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER], { ...args, filters });
+};
+
+export const containersTimeSeriesByAuthor = async (context, user, args) => {
+  const { authorId } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER], { ...args, filters });
+};
+
+export const containersNumberByEntity = (context, user, args) => {
+  const { objectId } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+  };
+};
+
+export const containersNumberByAuthor = (context, user, args) => {
+  const { authorId } = args;
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+  };
 };
 
 // List first 1000 objects of this container
