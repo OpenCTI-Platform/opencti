@@ -48,6 +48,10 @@ const sectorQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Sector_sector
       ...SectorKnowledge_sector
       ...FileImportViewer_entity
@@ -91,25 +95,6 @@ class RootSector extends Component {
 
     return (
       <>
-        <Routes>
-          <Route path="/knowledge/*" element={<StixCoreObjectKnowledgeBar
-            stixCoreObjectLink={link}
-            availableSections={[
-              'organizations',
-              'threats',
-              'threat_actors',
-              'intrusion_sets',
-              'campaigns',
-              'incidents',
-              'malwares',
-              'attack_patterns',
-              'tools',
-              'observables',
-            ]}
-                                              />}
-          >
-          </Route>
-        </Routes>
         <QueryRenderer
           query={sectorQuery}
           variables={{ id: sectorId }}
@@ -119,145 +104,170 @@ class RootSector extends Component {
                 const { sector } = props;
                 const paddingRight = getPaddingRight(location.pathname, sector.id, '/dashboard/entities/sectors');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Entities') },
-                      { label: t('Sectors'), link: '/dashboard/entities/sectors' },
-                      { label: sector.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Sector"
-                      disableSharing={true}
-                      stixDomainObject={sector}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<SectorPopover />}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, sector.id, '/dashboard/entities/sectors')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}`}
-                          value={`/dashboard/entities/sectors/${sector.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/knowledge/overview`}
-                          value={`/dashboard/entities/sectors/${sector.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/content`}
-                          value={`/dashboard/entities/sectors/${sector.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/analyses`}
-                          value={`/dashboard/entities/sectors/${sector.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/sightings`}
-                          value={`/dashboard/entities/sectors/${sector.id}/sightings`}
-                          label={t('Sightings')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/files`}
-                          value={`/dashboard/entities/sectors/${sector.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/sectors/${sector.id}/history`}
-                          value={`/dashboard/entities/sectors/${sector.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
                       <Route
-                        path="/"
-                        element={(
-                          <Sector sector={sector} />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate
-                            replace={true}
-                            to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
-                          />
-                        }
-                      />
-                      <Route
                         path="/knowledge/*"
-                        element={(
-                          <SectorKnowledge sector={sector} />
-                        )}
-                      />
-                      <Route
-                        path="/content/*"
                         element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={sector}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'organizations',
+                              'threats',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'attack_patterns',
+                              'tools',
+                              'observables',
+                            ]}
+                            stixCoreObjectsDistribution={sector.stixCoreObjectsDistribution}
                           />
                         }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={ (
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            stixDomainObjectOrStixCoreRelationship={sector}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/sightings"
-                        element={ (
-                          <EntityStixSightingRelationships
-                            entityId={sector.id}
-                            entityLink={link}
-                            noPadding={true}
-                            isTo={true}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
-                          <FileManager
-                            id={sectorId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={sector}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={(
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={sectorId}
-                          />
-                        )}
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Entities') },
+                        { label: t('Sectors'), link: '/dashboard/entities/sectors' },
+                        { label: sector.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Sector"
+                        disableSharing={true}
+                        stixDomainObject={sector}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<SectorPopover />}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, sector.id, '/dashboard/entities/sectors')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}`}
+                            value={`/dashboard/entities/sectors/${sector.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/knowledge/overview`}
+                            value={`/dashboard/entities/sectors/${sector.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/content`}
+                            value={`/dashboard/entities/sectors/${sector.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/analyses`}
+                            value={`/dashboard/entities/sectors/${sector.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                            value={`/dashboard/entities/sectors/${sector.id}/sightings`}
+                            label={t('Sightings')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/files`}
+                            value={`/dashboard/entities/sectors/${sector.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/sectors/${sector.id}/history`}
+                            value={`/dashboard/entities/sectors/${sector.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={(
+                            <Sector sector={sector} />
+                        )}
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate
+                              replace={true}
+                              to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={(
+                            <SectorKnowledge sector={sector} />
+                        )}
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={sector}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={ (
+                            <StixCoreObjectOrStixCoreRelationshipContainers
+                              stixDomainObjectOrStixCoreRelationship={sector}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/sightings"
+                          element={ (
+                            <EntityStixSightingRelationships
+                              entityId={sector.id}
+                              entityLink={link}
+                              noPadding={true}
+                              isTo={true}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/files"
+                          element={(
+                            <FileManager
+                              id={sectorId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={sector}
+                            />
+                        )}
+                        />
+                        <Route
+                          path="/history"
+                          element={(
+                            <StixCoreObjectHistory
+                              stixCoreObjectId={sectorId}
+                            />
+                        )}
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;

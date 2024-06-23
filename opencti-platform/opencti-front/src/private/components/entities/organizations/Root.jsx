@@ -49,6 +49,10 @@ const organizationQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Organization_organization
       ...OrganizationKnowledge_organization
       ...FileImportViewer_entity
@@ -120,33 +124,6 @@ class RootOrganization extends Component {
 
     return (
       <>
-        <Routes>
-          <Route
-            path="/knowledge/*"
-            element={viewAs === 'knowledge' && (
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'sectors',
-                'organizations',
-                'individuals',
-                'locations',
-                'used_tools',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'vulnerabilities',
-                'observables',
-              ]}
-            />)}
-          >
-          </Route>
-        </Routes>
         <QueryRenderer
           query={organizationQuery}
           variables={{ id: organizationId }}
@@ -156,155 +133,185 @@ class RootOrganization extends Component {
                 const { organization } = props;
                 const paddingRight = getPaddingRight(location.pathname, organization.id, '/dashboard/entities/organizations');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Entities') },
-                      { label: t('Organizations'), link: '/dashboard/entities/organizations' },
-                      { label: organization.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Organization"
-                      disableSharing={true}
-                      stixDomainObject={organization}
-                      isOpenctiAlias={true}
-                      enableQuickSubscription={true}
-                      PopoverComponent={<OrganizationPopover />}
-                      onViewAs={this.handleChangeViewAs.bind(this)}
-                      viewAs={viewAs}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, organization.id, '/dashboard/entities/organizations')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}`}
-                          value={`/dashboard/entities/organizations/${organization.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/knowledge/overview`}
-                          value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/content`}
-                          value={`/dashboard/entities/organizations/${organization.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/analyses`}
-                          value={`/dashboard/entities/organizations/${organization.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/sightings`}
-                          value={`/dashboard/entities/organizations/${organization.id}/sightings`}
-                          label={t('Sightings')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/files`}
-                          value={`/dashboard/entities/organizations/${organization.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/entities/organizations/${organization.id}/history`}
-                          value={`/dashboard/entities/organizations/${organization.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
                       <Route
-                        path="/"
-                        element={
-                          <Organization
-                            organization={props.organization}
-                            viewAs={viewAs}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate
-                            replace={true}
-                            to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
-                          />
-                        }
-                      />
-                      <Route
                         path="/knowledge/*"
-                        element={
-                          <OrganizationKnowledge
-                            organization={organization}
-                            viewAs={viewAs}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={organization}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={
-                          <OrganizationAnalysis
-                            organization={organization}
-                            viewAs={viewAs}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/sightings"
-                        element={
-                          <EntityStixSightingRelationships
-                            entityId={organization.id}
-                            entityLink={link}
-                            noPadding={true}
-                            isTo={true}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/files"
-                        element={
-                          <FileManager
-                            id={organizationId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.organization}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={organizationId}
-                          />
-                        }
+                        element={viewAs === 'knowledge' && (
+                        <StixCoreObjectKnowledgeBar
+                          stixCoreObjectLink={link}
+                          availableSections={[
+                            'sectors',
+                            'organizations',
+                            'individuals',
+                            'locations',
+                            'used_tools',
+                            'threats',
+                            'threat_actors',
+                            'intrusion_sets',
+                            'campaigns',
+                            'incidents',
+                            'malwares',
+                            'attack_patterns',
+                            'tools',
+                            'vulnerabilities',
+                            'observables',
+                          ]}
+                          stixCoreObjectsDistribution={organization.stixCoreObjectsDistribution}
+                        />
+                        )}
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Entities') },
+                        { label: t('Organizations'), link: '/dashboard/entities/organizations' },
+                        { label: organization.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Organization"
+                        disableSharing={true}
+                        stixDomainObject={organization}
+                        isOpenctiAlias={true}
+                        enableQuickSubscription={true}
+                        PopoverComponent={<OrganizationPopover />}
+                        onViewAs={this.handleChangeViewAs.bind(this)}
+                        viewAs={viewAs}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, organization.id, '/dashboard/entities/organizations')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}`}
+                            value={`/dashboard/entities/organizations/${organization.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/knowledge/overview`}
+                            value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/content`}
+                            value={`/dashboard/entities/organizations/${organization.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/analyses`}
+                            value={`/dashboard/entities/organizations/${organization.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/sightings`}
+                            value={`/dashboard/entities/organizations/${organization.id}/sightings`}
+                            label={t('Sightings')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/files`}
+                            value={`/dashboard/entities/organizations/${organization.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/entities/organizations/${organization.id}/history`}
+                            value={`/dashboard/entities/organizations/${organization.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <Organization
+                              organization={props.organization}
+                              viewAs={viewAs}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate
+                              replace={true}
+                              to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={
+                            <OrganizationKnowledge
+                              organization={organization}
+                              viewAs={viewAs}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={organization}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={
+                            <OrganizationAnalysis
+                              organization={organization}
+                              viewAs={viewAs}
+                              onViewAs={this.handleChangeViewAs.bind(this)}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/sightings"
+                          element={
+                            <EntityStixSightingRelationships
+                              entityId={organization.id}
+                              entityLink={link}
+                              noPadding={true}
+                              isTo={true}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/files"
+                          element={
+                            <FileManager
+                              id={organizationId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={props.organization}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/history"
+                          element={
+                            <StixCoreObjectHistory
+                              stixCoreObjectId={organizationId}
+                            />
+                        }
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;

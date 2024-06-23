@@ -470,21 +470,21 @@ const StixDomainObjectHeader = (props) => {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           {aliases.length > 5 ? (
             <IconButton
-              style={{ float: 'left', marginTop: -8 }}
+              style={{ float: 'left', marginTop: -5 }}
               color="primary"
               aria-label="More"
               onClick={handleToggleOpenAliases}
-              size="large"
+              size="medium"
             >
               <DotsHorizontalCircleOutline fontSize="small" />
             </IconButton>
           ) : (
             <IconButton
-              style={{ float: 'left', marginTop: -8 }}
+              style={{ float: 'left', marginTop: -5 }}
               color="primary"
               aria-label="Alias"
               onClick={handleToggleCreateAlias}
-              size="large"
+              size="medium"
             >
               {openAlias ? (
                 <Close fontSize="small" />

@@ -49,6 +49,10 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Country_country
       ...CountryKnowledge_country
       ...FileImportViewer_entity
@@ -66,7 +70,7 @@ const countryQuery = graphql`
   }
 `;
 
-const RootCountryComponent = ({ queryRef, countryId, link }) => {
+const RootCountryComponent = ({ queryRef, countryId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
@@ -81,140 +85,169 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { country, connectorsForImport, connectorsForExport } = data;
+  const link = `/dashboard/locations/countries/${countryId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
   return (
     <>
       {country ? (
-        <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Locations') },
-            { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
-            { label: country.name, current: true },
-          ]}
-          />
-          <StixDomainObjectHeader
-            entityType="Country"
-            disableSharing={true}
-            stixDomainObject={country}
-            PopoverComponent={<CountryPopover id={country.id} />}
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 4,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, country.id, '/dashboard/locations/countries')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}`}
-                value={`/dashboard/locations/countries/${country.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
-                value={`/dashboard/locations/countries/${country.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/content`}
-                value={`/dashboard/locations/countries/${country.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/analyses`}
-                value={`/dashboard/locations/countries/${country.id}/analyses`}
-                label={t_i18n('Analyses')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/sightings`}
-                value={`/dashboard/locations/countries/${country.id}/sightings`}
-                label={t_i18n('Sightings')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/files`}
-                value={`/dashboard/locations/countries/${country.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/countries/${country.id}/history`}
-                value={`/dashboard/locations/countries/${country.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+        <>
           <Routes>
             <Route
-              path="/"
-              element={<Country countryData={country} />}
-            />
-            <Route
-              path="/knowledge"
-              element={
-                <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-              }
-            />
-            <Route
               path="/knowledge/*"
-              element={<CountryKnowledge countryData={country} />}
-            />
-            <Route
-              path="/content/*"
               element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={country}
+                <StixCoreObjectKnowledgeBar
+                  stixCoreObjectLink={link}
+                  availableSections={[
+                    'regions',
+                    'areas',
+                    'cities',
+                    'organizations',
+                    'threats',
+                    'threat_actors',
+                    'intrusion_sets',
+                    'campaigns',
+                    'incidents',
+                    'malwares',
+                    'attack_patterns',
+                    'tools',
+                    'observables',
+                  ]}
+                  stixCoreObjectsDistribution={country.stixCoreObjectsDistribution}
                 />
-              }
-            />
-            <Route
-              path="/analyses"
-              element={
-                <StixCoreObjectOrStixCoreRelationshipContainers
-                  stixDomainObjectOrStixCoreRelationship={country}
-                />
-              }
-            />
-            <Route
-              path="/sightings"
-              element={
-                <EntityStixSightingRelationships
-                  entityId={country.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
-                />
-              }
-            />
-            <Route
-              path="/files"
-              element={
-                <FileManager
-                  id={countryId}
-                  connectorsImport={connectorsForImport}
-                  connectorsExport={connectorsForExport}
-                  entity={country}
-                />
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={countryId} />
               }
             />
           </Routes>
-        </div>
+          <div style={{ paddingRight }}>
+            <Breadcrumbs variant="object" elements={[
+              { label: t_i18n('Locations') },
+              { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
+              { label: country.name, current: true },
+            ]}
+            />
+            <StixDomainObjectHeader
+              entityType="Country"
+              disableSharing={true}
+              stixDomainObject={country}
+              PopoverComponent={<CountryPopover id={country.id} />}
+              enableQuickSubscription={true}
+              isOpenctiAlias={true}
+            />
+            <Box
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                marginBottom: 4,
+              }}
+            >
+              <Tabs
+                value={getCurrentTab(location.pathname, country.id, '/dashboard/locations/countries')}
+              >
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}`}
+                  value={`/dashboard/locations/countries/${country.id}`}
+                  label={t_i18n('Overview')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
+                  value={`/dashboard/locations/countries/${country.id}/knowledge`}
+                  label={t_i18n('Knowledge')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/content`}
+                  value={`/dashboard/locations/countries/${country.id}/content`}
+                  label={t_i18n('Content')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/analyses`}
+                  value={`/dashboard/locations/countries/${country.id}/analyses`}
+                  label={t_i18n('Analyses')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/sightings`}
+                  value={`/dashboard/locations/countries/${country.id}/sightings`}
+                  label={t_i18n('Sightings')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/files`}
+                  value={`/dashboard/locations/countries/${country.id}/files`}
+                  label={t_i18n('Data')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/countries/${country.id}/history`}
+                  value={`/dashboard/locations/countries/${country.id}/history`}
+                  label={t_i18n('History')}
+                />
+              </Tabs>
+            </Box>
+            <Routes>
+              <Route
+                path="/"
+                element={<Country countryData={country} />}
+              />
+              <Route
+                path="/knowledge"
+                element={
+                  <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
+              }
+              />
+              <Route
+                path="/knowledge/*"
+                element={<CountryKnowledge countryData={country} />}
+              />
+              <Route
+                path="/content/*"
+                element={
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={country}
+                  />
+              }
+              />
+              <Route
+                path="/analyses"
+                element={
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={country}
+                  />
+              }
+              />
+              <Route
+                path="/sightings"
+                element={
+                  <EntityStixSightingRelationships
+                    entityId={country.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                  />
+              }
+              />
+              <Route
+                path="/files"
+                element={
+                  <FileManager
+                    id={countryId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={country}
+                  />
+              }
+              />
+              <Route
+                path="/history"
+                element={
+                  <StixCoreObjectHistory stixCoreObjectId={countryId} />
+              }
+              />
+            </Routes>
+          </div>
+        </>
       ) : (
         <ErrorNotFound />
       )}
@@ -224,48 +257,17 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
 
 const RootCountry = () => {
   const { countryId } = useParams() as { countryId: string };
-
   const queryRef = useQueryLoading<RootCountryQuery>(countryQuery, {
     id: countryId,
   });
-  const link = `/dashboard/locations/countries/${countryId}/knowledge`;
   return (
-    <div>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'regions',
-                'areas',
-                'cities',
-                'organizations',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-            />
-          }
-        />
-      </Routes>
+    <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootCountryComponent
-            queryRef={queryRef}
-            countryId={countryId}
-            link={link}
-          />
+          <RootCountryComponent queryRef={queryRef} countryId={countryId} />
         </React.Suspense>
       )}
-    </div>
+    </>
   );
 };
 

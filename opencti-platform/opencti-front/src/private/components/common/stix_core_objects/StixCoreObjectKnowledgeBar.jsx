@@ -45,7 +45,9 @@ const StixCoreObjectKnowledgeBar = ({
   const isInAvailableSection = (sections) => R.any((filter) => R.includes(filter, sections), availableSections);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const statistics = stixCoreObjectsDistribution ? R.indexBy(R.prop('label'), stixCoreObjectsDistribution) : {};
-  const statisticsVictims = R.sum(R.values(R.pick(['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City'], statistics)).map((o) => o.value));
+  const statisticsThreats = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign', 'Incident'], statistics)).map((o) => o.value));
+  const statisticsThreatActors = R.sum(R.values(R.pick(['Threat-Actor-Individual', 'Threat-Actor-Group'], statistics)).map((o) => o.value));
+  const statisticsVictims = R.sum(R.values(R.pick(['Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Administrative-Area'], statistics)).map((o) => o.value));
   const statisticsAttributions = R.sum(R.values(R.pick(attribution, statistics)).map((o) => o.value));
   return (
     <Drawer
@@ -95,7 +97,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Sector" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Sectors')} />
+                <ListItemText primary={`${t_i18n('Sectors')}${statistics.Sector && statistics.Sector.value > 0 ? ` (${n(statistics.Sector.value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('regions', availableSections) && (
@@ -109,7 +111,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Region" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Regions')} />
+                <ListItemText primary={`${t_i18n('Regions')}${statistics.Region && statistics.Region.value > 0 ? ` (${n(statistics.Region.value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('countries', availableSections) && (
@@ -125,7 +127,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Country" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Countries')} />
+                <ListItemText primary={`${t_i18n('Countries')}${statistics.Country && statistics.Country.value > 0 ? ` (${n(statistics.Country.value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('areas', availableSections) && (
@@ -139,7 +141,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Administrative-Area" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Areas')} />
+                <ListItemText primary={`${t_i18n('Areas')}${statistics['Administrative-Area'] && statistics['Administrative-Area'].value > 0 ? ` (${n(statistics['Administrative-Area'].value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('cities', availableSections) && (
@@ -153,7 +155,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="City" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Cities')} />
+                <ListItemText primary={`${t_i18n('Cities')}${statistics.City && statistics.City.value > 0 ? ` (${n(statistics.City.value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('organizations', availableSections) && (
@@ -169,7 +171,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Organization" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Organizations')} />
+                <ListItemText primary={`${t_i18n('Organizations')}${statistics.Organization && statistics.Organization.value > 0 ? ` (${n(statistics.Organization.value)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('individuals', availableSections) && (
@@ -387,7 +389,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="threats" />
               </ListItemIcon>
-              <ListItemText primary={t_i18n('All threats')} />
+              <ListItemText primary={`${t_i18n('All threats')}${statisticsThreats > 0 ? ` (${n(statisticsThreats)})` : ''}`} />
             </MenuItem>
           )}
           {R.includes('attribution', availableSections) && (
@@ -435,7 +437,7 @@ const StixCoreObjectKnowledgeBar = ({
               <ListItemIcon style={{ minWidth: 28 }}>
                 <ItemIcon size="small" type="Threat-Actor-Individual" />
               </ListItemIcon>
-              <ListItemText primary={t_i18n('Threat actors')} />
+              <ListItemText primary={`${t_i18n('Threat actors')}${statisticsThreatActors > 0 ? ` (${n(statisticsThreatActors)})` : ''}`} />
             </MenuItem>
           )}
           {R.includes('intrusion_sets', availableSections) && (
