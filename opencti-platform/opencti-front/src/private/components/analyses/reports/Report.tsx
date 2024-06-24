@@ -86,7 +86,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
     reportFragment,
   );
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (<>
     <Grid
@@ -115,7 +115,7 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       stixCoreObjectOrStixCoreRelationshipId={report.id}
       defaultMarkings={report.objectMarking ?? []}
     />
-    {!FABReplaced && (
+    {!isFABReplaced && (
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ReportEdition reportId={report.id} />
       </Security>

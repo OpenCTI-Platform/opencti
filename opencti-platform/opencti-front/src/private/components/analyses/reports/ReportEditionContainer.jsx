@@ -9,7 +9,7 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 const ReportEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, report, open, controlledDial } = props;
   const { editContext } = report;
@@ -19,9 +19,9 @@ const ReportEditionContainer = (props) => {
       title={t_i18n('Update a report')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <ReportEditionOverview
         report={report}

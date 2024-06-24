@@ -21,18 +21,18 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { editContext } = externalReference;
 
   return (
     <Drawer
       title={t_i18n('Update an external reference')}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <ExternalReferenceEditionOverview
         externalReference={externalReference}

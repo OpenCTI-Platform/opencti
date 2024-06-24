@@ -74,7 +74,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
 }) => {
   const note = useFragment(NoteComponentFragment, noteFragment);
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (<>
     <Grid
@@ -130,7 +130,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
       </Grid>
     </Grid>
-    {!FABReplaced && (
+    {!isFABReplaced && (
       <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
         <NoteEdition noteId={note.id} />
       </CollaborativeSecurity>

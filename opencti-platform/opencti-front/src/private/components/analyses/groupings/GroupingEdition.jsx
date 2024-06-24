@@ -24,6 +24,9 @@ const GroupingEdition = ({ groupingId }) => {
       },
     });
   };
+  const EditGroupingControlledDial = (props) => (
+    <EditEntityControlledDial {...props} />
+  );
   return (
     <QueryRenderer
       query={groupingEditionQuery}
@@ -34,7 +37,7 @@ const GroupingEdition = ({ groupingId }) => {
             <GroupingEditionContainer
               grouping={props.grouping}
               handleClose={handleClose}
-              controlledDial={EditEntityControlledDial}
+              controlledDial={EditGroupingControlledDial}
             />
           );
         }

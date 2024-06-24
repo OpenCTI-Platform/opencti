@@ -26,7 +26,7 @@ const Notes: FunctionComponent = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notes | Analyses'));
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -143,7 +143,7 @@ const Notes: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
             <NoteCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -190,7 +190,7 @@ const Notes: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED
+      {!isFABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
           <NoteCreation paginationOptions={queryPaginationOptions} />
         </Security>

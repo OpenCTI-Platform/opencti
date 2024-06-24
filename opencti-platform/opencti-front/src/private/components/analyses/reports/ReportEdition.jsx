@@ -30,6 +30,9 @@ class ReportEdition extends Component {
 
   render() {
     const { reportId } = this.props;
+    const EditReportControlledDial = (props) => (
+      <EditEntityControlledDial {...props} />
+    );
     return (
       <QueryRenderer
         query={reportEditionQuery}
@@ -40,7 +43,7 @@ class ReportEdition extends Component {
               <ReportEditionContainer
                 report={props.report}
                 handleClose={this.handleClose.bind(this)}
-                controlledDial={EditEntityControlledDial}
+                controlledDial={EditReportControlledDial}
               />
             );
           }

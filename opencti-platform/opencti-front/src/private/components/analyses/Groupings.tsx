@@ -30,7 +30,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
   const { isFeatureEnable } = useHelper();
-  const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -153,7 +153,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FAB_REPLACED && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <GroupingCreation paginationOptions={queryPaginationOptions} />
           </Security>}
         >
@@ -200,7 +200,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
       {renderLines()}
-      {!FAB_REPLACED
+      {!isFABReplaced
         && <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <GroupingCreation paginationOptions={queryPaginationOptions} />
         </Security>

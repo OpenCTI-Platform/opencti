@@ -41,7 +41,7 @@ ExternalReferenceComponentProps
 > = ({ externalReference, connectorsImport }) => {
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
-  const FABReplacement = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <div className={classes.container}>
       <ExternalReferenceHeader
@@ -78,7 +78,7 @@ ExternalReferenceComponentProps
           />
         </Grid>
       </Grid>
-      {!FABReplacement && (
+      {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ExternalReferenceEdition externalReferenceId={externalReference.id} />
         </Security>

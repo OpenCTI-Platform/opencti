@@ -9,7 +9,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
@@ -19,9 +19,9 @@ const GroupingEditionContainer = (props) => {
       title={t_i18n('Update a grouping')}
       open={open}
       onClose={handleClose}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       <GroupingEditionOverview
         grouping={grouping}

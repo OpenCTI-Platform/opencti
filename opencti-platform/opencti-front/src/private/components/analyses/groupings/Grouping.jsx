@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 const GroupingComponent = ({ grouping }) => {
   const classes = useStyles();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <div data-testid="grouping-details-page">
       <Grid
@@ -48,7 +48,7 @@ const GroupingComponent = ({ grouping }) => {
         stixCoreObjectOrStixCoreRelationshipId={grouping.id}
         defaultMarkings={grouping.objectMarking ?? []}
       />
-      {!FABReplaced && (
+      {!isFABReplaced && (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <GroupingEdition groupingId={grouping.id} />
         </Security>

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import NoteEditionOverview from './NoteEditionOverview';
@@ -10,7 +10,7 @@ interface NoteEditionContainerProps {
   note: NoteEditionContainer_note$data
   handleClose: () => void
   open?: boolean
-  controlledDial?: ({ onOpen }: { onOpen: () => void }) => JSX.Element
+  controlledDial?: DrawerControlledDialType
 }
 
 const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
@@ -21,18 +21,18 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { editContext } = note;
 
   return (
     <Drawer
       title={t_i18n('Update a note')}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={isFABReplaced ? controlledDial : undefined}
     >
       {({ onClose }) => (
         <NoteEditionOverview
