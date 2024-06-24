@@ -151,7 +151,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
   };
 
   const handleAskValidateSuggestedMapping = () => {
-    const mappingToAdd = filteredMappedEntities.map((e) => { return { matchedString: e?.node?.matchedString, matchedEntityId: e?.node?.matchedEntity?.id }; });
+    const mappingToAdd = filteredMappedEntities.map((e) => { return { matchedString: e?.node?.matchedString, matchedEntityId: e?.node?.matchedEntity?.standard_id }; });
     handleValidateSuggestedMapping(mappingToAdd);
   };
 

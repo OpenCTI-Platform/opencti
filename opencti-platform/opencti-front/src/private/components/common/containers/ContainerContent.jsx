@@ -67,11 +67,38 @@ const addSuggestedMappingRelationsMutation = graphql`
   }
 `;
 
-// TODO: add stixCoreObjectEdit analysisClear mutation
-const clearSuggestedMappingMutation = {};
+const clearSuggestedMappingMutation = graphql`
+  mutation ContainerContentClearSuggestedMappingMutation(
+    $id: ID!
+    $contentSource: String!
+    $contentType: AnalysisContentType!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      analysisClear(
+        contentSource: $contentSource
+        contentType: $contentType
+      )
+    }
+  }
+`;
 
-// TODO: add stixCoreObjectEdit askAnalysis mutation
-const askSuggestedMappingMutation = {};
+const askSuggestedMappingMutation = graphql`
+  mutation ContainerContentAskSuggestedMappingMutation(
+    $id: ID!
+    $contentSource: String!
+    $contentType: AnalysisContentType!
+  ) {
+    stixCoreObjectEdit(id: $id) {
+      askAnalysis(
+        contentSource: $contentSource
+        contentType: $contentType
+      )
+      {
+        id
+      }
+    }
+  }
+`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -139,8 +166,8 @@ const ContainerContentComponent = ({ containerData }) => {
   );
 
   const [commitRelationsAdd] = useApiMutation(addSuggestedMappingRelationsMutation);
-  // const [commitAnalysisClear] = useApiMutation(clearSuggestedMappingMutation);
-  // const [commitAnalysisAsk] = useApiMutation(askSuggestedMappingMutation);
+  const [commitAnalysisClear] = useApiMutation(clearSuggestedMappingMutation);
+  const [commitAnalysisAsk] = useApiMutation(askSuggestedMappingMutation);
 
   const handleTextSelection = (text) => {
     if (currentView === 'mapping' && text && text.length > 2) {
@@ -191,18 +218,19 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
+
   // TODO replace hard coded mock value by real suggested mapping value
   const mappingCount = 7;
 
   const handleAskNewSuggestedMapping = () => {
-    // commitAnalysisAsk({
-    //   mutation: askSuggestedMappingMutation,
-    //   variables: {
-    //     id: containerData.id,
-    //     contentSource: '',
-    //     contentType: '',
-    //   },
-    // });
+    commitAnalysisAsk({
+      mutation: askSuggestedMappingMutation,
+      variables: {
+        id: containerData.id,
+        contentSource: 'content_mapping',
+        contentType: 'fields',
+      },
+    });
   };
 
   const addSuggestedMappingEntitiesToContainer = (suggestedMappingEntities) => {
@@ -239,22 +267,23 @@ const ContainerContentComponent = ({ containerData }) => {
     });
   };
 
-  // TODO: add correct input
   const clearSuggestedMapping = () => {
-    // commitAnalysisClear({
-    //   mutation: clearSuggestedMappingMutation,
-    //   variables: {
-    //     id: containerData.id,
-    //     contentSource: '',
-    //     contentType: '',
-    //   },
-    // });
+    commitAnalysisClear({
+      mutation: clearSuggestedMappingMutation,
+      variables: {
+        id: containerData.id,
+        contentSource: 'content_mapping',
+        contentType: 'fields',
+      },
+    });
   };
 
   const handleValidateSuggestedMapping = (suggestedMapping) => {
     const suggestedMappingEntities = suggestedMapping.map((m) => m.matchedEntityId);
     addSuggestedMappingEntitiesToContainer(suggestedMappingEntities);
+    console.log('bbb?');
     addSuggestedMappingToCurrentMapping(suggestedMapping);
+    console.log('aaa?');
     clearSuggestedMapping();
   };
 
