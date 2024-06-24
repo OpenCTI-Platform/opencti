@@ -1,6 +1,5 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { boundaryWrapper } from '../Error';
 import useGranted, {
   isOnlyOrganizationAdmin,
   VIRTUAL_ORGANIZATION_ADMIN,
