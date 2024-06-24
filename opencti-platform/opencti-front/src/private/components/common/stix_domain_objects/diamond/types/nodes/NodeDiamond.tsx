@@ -3,6 +3,7 @@ import { Handle, Position, NodeProps } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import type { Theme } from '../../../../../../../components/Theme';
 import ItemIcon from '../../../../../../../components/ItemIcon';
+import { truncate } from '../../../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -12,7 +13,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: 200,
     height: 200,
     lineHeight: '200px',
+    whiteSpace: 'nowrap',
     textAlign: 'center',
+    fontSize: 10,
     margin: 10,
     '&::before': {
       position: 'absolute',
@@ -73,7 +76,7 @@ const NodeDiamond = ({ data }: NodeProps) => {
   const classes = useStyles();
   return (
     <div className={classes.node}>
-      {data.name}
+      {truncate(data.name, 25, false)}
       <div className={classes.adversary}>
         <ItemIcon type="threats" size="large" color="inherit" />
       </div>

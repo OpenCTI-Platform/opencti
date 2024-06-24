@@ -6,6 +6,7 @@ import nodeTypes from './diamond/types/nodes';
 import edgeTypes from './diamond/types/edges';
 import { ErrorBoundary } from '../../Error';
 import { stixDomainObjectThreatDiamondQuery } from './StixDomainObjectThreatDiamondQuery';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -25,6 +26,7 @@ const defaultEdgeOptions = {
 
 const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { stixDomainObject } = data;
   const initialNodes = [
     {
@@ -85,7 +87,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
       sourceHandle: 'adversary',
       target: 'adversary',
       data: {
-        label: 'Adversary',
+        label: t_i18n('Adversary'),
       },
     },
     {
@@ -95,7 +97,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
       sourceHandle: 'infrastructure',
       target: 'infrastructure',
       data: {
-        label: 'Infrastructure',
+        label: t_i18n('Infrastructure'),
       },
     },
     {
@@ -105,7 +107,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
       sourceHandle: 'victimology',
       target: 'victimology',
       data: {
-        label: 'Victimology',
+        label: t_i18n('Victimology'),
       },
     },
     {
@@ -115,7 +117,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
       sourceHandle: 'capabilities',
       target: 'capabilities',
       data: {
-        label: 'Capabilities',
+        label: t_i18n('Capabilities'),
       },
     },
   ];
