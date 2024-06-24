@@ -76,8 +76,8 @@ const MarkdownField = (props) => {
               commonmark={true}
             />
           </div>,
-        )
-        }
+        )}
+        toolbarCommands={disabled ? [] : undefined}
         l18n={{
           write: t_i18n('Write'),
           preview: t_i18n('Preview'),
