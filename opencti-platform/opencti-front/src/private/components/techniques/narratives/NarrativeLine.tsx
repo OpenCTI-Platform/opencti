@@ -9,8 +9,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
-import { NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
+import { NarrativeLine_node$data, NarrativeLine_node$key } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
+import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
@@ -67,11 +68,31 @@ interface NarrativeLineProps {
   node: NarrativeLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, NarrativeLine_node$data>;
+  deSelectedElements: Record<string, NarrativeLine_node$data>;
+  onToggleEntity: (
+    entity: NarrativeLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onToggleShiftEntity: (
+    index: number,
+    entity: NarrativeLine_node$data,
+    event?: React.SyntheticEvent
+  ) => void;
+  index: number;
+  redirectionMode: string;
 }
 export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   dataColumns,
   node,
   onLabelClick,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -83,6 +104,23 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
       component={Link}
       to={`/dashboard/techniques/narratives/${data.id}`}
     >
+      <ListItemIcon
+        classes={{ root: classes.itemIcon }}
+        style={{ minWidth: 40 }}
+        onClick={(event) => (event.shiftKey
+          ? onToggleShiftEntity(index, data, event)
+          : onToggleEntity(data, event))
+          }
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
+          }
+          disableRipple={true}
+        />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Narrative" />
       </ListItemIcon>

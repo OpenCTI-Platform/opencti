@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from '@components/techniques/narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 import { NarrativesLines_data$key } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
+import { NarrativeLine_node$data } from '@components/techniques/narratives/__generated__/NarrativeLine_node.graphql';
 import { NarrativeLine, NarrativeLineDummy } from './NarrativeLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -13,9 +14,17 @@ const nbOfRowsToLoad = 50;
 interface NarrativesLinesProps {
   queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>;
   dataColumns: DataColumns;
-  paginationOptions?: NarrativesLinesPaginationQuery$variables;
+  paginationOptions: NarrativesLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  selectedElements: Record<string, NarrativeLine_node$data>;
+  deSelectedElements: Record<string, NarrativeLine_node$data>;
+  onToggleEntity: (
+    entity: NarrativeLine_node$data,
+    event: React.SyntheticEvent
+  ) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
+  redirectionMode?: string;
 }
 
 export const narrativesLinesQuery = graphql`
@@ -79,6 +88,10 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
   setNumberOfElements,
   queryRef,
   dataColumns,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
   paginationOptions,
   onLabelClick,
 }) => {
@@ -106,6 +119,10 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      selectAll={selectAll}
+      onToggleEntity={onToggleEntity}
     />
   );
 };
