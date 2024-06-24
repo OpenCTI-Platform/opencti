@@ -12,6 +12,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
   query ContainerStixCoreObjectsSuggestedMappingQuery(
@@ -53,6 +54,7 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   handleAskNewSuggestedMapping: () => void;
   handleValidateSuggestedMapping: any;
   currentView: string;
+  isLoading: boolean;
 }
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
@@ -65,6 +67,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
   handleAskNewSuggestedMapping,
   handleValidateSuggestedMapping,
   currentView,
+  isLoading,
 }) => {
   const [removedEntities, setRemovedEntities] = useState<string[]>([]);
   const classes = useStyles();
@@ -99,7 +102,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
     orderAsc,
   } = viewStorage;
   const {
-    handleSort,
     handleSetNumberOfElements,
   } = helpers;
 
@@ -155,6 +157,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
     handleValidateSuggestedMapping(mappingToAdd);
   };
 
+  if (isLoading) return <Loader variant={LoaderVariant.inElement}/>;
+
   // @ts-ignore
   return (
     <div className={classes.container}>
@@ -163,7 +167,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        handleSort={handleSort}
         handleChangeView={handleSwitchView}
         iconExtension={false}
         filters={filters}

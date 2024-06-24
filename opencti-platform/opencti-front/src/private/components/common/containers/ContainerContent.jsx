@@ -26,7 +26,6 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectMappableContent from '../stix_core_objects/StixCoreObjectMappableContent';
-import Loader from '../../../../components/Loader';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -299,9 +298,7 @@ const ContainerContentComponent = ({ containerData }) => {
   const handleValidateSuggestedMapping = (suggestedMapping) => {
     const suggestedMappingEntities = suggestedMapping.map((m) => m.matchedEntityId);
     addSuggestedMappingEntitiesToContainer(suggestedMappingEntities);
-    console.log('bbb?');
     addSuggestedMappingToCurrentMapping(suggestedMapping);
-    console.log('aaa?');
     clearSuggestedMapping();
   };
 
@@ -402,7 +399,10 @@ const ContainerContentComponent = ({ containerData }) => {
         query={containerStixCoreObjectsSuggestedMappingQuery}
         variables={{ id: containerData.id, contentSource: 'content_mapping', contentType: 'fields' }}
         render={({ props }) => {
-          if (!props) return <Loader variant="inElement"/>;
+          let isLoading = false;
+          if (!props) {
+            isLoading = true;
+          }
           const suggestedMappedStrings = props?.stixCoreObjectAnalysis?.mappedEntities?.map((e) => e?.matchedString);
           const suggestedMappingCount = countMappingMatch(suggestedMappedStrings);
           return (
@@ -438,6 +438,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
                     handleValidateSuggestedMapping={handleValidateSuggestedMapping}
                     currentView={currentView}
+                    isLoading={isLoading}
                   />
                 </Paper>
               </Grid>
