@@ -64,18 +64,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
   };
-  let validator = null;
-  if (containerData.entity_type === 'Report') {
-    validator = useSchemaEditionValidation('Report', basicShape);
-  } else if (containerData.entity_type === 'Grouping') {
-    validator = useSchemaEditionValidation('Grouping', basicShape);
-  } else if (containerData.entity_type === 'Case-Incident') {
-    validator = useSchemaEditionValidation('Case-Incident', basicShape);
-  } else if (containerData.entity_type === 'Case-Rfi') {
-    validator = useSchemaEditionValidation('Case-Rfi', basicShape);
-  } else if (containerData.entity_type === 'Case-Rft') {
-    validator = useSchemaEditionValidation('Case-Rft', basicShape);
-  }
+  const validator = useSchemaEditionValidation(containerData.entity_type, basicShape);
 
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
@@ -123,7 +112,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     // with enforced references option for this entity, submit is done at the
     // end with a button in <CommitMessage />
     if (!enableReferences) {
-      validator?.validateAt(name, { [name]: value })
+      validator.validateAt(name, { [name]: value })
         .then(() => {
           commit({
             variables: {
@@ -153,32 +142,27 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     return result;
   };
 
-  for (const mappedString of mappedStrings) {
+  const highlightMappedString = (mappedString: string, suggested = false) => {
+    const markClass = suggested ? 'marker-blue' : 'marker-yellow';
     const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const descriptionRegex = new RegExp(escapedMappedString, 'ig');
     description = (description || '').replace(
       descriptionRegex,
-      (match) => `==${matchCase(escapedMappedString, match)}==`,
+      (match) => `=${suggested ? 'b' : ''}=${matchCase(escapedMappedString, match)}==`,
     );
     const contentRegex = new RegExp(escapedMappedString, 'ig');
     contentField = (contentField || '').replace(
       contentRegex,
-      (match) => `<mark class="marker-yellow">${matchCase(escapedMappedString, match)}</mark>`,
+      (match) => `<mark class="${markClass}">${matchCase(escapedMappedString, match)}</mark>`,
     );
+  };
+
+  for (const mappedString of mappedStrings) {
+    highlightMappedString(mappedString);
   }
 
   for (const suggestedMappedString of suggestedMappedStrings) {
-    const escapedMappedString = suggestedMappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const descriptionRegex = new RegExp(escapedMappedString, 'ig');
-    description = (description || '').replace(
-      descriptionRegex,
-      (match) => `==${matchCase(escapedMappedString, match)}==`,
-    );
-    const contentRegex = new RegExp(escapedMappedString, 'ig');
-    contentField = (contentField || '').replace(
-      contentRegex,
-      (match) => `<mark class="marker-yellow">${matchCase(escapedMappedString, match)}</mark>`,
-    );
+    highlightMappedString(suggestedMappedString, true);
   }
 
   const initialValues = {
