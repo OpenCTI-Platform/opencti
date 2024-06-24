@@ -27,6 +27,8 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,12 +72,12 @@ export interface IngestionCsvCreationForm {
 }
 
 const resolveHasUserChoiceCsvMapper = (option: Option & {
-  representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
+  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
-        ({ name }) => name === 'user-choice',
+        ((value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG)),
       ),
     ),
   );
@@ -88,6 +90,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const [creatorId, setCreatorId] = useState('');
+  const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
 
   const onCreatorSelection = async (option: Option) => {
     setCreatorId(option.value);
@@ -100,7 +103,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
   const onCsvMapperSelection = async (
     option: Option & {
-      representations: { attributes: { key: string; default_values: { name: string }[] }[] }[]
+      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
     },
     {
       setFieldValue,
@@ -256,7 +259,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                         >
                           {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
                           <br/>
-                          {t_i18n('Given the default markings use configuration, the markings field will not show up. And the default markings of the user responsible for data creation are applied to the ingested entities')}<br/>
+                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
                         </Alert>
                       </Box>
                       <CsvMapperField
@@ -274,7 +277,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                     name="markings"
                     label={t_i18n('Marking definition levels')}
                     style={fieldSpacingContainerStyle}
-                    allowedMarkingOwnerId={creatorId}
+                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
                     setFieldValue={setFieldValue}
                   />
                 )

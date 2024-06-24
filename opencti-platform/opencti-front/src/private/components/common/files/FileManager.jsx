@@ -27,7 +27,7 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
-import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const styles = () => ({
   container: {
@@ -161,7 +161,7 @@ const FileManager = ({
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
-        parsedConfig.markings = objectMarking.map((marking) => marking.value);
+        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
         config = JSON.stringify(parsedConfig);
       }
     }

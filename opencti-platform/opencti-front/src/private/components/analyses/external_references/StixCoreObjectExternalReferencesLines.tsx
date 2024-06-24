@@ -48,7 +48,7 @@ import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -237,8 +237,14 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
-  const onCsvMapperSelection = (option: CsvMapperFieldOption) => {
-    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(option);
+  const onCsvMapperSelection = (option: CsvMapperFieldOption | string) => {
+    const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+    const parsedRepresentations = JSON.parse(parsedOption.representations);
+    const selectedCsvMapper = {
+      ...parsedOption,
+      representations: [...parsedRepresentations],
+    };
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
   return (
@@ -575,13 +581,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 {selectedConnector?.name === 'ImportCsv'
                     && hasUserChoiceCsvMapper
                     && (
-                    <>
                       <ObjectMarkingField
                         name="objectMarking"
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
-                    </>
                     )
                 }
               </DialogContent>

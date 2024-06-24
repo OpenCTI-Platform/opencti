@@ -163,18 +163,17 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
 
   useEffect(() => {
     if (allowedMarkingOwnerId) {
-      fetchCreatorAllowedMarking(allowedMarkingOwnerId).then((markingData) => {
-        const creatorAllowedMarkingIds = ((markingData as unknown as ObjectMarkingFieldAllowedMarkingQuery$data).user?.groups?.edges ?? [])
+      const fetchData = async () => {
+        const creatorAllowedMarkingIds = ((await fetchCreatorAllowedMarking(allowedMarkingOwnerId) as unknown as ObjectMarkingFieldAllowedMarkingQuery$data)
+          .user?.groups?.edges ?? [])
           .flatMap((group) => (group?.node?.allowed_marking ?? [])
             .map((marking) => marking.id));
-        fetchCreatorAllowedMarkings(creatorAllowedMarkingIds)
-          .then((markingsData) => {
-            setOtherUserAllowedMarkingsData((markingsData as unknown as ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data)?.markingDefinitions?.edges
-              .map((marking) => ({ ...marking.node })));
-          })
-          .catch((_) => {});
-      })
-        .catch((_) => {});
+        const markingsData = ((await fetchCreatorAllowedMarkings(creatorAllowedMarkingIds) as unknown as ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data)
+          ?.markingDefinitions?.edges
+          .map((marking) => ({ ...marking.node })));
+        setOtherUserAllowedMarkingsData(markingsData);
+      };
+      fetchData();
     }
   }, [allowedMarkingOwnerId]);
 

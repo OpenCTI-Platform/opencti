@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type CsvMapperFieldOption = Option & { representations: { attributes: { key: string, default_values: { name: string }[] }[] }[] };
+export type CsvMapperFieldOption = Option & { representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[] };
 interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: Option, value: Option) => boolean;

@@ -368,9 +368,10 @@ describe('CSV-MAPPER', () => {
 
     it('should set user chosen markings if policy in mapper is set to user choice', async () => {
       const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const USER_CHOICE_MARKING_CONFIG = 'user-choice';
       const data = (await mapData(
         filePath,
-        csvMapperAreaMarking('user-choice', [tlpClear.id, tlpAmber.id]),
+        csvMapperAreaMarking(USER_CHOICE_MARKING_CONFIG, [tlpClear.id, tlpAmber.id]),
       )).flat();
 
       const indre = data.find((object) => object.name === 'indre');

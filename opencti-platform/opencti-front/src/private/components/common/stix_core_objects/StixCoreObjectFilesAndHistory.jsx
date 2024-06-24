@@ -26,7 +26,7 @@ import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const styles = () => ({
   container: {
@@ -164,7 +164,7 @@ const StixCoreObjectFilesAndHistory = ({
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
-        parsedConfig.markings = objectMarking.map((marking) => marking.value);
+        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
         config = JSON.stringify(parsedConfig);
       }
     }

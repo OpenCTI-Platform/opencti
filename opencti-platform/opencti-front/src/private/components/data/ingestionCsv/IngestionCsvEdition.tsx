@@ -30,6 +30,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,14 +66,14 @@ const ingestionCsvEditionFragment = graphql`
     csvMapper {
       id
       name
-        representations {
-          attributes {
-            key
-            default_values {
-              name
-            }
+      representations {
+        attributes {
+          key
+          default_values {
+            name
           }
         }
+      }
     }
     user {
       id
@@ -107,7 +109,7 @@ const resolveHasUserChoiceCsvMapper = (option: CsvMapperFieldOption) => {
   return option?.representations?.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
-        ({ name }) => name === 'user-choice',
+        (value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG),
       ),
     ),
   );
@@ -125,11 +127,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(ingestionCsvData.csvMapper.representations.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && (attribute.default_values && attribute.default_values?.some(
-        ({ name }) => name === 'user-choice',
+        (value: string | { name: string }) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value.name === USER_CHOICE_MARKING_CONFIG),
       )),
     ),
   ));
   const [creatorId, setCreatorId] = useState(ingestionCsvData.user?.id);
+  const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const onCreatorSelection = async (option: Option) => {
     setCreatorId(option.value);
   };
@@ -313,7 +316,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   >
                     {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
                     <br/>
-                    {t_i18n('Given the default markings use configuration, the markings field will not show up. And the default markings of the user responsible for data creation are applied to the ingested entities')}<br/>
+                    {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
                   </Alert>
                 </Box>
                 <CsvMapperField
@@ -337,7 +340,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
                 label={t_i18n('Marking definition levels')}
                 style={fieldSpacingContainerStyle}
-                allowedMarkingOwnerId={creatorId}
+                allowedMarkingOwnerId={isGranted ? creatorId : undefined}
                 setFieldValue={setFieldValue}
                 onChange={(name, value) => {
                   if (value.length) {

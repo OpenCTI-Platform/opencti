@@ -41,7 +41,7 @@ import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const interval$ = interval(FIVE_SECONDS);
 

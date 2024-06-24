@@ -21,6 +21,7 @@ import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
+const USER_CHOICE_MARKING_CONFIG = 'user-choice';
 
 // -- HANDLE VALUE --
 
@@ -292,7 +293,7 @@ const handleDefaultMarkings = (
     ?.values ?? [];
 
   if (representationMarkingValue) {
-    if (representationMarkingValue === 'user-choice') {
+    if (representationMarkingValue === USER_CHOICE_MARKING_CONFIG) {
       input[INPUT_MARKINGS] = chosenMarkings.flatMap((id) => {
         const entity = refEntities[id];
         if (!entity) return [];
@@ -341,7 +342,8 @@ const mapRecord = async (
 export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed) => {
+  mapper: CsvMapperParsed
+) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
   const refIdsToResolve = new Set(representations.flatMap((representation) => {
@@ -357,7 +359,7 @@ export const handleRefEntities = async (
     });
   }));
 
-  return await internalFindByIdsMapped(
+  return internalFindByIdsMapped(
     context,
     user,
     [
@@ -366,7 +368,7 @@ export const handleRefEntities = async (
       ...(user_chosen_markings || []),
     ]
   );
-}
+};
 
 export const mappingProcess = async (
   context: AuthContext,

@@ -21,6 +21,7 @@ import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import { Option } from '@components/common/form/ReferenceField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
+import { FileManagerAskJobImportMutation$variables } from '@components/common/files/__generated__/FileManagerAskJobImportMutation.graphql';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
@@ -32,7 +33,7 @@ import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/E
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import resolveHasUserChoiceParsedCsvMapper from '../../../../utils/csvMapperUtils';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -110,20 +111,22 @@ ExternalReferenceFileImportViewerBaseProps
     values,
     { setSubmitting, resetForm },
   ) => {
-    const markings = values.objectMarking.map((option) => option.value);
-    const parsedConfig = JSON.parse(values.configuration);
-    let configuration = '';
-    if (typeof parsedConfig === 'object') {
-      parsedConfig.markings = [...markings];
-      configuration = JSON.stringify(parsedConfig);
+    const variables: FileManagerAskJobImportMutation$variables = {
+      fileName: fileToImport?.id ?? '',
+      connectorId: values.connector_id,
+    };
+    if (selectedConnector?.name === 'ImportCsv') {
+      const markings = values.objectMarking.map((option) => option.value);
+      const parsedConfig = JSON.parse(values.configuration);
+      if (typeof parsedConfig === 'object') {
+        parsedConfig.markings = [...markings];
+        variables.configuration = JSON.stringify(parsedConfig);
+      }
     }
+
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
-      variables: {
-        fileName: fileToImport?.id,
-        connectorId: values.connector_id,
-        configuration,
-      },
+      variables,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -161,14 +164,16 @@ ExternalReferenceFileImportViewerBaseProps
       && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (option: string | CsvMapperFieldOption) => {
-    const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
-    const parsedRepresentations = JSON.parse(parsedOption.representations);
-    const selectedCsvMapper = {
-      ...parsedOption,
-      representations: [...parsedRepresentations],
-    };
-    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
-    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+    if (selectedConnector?.name === 'ImportCsv') {
+      const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+      const parsedRepresentations = JSON.parse(parsedOption.representations);
+      const selectedCsvMapper = {
+        ...parsedOption,
+        representations: [...parsedRepresentations],
+      };
+      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+      setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+    }
   };
   return (
     <React.Fragment>
@@ -284,7 +289,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
+                        onChange={(_: string, value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (
