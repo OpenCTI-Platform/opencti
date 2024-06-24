@@ -242,15 +242,15 @@ type AppInfo {
   """
   The OpenCTI api current memory usage
   """
-  memory: AppMemory @auth(for: [SETTINGS]) # TODO replace by the child capability
+  memory: AppMemory @auth(for: [SETTINGS])
   """
   The list of OpenCTI software dependencies
   """
-  dependencies: [DependencyVersion!]! @auth(for: [SETTINGS]) # TODO replace by the child capability
+  dependencies: [DependencyVersion!]! @auth(for: [SETTINGS])
   """
   The objects statistics
   """
-  debugStats: AppDebugStatistics @auth(for: [SETTINGS]) # TODO replace by the child capability
+  debugStats: AppDebugStatistics @auth(for: [SETTINGS])
 }
 
 ### STATS
@@ -462,7 +462,7 @@ type Log {
   timestamp: DateTime!
   user_id: String!
   user: Creator
-  raw_data: String @auth(for: [SETTINGS]) # TODO replace SETTINGS by the child capability
+  raw_data: String @auth(for: [SETTINGS])
   context_uri: String
   context_data: ContextData
 }
