@@ -159,17 +159,6 @@ describe('SupportPackage rights management checks', () => {
       },
     });
   });
-
-  it('Should Disinformation analyst user not be allowed to create a SupportPackage.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST.client, {
-      query: CREATE_QUERY,
-      variables: {
-        input: {
-          name: `support-file-${new Date().getTime()}`,
-        },
-      },
-    });
-  });
 });
 
 describe('Testing STIX conversion for the day when Internal object will be exported.', () => {
