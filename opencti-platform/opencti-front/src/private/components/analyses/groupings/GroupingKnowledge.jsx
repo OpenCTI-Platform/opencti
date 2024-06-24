@@ -15,7 +15,6 @@ import GroupingPopover from './GroupingPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
 const styles = () => ({
@@ -158,7 +157,7 @@ class GroupingKnowledgeComponent extends Component {
             container={grouping}
             PopoverComponent={<GroupingPopover />}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'content', 'correlation', 'matrix']}
+            modes={['graph', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
             enableSuggestions={true}
@@ -191,26 +190,6 @@ class GroupingKnowledgeComponent extends Component {
                 }}
               />
             }
-          />
-          <Route
-            path="/content"
-            element={
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: grouping.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />
-              }
           />
           <Route
             path="/correlation"

@@ -96,8 +96,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -151,15 +149,9 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          if (contentMappingFeatureFlag) {
-            navigate(
-              `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
-            );
-          } else {
-            navigate(
-              `/dashboard/analyses/groupings/${response.groupingAdd?.id}/knowledge/content`,
-            );
-          }
+          navigate(
+            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
+          );
         }
       },
     });

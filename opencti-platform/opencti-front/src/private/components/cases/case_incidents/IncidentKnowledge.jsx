@@ -17,7 +17,6 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../.
 import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery } from './IncidentKnowledgeTimeLine';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -263,7 +262,7 @@ class IncidentKnowledgeComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
           link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}
@@ -286,25 +285,6 @@ class IncidentKnowledgeComponent extends Component {
                         enableReferences={enableReferences}
                       />
                     );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />}
-          />
-          <Route
-            path="/content"
-            element={
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: caseData.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
                   }
                   return (
                     <Loader

@@ -17,7 +17,6 @@ import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnow
 import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
 import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat-router/withRouter';
 
@@ -263,7 +262,7 @@ class CaseRftKnowledgeComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseRftPopover id={caseData.id}/>}
           link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}
@@ -296,26 +295,6 @@ class CaseRftKnowledgeComponent extends Component {
                 }}
               />
           )}
-          />
-          <Route
-            path="/content"
-            element={(
-              <QueryRenderer
-                query={containerContentQuery}
-                variables={{ id: caseData.id }}
-                render={({ props }) => {
-                  if (props && props.container) {
-                    return <ContainerContent containerData={props.container} />;
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
-              />
-              )}
           />
           <Route
             path="/timeline"

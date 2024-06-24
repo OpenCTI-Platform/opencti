@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
-import { AddTaskOutlined, AssistantOutlined, DifferenceOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import { AddTaskOutlined, AssistantOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { DialogTitle } from '@mui/material';
@@ -44,7 +44,6 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import Transition from '../../../../components/Transition';
 import { authorizedMembersToOptions } from '../../../../utils/authorizedMembers';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -470,8 +469,6 @@ const ContainerHeader = (props) => {
   const [selectedEntity, setSelectedEntity] = useState({});
   const [applying, setApplying] = useState([]);
   const [applied, setApplied] = useState([]);
-  const { isFeatureEnable } = useHelper();
-  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
     (o) => [
@@ -813,20 +810,6 @@ const ContainerHeader = (props) => {
                     <VectorPolygon
                       fontSize="small"
                       color={currentMode === 'graph' ? 'primary' : 'inherit'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-              )}
-              {!contentMappingFeatureFlag && modes.includes('content') && (
-                <Tooltip title={t_i18n('Content mapping view')}>
-                  <ToggleButton
-                    component={Link}
-                    to={`${link}/content`}
-                    selected={currentMode === 'content'}
-                  >
-                    <DifferenceOutlined
-                      fontSize="small"
-                      color={currentMode === 'content' ? 'primary' : 'inherit'}
                     />
                   </ToggleButton>
                 </Tooltip>
