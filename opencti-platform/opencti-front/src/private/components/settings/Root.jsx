@@ -298,7 +298,6 @@ const Root = () => {
                   <Retention />
                 </Security>
               }
-              Component={boundaryWrapper(Retention)}
             />
             <Route
               path="/customization/entity_types/:subTypeId/*"
