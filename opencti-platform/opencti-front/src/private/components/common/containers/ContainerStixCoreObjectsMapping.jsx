@@ -139,32 +139,32 @@ const ContainerStixCoreObjectsMapping = ({
         mappingCount={mappingCount}
       >
         {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <ContainerStixCoreObjectsMappingLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
-              }
-        >
-          <ContainerStixCoreObjectsMappingLines
-            container={container}
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            searchTerm={searchTerm}
-            dataColumns={dataColumns}
-            setNumberOfElements={handleSetNumberOfElements}
-            height={height}
-            contentMappingData={contentMappingData}
-            contentMappingCount={contentMappingCount}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <ContainerStixCoreObjectsMappingLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+                }
+          >
+            <ContainerStixCoreObjectsMappingLines
+              container={container}
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              searchTerm={searchTerm}
+              dataColumns={dataColumns}
+              setNumberOfElements={handleSetNumberOfElements}
+              height={height}
+              contentMappingData={contentMappingData}
+              contentMappingCount={contentMappingCount}
+            />
+          </React.Suspense>
         )}
       </ListLines>
       <ContainerAddStixCoreObjects
@@ -182,6 +182,7 @@ const ContainerStixCoreObjectsMapping = ({
         confidence={container.confidence}
         paginationOptions={paginationOptions}
         onAdd={addMapping}
+        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
       />
     </div>
   );
