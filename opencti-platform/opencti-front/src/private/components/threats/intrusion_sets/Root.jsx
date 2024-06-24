@@ -89,45 +89,6 @@ const RootIntrusionSet = () => {
 
   return (
     <>
-        <QueryRenderer
-          query={intrusionSetQuery}
-          variables={{ id: intrusionSetId }}
-          render={({ props }) => {
-            if (props) {
-              if (props.intrusionSet) {
-                const { intrusionSet } = props;
-                const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSet.id}`;
-                const paddingRight = getPaddingRight(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets');
-                return (
-                  <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'victimology',
-                'attribution',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'channels',
-                'narratives',
-                'vulnerabilities',
-                'indicators',
-                'observables',
-                'infrastructures',
-                'sightings',
-              ]}
-                            stixCoreObjectsDistribution={intrusionSet.stixCoreObjectsDistribution}
-                            attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
-                          />
-                        }
-                      />
-                    </Routes>
       <QueryRenderer
         query={intrusionSetQuery}
         variables={{ id: intrusionSetId }}
@@ -139,130 +100,159 @@ const RootIntrusionSet = () => {
               const isKnowledge = location.pathname.startsWith(`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`);
               const paddingRight = getPaddingRight(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets');
               return (
-                <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
-                  <Breadcrumbs variant="object" elements={[
-                    { label: t_i18n('Threats') },
-                    { label: t_i18n('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
-                    { label: intrusionSet.name, current: true },
-                  ]}
-                  />
-                  <StixDomainObjectHeader
-                    entityType="Intrusion-Set"
-                    stixDomainObject={intrusionSet}
-                    PopoverComponent={<IntrusionSetPopover />}
-                    enableQuickSubscription={true}
-                    enableAskAi={true}
-                  />
-                  <Box
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      marginBottom: 4,
-                    }}
-                  >
-                    <Tabs
-                      value={getCurrentTab(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
-                    >
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
-                        label={t_i18n('Overview')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
-                        label={t_i18n('Knowledge')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
-                        label={t_i18n('Content')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
-                        label={t_i18n('Analyses')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
-                        label={t_i18n('Data')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
-                        value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
-                        label={t_i18n('History')}
-                      />
-                    </Tabs>
-                    {isKnowledge && (
-                      <BulkRelationDialogContainer
-                        stixDomainObjectId={intrusionSet.id}
-                        stixDomainObjectName={intrusionSet.name}
-                        stixDomainObjectType="Intrusion-Set"
-                        handleRefetch={handleForceUpdate}
-                      />
-                    )}
-                    {isOverview && (
-                      <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
-                    )}
-                  </Box>
+                <>
                   <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <IntrusionSet intrusionSet={props.intrusionSet} />
-                                            }
-                    />
-                    <Route
-                      path="/knowledge"
-                      element={
-                        <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} replace={true} />
-                                            }
-                    />
                     <Route
                       path="/knowledge/*"
                       element={
-                        <div data-testid="instrusionSet-knowledge" key={forceUpdate}>
-                          <IntrusionSetKnowledge intrusionSet={props.intrusionSet} />
-                        </div>
-                                            }
-                    />
-                    <Route
-                      path="/content/*"
-                      element={<StixCoreObjectContentRoot stixCoreObject={intrusionSet} />}
-                    />
-                    <Route
-                      path="/analyses"
-                      element={
-                        <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.intrusionSet} />
-                     }
-                    />
-                    <Route
-                      path="/files"
-                      element={
-                        <FileManager
-                          id={intrusionSetId}
-                          connectorsImport={props.connectorsForImport}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.intrusionSet}
+                        <StixCoreObjectKnowledgeBar
+                          stixCoreObjectLink={link}
+                          availableSections={[
+                            'victimology',
+                            'attribution',
+                            'campaigns',
+                            'incidents',
+                            'malwares',
+                            'attack_patterns',
+                            'tools',
+                            'channels',
+                            'narratives',
+                            'vulnerabilities',
+                            'indicators',
+                            'observables',
+                            'infrastructures',
+                            'sightings',
+                          ]}
+                          stixCoreObjectsDistribution={intrusionSet.stixCoreObjectsDistribution}
+                          attribution={['Threat-Actor-Individual', 'Threat-Actor-Group']}
                         />
-                                            }
-                    />
-                    <Route
-                      path="/history"
-                      element={
-                        <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />
-                                            }
+                          }
                     />
                   </Routes>
-                </div>
-                  </>
+                  <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
+                    <Breadcrumbs variant="object" elements={[
+                      { label: t_i18n('Threats') },
+                      { label: t_i18n('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
+                      { label: intrusionSet.name, current: true },
+                    ]}
+                    />
+                    <StixDomainObjectHeader
+                      entityType="Intrusion-Set"
+                      stixDomainObject={intrusionSet}
+                      PopoverComponent={<IntrusionSetPopover />}
+                      enableQuickSubscription={true}
+                      enableAskAi={true}
+                    />
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Tabs
+                        value={getCurrentTab(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
+                      >
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
+                          label={t_i18n('Overview')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
+                          label={t_i18n('Knowledge')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
+                          label={t_i18n('Content')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
+                          label={t_i18n('Analyses')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
+                          label={t_i18n('Data')}
+                        />
+                        <Tab
+                          component={Link}
+                          to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
+                          value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
+                          label={t_i18n('History')}
+                        />
+                      </Tabs>
+                      {isKnowledge && (
+                        <BulkRelationDialogContainer
+                          stixDomainObjectId={intrusionSet.id}
+                          stixDomainObjectName={intrusionSet.name}
+                          stixDomainObjectType="Intrusion-Set"
+                          handleRefetch={handleForceUpdate}
+                        />
+                      )}
+                      {isOverview && (
+                        <StixCoreObjectSimulationResult id={intrusionSet.id} type="threat" />
+                      )}
+                    </Box>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <IntrusionSet intrusionSet={props.intrusionSet} />
+                                            }
+                      />
+                      <Route
+                        path="/knowledge"
+                        element={
+                          <Navigate to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/overview`} replace={true} />
+                                            }
+                      />
+                      <Route
+                        path="/knowledge/*"
+                        element={
+                          <div data-testid="instrusionSet-knowledge" key={forceUpdate}>
+                            <IntrusionSetKnowledge intrusionSet={props.intrusionSet} />
+                          </div>
+                                            }
+                      />
+                      <Route
+                        path="/content/*"
+                        element={<StixCoreObjectContentRoot stixCoreObject={intrusionSet} />}
+                      />
+                      <Route
+                        path="/analyses"
+                        element={
+                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.intrusionSet} />
+                     }
+                      />
+                      <Route
+                        path="/files"
+                        element={
+                          <FileManager
+                            id={intrusionSetId}
+                            connectorsImport={props.connectorsForImport}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.intrusionSet}
+                          />
+                      }
+                      />
+                      <Route
+                        path="/history"
+                        element={
+                          <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />
+                      }
+                      />
+                    </Routes>
+                  </div>
+                </>
               );
             }
             return <ErrorNotFound />;
