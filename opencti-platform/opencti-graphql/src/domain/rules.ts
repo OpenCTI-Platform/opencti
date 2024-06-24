@@ -21,6 +21,7 @@ import ReportRefIdentityPartOfRule from '../rules/report-refs-identity-part-of/R
 import ReportRefsIndicatorBasedOnRule from '../rules/report-refs-indicator-based-on/ReportRefIndicatorBasedOnRule';
 import ReportRefObservableBasedOnRule from '../rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
+import ParentTechniqueUseRule from '../rules/parent-technique-use/ParentTechniqueUseRule';
 import { BUS_TOPICS, DEV_MODE } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
@@ -52,6 +53,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   ReportRefsIndicatorBasedOnRule,
   ReportRefObservableBasedOnRule,
   ReportRefsLocationLocatedAtRule,
+  ParentTechniqueUseRule
 ];
 if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);

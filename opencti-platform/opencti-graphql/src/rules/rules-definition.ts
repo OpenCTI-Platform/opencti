@@ -19,6 +19,7 @@ import ReportRefObservableBasedOnDefinition from './report-refs-observable-based
 import SightingIncidentDefinition from './sighting-incident/SightingIncidentDefinition';
 import SightingIndicatorDefinition from './sighting-indicator/SightingIndicatorDefinition';
 import SightingObservableDefinition from './sighting-observable/SightingObservableDefinition';
+import ParentTechniqueUseDefinition from './parent-technique-use/ParentTechniqueUseDefinition';
 
 export const rule_definitions = [
   AttributedToAttributedDefinition,
@@ -40,6 +41,7 @@ export const rule_definitions = [
   ReportRefObservableBasedOnDefinition,
   SightingIncidentDefinition,
   SightingIndicatorDefinition,
-  SightingObservableDefinition
+  SightingObservableDefinition,
+  ParentTechniqueUseDefinition,
 ];
 // endregion

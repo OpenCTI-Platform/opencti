@@ -13,14 +13,14 @@ const display = {
     {
       source: 'User A',
       source_color: '#ff9800',
-      relation: 'participate-to',
+      relation: 'relationship_participate-to',
       target: 'Organization B',
       target_color: '#4caf50',
     },
     {
       source: 'Organization B',
       source_color: '#4caf50',
-      relation: 'part-of',
+      relation: 'relationship_part-of',
       target: 'Organization C',
       target_color: '#00bcd4',
     },
@@ -28,7 +28,7 @@ const display = {
   then: [
     {
       action: 'CREATE',
-      relation: 'participate-to',
+      relation: 'relationship_participate-to',
       source: 'User A',
       source_color: '#ff9800',
       target: 'organization C',
