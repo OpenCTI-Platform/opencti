@@ -355,18 +355,18 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
   const [type, setType] = useState(widget?.type ?? null);
   const inputRef = useRef();
   const widgetActionMenuAnchorRef = useRef();
-  const [widgetActionSelectedIndex, setWidgetActionSelectedIndex] = useState(0)
-  const [widgetActionMenuOpen, setWidgetActionMenuOpen] = React.useState(false)
+  const [widgetActionSelectedIndex, setWidgetActionSelectedIndex] = useState(0);
+  const [widgetActionMenuOpen, setWidgetActionMenuOpen] = React.useState(false);
   const widgetActionOptions = [
-    { 
-      text: t_i18n("Create a Widget"), 
+    {
+      text: t_i18n('Create a Widget'),
       action: () => setOpen(true),
     },
-    { 
-      text: t_i18n("Import a Widget"),
+    {
+      text: t_i18n('Import a Widget'),
       action: () => inputRef.current?.click(),
-    }
-  ]
+    },
+  ];
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const initialSelection = {
     label: '',
@@ -574,21 +574,21 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
     setParameters({ ...parameters, [parameter]: value });
   };
   const handleWidgetActionClick = () => {
-    widgetActionOptions[widgetActionSelectedIndex].action()
-  }
+    widgetActionOptions[widgetActionSelectedIndex].action();
+  };
   const handleToggleWidgetActionMenuOpen = () => {
     setWidgetActionMenuOpen(!widgetActionMenuOpen);
-  }
+  };
   const handleWidgetActionMenuItemClick = (event, index) => {
     setWidgetActionSelectedIndex(index);
     setWidgetActionMenuOpen(false);
-  }
+  };
   const handleWidgetActionMenuClose = (event) => {
-    if(widgetActionMenuAnchorRef.current && widgetActionMenuAnchorRef.current.contains(event.target)) {
+    if (widgetActionMenuAnchorRef.current && widgetActionMenuAnchorRef.current.contains(event.target)) {
       return;
     }
     setWidgetActionMenuOpen(false);
-  }
+  };
   const renderIcon = (key) => {
     switch (key) {
       case 'map':
@@ -1388,12 +1388,13 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                 <Button
                   size='small'
                   onClick={handleToggleWidgetActionMenuOpen}
-                > 
+                  data-testid="widget-action-selection"
+                >
                   <ArrowDropDownIcon/>
                 </Button>
               </ButtonGroup>
               <Popper
-                sx={{zIndex: 1}}
+                sx={{ zIndex: 1 }}
                 open={widgetActionMenuOpen}
                 anchorEl={widgetActionMenuAnchorRef.current}
                 role={undefined}
@@ -1425,52 +1426,33 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
                     </Paper>
                   </Grow>
                 )}
-            </Popper>
-              {/* <Button
-                color='primary'
-                size='small'
-                variant='contained'
-                disableElevation
-                onClick={() => setOpen(true)}
-                data-testid='CreateWidget'
-              >{
-                t_i18n('Create a widget')}
-              </Button>
-              <Button
-                color='primary'
-                size='small'
-                variant='contained'
-                disableElevation
-                onClick={() => inputRef.current?.click()}
-              >
-                {t_i18n('Import a widget')}
-              </Button> */}
+              </Popper>
             </div>
           )
          }
-         {!FAB_REPLACED && (
-            <SpeedDial
-              className={classes.createButton}
-              ariaLabel="Create"
-              icon={<SpeedDialIcon />}
-              FabProps={{ color: 'primary' }}
-            >
-              <SpeedDialAction
-                title={t_i18n('Create a widget')}
-                icon={<WidgetsOutlined />}
-                tooltipTitle={t_i18n('Create a widget')}
-                onClick={() => setOpen(true)}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-              <SpeedDialAction
-                title={t_i18n('Import a widget')}
-                icon={<CloudUploadOutlined />}
-                tooltipTitle={t_i18n('Import a widget')}
-                onClick={() => inputRef.current?.click()}
-                FabProps={{ classes: { root: classes.speedDialButton } }}
-              />
-            </SpeedDial>
-         )
+          {!FAB_REPLACED && (
+          <SpeedDial
+            className={classes.createButton}
+            ariaLabel="Create"
+            icon={<SpeedDialIcon />}
+            FabProps={{ color: 'primary' }}
+          >
+            <SpeedDialAction
+              title={t_i18n('Create a widget')}
+              icon={<WidgetsOutlined />}
+              tooltipTitle={t_i18n('Create a widget')}
+              onClick={() => setOpen(true)}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+            <SpeedDialAction
+              title={t_i18n('Import a widget')}
+              icon={<CloudUploadOutlined />}
+              tooltipTitle={t_i18n('Import a widget')}
+              onClick={() => inputRef.current?.click()}
+              FabProps={{ classes: { root: classes.speedDialButton } }}
+            />
+          </SpeedDial>
+          )
         }
           </Security>
         </>
@@ -1541,6 +1523,7 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
               || (getCurrentAvailableParameters().includes('attribute')
                 && !isDataSelectionAttributesValid())
             }
+            data-testid="widget-submit-button"
           >
             {widget ? t_i18n('Update') : t_i18n('Create')}
           </Button>

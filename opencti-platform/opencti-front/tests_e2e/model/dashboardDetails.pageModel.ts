@@ -31,4 +31,20 @@ export default class DashboardDetailsPage {
   getDuplicateButton() {
     return this.page.getByRole('button', { name: 'Duplicate' });
   }
+
+  getWidgetActionSelection() {
+    return this.page.getByTestId('widget-action-selection');
+  }
+
+  getCreateWidget() {
+    return this.page.getByRole('menuitem', {name: "Create a Widget"});
+  }
+
+  getCreateWidgetButton() {
+    return this.page.getByRole('button', {name: "Create a Widget"});
+  }
+
+  getTextWidget(content: string) {
+    return this.page.getByText(content, {exact: true});
+  }
 }
