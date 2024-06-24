@@ -53,12 +53,14 @@ const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
 
   const urlWithCapabilities = () => {
+    const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
     const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
     const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
     const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
     const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
     const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+    if (isGrantedToParameters) return '/dashboard/settings';
     if (isGrantedToSecurity) return '/dashboard/settings/accesses';
     if (isGrantedToCustomization) return '/dashboard/settings/customization';
     if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
@@ -94,7 +96,7 @@ const Root = () => {
                   placeholder={
                     <Security
                       needs={[SETTINGS_SETMARKINGS]}
-                      placeholder={<Navigate to="/dashboard/settings" />}
+                      placeholder={<Navigate to={urlWithCapabilities()} />}
                     >
                       <Navigate to="/dashboard/settings/accesses/marking" />
                     </Security>
@@ -109,7 +111,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Users />
                 </Security>
@@ -120,7 +122,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <RootUser />
                 </Security>
@@ -131,7 +133,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <SettingsOrganizations />
                 </Security>
@@ -139,14 +141,21 @@ const Root = () => {
             />
             <Route
               path="/accesses/organizations/:organizationId/*"
-              Component={boundaryWrapper(RootSettingsOrganization)}
+              element={
+                <Security
+                  needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
+                >
+                  <RootSettingsOrganization />
+                </Security>
+              }
             />
             <Route
               path="/accesses/roles"
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Roles />
                 </Security>
@@ -157,7 +166,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Navigate to={'/dashboard/policies'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Policies />
                 </Security>
@@ -165,14 +174,21 @@ const Root = () => {
             />
             <Route
               path="/accesses/roles/:roleId/*"
-              Component={boundaryWrapper(RootRole)}
+              element={
+                <Security
+                  needs={[SETTINGS_SETACCESSES]}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
+                >
+                  <RootRole />
+                </Security>
+              }
             />
             <Route
               path="/accesses/groups"
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Groups />
                 </Security>
@@ -180,14 +196,21 @@ const Root = () => {
             />
             <Route
               path="/accesses/groups/:groupId/*"
-              Component={boundaryWrapper(RootGroup)}
+              element={
+                <Security
+                  needs={[SETTINGS_SETACCESSES]}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
+                >
+                  <RootGroup />
+                </Security>
+              }
             />
             <Route
               path="/accesses/sessions"
               element={
                 <Security
                   needs={[SETTINGS_SETACCESSES]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Sessions />
                 </Security>
@@ -198,7 +221,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETMARKINGS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <MarkingDefinitions />
                 </Security>
@@ -207,7 +230,7 @@ const Root = () => {
             <Route
               path="/activity"
               element={
-                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Navigate to="/dashboard/settings/activity/audit" replace={true} />
                 </Security>
               }
@@ -262,29 +285,60 @@ const Root = () => {
             />
             <Route
               path="/customization/entity_types"
-              Component={boundaryWrapper(SubTypes)}
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <SubTypes />
+                </Security>
+              }
             />
             <Route
               path="/customization/retention"
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Retention />
+                </Security>
+              }
               Component={boundaryWrapper(Retention)}
             />
             <Route
               path="/customization/entity_types/:subTypeId/*"
-              element={<RootSubType />}
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <RootSubType />
+                </Security>
+              }
             />
             <Route
               path="/customization/rules"
-              Component={boundaryWrapper(Rules)}
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Rules />
+                </Security>
+              }
             />
-            <Route path="customization/decay"
-              Component={boundaryWrapper(DecayRules)}
+            <Route
+              path="customization/decay"
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <DecayRules />
+                </Security>
+              }
             />
-            <Route path='customization/decay/:decayRuleId/*'
-              Component={boundaryWrapper(DecayRule)}
+            <Route
+              path="customization/decay/:decayRuleId/*"
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <DecayRule />
+                </Security>
+              }
             />
             <Route
               path="/customization/notifiers"
-              Component={boundaryWrapper(Notifiers)}
+              element={
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                  <Notifiers />
+                </Security>
+              }
             />
             <Route
               path="/vocabularies"
@@ -321,7 +375,14 @@ const Root = () => {
             />
             <Route
               path="/vocabularies/status_templates"
-              Component={boundaryWrapper(StatusTemplates)}
+              element={
+                <Security
+                  needs={[SETTINGS_SETLABELS]}
+                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                >
+                  <StatusTemplates />
+                </Security>
+              }
             />
             <Route
               path="/vocabularies/case_templates"

@@ -71,6 +71,10 @@ export const up = async (next) => {
   const taxonomiesCapability = await elLoadById(context, SYSTEM_USER, 'capability--0f78ff7d-7197-568f-ac8c-5d7842c07f0f');
   const taxonomiesCapabilityPatch = { description: 'Manage taxonomies' };
   await elReplace(taxonomiesCapability._index, taxonomiesCapability.internal_id, { doc: taxonomiesCapabilityPatch });
+  // ------ Update description of Access security activity
+  const activityCapability = await elLoadById(context, SYSTEM_USER, 'capability--3d467062-f044-50da-902c-627cfa739444');
+  const activityCapabilityPatch = { description: 'Access security activity' };
+  await elReplace(activityCapability._index, activityCapability.internal_id, { doc: activityCapabilityPatch });
 
   logApp.info(`${message} > done`);
   next();
