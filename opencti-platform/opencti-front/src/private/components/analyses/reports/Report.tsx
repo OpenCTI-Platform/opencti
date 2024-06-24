@@ -115,11 +115,11 @@ const ReportComponent: FunctionComponent<ReportComponentProps> = ({
       stixCoreObjectOrStixCoreRelationshipId={report.id}
       defaultMarkings={report.objectMarking ?? []}
     />
-    {!FABReplaced
-      && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+    {!FABReplaced && (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ReportEdition reportId={report.id} />
       </Security>
-    }
+    )}
   </>);
 };
 

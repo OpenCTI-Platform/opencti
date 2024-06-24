@@ -101,9 +101,11 @@ class RootNote extends Component {
                         <ContainerHeader
                           container={note}
                           PopoverComponent={<NotePopover note={note} />}
-                          EditComponent={<CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                            <NoteEdition noteId={note.id} />
-                          </CollaborativeSecurity>}
+                          EditComponent={(
+                            <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
+                              <NoteEdition noteId={note.id} />
+                            </CollaborativeSecurity>
+                          )}
                           redirectToContent={true}
                         />
                       }
@@ -111,9 +113,11 @@ class RootNote extends Component {
                       <ContainerHeader
                         container={props.note}
                         PopoverComponent={<NotePopover note={note} />}
-                        EditComponent={<CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                          <NoteEdition noteId={note.id} />
-                        </CollaborativeSecurity>}
+                        EditComponent={(
+                          <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
+                            <NoteEdition noteId={note.id} />
+                          </CollaborativeSecurity>
+                        )}
                         redirectToContent={false}
                       />
                     </CollaborativeSecurity>

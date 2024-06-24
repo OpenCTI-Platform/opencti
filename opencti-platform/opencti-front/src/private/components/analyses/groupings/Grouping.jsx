@@ -48,11 +48,11 @@ const GroupingComponent = ({ grouping }) => {
         stixCoreObjectOrStixCoreRelationshipId={grouping.id}
         defaultMarkings={grouping.objectMarking ?? []}
       />
-      {!FABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!FABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <GroupingEdition groupingId={grouping.id} />
         </Security>
-      }
+      )}
     </div>
   );
 };

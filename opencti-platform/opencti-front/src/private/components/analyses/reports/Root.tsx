@@ -114,9 +114,11 @@ const RootReport = () => {
                     PopoverComponent={
                       <ReportPopover id={reportId} />
                     }
-                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <ReportEdition reportId={report.id} />
-                    </Security>}
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <ReportEdition reportId={report.id} />
+                      </Security>
+                    )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}

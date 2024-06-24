@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import EditEntityControlledDial from '../../../../components/EditEntityButton';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';

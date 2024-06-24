@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import EditEntityControlledDial from 'src/components/EditEntityButton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { externalReferenceEditionOverviewFocus } from './ExternalReferenceEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ExternalReferenceEditionContainerQuery$data } from './__generated__/ExternalReferenceEditionContainerQuery.graphql';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const externalReferenceEditionQuery = graphql`
   query ExternalReferenceEditionContainerQuery($id: String!) {

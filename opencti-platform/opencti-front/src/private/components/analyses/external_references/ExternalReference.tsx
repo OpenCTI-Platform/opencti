@@ -49,9 +49,11 @@ ExternalReferenceComponentProps
         PopoverComponent={
           <ExternalReferencePopover id={''} handleRemove={undefined} />
         }
-        EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ExternalReferenceEdition externalReferenceId={externalReference.id} />
-        </Security>}
+        EditComponent={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ExternalReferenceEdition externalReferenceId={externalReference.id} />
+          </Security>
+        )}
       />
       <Grid
         container={true}
@@ -76,11 +78,11 @@ ExternalReferenceComponentProps
           />
         </Grid>
       </Grid>
-      {!FABReplacement
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!FABReplacement && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ExternalReferenceEdition externalReferenceId={externalReference.id} />
         </Security>
-      }
+      )}
     </div>
   );
 };

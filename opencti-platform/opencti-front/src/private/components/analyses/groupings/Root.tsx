@@ -113,9 +113,11 @@ const RootGrouping = () => {
                   <ContainerHeader
                     container={grouping}
                     PopoverComponent={<GroupingPopover />}
-                    EditComponent={<Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <GroupingEdition groupingId={grouping.id} />
-                    </Security>}
+                    EditComponent={(
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <GroupingEdition groupingId={grouping.id} />
+                      </Security>
+                    )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableAskAi={true}
