@@ -14,38 +14,42 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 
 ### List of capabilities
 
-| Capability                                                         | Description                                                                             |
-|:-------------------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| `Bypass all capabilities`                                          | Just bypass everything including data segregation and enforcements.                     |
-| `Access knowledge`                                                 | Access in read-only to all the knowledge in the platform.                               |
-| &nbsp;&nbsp;`Access to collaborative creation`                     | Create notes and opinions (and modify its own) on entities and relations.               |
-| &nbsp;&nbsp;`Create / Update knowledge`                            | Create and update existing entities and relationships.                                  |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Restrict organization access`             | Share entities and relationships with other organizations.                              |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`                         | Delete entities and relationships.                                                      |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`                | Restrict the access to an entity to a user, group or organization.                      |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`                | If external references enforced in a type of entity, be able to bypass the enforcement. |
-| &nbsp;&nbsp;`Upload knowledge files`                               | Upload files in the `Data` and `Content` section of entities.                           |
-| &nbsp;&nbsp;`Import knowledge`                                     | Trigger the ingestion of an uploaded file.                                              |
-| &nbsp;&nbsp;`Download knowledge export`                            | Download the exports generated in the entities (in the `Data` section).                 |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Generate knowledge export`                | Trigger the export of the knowledge of an entity.                                       |
-| &nbsp;&nbsp;`Ask for knowledge enrichment`                         | Trigger an enrichment for a given entity.                                               |
-| `Access Dashboards and investigations`                             | Access to existing custom dashboards and investigations.                                |
-| &nbsp;&nbsp;`Create / Update dashboards and investigations`        | Create and update custom dashboards and investigations.                                 |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Delete dashboards and investigations`     | Delete existing custom dashboards and investigations.                                   |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Manage public dashboards`                 | Manage public dashboards                                                                |
-| `Access connectors`                                                | Read information in the `Data > Connectors` section.                                    |
-| &nbsp;&nbsp;`Manage connector state`                               | Reset the connector state to restart ingestion from the beginning.                      |
-| `Access data sharing`                                              | Access and consume data such as TAXII collections, CSV feeds & live streams.            |
-| &nbsp;&nbsp;`Manage data sharing`                                  | Share data such as TAXII collections, CSV feeds & live streams or custom dashboards.    |
-| `Access ingestion`                                                 | Access (read only) Remote OCTI streams TAXII feeds, RSS Feeds, CSV Feeds.               |
-| &nbsp;&nbsp;`Manage ingestion`                                     | Create, update, delete any Remote OCTI streams, TAXII feeds, RSS Feeds, CSV Feeds.      |
-| `Manage CSV mappers`                                               | Create, update and delete CSV mappers.                                                  |
-| `Access administration`                                            | Access and manage overall parameters of the platform in `Settings > Parameters`.        |
-| &nbsp;&nbsp;`Manage credentials`                                   | Access and manage roles, groups, users, organizations and security policies.            |
-| &nbsp;&nbsp;`Manage marking definitions`                           | Update and delete marking definitions.                                                  |
-| &nbsp;&nbsp;`Manage labels & Attributes`                           | Update and delete labels, custom taxonomies, workflow and case templates.               |
-| `Connectors API usage: register, ping, export push ...`            | Connectors specific permissions for register, ping, push export files, etc.             |
-| `Connect and consume the platform streams (/stream, /stream/live)` | List and consume the OpenCTI live streams.                                              |
+| Capability                                                     | Description                                                                             |
+|:---------------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| `Bypass all capabilities`                                      | Just bypass everything including data segregation and enforcements.                     |
+| `Access knowledge`                                             | Access in read-only to all the knowledge in the platform.                               |
+| &nbsp;&nbsp;`Access to collaborative creation`                 | Create notes and opinions (and modify its own) on entities and relations.               |
+| &nbsp;&nbsp;`Create / Update knowledge`                        | Create and update existing entities and relationships.                                  |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Restrict organization access`         | Share entities and relationships with other organizations.                              |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Delete knowledge`                     | Delete entities and relationships.                                                      |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Manage authorized members`            | Restrict the access to an entity to a user, group or organization.                      |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Bypass enforced reference`            | If external references enforced in a type of entity, be able to bypass the enforcement. |
+| &nbsp;&nbsp;`Upload knowledge files`                           | Upload files in the `Data` and `Content` section of entities.                           |
+| &nbsp;&nbsp;`Import knowledge`                                 | Trigger the ingestion of an uploaded file.                                              |
+| &nbsp;&nbsp;`Download knowledge export`                        | Download the exports generated in the entities (in the `Data` section).                 |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Generate knowledge export`            | Trigger the export of the knowledge of an entity.                                       |
+| &nbsp;&nbsp;`Ask for knowledge enrichment`                     | Trigger an enrichment for a given entity.                                               |
+| `Access Dashboards and investigations`                         | Access to existing custom dashboards and investigations.                                |
+| &nbsp;&nbsp;`Create / Update dashboards and investigations`    | Create and update custom dashboards and investigations.                                 |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Delete dashboards and investigations` | Delete existing custom dashboards and investigations.                                   |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Manage public dashboards`             | Manage public dashboards                                                                |
+| `Access connectors`                                            | Read information in the `Data > Connectors` section.                                    |
+| &nbsp;&nbsp;`Manage connector state`                           | Reset the connector state to restart ingestion from the beginning.                      |
+| `Connectors API usage: register, ping, export push ...`        | Connectors specific permissions for register, ping, push export files, etc.             |
+| `Access data sharing`                                          | Access and consume data such as TAXII collections, CSV feeds & live streams.            |
+| &nbsp;&nbsp;`Manage data sharing`                              | Share data such as TAXII collections, CSV feeds & live streams or custom dashboards.    |
+| `Access ingestion`                                             | Access (read only) Remote OCTI streams TAXII feeds, RSS Feeds, CSV Feeds.               |
+| &nbsp;&nbsp;`Manage ingestion`                                 | Create, update, delete any Remote OCTI streams, TAXII feeds, RSS Feeds, CSV Feeds.      |
+| `Manage CSV mappers`                                           | Create, update and delete CSV mappers.                                                  |
+| `Access to admin functionalities`                              | Parent capability allowing you to only view the settings                                |
+| &nbsp;&nbsp;`Access administration parameters`                 | Access and manage overall parameters of the platform in `Settings > Parameters`.        |
+| &nbsp;&nbsp;`Manage credentials`                               | Access and manage roles, groups, users, organizations and security policies.            |
+| &nbsp;&nbsp;`Manage marking definitions`                       | Update and delete marking definitions.                                                  |
+| &nbsp;&nbsp;`Manage customization`                             | Customize entity types, rules, notifiers retention policies & decays rules              |
+| &nbsp;&nbsp;`Manage taxonomies`                                | Manage labels, Kill chain phases, Vocabularies, Status Templates, Cases Templates       |
+| &nbsp;&nbsp;`Access to security activity`                      | Access to activity log                                                                  |
+| &nbsp;&nbsp;`Access to file indexing`                          | Manage file indexing                                                                    |
+| &nbsp;&nbsp;`Access to support`                                | Generate & download support packages                                                    |
 
 
 ### Manage roles
