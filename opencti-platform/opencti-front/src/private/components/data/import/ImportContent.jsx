@@ -309,6 +309,7 @@ class ImportContentComponent extends Component {
       connectorsImport,
       relay,
     } = this.props;
+    console.log('connectorsImport', connectorsImport);
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
     const { fileToImport, fileToValidate, displayCreate } = this.state;

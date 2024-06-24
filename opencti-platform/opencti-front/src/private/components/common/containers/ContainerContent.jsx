@@ -15,8 +15,9 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import { Link } from 'react-router-dom';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { QueryRenderer } from '../../../../relay/environment';
+import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
 import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
 import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from './ContainerStixCoreObjectsSuggestedMapping';
@@ -95,6 +96,9 @@ const askSuggestedMappingMutation = graphql`
       )
       {
         id
+        connector {
+          id
+        }
       }
     }
   }
@@ -229,6 +233,20 @@ const ContainerContentComponent = ({ containerData }) => {
         id: containerData.id,
         contentSource: 'content_mapping',
         contentType: 'fields',
+      },
+      onCompleted: (response) => {
+        console.log('response', response);
+        MESSAGING$.notifySuccess(
+          <span>
+            {t_i18n(
+              'New suggested mapping has been executed. You can monitor it on',
+            )}{' '}
+            <Link to={`/dashboard/data/ingestion/connectors/${response.stixCoreObjectEdit.askAnalysis.connector.id}`}>
+              {t_i18n('the dedicated page')}
+            </Link>
+            .
+          </span>,
+        );
       },
     });
   };
