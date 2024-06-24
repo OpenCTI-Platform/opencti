@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
-import { ADMIN_USER, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, USER_PARTICIPATE } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import type { SupportPackage } from '../../../src/generated/graphql';
 import { addSupportPackage } from '../../../src/modules/support/support-domain';
