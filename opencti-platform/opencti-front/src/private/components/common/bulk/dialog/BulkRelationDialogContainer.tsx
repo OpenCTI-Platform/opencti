@@ -8,7 +8,6 @@ type BulkRelationDialogContainerProps = {
   stixDomainObjectId: string;
   stixDomainObjectName: string;
   stixDomainObjectType: string;
-  handleOpenBulkRelationDialog: () => void;
   handleRefetch: () => void;
 };
 

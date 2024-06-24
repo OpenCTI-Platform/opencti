@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import BulkSelectRawLineData from '@components/common/bulk/BulkSelectRawLineData';
 import EntityRelationshipCard from '@components/common/bulk/EntityRelationshipCard';
 import { stixCoreRelationshipCreationFromEntityFromMutation } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import { commitMutation, MESSAGING$ } from 'src/relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
 import useAuth from 'src/utils/hooks/useAuth';
@@ -19,8 +19,48 @@ import Box from '@mui/material/Box';
 import { StixCoreRelationshipAddInput } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
 import { RelayError } from 'src/relay/relayTypes';
 import Loader from 'src/components/Loader';
-import { querySearchEntityByText, type StixCoreResultsType } from '../utils/querySearchEntityByText';
+import { graphql } from 'react-relay';
+import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
+
+export const searchStixCoreObjectsByRepresentativeQuery = graphql`
+  query BulkRelationDialogQuery(
+    $types: [String]
+    $filters: FilterGroup
+    $search: String
+  ) {
+    stixCoreObjects(types: $types, search: $search, filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          representative {
+            main
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          objectLabel {
+            id
+            value
+            color
+          }
+          creators {
+            id
+            name
+          }
+          containersNumber {
+            total
+          }
+        }
+      }
+    }
+  }
+`;
 
 interface BulkRelationDialogProps {
   stixDomainObjectId: string;
@@ -61,6 +101,31 @@ const classes = {
       overflow: 'initial',
     },
   },
+};
+
+const querySearchEntityByText = async (text: string) => {
+  const searchPaginationOptions = {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: allEntitiesKeyList,
+          values: [text],
+        },
+      ],
+      filterGroups: [],
+    },
+    count: 1,
+  };
+
+  const result = await fetchQuery(
+    searchStixCoreObjectsByRepresentativeQuery,
+    searchPaginationOptions,
+  ).toPromise()
+    .then((data) => {
+      return data;
+    }) as StixCoreResultsType;
+  return { ...result, searchTerm: text };
 };
 
 export const toHeaderWidth = 180;

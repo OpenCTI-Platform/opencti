@@ -1,14 +1,11 @@
-import { fetchQuery } from 'src/relay/environment';
-import searchStixCoreObjectsByRepresentativeQuery from '../dialog/BulkRelationDialogSearchQuery';
-
 export type StixCoreResultsType = {
   searchTerm: string;
-  stixCoreObjects: EdgeStuffType;
+  stixCoreObjects: EdgesType;
 };
-export type EdgeStuffType = {
-  edges: NodeStuffType[];
+export type EdgesType = {
+  edges: NodesType[];
 };
-export type NodeStuffType = {
+export type NodesType = {
   node: StixCoreEntityType;
 };
 export type StixCoreEntityType = {
@@ -45,32 +42,3 @@ export const allEntitiesKeyList = [
   'account_login',
   'path',
 ];
-
-export const querySearchEntityByText = async (text: string) => {
-  // TODO: see if representative can be use instead of this hardcoded list
-  // TODO: if not get the list from backend instead of hardcoded here ?
-  // This list can be find in backend in identifier.js stixBaseCyberObservableContribution.definition
-
-  const searchPaginationOptions = {
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: allEntitiesKeyList,
-          values: [text],
-        },
-      ],
-      filterGroups: [],
-    },
-    count: 1,
-  };
-
-  const result = await fetchQuery(
-    searchStixCoreObjectsByRepresentativeQuery,
-    searchPaginationOptions,
-  ).toPromise()
-    .then((data) => {
-      return data;
-    }) as StixCoreResultsType;
-  return { ...result, searchTerm: text };
-};
