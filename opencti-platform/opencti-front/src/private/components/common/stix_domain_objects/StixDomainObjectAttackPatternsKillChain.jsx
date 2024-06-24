@@ -365,10 +365,7 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
     }
 `;
 
-const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
-  StixDomainObjectAttackPatternsKillChainComponent,
-  {
-    data: graphql`
+const stixDomainObjectAttackPatternsKillChainLines = graphql`
             fragment StixDomainObjectAttackPatternsKillChain_data on Query {
                 stixCoreRelationships(
                     fromOrToId: $fromOrToId
@@ -504,12 +501,6 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
                     }
                 }
             }
-        `,
-  },
-  stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-);
+        `;
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(stixDomainObjectAttackPatternsKillChainLines);
+export default StixDomainObjectAttackPatternsKillChainLines;
