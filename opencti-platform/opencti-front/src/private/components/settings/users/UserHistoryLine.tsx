@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { green, pink, deepOrange, yellow, teal, deepPurple, indigo, red, lightGreen, orange } from '@mui/material/colors';
+import { deepOrange, deepPurple, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
-import { AddOutlined, EditOutlined, HelpOutlined, LinkOutlined, LinkOffOutlined, DeleteOutlined, VisibilityOutlined, DownloadOutlined } from '@mui/icons-material';
+import { DeleteOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
@@ -17,6 +17,7 @@ import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
+import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -158,7 +159,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <AddOutlined fontSize="small" />
+            <ItemIcon type={eventScope} color="inherit" size="small" />
           </Avatar>
         );
       }
@@ -195,7 +196,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <EditOutlined fontSize="small" />
+            <ItemIcon type={eventScope} color="inherit" size="small" />
           </Avatar>
         );
       }
@@ -212,7 +213,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <EditOutlined fontSize="small" />
+            <ItemIcon type={eventScope} color="inherit" size="small" />
           </Avatar>
         );
       }
@@ -277,7 +278,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
           >
-            <VisibilityOutlined fontSize="small" />
+            <ItemIcon type={eventScope} color="inherit" size="small" />
           </Avatar>
         );
       }
@@ -293,7 +294,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
           >
-            <DownloadOutlined fontSize="small" />
+            <ItemIcon type={eventScope} color="inherit" size="small" />
           </Avatar>
         );
       }
@@ -309,7 +310,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         }}
         onClick={() => commit && handleOpen()}
       >
-        <HelpOutlined fontSize="small" />
+        <ItemIcon type={eventScope} color="inherit" size="small" />
       </Avatar>
     );
   };

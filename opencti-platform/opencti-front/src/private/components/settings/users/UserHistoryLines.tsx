@@ -27,6 +27,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const userHistoryLinesQuery = graphql`
   query UserHistoryLinesQuery(
+    $types: [String!]
     $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
@@ -35,12 +36,13 @@ export const userHistoryLinesQuery = graphql`
     $cursor: ID
   ) {
     ...UserHistoryLines_data
-    @arguments( search: $search, orderBy: $orderBy, orderMode: $orderMode, filters: $filters, cursor: $cursor)}
+    @arguments( types: $types, search: $search, orderBy: $orderBy, orderMode: $orderMode, filters: $filters, cursor: $cursor)}
 `;
 
 const userHistoryLinesFragment = graphql`
     fragment UserHistoryLines_data on Query
     @argumentDefinitions(
+      types: { type: "[String!]" }
       search: { type: "String" }
       orderBy: { type: "LogsOrdering", defaultValue: created_at }
       orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -48,14 +50,15 @@ const userHistoryLinesFragment = graphql`
       cursor: { type: "ID" }
     )
     @refetchable(queryName: "UserHistoryLinesRefetchQuery") {
-      logs(
+      audits(
+        types: $types
         first: $first
         orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
         search: $search
         after: $cursor
-      ) @connection(key: "Pagination_logs") {
+      ) @connection(key: "Pagination_audits") {
         edges {
           node {
             id
@@ -86,10 +89,10 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
     linesQuery: userHistoryLinesQuery,
     linesFragment: userHistoryLinesFragment,
     queryRef,
-    nodePath: ['logs', 'pageInfo', 'globalCount'],
+    nodePath: ['audits', 'pageInfo', 'globalCount'],
   });
 
-  const logs = data?.logs?.edges ?? [];
+  const audits = data?.audits?.edges ?? [];
 
   useEffect(() => {
     // Refresh
@@ -107,11 +110,11 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       variant="outlined"
       style={{ marginTop: 0 }}
     >
-      {logs.length > 0 ? (
-        logs.map((logEdge) => {
-          const log = logEdge?.node;
-          return (log
-            && <UserHistoryLine key={log?.id} node={log} />
+      {audits.length > 0 ? (
+        audits.map((auditEdge) => {
+          const audit = auditEdge?.node;
+          return (audit
+            && <UserHistoryLine key={audit?.id} node={audit} />
           );
         })
       ) : (

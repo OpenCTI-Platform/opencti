@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
+import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
 
 const createdByUserRedirectButton = {
   float: 'left',
@@ -28,24 +29,25 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
-
+  const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const handleSearchEntity = (value: string) => {
     setEntitySearchTerm(value);
   };
-
   const [queryRef, loadQuery] = useQueryLoader<UserHistoryLinesQuery>(userHistoryLinesQuery);
+  let historyTypes = ['History'];
+  if (isGrantedToAudit && !isGrantedToKnowledge) {
+    historyTypes = ['Activity'];
+  } else if (isGrantedToAudit && isGrantedToKnowledge) {
+    historyTypes = ['History', 'Activity'];
+  }
   const queryArgs = {
+    types: historyTypes,
     filters: {
       mode: 'and',
       filterGroups: [],
       filters: [
         { key: ['user_id'], values: [userId], operator: 'wildcard', mode: 'or' },
-        {
-          key: ['event_type'],
-          values: ['mutation', 'create', 'update', 'delete', 'merge'],
-          operator: 'eq',
-          mode: 'or',
-        },
       ],
     } as GqlFilterGroup,
     first: 10,

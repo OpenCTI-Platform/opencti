@@ -44,7 +44,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
-import { BYPASS, SETTINGS } from '../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, KNOWLEDGE, SETTINGS, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
@@ -225,6 +225,8 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const user = useFragment(UserFragment, data);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
+  const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const [commitUserSessionKill] = useApiMutation<UserSessionKillMutation>(
     userSessionKillMutation,
   );
@@ -302,6 +304,12 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
+  let historyTypes = ['History'];
+  if (isGrantedToAudit && !isGrantedToKnowledge) {
+    historyTypes = ['Activity'];
+  } else if (isGrantedToAudit && isGrantedToKnowledge) {
+    historyTypes = ['History', 'Activity'];
+  }
   return (
     <>
       <Grid
@@ -604,7 +612,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
               <QueryRenderer
                 query={UserAuditsTimeSeriesQuery}
                 variables={{
-                  types: ['History'],
+                  types: historyTypes,
                   field: 'timestamp',
                   operation: 'count',
                   startDate,
@@ -613,12 +621,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                   filters: {
                     mode: 'and',
                     filters: [
-                      {
-                        key: 'members_user',
-                        values: [user.id],
-                        operator: 'eq',
-                        mode: 'or',
-                      },
+                      { key: ['user_id'], values: [user.id], operator: 'wildcard', mode: 'or' },
                     ],
                     filterGroups: [],
                   },
