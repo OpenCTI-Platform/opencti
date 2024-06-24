@@ -23,7 +23,7 @@ const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage < NarrativesLinesPaginationQuery$variables >(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
