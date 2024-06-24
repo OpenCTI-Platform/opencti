@@ -238,7 +238,7 @@ const Root = () => {
             <Route
               path="/activity/audit"
               element={
-                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Audit />
                 </Security>
               }
@@ -246,7 +246,7 @@ const Root = () => {
             <Route
               path="/activity/configuration"
               element={
-                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Configuration />
                 </Security>
               }
@@ -254,7 +254,7 @@ const Root = () => {
             <Route
               path="/activity/alerting"
               element={
-                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Alerting />
                 </Security>
               }
@@ -262,7 +262,7 @@ const Root = () => {
             <Route
               path="/file_indexing"
               element={
-                <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <FileIndexing />
                 </Security>
               }
@@ -270,7 +270,7 @@ const Root = () => {
             <Route
               path="/support"
               element={
-                <Security needs={[SETTINGS_SUPPORT]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SUPPORT]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <SupportPackage />
                 </Security>
               }
@@ -278,7 +278,7 @@ const Root = () => {
             <Route
               path="/customization"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
                 </Security>
               }
@@ -286,7 +286,7 @@ const Root = () => {
             <Route
               path="/customization/entity_types"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <SubTypes />
                 </Security>
               }
@@ -294,7 +294,7 @@ const Root = () => {
             <Route
               path="/customization/retention"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Retention />
                 </Security>
               }
@@ -303,7 +303,7 @@ const Root = () => {
             <Route
               path="/customization/entity_types/:subTypeId/*"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <RootSubType />
                 </Security>
               }
@@ -311,7 +311,7 @@ const Root = () => {
             <Route
               path="/customization/rules"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Rules />
                 </Security>
               }
@@ -319,7 +319,7 @@ const Root = () => {
             <Route
               path="customization/decay"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <DecayRules />
                 </Security>
               }
@@ -327,7 +327,7 @@ const Root = () => {
             <Route
               path="customization/decay/:decayRuleId/*"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <DecayRule />
                 </Security>
               }
@@ -335,7 +335,7 @@ const Root = () => {
             <Route
               path="/customization/notifiers"
               element={
-                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to="/dashboard/settings" />}>
+                <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                   <Notifiers />
                 </Security>
               }
@@ -345,7 +345,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Navigate to="/dashboard/settings/vocabularies/labels" />
                 </Security>
@@ -356,7 +356,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Labels />
                 </Security>
@@ -367,7 +367,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <KillChainPhases />
                 </Security>
@@ -378,7 +378,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <StatusTemplates />
                 </Security>
@@ -389,7 +389,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <CaseTemplates />
                 </Security>
@@ -400,7 +400,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <CaseTemplateTasks />
                 </Security>
@@ -411,7 +411,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <VocabularyCategories />
                 </Security>
@@ -422,7 +422,7 @@ const Root = () => {
               element={
                 <Security
                   needs={[SETTINGS_SETLABELS]}
-                  placeholder={<Navigate to={'/dashboard/settings'} />}
+                  placeholder={<Navigate to={urlWithCapabilities()} />}
                 >
                   <Vocabularies />
                 </Security>
