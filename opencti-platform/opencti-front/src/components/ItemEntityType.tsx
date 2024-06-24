@@ -34,23 +34,25 @@ const useStyles = makeStyles(() => ({
 interface ItemEntityTypeProps {
   entityType: string;
   maxLength?: number;
-  variant?: string;
+  inList?: boolean;
   showIcon?: boolean;
   isRestricted?: boolean;
-  styles?: React.CSSProperties;
+  style?: React.CSSProperties;
+  size?: 'small' | 'medium' | 'large'
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
-  variant = 'inList',
+  inList = true,
   maxLength,
   entityType,
   showIcon = false,
   isRestricted = false,
-  styles = {},
+  style = {},
+  size,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  const rootStyle = inList ? classes.chipInList : classes.chip;
 
   const { isRelationship: checkIsRelationship } = useSchema();
   const isRelationship = checkIsRelationship(entityType);
@@ -60,18 +62,32 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
     ? ThemeDark()
     : ThemeLight();
   const getStyle = () => {
+    let width;
+    switch (size) {
+      case 'small':
+        width = 100;
+        break;
+      case 'large':
+        width = 140;
+        break;
+      case 'medium':
+      default:
+        width = 120;
+    }
     if (isRestricted) {
       const restrictedColor = itemColor('Restricted');
       return {
         backgroundColor: theme.palette.background.default,
         color: theme.palette.chip.main,
         border: `1px solid ${restrictedColor}`,
+        width,
       };
     }
     return {
       backgroundColor: theme.palette.background.default,
       color: isRelationship ? theme.palette.primary.main : theme.palette.chip.main,
       border: `1px solid ${isRelationship ? theme.palette.primary.main : itemColor(entityType)}`,
+      width,
     };
   };
   const getIcon = () => {
@@ -83,7 +99,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
         />
       );
     }
-    return <></>;
+    return null;
   };
   const getLabel = () => {
     if (isRestricted) return t_i18n('Restricted');
@@ -94,10 +110,10 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
 
   return (
     <Chip
-      classes={{ root: style }}
+      classes={{ root: rootStyle }}
       style={{
-        ...styles,
         ...getStyle(),
+        ...style,
       }}
       label={<>
         {getIcon()}

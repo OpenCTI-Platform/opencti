@@ -521,7 +521,10 @@ RelationshipDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Relation type')}
       </Typography>
-      <ItemEntityType entityType={stixRelationship.relationship_type ?? 'unknown'} />
+      <ItemEntityType
+        entityType={stixRelationship.relationship_type ?? 'unknown'}
+        inList={false}
+      />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
           <RelationShipFromAndTo

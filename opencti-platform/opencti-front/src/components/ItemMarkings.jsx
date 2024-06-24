@@ -103,10 +103,8 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
-  const monochromeStyle = (color, isTooltip = false) => ({
-    backgroundColor: isTooltip
-      ? `${color}`
-      : `${color}33`, // 20% opacity
+  const monochromeStyle = (color) => ({
+    backgroundColor: `${color}33`, // 20% opacity
     color: theme.palette.text.primary,
     border: `2px solid ${color}`,
   });
@@ -119,7 +117,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
       className = classes.chipInList;
     }
     if (markingDefinition.x_opencti_color) {
-      const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color, isTooltip);
+      const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color);
       let { backgroundColor } = monochromeStyles;
       let textColor = monochromeStyles.color;
       let { border } = monochromeStyles;
@@ -129,8 +127,6 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           textColor = '#2b2b2b';
           border = '2px solid #2b2b2b';
         }
-      } else if (backgroundColor.startsWith('#ffffff')) {
-        textColor = '#2b2b2b';
       }
       return (
         <Chip

@@ -82,7 +82,6 @@ class IndicatorEntityLineComponent extends Component {
                 >
                   <ItemEntityType
                     entityType={node.relationship_type}
-                    styles={{ width: 120 }}
                   />
                 </div>
               )}
@@ -96,7 +95,7 @@ class IndicatorEntityLineComponent extends Component {
                     ? node.to.parent_types[0]
                     : node.to.entity_type}
                   isRestricted={restricted}
-                  styles={{ width: 140 }}
+                  size='large'
                   showIcon
                 />
               </div>

@@ -102,7 +102,6 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                         >
                           <ItemEntityType
                             entityType={stixNestedRefRelationship.relationship_type}
-                            styles={{ width: 120 }}
                           />
                         </div>
                         <div

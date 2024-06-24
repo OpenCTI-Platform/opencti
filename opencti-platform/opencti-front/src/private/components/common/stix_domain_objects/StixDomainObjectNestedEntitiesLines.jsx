@@ -84,7 +84,6 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                       >
                         <ItemEntityType
                           entityType={node.relationship_type}
-                          styles={{ width: 120 }}
                         />
                       </div>
                       <div
@@ -93,7 +92,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                       >
                         <ItemEntityType
                           entityType={stixCoreObject.entity_type}
-                          styles={{ width: 140 }}
+                          size='large'
                           showIcon
                         />
                       </div>

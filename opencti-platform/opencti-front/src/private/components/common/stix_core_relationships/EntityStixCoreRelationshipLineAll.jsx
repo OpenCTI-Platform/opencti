@@ -107,7 +107,6 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
               >
                 <ItemEntityType
                   entityType={node.relationship_type}
-                  styles={{ width: 120 }}
                 />
               </div>
               <div
@@ -117,7 +116,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                 <ItemEntityType
                   entityType={remoteNode.entity_type}
                   isRestricted={restricted}
-                  styles={{ width: 140 }}
+                  size='large'
                   showIcon
                 />
               </div>

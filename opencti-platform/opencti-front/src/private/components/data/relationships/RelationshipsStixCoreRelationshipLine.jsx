@@ -112,7 +112,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               <ItemEntityType
                 entityType={node.from?.entity_type}
                 isRestricted={!node.from}
-                styles={{ width: 140 }}
+                size='large'
                 showIcon
               />
             </div>
@@ -128,7 +128,6 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
             >
               <ItemEntityType
                 entityType={node.relationship_type}
-                styles={{ width: 120 }}
               />
             </div>
             <div
@@ -138,7 +137,7 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               <ItemEntityType
                 entityType={node.to?.entity_type}
                 isRestricted={!node.to}
-                styles={{ width: 140 }}
+                size='large'
                 showIcon
               />
             </div>
