@@ -16,7 +16,6 @@ import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import CreateEntityControlledDial from '../../common/menus/CreateEntityControlledDial';
 import { QueryRenderer } from '../../../../relay/environment';
 import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
@@ -30,6 +29,7 @@ import SearchInput from '../../../../components/SearchInput';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -464,7 +464,9 @@ const StixSightingRelationshipCreationFromEntity = ({
   const openElement = () => {
     switch (variant) {
       case 'controlledDial':
-        return CreateEntityControlledDial('entity_Sighting')({ onOpen: handleOpen });
+        return (
+          <CreateEntityControlledDial entityType='entity_Sighting' onOpen={handleOpen} />
+        );
       case 'inLine':
         return (
           <IconButton

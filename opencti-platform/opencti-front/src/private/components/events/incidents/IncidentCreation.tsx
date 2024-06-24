@@ -7,9 +7,8 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import useHelper from 'src/utils/hooks/useHelper';
-import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -32,6 +31,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -293,11 +293,14 @@ const IncidentCreation = ({
   const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='entity_Incident' {...props} />
+  );
   return (
     <Drawer
       title={t_i18n('Create an incident')}
       variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Incident') : undefined}
+      controlledDial={isFABReplaced ? CreateIncidentControlledDial : undefined}
     >
       {({ onClose }) => (
         <IncidentCreationForm

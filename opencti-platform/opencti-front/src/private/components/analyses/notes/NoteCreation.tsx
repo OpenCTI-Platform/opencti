@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -13,7 +13,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useHelper from 'src/utils/hooks/useHelper';
-import CreateEntityControlledDial from '@components/common/menus/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -36,6 +35,7 @@ import { NoteCreationMutation$variables } from './__generated__/NoteCreationMuta
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -322,12 +322,15 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
     return insertNode(store, 'Pagination_notes', paginationOptions, key);
   };
+  const CreateNoteControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='entity_Note' {...props} />
+  );
   const renderClassic = () => {
     return (
       <Drawer
         title={t_i18n('Create a note')}
         variant={isFABReplaced ? undefined : DrawerVariant.create}
-        controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Note') : undefined}
+        controlledDial={isFABReplaced ? CreateNoteControlledDial : undefined}
       >
         <NoteCreationForm inputValue={inputValue} updater={updater} />
       </Drawer>
