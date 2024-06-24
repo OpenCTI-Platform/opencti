@@ -2188,7 +2188,7 @@ class OpenCTIStix2:
             "objects": [],
         }
         do_read = self.get_reader(entity_type)
-        entity = do_read(id=entity_id)
+        entity = do_read(id=entity_id, withFiles=(mode == "full"))
         if entity is None:
             self.opencti.app_logger.error(
                 "Cannot export entity (not found)", {"id": entity_id}
@@ -2237,6 +2237,7 @@ class OpenCTIStix2:
         orderBy: str = None,
         orderMode: str = None,
         getAll: bool = True,
+        withFiles: bool = False,
     ) -> [Dict]:
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
@@ -2300,6 +2301,7 @@ class OpenCTIStix2:
             orderBy=orderBy,
             orderMode=orderMode,
             getAll=getAll,
+            withFiles=withFiles,
         )
 
     def export_list(
@@ -2334,6 +2336,7 @@ class OpenCTIStix2:
             orderBy=order_by,
             orderMode=order_mode,
             getAll=True,
+            withFiles=(mode == "full"),
         )
         if entities_list is not None:
             uuids = []
