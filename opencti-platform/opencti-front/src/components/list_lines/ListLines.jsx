@@ -410,12 +410,18 @@ class ListLines extends Component {
                       && enableMappingView && (
                         <ToggleButton value="suggestedMapping" aria-label="suggested mapping">
                           <Tooltip title={t('Suggested mapping view')}>
-                            <Badge badgeContent={mappingCount} color="primary">
-                              <PlaylistPlayIcon
-                                fontSize="small"
-                                color={currentView !== 'mapping' ? 'primary' : 'inherit'}
-                              />
-                            </Badge>
+                            { mappingCount
+                              ? <Badge badgeContent={mappingCount} color="primary">
+                                <PlaylistPlayIcon
+                                  fontSize="small"
+                                  color={currentView !== 'mapping' ? 'primary' : 'inherit'}
+                                />
+                              </Badge>
+                              : <PlaylistPlayIcon
+                                  fontSize="small"
+                                  color={currentView !== 'mapping' ? 'primary' : 'inherit'}
+                                />
+                              }
                           </Tooltip>
                         </ToggleButton>
                     )}

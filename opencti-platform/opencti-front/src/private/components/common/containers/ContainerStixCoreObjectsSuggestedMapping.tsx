@@ -159,6 +159,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
 
   if (isLoading) return <Loader variant={LoaderVariant.inElement}/>;
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return (
     <div className={classes.container}>
