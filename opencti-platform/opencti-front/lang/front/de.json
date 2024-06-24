@@ -2829,6 +2829,7 @@
   "Yes": "Ja",
   "you": "sie",
   "You are about to change the marking with another rank.": "Sie sind dabei, die Markierung mit einem anderen Rang zu ändern.",
+  "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "Sie sind im Begriff, eine Datei herunterzuladen, die sich auf ein Artefakt (oder eine Binärdatei) bezieht. Sie könnte bösartig sein. Sie können sie als verschlüsseltes Archiv herunterladen (Kennwort: \"infected\"), um Ihren Arbeitsplatz zu schützen und sie sicher weiterzugeben.",
   "You are not allowed to do this.": "Du bist nicht berechtigt, dies zu tun.",
   "You are not authorized to see this data.": "Sie sind nicht berechtigt, diese Daten zu sehen.",
   "You are trying to check the security posture of your organization against this threat intelligence set of knowledge using the OpenBAS platform.": "Sie versuchen, die Sicherheitslage Ihres Unternehmens mit Hilfe der OpenBAS-Plattform anhand dieses Wissens über Bedrohungen zu überprüfen.",
