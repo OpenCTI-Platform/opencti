@@ -146,7 +146,7 @@ const computeRuleTaskElements = async (context, user, task) => {
   }
   return { actions, elements: processingElements };
 };
-const computeQueryTaskElements = async (context, user, task) => {
+export const computeQueryTaskElements = async (context, user, task) => {
   const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
