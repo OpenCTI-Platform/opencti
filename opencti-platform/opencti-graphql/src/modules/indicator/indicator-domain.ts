@@ -5,7 +5,7 @@ import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitie
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
-import { DatabaseError, FunctionalError } from '../../config/errors';
+import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import {
@@ -299,12 +299,21 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
 export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
   const finalInput = [...input];
+  const indicator = await findById(context, user, id);
+  if (!indicator) {
+    throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
+  }
+  // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
+  let { valid_from, valid_until } = indicator;
+  input.forEach((e) => {
+    if (e.key === 'valid_from') [valid_from] = e.value;
+    if (e.key === 'valid_until') [valid_until] = e.value;
+  });
+  if (new Date(valid_until) <= new Date(valid_from)) {
+    throw ValidationError('valid_from', { message: 'The valid until date must be greater than the valid from date' });
+  }
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
-    const indicator = await findById(context, user, id);
-    if (!indicator) {
-      throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
-    }
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
       const newScore = scoreEditInput.value[0];
       const updateDate = utcDate();
