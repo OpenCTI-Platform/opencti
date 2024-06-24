@@ -77,7 +77,8 @@ import Collapse from '@mui/material/Collapse';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
-  EXPLORE, INVESTIGATION,
+  EXPLORE,
+  INVESTIGATION,
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,

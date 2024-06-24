@@ -74,7 +74,7 @@ export const up = async (next) => {
   const deleteDashboardCapability = await elLoadById(context, SYSTEM_USER, 'capability--287d57a8-5e9a-573f-8f22-ea321f5cbc90');
   const deleteDashboardCapabilityPatch = { description: 'Delete dashboards' };
   await elReplace(deleteDashboardCapability._index, deleteDashboardCapability.internal_id, { doc: deleteDashboardCapabilityPatch });
-  
+
   logApp.info(`${message} > done`);
   next();
 };

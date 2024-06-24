@@ -1,9 +1,9 @@
-import React, { lazy } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import React from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
-import { EXPLORE, EXPLORE_EXUPDATE, INVESTIGATION, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const Root = () => (
@@ -12,14 +12,14 @@ const Root = () => (
       path="/dashboards/*"
       element={
         <Security needs={[EXPLORE]}>
-          <Workspaces type={'dashboard'} />
+          <Workspaces type={'dashboard'} placeholder={<Navigate to="/dashboard" />} />
         </Security>
       }
     />
     <Route
       path="/dashboards/:workspaceId/*"
       element={
-        <Security needs={[EXPLORE]}>
+        <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
           <RootDashboard />
         </Security>
       }
@@ -27,7 +27,7 @@ const Root = () => (
     <Route
       path="/investigations/*"
       element={
-        <Security needs={[INVESTIGATION]}>
+        <Security needs={[INVESTIGATION]} placeholder={<Navigate to="/dashboard" />}>
           <Workspaces type={'investigation'} />
         </Security>
       }
@@ -35,7 +35,7 @@ const Root = () => (
     <Route
       path="/investigations/:workspaceId/*"
       element={
-        <Security needs={[INVESTIGATION]}>
+        <Security needs={[INVESTIGATION]} placeholder={<Navigate to="/dashboard" />}>
           <RootInvestigation />
         </Security>
       }
