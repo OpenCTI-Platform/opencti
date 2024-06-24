@@ -179,6 +179,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
         handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
         handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
         currentView={currentView}
+        mappingCount={filteredMappedEntities.length}
+        disabledValidate={filteredMappedEntities.length < 0}
         enableMappingView
         disableCards
       >
@@ -197,6 +199,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
           DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
           dataColumns={dataColumns}
           contentMappingCount={suggestedMappingCount}
+          mappingCount = {filteredMappedEntities.length}
           height={height}
         />
       </ListLines>

@@ -217,6 +217,7 @@ class ListLines extends Component {
       handleValidateSuggestedMapping,
       handleClearMapping,
       mappingCount,
+      disabledValidate,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
@@ -410,7 +411,7 @@ class ListLines extends Component {
                       && enableMappingView && (
                         <ToggleButton value="suggestedMapping" aria-label="suggested mapping">
                           <Tooltip title={t('Suggested mapping view')}>
-                            { mappingCount
+                            { mappingCount > 0
                               ? <Badge badgeContent={mappingCount} color="primary">
                                 <PlaylistPlayIcon
                                   fontSize="small"
@@ -432,6 +433,7 @@ class ListLines extends Component {
                         variant="contained"
                         classes={{ root: classes.button }}
                         onClick={() => handleAskNewSuggestedMapping()}
+                        color="secondary"
                       >
                         {t('Suggest new mapping')}
                       </Button>
@@ -441,11 +443,11 @@ class ListLines extends Component {
                     <Tooltip title={t('Validate suggested mapping')}>
                       <Button
                         variant="contained"
-                        color="secondary"
                         classes={{ root: classes.button }}
                         onClick={() => handleValidateSuggestedMapping()}
                         startIcon={<CheckCircleOutlined />}
                         size="small"
+                        disabled={disabledValidate}
                       >
                         {t('Validate')}
                       </Button>

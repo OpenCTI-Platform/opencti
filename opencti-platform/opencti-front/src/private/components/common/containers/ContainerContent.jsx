@@ -222,9 +222,6 @@ const ContainerContentComponent = ({ containerData }) => {
     });
   };
 
-  // TODO replace hard coded mock value by real suggested mapping value
-  const mappingCount = 7;
-
   const handleAskNewSuggestedMapping = () => {
     commitAnalysisAsk({
       mutation: askSuggestedMappingMutation,
@@ -234,7 +231,6 @@ const ContainerContentComponent = ({ containerData }) => {
         contentType: 'fields',
       },
       onCompleted: (response) => {
-        console.log('response', response);
         MESSAGING$.notifySuccess(
           <span>
             {t_i18n(
@@ -388,7 +384,6 @@ const ContainerContentComponent = ({ containerData }) => {
                 handleSwitchView={handleSwitchView}
                 handleClearMapping={() => setOpenClearMapping(true)}
                 currentView={currentView}
-                mappingCount={mappingCount}
               />
             </Paper>
           </Grid>
