@@ -1507,6 +1507,40 @@ class StixCoreObject:
             },
         )
 
+    def push_analysis(
+        self,
+        entity_id,
+        file_name,
+        data,
+        content_source,
+        content_type,
+        analysis_type,
+    ):
+        query = """
+            mutation StixCoreObjectEdit(
+                $id: ID!, $file: Upload!, $contentSource: String!, $contentType: AnalysisContentType!, $analysisType: String!
+            ) {
+                stixCoreObjectEdit(id: $id) {
+                    analysisPush(file: $file,contentSource: $contentSource,contentType: $contentType,analysisType: $analysisType){
+                        id
+                        name
+                    }
+                }
+            }
+        """
+
+        file = self.file(file_name, data)
+        self.opencti.query(
+            query,
+            {
+                "id": entity_id,
+                "file": file,
+                "contentSource": content_source,
+                "contentType": content_type,
+                "analysisType": analysis_type,
+            },
+        )
+
     """
         Get the reports about a Stix-Core-Object object
 
