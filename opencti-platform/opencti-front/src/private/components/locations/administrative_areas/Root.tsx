@@ -49,6 +49,10 @@ const administrativeAreaQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
       ...FileImportViewer_entity
@@ -66,11 +70,7 @@ const administrativeAreaQuery = graphql`
   }
 `;
 
-const RootAdministrativeAreaComponent = ({
-  queryRef,
-  administrativeAreaId,
-  link,
-}) => {
+const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
@@ -85,144 +85,173 @@ const RootAdministrativeAreaComponent = ({
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
+  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
     <>
       {administrativeArea ? (
-        <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Locations') },
-            { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
-            { label: administrativeArea.name, current: true },
-          ]}
-          />
-          <StixDomainObjectHeader
-            entityType="Administrative-Area"
-            disableSharing={true}
-            stixDomainObject={administrativeArea}
-            PopoverComponent={
-              <AdministrativeAreaPopover id={administrativeArea.id} />
-            }
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 4,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, administrativeArea.id, '/dashboard/locations/administrative_areas')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
-                label={t_i18n('Analyses')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
-                label={t_i18n('Sightings')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
-                value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+        <>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
-            />
-            <Route
-              path="/knowledge"
-              element={
-                <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
-            />
-            <Route
-              path="/content/*"
-              element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={administrativeArea}
-                />
-              }
-            />
             <Route
               path="/knowledge/*"
               element={
-                <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
-              }
-            />
-            <Route
-              path="/analyses"
-              element={
-                <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
-            />
-            <Route
-              path="/sightings"
-              element={
-                <EntityStixSightingRelationships
-                  entityId={administrativeArea.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
+                <StixCoreObjectKnowledgeBar
+                  stixCoreObjectLink={link}
+                  availableSections={[
+                    'organizations',
+                    'regions',
+                    'countries',
+                    'cities',
+                    'threats',
+                    'threat_actors',
+                    'intrusion_sets',
+                    'campaigns',
+                    'incidents',
+                    'malwares',
+                    'attack_patterns',
+                    'tools',
+                    'observables',
+                  ]}
+                  stixCoreObjectsDistribution={administrativeArea.stixCoreObjectsDistribution}
                 />
-              }
-            />
-            <Route
-              path="/files"
-              element={
-                <FileManager
-                  id={administrativeAreaId}
-                  connectorsImport={connectorsForImport}
-                  connectorsExport={connectorsForExport}
-                  entity={administrativeArea}
-                />
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
               }
             />
           </Routes>
-        </div>
+          <div style={{ paddingRight }}>
+            <Breadcrumbs variant="object" elements={[
+              { label: t_i18n('Locations') },
+              { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
+              { label: administrativeArea.name, current: true },
+            ]}
+            />
+            <StixDomainObjectHeader
+              entityType="Administrative-Area"
+              disableSharing={true}
+              stixDomainObject={administrativeArea}
+              PopoverComponent={
+                <AdministrativeAreaPopover id={administrativeArea.id} />
+            }
+              enableQuickSubscription={true}
+              isOpenctiAlias={true}
+            />
+            <Box
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                marginBottom: 4,
+              }}
+            >
+              <Tabs
+                value={getCurrentTab(location.pathname, administrativeArea.id, '/dashboard/locations/administrative_areas')}
+              >
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}`}
+                  label={t_i18n('Overview')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`}
+                  label={t_i18n('Knowledge')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/content`}
+                  label={t_i18n('Content')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/analyses`}
+                  label={t_i18n('Analyses')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/sightings`}
+                  label={t_i18n('Sightings')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/files`}
+                  label={t_i18n('Data')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
+                  value={`/dashboard/locations/administrative_areas/${administrativeArea.id}/history`}
+                  label={t_i18n('History')}
+                />
+              </Tabs>
+            </Box>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <AdministrativeArea administrativeAreaData={administrativeArea} />
+              }
+              />
+              <Route
+                path="/knowledge"
+                element={
+                  <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
+              }
+              />
+              <Route
+                path="/content/*"
+                element={
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={administrativeArea}
+                  />
+              }
+              />
+              <Route
+                path="/knowledge/*"
+                element={
+                  <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
+              }
+              />
+              <Route
+                path="/analyses"
+                element={
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
+              }
+              />
+              <Route
+                path="/sightings"
+                element={
+                  <EntityStixSightingRelationships
+                    entityId={administrativeArea.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                  />
+              }
+              />
+              <Route
+                path="/files"
+                element={
+                  <FileManager
+                    id={administrativeAreaId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={administrativeArea}
+                  />
+              }
+              />
+              <Route
+                path="/history"
+                element={
+                  <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
+              }
+              />
+            </Routes>
+          </div>
+        </>
       ) : (
         <ErrorNotFound />
       )}
@@ -238,41 +267,11 @@ const RootAdministrativeArea = () => {
     administrativeAreaQuery,
     { id: administrativeAreaId },
   );
-  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   return (
     <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'organizations',
-                'regions',
-                'countries',
-                'cities',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-            />
-          }
-        />
-      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootAdministrativeAreaComponent
-            queryRef={queryRef}
-            administrativeAreaId={administrativeAreaId}
-            link={link}
-          />
+          <RootAdministrativeAreaComponent queryRef={queryRef} administrativeAreaId={administrativeAreaId} />
         </React.Suspense>
       )}
     </>

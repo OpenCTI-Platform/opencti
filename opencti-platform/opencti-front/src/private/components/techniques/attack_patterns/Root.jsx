@@ -47,6 +47,10 @@ const attackPatternQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
@@ -89,29 +93,7 @@ class RootAttackPattern extends Component {
 
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
-      <div>
-        <Routes>
-          <Route
-            path="/knowledge/*"
-            element={
-              <StixCoreObjectKnowledgeBar
-                stixCoreObjectLink={link}
-                availableSections={[
-                  'victimology',
-                  'threat_actors',
-                  'intrusion_sets',
-                  'campaigns',
-                  'incidents',
-                  'tools',
-                  'vulnerabilities',
-                  'malwares',
-                  'indicators',
-                  'observables',
-                ]}
-              />
-            }
-          />
-        </Routes>
+      <>
         <QueryRenderer
           query={attackPatternQuery}
           variables={{ id: attackPatternId }}
@@ -121,119 +103,144 @@ class RootAttackPattern extends Component {
                 const { attackPattern } = props;
                 const paddingRight = getPaddingRight(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Techniques') },
-                      { label: t('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
-                      { label: attackPattern.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Attack-Pattern"
-                      disableSharing={true}
-                      stixDomainObject={props.attackPattern}
-                      PopoverComponent={<AttackPatternPopover />}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge/overview`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
-                          value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <AttackPattern attackPattern={props.attackPattern} />
-                        }
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
-                        }
-                      />
                       <Route
                         path="/knowledge/*"
                         element={
-                          <AttackPatternKnowledge attackPattern={props.attackPattern} />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={attackPattern}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'victimology',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'tools',
+                              'vulnerabilities',
+                              'malwares',
+                              'indicators',
+                              'observables',
+                            ]}
+                            stixCoreObjectsDistribution={attackPattern.stixCoreObjectsDistribution}
                           />
-                        }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={
-                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.attackPattern} />
-                        }
-                      />
-                      <Route
-                        path="/files"
-                        element={
-                          <FileManager
-                            id={attackPatternId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.attackPattern}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
                         }
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Techniques') },
+                        { label: t('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+                        { label: attackPattern.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Attack-Pattern"
+                        disableSharing={true}
+                        stixDomainObject={props.attackPattern}
+                        PopoverComponent={<AttackPatternPopover />}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, attackPattern.id, '/dashboard/techniques/attack_patterns')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge/overview`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
+                            value={`/dashboard/techniques/attack_patterns/${attackPattern.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <AttackPattern attackPattern={props.attackPattern} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={
+                            <AttackPatternKnowledge attackPattern={props.attackPattern} />
+                        }
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={attackPattern}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={
+                            <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.attackPattern} />
+                        }
+                        />
+                        <Route
+                          path="/files"
+                          element={
+                            <FileManager
+                              id={attackPatternId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={props.attackPattern}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/history"
+                          element={
+                            <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
+                        }
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;
@@ -241,7 +248,7 @@ class RootAttackPattern extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

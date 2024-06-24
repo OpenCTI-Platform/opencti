@@ -114,8 +114,9 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                     'tools',
                     'observables',
                   ]}
+                  stixCoreObjectsDistribution={region.stixCoreObjectsDistribution}
                 />
-                      }
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>

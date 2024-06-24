@@ -49,6 +49,10 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -66,7 +70,7 @@ const cityQuery = graphql`
   }
 `;
 
-const RootCityComponent = ({ queryRef, cityId, link }) => {
+const RootCityComponent = ({ queryRef, cityId }) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootCitiesSubscription>>(
     () => ({
       subscription,
@@ -79,138 +83,167 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { city, connectorsForImport, connectorsForExport } = data;
+  const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, city.id, '/dashboard/locations/cities');
   return (
     <>
       {city ? (
-        <div style={{ paddingRight }}>
-          <Breadcrumbs variant="object" elements={[
-            { label: t_i18n('Locations') },
-            { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
-            { label: city.name, current: true },
-          ]}
-          />
-          <StixDomainObjectHeader
-            entityType="City"
-            disableSharing={true}
-            stixDomainObject={city}
-            PopoverComponent={<CityPopover id={city.id} />}
-            enableQuickSubscription={true}
-            isOpenctiAlias={true}
-          />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 4,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, city.id, '/dashboard/locations/cities')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}`}
-                value={`/dashboard/locations/cities/${city.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/knowledge/overview`}
-                value={`/dashboard/locations/cities/${city.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/content`}
-                value={`/dashboard/locations/cities/${city.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/analyses`}
-                value={`/dashboard/locations/cities/${city.id}/analyses`}
-                label={t_i18n('Analyses')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/sightings`}
-                value={`/dashboard/locations/cities/${city.id}/sightings`}
-                label={t_i18n('Sightings')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/files`}
-                value={`/dashboard/locations/cities/${city.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/locations/cities/${city.id}/history`}
-                value={`/dashboard/locations/cities/${city.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+        <>
           <Routes>
             <Route
-              path="/"
-              element={<City cityData={city} />}
-            />
-            <Route
-              path="/knowledge"
-              element={
-                <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
-              }
-            />
-            <Route
               path="/knowledge/*"
-              element={<CityKnowledge cityData={city} />}
-            />
-            <Route
-              path="/content/*"
               element={
-                <StixCoreObjectContentRoot
-                  stixCoreObject={city}
+                <StixCoreObjectKnowledgeBar
+                  stixCoreObjectLink={link}
+                  availableSections={[
+                    'organizations',
+                    'regions',
+                    'countries',
+                    'areas',
+                    'threats',
+                    'threat_actors',
+                    'intrusion_sets',
+                    'campaigns',
+                    'incidents',
+                    'malwares',
+                    'attack_patterns',
+                    'tools',
+                    'observables',
+                  ]}
+                  stixCoreObjectsDistribution={city.stixCoreObjectsDistribution}
                 />
-              }
-            />
-            <Route
-              path="/analyses"
-              element={
-                <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
-              }
-            />
-            <Route
-              path="/sightings"
-              element={
-                <EntityStixSightingRelationships
-                  entityId={city.id}
-                  entityLink={link}
-                  noPadding={true}
-                  isTo={true}
-                />
-              }
-            />
-            <Route
-              path="/files"
-              element={
-                <FileManager
-                  id={cityId}
-                  connectorsImport={connectorsForImport}
-                  connectorsExport={connectorsForExport}
-                  entity={city}
-                />
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={cityId} />
               }
             />
           </Routes>
-        </div>
+          <div style={{ paddingRight }}>
+            <Breadcrumbs variant="object" elements={[
+              { label: t_i18n('Locations') },
+              { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
+              { label: city.name, current: true },
+            ]}
+            />
+            <StixDomainObjectHeader
+              entityType="City"
+              disableSharing={true}
+              stixDomainObject={city}
+              PopoverComponent={<CityPopover id={city.id} />}
+              enableQuickSubscription={true}
+              isOpenctiAlias={true}
+            />
+            <Box
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                marginBottom: 4,
+              }}
+            >
+              <Tabs
+                value={getCurrentTab(location.pathname, city.id, '/dashboard/locations/cities')}
+              >
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}`}
+                  value={`/dashboard/locations/cities/${city.id}`}
+                  label={t_i18n('Overview')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/knowledge/overview`}
+                  value={`/dashboard/locations/cities/${city.id}/knowledge`}
+                  label={t_i18n('Knowledge')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/content`}
+                  value={`/dashboard/locations/cities/${city.id}/content`}
+                  label={t_i18n('Content')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/analyses`}
+                  value={`/dashboard/locations/cities/${city.id}/analyses`}
+                  label={t_i18n('Analyses')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/sightings`}
+                  value={`/dashboard/locations/cities/${city.id}/sightings`}
+                  label={t_i18n('Sightings')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/files`}
+                  value={`/dashboard/locations/cities/${city.id}/files`}
+                  label={t_i18n('Data')}
+                />
+                <Tab
+                  component={Link}
+                  to={`/dashboard/locations/cities/${city.id}/history`}
+                  value={`/dashboard/locations/cities/${city.id}/history`}
+                  label={t_i18n('History')}
+                />
+              </Tabs>
+            </Box>
+            <Routes>
+              <Route
+                path="/"
+                element={<City cityData={city} />}
+              />
+              <Route
+                path="/knowledge"
+                element={
+                  <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
+              }
+              />
+              <Route
+                path="/knowledge/*"
+                element={<CityKnowledge cityData={city} />}
+              />
+              <Route
+                path="/content/*"
+                element={
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={city}
+                  />
+              }
+              />
+              <Route
+                path="/analyses"
+                element={
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
+              }
+              />
+              <Route
+                path="/sightings"
+                element={
+                  <EntityStixSightingRelationships
+                    entityId={city.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                  />
+              }
+              />
+              <Route
+                path="/files"
+                element={
+                  <FileManager
+                    id={cityId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={city}
+                  />
+              }
+              />
+              <Route
+                path="/history"
+                element={
+                  <StixCoreObjectHistory stixCoreObjectId={cityId} />
+              }
+              />
+            </Routes>
+          </div>
+        </>
       ) : (
         <ErrorNotFound />
       )}
@@ -221,37 +254,11 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
 const RootCity = () => {
   const { cityId } = useParams() as { cityId: string };
   const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
-  const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   return (
     <>
-      <Routes>
-        <Route
-          path="/knowledge/*"
-          element={
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'organizations',
-                'regions',
-                'countries',
-                'areas',
-                'threats',
-                'threat_actors',
-                'intrusion_sets',
-                'campaigns',
-                'incidents',
-                'malwares',
-                'attack_patterns',
-                'tools',
-                'observables',
-              ]}
-            />
-          }
-        />
-      </Routes>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootCityComponent queryRef={queryRef} cityId={cityId} link={link} />
+          <RootCityComponent queryRef={queryRef} cityId={cityId} />
         </React.Suspense>
       )}
     </>

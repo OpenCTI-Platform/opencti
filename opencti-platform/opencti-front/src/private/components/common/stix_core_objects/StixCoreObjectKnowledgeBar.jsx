@@ -311,7 +311,7 @@ const StixCoreObjectKnowledgeBar = ({
                 <ListItemIcon style={{ minWidth: 28 }}>
                   <ItemIcon size="small" type="Location" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n('Locations')} />
+                <ListItemText primary={`${t_i18n('Locations')}${statisticsLocations > 0 ? ` (${n(statisticsLocations)})` : ''}`} />
               </MenuItem>
             )}
             {R.includes('organizations', availableSections) && (

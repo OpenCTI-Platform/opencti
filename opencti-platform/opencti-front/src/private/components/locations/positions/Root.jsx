@@ -46,6 +46,10 @@ const positionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      stixCoreObjectsDistribution(field: "entity_type", operation: count) {
+        label
+        value
+      }
       ...Position_position
       ...PositionKnowledge_position
       ...FileImportViewer_entity
@@ -89,31 +93,6 @@ class RootPosition extends Component {
 
     return (
       <>
-        <Routes>
-          <Route
-            path="/knowledge/*"
-            element={
-              <StixCoreObjectKnowledgeBar
-                stixCoreObjectLink={link}
-                availableSections={[
-                  'organizations',
-                  'regions',
-                  'countries',
-                  'areas',
-                  'cities',
-                  'threat_actors',
-                  'intrusion_sets',
-                  'campaigns',
-                  'incidents',
-                  'malwares',
-                  'attack_patterns',
-                  'tools',
-                  'observables',
-                ]}
-              />
-            }
-          />
-        </Routes>
         <QueryRenderer
           query={positionQuery}
           variables={{ id: positionId }}
@@ -123,138 +102,166 @@ class RootPosition extends Component {
                 const { position } = props;
                 const paddingRight = getPaddingRight(location.pathname, position.id, '/dashboard/locations/positions');
                 return (
-                  <div style={{ paddingRight }}>
-                    <Breadcrumbs variant="object" elements={[
-                      { label: t('Locations') },
-                      { label: t('Positions'), link: '/dashboard/locations/positions' },
-                      { label: position.name, current: true },
-                    ]}
-                    />
-                    <StixDomainObjectHeader
-                      entityType="Position"
-                      disableSharing={true}
-                      stixDomainObject={props.position}
-                      PopoverComponent={<PositionPopover />}
-                      enableQuickSubscription={true}
-                      isOpenctiAlias={true}
-                    />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 4,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, position.id, '/dashboard/locations/positions')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}`}
-                          value={`/dashboard/locations/positions/${position.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
-                          value={`/dashboard/locations/positions/${position.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/content`}
-                          value={`/dashboard/locations/positions/${position.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/analyses`}
-                          value={`/dashboard/locations/positions/${position.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/sightings`}
-                          value={`/dashboard/locations/positions/${position.id}/sightings`}
-                          label={t('Sightings')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/files`}
-                          value={`/dashboard/locations/positions/${position.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/locations/positions/${position.id}/history`}
-                          value={`/dashboard/locations/positions/${position.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                  <>
                     <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <Position position={props.position} />
-                        }
-                      />
-                      <Route
-                        path="/knowledge"
-                        element={
-                          <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
-                        }
-                      />
                       <Route
                         path="/knowledge/*"
                         element={
-                          <PositionKnowledge position={props.position} />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={position}
+                          <StixCoreObjectKnowledgeBar
+                            stixCoreObjectLink={link}
+                            availableSections={[
+                              'organizations',
+                              'regions',
+                              'countries',
+                              'areas',
+                              'cities',
+                              'threat_actors',
+                              'intrusion_sets',
+                              'campaigns',
+                              'incidents',
+                              'malwares',
+                              'attack_patterns',
+                              'tools',
+                              'observables',
+                            ]}
+                            stixCoreObjectsDistribution={position.stixCoreObjectsDistribution}
                           />
-                        }
-                      />
-                      <Route
-                        path="/analyses"
-                        element={
-                          <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.position} />
-                        }
-                      />
-                      <Route
-                        path="/sightings"
-                        element={
-                          <EntityStixSightingRelationships
-                            entityId={props.position.id}
-                            entityLink={link}
-                            noPadding={true}
-                            isTo={true}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/files"
-                        element={
-                          <FileManager
-                            id={positionId}
-                            connectorsImport={props.connectorsForImport}
-                            connectorsExport={props.connectorsForExport}
-                            entity={props.position}
-                          />
-                        }
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory stixCoreObjectId={positionId} />
                         }
                       />
                     </Routes>
-                  </div>
+                    <div style={{ paddingRight }}>
+                      <Breadcrumbs variant="object" elements={[
+                        { label: t('Locations') },
+                        { label: t('Positions'), link: '/dashboard/locations/positions' },
+                        { label: position.name, current: true },
+                      ]}
+                      />
+                      <StixDomainObjectHeader
+                        entityType="Position"
+                        disableSharing={true}
+                        stixDomainObject={props.position}
+                        PopoverComponent={<PositionPopover />}
+                        enableQuickSubscription={true}
+                        isOpenctiAlias={true}
+                      />
+                      <Box
+                        sx={{
+                          borderBottom: 1,
+                          borderColor: 'divider',
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Tabs
+                          value={getCurrentTab(location.pathname, position.id, '/dashboard/locations/positions')}
+                        >
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}`}
+                            value={`/dashboard/locations/positions/${position.id}`}
+                            label={t('Overview')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/knowledge/overview`}
+                            value={`/dashboard/locations/positions/${position.id}/knowledge`}
+                            label={t('Knowledge')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/content`}
+                            value={`/dashboard/locations/positions/${position.id}/content`}
+                            label={t('Content')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/analyses`}
+                            value={`/dashboard/locations/positions/${position.id}/analyses`}
+                            label={t('Analyses')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/sightings`}
+                            value={`/dashboard/locations/positions/${position.id}/sightings`}
+                            label={t('Sightings')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/files`}
+                            value={`/dashboard/locations/positions/${position.id}/files`}
+                            label={t('Data')}
+                          />
+                          <Tab
+                            component={Link}
+                            to={`/dashboard/locations/positions/${position.id}/history`}
+                            value={`/dashboard/locations/positions/${position.id}/history`}
+                            label={t('History')}
+                          />
+                        </Tabs>
+                      </Box>
+                      <Routes>
+                        <Route
+                          path="/"
+                          element={
+                            <Position position={props.position} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge"
+                          element={
+                            <Navigate to={`/dashboard/locations/positions/${positionId}/knowledge/overview`} replace={true} />
+                        }
+                        />
+                        <Route
+                          path="/knowledge/*"
+                          element={
+                            <PositionKnowledge position={props.position} />
+                        }
+                        />
+                        <Route
+                          path="/content/*"
+                          element={
+                            <StixCoreObjectContentRoot
+                              stixCoreObject={position}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/analyses"
+                          element={
+                            <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={props.position} />
+                        }
+                        />
+                        <Route
+                          path="/sightings"
+                          element={
+                            <EntityStixSightingRelationships
+                              entityId={props.position.id}
+                              entityLink={link}
+                              noPadding={true}
+                              isTo={true}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/files"
+                          element={
+                            <FileManager
+                              id={positionId}
+                              connectorsImport={props.connectorsForImport}
+                              connectorsExport={props.connectorsForExport}
+                              entity={props.position}
+                            />
+                        }
+                        />
+                        <Route
+                          path="/history"
+                          element={
+                            <StixCoreObjectHistory stixCoreObjectId={positionId} />
+                        }
+                        />
+                      </Routes>
+                    </div>
+                  </>
                 );
               }
               return <ErrorNotFound />;
