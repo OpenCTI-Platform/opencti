@@ -504,7 +504,8 @@ class Report:
             first = 100
 
         self.opencti.app_logger.info(
-            "Listing Reports with filters", {"filters": json.dumps(filters)}
+            "Listing Reports with filters",
+            {"filters": json.dumps(filters), "with_files:": with_files},
         )
         query = (
             """
@@ -583,7 +584,9 @@ class Report:
         custom_attributes = kwargs.get("customAttributes", None)
         with_files = kwargs.get("withFiles", False)
         if id is not None:
-            self.opencti.app_logger.info("Reading Report", {"id": id})
+            self.opencti.app_logger.info(
+                "Reading Report", {"id": id, "with_files": with_files}
+            )
             query = (
                 """
                 query Report($id: String!) {
@@ -602,7 +605,7 @@ class Report:
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(result["data"]["report"])
         elif filters is not None:
-            result = self.list(filters=filters)
+            result = self.list(filters=filters, withFiles=with_files)
             if len(result) > 0:
                 return result[0]
             else:
