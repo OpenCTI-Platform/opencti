@@ -33,7 +33,7 @@ interface SightingCreationComponentProps {
   noPadding?: boolean,
   paginationOptions: EntityStixSightingRelationshipsLinesPaginationQuery$variables
   stixCoreObjectTypes: string[],
-  variant?: string,
+  variant?: 'controlledDial' | 'inLine',
 }
 
 const SightingCreationComponent: FunctionComponent<SightingCreationComponentProps> = ({
@@ -141,7 +141,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
     finalPaginationOptions,
   );
 
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderLines = () => {
     const dataColumns = {
@@ -211,14 +211,16 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           secondaryAction={true}
           paginationOptions={finalPaginationOptions}
           numberOfElements={numberOfElements}
-          createButton={FABReplaced && <SightingCreationComponent
-            isTo={isTo}
-            entityId={entityId}
-            noPadding={noPadding}
-            paginationOptions={finalPaginationOptions}
-            stixCoreObjectTypes={stixCoreObjectTypes}
-            variant='controlledDial'
-                                       />}
+          createButton={isFABReplaced && (
+            <SightingCreationComponent
+              isTo={isTo}
+              entityId={entityId}
+              noPadding={noPadding}
+              paginationOptions={finalPaginationOptions}
+              stixCoreObjectTypes={stixCoreObjectTypes}
+              variant='controlledDial'
+            />
+          )}
         >
           {queryRef && (
           <React.Suspense
@@ -251,15 +253,15 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   return (
     <div className={classes.container}>
       {renderLines()}
-      {!FABReplaced
-        && <SightingCreationComponent
+      {!isFABReplaced && (
+        <SightingCreationComponent
           isTo={isTo}
           entityId={entityId}
           noPadding={noPadding}
           paginationOptions={finalPaginationOptions}
           stixCoreObjectTypes={stixCoreObjectTypes}
-           />
-      }
+        />
+      )}
     </div>
   );
 };

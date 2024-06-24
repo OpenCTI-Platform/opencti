@@ -113,7 +113,7 @@ const Incidents: FunctionComponent = () => {
       isSortable: isRuntimeSort,
     },
   };
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const renderLines = () => {
     return (
       <>
@@ -138,9 +138,11 @@ const Incidents: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IncidentCreation paginationOptions={queryPaginationOptions} />
-          </Security>}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <IncidentCreation paginationOptions={queryPaginationOptions} />
+            </Security>
+          )}
         >
           {queryRef && (
             <React.Suspense
@@ -185,11 +187,11 @@ const Incidents: FunctionComponent = () => {
     <ExportContextProvider>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
       {renderLines()}
-      {!FABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {!isFABReplaced && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IncidentCreation paginationOptions={queryPaginationOptions} />
         </Security>
-      }
+      )}
     </ExportContextProvider>
   );
 };

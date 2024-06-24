@@ -60,7 +60,7 @@ const ObservedDatas: FunctionComponent = () => {
     ...paginationOptions, filters: contextFilters,
   } as unknown as ObservedDatasLinesPaginationQuery$variables;
 
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
@@ -123,9 +123,11 @@ const ObservedDatas: FunctionComponent = () => {
           paginationOptions={queryPaginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
-          createButton={FABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
-          </Security>}
+          createButton={isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+            </Security>
+          )}
         >
           <QueryRenderer
             query={observedDatasLinesQuery}
@@ -170,11 +172,11 @@ const ObservedDatas: FunctionComponent = () => {
         <ExportContextProvider>
           <Breadcrumbs variant="list" elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
           {renderLines(platformModuleHelpers)}
-          {!FABReplaced
-            && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          {!isFABReplaced && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
             </Security>
-          }
+          )}
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

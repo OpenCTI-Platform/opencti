@@ -275,12 +275,12 @@ const ObservedDataCreation = ({
     paginationOptions,
     'observedDataAdd',
   );
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Drawer
       title={t_i18n('Create an observed data')}
-      variant={FABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={FABReplaced ? CreateEntityControlledDial('entity_Observed-Data') : undefined}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Observed-Data') : undefined}
     >
       {({ onClose }) => (
         <ObservedDataCreationForm

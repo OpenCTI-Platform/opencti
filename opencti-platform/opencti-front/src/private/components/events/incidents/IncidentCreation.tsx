@@ -292,12 +292,12 @@ const IncidentCreation = ({
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Drawer
       title={t_i18n('Create an incident')}
-      variant={FABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={FABReplaced ? CreateEntityControlledDial('entity_Incident') : undefined}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateEntityControlledDial('entity_Incident') : undefined}
     >
       {({ onClose }) => (
         <IncidentCreationForm
