@@ -11242,7 +11242,7 @@ type Query {
     filters: FilterGroup,
     filterMode: FilterMode,
     entityTypes: [MemberType!]
-  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS, INGESTION_SETINGESTIONS])
+  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS, INGESTION_SETINGESTIONS, INVESTIGATION_INUPDATE])
   users(
     first: Int
     after: ID
@@ -11400,7 +11400,7 @@ type Query {
   ######## STIX CORE OBJECT ENTITIES
 
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
-  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
+  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
@@ -11410,7 +11410,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE, INVESTIGATION])
   stixCoreObjectsRegardingOf(
     entityId: ID,
     relationshipTypes: [String],
@@ -12180,7 +12180,7 @@ type Query {
 
   ######## STIX SIGHTING RELATIONSHIPS
 
-  stixSightingRelationship(id: String): StixSightingRelationship @auth(for: [KNOWLEDGE])
+  stixSightingRelationship(id: String): StixSightingRelationship @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   stixSightingRelationships(
     first: Int
     after: ID
