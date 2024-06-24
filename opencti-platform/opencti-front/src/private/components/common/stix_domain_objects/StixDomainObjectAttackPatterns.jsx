@@ -4,7 +4,12 @@ import Loader from '../../../../components/Loader';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useAvailableFilterKeysForEntityTypes,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject
+} from '../../../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,6 +52,7 @@ const StixDomainObjectAttackPatterns = ({
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Attack-Pattern']);
   return (
     <div className={classes.container}>
       <QueryRenderer
@@ -62,10 +68,7 @@ const StixDomainObjectAttackPatterns = ({
                 stixDomainObjectId={stixDomainObjectId}
                 handleChangeView={helpers.handleChangeView}
                 handleSearch={helpers.handleSearch}
-                handleAddFilter={helpers.handleAddFilter}
-                handleRemoveFilter={helpers.handleRemoveFilter}
-                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+                helpers={helpers}
                 filters={filters}
                 searchTerm={searchTerm ?? ''}
                 currentView={view}
@@ -74,6 +77,7 @@ const StixDomainObjectAttackPatterns = ({
                 exportContext={{ entity_type: 'stix-core-relationship' }}
                 handleToggleExports={disableExport ? null : helpers.handleToggleExports}
                 openExports={openExports}
+                availableFilterKeys={availableFilterKeys}
               />
             );
           }

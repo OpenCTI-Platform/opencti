@@ -94,10 +94,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       stixDomainObjectId,
       entityLink,
       handleSearch,
-      handleAddFilter,
-      handleRemoveFilter,
-      handleSwitchLocalMode,
-      handleSwitchGlobalMode,
+      helpers,
       filters,
       handleChangeView,
       searchTerm,
@@ -106,6 +103,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       openExports,
       handleToggleExports,
       exportContext,
+      availableFilterKeys,
     } = this.props;
     const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
@@ -172,9 +170,9 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             </Tooltip>
             <Tooltip
               title={
-                    currentColorsReversed
-                      ? t('Disable invert colors')
-                      : t('Enable invert colors')
+                currentColorsReversed
+                  ? t('Disable invert colors')
+                  : t('Enable invert colors')
                 }
             >
               <span>
@@ -187,26 +185,19 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 </IconButton>
               </span>
             </Tooltip>
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              helpers={helpers}
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+            <FilterIconButton
+              filters={filters}
+              helpers={helpers}
+              styleNumber={2}
+              redirection
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
           </div>
-          <Filters
-            availableFilterKeys={[
-              'objectMarking',
-              'createdBy',
-              'created',
-            ]}
-            handleAddFilter={handleAddFilter}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-          />
-          <FilterIconButton
-            filters={filters}
-            handleRemoveFilter={handleRemoveFilter}
-            handleSwitchLocalMode={handleSwitchLocalMode}
-            handleSwitchGlobalMode={handleSwitchGlobalMode}
-            styleNumber={2}
-            redirection
-          />
           <div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               <Tooltip title={t('Matrix view')}>
@@ -355,14 +346,12 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
   searchTerm: PropTypes.string,
   handleChangeView: PropTypes.func,
   handleSearch: PropTypes.func,
-  handleAddFilter: PropTypes.func,
-  handleRemoveFilter: PropTypes.func,
-  handleSwitchLocalMode: PropTypes.func,
-  handleSwitchGlobalMode: PropTypes.func,
+  helpers: PropTypes.object,
   filters: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  availableFilterKeys: PropTypes.func,
 };
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
