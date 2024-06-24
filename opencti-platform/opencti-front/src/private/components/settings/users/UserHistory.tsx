@@ -34,6 +34,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   const handleSearchEntity = (value: string) => {
     setEntitySearchTerm(value);
   };
+
   const [queryRef, loadQuery] = useQueryLoader<UserHistoryLinesQuery>(userHistoryLinesQuery);
   let historyTypes = ['History'];
   if (isGrantedToAudit && !isGrantedToKnowledge) {
@@ -75,7 +76,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
 
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [entitySearchTerm]);
 
   const refetch = React.useCallback(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
