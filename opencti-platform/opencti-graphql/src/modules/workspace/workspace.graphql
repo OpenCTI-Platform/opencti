@@ -58,7 +58,7 @@ type Query {
         filters: FilterGroup
         includeAuthorities: Boolean
         search: String
-    ): WorkspaceConnection @auth(for: [EXPLORE])
+    ): WorkspaceConnection @auth(for: [EXPLORE, SETTINGS_SETACCESSES])
 }
 
 type WorkspaceEdge {

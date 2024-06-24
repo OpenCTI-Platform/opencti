@@ -44,7 +44,7 @@ const validateNotifier = (notifier: { notifier_connector_id: string, notifier_co
 
 export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput): Promise<BasicStoreEntityNotifier> => {
   validateNotifier(notifier);
-  const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS'] };
+  const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
   const created = await createEntity(context, user, notifierToCreate, ENTITY_TYPE_NOTIFIER);
   await publishUserAction({
     user,

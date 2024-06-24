@@ -56,10 +56,14 @@ enum Capabilities {
   MODULES
   MODULES_MODMANAGE
   SETTINGS
+  SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
+  SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
+  SETTINGS_FILEINDEXING
+  SETTINGS_SUPPORT
   TAXIIAPI
   TAXIIAPI_SETCOLLECTIONS
   INGESTION
@@ -11142,7 +11146,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [KNOWLEDGE])
+  ): LogConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
   audits(
     first: Int
     after: ID
@@ -11191,7 +11195,7 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  subType(id: String!): SubType @auth(for: [KNOWLEDGE])
+  subType(id: String!): SubType @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   subTypes(
     first: Int
     after: ID
@@ -11218,7 +11222,7 @@ type Query {
   settings: Settings! @public # Some inner information are public
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
-  @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
@@ -11233,7 +11237,7 @@ type Query {
     filters: FilterGroup,
     filterMode: FilterMode,
     entityTypes: [MemberType!]
-  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
+  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS, INGESTION_SETINGESTIONS])
   users(
     first: Int
     after: ID
@@ -11252,7 +11256,7 @@ type Query {
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
-  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES])
+  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   work(id: ID!): Work @auth(for: [MODULES])
   works(
     first: Int
@@ -11324,9 +11328,9 @@ type Query {
     includeAuthorities: Boolean
     filters: FilterGroup
     search: String
-  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
+  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
-  rules: [Rule] @auth(for: [KNOWLEDGE])
+  rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
   synchronizer(id: String!): Synchronizer @auth(for: [SETTINGS])
   synchronizers(
@@ -11336,7 +11340,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): SynchronizerConnection @auth(for: [SETTINGS, INGESTION, INGESTION_SETINGESTIONS])
-  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS])
+  synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection] @auth(for: [SETTINGS, INGESTION_SETINGESTIONS])
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
@@ -11350,7 +11354,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixMetaObjectConnection @auth(for: [KNOWLEDGE])
-  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
+  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE, SETTINGS_SETMARKINGS])
   markingDefinitions(
     first: Int
     after: ID
@@ -11359,8 +11363,8 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
-  label(id: String!): Label @auth(for: [KNOWLEDGE])
+  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS])
+  label(id: String!): Label @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   labels(
     first: Int
     after: ID
@@ -11368,7 +11372,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LabelConnection @auth(for: [KNOWLEDGE])
+  ): LabelConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
   externalReferences(
     first: Int
@@ -11378,7 +11382,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
-  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE])
+  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   killChainPhases(
     first: Int
     after: ID
@@ -11386,7 +11390,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
+  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
 
   ######## STIX CORE OBJECT ENTITIES
 
@@ -11484,7 +11488,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -11511,14 +11515,14 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixDomainObjectsNumber(
     dateAttribute: String
     types: [String]
     endDate: DateTime
     onlyInferred: Boolean
     filters: FilterGroup
-    search: String): Number @auth(for: [KNOWLEDGE, EXPLORE])
+    search: String): Number @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixDomainObjectsDistribution(
     objectId: [String]
     relationship_type: [String]
@@ -11737,7 +11741,7 @@ type Query {
     search: String
     filters: FilterGroup
     toStix: Boolean
-  ): IdentityConnection @auth(for: [KNOWLEDGE])
+  ): IdentityConnection @auth(for: [KNOWLEDGE, INGESTION_SETINGESTIONS])
   individual(id: String!): Individual @auth(for: [KNOWLEDGE])
   individuals(
     first: Int
@@ -12000,7 +12004,7 @@ type Query {
     filters: FilterGroup
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
-  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   stixRelationshipsMultiTimeSeries(
     operation: StatsOperation!
     startDate: DateTime!
@@ -12054,7 +12058,7 @@ type Query {
     filters: FilterGroup
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
-  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE, SETTINGS_SETCUSTOMIZATION])
   schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth
   schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]! @auth
   filterKeysSchema: [FilterKeysSchema!]! @auth
@@ -12788,7 +12792,7 @@ type Mutation {
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
-  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI])
+  synchronizerTest(input: SynchronizerAddInput): String @auth(for: [CONNECTORAPI, INGESTION_SETINGESTIONS])
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [CONNECTORAPI, MODULES_MODMANAGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])

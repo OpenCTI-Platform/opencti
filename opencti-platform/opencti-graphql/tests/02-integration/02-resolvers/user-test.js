@@ -597,8 +597,8 @@ describe('User resolver standard behavior', () => {
 
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
-    const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY, variables: { first: 20 } });
-    expect(queryResult.data.members.edges.length).toEqual(18);
+    const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
+    expect(queryResult.data.members.edges.length).toEqual(22);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 2); // 2 built-in groups
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(7);

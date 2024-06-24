@@ -74,7 +74,7 @@ input NotifierAddInput {
 }
 
 type Mutation {
-    notifierDelete(id: ID!): ID @auth(for: [SETTINGS])
-    notifierFieldPatch(id: ID!, input: [EditInput!]!): Notifier @auth(for: [SETTINGS])
-    notifierAdd(input: NotifierAddInput!): Notifier @auth(for: [SETTINGS])
+    notifierDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    notifierFieldPatch(id: ID!, input: [EditInput!]!): Notifier @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    notifierAdd(input: NotifierAddInput!): Notifier @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

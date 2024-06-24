@@ -84,10 +84,14 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
   SETTINGS,
+  SETTINGS_SETPARAMETERS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
+  SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETMARKINGS,
+  SETTINGS_FILEINDEXING,
+  SETTINGS_SUPPORT,
   TAXIIAPI_SETCOLLECTIONS,
   CSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
@@ -212,9 +216,13 @@ const LeftBar = () => {
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToSettings = useGranted([SETTINGS]);
-  const isGrantedToIngestion = useGranted([SETTINGS, MODULES, INGESTION, INGESTION_SETINGESTIONS]);
+  const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
+  const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
+  const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
+  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
-  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const anchors = {
@@ -914,13 +922,13 @@ const LeftBar = () => {
               {isGrantedToSettings && generateSubMenu(
                 'settings',
                 [
-                  { granted: isGrantedToSettings, link: '/dashboard/settings', label: 'Parameters', exact: true },
+                  { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
                   { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
-                  { granted: isGrantedToSettings, link: '/dashboard/settings/customization', label: 'Customization' },
-                  { granted: isGrantedToLabels, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
+                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
+                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
                   { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
-                  { granted: isGrantedToSettings, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-                  { granted: isGrantedToSettings, link: '/dashboard/settings/support', label: 'Support' },
+                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                  { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
                 ],
               )}
             </Security>

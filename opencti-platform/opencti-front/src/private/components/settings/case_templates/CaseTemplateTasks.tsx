@@ -94,7 +94,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       },
       onCompleted: () => {
         handleCloseDelete();
-        navigate('/dashboard/settings/vocabularies/caseTemplates');
+        navigate('/dashboard/settings/vocabularies/case_templates');
       },
       updater: undefined,
       optimisticUpdater: undefined,

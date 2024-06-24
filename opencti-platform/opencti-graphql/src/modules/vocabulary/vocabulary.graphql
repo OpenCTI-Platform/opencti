@@ -107,7 +107,7 @@ type VocabularyEdge {
 
 # Queries
 type Query {
-  vocabulary(id: String!): Vocabulary @auth(for: [KNOWLEDGE])
+  vocabulary(id: String!): Vocabulary @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETLABELS])
   vocabularyCategories: [VocabularyDefinition!]! @auth
   vocabularies(
     category: VocabularyCategory
@@ -117,7 +117,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): VocabularyConnection @auth(for: [KNOWLEDGE])
+  ): VocabularyConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, INGESTION_SETINGESTIONS])
 }
 
 # Mutations

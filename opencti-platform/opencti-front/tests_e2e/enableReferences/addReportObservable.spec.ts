@@ -46,6 +46,8 @@ test.describe('Create user with no references bypass capabilities', () => {
     await expect(roleFormPage.getCreateUpdateKnowledgeCheckbox()).toBeChecked();
     await roleFormPage.getAccessAdministrationCheckbox().click();
     await expect(roleFormPage.getAccessAdministrationCheckbox()).toBeChecked();
+    await roleFormPage.getManageCustomizationCheckbox().click();
+    await expect(roleFormPage.getManageCustomizationCheckbox()).toBeChecked();
   });
 
   test('Create basic user group', async ({ page }) => {
