@@ -28,7 +28,7 @@ import {
   isStixDomainObjectContainer
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { createWork, workToExportFile } from './work';
+import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -572,6 +572,14 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     throw UnsupportedError('Cant get analysis on none existing element', { entityId });
   }
 
+  // Get ongoing work if any. If work is ongoing, we don't need to look for analysis
+  // TODO:  need to add content_source and content_type to work attributes to be able to filter works
+  const works = await worksForSource(context, user, entity.standard_id, { type: CONNECTOR_INTERNAL_ANALYSIS });
+  const filterCompletedWorks = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
+  if (filterCompletedWorks.length > 0) {
+    return { analysisType: 'mapping_analysis', analysisStatus: filterCompletedWorks[0].status };
+  }
+
   // Retrieve analysis file for given contentSource and contentType
   const analysisFilePath = `analysis/${entity.entity_type}/${entity.id}`;
   const analysisFilesPagination = await paginatedForPathWithEnrichment(context, context.user, analysisFilePath, entityId);
@@ -592,7 +600,7 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   const analysisDataConverted = (analysisKey) => {
     const analysisId = analysisParsedContent[analysisKey];
     const entityResolved = entitiesResolved[analysisId];
-    return { matchedString: analysisKey, matchedEntity: entityResolved };
+    return { matchedString: analysisKey, matchedEntity: entityResolved, analysisStatus: 'complete' };
   };
 
   const mappedEntities = Object.keys(analysisParsedContent)

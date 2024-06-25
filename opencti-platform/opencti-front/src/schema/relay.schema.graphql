@@ -7820,6 +7820,7 @@ input MappingAnalysisInput {
 
 type MappingAnalysis {
   analysisType: String!
+  analysisStatus: State
   mappedEntities: [MappedEntity!]
 }
 

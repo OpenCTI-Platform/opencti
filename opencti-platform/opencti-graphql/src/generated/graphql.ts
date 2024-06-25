@@ -12063,6 +12063,7 @@ export type MappedEntityInput = {
 
 export type MappingAnalysis = {
   __typename?: 'MappingAnalysis';
+  analysisStatus?: Maybe<State>;
   analysisType: Scalars['String']['output'];
   mappedEntities?: Maybe<Array<MappedEntity>>;
 };
@@ -34312,6 +34313,7 @@ export type MappedEntityResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type MappingAnalysisResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappingAnalysis'] = ResolversParentTypes['MappingAnalysis']> = ResolversObject<{
+  analysisStatus?: Resolver<Maybe<ResolversTypes['State']>, ParentType, ContextType>;
   analysisType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mappedEntities?: Resolver<Maybe<Array<ResolversTypes['MappedEntity']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

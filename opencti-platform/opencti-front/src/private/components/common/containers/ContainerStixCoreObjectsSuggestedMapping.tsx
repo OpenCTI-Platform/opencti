@@ -23,6 +23,7 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
     stixCoreObjectAnalysis(id: $id, contentSource: $contentSource, contentType: $contentType) {
       ... on MappingAnalysis {
         analysisType
+        analysisStatus
         mappedEntities {
           matchedString
           ...ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity
