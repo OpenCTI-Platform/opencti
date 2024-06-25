@@ -8,9 +8,6 @@ import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/st
 import ContainerSuggestedMappingContent from '@components/common/containers/ContainerSuggestedMappingContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import {
-    ContainerContent_container$data
-} from "@components/common/containers/__generated__/ContainerContent_container.graphql";
 
 interface StixCoreObjectContentRootProps {
   stixCoreObject: StixCoreObjectContent_stixCoreObject$data;
