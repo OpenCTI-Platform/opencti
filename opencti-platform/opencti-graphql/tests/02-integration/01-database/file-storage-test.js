@@ -89,6 +89,10 @@ describe('File storage file listing', () => {
     const user = head(jsonData.objects);
     expect(user.name).toEqual('Paradise Ransomware');
   });
+  it('should non existing download return null', async () => {
+    const fileStream = await downloadFile('ThisDoesNotExists');
+    expect(fileStream).toBeNull();
+  });
   it('should load file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const file = await loadFile(ADMIN_USER, exportFileId(malware));

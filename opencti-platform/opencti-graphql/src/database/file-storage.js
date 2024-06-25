@@ -145,15 +145,24 @@ export const deleteFiles = async (context, user, ids) => {
   return true;
 };
 
+/**
+ * Download a file from S3 at given S3 key (id)
+ * @param id
+ * @returns {Promise<*|null>} null when error occurs on download.
+ */
 export const downloadFile = async (id) => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
       Key: id
     }));
+    if (!object || !object.Body) {
+      logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
+      return null;
+    }
     return object.Body;
   } catch (err) {
-    logApp.info('[FILE STORAGE] Cannot retrieve file from S3', { error: err });
+    logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { error: err, fileId: id });
     return null;
   }
 };
