@@ -355,10 +355,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
               const emailAttribute = mappedConfig.email_attribute ?? 'email';
               const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
               const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
-              const name = userinfo[nameAttribute];
-              const email = userinfo[emailAttribute];
-              const firstname = userinfo[firstnameAttribute];
-              const lastname = userinfo[lastnameAttribute];
+              const decodedIdToken = jwtDecode(tokenset.id_token);
+              const name = userinfo[nameAttribute] || decodedIdToken[nameAttribute];
+              const email = userinfo[emailAttribute] || decodedIdToken[emailAttribute];
+              const firstname = userinfo[firstnameAttribute] || decodedIdToken[firstnameAttribute];
+              const lastname = userinfo[lastnameAttribute] || decodedIdToken[lastnameAttribute];
               const opts = {
                 providerGroups: groupsToAssociate,
                 providerOrganizations: organizationsToAssociate,
