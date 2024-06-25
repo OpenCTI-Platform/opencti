@@ -73,6 +73,7 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   suggestedMappingCount: Record<string, number>;
   height: number;
   handleAskNewSuggestedMapping: () => void;
+  askingSuggestion: boolean;
   handleValidateSuggestedMapping: (mappingToAdd: { matchedString: string, matchedEntityId: string }[]) => void;
   isLoading: boolean;
 }
@@ -86,6 +87,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
   suggestedMappingCount,
   height,
   handleAskNewSuggestedMapping,
+  askingSuggestion,
   handleValidateSuggestedMapping,
   isLoading,
 }) => {
@@ -224,6 +226,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
               variant="contained"
               size="small"
               onClick={handleAskNewSuggestedMapping}
+              disabled={askingSuggestion}
             >
               {t_i18n('Suggest new mapping')}
             </Button>

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
@@ -103,6 +103,8 @@ ContainerSuggestedMappingContentProps
   const { innerHeight } = window;
   const listHeight = innerHeight - 420;
 
+  const [askingSuggestion, setAskingSuggestion] = useState(false);
+
   const containerData = useFragment<ContainerContent_container$key>(containerContentFragment, containerFragment);
 
   const [commitFieldPatch] = useApiMutation<ContainerContentFieldPatchMutation>(contentMutationFieldPatch);
@@ -115,6 +117,7 @@ ContainerSuggestedMappingContentProps
   }
 
   const handleAskNewSuggestedMapping = () => {
+    setAskingSuggestion(true);
     commitAnalysisAsk({
       variables: {
         id: containerData.id,
@@ -122,6 +125,7 @@ ContainerSuggestedMappingContentProps
         contentType: 'fields',
       },
       onCompleted: (response) => {
+        setAskingSuggestion(false);
         MESSAGING$.notifySuccess(
           <span>
             {t_i18n(
@@ -246,6 +250,7 @@ ContainerSuggestedMappingContentProps
                   handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
                   handleValidateSuggestedMapping={validateSuggestedMapping}
                   isLoading={isLoading}
+                  askingSuggestion={askingSuggestion}
                 />
               </Paper>
             </Grid>
