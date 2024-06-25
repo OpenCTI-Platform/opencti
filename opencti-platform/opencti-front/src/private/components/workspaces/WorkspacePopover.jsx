@@ -125,10 +125,15 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         {workspace.type === 'dashboard' && [
           <MenuItem key="menu_duplicate" onClick={handleDashboardDuplication}>{t_i18n('Duplicate')}</MenuItem>,
           <MenuItem key="menu_export" onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>,
+          <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </Security>
         ]}
-        <Security needs={[EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE]} hasAccess={userCanManage}>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
+        {workspace.type === 'investigation' && [
+          <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={userCanManage}>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </Security>
+        ]}
       </Menu>
       <WorkspaceDuplicationDialog
         workspace={workspace}
