@@ -43,7 +43,7 @@ import {
   RestoreOutlined,
   TransformOutlined,
 } from '@mui/icons-material';
-import { CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
+import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -59,6 +59,7 @@ import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import EETooltip from '../common/entreprise_edition/EETooltip';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
@@ -69,7 +70,7 @@ import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
@@ -78,6 +79,7 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import ItemMarkings from '../../../components/ItemMarkings';
 import { findFilterFromKey, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { isNotEmptyField } from '../../../utils/utils';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -266,6 +268,22 @@ const toolBarContainersQuery = graphql`
   }
 `;
 
+const toolBarOrganizationsQuery = graphql`
+  query ToolBarOrganizationsQuery($search: String) {
+    organizations(search: $search) {
+      edges {
+        node {
+          id
+          entity_type
+          representative {
+            main
+          }
+        }
+      }
+    }
+  }
+`;
+
 class ToolBar extends Component {
   constructor(props) {
     super(props);
@@ -276,8 +294,11 @@ class ToolBar extends Component {
       displayRescan: false,
       displayMerge: false,
       displayAddInContainer: false,
+      displayShare: false,
+      displayUnshare: false,
       displayPromote: false,
       containerCreation: false,
+      organizationCreation: false,
       actions: [],
       scope: undefined,
       actionsInputs: [{}],
@@ -288,10 +309,13 @@ class ToolBar extends Component {
       labels: [],
       identities: [],
       containers: [],
+      organizations: [],
       statuses: [],
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
+      organizationInput: '',
+      shareOrganizations: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
@@ -343,6 +367,22 @@ class ToolBar extends Component {
 
   handleOpenAddInContainer() {
     this.setState({ displayAddInContainer: true });
+  }
+
+  handleOpenShare() {
+    this.setState({ displayShare: true });
+  }
+
+  handleCloseShare() {
+    this.setState({ displayShare: false });
+  }
+
+  handleOpenUnshare() {
+    this.setState({ displayUnshare: true });
+  }
+
+  handleCloseUnshare() {
+    this.setState({ displayUnshare: false });
   }
 
   handleOpenPromote() {
@@ -772,6 +812,27 @@ class ToolBar extends Component {
           .sort((a, b) => a.label.localeCompare(b.label))
           .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({ containers });
+      });
+  }
+
+  searchOrganizations(event, newValue) {
+    if (!event) return;
+    this.setState({ organizationInput: newValue && newValue.length > 0 ? newValue : '' });
+    fetchQuery(toolBarOrganizationsQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const elements = data.organizations.edges.map((e) => e.node);
+        const organizations = elements
+          .map((n) => ({
+            label: n.representative.main,
+            type: n.entity_type,
+            value: n.id,
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .sort((a, b) => a.type.localeCompare(b.type));
+        this.setState({ organizations });
       });
   }
 
@@ -1336,7 +1397,10 @@ class ToolBar extends Component {
     }
     return (
       <UserContext.Consumer>
-        {({ bannerSettings, schema }) => {
+        {({ bannerSettings, settings, schema }) => {
+          // region EE
+          const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+          // endregion
           // region promote filters
           const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
           const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
@@ -1560,6 +1624,38 @@ class ToolBar extends Component {
                     </Tooltip>
                   </Security>
                 )}
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                  <EETooltip title={t('Share with organizations')}>
+                    <IconButton
+                      color="primary"
+                      aria-label="input"
+                      onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
+                      size="small"
+                      disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                      }
+                    >
+                      <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                    </IconButton>
+                  </EETooltip>
+                </Security>
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                  <EETooltip title={t('Unshare with organizations')}>
+                    <IconButton
+                      color="primary"
+                      aria-label="input"
+                      onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
+                      size="small"
+                      disabled={
+                            numberOfSelectedElements === 0
+                            || this.state.processing
+                        }
+                    >
+                      <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                    </IconButton>
+                  </EETooltip>
+                </Security>
                 {deleteDisable !== true && (
                   <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                     <Tooltip title={warningMessage || t('Delete')}>
@@ -2286,6 +2382,161 @@ class ToolBar extends Component {
                     }}
                   >
                     {t('Add')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                fullWidth={true}
+                maxWidth="sm"
+                TransitionComponent={Transition}
+                open={this.state.displayShare}
+                onClose={() => this.setState({ displayShare: false })}
+              >
+                <DialogTitle>{t('Share with organizations')}</DialogTitle>
+                <DialogContent>
+                  <StixDomainObjectCreation
+                    inputValue={this.state.organizationInput}
+                    open={this.state.organizationCreation}
+                    display={true}
+                    speeddial={true}
+                    stixDomainObjectTypes={['Organization']}
+                    handleClose={() => this.setState({ organizationCreation: false })}
+                    creationCallback={(data) => {
+                      const element = {
+                        label: data.name,
+                        value: data.id,
+                        type: data.entity_type,
+                      };
+                      this.setState(({ organizations }) => ({
+                        organizations: [...(organizations ?? []), element],
+                      }));
+                      this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
+                    }}
+                  />
+                  <Autocomplete
+                    size="small"
+                    fullWidth={true}
+                    selectOnFocus={true}
+                    autoHighlight={true}
+                    getOptionLabel={(option) => (option.label ? option.label : '')}
+                    value={this.state.shareOrganizations}
+                    multiple={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        label={t('Values')}
+                        fullWidth={true}
+                        onFocus={this.searchOrganizations.bind(this)}
+                        style={{ marginTop: 3 }}
+                      />
+                    )}
+                    noOptionsText={t('No available options')}
+                    options={this.state.organizations}
+                    onInputChange={this.searchOrganizations.bind(this)}
+                    inputValue={this.state.organizationInput}
+                    onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div className={classes.icon}>
+                          <ItemIcon type={option.type}/>
+                        </div>
+                        <div className={classes.text}>{option.label}</div>
+                      </li>
+                    )}
+                    disableClearable
+                  />
+                  <IconButton
+                    onClick={() => this.setState({ organizationCreation: true })}
+                    edge="end"
+                    style={{ position: 'absolute', top: 68, right: 48 }}
+                    size="large"
+                  >
+                    <AddOutlined/>
+                  </IconButton>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={this.handleCloseShare.bind(this)}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => {
+                      const shareActions = [
+                        { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                      ];
+                      this.setState({ actions: shareActions }, () => {
+                        this.handleCloseShare();
+                        this.handleOpenTask();
+                      });
+                    }}
+                  >
+                    {t('Share')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog
+                PaperProps={{ elevation: 1 }}
+                fullWidth={true}
+                maxWidth="sm"
+                TransitionComponent={Transition}
+                open={this.state.displayUnshare}
+                onClose={() => this.setState({ displayUnshare: false })}
+              >
+                <DialogTitle>{t('Unshare with organizations')}</DialogTitle>
+                <DialogContent>
+                  <Autocomplete
+                    size="small"
+                    fullWidth={true}
+                    selectOnFocus={true}
+                    autoHighlight={true}
+                    getOptionLabel={(option) => (option.label ? option.label : '')}
+                    value={this.state.shareOrganizations}
+                    multiple={true}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="standard"
+                        label={t('Values')}
+                        fullWidth={true}
+                        onFocus={this.searchOrganizations.bind(this)}
+                        style={{ marginTop: 3 }}
+                      />
+                    )}
+                    noOptionsText={t('No available options')}
+                    options={this.state.organizations}
+                    onInputChange={this.searchOrganizations.bind(this)}
+                    inputValue={this.state.organizationInput}
+                    onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                    renderOption={(props, option) => (
+                      <li {...props}>
+                        <div className={classes.icon}>
+                          <ItemIcon type={option.type}/>
+                        </div>
+                        <div className={classes.text}>{option.label}</div>
+                      </li>
+                    )}
+                    disableClearable
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={this.handleCloseUnshare.bind(this)}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => {
+                      const shareActions = [
+                        { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                      ];
+                      this.setState({ actions: shareActions }, () => {
+                        this.handleCloseUnshare();
+                        this.handleOpenTask();
+                      });
+                    }}
+                  >
+                    {t('Share')}
                   </Button>
                 </DialogActions>
               </Dialog>

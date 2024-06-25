@@ -64,11 +64,14 @@ import {
   ACTION_TYPE_UNSHARE,
   TASK_TYPE_LIST,
   TASK_TYPE_QUERY,
-  TASK_TYPE_RULE
+  TASK_TYPE_RULE,
+  ACTION_TYPE_SHARE_MULTIPLE,
+  ACTION_TYPE_UNSHARE_MULTIPLE
 } from '../domain/backgroundTask-common';
 import { validateUpdatableAttribute } from '../schema/schema-validator';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { processDeleteOperation, restoreDelete } from '../modules/deleteOperation/deleteOperation-domain';
+import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -357,6 +360,12 @@ const executeUnshare = async (context, user, actionContext, element) => {
     }
   }
 };
+const executeShareMultiple = async (context, user, actionContext, element) => {
+  await Promise.all(actionContext.values.map((organizationId) => addOrganizationRestriction(context, user, element.id, organizationId)));
+};
+const executeUnshareMultiple = async (context, user, actionContext, element) => {
+  await Promise.all(actionContext.values.map((organizationId) => removeOrganizationRestriction(context, user, element.id, organizationId)));
+};
 const executeProcessing = async (context, user, job) => {
   const errors = [];
   for (let index = 0; index < job.actions.length; index += 1) {
@@ -450,6 +459,12 @@ const executeProcessing = async (context, user, job) => {
           }
           if (type === ACTION_TYPE_UNSHARE) {
             await executeUnshare(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_SHARE_MULTIPLE) {
+            await executeShareMultiple(context, user, actionContext, element);
+          }
+          if (type === ACTION_TYPE_UNSHARE_MULTIPLE) {
+            await executeUnshareMultiple(context, user, actionContext, element);
           }
         } catch (err) {
           logApp.error(err);

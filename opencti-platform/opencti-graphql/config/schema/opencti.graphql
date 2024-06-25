@@ -907,6 +907,8 @@ enum BackgroundTaskActionType {
   RULE_ELEMENT_RESCAN
   SHARE
   UNSHARE
+  SHARE_MULTIPLE
+  UNSHARE_MULTIPLE
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE

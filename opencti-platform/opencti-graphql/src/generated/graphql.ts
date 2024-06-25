@@ -1164,7 +1164,9 @@ export enum BackgroundTaskActionType {
   Restore = 'RESTORE',
   RuleElementRescan = 'RULE_ELEMENT_RESCAN',
   Share = 'SHARE',
-  Unshare = 'UNSHARE'
+  ShareMultiple = 'SHARE_MULTIPLE',
+  Unshare = 'UNSHARE',
+  UnshareMultiple = 'UNSHARE_MULTIPLE'
 }
 
 export type BackgroundTaskConnection = {

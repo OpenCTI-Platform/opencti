@@ -24,6 +24,8 @@ export const ACTION_TYPE_RESTORE = 'RESTORE';
 export const ACTION_TYPE_COMPLETE_DELETE = 'COMPLETE_DELETE';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
+export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
+export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 
 const isDeleteRestrictedAction = (a) => { return a === ACTION_TYPE_DELETE || a === ACTION_TYPE_RESTORE || a === ACTION_TYPE_COMPLETE_DELETE; };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
