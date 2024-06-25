@@ -7,7 +7,7 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
-import { Strategy as SamlStrategy } from 'passport-saml';
+import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
@@ -273,6 +273,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         } else {
           done({ message: 'Restricted access, ask your administrator' });
         }
+      }, (profile) => {
+        // SAML Logout function
+        logApp.info(`[SAML] Logout done for ${profile}`);
       });
       samlStrategy.logout_remote = samlOptions.logout_remote;
       passport.use(providerRef, samlStrategy);

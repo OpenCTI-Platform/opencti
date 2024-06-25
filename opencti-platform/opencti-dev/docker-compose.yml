@@ -90,6 +90,19 @@ services:
     profiles:
       - "telemetry"
 
+  # SAML / OpenId provider with keycloak - disabled by default
+  # docker compose --profile keycloak up -d
+  opencti-dev-keycloak:
+      profiles: [ keycloak ]
+      image: quay.io/keycloak/keycloak:23.0.1
+      container_name: opencti-dev-keycloak
+      command: start-dev
+      environment:
+        KEYCLOAK_ADMIN: "admin"
+        KEYCLOAK_ADMIN_PASSWORD: "admin"
+      ports:
+        - "9999:8080"
+
 volumes:
   esdata:
     driver: local
