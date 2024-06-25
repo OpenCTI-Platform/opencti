@@ -85,7 +85,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
   suggestedMapping,
   suggestedMappingCount,
   height,
-  handleSwitchView,
   handleAskNewSuggestedMapping,
   handleValidateSuggestedMapping,
   isLoading,
@@ -167,7 +166,9 @@ ContainerStixCoreObjectsSuggestedMappingProps
   const mappedEntitiesWithNode = mappedEntities.map((e) => { return { node: e }; });
 
   // Filter entities not removed and only entities not in container if toggle activated
-  const filterMappedEntities = (mappedEntity) => {
+  // TODO optimize perf of this method
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const filterMappedEntities = (mappedEntity: any) => {
     return !removedEntities.find((r) => r === mappedEntity.node?.matchedEntity?.id)
          && (!onlyNotContainedEntities || !mappedEntity.node?.matchedEntity?.containers?.edges?.find((c: { node: { id: string; }; }) => c.node?.id === container.id));
   };
@@ -238,7 +239,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        handleChangeView={handleSwitchView}
         iconExtension={false}
         filters={filters}
         availableEntityTypes={['Stix-Core-Object']}
@@ -260,15 +260,11 @@ ContainerStixCoreObjectsSuggestedMappingProps
           isLoading={() => false}
           dataList={filteredMappedEntities}
           globalCount={filteredMappedEntities.length}
-          LineComponent={
-            <ContainerStixCoreObjectsSuggestedMappingLine
-              handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-            />
-          }
+          LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
           DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
           dataColumns={dataColumns}
           contentMappingCount={suggestedMappingCount}
-          mappingCount = {filteredMappedEntities.length}
+          handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
           height={height}
         />
       </ListLines>
