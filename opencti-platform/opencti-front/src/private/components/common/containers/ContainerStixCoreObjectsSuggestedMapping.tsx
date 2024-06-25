@@ -15,6 +15,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -62,6 +64,9 @@ const useStyles = makeStyles(() => ({
     margin: 0,
     padding: '15px 0 0 0',
   },
+  button: {
+    marginLeft: 2,
+  },
 }));
 
 interface ContainerStixCoreObjectsSuggestedMappingProps {
@@ -69,10 +74,8 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   suggestedMapping: ContainerStixCoreObjectsSuggestedMappingQuery$data
   suggestedMappingCount: Record<string, number>;
   height: number;
-  handleSwitchView: (view: string) => void;
   handleAskNewSuggestedMapping: () => void;
   handleValidateSuggestedMapping: (mappingToAdd: any) => void;
-  currentView: string;
   isLoading: boolean;
 }
 
@@ -85,7 +88,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
   handleSwitchView,
   handleAskNewSuggestedMapping,
   handleValidateSuggestedMapping,
-  currentView,
   isLoading,
 }) => {
   const [removedEntities, setRemovedEntities] = useState<string[]>([]);
@@ -210,6 +212,27 @@ ContainerStixCoreObjectsSuggestedMappingProps
           label={t_i18n('Entities not in container')}
         />
       </FormGroup>
+      <Tooltip title={t_i18n('Suggest new mapping')}>
+        <Button
+          variant="contained"
+          classes={{ root: classes.button }}
+          onClick={handleAskNewSuggestedMapping}
+        >
+          {t_i18n('Suggest new mapping')}
+        </Button>
+      </Tooltip>
+      <Tooltip title={t_i18n('Validate suggested mapping')}>
+        <Button
+          variant="contained"
+          color="secondary"
+          classes={{ root: classes.button }}
+          onClick={handleAskValidateSuggestedMapping}
+          startIcon={<CheckCircleOutlined />}
+          size="small"
+        >
+          {t_i18n('Validate')}
+        </Button>
+      </Tooltip>
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
@@ -225,7 +248,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
         noPadding={true}
         handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
         handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
-        currentView={currentView}
         mappingCount={filteredMappedEntities.length}
         disabledValidate={filteredMappedEntities.length <= 0}
         enableMappingView

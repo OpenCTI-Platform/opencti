@@ -18,8 +18,15 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
 }) => {
   const [isMappingHeaderDisabled, setMappingHeaderDisabled] = useState<boolean>(false);
   const { pathname } = useLocation();
-  const currentMode = pathname.endsWith('/mapping') ? 'mapping' : 'content';
-  const modes = isContainer ? ['content', 'mapping'] : [];
+
+  const getCurrentMode = (currentPathname: string) => {
+    if (currentPathname.endsWith('/mapping')) return 'mapping';
+    if (currentPathname.endsWith('/suggested_mapping')) return 'suggested_mapping';
+    return 'content';
+  };
+
+  const currentMode = getCurrentMode(pathname);
+  const modes = isContainer ? ['content', 'suggested_mapping', 'mapping'] : [];
   return (
     <>
       <StixCoreObjectContentHeader
@@ -29,6 +36,26 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
       />
       <Routes>
         <Route
+          path="/suggested_mapping"
+          element={
+            <QueryRenderer
+              query={containerContentQuery}
+              variables={{ id: stixCoreObject.id }}
+              render={({ props } : { props: ContainerContentQuery$data }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} currentView={'suggestedMapping'}/>;
+                }
+                return (
+                  <Loader
+                    variant={LoaderVariant.inElement}
+                    withTopMargin={true}
+                  />
+                );
+              }}
+            />
+              }
+        />
+        <Route
           path="/mapping"
           element={
             <QueryRenderer
@@ -36,7 +63,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
               variables={{ id: stixCoreObject.id }}
               render={({ props } : { props: ContainerContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerContent containerData={props.container}/>;
+                  return <ContainerContent containerData={props.container} currentView={'mapping'}/>;
                 }
                 return (
                   <Loader

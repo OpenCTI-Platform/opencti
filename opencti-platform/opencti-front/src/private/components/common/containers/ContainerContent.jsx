@@ -15,7 +15,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
@@ -26,6 +26,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectMappableContent from '../stix_core_objects/StixCoreObjectMappableContent';
+import { resolveLink } from '../../../../utils/Entity';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -121,14 +122,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ContainerContentComponent = ({ containerData }) => {
+const ContainerContentComponent = ({ containerData, currentView }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openClearMapping, setOpenClearMapping] = useState(false);
-  const [currentView, setCurrentView] = useState('mapping');
   const [selectedText, setSelectedText] = useState(null);
   const [clearing, setClearing] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const subscription = OPEN$.subscribe({
       next: () => {
@@ -166,10 +167,6 @@ const ContainerContentComponent = ({ containerData }) => {
       setSelectedText(text.trim());
       OPEN$.next({ action: 'OpenMapping' });
     }
-  };
-
-  const handleSwitchView = (view) => {
-    setCurrentView(view);
   };
 
   const addMapping = (stixCoreObject) => {
@@ -223,7 +220,7 @@ const ContainerContentComponent = ({ containerData }) => {
         MESSAGING$.notifySuccess(
           <span>
             {t_i18n(
-              'New suggested mapping has been executed. You can monitor it on',
+              'New suggested mapping has been asked. You can monitor the progress on',
             )}{' '}
             <Link to={`/dashboard/data/ingestion/connectors/${response.stixCoreObjectEdit.askAnalysis.connector.id}`}>
               {t_i18n('the dedicated page')}
@@ -267,7 +264,9 @@ const ContainerContentComponent = ({ containerData }) => {
         },
       },
       onCompleted: () => {
-        handleSwitchView('mapping');
+        navigate(
+          `${resolveLink(containerData.entity_type)}/${containerData.id}/content/mapping`,
+        );
       },
     });
   };
@@ -373,7 +372,6 @@ const ContainerContentComponent = ({ containerData }) => {
                 addMapping={addMapping}
                 contentMappingData={contentMappingData}
                 contentMappingCount={mappedStringsCount}
-                handleSwitchView={handleSwitchView}
                 handleClearMapping={() => setOpenClearMapping(true)}
                 currentView={currentView}
               />
@@ -421,10 +419,8 @@ const ContainerContentComponent = ({ containerData }) => {
                       setOpen(false);
                       setSelectedText(null);
                     }}
-                    handleSwitchView={handleSwitchView}
                     handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
                     handleValidateSuggestedMapping={validateSuggestedMapping}
-                    currentView={currentView}
                     isLoading={isLoading}
                   />
                 </Paper>

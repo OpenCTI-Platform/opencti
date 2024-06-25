@@ -213,11 +213,7 @@ class ListLines extends Component {
       enableEntitiesView,
       enableContextualView,
       enableMappingView,
-      handleAskNewSuggestedMapping,
-      handleValidateSuggestedMapping,
       handleClearMapping,
-      mappingCount,
-      disabledValidate,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
@@ -393,66 +389,6 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                  <div
-                    style={{ padding: '0px 20px 0 0' }}
-                  >
-                    {typeof handleChangeView === 'function'
-                      && enableMappingView && (
-                        <ToggleButton value="mapping" aria-label="mapping">
-                          <Tooltip title={t('Mapping view')}>
-                            <DifferenceOutlined
-                              fontSize="small"
-                              color={currentView === 'mapping' ? 'primary' : 'inherit'}
-                            />
-                          </Tooltip>
-                        </ToggleButton>
-                    )}
-                    {typeof handleChangeView === 'function'
-                      && enableMappingView && (
-                        <ToggleButton value="suggestedMapping" aria-label="suggested mapping">
-                          <Tooltip title={t('Suggested mapping view')}>
-                            { mappingCount > 0
-                              ? <Badge badgeContent={mappingCount} color="primary">
-                                <PlaylistPlayIcon
-                                  fontSize="small"
-                                  color={currentView !== 'mapping' ? 'primary' : 'inherit'}
-                                />
-                              </Badge>
-                              : <PlaylistPlayIcon
-                                  fontSize="small"
-                                  color={currentView !== 'mapping' ? 'primary' : 'inherit'}
-                                />
-                              }
-                          </Tooltip>
-                        </ToggleButton>
-                    )}
-                  </div>
-                    {handleAskNewSuggestedMapping && (
-                    <Tooltip title={t('Suggest new mapping')}>
-                      <Button
-                        variant="contained"
-                        classes={{ root: classes.button }}
-                        onClick={() => handleAskNewSuggestedMapping()}
-                        color="secondary"
-                      >
-                        {t('Suggest new mapping')}
-                      </Button>
-                    </Tooltip>
-                    )}
-                    {handleValidateSuggestedMapping && (
-                    <Tooltip title={t('Validate suggested mapping')}>
-                      <Button
-                        variant="contained"
-                        classes={{ root: classes.button }}
-                        onClick={handleValidateSuggestedMapping}
-                        startIcon={<CheckCircleOutlined />}
-                        size="small"
-                        disabled={disabledValidate}
-                      >
-                        {t('Validate')}
-                      </Button>
-                    </Tooltip>
-                    )}
                     {handleClearMapping && (
                       <ToggleButton value="clearMapping" aria-label="Clear mapping" onClick={() => handleClearMapping()}>
                         <Tooltip title={t('Clear mapping')}>

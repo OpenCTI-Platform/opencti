@@ -81,6 +81,9 @@ export const getPaddingRight = (locationPath: string, entityId: string, entityTy
       locationPath.includes(
         `${entityTypePath}/${entityId}/content/mapping`,
       )
+      || locationPath.includes(
+        `${entityTypePath}/${entityId}/content/suggested_mapping`,
+      )
     ) {
       paddingRight = 0;
     }

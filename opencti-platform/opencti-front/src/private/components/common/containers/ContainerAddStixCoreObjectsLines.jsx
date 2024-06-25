@@ -288,7 +288,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     const dataList = R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data);
     const computedAddedStixCoreObjects = {};
     // The mapping view gives standard_id, we need to convert
-    (Object.keys(addedStixCoreObjects) ?? []).forEach((addedId) => {
+    Object.keys(addedStixCoreObjects).forEach((addedId) => {
       let object = dataList.find(({ node: { id } }) => addedId === id);
       if (object) {
         computedAddedStixCoreObjects[addedId] = object;

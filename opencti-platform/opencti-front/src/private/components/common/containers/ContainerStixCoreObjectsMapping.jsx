@@ -27,7 +27,6 @@ const ContainerStixCoreObjectsMapping = ({
   openDrawer,
   selectedText,
   handleClose,
-  handleSwitchView,
   handleClearMapping,
   currentView,
   mappingCount,
@@ -124,7 +123,6 @@ const ContainerStixCoreObjectsMapping = ({
         handleRemoveFilter={handleRemoveFilter}
         handleSwitchGlobalMode={handleSwitchGlobalMode}
         handleSwitchLocalMode={handleSwitchLocalMode}
-        handleChangeView={handleSwitchView}
         iconExtension={false}
         filters={filters}
         availableEntityTypes={['Stix-Core-Object']}
