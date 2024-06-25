@@ -8,16 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  FileDownloadOutlined,
-  LayersClearOutlined,
-  LibraryBooksOutlined,
-  SettingsOutlined,
-  ViewListOutlined,
-  ViewModuleOutlined,
-} from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp, FileDownloadOutlined, LibraryBooksOutlined, SettingsOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -208,8 +199,6 @@ class ListLines extends Component {
       enableNestedView,
       enableEntitiesView,
       enableContextualView,
-      enableMappingView,
-      handleClearMapping,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
@@ -290,10 +279,7 @@ class ListLines extends Component {
                       handleToggleExports();
                     } else if (value && value === 'settings') {
                       this.handleOpenSettings();
-                    } else if (value && value !== 'export-csv' && value !== 'clearMapping'
-                      && value !== 'askNewSuggestedMapping'
-                      && value !== 'validateSuggestedMapping'
-                    ) {
+                    } else if (value && value !== 'export-csv') {
                       handleChangeView(value);
                     }
                   }}
@@ -339,7 +325,7 @@ class ListLines extends Component {
                     </ToggleButton>
                   )}
                   {typeof handleChangeView === 'function'
-                    && !enableEntitiesView && !enableMappingView && (
+                    && !enableEntitiesView && (
                       <ToggleButton value="lines" aria-label="lines">
                         <Tooltip title={t('Lines view')}>
                           <ViewListOutlined
@@ -385,13 +371,6 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                    {handleClearMapping && (
-                      <ToggleButton value="clearMapping" aria-label="Clear mapping" onClick={() => handleClearMapping()}>
-                        <Tooltip title={t('Clear mapping')}>
-                          <LayersClearOutlined fontSize="small" color="primary"/>
-                        </Tooltip>
-                      </ToggleButton>
-                    )}
                     {handleSwitchRedirectionMode && (
                       <ToggleButton
                         size="small"

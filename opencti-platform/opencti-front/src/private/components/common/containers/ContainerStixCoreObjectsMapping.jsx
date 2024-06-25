@@ -1,8 +1,9 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { LayersClearOutlined } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
@@ -32,7 +33,6 @@ const ContainerStixCoreObjectsMapping = ({
   selectedText,
   handleClose,
   handleClearMapping,
-  mappingCount,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -115,64 +115,70 @@ const ContainerStixCoreObjectsMapping = ({
   );
 
   return (
-    <div className={classes.container}>
-      <ToggleButton value="clearMapping" aria-label="Clear mapping" onClick={handleClearMapping}>
+    <div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
         <Tooltip title={t_i18n('Clear mapping')}>
-          <LayersClearOutlined fontSize="small" color="primary"/>
-        </Tooltip>
-      </ToggleButton>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={handleSort}
-        handleSearch={handleSearch}
-        handleAddFilter={handleAddFilter}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        iconExtension={false}
-        filters={filters}
-        availableEntityTypes={['Stix-Core-Object']}
-        keyword={searchTerm}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        noPadding={true}
-        handleClearMapping={handleClearMapping}
-        enableMappingView
-        disableCards
-        mappingCount={mappingCount}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <ContainerStixCoreObjectsMappingLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
-                  ))}
-              </>
-                }
+          <Button
+            variant="contained"
+            onClick={handleClearMapping}
+            startIcon={<LayersClearOutlined />}
+            size="small"
           >
-            <ContainerStixCoreObjectsMappingLines
-              container={container}
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              searchTerm={searchTerm}
-              dataColumns={dataColumns}
-              setNumberOfElements={handleSetNumberOfElements}
-              height={height}
-              contentMappingData={contentMappingData}
-              contentMappingCount={contentMappingCount}
-            />
-          </React.Suspense>
-        )}
-      </ListLines>
+            {t_i18n('Clear mapping')}
+          </Button>
+        </Tooltip>
+      </Box>
+      <div className={classes.container}>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={handleSort}
+          handleSearch={handleSearch}
+          handleAddFilter={handleAddFilter}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          iconExtension={false}
+          filters={filters}
+          availableEntityTypes={['Stix-Core-Object']}
+          keyword={searchTerm}
+          secondaryAction={true}
+          numberOfElements={numberOfElements}
+          noPadding={true}
+          disableCards
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <ContainerStixCoreObjectsMappingLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+                  }
+            >
+              <ContainerStixCoreObjectsMappingLines
+                container={container}
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                searchTerm={searchTerm}
+                dataColumns={dataColumns}
+                setNumberOfElements={handleSetNumberOfElements}
+                height={height}
+                contentMappingData={contentMappingData}
+                contentMappingCount={contentMappingCount}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </div>
       <ContainerAddStixCoreObjects
         containerId={container.id}
         mapping={true}
