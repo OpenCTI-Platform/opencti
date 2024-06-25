@@ -18,6 +18,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 
+// containers fetching is not good performance wise, we could find a better way to do it by moving it to backend if needed
 export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
   query ContainerStixCoreObjectsSuggestedMappingQuery(
     $id: ID!

@@ -573,9 +573,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   }
 
   // Get ongoing work if any. If work is ongoing, we don't need to look for analysis
-  // TODO:  need to add content_source and content_type to work attributes to be able to filter works
+  // TODO:  need to add content_source and content_type to work attributes to be able to correct filter works
   const works = await worksForSource(context, user, entity.standard_id, { type: CONNECTOR_INTERNAL_ANALYSIS });
-  const filterCompletedWorks = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
+  const filterCompletedWorks = works.filter((w) => w.status !== 'complete' && w.errors.length === 0);
   if (filterCompletedWorks.length > 0) {
     return { analysisType: 'mapping_analysis', analysisStatus: filterCompletedWorks[0].status };
   }
