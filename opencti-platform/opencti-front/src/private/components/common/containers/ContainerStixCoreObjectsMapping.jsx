@@ -1,5 +1,8 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import { LayersClearOutlined } from '@mui/icons-material';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
@@ -8,6 +11,7 @@ import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,10 +32,10 @@ const ContainerStixCoreObjectsMapping = ({
   selectedText,
   handleClose,
   handleClearMapping,
-  currentView,
   mappingCount,
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -112,6 +116,11 @@ const ContainerStixCoreObjectsMapping = ({
 
   return (
     <div className={classes.container}>
+      <ToggleButton value="clearMapping" aria-label="Clear mapping" onClick={handleClearMapping}>
+        <Tooltip title={t_i18n('Clear mapping')}>
+          <LayersClearOutlined fontSize="small" color="primary"/>
+        </Tooltip>
+      </ToggleButton>
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
@@ -133,7 +142,6 @@ const ContainerStixCoreObjectsMapping = ({
         handleClearMapping={handleClearMapping}
         enableMappingView
         disableCards
-        currentView={currentView}
         mappingCount={mappingCount}
       >
         {queryRef && (

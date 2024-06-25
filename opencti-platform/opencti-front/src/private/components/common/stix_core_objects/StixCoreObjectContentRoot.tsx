@@ -5,8 +5,12 @@ import ContainerContent, { containerContentQuery } from '@components/common/cont
 import StixCoreObjectContent from '@components/common/stix_core_objects/StixCoreObjectContent';
 import { ContainerContentQuery$data } from '@components/common/containers/__generated__/ContainerContentQuery.graphql';
 import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
+import ContainerSuggestedMappingContent from '@components/common/containers/ContainerSuggestedMappingContent';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import {
+    ContainerContent_container$data
+} from "@components/common/containers/__generated__/ContainerContent_container.graphql";
 
 interface StixCoreObjectContentRootProps {
   stixCoreObject: StixCoreObjectContent_stixCoreObject$data;
@@ -43,7 +47,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
               variables={{ id: stixCoreObject.id }}
               render={({ props } : { props: ContainerContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerContent containerData={props.container} currentView={'suggestedMapping'}/>;
+                  return <ContainerSuggestedMappingContent containerFragment={props.container}/>;
                 }
                 return (
                   <Loader
@@ -63,7 +67,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
               variables={{ id: stixCoreObject.id }}
               render={({ props } : { props: ContainerContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerContent containerData={props.container} currentView={'mapping'}/>;
+                  return <ContainerContent containerData={props.container}/>;
                 }
                 return (
                   <Loader

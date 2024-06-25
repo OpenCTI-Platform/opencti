@@ -2,12 +2,12 @@ import React, { FunctionComponent, useState } from 'react';
 import Paper from '@mui/material/Paper';
 import { Field, Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
-import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
+import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
@@ -32,7 +32,7 @@ export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
 `;
 
 interface StixCoreObjectMappableContentProps {
-  containerData: StixCoreObjectContent_stixCoreObject$data;
+  containerData: ContainerContent_container$data;
   handleDownloadPdf?: () => void;
   handleTextSelection?: (t: string) => void;
   askAi: boolean;

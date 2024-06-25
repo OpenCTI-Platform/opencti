@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
 import { graphql } from 'react-relay';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine,
@@ -18,6 +17,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { CheckCircleOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
+import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -73,9 +73,11 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   suggestedMappingCount: Record<string, number>;
   height: number;
   handleAskNewSuggestedMapping: () => void;
-  handleValidateSuggestedMapping: (mappingToAdd: any) => void;
+  handleValidateSuggestedMapping: (mappingToAdd: { matchedString: string, matchedEntityId: string }[]) => void;
   isLoading: boolean;
 }
+
+type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
 ContainerStixCoreObjectsSuggestedMappingProps
@@ -161,17 +163,17 @@ ContainerStixCoreObjectsSuggestedMappingProps
   };
 
   const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
-  const mappedEntitiesWithNode = mappedEntities.map((e) => { return { node: e }; });
-
   // Filter entities not removed and only entities not in container if toggle activated
   // TODO optimize perf of this method
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  const filterMappedEntities = (mappedEntity: any) => {
-    return !removedEntities.find((r) => r === mappedEntity.node?.matchedEntity?.id)
-         && (!onlyNotContainedEntities || !mappedEntity.node?.matchedEntity?.containers?.edges?.find((c: { node: { id: string; }; }) => c.node?.id === container.id));
+  const filterMappedEntities = (mappedEntity: MappedEntityType) => {
+    return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id)
+        && (!onlyNotContainedEntities
+            || !mappedEntity.matchedEntity?.containers?.edges?.find((c) => c?.node?.id === container.id)
+        );
   };
-
-  const filteredMappedEntities = mappedEntitiesWithNode.filter((e) => filterMappedEntities(e));
+  const filteredMappedEntities = mappedEntities.filter((e) => filterMappedEntities(e));
+  const mappedEntitiesWithNode = filteredMappedEntities.map((e) => { return { node: e }; });
 
   handleSetNumberOfElements({
     number: filteredMappedEntities.length.toString(),
@@ -189,7 +191,12 @@ ContainerStixCoreObjectsSuggestedMappingProps
 
   const handleValidate = () => {
     setValidating(true);
-    const mappingToAdd = filteredMappedEntities.map((e) => { return { matchedString: e?.node?.matchedString, matchedEntityId: e?.node?.matchedEntity?.standard_id }; });
+    const mappingToAdd = filteredMappedEntities.map((e) => {
+      return {
+        matchedString: e.matchedString,
+        matchedEntityId: e.matchedEntity.standard_id,
+      };
+    });
     handleValidateSuggestedMapping(mappingToAdd);
   };
 
@@ -260,8 +267,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
             loadMore={() => {}}
             hasMore={() => {}}
             isLoading={() => false}
-            dataList={filteredMappedEntities}
-            globalCount={filteredMappedEntities.length}
+            dataList={mappedEntitiesWithNode}
+            globalCount={mappedEntitiesWithNode.length}
             LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
             DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
             dataColumns={dataColumns}
