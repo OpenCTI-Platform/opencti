@@ -83,6 +83,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
+  SETTINGS,
   SETTINGS_SETPARAMETERS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
@@ -91,6 +92,7 @@ import useGranted, {
   SETTINGS_SETMARKINGS,
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
+  TAXIIAPI_SETCOLLECTIONS,
   CSVMAPPERS,
   VIRTUAL_ORGANIZATION_ADMIN,
   INGESTION,
@@ -108,22 +110,21 @@ import logoFiligranTextLight from '../../../static/images/logo_filigran_text_lig
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
-const SMALL_BAR_WIDTH = 55;
-const OPEN_BAR_WIDTH = 180;
-
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => createStyles({
   drawerPaper: {
-    width: SMALL_BAR_WIDTH,
+    width: 55,
     minHeight: '100vh',
-    background: 'none',
+    background: 0,
+    backgroundColor: theme.palette.background.nav,
     overflowX: 'hidden',
   },
   drawerPaperOpen: {
-    width: OPEN_BAR_WIDTH,
+    width: 180,
     minHeight: '100vh',
-    background: 'none',
+    background: 0,
+    backgroundColor: theme.palette.background.nav,
     overflowX: 'hidden',
   },
   menuItemIcon: {
@@ -148,7 +149,7 @@ const useStyles = makeStyles((theme) => createStyles({
   },
   menuItemText: {
     padding: '1px 0 0 15px',
-    fontWeight: 500,
+    fontWeight: 1000,
     fontSize: 14,
   },
   menuSubItemText: {
@@ -160,25 +161,25 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 12,
   },
   menuCollapseOpen: {
-    width: OPEN_BAR_WIDTH,
+    width: 180,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuCollapse: {
-    width: SMALL_BAR_WIDTH,
+    width: 55,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogoOpen: {
-    width: OPEN_BAR_WIDTH,
+    width: 180,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
   },
   menuLogo: {
-    width: SMALL_BAR_WIDTH,
+    width: 55,
     height: 35,
     fontWeight: 500,
     fontSize: 14,
@@ -214,16 +215,7 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToSettings = useGranted([
-    SETTINGS_SETPARAMETERS,
-    SETTINGS_SETACCESSES,
-    SETTINGS_SETMARKINGS,
-    SETTINGS_SETCUSTOMIZATION,
-    SETTINGS_SETLABELS,
-    SETTINGS_SECURITYACTIVITY,
-    SETTINGS_FILEINDEXING,
-    SETTINGS_SUPPORT,
-  ]);
+  const isGrantedToSettings = useGranted([SETTINGS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -265,7 +257,6 @@ const LeftBar = () => {
   const handleToggle = () => {
     setSelectedMenu([]);
     localStorage.setItem('navOpen', String(!navOpen));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'navOpen' }));
     localStorage.setItem('selectedMenu', JSON.stringify([]));
     setNavOpen(!navOpen);
     MESSAGING$.toggleNav.next('toggle');
@@ -293,6 +284,19 @@ const LeftBar = () => {
   const handleGoToPage = (link) => {
     navigate(link);
   };
+  const handleExpandIcon = (entity_type) => {
+    if (!navOpen) return;
+    if (selectedMenu.includes(entity_type) && location.pathname.includes(`dashboard/${entity_type}`)) {
+      return <ExpandLessOutlined color="primary" />;
+    } if (selectedMenu.includes(entity_type) && !location.pathname.includes(`dashboard/${entity_type}`)) {
+      return <ExpandLessOutlined/>;
+    }
+    if (location.pathname.includes(`dashboard/${entity_type}`)) {
+      return <ExpandMoreOutlined color="primary">;</ExpandMoreOutlined>;
+    }
+    return <ExpandMoreOutlined />;
+  };
+
   const hiddenEntities = useHiddenEntities();
   const hideAnalyses = useIsHiddenEntities(
     'Report',
@@ -355,7 +359,6 @@ const LeftBar = () => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
-
   const isMobile = dimension.width < 768;
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
@@ -368,6 +371,11 @@ const LeftBar = () => {
                   component={Link}
                   to={entry.link}
                   selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
+                  sx={{
+                    color: location.pathname.includes(entry.link.substring(0, entry.link.lastIndexOf('/')))
+                      ? theme.palette.primary.main
+                      : theme.palette.common.white,
+                  }}
                   dense={true}
                   classes={{ root: classes.menuSubItem }}
                 >
@@ -406,7 +414,6 @@ const LeftBar = () => {
             onMouseEnter: () => handleSelectedMenuOpen(menu),
             onMouseLeave: handleSelectedMenuClose,
             sx: {
-              height: 'unset',
               pointerEvents: 'auto',
             },
           },
@@ -445,33 +452,29 @@ const LeftBar = () => {
         paper: navOpen ? classes.drawerPaperOpen : classes.drawerPaper,
       }}
       sx={{
-        width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-        zIndex: 2,
-        background: theme.palette.background.nav,
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
+        width: navOpen ? 180 : 55,
         transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.easeInOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
       }}
     >
-      <div ref={ref} aria-label="Main navigation">
+      <div ref={ref}>
         <MenuList
           component="nav"
-          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 58px )` }}
+          style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
         >
           <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
             <MenuItem
               component={Link}
               to="/dashboard"
               selected={location.pathname === '/dashboard'}
+              sx ={{ color: location.pathname === '/dashboard' ? theme.palette.primary.main : theme.palette.common.white }}
               dense={true}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <DashboardOutlined />
+                {location.pathname === '/dashboard' ? <DashboardOutlined color="primary"/> : <DashboardOutlined />}
               </ListItemIcon>
               {navOpen && (
                 <ListItemText
@@ -504,25 +507,57 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <AssignmentOutlined />
+                  {location.pathname.includes('analyses') ? <AssignmentOutlined color="primary"/> : <AssignmentOutlined />}
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Analyses')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/analyses')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('analyses') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('analyses')}
               </MenuItem>
             )}
             {!hideAnalyses && generateSubMenu(
               'analyses',
               [
-                { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small" /> },
-                { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
-                { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
-                { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
-                { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
+                {
+                  type: 'Report',
+                  link: '/dashboard/analyses/reports',
+                  label: 'Reports',
+                  icon: location.pathname.includes('/dashboard/analyses') ? <DescriptionOutlined fontSize="small" color="primary"/> : <DescriptionOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Grouping',
+                  link: '/dashboard/analyses/groupings',
+                  label: 'Groupings',
+                  icon: location.pathname.includes('/dashboard/analyses') ? <WorkspacesOutlined fontSize="small" color="primary"/> : <WorkspacesOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Malware-Analysis',
+                  link: '/dashboard/analyses/malware_analyses',
+                  label: 'Malware analyses',
+                  icon: location.pathname.includes('/dashboard/analyses') ? <BiotechOutlined fontSize="small" color="primary" /> : <BiotechOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Note',
+                  link: '/dashboard/analyses/notes',
+                  label: 'Notes',
+                  icon: location.pathname.includes('/dashboard/analyses') ? <SubjectOutlined fontSize="inherit" color="primary" /> : <SubjectOutlined fontSize="inherit" />,
+                },
+                {
+                  type: 'External-Reference',
+                  link: '/dashboard/analyses/external_references',
+                  label: 'External references',
+                  icon: location.pathname.includes('/dashboard/analyses') ? <LocalOfferOutlined fontSize="small" color="primary" /> : <LocalOfferOutlined fontSize="small" />,
+                },
               ],
             )}
             {!hideCases && (
@@ -536,25 +571,57 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <CasesOutlined />
+                  {location.pathname.includes('cases') ? <CasesOutlined color="primary"/> : <CasesOutlined />}
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Cases')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/cases')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('cases') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('cases')}
               </MenuItem>
             )}
             {!hideCases && generateSubMenu(
               'cases',
               [
-                { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: 'Incident responses', icon: <BriefcaseEyeOutline fontSize="small" /> },
-                { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: 'Requests for information', icon: <BriefcaseSearchOutline fontSize="small" /> },
-                { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: 'Requests for takedown', icon: <BriefcaseRemoveOutline fontSize="small" /> },
-                { type: 'Task', link: '/dashboard/cases/tasks', label: 'Tasks', icon: <TaskAltOutlined fontSize="small" /> },
-                { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: 'Feedbacks', icon: <BriefcaseEditOutline fontSize="small" /> },
+                {
+                  type: 'Case-Incident',
+                  link: '/dashboard/cases/incidents',
+                  label: 'Incident responses',
+                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseEyeOutline fontSize="small" color="primary"/> : <BriefcaseEyeOutline fontSize="small" />,
+                },
+                {
+                  type: 'Case-Rfi',
+                  link: '/dashboard/cases/rfis',
+                  label: 'Requests for information',
+                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseSearchOutline fontSize="small" color="primary"/> : <BriefcaseSearchOutline fontSize="small" />,
+                },
+                {
+                  type: 'Case-Rft',
+                  link: '/dashboard/cases/rfts',
+                  label: 'Requests for takedown',
+                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseRemoveOutline fontSize="small" color="primary"/> : <BriefcaseRemoveOutline fontsize="small" />,
+                },
+                {
+                  type: 'Task',
+                  link: '/dashboard/cases/tasks',
+                  label: 'Tasks',
+                  icon: location.pathname.includes('/dashboard/cases') ? <TaskAltOutlined fontSize="small" color="primary"/> : <TaskAltOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Feedback',
+                  link: '/dashboard/cases/feedbacks',
+                  label: 'Feedbacks',
+                  icon: location.pathname.includes('/dashboard/cases') ? <BriefcaseEditOutline fontSize="small" color="primary"/> : <BriefcaseEditOutline fontSize="small" />,
+                },
               ],
             )}
             {!hideEvents && (
@@ -568,23 +635,45 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <Timetable />
+                  {location.pathname.includes('dashboard/events') ? <Timetable color="primary"/> : <Timetable /> }
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Events')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/events')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('events') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('events')}
               </MenuItem>
             )}
             {!hideEvents && generateSubMenu(
               'events',
               [
-                { type: 'Incident', link: '/dashboard/events/incidents', label: 'Incidents', icon: <Fire fontSize="small" /> },
-                { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: 'Sightings', icon: <VisibilityOutlined fontSize="small" /> },
-                { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: 'Observed datas', icon: <WifiTetheringOutlined fontSize="small" /> },
+                {
+                  type: 'Incident',
+                  link: '/dashboard/events/incidents',
+                  label: 'Incidents',
+                  icon: location.pathname.includes('/dashboard/events') ? <Fire fontSize="small" color="primary"/> : <Fire fontSize="small" />,
+                },
+                {
+                  type: 'stix-sighting-relationship',
+                  link: '/dashboard/events/sightings',
+                  label: 'Sightings',
+                  icon: location.pathname.includes('/dashboard/events') ? <VisibilityOutlined fontSize="small" color="primary"/> : <VisibilityOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Observed-Data',
+                  link: '/dashboard/events/observed_data',
+                  label: 'Observed datas',
+                  icon: location.pathname.includes('/dashboard/events') ? <WifiTetheringOutlined fontSize="small" color="primary"/> : <WifiTetheringOutlined fontSize="small" />,
+                },
               ],
             )}
             {!hideObservations && (
@@ -598,24 +687,51 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <Binoculars />
+                  {location.pathname.includes('observations') ? <Binoculars color="primary"/> : <Binoculars />}
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Observations')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/observations')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('observations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('observations')}
               </MenuItem>
             )}
             {!hideObservations && generateSubMenu(
               'observations',
               [
-                { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: 'Observables', icon: <HexagonOutline fontSize="small" /> },
-                { type: 'Artifact', link: '/dashboard/observations/artifacts', label: 'Artifacts', icon: <ArchiveOutline fontSize="small" /> },
-                { type: 'Indicator', link: '/dashboard/observations/indicators', label: 'Indicators', icon: <ShieldSearch fontSize="small" /> },
-                { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: 'Infrastructures', icon: <ServerNetwork fontSize="small" /> },
+                {
+                  type: 'Stix-Cyber-Observable',
+                  link: '/dashboard/observations/observables',
+                  label: 'Observables',
+                  icon: location.pathname.includes('/dashboard/observations') ? <HexagonOutline color="primary" fontSize="small" /> : <HexagonOutline fontSize="small" />,
+                },
+                {
+                  type: 'Artifact',
+                  link: '/dashboard/observations/artifacts',
+                  label: 'Artifacts',
+                  icon: location.pathname.includes('/dashboard/observations') ? <ArchiveOutline color="primary" fontSize="small"/> : <ArchiveOutline fontSize="small"/>,
+                },
+                {
+                  type: 'Indicator',
+                  link: '/dashboard/observations/indicators',
+                  label: 'Indicators',
+                  icon: location.pathname.includes('/dashboard/observations') ? <ShieldSearch color="primary" fontSize="small"/> : <ShieldSearch fontSize="small"/>,
+                },
+                {
+                  type: 'Infrastructure',
+                  link: '/dashboard/observations/infrastructures',
+                  label: 'Infrastructures',
+                  icon: location.pathname.includes('/dashboard/observations') ? <ServerNetwork color="primary" fontSize="small" /> : <ServerNetwork fontSize="small" />,
+                },
               ],
             )}
           </MenuList>
@@ -632,29 +748,51 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <FlaskOutline />
+                  {location.pathname.includes('threats') ? <FlaskOutline color="primary"/> : <FlaskOutline /> }
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Threats')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/threats')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('threats') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('threats')}
               </MenuItem>
             )}
             {!hideThreats && generateSubMenu(
               'threats',
               [
-                { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: 'Threat actors (group)', icon: <AccountMultipleOutline fontSize="small" /> },
+                {
+                  type: 'Threat-Actor-Group',
+                  link: '/dashboard/threats/threat_actors_group',
+                  label: 'Threat actors (group)',
+                  icon: location.pathname.includes('/dashboard/threats') ? <AccountMultipleOutline fontSize="small" color="primary"/> : <AccountMultipleOutline fontsize="small" />,
+                },
                 {
                   type: 'Threat-Actor-Individual',
                   link: '/dashboard/threats/threat_actors_individual',
                   label: 'Threat actors (individual)',
-                  icon: <LaptopAccount fontSize="small" />,
+                  icon: location.pathname.includes('/dashboard/threats') ? <LaptopAccount fontSize="small" color="primary"/> : <LaptopAccount fontsize="small" />,
                 },
-                { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: 'Intrusion sets', icon: <DiamondOutlined fontSize="small" /> },
-                { type: 'Campaign', link: '/dashboard/threats/campaigns', label: 'Campaigns', icon: <ChessKnight fontSize="small" /> },
+                {
+                  type: 'Intrusion-Set',
+                  link: '/dashboard/threats/intrusion_sets',
+                  label: 'Intrusion sets',
+                  icon: location.pathname.includes('/dashboard/threats') ? <DiamondOutlined fontSize="small" color="primary"/> : <DiamondOutlined fontsize="small" />,
+                },
+                {
+                  type: 'Campaign',
+                  link: '/dashboard/threats/campaigns',
+                  label: 'Campaigns',
+                  icon: location.pathname.includes('/dashboard/threats') ? <ChessKnight fontSize="small" color="primary"/> : <ChessKnight fontsize="small"/>,
+                },
               ],
             )}
             {!hideArsenal && (
@@ -668,24 +806,51 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <LayersOutlined />
+                  {location.pathname.includes('arsenal') ? <LayersOutlined color="primary"/> : <LayersOutlined /> }
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Arsenal')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/arsenal')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('arsenal') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('arsenal')}
               </MenuItem>
             )}
             {!hideArsenal && generateSubMenu(
               'arsenal',
               [
-                { type: 'Malware', link: '/dashboard/arsenal/malwares', label: 'Malwares', icon: <Biohazard fontSize="small" /> },
-                { type: 'Channel', link: '/dashboard/arsenal/channels', label: 'Channels', icon: <SurroundSoundOutlined fontSize="small" /> },
-                { type: 'Tool', link: '/dashboard/arsenal/tools', label: 'Tools', icon: <WebAssetOutlined fontSize="small" /> },
-                { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: 'Vulnerabilities', icon: <BugReportOutlined fontSize="small" /> },
+                {
+                  type: 'Malware',
+                  link: '/dashboard/arsenal/malwares',
+                  label: 'Malwares',
+                  icon: location.pathname.includes('/dashboard/arsenal') ? <Biohazard fontSize="small" color="primary"/> : <Biohazard fontSize="small" />,
+                },
+                {
+                  type: 'Channel',
+                  link: '/dashboard/arsenal/channels',
+                  label: 'Channels',
+                  icon: location.pathname.includes('/dashboard/arsenal') ? <SurroundSoundOutlined fontSize="small" color="primary"/> : <SurroundSoundOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Tool',
+                  link: '/dashboard/arsenal/tools',
+                  label: 'Tools',
+                  icon: location.pathname.includes('/dashboard/arsenal') ? <WebAssetOutlined fontSize="small" color="primary"/> : <WebAssetOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Vulnerability',
+                  link: '/dashboard/arsenal/vulnerabilities',
+                  label: 'Vulnerabilities',
+                  icon: location.pathname.includes('/dashboard/arsenal') ? <BugReportOutlined fontSize="small" color="primary"/> : <BugReportOutlined fontSize="small" />,
+                },
               ],
             )}
             {!hideTechniques && (
@@ -699,25 +864,57 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <ConstructionOutlined />
+                  {location.pathname.includes('techniques') ? <ConstructionOutlined color="primary"/> : <ConstructionOutlined /> }
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Techniques')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/techniques')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('techniques') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('techniques')}
               </MenuItem>
             )}
             {!hideTechniques && generateSubMenu(
               'techniques',
               [
-                { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: 'Attack patterns', icon: <LockPattern fontSize="small" /> },
-                { type: 'Narrative', link: '/dashboard/techniques/narratives', label: 'Narratives', icon: <SpeakerNotesOutlined fontSize="small" /> },
-                { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: 'Courses of action', icon: <ProgressWrench fontSize="small" /> },
-                { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: 'Data components', icon: <SourceOutlined fontSize="small" /> },
-                { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: 'Data sources', icon: <StreamOutlined fontSize="small" /> },
+                {
+                  type: 'Attack-Pattern',
+                  link: '/dashboard/techniques/attack_patterns',
+                  label: 'Attack patterns',
+                  icon: location.pathname.includes('/dashboard/techniques') ? <LockPattern fontSize="small" color="primary"/> : <LockPattern fontSize="small" />,
+                },
+                {
+                  type: 'Narrative',
+                  link: '/dashboard/techniques/narratives',
+                  label: 'Narratives',
+                  icon: location.pathname.includes('/dashboard/techniques') ? <SpeakerNotesOutlined fontSize="small" color="primary"/> : <SpeakerNotesOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Course-Of-Action',
+                  link: '/dashboard/techniques/courses_of_action',
+                  label: 'Courses of action',
+                  icon: location.pathname.includes('/dashboard/techniques') ? <ProgressWrench fontSize="small" color="primary"/> : <ProgressWrench fontSize="small" />,
+                },
+                {
+                  type: 'Data-Component',
+                  link: '/dashboard/techniques/data_components',
+                  label: 'Data components',
+                  icon: location.pathname.includes('/dashboard/techniques') ? <SourceOutlined fontSize="small" color="primary"/> : <SourceOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Data-Source',
+                  link: '/dashboard/techniques/data_sources',
+                  label: 'Data sources',
+                  icon: location.pathname.includes('/dashboard/techniques') ? <StreamOutlined fontSize="small" color="primary"/> : <StreamOutlined fontSize="small" />,
+                },
               ],
             )}
             {!hideEntities && (
@@ -731,25 +928,57 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <FolderTableOutline />
+                  {location.pathname.includes('dashboard/entities') ? <FolderTableOutline color="primary"/> : <FolderTableOutline />}
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Entities')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/entities')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('entities') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('entities')}
               </MenuItem>
             )}
             {!hideEntities && generateSubMenu(
               'entities',
               [
-                { type: 'Sector', link: '/dashboard/entities/sectors', label: 'Sectors', icon: <DomainOutlined fontSize="small" /> },
-                { type: 'Event', link: '/dashboard/entities/events', label: 'Events', icon: <EventOutlined fontSize="small" /> },
-                { type: 'Organization', link: '/dashboard/entities/organizations', label: 'Organizations', icon: <AccountBalanceOutlined fontSize="small" /> },
-                { type: 'System', link: '/dashboard/entities/systems', label: 'Systems', icon: <StorageOutlined fontSize="small" /> },
-                { type: 'Individual', link: '/dashboard/entities/individuals', label: 'Individuals', icon: <PersonOutlined fontSize="small" /> },
+                {
+                  type: 'Sector',
+                  link: '/dashboard/entities/sectors',
+                  label: 'Sectors',
+                  icon: location.pathname.includes('/dashboard/entities') ? <DomainOutlined fontSize="small" color="primary"/> : <DomainOutlined fontSize="small"/>,
+                },
+                {
+                  type: 'Event',
+                  link: '/dashboard/entities/events',
+                  label: 'Events',
+                  icon: location.pathname.includes('/dashboard/entities') ? <EventOutlined fontSize="small" color="primary"/> : <EventOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Organization',
+                  link: '/dashboard/entities/organizations',
+                  label: 'Organizations',
+                  icon: location.pathname.includes('/dashboard/entities') ? <AccountBalanceOutlined fontSize="small" color="primary" /> : <AccountBalanceOutlined fontSize="small"/>,
+                },
+                {
+                  type: 'System',
+                  link: '/dashboard/entities/systems',
+                  label: 'Systems',
+                  icon: location.pathname.includes('/dashboard/entities') ? <StorageOutlined fontSize="small" color="primary" /> : <StorageOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Individual',
+                  link: '/dashboard/entities/individuals',
+                  label: 'Individuals',
+                  icon: location.pathname.includes('/dashboard/entities') ? <PersonOutlined fontSize="small" color="primary" /> : <PersonOutlined fontSize="small" />,
+                },
               ],
             )}
             {!hideLocations && (
@@ -763,25 +992,57 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <GlobeModel />
+                  {location.pathname.includes('locations') ? <GlobeModel color="primary"/> : <GlobeModel /> }
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Locations')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/locations')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('locations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('locations')}
               </MenuItem>
             )}
             {!hideLocations && generateSubMenu(
               'locations',
               [
-                { type: 'Region', link: '/dashboard/locations/regions', label: 'Regions', icon: <PublicOutlined fontSize="small" /> },
-                { type: 'Country', link: '/dashboard/locations/countries', label: 'Countries', icon: <FlagOutlined fontSize="small" /> },
-                { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: 'Administrative areas', icon: <MapOutlined fontSize="small" /> },
-                { type: 'City', link: '/dashboard/locations/cities', label: 'Cities', icon: <CityVariantOutline fontSize="small" /> },
-                { type: 'Position', link: '/dashboard/locations/positions', label: 'Positions', icon: <PlaceOutlined fontSize="small" /> },
+                {
+                  type: 'Region',
+                  link: '/dashboard/locations/regions',
+                  label: 'Regions',
+                  icon: location.pathname.includes('/dashboard/locations') ? <PublicOutlined fontSize="small" color="primary" /> : <PublicOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Country',
+                  link: '/dashboard/locations/countries',
+                  label: 'Countries',
+                  icon: location.pathname.includes('/dashboard/locations') ? <FlagOutlined fontSize="small" color="primary"/> : <FlagOutlined fontSize="small" />,
+                },
+                {
+                  type: 'Administrative-Area',
+                  link: '/dashboard/locations/administrative_areas',
+                  label: 'Administrative areas',
+                  icon: location.pathname.includes('/dashboard/locations') ? <MapOutlined fontSize="small" color="primary" /> : <MapOutlined fontSize="small" />,
+                },
+                {
+                  type: 'City',
+                  link: '/dashboard/locations/cities',
+                  label: 'Cities',
+                  icon: location.pathname.includes('/dashboard/locations') ? <CityVariantOutline fontSize="small" color="primary" /> : <CityVariantOutline fontSize="small" />,
+                },
+                {
+                  type: 'Position',
+                  link: '/dashboard/locations/positions',
+                  label: 'Positions',
+                  icon: location.pathname.includes('/dashboard/locations') ? <PlaceOutlined fontSize="small" color="primary" /> : <PlaceOutlined fontSize="small" />,
+                },
               ],
             )}
           </MenuList>
@@ -799,12 +1060,13 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <InsertChartOutlinedOutlined />
+                    {location.pathname.includes('/dashboard/workspaces/dashboards') ? <InsertChartOutlinedOutlined color="primary"/> : <InsertChartOutlinedOutlined /> }
                   </ListItemIcon>
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Dashboards')}
+                      sx={{ color: location.pathname === '/dashboard/workspaces/dashboards' ? theme.palette.primary.main : theme.palette.common.white }}
                     />
                   )}
                 </MenuItem>
@@ -820,12 +1082,13 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <ExploreOutlined />
+                    {location.pathname.includes('/dashboard/workspaces/investigations') ? <ExploreOutlined color="primary"/> : <ExploreOutlined />}
                   </ListItemIcon>
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Investigations')}
+                      sx={{ color: location.pathname === '/dashboard/workspaces/investigations' ? theme.palette.primary.main : theme.palette.common.white }}
                     />
                   )}
                 </MenuItem>
@@ -842,15 +1105,22 @@ const LeftBar = () => {
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <Database />
+                  {location.pathname.includes('data') ? <Database color="primary"/> : <Database />}
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText
                     classes={{ primary: classes.menuItemText }}
                     primary={t_i18n('Data')}
+                    sx={[
+                      {
+                        color: location.pathname.includes('/dashboard/data')
+                          ? theme.palette.primary.main
+                          : theme.palette.common.white,
+                      },
+                    ]}
                   />
                 )}
-                {navOpen && (selectedMenu.includes('data') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
+                {handleExpandIcon('data')}
               </MenuItem>
               {generateSubMenu(
                 'data',
@@ -874,12 +1144,13 @@ const LeftBar = () => {
                   classes={{ root: classes.menuItem }}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <DeleteOutlined />
+                    {location.pathname.includes('/dashboard/trash') ? <DeleteOutlined color="primary"/> : <DeleteOutlined /> }
                   </ListItemIcon>
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Trash')}
+                      sx={{ color: location.pathname === '/dashboard/trash' ? theme.palette.primary.main : theme.palette.common.white }}
                     />
                   )}
                 </MenuItem>
@@ -887,77 +1158,75 @@ const LeftBar = () => {
             </Security>
           </MenuList>
         </Security>
-        <Security needs={[
-          VIRTUAL_ORGANIZATION_ADMIN,
-          SETTINGS_SETPARAMETERS,
-          SETTINGS_SETACCESSES,
-          SETTINGS_SETMARKINGS,
-          SETTINGS_SETCUSTOMIZATION,
-          SETTINGS_SETLABELS,
-          SETTINGS_SECURITYACTIVITY,
-          SETTINGS_FILEINDEXING,
-          SETTINGS_SUPPORT,
-        ]}
-        >
+        <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
           <Divider />
           <MenuList component="nav">
-            {isOrganizationAdmin && !isGrantedToSettings ? (
-              <StyledTooltip
-                title={!navOpen && t_i18n('Settings')}
-                placement="right"
-              >
+            <Security needs={[SETTINGS, VIRTUAL_ORGANIZATION_ADMIN]}>
+              {isOrganizationAdmin && !isGrantedToSettings ? (
+                <StyledTooltip
+                  title={!navOpen && t_i18n('Settings')}
+                  placement="right"
+                >
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/settings/accesses/organizations"
+                    selected={!navOpen && location.pathname.includes('/dashboard/settings')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      {location.pathname.includes('/dashboard/settings') ? <CogOutline color="primary"/> : <CogOutline /> }
+                    </ListItemIcon>
+                    {navOpen && (
+                      <ListItemText
+                        classes={{ primary: classes.menuItemText }}
+                        primary={t_i18n('Settings')}
+                      />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              ) : (
                 <MenuItem
-                  component={Link}
-                  to="/dashboard/settings/accesses/organizations"
+                  ref={anchors.settings}
                   selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
+                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                  onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
+                  onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
                   <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                    <CogOutline />
+                    {location.pathname.includes('settings') ? <CogOutline color="primary"/> : <CogOutline /> }
                   </ListItemIcon>
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
                       primary={t_i18n('Settings')}
+                      sx={[
+                        {
+                          color: location.pathname.includes('/dashboard/settings') && selectedMenu.includes('settings')
+                            ? theme.palette.primary.main
+                            : theme.palette.common.white,
+                        },
+                      ]}
                     />
                   )}
+                  {handleExpandIcon('settings')}
                 </MenuItem>
-              </StyledTooltip>
-            ) : (
-              <MenuItem
-                ref={anchors.settings}
-                selected={!navOpen && location.pathname.includes('/dashboard/settings')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
-                onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
-                onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <CogOutline />
-                </ListItemIcon>
-                {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Settings')}
-                  />
-                )}
-                {navOpen && (selectedMenu.includes('settings') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
-              </MenuItem>
-            )}
-            {isGrantedToSettings && generateSubMenu(
-              'settings',
-              [
-                { granted: isGrantedToParameters, link: '/dashboard/settings', label: 'Parameters', exact: true },
-                { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
-                { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
-                { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
-                { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
-                { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
-                { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
-              ],
-            )}
+              )}
+              {isGrantedToSettings && generateSubMenu(
+                'settings',
+                [
+                  { granted: isGrantedToParameters, link: '/dashboard/settings/', label: 'Parameters', exact: true },
+                  { granted: isGrantedToSecurity, link: '/dashboard/settings/accesses', label: 'Security' },
+                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: 'Customization' },
+                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: 'Taxonomies' },
+                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: 'Activity' },
+                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: 'File indexing' },
+                  { granted: isGrantedToSupport, link: '/dashboard/settings/support', label: 'Support' },
+                ],
+              )}
+            </Security>
           </MenuList>
         </Security>
       </div>
