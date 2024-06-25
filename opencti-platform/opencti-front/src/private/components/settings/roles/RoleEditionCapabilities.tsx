@@ -63,9 +63,7 @@ interface RoleEditionCapabilitiesComponentProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
 }
 
-const RoleEditionCapabilitiesComponent: FunctionComponent<
-RoleEditionCapabilitiesComponentProps
-> = ({ role, queryRef }) => {
+const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {
   const { t_i18n } = useFormatter();
   const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -131,11 +129,13 @@ RoleEditionCapabilitiesComponentProps
                 </ListItemIcon>
                 <ListItemText primary={t_i18n(capability.description)} />
                 <ListItemSecondaryAction>
-                  <Checkbox
-                    onChange={(event) => handleToggle(capability.id, event)}
-                    checked={isChecked}
-                    disabled={isDisabled}
-                  />
+                  {capability.name !== 'SETTINGS' && (
+                    <Checkbox
+                      onChange={(event) => handleToggle(capability.id, event)}
+                      checked={isChecked}
+                      disabled={isDisabled}
+                    />
+                  )}
                 </ListItemSecondaryAction>
               </ListItem>
             );
