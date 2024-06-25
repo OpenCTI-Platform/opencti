@@ -53,7 +53,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
-import { promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
+import { indicatorEditField, promoteIndicatorToObservable } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
@@ -253,8 +253,21 @@ const executeRemove = async (context, user, actionContext, element) => {
     await patchAttribute(context, user, element.id, element.entity_type, patch, { operations });
   }
 };
+
+const executeReplaceScoreForIndicator = async (context, user, id, field, values) => {
+  const input = {
+    key: field,
+    value: values
+  };
+  await indicatorEditField(context, user, id, [input]);
+};
+
 export const executeReplace = async (context, user, actionContext, element) => {
   const { field, type: contextType, values } = actionContext;
+  // About indicators, when score is changing, it should change some other values
+  if (element.entity_type === ENTITY_TYPE_INDICATOR && field === 'x_opencti_score') {
+    await executeReplaceScoreForIndicator(context, user, element.id, field, values);
+  }
   let input = field;
   if (contextType === ACTION_TYPE_RELATION) {
     input = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, field);
