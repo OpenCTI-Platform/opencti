@@ -2459,6 +2459,7 @@
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "平台配置中缺少令牌，请要求 Filigran 代表提供令牌或内部部署说明。您可以打开支持票单进行申请。",
   "The user has BYPASS capability, their max confidence level is set to 100.": "用户具有 BYPASS 功能，其最大置信度设置为 100。",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "用户的最大信任度高于从用户组继承的最大信任度",
+  "The valid until date must be greater than the valid from date": "有效期至日期必须大于有效期起日期",
   "The value is too long": "该值太长",
   "The value is too short": "该值太短",
   "The value must be a date (yyyy-MM-dd)": "该值必须是一个日期(yyyy-MM-dd)",

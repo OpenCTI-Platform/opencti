@@ -2459,6 +2459,7 @@
   "The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.": "Le token est manquant dans la configuration de votre plateforme, veuillez demander à votre représentant Filigran de vous le fournir ou de vous donner des instructions pour le déploiement sur site. Vous pouvez ouvrir un ticket de support pour ce faire.",
   "The user has BYPASS capability, their max confidence level is set to 100.": "L'utilisateur a la capacité de BYPASS, son niveau de confiance maximum est fixé à 100.",
   "The user’s Max Confidence Level overrides Max Confidence Level inherited from user’s groups": "Le niveau de confiance maximum de l'utilisateur prévaut sur le niveau de confiance maximum hérité des groupes de l'utilisateur",
+  "The valid until date must be greater than the valid from date": "La date de fin de validité doit être supérieure à la date de début de validité",
   "The value is too long": "La valeur est trop longue",
   "The value is too short": "La valeur est trop courte",
   "The value must be a date (yyyy-MM-dd)": "La valeur doit être une date (dd/mm/aaaaa)",
