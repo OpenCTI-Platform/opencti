@@ -11,8 +11,8 @@ const Root = () => (
     <Route
       path="/dashboards/*"
       element={
-        <Security needs={[EXPLORE]}>
-          <Workspaces type={'dashboard'} placeholder={<Navigate to="/dashboard" />} />
+        <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+          <Workspaces type={'dashboard'} />
         </Security>
       }
     />

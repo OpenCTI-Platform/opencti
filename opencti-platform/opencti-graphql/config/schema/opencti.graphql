@@ -11386,7 +11386,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
+  ): ExternalReferenceConnection @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   killChainPhases(
     first: Int
@@ -11400,7 +11400,7 @@ type Query {
   ######## STIX CORE OBJECT ENTITIES
 
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
-  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
+  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE, INVESTIGATION])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
@@ -11493,7 +11493,7 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES])
+  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, INVESTIGATION])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -11746,7 +11746,7 @@ type Query {
     search: String
     filters: FilterGroup
     toStix: Boolean
-  ): IdentityConnection @auth(for: [KNOWLEDGE, INGESTION_SETINGESTIONS])
+  ): IdentityConnection @auth(for: [KNOWLEDGE, INGESTION_SETINGESTIONS, INVESTIGATION_INUPDATE])
   individual(id: String!): Individual @auth(for: [KNOWLEDGE])
   individuals(
     first: Int
@@ -11956,7 +11956,7 @@ type Query {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX RELATIONSHIPS
-  stixRelationship(id: String): StixRelationship @auth(for: [KNOWLEDGE])
+  stixRelationship(id: String): StixRelationship @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   stixRelationships(
     first: Int
     after: ID
@@ -12042,7 +12042,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     aggregateOnConnections: Boolean
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE, INVESTIGATION])
   stixRelationshipsNumber(
     dateAttribute: String
     authorId: String
@@ -12070,7 +12070,7 @@ type Query {
 
   ######## STIX CORE RELATIONSHIPS
 
-  stixCoreRelationship(id: String): StixCoreRelationship @auth(for: [KNOWLEDGE])
+  stixCoreRelationship(id: String): StixCoreRelationship @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   stixCoreRelationships(
     first: Int
     after: ID
@@ -12099,7 +12099,7 @@ type Query {
     search: String
     filters: FilterGroup
     stix: Boolean
-  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
+  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE, INVESTIGATION_INUPDATE])
   stixCoreRelationshipsTimeSeries(
     field: String!
     operation: StatsOperation!
@@ -13013,7 +13013,7 @@ type Mutation {
 
   ######## STIX CORE RELATIONSHIPS
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE, INVESTIGATION_INUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportAsk(input: StixCoreRelationshipsExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!

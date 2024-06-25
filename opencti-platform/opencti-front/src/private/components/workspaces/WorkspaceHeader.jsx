@@ -381,20 +381,22 @@ const WorkspaceHeader = ({
           />
         </div>
         {variant === 'investigation' && (
-          <div className={classes.turnToReportOrCase}>
-            <Tooltip title={t_i18n('Add to a container')}>
-              <ToggleButtonGroup size="small" color="primary" exclusive={true}>
-                <ToggleButton
-                  aria-label="Label"
-                  onClick={handleOpenTurnToReportOrCaseContainer}
-                  size="small"
-                  value="add-to-a-container"
-                >
-                  <MoveToInboxOutlined color="primary" fontSize="small" />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Tooltip>
-          </div>
+          <Security needs={[INVESTIGATION_INUPDATE]}>
+            <div className={classes.turnToReportOrCase}>
+              <Tooltip title={t_i18n('Add to a container')}>
+                <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+                  <ToggleButton
+                    aria-label="Label"
+                    onClick={handleOpenTurnToReportOrCaseContainer}
+                    size="small"
+                    value="add-to-a-container"
+                  >
+                    <MoveToInboxOutlined color="primary" fontSize="small" />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Tooltip>
+            </div>
+          </Security>
         )}
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanManage}>
           <div className={classes.manageAccess}>
