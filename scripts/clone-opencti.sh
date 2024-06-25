@@ -63,7 +63,13 @@ clone_for_pr_build() {
 clone_for_push_build() {
     echo "[CLONE-DEPS]  Build from a commit, checking if a dedicated branch is required."
     OPENCTI_BRANCH=$([ $(echo $PR_BRANCH_NAME | cut -d "/" -f 1) == opencti ] && echo $(echo $PR_BRANCH_NAME | cut -d "/" -f2-) || echo 'master' )
-    git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git
+    if [ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/opencti.git refs/heads/OPENCTI_BRANCH)")" != '' ]
+    then
+      git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git
+    else
+      git clone -b master https://github.com/OpenCTI-Platform/opencti.git
+    fi
+
 }
 
 echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
