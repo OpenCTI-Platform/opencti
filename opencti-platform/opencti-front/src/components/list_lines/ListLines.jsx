@@ -11,8 +11,6 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  CheckCircleOutlined,
-  DifferenceOutlined,
   FileDownloadOutlined,
   LayersClearOutlined,
   LibraryBooksOutlined,
@@ -35,8 +33,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
-import { Badge } from '@mui/material';
 import { ErrorBoundary } from '../../private/components/Error';
 import { UserContext } from '../../utils/hooks/useAuth';
 import Filters from '../../private/components/common/lists/Filters';

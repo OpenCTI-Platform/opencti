@@ -17,6 +17,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { CheckCircleOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -63,9 +64,6 @@ const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '15px 0 0 0',
-  },
-  button: {
-    marginLeft: 2,
   },
 }));
 
@@ -200,74 +198,79 @@ ContainerStixCoreObjectsSuggestedMappingProps
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return (
-    <div className={classes.container}>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              disabled={mappedEntities.length <= 0}
-              checked={onlyNotContainedEntities}
-              onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
-            />
-            }
-          label={t_i18n('Entities not in container')}
-        />
-      </FormGroup>
-      <Tooltip title={t_i18n('Suggest new mapping')}>
-        <Button
-          variant="contained"
-          classes={{ root: classes.button }}
-          onClick={handleAskNewSuggestedMapping}
-        >
-          {t_i18n('Suggest new mapping')}
-        </Button>
-      </Tooltip>
-      <Tooltip title={t_i18n('Validate suggested mapping')}>
-        <Button
-          variant="contained"
-          color="secondary"
-          classes={{ root: classes.button }}
-          onClick={handleAskValidateSuggestedMapping}
-          startIcon={<CheckCircleOutlined />}
-          size="small"
-        >
-          {t_i18n('Validate')}
-        </Button>
-      </Tooltip>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        iconExtension={false}
-        filters={filters}
-        availableEntityTypes={['Stix-Core-Object']}
-        keyword={searchTerm}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        noPadding={true}
-        handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
-        handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
-        mappingCount={filteredMappedEntities.length}
-        disabledValidate={filteredMappedEntities.length <= 0}
-        enableMappingView
-        disableCards
-      >
-        <ListLinesContent
-          initialLoading={false}
-          loadMore={() => {}}
-          hasMore={() => {}}
-          isLoading={() => false}
-          dataList={filteredMappedEntities}
-          globalCount={filteredMappedEntities.length}
-          LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
-          DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
+    <div>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Switch
+                disabled={mappedEntities.length <= 0}
+                checked={onlyNotContainedEntities}
+                onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
+              />
+              }
+            label={t_i18n('Entities not in container')}
+          />
+        </FormGroup>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title={t_i18n('Suggest new mapping')}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleAskNewSuggestedMapping}
+            >
+              {t_i18n('Suggest new mapping')}
+            </Button>
+          </Tooltip>
+          <Tooltip title={t_i18n('Validate suggested mapping')}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleAskValidateSuggestedMapping}
+              startIcon={<CheckCircleOutlined />}
+              size="small"
+            >
+              {t_i18n('Validate')}
+            </Button>
+          </Tooltip>
+        </Box>
+      </Box>
+      <div className={classes.container}>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
           dataColumns={dataColumns}
-          contentMappingCount={suggestedMappingCount}
-          handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-          height={height}
-        />
-      </ListLines>
+          iconExtension={false}
+          filters={filters}
+          availableEntityTypes={['Stix-Core-Object']}
+          keyword={searchTerm}
+          secondaryAction={true}
+          numberOfElements={numberOfElements}
+          noPadding={true}
+          handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
+          handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
+          mappingCount={filteredMappedEntities.length}
+          disabledValidate={filteredMappedEntities.length <= 0}
+          enableMappingView
+          disableCards
+        >
+          <ListLinesContent
+            initialLoading={false}
+            loadMore={() => {}}
+            hasMore={() => {}}
+            isLoading={() => false}
+            dataList={filteredMappedEntities}
+            globalCount={filteredMappedEntities.length}
+            LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
+            DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
+            dataColumns={dataColumns}
+            contentMappingCount={suggestedMappingCount}
+            handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
+            height={height}
+          />
+        </ListLines>
+      </div>
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={openValidate}
