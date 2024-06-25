@@ -29,10 +29,13 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | &nbsp;&nbsp;`Download knowledge export`                        | Download the exports generated in the entities (in the `Data` section).                 |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Generate knowledge export`            | Trigger the export of the knowledge of an entity.                                       |
 | &nbsp;&nbsp;`Ask for knowledge enrichment`                     | Trigger an enrichment for a given entity.                                               |
-| `Access Dashboards and investigations`                         | Access to existing custom dashboards and investigations.                                |
-| &nbsp;&nbsp;`Create / Update dashboards and investigations`    | Create and update custom dashboards and investigations.                                 |
-| &nbsp;&nbsp;&nbsp;&nbsp;`Delete dashboards and investigations` | Delete existing custom dashboards and investigations.                                   |
+| `Access Dashboards and investigations`                         | Access to existing custom dashboards.                                                   |
+| &nbsp;&nbsp;`Create / Update dashboards and investigations`    | Create and update custom dashboards.                                                    |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Delete dashboards and investigations` | Delete existing custom dashboards.                                                      |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Manage public dashboards`             | Manage public dashboards.                                                               |
+| `Access investigations`                                        | Access to existing investigations.                                                      |
+| &nbsp;&nbsp;`Create / Update investigations`                   | Create and update investigations.                                                       |
+| &nbsp;&nbsp;&nbsp;&nbsp;`Delete investigations`                | Delete existing investigations.                                                         |
 | `Access connectors`                                            | Read information in the `Data > Connectors` section.                                    |
 | &nbsp;&nbsp;`Manage connector state`                           | Reset the connector state to restart ingestion from the beginning.                      |
 | `Connectors API usage: register, ping, export push ...`        | Connectors specific permissions for register, ping, push export files, etc.             |
