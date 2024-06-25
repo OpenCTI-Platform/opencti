@@ -7,12 +7,16 @@ import {
   ContainerStixCoreObjectsSuggestedMappingLineDummy,
 } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMappingLine';
 import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
   query ContainerStixCoreObjectsSuggestedMappingQuery(
@@ -30,6 +34,13 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
           matchedEntity{
             id
             standard_id
+            containers{
+              edges{
+                node{
+                  id
+                }
+              }
+            }
           }
         }
       }
@@ -71,7 +82,9 @@ ContainerStixCoreObjectsSuggestedMappingProps
   isLoading,
 }) => {
   const [removedEntities, setRemovedEntities] = useState<string[]>([]);
+  const [onlyNotContainedEntities, setOnlyNotContainedEntities] = useState(true);
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -141,7 +154,14 @@ ContainerStixCoreObjectsSuggestedMappingProps
 
   const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
   const mappedEntitiesWithNode = mappedEntities.map((e) => { return { node: e }; });
-  const filteredMappedEntities = mappedEntitiesWithNode.filter((e) => !removedEntities.find((r) => r === e?.node?.matchedEntity?.id));
+
+  // Filter entities not removed and only entities not in container if toggle activated
+  const filterMappedEntities = (mappedEntity) => {
+    return !removedEntities.find((r) => r === mappedEntity.node?.matchedEntity?.id)
+         && (!onlyNotContainedEntities || !mappedEntity.node?.matchedEntity?.containers?.edges?.find((c: { node: { id: string; }; }) => c.node?.id === container.id));
+  };
+
+  const filteredMappedEntities = mappedEntitiesWithNode.filter((e) => filterMappedEntities(e));
 
   handleSetNumberOfElements({
     number: filteredMappedEntities.length.toString(),
@@ -164,6 +184,18 @@ ContainerStixCoreObjectsSuggestedMappingProps
   // @ts-ignore
   return (
     <div className={classes.container}>
+      <FormGroup>
+        <FormControlLabel
+          control={
+            <Switch
+              disabled={mappedEntities.length <= 0}
+              checked={onlyNotContainedEntities}
+              onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
+            />
+            }
+          label={t_i18n('Entities not in container')}
+        />
+      </FormGroup>
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
