@@ -127,12 +127,12 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
           <MenuItem key="menu_export" onClick={() => handleExportJson(workspace)}>{t_i18n('Export')}</MenuItem>,
           <Security key="security_delete" needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
             <MenuItem key="menu_delete" onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
+          </Security>,
         ]}
         {workspace.type === 'investigation' && [
           <Security key="security_delete" needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={userCanManage}>
             <MenuItem key="menu_delete" onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
+          </Security>,
         ]}
       </Menu>
       <WorkspaceDuplicationDialog
