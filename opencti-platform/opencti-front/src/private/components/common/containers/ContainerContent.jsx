@@ -173,7 +173,7 @@ const ContainerContentComponent = ({ containerData }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ marginTop: 0 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 0, paddingTop: 0 }}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -183,7 +183,7 @@ const ContainerContentComponent = ({ containerData }) => {
             suggest
           />
         </Grid>
-        <Grid item xs={6} style={{ marginTop: -10 }}>
+        <Grid item xs={6} style={{ marginTop: -10, paddingTop: 0 }}>
           <Dialog
             PaperProps={{ elevation: 1 }}
             open={openClearMapping}
