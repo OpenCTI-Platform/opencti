@@ -107,6 +107,6 @@ export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeI
     validFrom,
     validUntil,
     revoked: validUntil.isSameOrBefore(utcDate()),
-    validPeriod: validFrom.isSameOrBefore(validUntil)
+    validPeriod: validFrom.isBefore(validUntil),
   };
 };
