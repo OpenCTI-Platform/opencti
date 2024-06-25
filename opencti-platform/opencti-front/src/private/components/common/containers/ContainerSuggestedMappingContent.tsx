@@ -137,7 +137,7 @@ ContainerSuggestedMappingContentProps
     });
   };
 
-  const addSuggestedMappingEntitiesToContainer = (suggestedMappingEntities: any) => {
+  const addSuggestedMappingEntitiesToContainer = (suggestedMappingEntities: string[]) => {
     commitRelationsAdd({
       variables: {
         id: containerData.id,
@@ -149,7 +149,7 @@ ContainerSuggestedMappingContentProps
     });
   };
 
-  const addSuggestedMappingToCurrentMapping = (suggestedMappings: any) => {
+  const addSuggestedMappingToCurrentMapping = (suggestedMappings: { matchedString: string, matchedEntityId: string }[]) => {
     const { content_mapping } = containerData;
     let newMappingData = decodeMappingData(content_mapping);
     for (let i = 0; i < suggestedMappings.length; i += 1) {
