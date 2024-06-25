@@ -73,7 +73,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
 
   useEffect(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [entitySearchTerm]);
 
   const refetch = React.useCallback(() => {
     loadQuery(queryArgs, { fetchPolicy: 'store-and-network' });
