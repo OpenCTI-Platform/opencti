@@ -39,8 +39,8 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | `Access connectors`                                            | Read information in the `Data > Connectors` section.                                    |
 | &nbsp;&nbsp;`Manage connector state`                           | Reset the connector state to restart ingestion from the beginning.                      |
 | `Connectors API usage: register, ping, export push ...`        | Connectors specific permissions for register, ping, push export files, etc.             |
-| `Access data sharing`                                          | Access and consume data such as TAXII collections, CSV feeds & live streams.            |
-| &nbsp;&nbsp;`Manage data sharing`                              | Share data such as TAXII collections, CSV feeds & live streams or custom dashboards.    |
+| `Access data sharing`                                          | Access and consume data such as TAXII collections, CSV feeds and live streams.          |
+| &nbsp;&nbsp;`Manage data sharing`                              | Share data such as TAXII collections, CSV feeds and live streams or custom dashboards.  |
 | `Access ingestion`                                             | Access (read only) remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.              |
 | &nbsp;&nbsp;`Manage ingestion`                                 | Create, update, delete any remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.      |
 | `Manage CSV mappers`                                           | Create, update and delete CSV mappers.                                                  |
@@ -48,11 +48,11 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | &nbsp;&nbsp;`Access administration parameters`                 | Access and manage overall parameters of the platform in `Settings > Parameters`.        |
 | &nbsp;&nbsp;`Manage credentials`                               | Access and manage roles, groups, users, organizations and security policies.            |
 | &nbsp;&nbsp;`Manage marking definitions`                       | Update and delete marking definitions.                                                  |
-| &nbsp;&nbsp;`Manage customization`                             | Customize entity types, rules, notifiers retention policies & decays rules.             |
+| &nbsp;&nbsp;`Manage customization`                             | Customize entity types, rules, notifiers retention policies and decays rules.           |
 | &nbsp;&nbsp;`Manage taxonomies`                                | Manage labels, kill chain phases, vocabularies, status templates, cases templates.      |
 | &nbsp;&nbsp;`Access to security activity`                      | Access to activity log.                                                                 |
 | &nbsp;&nbsp;`Access to file indexing`                          | Manage file indexing.                                                                   |
-| &nbsp;&nbsp;`Access to support`                                | Generate & download support packages.                                                   |
+| &nbsp;&nbsp;`Access to support`                                | Generate and download support packages.                                                 |
 
 
 ### Manage roles
