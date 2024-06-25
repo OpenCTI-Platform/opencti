@@ -238,7 +238,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
           defaultStartTime={defaultStartTime}
           defaultStopTime={defaultStopTime}
           paginationOptions={paginationOptions}
-          connectionKey="Pagination_stixCoreObjects"
+          connectionKey="Pagination_stixCoreObjectsRegardingOf"
           paddingRight={paddingRightButtonAdd ?? 220}
         />
       </Security>
