@@ -165,7 +165,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
   const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
   // Filter entities not removed and only entities not in container if toggle activated
   // TODO optimize perf of this method
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   const filterMappedEntities = (mappedEntity: MappedEntityType) => {
     return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id)
         && (!onlyNotContainedEntities
@@ -219,7 +218,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
             label={t_i18n('Entities not in container')}
           />
         </FormGroup>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <Tooltip title={t_i18n('Suggest new mapping')}>
             <Button
               variant="contained"
