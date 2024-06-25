@@ -181,7 +181,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
         handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
         currentView={currentView}
         mappingCount={filteredMappedEntities.length}
-        disabledValidate={filteredMappedEntities.length < 0}
+        disabledValidate={filteredMappedEntities.length <= 0}
         enableMappingView
         disableCards
       >
