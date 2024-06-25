@@ -444,7 +444,7 @@ class ListLines extends Component {
                       <Button
                         variant="contained"
                         classes={{ root: classes.button }}
-                        onClick={() => handleValidateSuggestedMapping()}
+                        onClick={handleValidateSuggestedMapping}
                         startIcon={<CheckCircleOutlined />}
                         size="small"
                         disabled={disabledValidate}

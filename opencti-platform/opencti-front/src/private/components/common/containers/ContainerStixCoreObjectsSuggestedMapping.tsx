@@ -10,6 +10,11 @@ import { ContainerStixCoreObjectsSuggestedMappingQuery$data } from '@components/
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -17,6 +22,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import Transition from '../../../../components/Transition';
 
 // containers fetching is not good performance wise, we could find a better way to do it by moving it to backend if needed
 export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
@@ -65,7 +71,7 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   height: number;
   handleSwitchView: (view: string) => void;
   handleAskNewSuggestedMapping: () => void;
-  handleValidateSuggestedMapping: any;
+  handleValidateSuggestedMapping: (mappingToAdd: any) => void;
   currentView: string;
   isLoading: boolean;
 }
@@ -84,6 +90,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
 }) => {
   const [removedEntities, setRemovedEntities] = useState<string[]>([]);
   const [onlyNotContainedEntities, setOnlyNotContainedEntities] = useState(true);
+  const [openValidate, setOpenValidate] = useState(false);
+  const [validating, setValidating] = useState(false);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
@@ -175,6 +183,11 @@ ContainerStixCoreObjectsSuggestedMappingProps
   };
 
   const handleAskValidateSuggestedMapping = () => {
+    setOpenValidate(true);
+  };
+
+  const handleValidate = () => {
+    setValidating(true);
     const mappingToAdd = filteredMappedEntities.map((e) => { return { matchedString: e?.node?.matchedString, matchedEntityId: e?.node?.matchedEntity?.standard_id }; });
     handleValidateSuggestedMapping(mappingToAdd);
   };
@@ -237,6 +250,34 @@ ContainerStixCoreObjectsSuggestedMappingProps
           height={height}
         />
       </ListLines>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={openValidate}
+        keepMounted
+        TransitionComponent={Transition}
+        onClose={() => setOpenValidate(false)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to validate the mapping of this content?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenValidate(false)}
+            disabled={validating}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={handleValidate}
+            disabled={validating}
+          >
+            {t_i18n('Validate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

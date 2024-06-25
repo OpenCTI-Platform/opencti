@@ -67,7 +67,7 @@ const addSuggestedMappingRelationsMutation = graphql`
   }
 `;
 
-const clearSuggestedMappingMutation = graphql`
+/* const clearSuggestedMappingMutation = graphql`
   mutation ContainerContentClearSuggestedMappingMutation(
     $id: ID!
     $contentSource: String!
@@ -80,7 +80,7 @@ const clearSuggestedMappingMutation = graphql`
       )
     }
   }
-`;
+`; */
 
 const askSuggestedMappingMutation = graphql`
   mutation ContainerContentAskSuggestedMappingMutation(
@@ -149,18 +149,7 @@ const ContainerContentComponent = ({ containerData }) => {
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
   };
-  let validator = null;
-  if (containerData.entity_type === 'Report') {
-    validator = useSchemaEditionValidation('Report', basicShape);
-  } else if (containerData.entity_type === 'Grouping') {
-    validator = useSchemaEditionValidation('Grouping', basicShape);
-  } else if (containerData.entity_type === 'Case-Incident') {
-    validator = useSchemaEditionValidation('Case-Incident', basicShape);
-  } else if (containerData.entity_type === 'Case-Rfi') {
-    validator = useSchemaEditionValidation('Case-Rfi', basicShape);
-  } else if (containerData.entity_type === 'Case-Rft') {
-    validator = useSchemaEditionValidation('Case-Rft', basicShape);
-  }
+  const validator = useSchemaEditionValidation(containerData.entity_type, basicShape);
   const editor = useFormEditor(
     containerData,
     enableReferences,
@@ -169,7 +158,7 @@ const ContainerContentComponent = ({ containerData }) => {
   );
 
   const [commitRelationsAdd] = useApiMutation(addSuggestedMappingRelationsMutation);
-  const [commitAnalysisClear] = useApiMutation(clearSuggestedMappingMutation);
+  // const [commitAnalysisClear] = useApiMutation(clearSuggestedMappingMutation);
   const [commitAnalysisAsk] = useApiMutation(askSuggestedMappingMutation);
 
   const handleTextSelection = (text) => {
@@ -277,10 +266,13 @@ const ContainerContentComponent = ({ containerData }) => {
           value: encodeMappingData(newMappingData),
         },
       },
+      onCompleted: () => {
+        handleSwitchView('mapping');
+      },
     });
   };
 
-  const clearSuggestedMapping = () => {
+  /*  const clearSuggestedMapping = () => {
     commitAnalysisClear({
       mutation: clearSuggestedMappingMutation,
       variables: {
@@ -289,13 +281,13 @@ const ContainerContentComponent = ({ containerData }) => {
         contentType: 'fields',
       },
     });
-  };
+  }; */
 
-  const handleValidateSuggestedMapping = (suggestedMapping) => {
+  const validateSuggestedMapping = (suggestedMapping) => {
     const suggestedMappingEntities = suggestedMapping.map((m) => m.matchedEntityId);
     addSuggestedMappingEntitiesToContainer(suggestedMappingEntities);
     addSuggestedMappingToCurrentMapping(suggestedMapping);
-    clearSuggestedMapping();
+    // clearSuggestedMapping();
   };
 
   const { description, contentField } = containerData;
@@ -431,7 +423,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     }}
                     handleSwitchView={handleSwitchView}
                     handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
-                    handleValidateSuggestedMapping={handleValidateSuggestedMapping}
+                    handleValidateSuggestedMapping={validateSuggestedMapping}
                     currentView={currentView}
                     isLoading={isLoading}
                   />

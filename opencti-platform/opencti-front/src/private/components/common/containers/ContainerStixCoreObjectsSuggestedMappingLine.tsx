@@ -5,7 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { DeleteOutlined, MoreVert } from '@mui/icons-material';
+import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
@@ -269,7 +269,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity.id)}
         >
-          <DeleteOutlined />
+          <CloseOutlined />
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
