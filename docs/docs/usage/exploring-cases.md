@@ -56,12 +56,6 @@ At the bottom, you have many option to manipulate the graph:
 - Multiple filters, including a time range selector allowing you to see the evolution of the Knowledge within the Case.
 - Multiple creation and edition tools to modify the Knowledge contained in the Case.
 
-#### Content mapping view
-
-![Content mapping view of a Case](assets/case-content-mapping.png)
-
-Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
-This view is a great place to see the continuum between unstructured and structured Knowledge.
 
 #### Timeline view
 

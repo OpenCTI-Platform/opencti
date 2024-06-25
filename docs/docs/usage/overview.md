@@ -121,6 +121,14 @@ The `Content` tab is available for a subset of entities: `Report`, `Incident`, `
 
 ![The Content tab of an Incident](assets/entity-content-tab.png)
 
+#### Content mapping view
+
+![Content mapping view of a Case](assets/case-content-mapping.png)
+
+Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
+This view is a great place to see the continuum between unstructured and structured Knowledge.
+
+
 
 <a id="analyses-section"></a>
 ### Analyses
