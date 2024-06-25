@@ -5,7 +5,7 @@ import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, RABBIT_QUEUE_PREFIX } from './utils';
+import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -74,8 +74,8 @@ const amqpHttpClient = async () => {
  */
 export const purgeConnectorQueues = async (connector) => {
   const httpClient = await amqpHttpClient();
-  const pathPushQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
-  const pathListenQueue = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}/contents`;
+  const pathPushQueue = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connector.id}/contents`;
+  const pathListenQueue = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connector.id}/contents`;
 
   await httpClient.delete(pathPushQueue).then((response) => response.data);
   await httpClient.delete(pathListenQueue).then((response) => response.data);
@@ -83,7 +83,7 @@ export const purgeConnectorQueues = async (connector) => {
 
 export const getConnectorQueueDetails = async (connectorId) => {
   const httpClient = await amqpHttpClient();
-  const pathRabbit = `/api/queues${VHOST_PATH}/%2F/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+  const pathRabbit = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
 
   const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
   logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
