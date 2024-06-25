@@ -36,6 +36,10 @@ import {
 } from '../../schema/stixRefRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_BANK_ACCOUNT,
+  ENTITY_CREDENTIAL,
+  ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -43,13 +47,23 @@ import {
   ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
+  ENTITY_MEDIA_CONTENT,
+  ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PAYMENT_CARD,
+  ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
+  ENTITY_SOFTWARE,
+  ENTITY_TEXT,
+  ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
+  ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../../schema/stixCyberObservable';
@@ -117,3 +131,23 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [
   buildRelationRef(values, (_: string, toType: string) => ENTITY_WINDOWS_REGISTRY_VALUE_TYPE === toType),
   buildRelationRef(creatorUser, (_: string, toType: string) => ENTITY_USER_ACCOUNT === toType),
 ]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_URL, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_USER_AGENT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_BANK_ACCOUNT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_AUTONOMOUS_SYSTEM, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CREDENTIAL, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CRYPTOGRAPHIC_WALLET, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_CRYPTOGRAPHIC_KEY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HOSTNAME, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MAC_ADDR, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MEDIA_CONTENT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_MUTEX, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PAYMENT_CARD, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PHONE_NUMBER, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_SOFTWARE, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TEXT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TRACKING_NUMBER, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_USER_ACCOUNT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, []);
