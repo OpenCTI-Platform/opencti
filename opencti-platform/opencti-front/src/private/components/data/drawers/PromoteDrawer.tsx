@@ -29,7 +29,7 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
     return (
       <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
         <Checkbox edge="start" checked={promoteToContainer} onChange={togglePromoteToContainer} />
-        <Typography>{t_i18n(`Add in generated & existing ${type} in the container`)}</Typography>
+        <Typography>{t_i18n(`Add generated and existing ${type} in the container`)}</Typography>
       </div>
     );
   };
