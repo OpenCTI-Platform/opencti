@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { CheckCircleOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
+import { InformationOutline } from 'mdi-material-ui';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -54,6 +55,9 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
           }
         }
       }
+    }
+    connectorsForAnalysis {
+      id
     }
   }
 `;
@@ -164,6 +168,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
     },
   };
 
+  const hasConnectorsAvailable = suggestedMapping?.connectorsForAnalysis?.length && suggestedMapping?.connectorsForAnalysis?.length > 0;
+
   const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
   // Filter entities not removed and only entities not in container if toggle activated
   // TODO optimize perf of this method
@@ -202,6 +208,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
   };
 
   if (isLoading) return <Loader variant={LoaderVariant.inElement}/>;
+  const suggestDisabled = !hasConnectorsAvailable || askingSuggestion;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -221,12 +228,21 @@ ContainerStixCoreObjectsSuggestedMappingProps
           />
         </FormGroup>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {!hasConnectorsAvailable && (
+          <Tooltip
+            title={t_i18n(
+              'An analysis connector needs to be available to ask for a mapping suggestion. ',
+            )}
+          >
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+          )}
           <Tooltip title={t_i18n('Suggest new mapping')}>
             <Button
               variant="contained"
               size="small"
               onClick={handleAskNewSuggestedMapping}
-              disabled={askingSuggestion}
+              disabled={suggestDisabled}
             >
               {t_i18n('Suggest new mapping')}
             </Button>
@@ -238,6 +254,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
               onClick={handleAskValidateSuggestedMapping}
               startIcon={<CheckCircleOutlined />}
               size="small"
+              disabled={filteredMappedEntities.length === 0}
             >
               {t_i18n('Validate')}
             </Button>
