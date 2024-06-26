@@ -32,7 +32,7 @@ type TaskTemplateEdge {
 
 # Queries
 type Query {
-  taskTemplate(id: String!): TaskTemplate @auth(for: [SETTINGS])
+  taskTemplate(id: String!): TaskTemplate @auth(for: [SETTINGS_SETLABELS])
   taskTemplates(
     first: Int
     after: ID
@@ -41,7 +41,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): TaskTemplateConnection @auth(for: [SETTINGS])
+  ): TaskTemplateConnection @auth(for: [SETTINGS_SETLABELS])
 }
 
 # Mutations
@@ -51,7 +51,7 @@ input TaskTemplateAddInput {
 }
 
 type Mutation {
-  taskTemplateAdd(input: TaskTemplateAddInput!): TaskTemplate @auth(for: [SETTINGS])
-  taskTemplateDelete(id: ID!): ID @auth(for: [SETTINGS])
-  taskTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): TaskTemplate @auth(for: [SETTINGS])
+  taskTemplateAdd(input: TaskTemplateAddInput!): TaskTemplate @auth(for: [SETTINGS_SETLABELS])
+  taskTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETLABELS])
+  taskTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): TaskTemplate @auth(for: [SETTINGS_SETLABELS])
 }

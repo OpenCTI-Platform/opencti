@@ -18,7 +18,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { SETTINGS_SUPPORT } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -123,7 +123,7 @@ const SupportPackages = () => {
   };
 
   return (
-    <Security needs={[SETTINGS]} placeholder={<>{t_i18n('You do not have any access to the knowledge of this OpenCTI instance.')}</>}>
+    <Security needs={[SETTINGS_SUPPORT]} placeholder={<>{t_i18n('You do not have any access to the knowledge of this OpenCTI instance.')}</>}>
       <div>
         <Breadcrumbs variant="list"
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Support packages'), current: true }]}

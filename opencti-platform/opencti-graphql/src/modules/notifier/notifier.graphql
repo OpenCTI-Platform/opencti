@@ -31,7 +31,7 @@ type Notifier implements InternalObject & BasicObject {
     notifier_connector: NotifierConnector!
     notifier_connector_id: String!
     notifier_configuration: String!
-    authorized_members: [MemberAccess!] @auth(for: [SETTINGS])
+    authorized_members: [MemberAccess!] @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 type NotifierConnection {
@@ -52,8 +52,8 @@ input NotifierTestInput {
 
 type Query {
     notificationNotifiers: [Notifier!]! @auth
-    notifier(id: String!): Notifier @auth(for: [SETTINGS])
-    notifierTest(input: NotifierTestInput!): String @auth(for: [SETTINGS])
+    notifier(id: String!): Notifier @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    notifierTest(input: NotifierTestInput!): String @auth(for: [SETTINGS_SETCUSTOMIZATION])
     notifiers(
         first: Int
         after: ID
@@ -61,7 +61,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): NotifierConnection @auth(for: [SETTINGS])
+    ): NotifierConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Mutations

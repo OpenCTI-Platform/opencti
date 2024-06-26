@@ -166,7 +166,7 @@ type Query {
     ): TriggerConnection @auth
     triggersKnowledgeCount(filters: FilterGroup, includeAuthorities: Boolean, search: String): Int @auth
     # Alerts
-    triggerActivity(id: String!): Trigger @auth(for: [SETTINGS])
+    triggerActivity(id: String!): Trigger @auth(for: [SETTINGS_SECURITYACTIVITY])
     triggersActivity(
         first: Int
         after: ID
@@ -174,7 +174,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): TriggerConnection @auth(for: [SETTINGS])
+    ): TriggerConnection @auth(for: [SETTINGS_SECURITYACTIVITY])
     # Notifications
     notification(id: String!): Notification @auth
     notifications(
@@ -205,10 +205,10 @@ type Mutation {
     triggerKnowledgeLiveAdd(input: TriggerLiveAddInput!): Trigger @auth
     triggerKnowledgeDigestAdd(input: TriggerDigestAddInput!): Trigger @auth
     # Alerts
-    triggerActivityDelete(id: ID!): ID @auth(for: [SETTINGS])
-    triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth(for: [SETTINGS])
-    triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger @auth(for: [SETTINGS])
-    triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger @auth(for: [SETTINGS])
+    triggerActivityDelete(id: ID!): ID @auth(for: [SETTINGS_SECURITYACTIVITY])
+    triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth(for: [SETTINGS_SECURITYACTIVITY])
+    triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger @auth(for: [SETTINGS_SECURITYACTIVITY])
+    triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger @auth(for: [SETTINGS_SECURITYACTIVITY])
     # Notifications
     notificationDelete(id: ID!): ID @auth
     notificationMarkRead(id: ID!, read: Boolean!): Notification @auth

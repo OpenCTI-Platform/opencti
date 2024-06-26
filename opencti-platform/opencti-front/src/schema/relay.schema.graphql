@@ -1764,8 +1764,8 @@ type ConnectorConfiguration {
 }
 
 type ConnectorQueueDetails {
-  messages_number: Int!
-  messages_size: Int!
+  messages_number: Float!
+  messages_size: Float!
 }
 
 type Connector implements BasicObject & InternalObject {

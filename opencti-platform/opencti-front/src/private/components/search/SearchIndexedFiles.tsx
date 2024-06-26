@@ -38,7 +38,7 @@ import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/Searc
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
 import Security from '../../../utils/Security';
-import { SETTINGS } from '../../../utils/hooks/useGranted';
+import { SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'view-files';
 const SearchIndexedFilesComponent = () => {
@@ -188,7 +188,7 @@ const SearchIndexedFilesComponent = () => {
           >
             <AlertTitle style={{ marginBottom: 0 }}>
               {t_i18n('File indexing is not started.')}
-              <Security needs={[SETTINGS]} placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}>
+              <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}>
                 <Button
                   component={Link}
                   size="small"
