@@ -48,7 +48,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   showIcon = false,
   isRestricted = false,
   style = {},
-  size,
+  size = 'medium',
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
