@@ -65,7 +65,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Attack-Pattern']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['stix-core-relationship']);
   const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
     stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
     { first: 500, ...queryPaginationOptions },
