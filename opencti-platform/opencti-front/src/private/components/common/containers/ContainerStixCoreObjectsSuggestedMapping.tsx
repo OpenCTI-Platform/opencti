@@ -217,7 +217,7 @@ ContainerStixCoreObjectsSuggestedMappingProps
                 onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
               />
               }
-            label={t_i18n('Entities not in container')}
+            label={t_i18n('Hide entities in container')}
           />
         </FormGroup>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

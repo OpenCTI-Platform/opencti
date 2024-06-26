@@ -285,7 +285,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && !disableCards && (
                     <ToggleButton value="cards" aria-label="cards">
                       <Tooltip title={t('Cards view')}>
-                        <ViewModuleOutlined fontSize="small" color="primary"/>
+                        <ViewModuleOutlined fontSize="small" color="primary" />
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -339,7 +339,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableGraph && (
                     <ToggleButton value="graph" aria-label="graph">
                       <Tooltip title={t('Graph view')}>
-                        <VectorPolygon fontSize="small" color="primary"/>
+                        <VectorPolygon fontSize="small" color="primary" />
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -347,7 +347,7 @@ class ListLines extends Component {
                     && enableNestedView && (
                       <ToggleButton value="nested" aria-label="nested">
                         <Tooltip title={t('Nested view')}>
-                          <FormatListGroup fontSize="small" color="primary"/>
+                          <FormatListGroup fontSize="small" color="primary" />
                         </Tooltip>
                       </ToggleButton>
                   )}
@@ -375,7 +375,7 @@ class ListLines extends Component {
                       aria-label="settings"
                     >
                       <Tooltip title={t('List settings')}>
-                        <SettingsOutlined fontSize="small" color="primary"/>
+                        <SettingsOutlined fontSize="small" color="primary" />
                       </Tooltip>
                     </ToggleButton>
                   )}
@@ -420,7 +420,7 @@ class ListLines extends Component {
                             aria-label="export"
                             disabled={true}
                           >
-                            <FileDownloadOutlined fontSize="small"/>
+                            <FileDownloadOutlined fontSize="small" />
                           </ToggleButton>
                         </span>
                       </Tooltip>

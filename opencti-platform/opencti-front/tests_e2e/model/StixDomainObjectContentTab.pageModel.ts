@@ -26,6 +26,8 @@ export default class StixDomainObjectContentTabPage {
     const element = this.page.getByLabel('Editor editing area: main');
     await element.click();
     if (isAutoSave) return element.fill(input);
+
+    await element.fill(input);
     return this.page.getByLabel('Save').click();
   }
 
