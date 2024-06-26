@@ -666,7 +666,32 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
           </Paper>
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 35 }}>
-          <UserHistory userId={user.id} />
+          {isGrantedToAudit ? (
+            <UserHistory userId={user.id} />
+          ) : (
+            <>
+              <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+                {t_i18n('History')}
+              </Typography>
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <Paper
+                  classes={{ root: classes.paper }}
+                  variant="outlined"
+                >
+                  <span
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: '100%'
+                    }}
+                  >
+                    {t_i18n('You are not authorized to see this data.')}
+                  </span>
+                </Paper>
+              </div>
+            </>
+          )}
         </Grid>
       </Grid>
       <QueryRenderer
