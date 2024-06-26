@@ -241,15 +241,15 @@ type AppInfo {
   """
   The OpenCTI api current memory usage
   """
-  memory: AppMemory @auth(for: [SETTINGS])
+  memory: AppMemory @auth(for: [SETTINGS_SETPARAMETERS])
   """
   The list of OpenCTI software dependencies
   """
-  dependencies: [DependencyVersion!]! @auth(for: [SETTINGS])
+  dependencies: [DependencyVersion!]! @auth(for: [SETTINGS_SETPARAMETERS])
   """
   The objects statistics
   """
-  debugStats: AppDebugStatistics @auth(for: [SETTINGS])
+  debugStats: AppDebugStatistics @auth(for: [SETTINGS_SETPARAMETERS])
 }
 
 ### STATS
@@ -461,7 +461,7 @@ type Log {
   timestamp: DateTime!
   user_id: String!
   user: Creator
-  raw_data: String @auth(for: [SETTINGS])
+  raw_data: String @auth(for: [SETTINGS_SECURITYACTIVITY])
   context_uri: String
   context_data: ContextData
 }
@@ -1114,7 +1114,7 @@ type SettingsMessage {
   dismissible: Boolean!
   updated_at: DateTime!
   color: String
-  recipients: [Member!] @auth(for: [SETTINGS])
+  recipients: [Member!] @auth(for: [SETTINGS_SETPARAMETERS])
 }
 
 enum PlatformCriticalAlertType {
@@ -1189,7 +1189,7 @@ type Settings implements InternalObject & BasicObject {
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime
-  activity_listeners: [Member!] @auth(for: [SETTINGS])
+  activity_listeners: [Member!] @auth(for: [SETTINGS_SECURITYACTIVITY])
   otp_mandatory: Boolean @auth
   password_policy_min_length: Int @auth
   password_policy_max_length: Int @auth
@@ -1199,7 +1199,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_lowercase: Int @auth
   password_policy_min_uppercase: Int @auth
   platform_messages: [SettingsMessage!] @auth
-  messages_administration: [SettingsMessage!] @auth(for: [SETTINGS])
+  messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])
@@ -11209,12 +11209,12 @@ type Query {
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  filesMetrics: FilesMetrics @auth(for: [SETTINGS])
+  filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
 
   ######## INDEXED FILES
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
   indexedFilesCount(search: String): Int @auth(for: [KNOWLEDGE])
-  indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS])
+  indexedFilesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
 
   ###### ENTITIES
 
@@ -11238,7 +11238,7 @@ type Query {
     filters: FilterGroup,
     filterMode: FilterMode,
     entityTypes: [MemberType!]
-  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS, INGESTION_SETINGESTIONS])
+  ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, INGESTION_SETINGESTIONS])
   users(
     first: Int
     after: ID
@@ -11274,8 +11274,8 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
-  retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
-  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
+  retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollections(
     first: Int
@@ -11332,7 +11332,7 @@ type Query {
   ): BackgroundTaskConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
-  ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
+  ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [SETTINGS])
   synchronizers(
     first: Int
@@ -12311,14 +12311,14 @@ type Query {
 ### SUBSCRIPTIONS
 
 type Subscription {
-  settings(id: ID!): Settings @auth(for: [SETTINGS])
+  settings(id: ID!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   settingsMessages(id: ID!): Settings @auth
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
-  label(id: ID!): Label @auth(for: [SETTINGS])
-  statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS])
-  markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
-  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
+  label(id: ID!): Label @auth(for: [SETTINGS_SETLABELS])
+  statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS_SETLABELS])
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
+  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
   stixCoreObject(id: ID!): StixCoreObject @auth(for: [KNOWLEDGE])
   internalObject(id: ID!): InternalObject @auth(for: [SETTINGS])
   stixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
@@ -12786,7 +12786,7 @@ type Mutation {
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  resetFileIndexing: Boolean @auth(for: [SETTINGS])
+  resetFileIndexing: Boolean @auth(for: [SETTINGS_FILEINDEXING])
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
@@ -12806,13 +12806,13 @@ type Mutation {
   queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth
 
   ### RETENTION RULE
-  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])
-  retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS])
-  retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS])
+  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
 
   ### RULE
-  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS])
-  ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS])
+  ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ruleManagerClean(eventId: ID): RuleManager! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
@@ -12821,14 +12821,14 @@ type Mutation {
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS_SETPARAMETERS])
   otpSetActivation(input: UserOTPActivationInput): User @auth(for: [SETTINGS])
-  subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS])
-  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS])
-  statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS])
-  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS])
-  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS])
-  statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS])
+  subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
+  statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETLABELS])
+  statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
+  statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
+  statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
