@@ -12346,11 +12346,11 @@ type WorkEditMutations {
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
-  fieldPatch(input: [EditInput]!): Settings
-  contextPatch(input: EditContext): Settings
-  contextClean: Settings
-  editMessage(input: SettingsMessageInput!): Settings
-  deleteMessage(input: String!): Settings
+  fieldPatch(input: [EditInput]!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY])
+  contextPatch(input: EditContext): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  contextClean: Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  editMessage(input: SettingsMessageInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteMessage(input: String!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType
@@ -12822,7 +12822,7 @@ type Mutation {
   otpDeactivation: MeUser @auth
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  settingsEdit(id: ID!): SettingsEditMutations @auth
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETLABELS])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETLABELS])

@@ -79,7 +79,7 @@ type Query {
 
 # Mutations
 type Mutation {
-  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS_SETPARAMETERS])
+  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS])
 }
 
 # Subscriptions
