@@ -224,10 +224,10 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
       .required(t_i18n('This field is required')),
     first_seen: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .nullable(),
     last_seen: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t_i18n('This field is required')),
+      .nullable(),
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean(),
     x_opencti_workflow_id: Yup.object(),
