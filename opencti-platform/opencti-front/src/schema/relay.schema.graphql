@@ -8163,7 +8163,6 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
-  otpSetActivation(input: UserOTPActivationInput): User
   subTypeEdit(id: ID!): SubTypeEditMutations
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
   statusTemplateDelete(id: ID!): ID!
@@ -8188,7 +8187,6 @@ type Mutation {
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
-  runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID!
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
   feedEdit(id: ID!, input: FeedAddInput!): Feed!

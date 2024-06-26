@@ -83,7 +83,6 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
-  SETTINGS,
   SETTINGS_SETPARAMETERS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
@@ -214,7 +213,7 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToSettings = useGranted([SETTINGS]);
+  const isGrantedToSettings = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETLABELS, SETTINGS_SECURITYACTIVITY, SETTINGS_FILEINDEXING, SETTINGS_SUPPORT]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
