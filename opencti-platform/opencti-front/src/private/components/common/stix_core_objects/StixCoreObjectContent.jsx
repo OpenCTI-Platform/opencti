@@ -751,7 +751,7 @@ class StixCoreObjectContentComponent extends Component {
 
 StixCoreObjectContentComponent.propTypes = {
   stixCoreObject: PropTypes.object,
-  setMappingHeaderDisabled: PropTypes.function,
+  setMappingHeaderDisabled: PropTypes.func,
   theme: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
