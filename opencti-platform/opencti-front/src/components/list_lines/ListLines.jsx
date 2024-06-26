@@ -111,9 +111,6 @@ const styles = (theme) => ({
   info: {
     paddingTop: 10,
   },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
 });
 
 class ListLines extends Component {
@@ -371,63 +368,63 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                   )}
-                    {handleSwitchRedirectionMode && (
-                      <ToggleButton
-                        size="small"
-                        value="settings"
-                        aria-label="settings"
-                      >
-                        <Tooltip title={t('List settings')}>
-                          <SettingsOutlined fontSize="small" color="primary"/>
-                        </Tooltip>
-                      </ToggleButton>
-                    )}
-                    {typeof handleToggleExports === 'function'
-                      && !exportDisabled && (
-                        <ToggleButton value="export" aria-label="export">
-                          <Tooltip title={t('Open export panel')}>
-                            <FileDownloadOutlined
-                              fontSize="small"
-                              color={openExports ? 'secondary' : 'primary'}
-                            />
-                          </Tooltip>
-                        </ToggleButton>
-                    )}
-                    {typeof handleExportCsv === 'function' && !exportDisabled && (
-                      <ToggleButton
-                        value="export-csv"
-                        onClick={() => handleExportCsv()}
-                        aria-label="export"
-                      >
-                        <Tooltip title={t('Export first 5000 rows in CSV')}>
-                          <FileDelimitedOutline
+                  {handleSwitchRedirectionMode && (
+                    <ToggleButton
+                      size="small"
+                      value="settings"
+                      aria-label="settings"
+                    >
+                      <Tooltip title={t('List settings')}>
+                        <SettingsOutlined fontSize="small" color="primary"/>
+                      </Tooltip>
+                    </ToggleButton>
+                  )}
+                  {typeof handleToggleExports === 'function'
+                    && !exportDisabled && (
+                      <ToggleButton value="export" aria-label="export">
+                        <Tooltip title={t('Open export panel')}>
+                          <FileDownloadOutlined
                             fontSize="small"
-                            color="primary"
+                            color={openExports ? 'secondary' : 'primary'}
                           />
                         </Tooltip>
                       </ToggleButton>
-                    )}
-                    {typeof handleToggleExports === 'function'
-                      && exportDisabled && (
-                        <Tooltip
-                          title={`${
-                            t(
-                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                            ) + export_max_size
-                          })`}
-                        >
-                          <span>
-                            <ToggleButton
-                              size="small"
-                              value="export"
-                              aria-label="export"
-                              disabled={true}
-                            >
-                              <FileDownloadOutlined fontSize="small"/>
-                            </ToggleButton>
-                          </span>
-                        </Tooltip>
-                    )}
+                  )}
+                  {typeof handleExportCsv === 'function' && !exportDisabled && (
+                    <ToggleButton
+                      value="export-csv"
+                      onClick={() => handleExportCsv()}
+                      aria-label="export"
+                    >
+                      <Tooltip title={t('Export first 5000 rows in CSV')}>
+                        <FileDelimitedOutline
+                          fontSize="small"
+                          color="primary"
+                        />
+                      </Tooltip>
+                    </ToggleButton>
+                  )}
+                  {typeof handleToggleExports === 'function'
+                    && exportDisabled && (
+                      <Tooltip
+                        title={`${
+                          t(
+                            'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                          ) + export_max_size
+                        })`}
+                      >
+                        <span>
+                          <ToggleButton
+                            size="small"
+                            value="export"
+                            aria-label="export"
+                            disabled={true}
+                          >
+                            <FileDownloadOutlined fontSize="small"/>
+                          </ToggleButton>
+                        </span>
+                      </Tooltip>
+                  )}
                 </ToggleButtonGroup>
               )}
               {/*
