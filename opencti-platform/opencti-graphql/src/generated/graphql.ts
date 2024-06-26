@@ -12052,6 +12052,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
 
 export type MappedEntity = {
   __typename?: 'MappedEntity';
+  isEntityInContainer: Scalars['Boolean']['output'];
   matchedEntity: StixCoreObject;
   matchedString: Scalars['String']['output'];
 };
@@ -34307,6 +34308,7 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type MappedEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappedEntity'] = ResolversParentTypes['MappedEntity']> = ResolversObject<{
+  isEntityInContainer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   matchedEntity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
   matchedString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

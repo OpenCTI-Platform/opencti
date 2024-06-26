@@ -42,17 +42,11 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
         analysisStatus
         mappedEntities {
           matchedString
+          isEntityInContainer
           ...ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity
           matchedEntity{
             id
             standard_id
-            containers{
-              edges{
-                node{
-                  id
-                }
-              }
-            }
           }
         }
       }
@@ -173,12 +167,10 @@ ContainerStixCoreObjectsSuggestedMappingProps
 
   const mappedEntities = (suggestedMapping?.stixCoreObjectAnalysis?.mappedEntities ?? []);
   // Filter entities not removed and only entities not in container if toggle activated
-  // TODO optimize perf of this method
   const filterMappedEntities = (mappedEntity: MappedEntityType) => {
     return !removedEntities.find((r) => r === mappedEntity.matchedEntity?.id)
         && (!onlyNotContainedEntities
-            || !mappedEntity.matchedEntity?.containers?.edges?.find((c) => c?.node?.id === container.id)
-        );
+            || !mappedEntity.isEntityInContainer);
   };
   const filteredMappedEntities = mappedEntities.filter((e) => filterMappedEntities(e));
   const mappedEntitiesWithNode = filteredMappedEntities.map((e) => { return { node: e }; });

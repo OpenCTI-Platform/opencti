@@ -600,7 +600,9 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   const analysisDataConverted = (analysisKey) => {
     const analysisId = analysisParsedContent[analysisKey];
     const entityResolved = entitiesResolved[analysisId];
-    return { matchedString: analysisKey, matchedEntity: entityResolved };
+    const entityContainers = entityResolved?.[buildRefRelationKey(RELATION_OBJECT)];
+    const isEntityInContainer = entityContainers ? entityContainers.some((c) => c === entity.id) : false;
+    return { matchedString: analysisKey, matchedEntity: entityResolved, isEntityInContainer };
   };
 
   const mappedEntities = Object.keys(analysisParsedContent)

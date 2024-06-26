@@ -12478,6 +12478,7 @@ input MappedEntityInput {
 type MappedEntity {
   matchedString: String!
   matchedEntity: StixCoreObject!
+  isEntityInContainer: Boolean!
 }
 
 type StixCoreObjectEditMutations {
