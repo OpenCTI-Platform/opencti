@@ -19,13 +19,13 @@ export default class StixDomainObjectContentTabPage {
 
   async editMainContent(input: string) {
     await this.selectMainContent();
-    return this.editTextArea(input);
+    return this.editTextArea(input, true);
   }
 
-  async editTextArea(input: string) {
+  async editTextArea(input: string, isAutoSave = false) {
     const element = this.page.getByLabel('Editor editing area: main');
     await element.click();
-    await element.fill(input);
+    if (isAutoSave) return element.fill(input);
     return this.page.getByLabel('Save').click();
   }
 
