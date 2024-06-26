@@ -208,18 +208,20 @@ ContainerStixCoreObjectsSuggestedMappingProps
   return (
     <div>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
-        <FormGroup>
-          <FormControlLabel
-            control={
-              <Switch
-                disabled={mappedEntities.length <= 0}
-                checked={onlyNotContainedEntities}
-                onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
-              />
-              }
-            label={t_i18n('Hide entities in container')}
-          />
-        </FormGroup>
+        <Box sx={{ flex: 1 }}>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  disabled={mappedEntities.length <= 0}
+                  checked={onlyNotContainedEntities}
+                  onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
+                />
+                }
+              label={t_i18n('Hide entities in container')}
+            />
+          </FormGroup>
+        </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {!hasConnectorsAvailable && (
           <Tooltip

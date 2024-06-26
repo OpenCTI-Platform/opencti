@@ -17,7 +17,6 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
@@ -68,105 +67,10 @@ const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
         id
         standard_id
         entity_type
-        ... on AttackPattern {
-          name
-          x_mitre_id
-        }
-        ... on Campaign {
-          name
-        }
-        ... on CourseOfAction {
-          name
-        }
-        ... on ObservedData {
-          name
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Individual {
-          name
-        }
-        ... on Organization {
-          name
-        }
-        ... on Sector {
-          name
-        }
-        ... on System {
-          name
-        }
-        ... on Indicator {
-          name
-        }
-        ... on Infrastructure {
-          name
-        }
-        ... on IntrusionSet {
-          name
-        }
-        ... on Position {
-          name
-        }
-        ... on City {
-          name
-        }
-        ... on AdministrativeArea {
-          name
-        }
-        ... on Country {
-          name
-        }
-        ... on Region {
-          name
-        }
-        ... on Malware {
-          name
-        }
-        ... on MalwareAnalysis {
-          result_name
-        }
-        ... on ThreatActor {
-          name
-        }
-        ... on Tool {
-          name
-        }
-        ... on Vulnerability {
-          name
-        }
-        ... on Incident {
-          name
-        }
-        ... on Event {
-          name
-        }
-        ... on Channel {
-          name
-        }
-        ... on Narrative {
-          name
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on Task {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
+        ... on StixObject {
+          representative {
+            main
+          }
         }
         objectMarking {
           id
@@ -237,9 +141,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
             >
-              {matchedEntity.x_mitre_id
-                ? `[${matchedEntity.x_mitre_id}] ${matchedEntity.name}`
-                : getMainRepresentative(matchedEntity)}
+              {matchedEntity.representative?.main}
             </div>
             <div
               className={classes.bodyItem}
@@ -289,61 +191,20 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.matched_text.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.mapping.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
           </div>
         }
       />
