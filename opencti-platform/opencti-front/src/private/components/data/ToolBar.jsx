@@ -2115,7 +2115,7 @@ class ToolBar extends Component {
                       </Typography>
                       <ItemMarkings
                         markingDefinitions={
-                          keptElement?.markingDefinitions || []
+                          keptElement?.objectMarking || []
                         }
                       />
                     </>
