@@ -1,6 +1,5 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Tooltip from '@mui/material/Tooltip';
 import { LayersClearOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
