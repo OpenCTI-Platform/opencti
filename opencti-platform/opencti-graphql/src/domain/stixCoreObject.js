@@ -600,14 +600,14 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   const analysisDataConverted = (analysisKey) => {
     const analysisId = analysisParsedContent[analysisKey];
     const entityResolved = entitiesResolved[analysisId];
-    return { matchedString: analysisKey, matchedEntity: entityResolved, analysisStatus: 'complete' };
+    return { matchedString: analysisKey, matchedEntity: entityResolved };
   };
 
   const mappedEntities = Object.keys(analysisParsedContent)
     .map((d) => analysisDataConverted(d))
     .filter((e) => e.matchedEntity);
 
-  return { analysisType, mappedEntities };
+  return { analysisType, mappedEntities, analysisStatus: 'complete' };
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
