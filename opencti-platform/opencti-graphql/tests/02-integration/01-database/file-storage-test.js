@@ -117,7 +117,7 @@ describe('File storage utils', () => {
     expect(guessMimeType('path/to/iamajsonfile.json')).toBe('application/json');
     expect(guessMimeType('path/to/iamapdf.pdf')).toBe('application/pdf');
     expect(guessMimeType('path/to/i Have space and 💖.txt')).toBe('text/plain');
-    expect(guessMimeType('unknown')).toBe('text/plain');
+    expect(guessMimeType('unknown')).toBe('application/octet-stream');
     expect(guessMimeType('export/Malware/b4bebef0-7f1b-4212-b09d-f376adb3181a/(ExportFileStix)_Malware-Paradise Ransomware_all.json')).toBe('application/json');
   });
 
