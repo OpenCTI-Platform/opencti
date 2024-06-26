@@ -409,6 +409,7 @@
   "Courses of action": "Conduites à suivre",
   "Courses of action view": "Vue conduites à suivre",
   "Create": "Créer",
+  "Create ...": "Créer {entity_type}",
   "CREATE": "CREER",
   "create": "créer",
   "Create / Update dashboards": "Créer / Mettre à jour des tableaux de bord",

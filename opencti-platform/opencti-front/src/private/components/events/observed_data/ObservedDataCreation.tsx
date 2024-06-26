@@ -277,7 +277,7 @@ const ObservedDataCreation = ({
   );
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='entity_Observed-Data' {...props} />
+    <CreateEntityControlledDial entityType='Observed-Data' {...props} />
   );
   return (
     <Drawer

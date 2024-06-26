@@ -409,6 +409,7 @@
   "Courses of action": "应对措施",
   "Courses of action view": "应对措施视图",
   "Create": "创建",
+  "Create ...": "创建 {entity_type}",
   "CREATE": "创建",
   "create": "创建",
   "Create / Update dashboards": "创建/更新仪表板",

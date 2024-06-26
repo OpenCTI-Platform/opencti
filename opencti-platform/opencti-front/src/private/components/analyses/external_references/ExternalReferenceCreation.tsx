@@ -208,7 +208,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
 
   const isEmbeddedInExternalReferenceCreation = true;
   const CreateExternalReferenceControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='entity_External-Reference' {...props} />
+    <CreateEntityControlledDial entityType='External-Reference' {...props} />
   );
   const renderClassic = () => {
     return (

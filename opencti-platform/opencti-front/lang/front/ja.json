@@ -409,6 +409,7 @@
   "Courses of action": "行動指針",
   "Courses of action view": "行動指針の表示",
   "Create": "作成",
+  "Create ...": "{entity_type} 作成",
   "CREATE": "作成",
   "create": "作成する",
   "Create / Update dashboards": "ダッシュボードの作成/更新",

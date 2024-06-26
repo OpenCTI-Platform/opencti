@@ -323,7 +323,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return insertNode(store, 'Pagination_notes', paginationOptions, key);
   };
   const CreateNoteControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='entity_Note' {...props} />
+    <CreateEntityControlledDial entityType='Note' {...props} />
   );
   const renderClassic = () => {
     return (

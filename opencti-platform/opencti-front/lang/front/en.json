@@ -410,6 +410,7 @@
   "Courses of action view": "Courses of action view",
   "CREATE": "CREATE",
   "Create": "Create",
+  "Create ...": "Create {entity_type}",
   "create": "create",
   "Create / Update dashboards": "Create / Update dashboards",
   "Create / Update investigations": "Create / Update investigations",

@@ -20,7 +20,10 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   style,
 }) => {
   const { t_i18n } = useFormatter();
-  const buttonValue = `${t_i18n('Create')} ${t_i18n(entityType)}`;
+  const buttonValue = t_i18n('', {
+    id: 'Create ...',
+    values: { entity_type: t_i18n(`entity_${entityType}`) },
+  });
   return (
     <Button
       onClick={onOpen}
