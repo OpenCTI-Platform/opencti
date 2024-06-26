@@ -104,6 +104,7 @@ class StixDomainObjectAttackPatternsKillChain extends Component {
       handleToggleExports,
       exportContext,
       availableFilterKeys,
+      refetch,
     } = this.props;
     const { currentColorsReversed, currentModeOnlyActive, targetEntities } = this.state;
     let csvData = null;
@@ -282,7 +283,7 @@ class StixDomainObjectAttackPatternsKillChain extends Component {
             data={data}
             entityLink={entityLink}
             paginationOptions={paginationOptions}
-            onDelete={this.props.relay.refetch.bind(this)}
+            onDelete={refetch.bind(this)}
             searchTerm={searchTerm}
           />
           )}
@@ -307,7 +308,7 @@ class StixDomainObjectAttackPatternsKillChain extends Component {
             data={data}
             entityLink={entityLink}
             paginationOptions={paginationOptions}
-            onDelete={this.props.relay.refetch.bind(this)}
+            onDelete={refetch.bind(this)}
             searchTerm={searchTerm}
             coursesOfAction={true}
           />
@@ -317,7 +318,7 @@ class StixDomainObjectAttackPatternsKillChain extends Component {
               entityId={stixDomainObjectId}
               isRelationReversed={false}
               paddingRight={220}
-              onCreate={this.props.relay.refetch.bind(this)}
+              onCreate={refetch.bind(this)}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
               targetEntities={targetEntities}
@@ -351,7 +352,8 @@ StixDomainObjectAttackPatternsKillChain.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  availableFilterKeys: PropTypes.func,
+  availableFilterKeys: PropTypes.array,
+  refetch: PropTypes.func,
 };
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
@@ -362,12 +364,6 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
         $filters: FilterGroup
     ) {
         ...StixDomainObjectAttackPatternsKillChainContainer_data
-        @arguments(
-          fromOrToId: $fromOrToId
-          elementWithTargetTypes: $elementWithTargetTypes
-          first: $first
-          filters: $filters
-        )
     }
 `;
 

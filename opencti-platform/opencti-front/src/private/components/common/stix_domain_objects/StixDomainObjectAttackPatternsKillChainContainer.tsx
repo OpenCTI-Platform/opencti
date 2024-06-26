@@ -1,5 +1,5 @@
-import { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import {
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
@@ -7,7 +7,6 @@ import {
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 interface StixDomainObjectAttackPatternsKillChainProps {
   helpers: UseLocalStorageHelpers;
@@ -26,14 +25,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
 }
 
 const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
-    fragment StixDomainObjectAttackPatternsKillChainContainer_data on Query
-    @argumentDefinitions(
-        fromOrToId: { type: "[String]" }
-        elementWithTargetTypes: { type: "[String]" }
-        first: { type: "Int", defaultValue: 200 }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "StixDomainObjectAttackPatternsKillChainContainerRefetchQuery") {
+    fragment StixDomainObjectAttackPatternsKillChainContainer_data on Query {
         stixCoreRelationships(
             fromOrToId: $fromOrToId
             elementWithTargetTypes: $elementWithTargetTypes
@@ -185,16 +177,19 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   openExports,
   availableFilterKeys,
 }) => {
-  const data = usePreloadedPaginationFragment(
-    {
-      queryRef,
-      linesQuery: stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-      linesFragment: stixDomainObjectAttackPatternsKillChainContainerFragment,
-      nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
-      setNumberOfElements: helpers.handleSetNumberOfElements,
-    },
-  );
+  const dataPreloaded = usePreloadedQuery(stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery, queryRef);
+  const data = useFragment(stixDomainObjectAttackPatternsKillChainContainerFragment, dataPreloaded);
+  // const data = usePreloadedPaginationFragment(
+  //   {
+  //     queryRef,
+  //     linesQuery: stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  //     linesFragment: stixDomainObjectAttackPatternsKillChainContainerFragment,
+  //     nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
+  //     setNumberOfElements: helpers.handleSetNumberOfElements,
+  //   },
+  // );
   console.log('data', data);
+  const refetch = React.useCallback;
   return (
     <StixDomainObjectAttackPatternsKillChain
       data={data}
@@ -213,6 +208,7 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
       handleToggleExports={disableExport ? null : helpers.handleToggleExports}
       openExports={openExports}
       availableFilterKeys={availableFilterKeys}
+      refetch={refetch}
     />
   );
 };
