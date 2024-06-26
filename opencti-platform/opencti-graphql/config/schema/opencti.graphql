@@ -11230,8 +11230,8 @@ type Query {
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
-  assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+  creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
+  assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
   participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
   members(
     first: Int,
@@ -11365,7 +11365,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETCUSTOMIZATION])
+  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS])
   label(id: String!): Label @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   labels(
     first: Int
@@ -11374,7 +11374,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LabelConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS, SETTINGS_SETCUSTOMIZATION])
+  ): LabelConnection @auth(for: [KNOWLEDGE, SETTINGS_SETLABELS])
   externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
   externalReferences(
     first: Int
