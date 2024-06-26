@@ -250,8 +250,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     const inputValues = Object.entries({
       ...otherValues,
       confidence: parseInt(String(values.confidence), 10),
-      first_seen: values.first_seen ? formatDate(values.first_seen) : null,
-      last_seen: values.last_seen ? formatDate(values.last_seen) : null,
+      first_seen: formatDate(values.first_seen),
+      last_seen: formatDate(values.last_seen),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       createdBy: values.createdBy?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
