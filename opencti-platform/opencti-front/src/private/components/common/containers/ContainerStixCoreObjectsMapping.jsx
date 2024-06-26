@@ -117,16 +117,14 @@ const ContainerStixCoreObjectsMapping = ({
   return (
     <div>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
-        <Tooltip title={t_i18n('Clear mapping')}>
-          <Button
-            variant="contained"
-            onClick={handleClearMapping}
-            startIcon={<LayersClearOutlined />}
-            size="small"
-          >
-            {t_i18n('Clear mapping')}
-          </Button>
-        </Tooltip>
+        <Button
+          variant="contained"
+          onClick={handleClearMapping}
+          startIcon={<LayersClearOutlined />}
+          size="small"
+        >
+          {t_i18n('Clear mappings')}
+        </Button>
       </Box>
       <div className={classes.container}>
         <ListLines

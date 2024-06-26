@@ -19,6 +19,7 @@ import { CheckCircleOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { ContainerContent_container$data } from '@components/common/containers/__generated__/ContainerContent_container.graphql';
 import { InformationOutline } from 'mdi-material-ui';
+import DialogTitle from '@mui/material/DialogTitle';
 import ListLines from '../../../../components/list_lines/ListLines';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -304,9 +305,12 @@ ContainerStixCoreObjectsSuggestedMappingProps
         TransitionComponent={Transition}
         onClose={() => setOpenValidate(false)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Do you want to validate the mapping of this content?')}
+            {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

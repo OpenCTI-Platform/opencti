@@ -260,7 +260,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
                 label={
                     contentMappingCount[matchedString]
                       ? contentMappingCount[matchedString]
-                      : t_i18n('0')
+                      : '0'
                   }
               />
             </div>

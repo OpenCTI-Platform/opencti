@@ -138,7 +138,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 label={
                   contentMappingCount[mappedString]
                     ? contentMappingCount[mappedString]
-                    : t_i18n('0')
+                    : '0'
                 }
               />
             </div>
