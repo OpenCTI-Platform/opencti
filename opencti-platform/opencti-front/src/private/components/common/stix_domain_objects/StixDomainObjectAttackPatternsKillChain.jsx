@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import { createRefetchContainer, graphql } from 'react-relay';
+import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, FilterAltOutlined, InvertColorsOffOutlined, ViewColumnOutlined, ViewListOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
+import withStyles from '@mui/styles/withStyles';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
-import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -21,6 +20,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { export_max_size } from '../../../../utils/utils';
+import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
@@ -64,7 +64,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectAttackPatternsKillChainComponent extends Component {
+class StixDomainObjectAttackPatternsKillChain extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -338,7 +338,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
   }
 }
 
-StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
+StixDomainObjectAttackPatternsKillChain.propTypes = {
   data: PropTypes.object,
   entity: PropTypes.object,
   entityLink: PropTypes.string,
@@ -361,146 +361,17 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
         $first: Int
         $filters: FilterGroup
     ) {
-        ...StixDomainObjectAttackPatternsKillChain_data
+        ...StixDomainObjectAttackPatternsKillChainContainer_data
+        @arguments(
+          fromOrToId: $fromOrToId
+          elementWithTargetTypes: $elementWithTargetTypes
+          first: $first
+          filters: $filters
+        )
     }
 `;
 
-const stixDomainObjectAttackPatternsKillChainLines = graphql`
-            fragment StixDomainObjectAttackPatternsKillChain_data on Query {
-                stixCoreRelationships(
-                    fromOrToId: $fromOrToId
-                    elementWithTargetTypes: $elementWithTargetTypes
-                    filters: $filters
-                    first: $first
-                ) @connection(key: "Pagination_stixCoreRelationships") {
-                    edges {
-                        node {
-                            id
-                            description
-                            start_time
-                            stop_time
-                            from {
-                                ... on BasicRelationship {
-                                    id
-                                    entity_type
-                                }
-                                ... on AttackPattern {
-                                    id
-                                    parent_types
-                                    entity_type
-                                    name
-                                    description
-                                    x_mitre_id
-                                    x_mitre_platforms
-                                    x_mitre_permissions_required
-                                    x_mitre_detection
-                                    isSubAttackPattern
-                                    coursesOfAction {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    parentAttackPatterns {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    subAttackPatterns {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    killChainPhases {
-                                        id
-                                        phase_name
-                                        x_opencti_order
-                                    }
-                                }
-                            }
-                            to {
-                                ... on BasicRelationship {
-                                    id
-                                    entity_type
-                                }
-                                ... on AttackPattern {
-                                    id
-                                    parent_types
-                                    entity_type
-                                    name
-                                    description
-                                    x_mitre_id
-                                    x_mitre_platforms
-                                    x_mitre_permissions_required
-                                    x_mitre_detection
-                                    isSubAttackPattern
-                                    coursesOfAction {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    parentAttackPatterns {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    subAttackPatterns {
-                                        edges {
-                                            node {
-                                                id
-                                                name
-                                                description
-                                                x_mitre_id
-                                            }
-                                        }
-                                    }
-                                    killChainPhases {
-                                        id
-                                        phase_name
-                                        x_opencti_order
-                                    }
-                                }
-                            }
-                            killChainPhases {
-                                id
-                                phase_name
-                                x_opencti_order
-                            }
-                            objectMarking {
-                                id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                            }
-                        }
-                    }
-                }
-            }
-        `;
-
-export default StixDomainObjectAttackPatternsKillChainLines;
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(StixDomainObjectAttackPatternsKillChain);
