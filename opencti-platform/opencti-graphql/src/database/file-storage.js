@@ -282,7 +282,7 @@ export const guessMimeType = (fileId) => {
   if (!mimeType && fileName === 'pdf_report') {
     return 'application/pdf';
   }
-  return mimeType || 'text/plain';
+  return mimeType || 'application/octet-stream';
 };
 
 export const isFileObjectExcluded = (id) => {
