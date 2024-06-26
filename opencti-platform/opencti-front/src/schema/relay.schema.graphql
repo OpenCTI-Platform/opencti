@@ -51,6 +51,9 @@ enum Capabilities {
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
   EXPLORE_EXUPDATE_PUBLISH
+  INVESTIGATION
+  INVESTIGATION_INUPDATE
+  INVESTIGATION_INUPDATE_INDELETE
   MODULES
   MODULES_MODMANAGE
   SETTINGS
@@ -1764,8 +1767,8 @@ type ConnectorConfiguration {
 }
 
 type ConnectorQueueDetails {
-  messages_number: Int!
-  messages_size: Int!
+  messages_number: Float!
+  messages_size: Float!
 }
 
 type Connector implements BasicObject & InternalObject {

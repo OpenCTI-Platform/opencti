@@ -5,7 +5,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
 import Security from '../../../utils/Security';
-import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { GqlFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -131,7 +131,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     <>
       <Breadcrumbs variant="list" elements={[{ label: type === 'dashboard' ? t_i18n('Dashboards') : t_i18n('Investigations'), current: true }]} />
       {renderLines()}
-      <Security needs={[EXPLORE_EXUPDATE]}>
+      <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
         <WorkspaceCreation
           paginationOptions={workspacePaginationOptions}
           type={type}

@@ -1722,6 +1722,9 @@ export enum Capabilities {
   ExploreExupdatePublish = 'EXPLORE_EXUPDATE_PUBLISH',
   Ingestion = 'INGESTION',
   IngestionSetingestions = 'INGESTION_SETINGESTIONS',
+  Investigation = 'INVESTIGATION',
+  InvestigationInupdate = 'INVESTIGATION_INUPDATE',
+  InvestigationInupdateIndelete = 'INVESTIGATION_INUPDATE_INDELETE',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
@@ -3465,8 +3468,8 @@ export type ConnectorMetadata = {
 
 export type ConnectorQueueDetails = {
   __typename?: 'ConnectorQueueDetails';
-  messages_number: Scalars['Int']['output'];
-  messages_size: Scalars['Int']['output'];
+  messages_number: Scalars['Float']['output'];
+  messages_size: Scalars['Float']['output'];
 };
 
 export enum ConnectorType {
@@ -31420,8 +31423,8 @@ export type ConnectorMetadataResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type ConnectorQueueDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorQueueDetails'] = ResolversParentTypes['ConnectorQueueDetails']> = ResolversObject<{
-  messages_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  messages_size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  messages_number?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

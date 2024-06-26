@@ -62,6 +62,8 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Security from '../../../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -1329,27 +1331,29 @@ const WidgetConfig = ({ workspace, widget, onComplete, closeMenu }) => {
       {!widget && (
         <>
           <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleWidgetImport} />
-          <SpeedDial
-            className={classes.createButton}
-            ariaLabel="Create"
-            icon={<SpeedDialIcon />}
-            FabProps={{ color: 'primary' }}
-          >
-            <SpeedDialAction
-              title={t_i18n('Create a widget')}
-              icon={<WidgetsOutlined />}
-              tooltipTitle={t_i18n('Create a widget')}
-              onClick={() => setOpen(true)}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-            <SpeedDialAction
-              title={t_i18n('Import a widget')}
-              icon={<CloudUploadOutlined />}
-              tooltipTitle={t_i18n('Import a widget')}
-              onClick={() => inputRef.current?.click()}
-              FabProps={{ classes: { root: classes.speedDialButton } }}
-            />
-          </SpeedDial>
+          <Security needs={[EXPLORE_EXUPDATE]}>
+            <SpeedDial
+              className={classes.createButton}
+              ariaLabel="Create"
+              icon={<SpeedDialIcon />}
+              FabProps={{ color: 'primary' }}
+            >
+              <SpeedDialAction
+                title={t_i18n('Create a widget')}
+                icon={<WidgetsOutlined />}
+                tooltipTitle={t_i18n('Create a widget')}
+                onClick={() => setOpen(true)}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+              <SpeedDialAction
+                title={t_i18n('Import a widget')}
+                icon={<CloudUploadOutlined />}
+                tooltipTitle={t_i18n('Import a widget')}
+                onClick={() => inputRef.current?.click()}
+                FabProps={{ classes: { root: classes.speedDialButton } }}
+              />
+            </SpeedDial>
+          </Security>
         </>
       )}
       {widget && (

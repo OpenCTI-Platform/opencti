@@ -44,7 +44,7 @@ import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { parseDomain } from '../../../../utils/Graph';
-import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import { INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { dateFormat } from '../../../../utils/Time';
@@ -793,7 +793,7 @@ class InvestigationGraphBar extends Component {
                 </div>
                 {workspace && (
                   <Security
-                    needs={[EXPLORE_EXUPDATE]}
+                    needs={[INVESTIGATION_INUPDATE]}
                     hasAccess={
                       workspace.currentUserAccessRight === 'admin'
                       || workspace.currentUserAccessRight === 'edit'

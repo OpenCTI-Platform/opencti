@@ -36,7 +36,7 @@ import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
-import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH } from '../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
@@ -198,6 +198,7 @@ const WorkspaceHeader = ({
   ] = useState(false);
   const handleOpenTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(true);
   const handleCloseTurnToReportOrCaseContainer = () => setDisplayTurnToReportOrCaseContainer(false);
+  const isGrantedToUpdateDashboard = useGranted([EXPLORE_EXUPDATE]);
   return (
     <>
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -209,14 +210,14 @@ const WorkspaceHeader = ({
         >
           {workspace.name}
         </Typography>
-        <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanEdit}>
           <div className={classes.popover}>
             <WorkspacePopover workspace={workspace} />
           </div>
         </Security>
         {variant === 'dashboard' && (
           <Security
-            needs={[EXPLORE_EXUPDATE]}
+            needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
             hasAccess={userCanEdit}
             placeholder={
               <div
@@ -375,27 +376,29 @@ const WorkspaceHeader = ({
             adjust={adjust}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
-            handleDashboardDuplication={handleDashboardDuplication}
+            handleDashboardDuplication={isGrantedToUpdateDashboard && handleDashboardDuplication}
             variant={variant}
           />
         </div>
         {variant === 'investigation' && (
-          <div className={classes.turnToReportOrCase}>
-            <Tooltip title={t_i18n('Add to a container')}>
-              <ToggleButtonGroup size="small" color="primary" exclusive={true}>
-                <ToggleButton
-                  aria-label="Label"
-                  onClick={handleOpenTurnToReportOrCaseContainer}
-                  size="small"
-                  value="add-to-a-container"
-                >
-                  <MoveToInboxOutlined color="primary" fontSize="small" />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Tooltip>
-          </div>
+          <Security needs={[INVESTIGATION_INUPDATE]}>
+            <div className={classes.turnToReportOrCase}>
+              <Tooltip title={t_i18n('Add to a container')}>
+                <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+                  <ToggleButton
+                    aria-label="Label"
+                    onClick={handleOpenTurnToReportOrCaseContainer}
+                    size="small"
+                    value="add-to-a-container"
+                  >
+                    <MoveToInboxOutlined color="primary" fontSize="small" />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Tooltip>
+            </div>
+          </Security>
         )}
-        <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanManage}>
           <div className={classes.manageAccess}>
             <Tooltip title={t_i18n('Manage access restriction')}>
               <ToggleButtonGroup size="small" color="warning" exclusive={true}>
@@ -429,7 +432,7 @@ const WorkspaceHeader = ({
             />
             ),
           )}
-          <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
+          <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanEdit}>
             {tags.length > 1 ? (
               <IconButton
                 color="primary"

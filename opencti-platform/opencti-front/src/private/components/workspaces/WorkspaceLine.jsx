@@ -13,6 +13,8 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../components/i18n';
 import WorkspacePopover from './WorkspacePopover';
 import ItemIcon from '../../../components/ItemIcon';
+import Security from '../../../utils/Security';
+import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -105,10 +107,12 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
         }
       />
       <ListItemSecondaryAction>
-        <WorkspacePopover
-          workspace={node}
-          paginationOptions={paginationOptions}
-        />
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+          <WorkspacePopover
+            workspace={node}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
       </ListItemSecondaryAction>
     </ListItem>
   );
