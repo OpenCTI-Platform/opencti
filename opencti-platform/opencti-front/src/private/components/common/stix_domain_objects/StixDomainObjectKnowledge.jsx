@@ -9,12 +9,11 @@ import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
+import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
-import StixCoreObjectReportsHorizontalBars from '../../analyses/reports/StixCoreObjectReportsHorizontalBars';
-import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixSightingRelationshipsDonut from '../../events/stix_sighting_relationships/EntityStixSightingRelationshipsDonut';
 
@@ -226,25 +225,11 @@ class StixDomainObjectKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectReportsHorizontalBars
-              stixCoreObjectId={stixDomainObjectId}
-              field="created-by.internal_id"
-              title={t('Distribution of sources')}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectStixCoreRelationshipsCloud
-              stixCoreObjectId={stixDomainObjectId}
-              stixCoreObjectType="Stix-Core-Object"
-              relationshipType="stix-core-relationship"
-              title={t('Distribution of relations')}
-              field="entity_type"
-              noDirection={true}
-            />
-          </Grid>
-        </Grid>
+        <StixCoreObjectReportsHorizontalBar
+          stixCoreObjectId={stixDomainObjectId}
+          field="created-by.internal_id"
+          title={t('Distribution of reports')}
+        />
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item={true} xs={6} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars

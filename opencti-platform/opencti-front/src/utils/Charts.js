@@ -498,6 +498,7 @@ export const horizontalBarsChartOptions = (
   },
   legend: {
     show: legend,
+    showForSingleSeries: true,
     itemMargin: {
       horizontal: 5,
     },
