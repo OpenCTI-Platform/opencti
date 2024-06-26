@@ -683,7 +683,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                       display: 'flex',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      height: '100%'
+                      height: '100%',
                     }}
                   >
                     {t_i18n('You are not authorized to see this data.')}

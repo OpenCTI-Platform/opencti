@@ -213,7 +213,16 @@ const LeftBar = () => {
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToSettings = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETLABELS, SETTINGS_SECURITYACTIVITY, SETTINGS_FILEINDEXING, SETTINGS_SUPPORT]);
+  const isGrantedToSettings = useGranted([
+    SETTINGS_SETPARAMETERS,
+    SETTINGS_SETACCESSES,
+    SETTINGS_SETMARKINGS,
+    SETTINGS_SETCUSTOMIZATION,
+    SETTINGS_SETLABELS,
+    SETTINGS_SECURITYACTIVITY,
+    SETTINGS_FILEINDEXING,
+    SETTINGS_SUPPORT,
+  ]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
@@ -868,7 +877,18 @@ const LeftBar = () => {
             </Security>
           </MenuList>
         </Security>
-        <Security needs={[VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETPARAMETERS, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETLABELS, SETTINGS_SECURITYACTIVITY, SETTINGS_FILEINDEXING, SETTINGS_SUPPORT]}>
+        <Security needs={[
+          VIRTUAL_ORGANIZATION_ADMIN,
+          SETTINGS_SETPARAMETERS,
+          SETTINGS_SETACCESSES,
+          SETTINGS_SETMARKINGS,
+          SETTINGS_SETCUSTOMIZATION,
+          SETTINGS_SETLABELS,
+          SETTINGS_SECURITYACTIVITY,
+          SETTINGS_FILEINDEXING,
+          SETTINGS_SUPPORT,
+        ]}
+        >
           <Divider />
           <MenuList component="nav">
             {isOrganizationAdmin && !isGrantedToSettings ? (

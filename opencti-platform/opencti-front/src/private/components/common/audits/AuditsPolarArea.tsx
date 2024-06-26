@@ -22,7 +22,7 @@ import WidgetLoader from '../../../../components/dashboard/WidgetLoader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import { DashboardWidgetDataSelection, DashboardWidgetParameters } from '../../../../utils/dashboard';
