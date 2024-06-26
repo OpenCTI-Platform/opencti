@@ -298,7 +298,7 @@ export const getBaseUrl = (req) => {
 };
 
 export const configureCA = (certificates) => {
-  if (certificates && certificates.length) {
+  if (certificates && certificates.length > 0) {
     return { ca: certificates };
   }
   // eslint-disable-next-line no-restricted-syntax
@@ -329,17 +329,6 @@ export const loadCert = (cert) => {
   return readFileSync(cert);
 };
 export const PORT = nconf.get('app:port');
-
-class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
-  constructor(basicOpts, extendedOpts) {
-    super(basicOpts);
-    this.extendedOpts = extendedOpts;
-  }
-
-  callback(req, opts) {
-    return super.callback(req, { ...opts, ...this.extendedOpts });
-  }
-}
 
 const escapeRegex = (string) => {
   return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -386,7 +375,7 @@ export const getPlatformHttpProxies = () => {
   const proxies = {};
   if (https) {
     proxies['https:'] = {
-      build: () => new ExtendedHttpsProxyAgent(https, {
+      build: () => new HttpsProxyAgent(https, {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
         ...configureCA(proxyCA)
       }),
