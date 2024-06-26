@@ -11156,7 +11156,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): LogConnection @auth(for: [SETTINGS_SECURITYACTIVITY, KNOWLEDGE])
+  ): LogConnection @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsNumber(
     dateAttribute: String
     types: [String]
@@ -11165,7 +11165,7 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
-  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  ): Number @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsTimeSeries(
     field: String!
     operation: StatsOperation!
@@ -11175,7 +11175,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): [TimeSeries] @auth(for: [SETTINGS, VIRTUAL_ORGANIZATION_ADMIN])
+  ): [TimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsDistribution(
     field: String!
     startDate: DateTime
@@ -11187,7 +11187,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): [Distribution] @auth(for: [SETTINGS])
+  ): [Distribution] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsMultiTimeSeries(
     operation: StatsOperation!
     startDate: DateTime!
@@ -11195,7 +11195,7 @@ type Query {
     interval: String!
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
-  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   subTypes(
     first: Int

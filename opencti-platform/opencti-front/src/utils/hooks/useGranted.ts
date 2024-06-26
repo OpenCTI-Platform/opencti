@@ -40,7 +40,7 @@ export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
 export const isOnlyOrganizationAdmin = () => {
   const { me: user } = useAuth();
   const userCapabilities = user.capabilities.map((n) => n.name);
-  return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS);
+  return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
 };
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {

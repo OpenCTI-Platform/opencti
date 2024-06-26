@@ -44,7 +44,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
-import useGranted, { BYPASS, KNOWLEDGE, SETTINGS, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
@@ -235,7 +235,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
     userOtpDeactivationMutation,
   );
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  const userHasSettingsCapability = userCapabilities.includes(SETTINGS) || userCapabilities.includes(BYPASS);
+  const userHasSettingsCapability = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const handleOpenKillSession = (sessionId: string) => {
     setDisplayKillSession(true);
     setSessionToKill(sessionId);
@@ -511,7 +511,7 @@ const User: FunctionComponent<UserProps> = ({ data }) => {
                 >
                   {t_i18n('Sessions')}
                 </Typography>
-                <Security needs={[SETTINGS]}>
+                <Security needs={[SETTINGS_SETACCESSES]}>
                   <IconButton
                     color="primary"
                     aria-label="Delete all"

@@ -9,7 +9,7 @@ import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useAI from '../../../../utils/hooks/useAI';
 
@@ -26,7 +26,7 @@ const EETooltip = ({
   const [feedbackCreation, setFeedbackCreation] = useState(false);
   const [openEnableAI, setOpenEnableAI] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
-  const isAdmin = useGranted([SETTINGS]);
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const {
