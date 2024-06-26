@@ -2,8 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import {
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$data,
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
+import {
+  StixDomainObjectAttackPatternsKillChainContainer_data$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -54,6 +58,13 @@ const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
                             x_mitre_permissions_required
                             x_mitre_detection
                             isSubAttackPattern
+                            objectMarking {
+                                id
+                                definition_type
+                                definition
+                                x_opencti_order
+                                x_opencti_color
+                            }
                             coursesOfAction {
                                 edges {
                                     node {
@@ -177,18 +188,14 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   openExports,
   availableFilterKeys,
 }) => {
-  const dataPreloaded = usePreloadedQuery(stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery, queryRef);
-  const data = useFragment(stixDomainObjectAttackPatternsKillChainContainerFragment, dataPreloaded);
-  // const data = usePreloadedPaginationFragment(
-  //   {
-  //     queryRef,
-  //     linesQuery: stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-  //     linesFragment: stixDomainObjectAttackPatternsKillChainContainerFragment,
-  //     nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
-  //     setNumberOfElements: helpers.handleSetNumberOfElements,
-  //   },
-  // );
-  console.log('data', data);
+  const dataPreloaded = usePreloadedQuery<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
+    stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+    queryRef,
+  );
+  const data = useFragment<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$data>(
+    stixDomainObjectAttackPatternsKillChainContainerFragment,
+    dataPreloaded,
+  ) as StixDomainObjectAttackPatternsKillChainContainer_data$data;
   const refetch = React.useCallback;
   return (
     <StixDomainObjectAttackPatternsKillChain
@@ -205,7 +212,7 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
       defaultStartTime={defaultStartTime}
       defaultStopTime={defaultStopTime}
       exportContext={{ entity_type: 'stix-core-relationship' }}
-      handleToggleExports={disableExport ? null : helpers.handleToggleExports}
+      handleToggleExports={disableExport ? undefined : helpers.handleToggleExports}
       openExports={openExports}
       availableFilterKeys={availableFilterKeys}
       refetch={refetch}
