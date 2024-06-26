@@ -88,6 +88,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   authentication_value?: string | null
   user_id: string | undefined
   ingestion_running: boolean
+  markings?: string[]
 }
 
 export interface StoreEntityIngestionCsv extends StoreEntity {

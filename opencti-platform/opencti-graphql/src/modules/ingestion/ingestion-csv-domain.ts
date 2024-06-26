@@ -123,7 +123,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     authentication_value: input.authentication_value
   } as BasicStoreEntityIngestionCsv;
   const { data } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 50 });
-  const bundle = await bundleProcess(context, user, data, parsedMapper);
+  const bundle = await bundleProcess(context, user, data, parsedMapper); // pass ingestion creator user
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object) => object.type === 'relationship').length,

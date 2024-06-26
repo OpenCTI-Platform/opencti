@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { sanitized, validateCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { BundleBuilder } from './bundle-creator';
-import { mappingProcess } from './csv-mapper';
+import { handleRefEntities, mappingProcess } from './csv-mapper';
 import { convertStoreToStix } from '../database/stix-converter';
 import type { BasicStoreBase, StoreCommon } from '../types/store';
 import { parsingProcess } from './csv-parser';
@@ -35,6 +35,7 @@ export const bundleProcess = async (
   let skipLine = sanitizedMapper.has_header;
   const rawRecords = await parsingProcess(content, mapper.separator, mapper.skipLineChar);
   const records = maxRecordNumber ? rawRecords.slice(0, maxRecordNumber) : rawRecords;
+  const refEntities = await handleRefEntities(context, user, mapper);
   if (records) {
     await Promise.all((records.map(async (record: string[]) => {
       const isEmptyLine = record.length === 1 && isEmptyField(record[0]);
@@ -44,7 +45,7 @@ export const bundleProcess = async (
       } else if (!isEmptyLine) {
         try {
           // Compute input by representation
-          const inputs = await mappingProcess(context, user, sanitizedMapper, record);
+          const inputs = await mappingProcess(context, user, sanitizedMapper, record, refEntities);
           // Remove inline elements
           const withoutInlineInputs = inputs.filter((input) => !inlineEntityTypes.includes(input.entity_type as string));
           // Transform entity to stix

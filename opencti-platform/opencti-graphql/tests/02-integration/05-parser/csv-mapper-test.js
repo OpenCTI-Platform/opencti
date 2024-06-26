@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
 import { parsingProcess } from '../../../src/parser/csv-parser';
-import { mappingProcess } from '../../../src/parser/csv-mapper';
+import { handleRefEntities, mappingProcess } from '../../../src/parser/csv-mapper';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { csvMapperFile } from './files-hashes/mapper-files';
@@ -56,7 +56,8 @@ const GET_QUERY = `
 const mapData = async (fileName, mapper, user = ADMIN_USER) => {
   const [_, ...records] = await parsingProcess(fileName, mapper.separator);
   return await Promise.all((records.map(async (record) => {
-    return await mappingProcess(testContext, user, mapper, record);
+    const refEntities = await handleRefEntities(testContext, user, mapper)
+    return await mappingProcess(testContext, user, mapper, record, refEntities);
   })));
 };
 
@@ -367,9 +368,10 @@ describe('CSV-MAPPER', () => {
 
     it('should set user chosen markings if policy in mapper is set to user choice', async () => {
       const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const USER_CHOICE_MARKING_CONFIG = 'user-choice';
       const data = (await mapData(
         filePath,
-        csvMapperAreaMarking('user-choice', [tlpClear.id, tlpAmber.id]),
+        csvMapperAreaMarking(USER_CHOICE_MARKING_CONFIG, [tlpClear.id, tlpAmber.id]),
       )).flat();
 
       const indre = data.find((object) => object.name === 'indre');

@@ -21,6 +21,7 @@ import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
+const USER_CHOICE_MARKING_CONFIG = 'user-choice';
 
 // -- HANDLE VALUE --
 
@@ -292,7 +293,7 @@ const handleDefaultMarkings = (
     ?.values ?? [];
 
   if (representationMarkingValue) {
-    if (representationMarkingValue === 'user-choice') {
+    if (representationMarkingValue === USER_CHOICE_MARKING_CONFIG) {
       input[INPUT_MARKINGS] = chosenMarkings.flatMap((id) => {
         const entity = refEntities[id];
         if (!entity) return [];
@@ -338,12 +339,11 @@ const mapRecord = async (
   return filledInput;
 };
 
-export const mappingProcess = async (
+export const handleRefEntities = async (
   context: AuthContext,
   user: AuthUser,
-  mapper: CsvMapperParsed,
-  record: string[]
-): Promise<Record<string, InputType>[]> => {
+  mapper: CsvMapperParsed
+) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
   const refIdsToResolve = new Set(representations.flatMap((representation) => {
@@ -358,7 +358,8 @@ export const mappingProcess = async (
       return [];
     });
   }));
-  const refEntities = await internalFindByIdsMapped(
+
+  return internalFindByIdsMapped(
     context,
     user,
     [
@@ -367,6 +368,17 @@ export const mappingProcess = async (
       ...(user_chosen_markings || []),
     ]
   );
+};
+
+export const mappingProcess = async (
+  context: AuthContext,
+  user: AuthUser,
+  mapper: CsvMapperParsed,
+  record: string[],
+  refEntities: Record<string, BasicStoreObject>,
+): Promise<Record<string, InputType>[]> => {
+  // Resolution des representations & markings - refIds = default values for representation attributes
+  const { representations, user_chosen_markings } = mapper;
 
   const representationEntities = representations
     .filter((r) => r.type === CsvMapperRepresentationType.Entity)

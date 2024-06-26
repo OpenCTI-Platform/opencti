@@ -18,8 +18,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import DialogContentText from '@mui/material/DialogContentText';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
+import { Option } from '@components/common/form/ReferenceField';
+import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
+import { FileManagerAskJobImportMutation$variables } from '@components/common/files/__generated__/FileManagerAskJobImportMutation.graphql';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import FileUploader from '../../common/files/FileUploader';
@@ -31,6 +33,7 @@ import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/E
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -69,6 +72,7 @@ const importValidation = (t: (value: string) => string, configurations: boolean)
     return Yup.object().shape({
       ...shape,
       configuration: Yup.string().required(t('This field is required')),
+      objectMarking: Yup.array().required(t('This field is required')),
     });
   }
   return Yup.object().shape(shape);
@@ -103,17 +107,26 @@ ExternalReferenceFileImportViewerBaseProps
   const importConnsPerFormat = scopesConn(connectorsImport);
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string }>['onSubmit'] = (
+  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string, objectMarking: Option[] }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
+    const variables: FileManagerAskJobImportMutation$variables = {
+      fileName: fileToImport?.id ?? '',
+      connectorId: values.connector_id,
+    };
+    if (selectedConnector?.name === 'ImportCsv') {
+      const markings = values.objectMarking.map((option) => option.value);
+      const parsedConfig = JSON.parse(values.configuration);
+      if (typeof parsedConfig === 'object') {
+        parsedConfig.markings = [...markings];
+        variables.configuration = JSON.stringify(parsedConfig);
+      }
+    }
+
     commitMutation({
       mutation: fileManagerAskJobImportMutation,
-      variables: {
-        fileName: fileToImport?.id,
-        connectorId: values.connector_id,
-        configuration: values.configuration,
-      },
+      variables,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -149,6 +162,19 @@ ExternalReferenceFileImportViewerBaseProps
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (option: string | CsvMapperFieldOption) => {
+    if (selectedConnector?.name === 'ImportCsv') {
+      const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+      const parsedRepresentations = JSON.parse(parsedOption.representations);
+      const selectedCsvMapper = {
+        ...parsedOption,
+        representations: [...parsedRepresentations],
+      };
+      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+      setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+    }
+  };
   return (
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
@@ -213,7 +239,7 @@ ExternalReferenceFileImportViewerBaseProps
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '' }}
+          initialValues={{ connector_id: '', configuration: '', objectMarking: [] as Option[] }}
           validationSchema={importValidation(t_i18n, (selectedConnector?.configurations?.length ?? 0) > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
@@ -263,6 +289,7 @@ ExternalReferenceFileImportViewerBaseProps
                         label={t_i18n('Configuration')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(_: string, value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
                       >
                       {selectedConnector?.configurations.map((config) => {
                         return (
@@ -277,6 +304,7 @@ ExternalReferenceFileImportViewerBaseProps
                     </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                     }
                   {selectedConnector?.name === 'ImportCsv'
+                      && hasUserChoiceCsvMapper
                       && (
                       <>
                         <ObjectMarkingField
@@ -284,9 +312,6 @@ ExternalReferenceFileImportViewerBaseProps
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                         />
-                        <DialogContentText>
-                          {t_i18n('Marking definitions to use by the csv mapper...')}
-                        </DialogContentText>
                       </>
                       )
                   }

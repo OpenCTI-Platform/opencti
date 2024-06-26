@@ -25,7 +25,6 @@ import { ListItemButton } from '@mui/material';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
-import DialogContentText from '@mui/material/DialogContentText';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -42,6 +41,7 @@ import { truncate } from '../../../../utils/String';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import withRouter from '../../../../utils/compat-router/withRouter';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -182,6 +182,7 @@ class ImportContentComponent extends Component {
       sortBy: 'name',
       orderAsc: true,
       selectedConnector: null,
+      hasUserChoiceCsvMapper: false,
     };
   }
 
@@ -193,6 +194,16 @@ class ImportContentComponent extends Component {
 
   componentWillUnmount() {
     this.subscription.unsubscribe();
+  }
+
+  handleSetCsvMapper(_, csvMapper) {
+    const parsedCsvMapper = JSON.parse(csvMapper);
+    const parsedRepresentations = JSON.parse(parsedCsvMapper.representations);
+    const selectedCsvMapper = {
+      ...parsedCsvMapper,
+      representations: [...parsedRepresentations],
+    };
+    this.setState({ hasUserChoiceCsvMapper: resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper) });
   }
 
   handleOpenImport(file) {
@@ -229,7 +240,7 @@ class ImportContentComponent extends Component {
     if (isCsvConnector && configuration && objectMarking) {
       const parsedConfig = JSON.parse(configuration);
       if (typeof parsedConfig === 'object') {
-        parsedConfig.user_chosen_markings = objectMarking.map((marking) => marking.value);
+        parsedConfig.markings = objectMarking.map((marking) => marking.value);
         config = JSON.stringify(parsedConfig);
       }
     }
@@ -315,7 +326,8 @@ class ImportContentComponent extends Component {
     const connectors = connectorsImport.filter((n) => !n.only_contextual); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
     const handleSelectConnector = (_, value) => {
-      this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
+      const selectedConnector = connectors.find((c) => c.id === value);
+      this.setState({ selectedConnector });
     };
     const invalidCsvMapper = this.state.selectedConnector?.name === 'ImportCsv'
         && this.state.selectedConnector?.configurations?.length === 0;
@@ -522,7 +534,7 @@ class ImportContentComponent extends Component {
                   onClose={() => handleReset()}
                   fullWidth={true}
                 >
-                  <DialogTitle>{t('Launch an import')}</DialogTitle>
+                  <DialogTitle>{`${t('Launch an import')}`}</DialogTitle>
                   <DialogContent>
                     <Field
                       component={SelectField}
@@ -559,6 +571,7 @@ class ImportContentComponent extends Component {
                           label={t('Configuration')}
                           fullWidth={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
+                          onChange={this.handleSetCsvMapper.bind(this)}
                         >
                         {this.state.selectedConnector.configurations?.map((config) => {
                           return (
@@ -574,6 +587,7 @@ class ImportContentComponent extends Component {
                       : <ManageImportConnectorMessage name={this.state.selectedConnector?.name }/>
                     }
                     {this.state.selectedConnector?.name === 'ImportCsv'
+                      && this.state.hasUserChoiceCsvMapper
                       && (
                         <>
                           <ObjectMarkingField
@@ -581,9 +595,6 @@ class ImportContentComponent extends Component {
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                           />
-                          <DialogContentText>
-                            {t('Marking definitions to use by the csv mapper...')}
-                          </DialogContentText>
                         </>
                       )
                     }

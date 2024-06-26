@@ -14,7 +14,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import DialogContentText from '@mui/material/DialogContentText';
 import Tooltip from '@mui/material/Tooltip';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
@@ -28,6 +27,7 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
+import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 
 const styles = () => ({
   container: {
@@ -248,6 +248,17 @@ const FileManager = ({
     'Malware',
   ].includes(entity.entity_type);
 
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const onCsvMapperSelection = (option) => {
+    const parsedOption = typeof option === 'string' ? JSON.parse(option) : option;
+    const parsedRepresentations = JSON.parse(parsedOption.representations);
+    const selectedCsvMapper = {
+      ...parsedOption,
+      representations: [...parsedRepresentations],
+    };
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+  };
   return (
     <div className={classes.container} data-testid="FileManager">
       <Grid
@@ -334,6 +345,7 @@ const FileManager = ({
                       label={t('Configuration')}
                       fullWidth={true}
                       containerstyle={{ marginTop: 20, width: '100%' }}
+                      onChange={(_, value) => onCsvMapperSelection(value)}
                     >
                       {selectedConnector.configurations.map((config) => {
                         return (
@@ -348,18 +360,16 @@ const FileManager = ({
                     </Field>
                   )}
                   {selectedConnector?.name === 'ImportCsv'
-                    && (
+                      && hasUserChoiceCsvMapper
+                      && (
                       <>
                         <ObjectMarkingField
                           name="objectMarking"
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                         />
-                        <DialogContentText>
-                          {t('Marking definitions to use by the csv mapper...')}
-                        </DialogContentText>
                       </>
-                    )
+                      )
                   }
                 </DialogContent>
                 <DialogActions>

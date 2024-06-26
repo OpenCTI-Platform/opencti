@@ -44,6 +44,7 @@ const IngestionCsv = () => {
       symbol: '',
     },
   });
+
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, numberOfElements } = viewStorage;
     const dataColumns = {
@@ -119,13 +120,16 @@ const IngestionCsv = () => {
       </div>
     );
   }
+
   return (
     <div className={classes.container}>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu/>
       {renderLines()}
       <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionCsvCreation paginationOptions={paginationOptions} />
+        <IngestionCsvCreation
+          paginationOptions={paginationOptions}
+        />
       </Security>
     </div>
   );

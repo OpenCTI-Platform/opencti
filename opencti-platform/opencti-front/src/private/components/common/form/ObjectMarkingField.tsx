@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -7,6 +7,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldAllowedMarkingQuery.graphql';
+import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
@@ -17,6 +19,7 @@ import { convertMarking } from '../../../../utils/edition';
 import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
+import { fetchQuery } from '../../../../relay/environment';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,6 +51,40 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
   }
 `;
 
+const objectMarkingFieldOtherUserAllowedMarkingsQuery = graphql`
+  query ObjectMarkingFieldOtherUserAllowedMarkingsQuery($filters: FilterGroup) {
+    markingDefinitions(filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          standard_id
+          definition_type
+          definition
+          x_opencti_color
+          x_opencti_order
+        }
+      }
+    }
+  }
+`;
+
+const objectMarkingFieldAllowedMarkingQuery = graphql`
+  query ObjectMarkingFieldAllowedMarkingQuery($id: String!) {
+    user(id: $id) {
+      groups(orderBy: name) {
+        edges {
+          node {
+            allowed_marking {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 interface ObjectMarkingFieldProps {
   name: string;
   style?: React.CSSProperties;
@@ -56,9 +93,11 @@ interface ObjectMarkingFieldProps {
     values: Option[],
     operation?: string | undefined,
   ) => void;
+  isOptionEqualToValue?: (option: Option, value: Option) => boolean;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;
+  allowedMarkingOwnerId?: string;
   setFieldValue?: (name: string, values: Option[]) => void;
   limitToMaxSharing?: boolean;
   filterTargetIds?: string[];
@@ -76,9 +115,11 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   helpertext,
   disabled,
   label,
+  allowedMarkingOwnerId,
   setFieldValue,
   limitToMaxSharing = false,
   filterTargetIds,
+  isOptionEqualToValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -86,6 +127,55 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   Option[] | OptionValues | undefined
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
+  const [otherUserAllowedMarkingsData, setOtherUserAllowedMarkingsData] = useState(
+    [] as { definition: string | null | undefined, id: string, x_opencti_color: string | null | undefined }[] | undefined,
+  );
+
+  const fetchCreatorAllowedMarking = async (creatorId: string) => {
+    return fetchQuery(objectMarkingFieldAllowedMarkingQuery, {
+      id: creatorId,
+    })
+      .toPromise();
+  };
+
+  const fetchCreatorAllowedMarkings = async (creatorAllowedMarkingIds: string[]) => {
+    if (creatorAllowedMarkingIds.length) {
+      return fetchQuery(objectMarkingFieldOtherUserAllowedMarkingsQuery, {
+        filters: {
+          mode: 'and',
+          filters: {
+            mode: 'or',
+            key: 'id',
+            values: creatorAllowedMarkingIds,
+            operator: 'eq',
+          },
+          filterGroups: [],
+        },
+      })
+        .toPromise();
+    }
+    return {
+      markingDefinitions: {
+        edges: [],
+      },
+    };
+  };
+
+  useEffect(() => {
+    if (allowedMarkingOwnerId) {
+      const fetchData = async () => {
+        const creatorAllowedMarkingIds = ((await fetchCreatorAllowedMarking(allowedMarkingOwnerId) as unknown as ObjectMarkingFieldAllowedMarkingQuery$data)
+          .user?.groups?.edges ?? [])
+          .flatMap((group) => (group?.node?.allowed_marking ?? [])
+            .map((marking) => marking.id));
+        const markingsData = ((await fetchCreatorAllowedMarkings(creatorAllowedMarkingIds) as unknown as ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data)
+          ?.markingDefinitions?.edges
+          .map((marking) => ({ ...marking.node })));
+        setOtherUserAllowedMarkingsData(markingsData);
+      };
+      fetchData();
+    }
+  }, [allowedMarkingOwnerId]);
 
   const { me } = useAuth();
   let allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
@@ -98,7 +188,9 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const filteredAllowedMarkingDefinitionsOut = filterTargetIds
     ? filterMarkingsOutFor(allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)), allowedMarkingDefinitions) : allowedMarkingDefinitions;
 
-  const optionSorted = filteredAllowedMarkingDefinitionsOut.sort((a, b) => {
+  const otherUserAllowedMarkings = otherUserAllowedMarkingsData?.map(convertMarking) ?? [];
+
+  const optionSorted = (otherUserAllowedMarkings.length ? otherUserAllowedMarkings : filteredAllowedMarkingDefinitionsOut).sort((a, b) => {
     if (a.definition_type === b.definition_type) {
       return a.x_opencti_order < b.x_opencti_order ? -1 : 1;
     }
@@ -168,6 +260,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         }}
         noOptionsText={t_i18n('No available options')}
         options={optionSorted}
+        isOptionEqualToValue={isOptionEqualToValue}
         onChange={handleOnChange}
         renderOption={renderOption}
       />

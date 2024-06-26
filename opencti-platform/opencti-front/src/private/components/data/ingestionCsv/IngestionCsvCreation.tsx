@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -14,6 +14,7 @@ import { CsvAuthType } from '@components/data/ingestionCsv/__generated__/Ingesti
 import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
+import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -26,6 +27,8 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,14 +68,55 @@ export interface IngestionCsvCreationForm {
   cert?: string
   key?: string
   ca?: string
+  markings: Option[],
 }
+
+const resolveHasUserChoiceCsvMapper = (option: Option & {
+  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+}) => {
+  return option.representations.some(
+    (representation) => representation.attributes.some(
+      (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
+        ((value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG)),
+      ),
+    ),
+  );
+};
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
+  const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
+  const [creatorId, setCreatorId] = useState('');
+  const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
 
+  const onCreatorSelection = async (option: Option) => {
+    setCreatorId(option.value);
+  };
+  const updateObjectMarkingField = async (
+    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>,
+    values: IngestionCsvCreationForm,
+  ) => {
+    await setFieldValue('markings', values.markings);
+  };
+  const onCsvMapperSelection = async (
+    option: Option & {
+      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+    },
+    {
+      setFieldValue,
+      values,
+    }:{
+      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvCreationForm>>);
+      values: IngestionCsvCreationForm
+    },
+  ) => {
+    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
+    setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
+    await updateObjectMarkingField(setFieldValue, values);
+  };
   const ingestionCsvCreationValidation = () => Yup.object().shape({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -102,6 +146,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     } else if (values.authentication_type === 'certificate') {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
+    const markings = values.markings.map((option) => option.value);
     const input = {
       name: values.name,
       description: values.description,
@@ -111,6 +156,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_value: authenticationValue,
       current_state_date: values.current_state_date,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
+      markings: markings ?? [],
     };
     commit({
       variables: {
@@ -133,7 +179,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-
   return (
     <Drawer
       title={t_i18n('Create a CSV ingester')}
@@ -155,12 +200,13 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             cert: '',
             key: '',
             ca: '',
+            markings: [],
           }}
           validationSchema={ingestionCsvCreationValidation}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, values }) => (
+          {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -195,15 +241,45 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
+              <CreatorField
+                name="user_id"
+                label={t_i18n('User responsible for data creation (empty = System)')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(_, option) => onCreatorSelection(option)}
+                showConfidence
+              />
               {
-                queryRef && (
-                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <CsvMapperField
-                      name="csv_mapper_id"
-                      isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
-                      queryRef={queryRef}
-                    />
-                  </React.Suspense>
+                  queryRef && (
+                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+                      <Box sx={{ width: '100%', marginTop: 5 }}>
+                        <Alert
+                          severity="info"
+                          variant="outlined"
+                          style={{ padding: '0px 10px 0px 10px' }}
+                        >
+                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
+                          <br/>
+                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                        </Alert>
+                      </Box>
+                      <CsvMapperField
+                        name="csv_mapper_id"
+                        onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
+                        isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+                        queryRef={queryRef}
+                      />
+                    </React.Suspense>
+                  )
+                }
+              {
+                hasUserChoiceCsvMapper && (
+                  <ObjectMarkingField
+                    name="markings"
+                    label={t_i18n('Marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                    setFieldValue={setFieldValue}
+                  />
                 )
               }
               <Field
@@ -227,69 +303,63 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 </MenuItem>
               </Field>
               {values.authentication_type === 'basic' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="username"
-                    label={t_i18n('Username')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="password"
-                    label={t_i18n('Password')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
-              )}
-              {values.authentication_type === 'bearer' && (
+              <>
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="authentication_value"
-                  label={t_i18n('Token')}
+                  name="username"
+                  label={t_i18n('Username')}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="password"
+                  label={t_i18n('Password')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
+              )}
+              {values.authentication_type === 'bearer' && (
+              <Field
+                component={TextField}
+                variant="standard"
+                name="authentication_value"
+                label={t_i18n('Token')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
               )}
               {values.authentication_type === 'certificate' && (
-                <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="cert"
-                    label={t_i18n('Certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="key"
-                    label={t_i18n('Key (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="ca"
-                    label={t_i18n('CA certificate (base64)')}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                  />
-                </>
+              <>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="cert"
+                  label={t_i18n('Certificate (base64)')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="key"
+                  label={t_i18n('Key (base64)')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="ca"
+                  label={t_i18n('CA certificate (base64)')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
               )}
-              <CreatorField
-                name="user_id"
-                label={t_i18n('User responsible for data creation (empty = System)')}
-                containerStyle={fieldSpacingContainerStyle}
-                showConfidence
-              />
               <Box sx={{ width: '100%', marginTop: 5 }}>
                 <Alert
                   severity="info"
