@@ -385,7 +385,7 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [], mime_type } = opts;
   const metadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();
@@ -407,7 +407,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = guessMimeType(key);
+  const fileMime = mime_type ?? guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),

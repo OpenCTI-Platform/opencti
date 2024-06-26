@@ -16,6 +16,7 @@ interface FileUploadOpts {
   errorOnExisting?: boolean,
   file_markings?: string[],
   importContextEntities?: BasicStoreEntity[], // entities used for import context
+  mime_type?: string,
 }
 
 interface FileUploadData {
