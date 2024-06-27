@@ -17,7 +17,7 @@ import {
   UnsupportedError,
   ValidationError
 } from '../config/errors';
-import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
+import { extractEntityRepresentativeName } from './entity-representative';
 import {
   buildPagination,
   computeAverage,
