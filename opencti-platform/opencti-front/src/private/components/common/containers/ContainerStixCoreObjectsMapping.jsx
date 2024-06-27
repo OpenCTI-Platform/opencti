@@ -1,5 +1,8 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import { LayersClearOutlined } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
@@ -8,6 +11,7 @@ import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,12 +27,14 @@ const ContainerStixCoreObjectsMapping = ({
   height,
   addMapping,
   contentMappingData,
-  contentMapping,
+  contentMappingCount,
   openDrawer,
   selectedText,
   handleClose,
+  handleClearMapping,
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -49,7 +55,9 @@ const ContainerStixCoreObjectsMapping = ({
       sortBy: 'name',
       orderAsc: false,
       openExports: false,
+      view: 'mapping',
     },
+    true,
   );
   const {
     numberOfElements,
@@ -91,12 +99,12 @@ const ContainerStixCoreObjectsMapping = ({
     },
     objectMarking: {
       label: 'Marking',
-      width: '10%',
+      width: '12%',
       isSortable: isRuntimeSort,
     },
     mapping: {
       label: 'Mapping',
-      width: '10%',
+      width: '8%',
       isSortable: false,
     },
   };
@@ -106,55 +114,68 @@ const ContainerStixCoreObjectsMapping = ({
   );
 
   return (
-    <div className={classes.container}>
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={handleSort}
-        handleSearch={handleSearch}
-        handleAddFilter={handleAddFilter}
-        handleRemoveFilter={handleRemoveFilter}
-        handleSwitchGlobalMode={handleSwitchGlobalMode}
-        handleSwitchLocalMode={handleSwitchLocalMode}
-        iconExtension={false}
-        filters={filters}
-        availableEntityTypes={['Stix-Core-Object']}
-        keyword={searchTerm}
-        secondaryAction={true}
-        numberOfElements={numberOfElements}
-        noPadding={true}
-      >
-        {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <ContainerStixCoreObjectsMappingLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
-              }
+    <div>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'end' }}>
+        <Button
+          variant="contained"
+          onClick={handleClearMapping}
+          startIcon={<LayersClearOutlined />}
+          size="small"
         >
-          <ContainerStixCoreObjectsMappingLines
-            container={container}
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            searchTerm={searchTerm}
-            dataColumns={dataColumns}
-            setNumberOfElements={handleSetNumberOfElements}
-            height={height}
-            contentMappingData={contentMappingData}
-            contentMapping={contentMapping}
-          />
-        </React.Suspense>
-        )}
-      </ListLines>
+          {t_i18n('Clear mappings')}
+        </Button>
+      </Box>
+      <div className={classes.container}>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={handleSort}
+          handleSearch={handleSearch}
+          handleAddFilter={handleAddFilter}
+          handleRemoveFilter={handleRemoveFilter}
+          handleSwitchGlobalMode={handleSwitchGlobalMode}
+          handleSwitchLocalMode={handleSwitchLocalMode}
+          iconExtension={false}
+          filters={filters}
+          availableEntityTypes={['Stix-Core-Object']}
+          keyword={searchTerm}
+          secondaryAction={true}
+          numberOfElements={numberOfElements}
+          noPadding={true}
+          disableCards
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <ContainerStixCoreObjectsMappingLineDummy
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+                  }
+            >
+              <ContainerStixCoreObjectsMappingLines
+                container={container}
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                searchTerm={searchTerm}
+                dataColumns={dataColumns}
+                setNumberOfElements={handleSetNumberOfElements}
+                height={height}
+                contentMappingData={contentMappingData}
+                contentMappingCount={contentMappingCount}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+      </div>
       <ContainerAddStixCoreObjects
         containerId={container.id}
         mapping={true}
@@ -170,6 +191,7 @@ const ContainerStixCoreObjectsMapping = ({
         confidence={container.confidence}
         paginationOptions={paginationOptions}
         onAdd={addMapping}
+        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
       />
     </div>
   );

@@ -8,7 +8,7 @@ export default class StixDomainObjectContentTabPage {
   }
 
   async selectMainContent() {
-    await this.page.getByRole('button', { name: 'Main content Embedded content' }).click();
+    await this.page.getByRole('button', { name: 'Description & Main content' }).click();
     return this.page.getByLabel('Editor editing area: main');
   }
 
@@ -19,12 +19,14 @@ export default class StixDomainObjectContentTabPage {
 
   async editMainContent(input: string) {
     await this.selectMainContent();
-    return this.editTextArea(input);
+    return this.editTextArea(input, true);
   }
 
-  async editTextArea(input: string) {
+  async editTextArea(input: string, isAutoSave = false) {
     const element = this.page.getByLabel('Editor editing area: main');
     await element.click();
+    if (isAutoSave) return element.fill(input);
+
     await element.fill(input);
     return this.page.getByLabel('Save').click();
   }

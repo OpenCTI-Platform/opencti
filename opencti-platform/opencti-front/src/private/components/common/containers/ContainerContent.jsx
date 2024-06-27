@@ -6,31 +6,22 @@ import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
-import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { EditOutlined, LayersClearOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-import CommitMessage from '../form/CommitMessage';
-import RichTextField from '../../../../components/fields/RichTextField';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
-import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
 import Transition from '../../../../components/Transition';
+import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
+import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useFormatter } from '../../../../components/i18n';
+import StixCoreObjectMappableContent from '../stix_core_objects/StixCoreObjectMappableContent';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -69,24 +60,14 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 4,
   },
-  clearButton: {
-    float: 'right',
-    marginTop: -15,
-  },
-  editButton: {
-    float: 'left',
-    marginTop: -15,
-  },
 }));
 
 const ContainerContentComponent = ({ containerData }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [editionMode, setEditionMode] = useState(false);
   const [openClearMapping, setOpenClearMapping] = useState(false);
   const [selectedText, setSelectedText] = useState(null);
-  const [selectedTab, setSelectedTab] = useState('preview');
   const [clearing, setClearing] = useState(false);
   useEffect(() => {
     const subscription = OPEN$.subscribe({
@@ -100,7 +81,6 @@ const ContainerContentComponent = ({ containerData }) => {
   }, []);
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
-  const enrichedEditorHeight = innerHeight - 620;
   const listHeight = innerHeight - 420;
   const queries = {
     fieldPatch: contentMutationFieldPatch,
@@ -109,81 +89,13 @@ const ContainerContentComponent = ({ containerData }) => {
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
   };
-  let validator = null;
-  if (containerData.entity_type === 'Report') {
-    validator = useSchemaEditionValidation('Report', basicShape);
-  } else if (containerData.entity_type === 'Grouping') {
-    validator = useSchemaEditionValidation('Grouping', basicShape);
-  } else if (containerData.entity_type === 'Case-Incident') {
-    validator = useSchemaEditionValidation('Case-Incident', basicShape);
-  } else if (containerData.entity_type === 'Case-Rfi') {
-    validator = useSchemaEditionValidation('Case-Rfi', basicShape);
-  } else if (containerData.entity_type === 'Case-Rft') {
-    validator = useSchemaEditionValidation('Case-Rft', basicShape);
-  }
+  const validator = useSchemaEditionValidation(containerData.entity_type, basicShape);
   const editor = useFormEditor(
     containerData,
     enableReferences,
     queries,
     validator,
   );
-
-  const toggleEditionMode = () => {
-    if (editionMode) {
-      setSelectedTab('preview');
-      setEditionMode(false);
-    } else {
-      setSelectedTab('write');
-      setEditionMode(true);
-    }
-  };
-  const handleChangeSelectedTab = (mode) => {
-    if (editionMode) {
-      setSelectedTab(mode);
-    }
-  };
-
-  // onSubmit will be called when a submit button is called, thus only
-  // when enforced references option is set (i.e enableReferences==true)
-  const onSubmit = (values, options) => {
-    const { setSubmitting } = options;
-    const { message, references, ...otherValues } = values;
-    const commitMessage = message ?? '';
-    const commitReferences = (references ?? []).map(({ value }) => value);
-    editor.fieldPatch({
-      variables: {
-        id: containerData.id,
-        // rebuild an array of {key: x, value: y } objects for the query
-        input: Object.keys(otherValues).map(((k) => ({ key: k, value: otherValues[k] }))),
-        // the commit msg and ref might not be set if the user has the ability to bypass the enforced refs (Direct update)
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references: commitReferences,
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        toggleEditionMode();
-      },
-    });
-  };
-  const handleSubmitField = (name, value) => {
-    // we try to update every time a field is changed (e.g. lose focus)
-    // with enforced references option for this entity, submit is done at the
-    // end with a button in <CommitMessage />
-    if (!enableReferences) {
-      validator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: containerData.id,
-              input: { key: name, value: value || '' },
-            },
-          });
-        })
-        .catch(() => false);
-    }
-  };
 
   const handleTextSelection = (text) => {
     if (text && text.length > 2) {
@@ -213,6 +125,7 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
+
   const clearMapping = () => {
     setClearing(true);
     editor.fieldPatch({
@@ -230,49 +143,28 @@ const ContainerContentComponent = ({ containerData }) => {
     });
   };
 
-  const matchCase = (text, pattern) => {
-    let result = '';
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < text.length; i++) {
-      const c = text.charAt(i);
-      const p = pattern.charCodeAt(i);
-      if (p >= 65 && p < 65 + 26) {
-        result += c.toUpperCase();
-      } else {
-        result += c.toLowerCase();
-      }
-    }
-    return result;
-  };
-  const { content_mapping } = containerData;
-  const contentMappingData = decodeMappingData(content_mapping);
-  const mappedStrings = Object.keys(contentMappingData);
-  let { description, content } = containerData;
-  const contentMapping = {};
-  if (!editionMode) {
+  const { description, contentField } = containerData;
+
+  const countMappingMatch = (mappedStrings) => {
+    if (!mappedStrings) return {};
+    const contentMapping = {};
     for (const mappedString of mappedStrings) {
       const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const descriptionRegex = new RegExp(escapedMappedString, 'ig');
       const descriptionCount = (
         (description || '').match(descriptionRegex) || []
       ).length;
-      description = (description || '').replace(
-        descriptionRegex,
-        (match) => `==${matchCase(escapedMappedString, match)}==`,
-      );
       const contentRegex = new RegExp(escapedMappedString, 'ig');
-      const contentCount = ((content || '').match(contentRegex) || []).length;
-      content = (content || '').replace(
-        contentRegex,
-        (match) => `<mark class="marker-yellow">${matchCase(escapedMappedString, match)}</mark>`,
-      );
-      contentMapping[contentMappingData[escapedMappedString]] = descriptionCount + contentCount;
+      const contentCount = ((contentField || '').match(contentRegex) || []).length;
+      contentMapping[mappedString] = descriptionCount + contentCount;
     }
-  }
-  const initialValues = {
-    description: description || '',
-    content: content || '',
+    return contentMapping;
   };
+
+  const { content_mapping } = containerData;
+  const contentMappingData = decodeMappingData(content_mapping);
+  const mappedStrings = Object.keys(contentMappingData);
+  const mappedStringsCount = countMappingMatch(mappedStrings);
 
   return (
     <div className={classes.container}>
@@ -281,145 +173,45 @@ const ContainerContentComponent = ({ containerData }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ marginTop: -15 }}>
-          <Typography
-            variant="h4"
-            gutterBottom
-            style={{ float: 'left' }}
-          >
-            {t_i18n('Content')}
-          </Typography>
-          <Tooltip title={editionMode ? t_i18n('Turn off edition mode') : t_i18n('Turn on edition mode')}>
-            <IconButton
-              color={editionMode ? 'secondary' : 'primary'}
-              aria-label="Edit"
-              onClick={() => toggleEditionMode()}
-              classes={{ root: classes.editButton }}
-              size="large"
-            >
-              <EditOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <>
-            <Tooltip title={t_i18n('Clear mappings')}>
-              <IconButton
-                color="primary"
-                aria-label="Apply"
-                onClick={() => setOpenClearMapping(true)}
-                classes={{ root: classes.clearButton }}
-                size="large"
-              >
-                <LayersClearOutlined fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Dialog
-              PaperProps={{ elevation: 1 }}
-              open={openClearMapping}
-              keepMounted
-              TransitionComponent={Transition}
-              onClose={() => setOpenClearMapping(false)}
-            >
-              <DialogContent>
-                <DialogContentText>
-                  {t_i18n('Do you want to delete the mapping of this content?')}
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => setOpenClearMapping(false)}
-                  disabled={clearing}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  color="secondary"
-                  onClick={() => clearMapping()}
-                  disabled={clearing}
-                >
-                  {t_i18n('Clear')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </>
-          <div className="clearfix" />
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ marginTop: -5 }}
-          >
-            <Formik
-              enableReinitialize
-              initialValues={initialValues}
-              validationSchema={validator}
-              onSubmit={onSubmit}
-            >
-              {({
-                submitForm,
-                isSubmitting,
-                setFieldValue,
-                values,
-                isValid,
-                dirty,
-              }) => (
-                <Form styke={{ margin: 0 }}>
-                  <Field
-                    component={MarkdownField}
-                    name="description"
-                    label={t_i18n('Description')}
-                    fullWidth
-                    multiline
-                    rows="4"
-                    onSubmit={handleSubmitField}
-                    onSelect={handleTextSelection}
-                    helperText={
-                      <SubscriptionFocus
-                        context={containerData.editContext}
-                        fieldName="description"
-                      />
-                    }
-                    disabled={!editionMode}
-                    controlledSelectedTab={selectedTab}
-                    controlledSetSelectTab={handleChangeSelectedTab}
-                  />
-                  <Field
-                    component={RichTextField}
-                    name="content"
-                    label={t_i18n('Content')}
-                    fullWidth
-                    onSubmit={handleSubmitField}
-                    onSelect={handleTextSelection}
-                    style={{
-                      ...fieldSpacingContainerStyle,
-                      minHeight: enrichedEditorHeight,
-                      height: enrichedEditorHeight,
-                    }}
-                    helperText={
-                      <SubscriptionFocus
-                        context={containerData.editContext}
-                        fieldName="content"
-                      />
-                    }
-                    disabled={!editionMode}
-                  />
-                  {enableReferences && (
-                    <CommitMessage
-                      submitForm={submitForm}
-                      disabled={isSubmitting || !isValid || !dirty}
-                      setFieldValue={setFieldValue}
-                      values={values.references}
-                      id={containerData.id}
-                      open={false} // dialog closed at start
-                    />
-                  )}
-                </Form>
-              )}
-            </Formik>
-          </Paper>
+        <Grid item={true} xs={6} style={{ marginTop: 0, paddingTop: 0 }}>
+          <StixCoreObjectMappableContent
+            containerData={containerData}
+            handleTextSelection={handleTextSelection}
+            askAi={false}
+            editionMode={false}
+            mappedStrings={mappedStrings}
+            suggest
+          />
         </Grid>
-        <Grid item xs={6} style={{ marginTop: -15 }}>
-          <Typography variant="h4" gutterBottom>
-            {t_i18n('Mapping')}
-          </Typography>
+        <Grid item xs={6} style={{ marginTop: -10, paddingTop: 0 }}>
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={openClearMapping}
+            keepMounted
+            TransitionComponent={Transition}
+            onClose={() => setOpenClearMapping(false)}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t_i18n('Do you want to delete the mapping of this content?')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => setOpenClearMapping(false)}
+                disabled={clearing}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={() => clearMapping()}
+                disabled={clearing}
+              >
+                {t_i18n('Clear')}
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <ContainerStixCoreObjectsMapping
               container={containerData}
@@ -432,7 +224,8 @@ const ContainerContentComponent = ({ containerData }) => {
               }}
               addMapping={addMapping}
               contentMappingData={contentMappingData}
-              contentMapping={contentMapping}
+              contentMappingCount={mappedStringsCount}
+              handleClearMapping={() => setOpenClearMapping(true)}
             />
           </Paper>
         </Grid>
@@ -449,58 +242,60 @@ export const containerContentQuery = graphql`
   }
 `;
 
+export const containerContentFragment = graphql`
+  fragment ContainerContent_container on Container {
+    id
+    standard_id
+    entity_type
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    ... on Report {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Case {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+    ... on Grouping {
+      description
+      contentField: content
+      content_mapping
+      editContext {
+        name
+        focusOn
+      }
+    }
+  }
+`;
+
 const ContainerContent = createFragmentContainer(
   ContainerContentComponent,
   {
-    containerData: graphql`
-      fragment ContainerContent_container on Container {
-        id
-        standard_id
-        entity_type
-        confidence
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        ... on Report {
-          description
-          content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-        ... on Case {
-          description
-          content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-        ... on Grouping {
-          description
-          content
-          content_mapping
-          editContext {
-            name
-            focusOn
-          }
-        }
-      }
-    `,
+    containerData: containerContentFragment,
   },
   containerContentQuery,
 );

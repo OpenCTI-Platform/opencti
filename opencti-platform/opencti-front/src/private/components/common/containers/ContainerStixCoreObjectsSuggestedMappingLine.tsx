@@ -1,30 +1,29 @@
-import React from 'react';
-import * as R from 'ramda';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert } from '@mui/icons-material';
+import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { AutoFix } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
+import {
+  ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
+} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
+import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
+import { DataColumns } from '../../../../components/list_lines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -54,32 +53,60 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ContainerStixCoreObjectLineComponent = (props) => {
-  const {
-    node,
-    types,
-    dataColumns,
-    contentMappingCount,
-    containerId,
-    paginationOptions,
-    contentMappingData,
-  } = props;
+interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
+  dataColumns: DataColumns;
+  node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key;
+  contentMappingCount: Record<string, number>;
+  handleRemoveSuggestedMappingLine: (matchedId: string) => void;
+}
+
+const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
+    fragment ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity on MappedEntity {
+      matchedString
+      matchedEntity{
+        id
+        standard_id
+        entity_type
+        ... on StixObject {
+          representative {
+            main
+          }
+        }
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+      }
+    }
+  `;
+
+export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
+ContainerStixCoreObjectsSuggestedMappingLineComponentProps
+> = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
   const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
-  const refTypes = types ?? ['manual'];
-  const isThroughInference = refTypes.includes('inferred');
-  const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-  const mappedString = Object.keys(contentMappingData).find((key) => contentMappingData[key] === node.standard_id);
+  const { t_i18n } = useFormatter();
+  const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
+  const { matchedString, matchedEntity } = mappedEntityData;
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       button={true}
       component={Link}
-      to={`${resolveLink(node.entity_type)}/${node.id}`}
+      to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
+        <ItemIcon type={matchedEntity.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -91,30 +118,24 @@ const ContainerStixCoreObjectLineComponent = (props) => {
               <Chip
                 classes={{ root: classes.chipInList }}
                 style={{
-                  backgroundColor: hexToRGB(itemColor(node.entity_type), 0.08),
-                  color: itemColor(node.entity_type),
-                  border: `1px solid ${itemColor(node.entity_type)}`,
+                  backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
+                  color: itemColor(matchedEntity.entity_type),
+                  border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
                 }}
-                label={t_i18n(`entity_${node.entity_type}`)}
+                label={t_i18n(`entity_${matchedEntity.entity_type}`)}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              {node.representative?.main}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {R.pathOr('', ['createdBy', 'name'], node)}
+              {matchedEntity.createdBy?.name}
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
+              style={{ width: dataColumns.value.width }}
             >
-              {fd(node.created_at)}
+              {matchedEntity.representative?.main}
             </div>
             <div
               className={classes.bodyItem}
@@ -122,9 +143,15 @@ const ContainerStixCoreObjectLineComponent = (props) => {
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitions={node.objectMarking ?? []}
+                markingDefinitions={matchedEntity.objectMarking ?? []}
                 limit={1}
               />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.matched_text.width }}
+            >
+              {matchedString}
             </div>
             <div
               className={classes.bodyItem}
@@ -133,74 +160,27 @@ const ContainerStixCoreObjectLineComponent = (props) => {
               <Chip
                 classes={{ root: classes.chipInList }}
                 label={
-                  (mappedString && contentMappingCount[mappedString])
-                    ? contentMappingCount[mappedString]
-                    : '0'
-                }
+                    contentMappingCount[matchedString]
+                      ? contentMappingCount[matchedString]
+                      : '0'
+                  }
               />
             </div>
           </>
         }
       />
       <ListItemSecondaryAction>
-        {isOnlyThroughInference ? (
-          <Tooltip title={t_i18n('Inferred knowledge')}>
-            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-          </Tooltip>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ContainerStixCoreObjectPopover
-              containerId={containerId}
-              toId={node.id}
-              toStandardId={node.standard_id}
-              relationshipType="object"
-              paginationKey="Pagination_objects"
-              paginationOptions={paginationOptions}
-              contentMappingData={contentMappingData}
-              mapping={contentMappingCount[mappedString]}
-            />
-          </Security>
-        )}
+        <IconButton
+          onClick={() => handleRemoveSuggestedMappingLine(matchedEntity.id)}
+        >
+          <CloseOutlined/>
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );
 };
 
-export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
-  ContainerStixCoreObjectLineComponent,
-  {
-    node: graphql`
-      fragment ContainerStixCoreObjectsMappingLine_node on StixCoreObject {
-        id
-        standard_id
-        entity_type
-        parent_types
-        created_at
-        ... on StixObject {
-          representative {
-            main
-          }
-        }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-    `,
-  },
-);
-
-export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
+export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: ContainerStixCoreObjectsSuggestedMappingLineComponentProps) => {
   const classes = useStyles();
   const { dataColumns } = props;
   return (
@@ -230,7 +210,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
         <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
+          <MoreVert/>
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>

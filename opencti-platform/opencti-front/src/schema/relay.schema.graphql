@@ -7820,6 +7820,7 @@ input MappingAnalysisInput {
 
 type MappingAnalysis {
   analysisType: String!
+  analysisStatus: State
   mappedEntities: [MappedEntity!]
 }
 
@@ -7831,6 +7832,7 @@ input MappedEntityInput {
 type MappedEntity {
   matchedString: String!
   matchedEntity: StixCoreObject!
+  isEntityInContainer: Boolean!
 }
 
 type StixCoreObjectEditMutations {

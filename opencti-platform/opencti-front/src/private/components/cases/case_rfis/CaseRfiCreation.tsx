@@ -32,7 +32,6 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,8 +102,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const contentMappingFeatureFlag = isFeatureEnable('CONTENT_MAPPING');
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -153,15 +150,9 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           onClose();
         }
         if (mapAfter) {
-          if (contentMappingFeatureFlag) {
-            navigate(
-              `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
-            );
-          } else {
-            navigate(
-              `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/knowledge/content`,
-            );
-          }
+          navigate(
+            `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
+          );
         }
       },
     });

@@ -12054,6 +12054,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
 
 export type MappedEntity = {
   __typename?: 'MappedEntity';
+  isEntityInContainer: Scalars['Boolean']['output'];
   matchedEntity: StixCoreObject;
   matchedString: Scalars['String']['output'];
 };
@@ -12065,6 +12066,7 @@ export type MappedEntityInput = {
 
 export type MappingAnalysis = {
   __typename?: 'MappingAnalysis';
+  analysisStatus?: Maybe<State>;
   analysisType: Scalars['String']['output'];
   mappedEntities?: Maybe<Array<MappedEntity>>;
 };
@@ -34295,12 +34297,14 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type MappedEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappedEntity'] = ResolversParentTypes['MappedEntity']> = ResolversObject<{
+  isEntityInContainer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   matchedEntity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
   matchedString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MappingAnalysisResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappingAnalysis'] = ResolversParentTypes['MappingAnalysis']> = ResolversObject<{
+  analysisStatus?: Resolver<Maybe<ResolversTypes['State']>, ParentType, ContextType>;
   analysisType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mappedEntities?: Resolver<Maybe<Array<ResolversTypes['MappedEntity']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

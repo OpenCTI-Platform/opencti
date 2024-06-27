@@ -218,7 +218,7 @@ class StixCoreObjectContentFiles extends Component {
         <div className={classes.toolbar} />
         {!R.isNil(content) && (
         <>
-          <Typography variant="body2" style={{ margin: '5px 0 0 15px' }}>{t('Content')}</Typography>
+          <Typography variant="body2" style={{ margin: '5px 0 0 15px' }}>{t('Mappable content')}</Typography>
           <List style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}>
             <ListItemButton
               dense={true}
@@ -230,8 +230,15 @@ class StixCoreObjectContentFiles extends Component {
                 <FileOutline fontSize="small" />
               </ListItemIcon>
               <ListItemText
-                primary={t('Main content')}
-                secondary={t('Embedded content in the entity')}
+                sx={{
+                  '.MuiListItemText-secondary': {
+                    whiteSpace: 'pre-line',
+                  },
+                }}
+                primary={t('Description & Main content')}
+                secondary={<div>
+                  {t('Description and content of the entity')}
+                </div>}
               />
             </ListItemButton>
           </List>
