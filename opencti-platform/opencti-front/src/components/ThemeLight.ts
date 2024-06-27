@@ -172,7 +172,7 @@ const ThemeLight = (
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#000000 !important',
-            background: `${accent || THEME_LIGHT_DEFAULT_BACKGROUND} !important`,
+            background: `${accent} !important`,
             borderRadius: 4,
           },
           'pre.light': {
@@ -182,8 +182,8 @@ const ThemeLight = (
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#000000 !important',
-            background: `${accent || THEME_LIGHT_DEFAULT_BACKGROUND} !important`,
+            color: '#FFFFFF !important',
+            background: `${accent} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
