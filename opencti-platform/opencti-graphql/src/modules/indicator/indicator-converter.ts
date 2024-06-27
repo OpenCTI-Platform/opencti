@@ -9,7 +9,7 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
   // Adding one second to the valid_until if valid_from and valid_until are equals,
   // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
   const computedValidUntil = (
-    isNotEmptyField(instance.valid_from) === isNotEmptyField(instance.valid_until)
+    isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until) && instance.valid_until === instance.valid_from
   ) ? moment(instance.valid_from).add(1, 'seconds').toDate() : instance.valid_until;
   return {
     ...indicator,
