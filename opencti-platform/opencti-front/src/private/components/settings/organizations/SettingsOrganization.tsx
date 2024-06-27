@@ -26,7 +26,7 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useGranted, { BYPASS, SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -144,7 +144,7 @@ const SettingsOrganization = ({
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <Security needs={[SETTINGS]}>
+      <Security needs={[SETTINGS_SETACCESSES]}>
         <SettingsOrganizationEdition
           organization={organization}
           enableReferences={useIsEnforceReference('Organization')}

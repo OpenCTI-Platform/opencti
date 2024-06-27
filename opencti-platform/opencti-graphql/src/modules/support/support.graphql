@@ -44,7 +44,7 @@ input SupportPackageForceZipInput {
 }
 
 type Query {
-    supportPackage(id: String!): SupportPackage @auth(for: [SETTINGS])
+    supportPackage(id: String!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
     supportPackages(
         first: Int
         after: ID
@@ -52,11 +52,11 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): SupportPackageConnection @auth(for: [SETTINGS])
+    ): SupportPackageConnection @auth(for: [SETTINGS_SUPPORT])
 }
 
 type Mutation {
-    supportPackageAdd(input: SupportPackageAddInput!): SupportPackage @auth(for: [SETTINGS])
-    supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage @auth(for: [SETTINGS])
-    supportPackageDelete(id: ID!): ID @auth(for: [SETTINGS])
+    supportPackageAdd(input: SupportPackageAddInput!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
+    supportPackageForceZip(input: SupportPackageForceZipInput!): SupportPackage @auth(for: [SETTINGS_SUPPORT])
+    supportPackageDelete(id: ID!): ID @auth(for: [SETTINGS_SUPPORT])
 }

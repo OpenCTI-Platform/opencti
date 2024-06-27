@@ -44,7 +44,7 @@ type DecayRuleEdge {
 
 # Queries
 type Query {
-  decayRule(id: String!): DecayRule @auth(for: [SETTINGS])
+  decayRule(id: String!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   decayRules(
     first: Int
     after: ID
@@ -52,7 +52,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): DecayRuleConnection @auth(for: [SETTINGS])
+  ): DecayRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 input DecayRuleAddInput {
@@ -69,7 +69,7 @@ input DecayRuleAddInput {
 }
 
 type Mutation {
-  decayRuleAdd(input: DecayRuleAddInput!): DecayRule @auth(for: [SETTINGS])
-  decayRuleDelete(id: ID!): ID @auth(for: [SETTINGS])
-  decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule @auth(for: [SETTINGS])
+  decayRuleAdd(input: DecayRuleAddInput!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

@@ -8,18 +8,18 @@ type ManagerConfiguration implements InternalObject & BasicObject {
     manager_running: Boolean @auth
     last_run_start_date: DateTime @auth
     last_run_end_date: DateTime @auth
-    manager_setting: JSON @auth(for: [SETTINGS])
+    manager_setting: JSON @auth(for: [SETTINGS_FILEINDEXING])
 }
 
 # Queries
 type Query {
-    managerConfiguration(id: String!): ManagerConfiguration @auth(for: [SETTINGS])
+    managerConfiguration(id: String!): ManagerConfiguration @auth(for: [SETTINGS_FILEINDEXING])
     managerConfigurationByManagerId(managerId: String!): ManagerConfiguration @auth
 }
 
 # Mutations
 type Mutation {
-    managerConfigurationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): ManagerConfiguration @auth(for: [SETTINGS])
+    managerConfigurationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): ManagerConfiguration @auth(for: [SETTINGS_FILEINDEXING])
 }
 
 # Subscriptions

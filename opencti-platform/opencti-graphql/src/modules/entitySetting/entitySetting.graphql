@@ -37,8 +37,8 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean @auth
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
-  attributes_configuration: String @auth(for: [SETTINGS])
-  attributesDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
+  attributes_configuration: String @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  attributesDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   mandatoryAttributes: [String!]! @auth
   scaleAttributes: [ScaleAttribute!]! @auth
   defaultValuesAttributes: [DefaultValueAttribute!]! @auth
@@ -79,7 +79,7 @@ type Query {
 
 # Mutations
 type Mutation {
-  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS])
+  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS])
 }
 
 # Subscriptions

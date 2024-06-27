@@ -53,7 +53,7 @@ const Root = () => {
 
   const urlWithCapabilities = () => {
     const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-    const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
+    const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
     const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
     const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
     const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);

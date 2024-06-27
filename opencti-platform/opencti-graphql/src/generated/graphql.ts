@@ -12705,7 +12705,6 @@ export type Mutation = {
   otpActivation?: Maybe<MeUser>;
   otpDeactivation?: Maybe<MeUser>;
   otpLogin?: Maybe<Scalars['Boolean']['output']>;
-  otpSetActivation?: Maybe<User>;
   otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   playbookAdd?: Maybe<Playbook>;
@@ -12739,7 +12738,6 @@ export type Mutation = {
   roleEdit?: Maybe<RoleEditMutations>;
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
-  runtimeAttributeEdit: Scalars['ID']['output'];
   sectorAdd?: Maybe<Sector>;
   sectorEdit?: Maybe<SectorEditMutations>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
@@ -13984,11 +13982,6 @@ export type MutationOtpLoginArgs = {
 };
 
 
-export type MutationOtpSetActivationArgs = {
-  input?: InputMaybe<UserOtpActivationInput>;
-};
-
-
 export type MutationOtpUserDeactivationArgs = {
   id: Scalars['ID']['input'];
 };
@@ -14171,13 +14164,6 @@ export type MutationRuleManagerCleanArgs = {
 export type MutationRuleSetActivationArgs = {
   enable: Scalars['Boolean']['input'];
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationRuntimeAttributeEditArgs = {
-  current: Scalars['String']['input'];
-  id: Scalars['String']['input'];
-  previous: Scalars['String']['input'];
 };
 
 
@@ -34750,7 +34736,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpActivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
-  otpSetActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpSetActivationArgs>>;
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
@@ -34784,7 +34769,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
-  runtimeAttributeEdit?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationRuntimeAttributeEditArgs, 'current' | 'id' | 'previous'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;

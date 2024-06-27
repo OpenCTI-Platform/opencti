@@ -5,7 +5,7 @@ import EnterpriseEditionAgreement from '@components/common/entreprise_edition/En
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -48,7 +48,7 @@ const EEChip = ({ feature, clickable = true, floating = false }: { feature?: str
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const [displayDialog, setDisplayDialog] = useState(false);
-  const isAdmin = useGranted([SETTINGS]);
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
   return (!isEnterpriseEdition && (
     <>
