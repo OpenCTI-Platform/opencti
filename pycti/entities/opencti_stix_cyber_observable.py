@@ -6,615 +6,23 @@ import os
 
 import magic
 
+from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
+from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
+    StixCyberObservableDeprecatedMixin,
+)
+from .stix_cyber_observable.opencti_stix_cyber_observable_properties import (
+    SCO_PROPERTIES,
+    SCO_PROPERTIES_WITH_FILES,
+)
 
-class StixCyberObservable:
+
+class StixCyberObservable(StixCyberObservableDeprecatedMixin):
     def __init__(self, opencti, file):
+
         self.opencti = opencti
         self.file = file
-        self.properties = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            creators {
-                id
-                name
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                }
-            }
-            observable_value
-            x_opencti_description
-            x_opencti_score
-            indicators {
-                edges {
-                    node {
-                        id
-                        pattern
-                        pattern_type
-                    }
-                }
-            }
-            ... on AutonomousSystem {
-                number
-                name
-                rir
-            }
-            ... on Directory {
-                path
-                path_enc
-                ctime
-                mtime
-                atime
-            }
-            ... on DomainName {
-                value
-            }
-            ... on EmailAddr {
-                value
-                display_name
-            }
-            ... on EmailMessage {
-                is_multipart
-                attribute_date
-                content_type
-                message_id
-                subject
-                received_lines
-                body
-            }
-            ... on Artifact {
-                mime_type
-                payload_bin
-                url
-                encryption_algorithm
-                decryption_key
-                hashes {
-                    algorithm
-                    hash
-                }
-                importFiles {
-                    edges {
-                        node {
-                            id
-                            name
-                            size
-                            metaData {
-                                mimetype
-                                version
-                            }
-                        }
-                    }
-                }
-            }
-            ... on StixFile {
-                extensions
-                size
-                name
-                name_enc
-                magic_number_hex
-                mime_type
-                ctime
-                mtime
-                atime
-                x_opencti_additional_names
-                hashes {
-                  algorithm
-                  hash
-                }
-            }
-            ... on X509Certificate {
-                is_self_signed
-                version
-                serial_number
-                signature_algorithm
-                issuer
-                subject
-                subject_public_key_algorithm
-                subject_public_key_modulus
-                subject_public_key_exponent
-                validity_not_before
-                validity_not_after
-                hashes {
-                  algorithm
-                  hash
-                }
-            }
-            ... on IPv4Addr {
-                value
-            }
-            ... on IPv6Addr {
-                value
-            }
-            ... on MacAddr {
-                value
-            }
-            ... on Mutex {
-                name
-            }
-            ... on NetworkTraffic {
-                extensions
-                start
-                end
-                is_active
-                src_port
-                dst_port
-                protocols
-                src_byte_count
-                dst_byte_count
-                src_packets
-                dst_packets
-            }
-            ... on Process {
-                extensions
-                is_hidden
-                pid
-                created_time
-                cwd
-                command_line
-                environment_variables
-            }
-            ... on Software {
-                name
-                cpe
-                swid
-                languages
-                vendor
-                version
-            }
-            ... on Url {
-                value
-            }
-            ... on UserAccount {
-                extensions
-                user_id
-                credential
-                account_login
-                account_type
-                display_name
-                is_service_account
-                is_privileged
-                can_escalate_privs
-                is_disabled
-                account_created
-                account_expires
-                credential_last_changed
-                account_first_login
-                account_last_login
-            }
-            ... on WindowsRegistryKey {
-                attribute_key
-                modified_time
-                number_of_subkeys
-            }
-            ... on WindowsRegistryValueType {
-                name
-                data
-                data_type
-            }
-            ... on CryptographicKey {
-                value
-            }
-            ... on CryptocurrencyWallet {
-                value
-            }
-            ... on Hostname {
-                value
-            }
-            ... on Text {
-                value
-            }
-            ... on UserAgent {
-                value
-            }
-            ... on BankAccount {
-                iban
-                bic
-                account_number
-            }
-            ... on PhoneNumber {
-                value
-            }
-            ... on TrackingNumber {
-                value
-            }
-            ... on Credential {
-                value
-            }
-            ... on PaymentCard {
-                card_number
-                expiration_date
-                cvv
-                holder_name
-            }
-            ... on MediaContent {
-                title
-                content
-                media_category
-                url
-                publication_date
-            }
-        """
-        self.properties_with_files = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            creators {
-                id
-                name
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            observable_value
-            x_opencti_description
-            x_opencti_score
-            indicators {
-                edges {
-                    node {
-                        id
-                        pattern
-                        pattern_type
-                    }
-                }
-            }
-            ... on AutonomousSystem {
-                number
-                name
-                rir
-            }
-            ... on Directory {
-                path
-                path_enc
-                ctime
-                mtime
-                atime
-            }
-            ... on DomainName {
-                value
-            }
-            ... on EmailAddr {
-                value
-                display_name
-            }
-            ... on EmailMessage {
-                is_multipart
-                attribute_date
-                content_type
-                message_id
-                subject
-                received_lines
-                body
-            }
-            ... on Artifact {
-                mime_type
-                payload_bin
-                url
-                encryption_algorithm
-                decryption_key
-                hashes {
-                    algorithm
-                    hash
-                }
-                importFiles {
-                    edges {
-                        node {
-                            id
-                            name
-                            size
-                        }
-                    }
-                }
-            }
-            ... on StixFile {
-                extensions
-                size
-                name
-                name_enc
-                magic_number_hex
-                mime_type
-                ctime
-                mtime
-                atime
-                x_opencti_additional_names
-                hashes {
-                  algorithm
-                  hash
-                }
-            }
-            ... on X509Certificate {
-                is_self_signed
-                version
-                serial_number
-                signature_algorithm
-                issuer
-                subject
-                subject_public_key_algorithm
-                subject_public_key_modulus
-                subject_public_key_exponent
-                validity_not_before
-                validity_not_after
-                hashes {
-                  algorithm
-                  hash
-                }
-            }
-            ... on IPv4Addr {
-                value
-            }
-            ... on IPv6Addr {
-                value
-            }
-            ... on MacAddr {
-                value
-            }
-            ... on Mutex {
-                name
-            }
-            ... on NetworkTraffic {
-                extensions
-                start
-                end
-                is_active
-                src_port
-                dst_port
-                protocols
-                src_byte_count
-                dst_byte_count
-                src_packets
-                dst_packets
-            }
-            ... on Process {
-                extensions
-                is_hidden
-                pid
-                created_time
-                cwd
-                command_line
-                environment_variables
-            }
-            ... on Software {
-                name
-                cpe
-                swid
-                languages
-                vendor
-                version
-            }
-            ... on Url {
-                value
-            }
-            ... on UserAccount {
-                extensions
-                user_id
-                credential
-                account_login
-                account_type
-                display_name
-                is_service_account
-                is_privileged
-                can_escalate_privs
-                is_disabled
-                account_created
-                account_expires
-                credential_last_changed
-                account_first_login
-                account_last_login
-            }
-            ... on WindowsRegistryKey {
-                attribute_key
-                modified_time
-                number_of_subkeys
-            }
-            ... on WindowsRegistryValueType {
-                name
-                data
-                data_type
-            }
-            ... on CryptographicKey {
-                value
-            }
-            ... on CryptocurrencyWallet {
-                value
-            }
-            ... on Hostname {
-                value
-            }
-            ... on Text {
-                value
-            }
-            ... on UserAgent {
-                value
-            }
-            ... on BankAccount {
-                iban
-                bic
-                account_number
-            }
-            ... on PhoneNumber {
-                value
-            }
-            ... on TrackingNumber {
-                value
-            }
-            ... on Credential {
-                value
-            }
-            ... on PaymentCard {
-                card_number
-                expiration_date
-                cvv
-                holder_name
-            }
-            ... on MediaContent {
-                title
-                content
-                media_category
-                url
-                publication_date
-            }
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                    }
-                }
-            }
-        """
+        self.properties = SCO_PROPERTIES
+        self.properties_with_files = SCO_PROPERTIES_WITH_FILES
 
     """
         List StixCyberObservable objects
@@ -649,11 +57,11 @@ class StixCyberObservable:
         )
         query = (
             """
-                query StixCyberObservables($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
-                    stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                        edges {
-                            node {
-                                """
+                    query StixCyberObservables($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
+                        stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                            edges {
+                                node {
+                                    """
             + (
                 custom_attributes
                 if custom_attributes is not None
@@ -734,9 +142,9 @@ class StixCyberObservable:
             self.opencti.app_logger.info("Reading StixCyberObservable", {"id": id})
             query = (
                 """
-                    query StixCyberObservable($id: String!) {
-                        stixCyberObservable(id: $id) {
-                            """
+                        query StixCyberObservable($id: String!) {
+                            stixCyberObservable(id: $id) {
+                                """
                 + (
                     custom_attributes
                     if custom_attributes is not None
@@ -1859,25 +1267,24 @@ class StixCyberObservable:
         Promote a Stix-Observable to an Indicator
 
         :param id: the Stix-Observable id
-        :return void
+        :return the newly created indicator
     """
 
-    def promote_to_indicator(self, **kwargs):
+    def promote_to_indicator_v2(self, **kwargs):
         id = kwargs.get("id", None)
         custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
         if id is not None:
             self.opencti.app_logger.info("Promoting Stix-Observable", {"id": id})
             query = (
                 """
-                    mutation StixCyberObservableEdit($id: ID!) {
-                        stixCyberObservableEdit(id: $id) {
-                            promote {
-                                """
+                        mutation StixCyberObservableEdit($id: ID!) {
+                            stixCyberObservableEdit(id: $id) {
+                                promoteToIndicator {
+                                    """
                 + (
                     custom_attributes
                     if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
+                    else (INDICATOR_PROPERTIES)
                 )
                 + """
                             }
@@ -1887,7 +1294,7 @@ class StixCyberObservable:
             )
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(
-                result["data"]["stixCyberObservableEdit"]["promote"]
+                result["data"]["stixCyberObservableEdit"]["promoteToIndicator"]
             )
         else:
             self.opencti.app_logger.error(
