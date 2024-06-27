@@ -136,11 +136,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
       width: '20%',
       isSortable: true,
     },
-    matched_text: {
-      label: 'Matched text',
-      width: '17%',
-      isSortable: true,
-    },
     createdBy: {
       label: 'Author',
       width: '15%',
@@ -155,6 +150,11 @@ ContainerStixCoreObjectsSuggestedMappingProps
       label: 'Marking',
       width: '10%',
       isSortable: isRuntimeSort,
+    },
+    matched_text: {
+      label: 'Matched text',
+      width: '17%',
+      isSortable: true,
     },
     mapping: {
       label: 'Mapping',

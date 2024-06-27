@@ -127,12 +127,6 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.matched_text.width }}
-            >
-              {matchedString}
-            </div>
-            <div
-              className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
               {matchedEntity.createdBy?.name}
@@ -155,6 +149,12 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.matched_text.width }}
+            >
+              {matchedString}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.mapping.width }}
             >
               <Chip
@@ -173,7 +173,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity.id)}
         >
-          <CloseOutlined />
+          <CloseOutlined/>
         </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
