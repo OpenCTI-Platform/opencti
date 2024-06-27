@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine,
@@ -57,15 +56,6 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '15px 0 0 0',
-  },
-}));
-
 interface ContainerStixCoreObjectsSuggestedMappingProps {
   container: ContainerContent_container$data;
   suggestedMapping: ContainerStixCoreObjectsSuggestedMappingQuery$data
@@ -74,27 +64,25 @@ interface ContainerStixCoreObjectsSuggestedMappingProps {
   handleAskNewSuggestedMapping: () => void;
   askingSuggestion: boolean;
   handleValidateSuggestedMapping: (mappingToAdd: { matchedString: string, matchedEntityId: string }[]) => void;
-  isLoading: boolean;
 }
 
 type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
 ContainerStixCoreObjectsSuggestedMappingProps
-> = ({ container,
+> = ({
+  container,
   suggestedMapping,
   suggestedMappingCount,
   height,
   handleAskNewSuggestedMapping,
   askingSuggestion,
   handleValidateSuggestedMapping,
-  isLoading,
 }) => {
   const [removedEntities, setRemovedEntities] = useState<string[]>([]);
   const [onlyNotContainedEntities, setOnlyNotContainedEntities] = useState(true);
   const [openValidate, setOpenValidate] = useState(false);
   const [validating, setValidating] = useState(false);
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -200,11 +188,8 @@ ContainerStixCoreObjectsSuggestedMappingProps
     handleValidateSuggestedMapping(mappingToAdd);
   };
 
-  if (isLoading) return <Loader variant={LoaderVariant.inElement}/>;
   const suggestDisabled = !hasConnectorsAvailable || askingSuggestion;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   return (
     <div>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '4px' }}>
@@ -213,7 +198,6 @@ ContainerStixCoreObjectsSuggestedMappingProps
             <FormControlLabel
               control={
                 <Switch
-                  disabled={mappedEntities.length <= 0}
                   checked={onlyNotContainedEntities}
                   onChange={() => { setOnlyNotContainedEntities(!onlyNotContainedEntities); }}
                 />
@@ -249,48 +233,57 @@ ContainerStixCoreObjectsSuggestedMappingProps
               onClick={handleAskValidateSuggestedMapping}
               startIcon={<CheckCircleOutlined />}
               size="small"
-              disabled={filteredMappedEntities.length === 0}
+              disabled={askingSuggestion || filteredMappedEntities.length === 0}
             >
               {t_i18n('Validate')}
             </Button>
           </Tooltip>
         </Box>
       </Box>
-      <div className={classes.container}>
-        <ListLines
-          helpers={helpers}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          dataColumns={dataColumns}
-          iconExtension={false}
-          filters={filters}
-          availableEntityTypes={['Stix-Core-Object']}
-          keyword={searchTerm}
-          secondaryAction={true}
-          numberOfElements={numberOfElements}
-          noPadding={true}
-          handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
-          handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
-          mappingCount={filteredMappedEntities.length}
-          disabledValidate={filteredMappedEntities.length <= 0}
-          enableMappingView
-          disableCards
-        >
-          <ListLinesContent
-            initialLoading={false}
-            loadMore={() => {}}
-            hasMore={() => {}}
-            isLoading={() => false}
-            dataList={mappedEntitiesWithNode}
-            globalCount={mappedEntitiesWithNode.length}
-            LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
-            DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
-            dataColumns={dataColumns}
-            contentMappingCount={suggestedMappingCount}
-            handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-            height={height}
-          />
-        </ListLines>
+      <div style={{
+        margin: 0,
+        padding: '15px 0 0 0',
+      }}
+      >
+        {askingSuggestion
+          ? <Loader variant={LoaderVariant.inElement}/>
+          : (
+            <ListLines
+              helpers={helpers}
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={dataColumns}
+              iconExtension={false}
+              filters={filters}
+              availableEntityTypes={['Stix-Core-Object']}
+              keyword={searchTerm}
+              secondaryAction={true}
+              numberOfElements={numberOfElements}
+              noPadding={true}
+              handleAskNewSuggestedMapping={handleAskNewSuggestedMapping}
+              handleValidateSuggestedMapping={handleAskValidateSuggestedMapping}
+              mappingCount={filteredMappedEntities.length}
+              disabledValidate={filteredMappedEntities.length <= 0}
+              enableMappingView
+              disableCards
+            >
+              <ListLinesContent
+                initialLoading={false}
+                loadMore={() => {}}
+                hasMore={() => {}}
+                isLoading={() => false}
+                dataList={mappedEntitiesWithNode}
+                globalCount={mappedEntitiesWithNode.length}
+                LineComponent={ContainerStixCoreObjectsSuggestedMappingLine}
+                DummyLineComponent={ContainerStixCoreObjectsSuggestedMappingLineDummy}
+                dataColumns={dataColumns}
+                contentMappingCount={suggestedMappingCount}
+                handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
+                height={height}
+              />
+            </ListLines>
+          )
+        }
       </div>
       <Dialog
         PaperProps={{ elevation: 1 }}
