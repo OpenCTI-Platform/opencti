@@ -3605,7 +3605,7 @@ export const elUpdateElement = async (instance) => {
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
-    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative.main });
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: extractEntityRepresentativeName(esData) });
   }
   return Promise.all([replacePromise, connectionPromise]);
 };
