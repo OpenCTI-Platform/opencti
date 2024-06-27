@@ -42,7 +42,7 @@ const externalReferenceResolvers = {
       const listing = await paginatedForPathWithEnrichment(context, context.user, `import/${externalReference.entity_type}/${externalReference.id}`, externalReference.id, opts);
       if (externalReference.fileId) {
         try {
-          const refFile = await loadFile(context.user, externalReference.fileId);
+          const refFile = await loadFile(context, context.user, externalReference.fileId);
           listing.edges.unshift({ node: refFile, cursor: '' });
         } catch {
           // FileId is no longer available

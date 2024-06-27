@@ -128,8 +128,8 @@ export const sendCurrentNodeSupportLogToS3 = async (context: AuthContext, user: 
   }
 };
 
-const downloadAllLogFiles = async (user: AuthUser, s3Directory: string, localDirectory: string) => {
-  const allSupportFiles = await loadedFilesListing(user, s3Directory, {});
+const downloadAllLogFiles = async (context:AuthContext, user: AuthUser, s3Directory: string, localDirectory: string) => {
+  const allSupportFiles = await loadedFilesListing(context, user, s3Directory, {});
   logApp.info('All support files', { allSupportFiles });
   for (let i = 0; i < allSupportFiles.length; i += 1) {
     const supportFile = allSupportFiles[i];
@@ -175,7 +175,7 @@ export const zipAllSupportFiles = async (context: AuthContext, user: AuthUser, e
     fs.mkdirSync(zipLocalFullFolder, { recursive: true });
   }
   // Get all support files
-  await downloadAllLogFiles(user, `${entity.package_upload_dir}/`, zipLocalFullFolder);
+  await downloadAllLogFiles(context, user, `${entity.package_upload_dir}/`, zipLocalFullFolder);
   // Build the zip
   const zipName = `${entity.id}.zip`;
   const zipFullpath = join(SUPPORT_LOG_RELATIVE_LOCAL_DIR, zipName);

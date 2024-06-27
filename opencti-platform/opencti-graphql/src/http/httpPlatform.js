@@ -168,7 +168,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       const { id, metaData: { filename, entity_id } } = data;
       await checkFileAccess(executeContext, auth, 'download', { id, filename, entity_id });
       // If file is attach to a specific instance, we need to contr
@@ -192,7 +192,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       const { id, metaData: { filename, entity_id } } = data;
       await checkFileAccess(executeContext, auth, 'read', { id, filename, entity_id });
       await publishFileRead(executeContext, auth, data);
@@ -223,7 +223,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       const { id, metaData: { filename, entity_id } } = data;
       await checkFileAccess(executeContext, auth, 'read', { id, filename, entity_id });
       const { mimetype } = data.metaData;
@@ -254,7 +254,7 @@ const createApp = async (app) => {
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(auth, file);
+      const data = await loadFile(executeContext, auth, file);
       const { id, metaData: { filename, entity_id } } = data;
       await checkFileAccess(executeContext, auth, 'download', { id, filename, entity_id });
       await publishFileDownload(executeContext, auth, data);

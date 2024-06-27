@@ -462,7 +462,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
 };
 
 const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
-  const file = await loadFile(user, contentSource);
+  const file = await loadFile(context, user, contentSource);
 
   let connectors = await connectorsForAnalysis(context, user, file.metaData.mimetype);
   if (connectorId) {
