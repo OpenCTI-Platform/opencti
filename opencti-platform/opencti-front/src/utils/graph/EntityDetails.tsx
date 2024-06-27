@@ -10,7 +10,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../components/i18n';
 import ItemAuthor from '../../components/ItemAuthor';
 import useQueryLoading from '../hooks/useQueryLoading';
@@ -22,12 +21,12 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import ItemIcon from '../../components/ItemIcon';
 import type { Theme } from '../../components/Theme';
 import { getMainRepresentative } from '../defaultRepresentatives';
-import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreators from '../../components/ItemCreators';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../components/ItemConfidence';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
+import ItemEntityType from '../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,13 +63,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -330,18 +322,7 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
       </Typography>
-      <Chip
-        classes={{ root: classes.chipInList }}
-        style={{
-          backgroundColor: hexToRGB(
-            itemColor(stixCoreObject.entity_type),
-            0.08,
-          ),
-          color: itemColor(stixCoreObject.entity_type),
-          border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
-        }}
-        label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
-      />
+      <ItemEntityType entityType={stixCoreObject.entity_type} inList={false} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Platform creation date')}
       </Typography>

@@ -1,9 +1,14 @@
 import Chip from '@mui/material/Chip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { hexToRGB, itemColor } from '../utils/Colors';
+import { useTheme } from '@mui/material';
+import { itemColor } from '../utils/Colors';
 import { useFormatter } from './i18n';
 import useSchema from '../utils/hooks/useSchema';
+import ThemeLight from './ThemeLight';
+import ThemeDark from './ThemeDark';
+import ItemIcon from './ItemIcon';
+import { truncate } from '../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,28 +33,92 @@ const useStyles = makeStyles(() => ({
 
 interface ItemEntityTypeProps {
   entityType: string;
-  variant?: string;
+  maxLength?: number;
+  inList?: boolean;
+  showIcon?: boolean;
+  isRestricted?: boolean;
+  style?: React.CSSProperties;
+  size?: 'small' | 'medium' | 'large'
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
-  variant = 'inList',
+  inList = true,
+  maxLength,
   entityType,
+  showIcon = false,
+  isRestricted = false,
+  style = {},
+  size = 'medium',
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  const rootStyle = inList ? classes.chipInList : classes.chip;
 
-  const { isRelationship } = useSchema();
+  const { isRelationship: checkIsRelationship } = useSchema();
+  const isRelationship = checkIsRelationship(entityType);
+
+  const { palette: { mode } } = useTheme();
+  const theme = mode === 'dark'
+    ? ThemeDark()
+    : ThemeLight();
+  const getStyle = () => {
+    let width;
+    switch (size) {
+      case 'small':
+        width = 100;
+        break;
+      case 'large':
+        width = 140;
+        break;
+      case 'medium':
+      default:
+        width = 120;
+    }
+    if (isRestricted) {
+      const restrictedColor = itemColor('Restricted');
+      return {
+        backgroundColor: theme.palette.background.default,
+        color: theme.palette.chip.main,
+        border: `1px solid ${restrictedColor}`,
+        width,
+      };
+    }
+    return {
+      backgroundColor: theme.palette.background.default,
+      color: isRelationship ? theme.palette.primary.main : theme.palette.chip.main,
+      border: `1px solid ${isRelationship ? theme.palette.primary.main : itemColor(entityType)}`,
+      width,
+    };
+  };
+  const getIcon = () => {
+    if (showIcon && !isRelationship) {
+      return (
+        <ItemIcon
+          variant="inline"
+          type={isRestricted ? 'restricted' : entityType}
+        />
+      );
+    }
+    return null;
+  };
+  const getLabel = () => {
+    if (isRestricted) return t_i18n('Restricted');
+    const label = t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
+    if (maxLength) return truncate(label, maxLength);
+    return label;
+  };
 
   return (
     <Chip
-      classes={{ root: style }}
+      classes={{ root: rootStyle }}
       style={{
-        backgroundColor: hexToRGB(itemColor(entityType), 0.08),
-        color: itemColor(entityType),
-        border: `1px solid ${itemColor(entityType)}`,
+        ...getStyle(),
+        ...style,
       }}
-      label={t_i18n(isRelationship(entityType) ? `relationship_${entityType}` : `entity_${entityType}`)}
+      label={<>
+        {getIcon()}
+        {getLabel()}
+      </>}
     />
   );
 };

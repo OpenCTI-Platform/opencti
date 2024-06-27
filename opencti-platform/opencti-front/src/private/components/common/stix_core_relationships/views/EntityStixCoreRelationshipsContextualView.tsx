@@ -9,7 +9,6 @@ import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStora
 import useAuth from '../../../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsContextualViewLines from './EntityStixCoreRelationshipsContextualViewLines';
-import { hexToRGB, itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
@@ -29,18 +28,11 @@ import type { Theme } from '../../../../../components/Theme';
 import { resolveLink } from '../../../../../utils/Entity';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import ItemEntityType from '../../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
   chip: {
     fontSize: 13,
     lineHeight: '12px',
@@ -136,15 +128,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       width: '10%',
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          style={{
-            backgroundColor: hexToRGB(itemColor(stixCoreObject.entity_type), 0.08),
-            color: itemColor(stixCoreObject.entity_type),
-            border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
-          }}
-          label={t_i18n(`entity_${stixCoreObject.entity_type}`)}
-        />
+        <ItemEntityType entityType={stixCoreObject.entity_type} />
       ),
     },
     [isObservables ? 'observable_value' : 'name']: {

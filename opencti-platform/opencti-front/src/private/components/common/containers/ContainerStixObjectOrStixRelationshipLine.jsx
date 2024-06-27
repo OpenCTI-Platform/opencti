@@ -8,7 +8,6 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,11 +15,11 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,14 +43,6 @@ const useStyles = makeStyles((theme) => ({
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-  },
 }));
 
 const ContainerStixObjectOrStixRelationshipLineComponent = ({
@@ -61,7 +52,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
+  const { fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
   // eslint-disable-next-line no-nested-ternary
   const link = node.relationship_type
@@ -73,13 +64,6 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
       }/${node.id}`
       : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
-  const entityType = !restrictedWithFrom ? node.entity_type : 'unknown';
-  // eslint-disable-next-line no-nested-ternary
-  const entityTypeLabel = node.relationship_type
-    ? !restrictedWithFrom
-      ? t_i18n(`relationship_${node.entity_type}`)
-      : t_i18n('Restricted')
-    : t_i18n(`entity_${node.entity_type}`);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -99,14 +83,9 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  backgroundColor: hexToRGB(itemColor(entityType), 0.08),
-                  color: itemColor(entityType),
-                  border: `1px solid ${itemColor(entityType)}`,
-                }}
-                label={entityTypeLabel}
+              <ItemEntityType
+                entityType={node.entity_type}
+                isRestricted={node.relationship_type && restrictedWithFrom}
               />
             </div>
             <div

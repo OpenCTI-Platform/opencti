@@ -111,6 +111,7 @@ const userValidation = (t) => Yup.object().shape({
   unit_system: Yup.string().nullable(),
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
+  monochrome_labels: Yup.boolean(),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -227,6 +228,7 @@ const ProfileOverviewComponent = (props) => {
     'unit_system',
     'submenu_show_icons',
     'submenu_auto_collapse',
+    'monochrome_labels',
   ];
 
   const initialValues = {
@@ -444,6 +446,18 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              {/* <ListItem style={{ padding: '10px 0 0 0' }}>
+                <ListItemText
+                  primary={t('Monochrome labels and entity types')}
+                />
+                <Field
+                  component={Switch}
+                  variant="standard"
+                  name="monochrome_labels"
+                  checked={initialValues.monochrome_labels}
+                  onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
+                />
+              </ListItem> */}
               <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
               <NotifierField
                 label={t('Personal notifiers')}
@@ -618,6 +632,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       unit_system
       submenu_show_icons
       submenu_auto_collapse
+      monochrome_labels
       personal_notifiers {
         id
         name

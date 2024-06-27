@@ -26,6 +26,7 @@ import { truncate } from '../../../../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -174,16 +175,9 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               needs={[KNOWLEDGE_KNUPDATE]}
               placeholder={
                 <Tooltip title={label.value}>
-                  <Chip
-                    key={label.id}
-                    variant="outlined"
-                    classes={{ root: classes.label }}
-                    label={truncate(label.value, 25)}
-                    style={{
-                      color: label.color,
-                      borderColor: label.color,
-                      backgroundColor: hexToRGB(label.color),
-                    }}
+                  <ItemEntityType
+                    entityType={label.value}
+                    maxLength={25}
                   />
                 </Tooltip>
               }

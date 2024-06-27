@@ -92,6 +92,7 @@ const rootPrivateQuery = graphql`
       unit_system
       submenu_show_icons
       submenu_auto_collapse
+      monochrome_labels
       default_dashboards {
         id
         name

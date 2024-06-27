@@ -34,9 +34,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
   switch (type) {
     case 'Attack-Pattern':
       if (dark) {
-        return '#727926';
+        return '#d4e157';
       }
-      return '#7f8727';
+      return '#827717';
     case 'Case-Incident':
       if (dark) {
         return '#ad1457';
@@ -49,34 +49,34 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#3880b7';
     case 'Case-Rft':
       if (dark) {
-        return '#4a2e7a';
+        return '#ea80fc';
       }
-      return '#5c418a';
+      return '#8e24aa';
     case 'Case-Feedback':
       if (dark) {
-        return '#107a6e';
+        return '#00acc1';
       }
-      return '#44a49d';
+      return '#006064';
     case 'Task':
       if (dark) {
-        return '#303f9f';
+        return '#304ffe';
       }
-      return '#3f51b5';
+      return '#283593';
     case 'Campaign':
       if (dark) {
         return '#8e24aa';
       }
-      return '#ab47bc';
+      return '#ea80fc';
     case 'Note':
       if (dark) {
-        return '#43a047';
+        return '#33691e';
       }
-      return '#2e7d32';
+      return '#689f38';
     case 'Observed-Data':
       if (dark) {
-        return '#00838f';
+        return '#00acc1';
       }
-      return '#00acc1';
+      return '#006064';
     case 'Opinion':
       if (dark) {
         return '#1565c0';
@@ -91,18 +91,18 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#689f38';
       }
-      return '#9ccc65';
+      return '#8bc34a';
     case 'Course-Of-Action':
       if (dark) {
-        return '#558b2f';
+        return '#8bc34a';
       }
-      return '#8bc34a';
+      return '#689f38';
     case 'Individual':
     case 'User':
       if (dark) {
-        return '#006064';
+        return '#9c27b0';
       }
-      return '#00bcd4';
+      return '#4a148c';
     case 'Group':
       if (dark) {
         return '#006064';
@@ -115,9 +115,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#757575';
     case 'Organization':
       if (dark) {
-        return '#01579b';
+        return '#3880b7';
       }
-      return '#03A9F4';
+      return '#0c5c98';
     case 'Sector':
       if (dark) {
         return '#0d47a1';
@@ -125,19 +125,19 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#2196f3';
     case 'System':
       if (dark) {
-        return '#64dd17';
+        return '#8bc34a';
       }
-      return '#76ff03';
+      return '#689f38';
     case 'Event':
       if (dark) {
-        return '#00695c';
+        return '#00acc1';
       }
-      return '#26a69a';
+      return '#006064';
     case 'Indicator':
       if (dark) {
-        return '#ff6f00';
+        return '#ffc107';
       }
-      return '#ffc107';
+      return '#b69007';
     case 'Infrastructure':
       if (dark) {
         return '#512da8';
@@ -147,17 +147,17 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#bf360c';
       }
-      return '#ff5722';
+      return '#ff5622';
     case 'City':
       if (dark) {
-        return '#004d40';
+        return '#00acc1';
       }
-      return '#009688';
+      return '#006064';
     case 'Country':
       if (dark) {
-        return '#1a237e';
+        return '#304ffe';
       }
-      return '#3f51b5';
+      return '#283593';
     case 'Region':
       if (dark) {
         return '#33691e';
@@ -165,24 +165,24 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#689f38';
     case 'Administrative-Area':
       if (dark) {
-        return '#fbc02d';
+        return '#ffc107';
       }
-      return '#ffeb3b';
+      return '#b69007';
     case 'Position':
       if (dark) {
-        return '#afb42b';
+        return '#00acc1';
       }
-      return '#d4e157';
+      return '#827717';
     case 'Malware':
       if (dark) {
-        return '#e65100';
+        return '#ff9800';
       }
-      return '#ff9800';
+      return '#d68100';
     case 'Malware-Analysis':
       if (dark) {
-        return '#00838f';
+        return '#006064';
       }
-      return '#00bcd4';
+      return '#00acc1';
     case 'Threat-Actor-Group':
       if (dark) {
         return '#880e4f';
@@ -192,12 +192,12 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#4a148c';
       }
-      return '#7b1fa2';
+      return '#9c27b0';
     case 'Tool':
       if (dark) {
-        return '#1b5e20';
+        return '#986937';
       }
-      return '#4caf50';
+      return '#986937';
     case 'Channel':
       if (dark) {
         return '#ad1457';
@@ -205,9 +205,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#ec407a';
     case 'Narrative':
       if (dark) {
-        return '#558b2f';
+        return '#8bc34a';
       }
-      return '#8bc34a';
+      return '#689f38';
     case 'Language':
       if (dark) {
         return '#afb42b';
@@ -222,7 +222,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#f44336';
       }
-      return '#b71c1c';
+      return '#f44336';
     case 'Dashboard':
       if (dark) {
         return '#689f38';
@@ -238,6 +238,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#5d4037';
       }
       return '#795548';
+    case 'Artifact':
+      if (dark) {
+        return '#f2699c';
+      }
+      return '#ff4081';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -245,7 +250,6 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Email-Addr':
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
-    case 'Artifact':
     case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':
@@ -270,9 +274,10 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Payment-Card':
     case 'Media-Content':
       if (dark) {
-        return '#37474f';
+        return '#84ffff';
       }
-      return stringToColour(type);
+      // return stringToColour(type);
+      return '#03a9f4';
     case 'Stix-Core-Relationship':
     case 'Relationship':
     case 'stix-core-relationship':

@@ -14,14 +14,14 @@ const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
 
 const ThemeLight = (
-  logo: string | null,
-  logo_collapsed: string | null,
-  background: string | null,
-  paper: string | null,
-  nav: string | null,
-  primary: string | null,
-  secondary: string | null,
-  accent: string | null,
+  logo: string | null = null,
+  logo_collapsed: string | null = null,
+  background: string | null = null,
+  paper: string | null = null,
+  nav: string | null = null,
+  primary: string | null = null,
+  secondary: string | null = null,
+  accent: string | null = null,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),

@@ -102,6 +102,13 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+
+  const monochromeStyle = (color) => ({
+    backgroundColor: `${color}33`, // 20% opacity
+    color: theme.palette.text.primary,
+    border: `2px solid ${color}`,
+  });
+
   const renderChip = (markingDefinition, isTooltip = false) => {
     let className = classes.chip;
     if (isTooltip) {
@@ -110,19 +117,16 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
       className = classes.chipInList;
     }
     if (markingDefinition.x_opencti_color) {
-      let backgroundColor = markingDefinition.x_opencti_color;
-      let textColor = theme.palette.text.primary;
-      let border = '0';
+      const monochromeStyles = monochromeStyle(markingDefinition.x_opencti_color);
+      let { backgroundColor } = monochromeStyles;
+      let textColor = monochromeStyles.color;
+      let { border } = monochromeStyles;
       if (theme.palette.mode === 'light') {
-        if (backgroundColor === '#ffffff') {
+        if (backgroundColor.startsWith('#ffffff')) {
           backgroundColor = '#ffffff';
           textColor = '#2b2b2b';
-          border = '1px solid #2b2b2b';
-        } else {
-          textColor = '#ffffff';
+          border = '2px solid #2b2b2b';
         }
-      } else if (backgroundColor === '#ffffff') {
-        textColor = '#2b2b2b';
       }
       return (
         <Chip
@@ -151,7 +155,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={inlineStyles.red}
+            style={monochromeStyle(inlineStyles.red.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -160,7 +164,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={inlineStyles.orange}
+            style={monochromeStyle(inlineStyles.orange.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -170,7 +174,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={inlineStyles.green}
+            style={monochromeStyle(inlineStyles.green.backgroundColor)}
             label={markingDefinition.definition}
           />
         );
@@ -179,7 +183,7 @@ const ItemMarkings = ({ variant, markingDefinitions, limit }) => {
           <Chip
             key={markingDefinition.definition}
             className={className}
-            style={inlineStyles.blue}
+            style={monochromeStyle(inlineStyles.blue.backgroundColor)}
             label={markingDefinition.definition}
           />
         );

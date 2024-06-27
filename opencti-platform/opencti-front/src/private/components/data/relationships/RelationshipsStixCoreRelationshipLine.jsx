@@ -11,14 +11,14 @@ import { KeyboardArrowRight } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { computeLink } from '../../../../utils/Entity';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { itemColor } from '../../../../utils/Colors';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -38,13 +38,6 @@ const useStyles = makeStyles((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
   goIcon: {
     position: 'absolute',
@@ -116,36 +109,11 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.fromType.width, display: 'flex' }}
             >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  width: 140,
-                  backgroundColor: hexToRGB(
-                    itemColor(node.from ? node.from.entity_type : 'Restricted'),
-                    0.08,
-                  ),
-                  color: itemColor(
-                    node.from ? node.from.entity_type : 'Restricted',
-                  ),
-                  border: `1px solid ${itemColor(
-                    node.from ? node.from.entity_type : 'Restricted',
-                  )}`,
-                }}
-                label={
-                  <>
-                    <ItemIcon
-                      variant="inline"
-                      type={node.from ? node.from.entity_type : 'restricted'}
-                    />
-                    {node.from
-                      ? t_i18n(
-                        node.from.parent_types.includes('basic-relationship')
-                          ? `relationship_${node.from.entity_type}`
-                          : `entity_${node.from.entity_type}`,
-                      )
-                      : t_i18n('Restricted')}
-                  </>
-                }
+              <ItemEntityType
+                entityType={node.from?.entity_type}
+                isRestricted={!node.from}
+                size='large'
+                showIcon
               />
             </div>
             <div
@@ -158,48 +126,19 @@ const RelationshipsStixCoreRelationshipLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.relationship_type.width }}
             >
-              <Chip
-                variant="outlined"
-                classes={{ root: classes.chipInList }}
-                style={{ width: 120 }}
-                color="primary"
-                label={t_i18n(`relationship_${node.relationship_type}`)}
+              <ItemEntityType
+                entityType={node.relationship_type}
               />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.toType.width, display: 'flex' }}
             >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  width: 140,
-                  backgroundColor: hexToRGB(
-                    itemColor(node.to ? node.to.entity_type : 'Restricted'),
-                    0.08,
-                  ),
-                  color: itemColor(
-                    node.to ? node.to.entity_type : 'Restricted',
-                  ),
-                  border: `1px solid ${itemColor(
-                    node.to ? node.to.entity_type : 'Restricted',
-                  )}`,
-                }}
-                label={
-                  <>
-                    <ItemIcon
-                      variant="inline"
-                      type={node.to ? node.to.entity_type : 'restricted'}
-                    />
-                    {node.to
-                      ? t_i18n(
-                        node.to.parent_types.includes('basic-relationship')
-                          ? `relationship_${node.to.entity_type}`
-                          : `entity_${node.to.entity_type}`,
-                      )
-                      : t_i18n('Restricted')}
-                  </>
-                }
+              <ItemEntityType
+                entityType={node.to?.entity_type}
+                isRestricted={!node.to}
+                size='large'
+                showIcon
               />
             </div>
             <div

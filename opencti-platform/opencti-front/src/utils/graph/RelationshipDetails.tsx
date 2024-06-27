@@ -10,7 +10,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { useFormatter } from '../../components/i18n';
@@ -23,9 +22,9 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
 import type { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
-import { hexToRGB, itemColor } from '../Colors';
 import ItemCreators from '../../components/ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
+import ItemEntityType from '../../components/ItemEntityType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,13 +61,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -529,17 +521,9 @@ RelationshipDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Relation type')}
       </Typography>
-      <Chip
-        classes={{ root: classes.chipInList }}
-        style={{
-          backgroundColor: hexToRGB(
-            itemColor(stixRelationship.relationship_type),
-            0.08,
-          ),
-          color: itemColor(stixRelationship.relationship_type),
-          border: `1px solid ${itemColor(stixRelationship.relationship_type)}`,
-        }}
-        label={t_i18n(`relationship_${stixRelationship.relationship_type}`)}
+      <ItemEntityType
+        entityType={stixRelationship.relationship_type ?? 'unknown'}
+        inList={false}
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
