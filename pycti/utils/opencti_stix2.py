@@ -1507,9 +1507,7 @@ class OpenCTIStix2:
             and "valid_until" in entity
             and entity["valid_from"] == entity["valid_until"]
         ):
-            entity["valid_until"] = entity["valid_from"] + datetime.timedelta(
-                seconds=1
-            )
+            entity["valid_until"] = entity["valid_from"] + datetime.timedelta(seconds=1)
 
         # Flatten
         if "tasks" in entity:
