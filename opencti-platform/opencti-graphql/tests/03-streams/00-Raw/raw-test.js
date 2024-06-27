@@ -25,9 +25,9 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(31);
       expect(createEventsByTypes.location.length).toBe(15);
-      expect(createEventsByTypes.relationship.length).toBe(136);
+      expect(createEventsByTypes.relationship.length).toBe(137);
       expect(createEventsByTypes.sighting.length).toBe(4);
-      expect(createEventsByTypes.indicator.length).toBe(36);
+      expect(createEventsByTypes.indicator.length).toBe(37);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
       expect(createEventsByTypes['threat-actor'].length).toBe(13);
       expect(createEventsByTypes['observed-data'].length).toBe(1);
@@ -46,7 +46,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(335); // 328 created at init + 2 created in tests + 5 vocabulary organizations types
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(765);
+      expect(createEvents.length).toBe(768);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -95,7 +95,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(127);
+      expect(deleteEvents.length).toBe(129);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
