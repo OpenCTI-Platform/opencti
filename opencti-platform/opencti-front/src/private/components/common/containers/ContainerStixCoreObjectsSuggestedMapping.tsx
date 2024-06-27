@@ -39,6 +39,7 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
       ... on MappingAnalysis {
         analysisType
         analysisStatus
+        analysisDate
         mappedEntities {
           matchedString
           isEntityInContainer
