@@ -15,6 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 
 export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
   mutation StixCoreObjectMappableContentFieldPatchMutation(
@@ -127,6 +128,9 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     }
   };
 
+  // we debounce the submit so it does not trigger too often, as we are hooked on the RichText onChange
+  const debouncedSubmit = useDebounceCallback(handleSubmitField, 1000);
+
   const matchCase = (text: string, pattern: string) => {
     let result = '';
     // eslint-disable-next-line no-plusplus
@@ -201,7 +205,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               fullWidth
               multiline
               rows="4"
-              onSubmit={handleSubmitField}
+              onSubmit={debouncedSubmit}
               onSelect={handleTextSelection}
               disabled={!editionMode}
               helperText={
@@ -218,7 +222,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               name="content"
               label={t_i18n('Content')}
               fullWidth
-              onSubmit={handleSubmitField}
+              onChange={debouncedSubmit}
               onSelect={handleTextSelection}
               askAi={askAi}
               disabled={!editionMode}

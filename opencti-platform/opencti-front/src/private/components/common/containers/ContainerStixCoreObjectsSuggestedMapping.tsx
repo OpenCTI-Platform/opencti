@@ -132,17 +132,17 @@ ContainerStixCoreObjectsSuggestedMappingProps
     },
     value: {
       label: 'Value',
-      width: '30%',
+      width: '27%',
       isSortable: false,
     },
     objectMarking: {
       label: 'Marking',
-      width: '10%',
+      width: '15%',
       isSortable: isRuntimeSort,
     },
     matched_text: {
       label: 'Matched text',
-      width: '17%',
+      width: '15%',
       isSortable: true,
     },
     mapping: {
