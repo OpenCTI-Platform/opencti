@@ -363,6 +363,7 @@ class DataSource:
         collection_layers = kwargs.get("collection_layers", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -399,6 +400,7 @@ class DataSource:
                         "x_mitre_platforms": platforms,
                         "collection_layers": collection_layers,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
                     }
                 },
@@ -444,6 +446,10 @@ class DataSource:
             if "x_opencti_granted_refs" not in stix_object:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
                 )
 
             return self.opencti.data_source.create(
@@ -494,6 +500,11 @@ class DataSource:
                 objectOrganization=(
                     stix_object["x_opencti_granted_refs"]
                     if "x_opencti_granted_refs" in stix_object
+                    else None
+                ),
+                x_opencti_workflow_id=(
+                    stix_object["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_object
                     else None
                 ),
                 update=update,

@@ -1355,6 +1355,10 @@ class OpenCTIStix2:
             stix_sighting["x_opencti_negative"] = (
                 self.opencti.get_attribute_in_extension("negative", stix_sighting)
             )
+        if "x_opencti_workflow_id" not in stix_sighting:
+            stix_sighting["x_opencti_workflow_id"] = (
+                self.opencti.get_attribute_in_extension("workflow_id", stix_sighting)
+            )
         stix_sighting_result = self.opencti.stix_sighting_relationship.create(
             fromId=final_from_id,
             toId=final_to_id,
@@ -1395,6 +1399,11 @@ class OpenCTIStix2:
             ),
             objectOrganization=(
                 extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
+            ),
+            x_opencti_workflow_id=(
+                stix_sighting["x_opencti_workflow_id"]
+                if "x_opencti_workflow_id" in stix_sighting
+                else None
             ),
             update=update,
             ignore_dates=(
