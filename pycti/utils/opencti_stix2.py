@@ -1507,7 +1507,7 @@ class OpenCTIStix2:
             and "valid_until" in entity
             and entity["valid_from"] == entity["valid_until"]
         ):
-            entity["valid_until"] = entity["valid_until"] + datetime.timedelta(
+            entity["valid_until"] = entity["valid_from"] + datetime.timedelta(
                 seconds=1
             )
 
