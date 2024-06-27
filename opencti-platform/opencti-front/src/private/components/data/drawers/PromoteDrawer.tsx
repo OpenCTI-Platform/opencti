@@ -3,6 +3,8 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useTheme } from '@mui/styles';
+import Checkbox from '@mui/material/Checkbox';
+import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
@@ -11,11 +13,26 @@ type DrawerContainerPropsType = {
   isOnlyStixCyberObservablesTypes: boolean;
   onClose: () => void;
   onSubmit: () => void;
+  isContainer: boolean;
+  promoteToContainer: boolean;
+  togglePromoteToContainer: () => void;
 };
 
-const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit }: DrawerContainerPropsType) => {
+const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit, isContainer, promoteToContainer, togglePromoteToContainer }: DrawerContainerPropsType) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
+  const renderPromoteToContainerCheckBox = () => {
+    if (!isContainer) return null;
+
+    const type = isOnlyStixCyberObservablesTypes ? 'indicators' : 'observables';
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+        <Checkbox edge="start" checked={promoteToContainer} onChange={togglePromoteToContainer} />
+        <Typography>{t_i18n(`Add generated and existing ${type} in the container`)}</Typography>
+      </div>
+    );
+  };
 
   return (
     <Drawer
@@ -23,7 +40,6 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
       onClose={onClose}
       open={isOpen}
     >
-
       <div style={{ padding: '10px 20px 20px 20px' }}>
         {isOnlyStixCyberObservablesTypes ? (
           <div>
@@ -40,6 +56,7 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
             </Alert>
           </div>
         )}
+        {renderPromoteToContainerCheckBox()}
         <div style={{
           marginTop: 20,
           textAlign: 'right',

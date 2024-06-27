@@ -15,6 +15,7 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import { deleteNodeFromId } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -89,11 +90,17 @@ class StixCyberObservableIndicatorPopover extends Component {
         toId: this.props.observableId,
         relationship_type: 'based-on',
       },
+      updater: (store) => {
+        deleteNodeFromId(
+          store,
+          this.props.observableId,
+          'Pagination_stixCyberObservables_indicators',
+          {},
+          this.props.indicatorId,
+        );
+      },
       onCompleted: () => {
         this.handleCloseDelete();
-        if (this.props.onDelete) {
-          this.props.onDelete();
-        }
       },
     });
   }
@@ -103,6 +110,7 @@ class StixCyberObservableIndicatorPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          aria-label="stix cyber observable indicator popover button"
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
@@ -161,7 +169,6 @@ StixCyberObservableIndicatorPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  onDelete: PropTypes.func,
 };
 
 export default compose(

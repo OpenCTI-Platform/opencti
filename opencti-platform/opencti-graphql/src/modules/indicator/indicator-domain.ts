@@ -30,6 +30,7 @@ import {
   type QueryIndicatorsArgs,
   type QueryIndicatorsNumberArgs,
   type EditInput,
+  type StixCyberObservable,
   FilterMode,
   FilterOperator,
   OrderingMode
@@ -177,8 +178,8 @@ export const createObservablesFromIndicator = async (
       update: true,
     };
     try {
-      const createdObservable = await createEntity(context, user, observableInput, observable.type);
-      observablesToLink.push(createdObservable.id);
+      const createdObservable: StixCyberObservable = await createEntity(context, user, observableInput, observable.type);
+      observablesToLink.push(createdObservable);
     } catch (err) {
       logApp.error('[API] Create observable from indicator fail', { index, cause: err, ...extendedErrors({ input: observableInput }) });
     }
@@ -187,7 +188,7 @@ export const createObservablesFromIndicator = async (
     observablesToLink.map((observableToLink) => {
       const relationInput = {
         fromId: indicator.id,
-        toId: observableToLink,
+        toId: observableToLink.id,
         relationship_type: RELATION_BASED_ON,
         objectMarking: input.objectMarking,
         objectOrganization: input.objectOrganization,
@@ -195,9 +196,10 @@ export const createObservablesFromIndicator = async (
       return createRelation(context, user, relationInput);
     })
   );
+  return observablesToLink;
 };
 
-export const promoteIndicatorToObservable = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
+export const promoteIndicatorToObservables = async (context: AuthContext, user: AuthUser, indicatorId: string) => {
   const indicator: StoreEntityIndicator = await storeLoadByIdWithRefs(context, user, indicatorId) as StoreEntityIndicator;
   const objectLabel = (indicator[INPUT_LABELS] ?? []).map((n) => n.internal_id);
   const objectMarking = (indicator[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
