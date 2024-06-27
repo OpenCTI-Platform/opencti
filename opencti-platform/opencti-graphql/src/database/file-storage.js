@@ -247,15 +247,16 @@ export const loadFile = async (user, fileS3Path, opts = {}) => {
       Key: fileS3Path
     }));
     const mimeTypeResolved = guessMimeType(fileS3Path);
+    const onlyFilename = getFileName(fileS3Path);
     return {
       id: fileS3Path,
-      name: getFileName(fileS3Path),
+      name: onlyFilename,
       size: object.ContentLength,
       information: '',
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
       uploadStatus: 'complete',
-      metaData: { mimetype: mimeTypeResolved },
+      metaData: { mimetype: mimeTypeResolved, filename: onlyFilename },
     };
   } catch (err) {
     if (dontThrow) {

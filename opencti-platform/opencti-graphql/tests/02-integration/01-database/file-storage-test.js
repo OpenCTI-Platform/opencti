@@ -102,6 +102,7 @@ describe('File storage file listing', () => {
     expect(file.size).toEqual(10700);
     expect(file.metaData).toBeDefined();
     expect(file.metaData.mimetype).toBe('application/json');
+    expect(file.metaData.filename).toBe(exportFileName);
   });
   it('should delete file', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
