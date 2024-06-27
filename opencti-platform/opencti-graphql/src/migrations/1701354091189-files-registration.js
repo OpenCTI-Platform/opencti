@@ -23,7 +23,7 @@ export const up = async (next) => {
     }
     iteration += 1;
   };
-  await loadedFilesListing(SYSTEM_USER, '', { recursive: true, dontThrow: true, callback });
+  await loadedFilesListing(context, SYSTEM_USER, '', { recursive: true, dontThrow: true, callback });
   logApp.info('[MIGRATION] Done 1701354091161-files-registration.js');
   next();
 };

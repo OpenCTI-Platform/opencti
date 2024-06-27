@@ -113,7 +113,7 @@ export const storageInit = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
-  const up = await loadFile(user, id);
+  const up = await loadFile(context, user, id);
   logApp.info(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
   await s3Client.send(new s3.DeleteObjectCommand({
@@ -237,25 +237,81 @@ export const storeFileConverter = (user, file) => {
 };
 
 /**
- * Get S3 metadata information of file like size (calling HEAD on S3 file).
+ * Get file size from S3 (calling HEAD on S3 file).
  */
-export const loadFile = async (user, fileS3Path, opts = {}) => {
-  const { dontThrow = false } = opts;
+export const getFileSize = async (user, fileS3Path) => {
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
       Key: fileS3Path
     }));
-    const mimeTypeResolved = guessMimeType(fileS3Path);
+    return object.ContentLength;
+  } catch (err) {
+    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
+  }
+};
+
+/**
+ * Get file metadata from database, or else from S3.
+ */
+export const loadFile = async (context, user, fileS3Path, opts = {}) => {
+  const fileInformationFromDB = await documentFindById(context, user, fileS3Path);
+  const { dontThrow = false } = opts;
+  try {
+    let metaData; let name; let size; let lastModified; let lastModifiedSinceMin;
+
+    // Try first to get metadata from elastic
+    if (fileInformationFromDB) {
+      metaData = fileInformationFromDB.metaData;
+      name = fileInformationFromDB.name;
+      size = fileInformationFromDB.size;
+      lastModified = fileInformationFromDB.lastModified;
+      lastModifiedSinceMin = fileInformationFromDB.lastModifiedSinceMin;
+    } else {
+      // Else try to get them from S3 instead
+      const object = await s3Client.send(new s3.HeadObjectCommand({
+        Bucket: bucketName,
+        Key: fileS3Path
+      }));
+      size = object.ContentLength;
+      lastModified = object.LastModified;
+      lastModifiedSinceMin = sinceNowInMinutes(object.LastModified);
+
+      if (object.Metadata) {
+        metaData = {
+          version: object.Metadata.version,
+          description: object.Metadata.description,
+          list_filters: object.Metadata.list_filters,
+          filename: object.Metadata.filename,
+          mimetype: object.Metadata.mimetype,
+          labels_text: object.Metadata.labels_text,
+          labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
+          encoding: object.Metadata.encoding,
+          creator_id: object.Metadata.creator_id,
+          entity_id: object.Metadata.entity_id,
+          external_reference_id: object.Metadata.external_reference_id,
+          messages: object.Metadata.messages,
+          errors: object.Metadata.errors,
+          inCarousel: object.Metadata.inCarousel,
+          order: object.Metadata.order
+        };
+        name = decodeURIComponent(object.Metadata.filename || 'unknown');
+      } else {
+        const mimeTypeResolved = guessMimeType(fileS3Path);
+        metaData = { mimetype: mimeTypeResolved };
+        name = getFileName(fileS3Path);
+      }
+    }
+
     return {
       id: fileS3Path,
-      name: getFileName(fileS3Path),
-      size: object.ContentLength,
+      name,
+      size,
       information: '',
-      lastModified: object.LastModified,
-      lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
+      lastModified,
+      lastModifiedSinceMin,
       uploadStatus: 'complete',
-      metaData: { mimetype: mimeTypeResolved },
+      metaData
     };
   } catch (err) {
     if (dontThrow) {
@@ -282,7 +338,7 @@ export const guessMimeType = (fileId) => {
   if (!mimeType && fileName === 'pdf_report') {
     return 'application/pdf';
   }
-  return mimeType || 'text/plain';
+  return mimeType || 'application/octet-stream';
 };
 
 export const isFileObjectExcluded = (id) => {
@@ -302,7 +358,7 @@ const filesAdaptation = (objects) => {
   });
 };
 
-export const loadedFilesListing = async (user, directory, opts = {}) => {
+export const loadedFilesListing = async (context, user, directory, opts = {}) => {
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
@@ -321,7 +377,7 @@ export const loadedFilesListing = async (user, directory, opts = {}) => {
     try {
       const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
       const resultFiles = filesAdaptation(response.Contents ?? []);
-      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(user, f.Key, { dontThrow }), { concurrency: 5 });
+      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
       } else {
@@ -407,7 +463,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = guessMimeType(key);
+  const fileMime = metadata.mimetype ?? guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
@@ -425,13 +481,13 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     }
   });
   await s3Upload.done();
-  const uploadedFile = await loadFile(user, key);
+  const fileSize = await getFileSize(user, key);
 
   // Register in elastic
   const file = {
     id: key,
     name: truncatedFileName,
-    size: uploadedFile.size,
+    size: fileSize,
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),

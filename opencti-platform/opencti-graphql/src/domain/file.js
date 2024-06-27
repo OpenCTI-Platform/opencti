@@ -68,7 +68,7 @@ export const filesMetrics = async (context, user) => {
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
-  const file = await loadFile(user, fileName);
+  const file = await loadFile(context, user, fileName);
   const entityId = bypassEntityId || file.metaData.entity_id;
   const opts = { manual: true, connectorId, configuration, bypassValidation };
   const entity = await internalLoadById(context, user, entityId);

@@ -11,7 +11,7 @@ const domainLoader = batchLoader(batchStixDomainObjects);
 
 const fileResolvers = {
   Query: {
-    file: (_, { id }, context) => loadFile(context.user, id),
+    file: (_, { id }, context) => loadFile(context, context.user, id),
     importFiles: (_, { first }, context) => {
       return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, { first });
     },
