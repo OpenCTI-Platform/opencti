@@ -1,9 +1,16 @@
+import moment from 'moment';
 import { buildKillChainPhases, buildMITREExtensions, buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-converter';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixIndicator, StoreEntityIndicator } from './indicator-types';
 
 const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator => {
   const indicator = buildStixDomain(instance);
+  const computedValidUntil = () => {
+    if (instance.valid_from === instance.valid_until) {
+      return moment(instance.valid_from).add(1, 'seconds').toDate();
+    }
+    return instance.valid_until;
+  };
   return {
     ...indicator,
     name: instance.name,
@@ -13,7 +20,7 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
     pattern_type: instance.pattern_type,
     pattern_version: instance.pattern_version,
     valid_from: convertToStixDate(instance.valid_from),
-    valid_until: convertToStixDate(instance.valid_until),
+    valid_until: convertToStixDate(computedValidUntil()),
     kill_chain_phases: buildKillChainPhases(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
