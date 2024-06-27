@@ -624,6 +624,7 @@ class Grouping:
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         if name is not None and context is not None:
@@ -659,6 +660,7 @@ class Grouping:
                         "description": description,
                         "x_opencti_aliases": x_opencti_aliases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
                     }
                 },
@@ -776,6 +778,10 @@ class Grouping:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
                 )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -821,6 +827,11 @@ class Grouping:
                     else None
                 ),
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
+                x_opencti_workflow_id=(
+                    stix_object["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
                 update=update,
             )
         else:

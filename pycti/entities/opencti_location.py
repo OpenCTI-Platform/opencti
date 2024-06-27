@@ -350,6 +350,7 @@ class Location:
         precision = kwargs.get("precision", None)
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -386,6 +387,7 @@ class Location:
                         "precision": precision,
                         "x_opencti_aliases": x_opencti_aliases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
                     }
                 },
@@ -439,6 +441,10 @@ class Location:
                 stix_object["x_opencti_stix_ids"] = (
                     self.opencti.get_attribute_in_extension("stix_ids", stix_object)
                 )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
+                )
 
             return self.create(
                 type=type,
@@ -485,6 +491,11 @@ class Location:
                     else None
                 ),
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
+                x_opencti_workflow_id=(
+                    stix_object["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
                 update=update,
             )
         else:

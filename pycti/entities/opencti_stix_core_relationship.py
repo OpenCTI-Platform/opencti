@@ -1138,6 +1138,12 @@ class StixCoreRelationship:
                         "granted_refs", stix_relation
                     )
                 )
+            if "x_opencti_workflow_id" not in stix_relation:
+                stix_relation["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "workflow_id", stix_relation
+                    )
+                )
 
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
