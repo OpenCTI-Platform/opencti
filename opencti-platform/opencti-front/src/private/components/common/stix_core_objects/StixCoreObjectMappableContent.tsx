@@ -145,15 +145,15 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   const highlightMappedString = (mappedString: string, suggested = false) => {
     const markClass = suggested ? 'marker-blue' : 'marker-yellow';
     const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const descriptionRegex = new RegExp(escapedMappedString, 'ig');
+    const descriptionRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
     description = (description || '').replace(
       descriptionRegex,
-      (match) => `=${suggested ? 'b' : ''}=${matchCase(escapedMappedString, match)}==`,
+      (match) => `=${suggested ? 'b' : ''}=${matchCase(mappedString, match)}==`,
     );
-    const contentRegex = new RegExp(escapedMappedString, 'ig');
+    const contentRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
     contentField = (contentField || '').replace(
       contentRegex,
-      (match) => `<mark class="${markClass}">${matchCase(escapedMappedString, match)}</mark>`,
+      (match) => `<mark class="${markClass}">${matchCase(mappedString, match)}</mark>`,
     );
   };
 

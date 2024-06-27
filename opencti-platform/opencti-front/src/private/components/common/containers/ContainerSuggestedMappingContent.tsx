@@ -131,11 +131,11 @@ ContainerSuggestedMappingContentComponentProps
     const contentMapping: Record<string, number> = {};
     for (const mappedString of mappedStrings) {
       const escapedMappedString = mappedString.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const descriptionRegex = new RegExp(escapedMappedString, 'ig');
+      const descriptionRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
       const descriptionCount = (
         (description || '').match(descriptionRegex) || []
       ).length;
-      const contentRegex = new RegExp(escapedMappedString, 'ig');
+      const contentRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
       const contentCount = ((contentField || '').match(contentRegex) || []).length;
       contentMapping[mappedString] = descriptionCount + contentCount;
     }
