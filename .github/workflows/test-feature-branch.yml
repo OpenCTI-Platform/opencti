@@ -11,6 +11,11 @@ on:
         type: boolean
         required: false
         default: false
+      redis_cluster:
+        description: Redis cluster (sentinel) ?
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   worker:
@@ -125,6 +130,6 @@ jobs:
           ansible-tower-url: ${{ secrets.AWX_URL }}
           template-id: "${{ env.AWX_TPL_ID }}"
           additional-vars: |
-            { "octi_version": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }} }
+            { "octi_version": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }}, "redis_cluster": ${{ inputs.redis_cluster }} }
       - name: display URL
         run: echo "https://${{steps.meta.outputs.version}}.octi.dev.filigran.io"
