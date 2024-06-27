@@ -408,7 +408,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
 
   // Upload the data
   const readStream = createReadStream();
-  const fileMime = metadata.mime_type ?? guessMimeType(key);
+  const fileMime = metadata.mimetype ?? guessMimeType(key);
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
