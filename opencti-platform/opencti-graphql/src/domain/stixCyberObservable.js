@@ -399,8 +399,8 @@ export const artifactImport = async (context, user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
-  const meta = { version };
-  await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta, mime_type: mimetype });
+  const meta = { version, mimetype };
+  await uploadToStorage(context, user, `import/${artifact.entity_type}/${artifact.id}`, resolvedFile, { entity: artifact, meta });
   return artifact;
 };
 
