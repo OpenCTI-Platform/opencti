@@ -50,7 +50,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
 }) => {
   const { t_i18n } = useFormatter();
   const [result, setResult] = useState<IngestionCsvMapperTestDialogMutation$data | undefined>(undefined);
-  const [commitTest] = useApiMutation(ingestionCsvMapperTestMutation);
+  const [commitTest] = useApiMutation(ingestionCsvMapperTestMutation, undefined, { errorMessage: 'Something went wrong. Please check the configuration.' });
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
