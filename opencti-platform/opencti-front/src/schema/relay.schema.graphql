@@ -7255,6 +7255,7 @@ input StixSightingRelationshipAddInput {
   externalReferences: [String]
   clientMutationId: String
   update: Boolean
+  x_opencti_workflow_id: String
 }
 
 enum StixRefRelationshipsOrdering {
@@ -8979,6 +8980,7 @@ input NarrativeAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  x_opencti_workflow_id: String
 }
 
 type ResolvedInstanceFilter {
@@ -9237,6 +9239,7 @@ input DataComponentAddInput {
   aliases: [String]
   dataSource: String
   file: Upload
+  x_opencti_workflow_id: String
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9337,6 +9340,7 @@ input DataSourceAddInput {
   collection_layers: [String!]
   dataComponents: [String]
   file: Upload
+  x_opencti_workflow_id: String
 }
 
 enum VocabularyCategory {
