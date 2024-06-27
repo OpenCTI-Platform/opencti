@@ -262,55 +262,45 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
 
     // Try first to get metadata from elastic
     if (fileInformationFromDB) {
-      const dbMeta = fileInformationFromDB.metaData;
-      metaData = {
-        version: dbMeta.version,
-        // description: object.Metadata.description,
-        // list_filters: object.Metadata.list_filters,
-        filename: dbMeta.filename,
-        mimetype: dbMeta.mimetype,
-        // labels_text: object.Metadata.labels_text,
-        // labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
-        encoding: dbMeta.encoding,
-        creator_id: dbMeta.creator_id,
-        entity_id: dbMeta.entity_id,
-        // external_reference_id: object.Metadata.external_reference_id,
-        // messages: object.Metadata.messages,
-        // errors: object.Metadata.errors,
-        inCarousel: dbMeta.inCarousel,
-        order: dbMeta.order
-      };
+      metaData = fileInformationFromDB.metaData;
       name = fileInformationFromDB.name;
       size = fileInformationFromDB.size;
       lastModified = fileInformationFromDB.lastModified;
-      lastModifiedSinceMin = lastModified; // ??
+      lastModifiedSinceMin = fileInformationFromDB.lastModifiedSinceMin;
     } else {
       // Else try to get them from S3 instead
       const object = await s3Client.send(new s3.HeadObjectCommand({
         Bucket: bucketName,
         Key: fileS3Path
       }));
-      metaData = {
-        version: object.Metadata.version,
-        description: object.Metadata.description,
-        list_filters: object.Metadata.list_filters,
-        filename: object.Metadata.filename,
-        mimetype: object.Metadata.mimetype,
-        labels_text: object.Metadata.labels_text,
-        labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
-        encoding: object.Metadata.encoding,
-        creator_id: object.Metadata.creator_id,
-        entity_id: object.Metadata.entity_id,
-        external_reference_id: object.Metadata.external_reference_id,
-        messages: object.Metadata.messages,
-        errors: object.Metadata.errors,
-        inCarousel: object.Metadata.inCarousel,
-        order: object.Metadata.order
-      };
-      name = decodeURIComponent(object.Metadata.filename || 'unknown');
       size = object.ContentLength;
       lastModified = object.LastModified;
       lastModifiedSinceMin = sinceNowInMinutes(object.LastModified);
+
+      if (object.Metadata) {
+        metaData = {
+          version: object.Metadata.version,
+          description: object.Metadata.description,
+          list_filters: object.Metadata.list_filters,
+          filename: object.Metadata.filename,
+          mimetype: object.Metadata.mimetype,
+          labels_text: object.Metadata.labels_text,
+          labels: object.Metadata.labels_text ? object.Metadata.labels_text.split(';') : [],
+          encoding: object.Metadata.encoding,
+          creator_id: object.Metadata.creator_id,
+          entity_id: object.Metadata.entity_id,
+          external_reference_id: object.Metadata.external_reference_id,
+          messages: object.Metadata.messages,
+          errors: object.Metadata.errors,
+          inCarousel: object.Metadata.inCarousel,
+          order: object.Metadata.order
+        };
+        name = decodeURIComponent(object.Metadata.filename || 'unknown');
+      } else {
+        const mimeTypeResolved = guessMimeType(fileS3Path);
+        metaData = { mimetype: mimeTypeResolved };
+        name = getFileName(fileS3Path);
+      }
     }
 
     return {
