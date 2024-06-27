@@ -42,21 +42,6 @@ const addSuggestedMappingRelationsMutation = graphql`
   }
 `;
 
-/* const clearSuggestedMappingMutation = graphql`
-  mutation ContainerSuggestedMappingContentClearSuggestedMappingMutation(
-    $id: ID!
-    $contentSource: String!
-    $contentType: AnalysisContentType!
-  ) {
-    stixCoreObjectEdit(id: $id) {
-      analysisClear(
-        contentSource: $contentSource
-        contentType: $contentType
-      )
-    }
-  }
-`; */
-
 const askSuggestedMappingMutation = graphql`
   mutation ContainerSuggestedMappingContentAskSuggestedMappingMutation(
     $id: ID!
@@ -106,7 +91,6 @@ ContainerSuggestedMappingContentComponentProps
 
   const [commitFieldPatch] = useApiMutation<ContainerContentFieldPatchMutation>(contentMutationFieldPatch);
   const [commitRelationsAdd] = useApiMutation<ContainerSuggestedMappingContentAddSuggestedMappingRelationsMutation>(addSuggestedMappingRelationsMutation);
-  // const [commitAnalysisClear] = useApiMutation<ContainerSuggestedMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
   const [commitAnalysisAsk] = useApiMutation<ContainerSuggestedMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
 
   useEffect(() => {
@@ -212,22 +196,10 @@ ContainerSuggestedMappingContentComponentProps
     });
   };
 
-  /*  const clearSuggestedMapping = () => {
-      commitAnalysisClear({
-        mutation: clearSuggestedMappingMutation,
-        variables: {
-          id: containerData.id,
-          contentSource: 'content_mapping',
-          contentType: 'fields',
-        },
-      });
-    }; */
-
   const validateSuggestedMapping = (suggestedMapping: { matchedString: string, matchedEntityId: string }[]) => {
     const suggestedMappingEntities = suggestedMapping.map((m) => m.matchedEntityId);
     addSuggestedMappingEntitiesToContainer(suggestedMappingEntities);
     addSuggestedMappingToCurrentMapping(suggestedMapping);
-    // clearSuggestedMapping();
   };
 
   return (
