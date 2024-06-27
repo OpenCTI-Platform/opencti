@@ -92,7 +92,16 @@ ContainerSuggestedMappingContentComponentProps
   const { innerHeight } = window;
   const listHeight = innerHeight - 420;
 
-  const [askingSuggestion, setAskingSuggestion] = useState(false);
+  const data = usePreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>(
+    containerStixCoreObjectsSuggestedMappingQuery,
+    queryRef,
+  );
+
+  const workInProgress = data.stixCoreObjectAnalysis?.analysisStatus
+    ? data.stixCoreObjectAnalysis?.analysisStatus === 'wait' || data.stixCoreObjectAnalysis?.analysisStatus === 'progress'
+    : false;
+
+  const [askingSuggestion, setAskingSuggestion] = useState(workInProgress);
   const analysisStatus = useRef('');
 
   const [commitFieldPatch] = useApiMutation<ContainerContentFieldPatchMutation>(contentMutationFieldPatch);
@@ -100,17 +109,12 @@ ContainerSuggestedMappingContentComponentProps
   // const [commitAnalysisClear] = useApiMutation<ContainerSuggestedMappingContentClearSuggestedMappingMutation>(clearSuggestedMappingMutation);
   const [commitAnalysisAsk] = useApiMutation<ContainerSuggestedMappingContentAskSuggestedMappingMutation>(askSuggestedMappingMutation);
 
-  const data = usePreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>(
-    containerStixCoreObjectsSuggestedMappingQuery,
-    queryRef,
-  );
-
   useEffect(() => {
     analysisStatus.current = data.stixCoreObjectAnalysis?.analysisStatus ?? '';
     if (analysisStatus.current === 'complete') {
       setAskingSuggestion(false);
     }
-  }, [data, setAskingSuggestion]);
+  }, [data]);
 
   useEffect(() => {
     const fetchSuggestedMapping = () => {

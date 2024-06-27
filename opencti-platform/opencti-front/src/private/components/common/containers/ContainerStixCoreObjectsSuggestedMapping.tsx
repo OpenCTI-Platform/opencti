@@ -209,9 +209,14 @@ ContainerStixCoreObjectsSuggestedMappingProps
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           {!hasConnectorsAvailable && (
           <Tooltip
-            title={t_i18n(
-              'An analysis connector needs to be available to ask for a mapping suggestion. ',
-            )}
+            title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
+          >
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+          )}
+          {askingSuggestion && (
+          <Tooltip
+            title={t_i18n('An analysis is ongoing, waiting for results.')}
           >
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
