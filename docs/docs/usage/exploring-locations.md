@@ -29,6 +29,7 @@ When clicking on a `Region` in the list, you land on its Overview tab. For a Reg
 
 - Overview: as described [here](overview.md#overview-section), with the particularity of not having a `Details` section but a map locating the Region.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Region. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the Region. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Location. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in a Region.
 - Data: as described [here](overview.md#data-section).
@@ -52,6 +53,7 @@ When clicking on a `Country` in the list, you land on its Overview tab. For a Co
 
 - Overview: as described [here](overview.md#overview-section), with the particularity of not having a `Details` section but a map locating the Country.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Country. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the Country. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Country. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in a Country.
 - Data: as described [here](overview.md#data-section).
@@ -73,6 +75,7 @@ When clicking on an `Area` in the list, you land on its Overview tab. For an Are
 
 - Overview: as described [here](overview.md#overview-section), with the particularity of not having a `Details` section but a map locating the Area.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Area. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the Area. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Area. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in an Area.
 - Data: as described [here](overview.md#data-section).
@@ -95,6 +98,7 @@ When clicking on a `City` in the list, you land on its Overview tab. For a City,
 
 - Overview: as described [here](overview.md#overview-section), with the particularity of not having a `Details` section but a map locating the City.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the City. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the City. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the City. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted in a City.
 - Data: as described [here](overview.md#data-section).
@@ -117,6 +121,7 @@ When clicking on a `Position` in the list, you land on its Overview tab. For a P
 
 - Overview: as described [here](overview.md#overview-section), with the particularity to display a map locating the Position.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Position. Different thematic views are proposed to easily see the related entities, the threats, the incidents, etc. linked to the Position. As described [here](overview.md#knowledge-section).
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Position. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Sightings: a table containing all `Sightings` relationships corresponding to events in which an `Indicator` (IP, domain name, url, etc.) is sighted at a Position.
 - Data: as described [here](overview.md#data-section).

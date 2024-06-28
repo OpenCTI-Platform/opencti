@@ -36,6 +36,7 @@ When clicking on an Attack pattern, you land on its Overview tab. For an Attack 
    - Courses of action to mitigate the Attack pattern
    - Data components in which find data to detect the usage of the Attack pattern
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Attack pattern. Different thematic views are proposed to easily see Threat Actors and Intrusion Sets using this techniques, linked incidents, etc.
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Attack pattern. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
@@ -58,6 +59,7 @@ When clicking on a Narrative, you land on its Overview tab. For a Narrative, the
 
 - Overview: as described [here](overview.md).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Narratives. Different thematic views are proposed to easily see the Threat actors and Intrusion Set using the Narrative, etc. 
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the technique. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
@@ -78,6 +80,7 @@ When clicking on a `Course of Action`, you land on its Overview tab. For a Cours
 
 - Overview: Overview of Course of action is a bit different as the usual described [here](overview.md). In "Details" box, mitigated attack pattern are listed.
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Narratives. Different thematic views are proposed to easily see the Threat actors and Intrusion Set using the Narrative, etc. 
+- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Course of action. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
