@@ -115,11 +115,12 @@ The `Indicators` and `Observables` section offers 3 display modes:
 <a id="content-section"></a>
 ### Content
 
-The `Content` tab allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.
+The `Content` tab is available for all entities. It allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.
 
-The `Content` tab is available for a subset of entities: `Report`, `Incident`, `Incident response`, `Request for Information`, and `Request for Takedown`.
+The `Content mapping view` and the `Suggested mapping view`  are available for a subset of entities: `Report`, `Grouping`, `Incident`, `Incident response`, `Request for Information`, and `Request for Takedown`.
 
-![The Content tab of an Incident](assets/entity-content-tab.png)
+
+![The Content tab of a Malware](assets/entity-content-tab.png)
 
 #### Content mapping view
 
@@ -128,7 +129,7 @@ The `Content` tab is available for a subset of entities: `Report`, `Incident`, `
 Through this view, you can map existing or new Objects directly from a readable content, allowing you to quickly append structured Knowledge in your Case before refining it with relationships and details.
 This view is a great place to see the continuum between unstructured and structured Knowledge.
 
-
+#### Suggested mapping view
 
 <a id="analyses-section"></a>
 ### Analyses
