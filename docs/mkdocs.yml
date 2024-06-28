@@ -117,6 +117,7 @@ nav:
       - Configuration: deployment/configuration.md
       - Authentication: deployment/authentication.md
       - Upgrade: deployment/upgrade.md
+      - Breaking changes: deployment/breaking-changes.md
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
