@@ -115,16 +115,26 @@ export const getRelationsFromOneEntityToAny = (
     });
   }
 
+  // Add all missing entities
+  for (let i = 0; i < schema.sdos.length; i += 1) {
+    const existingEntity = entityList.some((relationsToEntity) => relationsToEntity.toEntitytype === schema.sdos[i].id);
+    if (!existingEntity) {
+      entityList.push({
+        toEntitytype: schema.sdos[i].id,
+        legitRelations: [DEFAULT_RELATION],
+      });
+    }
+  }
+
   // Add all observable + related-to
   for (let i = 0; i < schema.scos.length; i += 1) {
     entityList.push({
-      toEntitytype: schema.scos[i].label,
+      toEntitytype: schema.scos[i].id,
       legitRelations: [DEFAULT_RELATION],
     });
   }
 
   const relationListArray = Array.from(relationList);
-
   return {
     allPossibleRelations: relationListArray,
     allRelationsToEntity: entityList,

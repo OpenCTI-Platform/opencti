@@ -99,13 +99,13 @@ describe('Test schema utilities functions', () => {
     const matchesAll = result.allPossibleRelations.filter((relation) => { return relation === 'uses' || relation === 'related-to' || relation === 'originates-from' || relation === 'targets'; });
     expect(matchesAll.length).toBe(4);
 
-    expect(result.allRelationsToEntity.length).toBe(13); // 5 entity + 8 observables
+    expect(result.allRelationsToEntity.length).toBe(20);
   });
 
   it('should get all relationType with from entity not in list', () => {
     const result = getRelationsFromOneEntityToAny('Wrong-Stuff', testSchema);
     expect(result.allPossibleRelations.length).toBe(1);
     expect(result.allPossibleRelations[0]).toBe('related-to');
-    expect(result.allRelationsToEntity.length).toBe(8); // All 8 observable
+    expect(result.allRelationsToEntity.length).toBe(20);
   });
 });
