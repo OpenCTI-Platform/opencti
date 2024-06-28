@@ -304,9 +304,9 @@ python3 worker.py &
 
     ---
 
-    OpenCTI Helm Charts for Kubernetes with a global configuration file. More information how to deploy here on [basic installation](https://github.com/devops-ia/helm-charts/blob/main/charts/opencti/docs/configuration.md) and [examples](https://github.com/devops-ia/helm-charts/blob/main/charts/opencti/docs/examples.md).
+    OpenCTI Helm Charts for Kubernetes with a global configuration file. More information how to deploy here on [basic installation](https://github.com/devops-ia/helm-opencti/blob/main/opencti/docs/configuration.md) and [examples](https://github.com/devops-ia/helm-opencti/blob/main/opencti/docs/examples.md).
 
-    [:material-github:{ .middle } GitHub Repository](https://github.com/devops-ia/helm-charts/tree/main/charts/opencti)
+    [:material-github:{ .middle } GitHub Repository](https://github.com/devops-ia/helm-opencti/tree/main/opencti)
 </div>
 
 ### Deploy behind a reverse proxy
