@@ -97,6 +97,8 @@ This strategy can be used to authenticate your user with your company SAML and i
         // "private_key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwg...",
         "cert": "MIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w...",
         "logout_remote": false
+        "want_assertions_signed": true,
+        "want_authn_response_signed": true
     }
 }
 ```
@@ -114,6 +116,8 @@ For the SAML strategy to work:
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
     ```
 
+    Starting from OpenCTI 6.2 when `want_assertions_signed` and `want_authn_response_signed` SAML parameter are not present in OpenCTI configuration, the default is set to "true" by the underlaying library (passport-saml) when previously it was false by default. If you have issues after upgrade, you can try with both of them set to false.
+
 Here is an example of SAML configuration using environment variables:
 
 ```yaml
@@ -124,6 +128,8 @@ Here is an example of SAML configuration using environment variables:
 - PROVIDERS__SAML__CONFIG__SAML_CALLBACK_URL=http://opencti.mydomain.com/auth/saml/callback
 - PROVIDERS__SAML__CONFIG__CERT=MIICmzCCAYMCBgF3Rt3X1zANBgkqhkiG9w0BAQsFADARMQ8w
 - PROVIDERS__SAML__CONFIG__LOGOUT_REMOTE=false
+- PROVIDERS__SAML__CONFIG__WANT_AUTHN_RESPONSE_SIGNED=true
+- PROVIDERS__SAML__CONFIG__WANT_ASSERTIONS_SIGNED=true
 ```
 
 OpenCTI supports mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
