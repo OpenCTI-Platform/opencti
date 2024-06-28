@@ -424,6 +424,11 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
                   stop_time
                   created
                 }
+                ... on StixCyberObservable {
+                  representative {
+                    main
+                  }
+                }
                 ... on AttackPattern {
                   name
                 }
@@ -511,6 +516,11 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
                   start_time
                   stop_time
                   created
+                }
+                ... on StixCyberObservable {
+                  representative {
+                    main
+                  }
                 }
                 ... on AttackPattern {
                   name
