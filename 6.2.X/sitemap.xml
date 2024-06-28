@@ -121,6 +121,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/latest/deployment/breaking-changes/</loc>
+         <lastmod>2024-06-28</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/latest/deployment/clustering/</loc>
          <lastmod>2024-06-28</lastmod>
          <changefreq>daily</changefreq>
