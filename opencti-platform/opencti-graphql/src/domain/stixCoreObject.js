@@ -609,7 +609,7 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .map((d) => analysisDataConverted(d))
     .filter((e) => e.matchedEntity);
 
-  return { analysisType, mappedEntities, analysisStatus: 'complete' };
+  return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {

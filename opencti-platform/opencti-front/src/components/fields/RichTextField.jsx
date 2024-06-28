@@ -43,6 +43,7 @@ const RichTextField = (props) => {
     field: { name, value },
     meta = {},
     onFocus,
+    onChange,
     onSubmit,
     onSelect,
     label,
@@ -105,6 +106,7 @@ const RichTextField = (props) => {
       data={value || ''}
       onChange={(_, editor) => {
         setFieldValue(name, editor.getData());
+        onChange?.(name, editor.getData() || '');
       }}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}

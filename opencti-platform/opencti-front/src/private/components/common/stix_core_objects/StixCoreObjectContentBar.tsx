@@ -8,6 +8,9 @@ import { FilePdfBox } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Alert from '@mui/material/Alert';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
@@ -84,15 +87,26 @@ StixCoreObjectContentBarProps
           }}
         >
           {handleSave && (
-            <IconButton
-              color="primary"
-              onClick={handleSave}
-              size="large"
-              disabled={!changed}
-              aria-label={t_i18n('Save')}
-            >
-              <SaveOutlined />
-            </IconButton>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <IconButton
+                  color="primary"
+                  onClick={handleSave}
+                  size="large"
+                  disabled={!changed}
+                  aria-label={t_i18n('Save')}
+                >
+                  <SaveOutlined />
+                </IconButton>
+                  }
+              label={changed
+                ? <Alert severity="warning">
+                  {t_i18n('You have unsaved changes')}
+                </Alert>
+                : t_i18n('No changes detected')}
+            />
+          </FormGroup>
           )}
           {enableZoom && (
             <IconButton

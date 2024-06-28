@@ -25,7 +25,11 @@ export default class StixDomainObjectContentTabPage {
   async editTextArea(input: string, isAutoSave = false) {
     const element = this.page.getByLabel('Editor editing area: main');
     await element.click();
-    if (isAutoSave) return element.fill(input);
+    if (isAutoSave) {
+      await element.fill(input);
+      // We wait for changes to be saved before leaving page
+      return new Promise((r) => { setTimeout(r, 4000); });
+    }
 
     await element.fill(input);
     return this.page.getByLabel('Save').click();
