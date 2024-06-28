@@ -29,11 +29,20 @@ interface StixDomainObjectAttackPatternsKillChainProps {
 }
 
 const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
-    fragment StixDomainObjectAttackPatternsKillChainContainer_data on Query {
+    fragment StixDomainObjectAttackPatternsKillChainContainer_data on Query
+    @argumentDefinitions(
+        fromOrToId: { type: "[String]" }
+        elementWithTargetTypes: { type: "[String]" }
+        first: { type: "Int", defaultValue: 25 }
+        filters: { type: "FilterGroup" }
+        cursor: { type: "ID" }
+    )
+    @refetchable(queryName: "StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsRefetchQuery") {
         stixCoreRelationships(
             fromOrToId: $fromOrToId
             elementWithTargetTypes: $elementWithTargetTypes
             first: $first
+            after: $cursor
             filters: $filters
         ) @connection(key: "Pagination_stixCoreRelationships") {
             edges {
@@ -196,7 +205,6 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
     stixDomainObjectAttackPatternsKillChainContainerFragment,
     dataPreloaded,
   ) as StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  const refetch = React.useCallback;
   return (
     <StixDomainObjectAttackPatternsKillChain
       data={data}
@@ -215,7 +223,6 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
       handleToggleExports={disableExport ? undefined : helpers.handleToggleExports}
       openExports={openExports}
       availableFilterKeys={availableFilterKeys}
-      refetch={refetch}
     />
   );
 };

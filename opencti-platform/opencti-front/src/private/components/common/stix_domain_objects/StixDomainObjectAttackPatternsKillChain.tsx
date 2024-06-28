@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, FilterAltOutlined, InvertColorsOffOutlined, ViewColumnOutlined, ViewListOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
@@ -8,6 +8,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import {
+  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
 import {
@@ -50,9 +51,17 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
         $fromOrToId: [String]
         $elementWithTargetTypes: [String]
         $first: Int
+        $cursor: ID
         $filters: FilterGroup
     ) {
         ...StixDomainObjectAttackPatternsKillChainContainer_data
+        @arguments(
+            fromOrToId: $fromOrToId
+            elementWithTargetTypes: $elementWithTargetTypes
+            first: $first
+            cursor: $cursor
+            filters: $filters
+        )
     }
 `;
 
@@ -71,7 +80,6 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   handleToggleExports?: () => void,
   exportContext: { entity_type: string },
   availableFilterKeys: string[];
-  refetch: any;
   defaultStartTime: string;
   defaultStopTime: string;
 }
@@ -91,7 +99,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   handleToggleExports,
   exportContext,
   availableFilterKeys,
-  refetch,
   defaultStartTime,
   defaultStopTime,
 }) => {
@@ -100,6 +107,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [currentModeOnlyActive, setCurrentModeOnlyActive] = useState(false);
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
+  const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
+    stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  );
+  const refetch = React.useCallback(() => {
+    loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
 
   const handleToggleModeOnlyActive = () => {
     setCurrentModeOnlyActive(!currentModeOnlyActive);
