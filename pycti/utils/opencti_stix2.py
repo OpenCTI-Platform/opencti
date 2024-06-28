@@ -1507,7 +1507,7 @@ class OpenCTIStix2:
             and "valid_until" in entity
             and entity["valid_from"] == entity["valid_until"]
         ):
-            valid_until_converted_datetime = datetime.strptime(
+            valid_until_converted_datetime = datetime.datetime.strptime(
                 entity["valid_until"], "%Y-%m-%dT%H:%M:%S.%fZ"
             )
             new_valid_until = valid_until_converted_datetime + datetime.timedelta(
