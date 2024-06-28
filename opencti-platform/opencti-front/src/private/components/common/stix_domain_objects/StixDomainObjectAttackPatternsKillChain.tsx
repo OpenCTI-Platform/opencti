@@ -8,13 +8,13 @@ import ToggleButton from '@mui/material/ToggleButton';
 import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
-import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import Box from '@mui/material/Box';
+import {
+  StixDomainObjectAttackPatternsKillChainQuery,
+  StixDomainObjectAttackPatternsKillChainQuery$variables,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -62,18 +62,16 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
-    query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
-        $fromOrToId: [String]
-        $elementWithTargetTypes: [String]
+export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
+    query StixDomainObjectAttackPatternsKillChainQuery(
+        $search: String
         $first: Int
         $cursor: ID
         $filters: FilterGroup
     ) {
         ...StixDomainObjectAttackPatternsKillChainContainer_data
         @arguments(
-            fromOrToId: $fromOrToId
-            elementWithTargetTypes: $elementWithTargetTypes
+            search: $search
             first: $first
             cursor: $cursor
             filters: $filters
@@ -91,7 +89,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   handleChangeView: (value: string) => void;
   searchTerm: string;
   currentView?: string;
-  paginationOptions: StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
+  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
   openExports?: boolean;
   handleToggleExports?: () => void,
   exportContext: { entity_type: string },
@@ -123,8 +121,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [currentModeOnlyActive, setCurrentModeOnlyActive] = useState(false);
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
-  const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
-    stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
+    stixDomainObjectAttackPatternsKillChainQuery,
   );
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
@@ -144,15 +142,15 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   let csvData = null;
   if (currentView === 'courses-of-action') {
-    csvData = (data.stixCoreRelationships?.edges ?? [])
-      .map((n) => n.node.to?.coursesOfAction?.edges ?? [])
+    csvData = (data.attackPatterns?.edges ?? [])
+      .map((n) => n.node.coursesOfAction?.edges ?? [])
       .flat()
       .map((n) => n?.node);
   }
   const exportDisabled = targetEntities.length > export_max_size;
 
-  const newExportContext = { ...exportContext, entity_type: 'Attack-Pattern' };
-  const newPaginationOptions = {
+  const exportContextWithEntityType = { ...exportContext, entity_type: 'Attack-Pattern' };
+  const paginationOptionsForExport = {
     orderBy: 'name',
     orderMode: 'desc',
     filters: {
@@ -330,7 +328,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         {currentView === 'matrix' && (
           <StixDomainObjectAttackPatternsKillChainMatrix
             data={data}
-            entityLink={entityLink}
             searchTerm={searchTerm}
             handleToggleModeOnlyActive={handleToggleModeOnlyActive}
             handleToggleColorsReversed={handleToggleColorsReversed}
@@ -367,8 +364,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             open={openExports}
             exportType='simple'
             handleToggle={handleToggleExports}
-            paginationOptions={newPaginationOptions}
-            exportContext={newExportContext}
+            paginationOptions={paginationOptionsForExport}
+            exportContext={exportContextWithEntityType}
           />
         </Security>
       </div>

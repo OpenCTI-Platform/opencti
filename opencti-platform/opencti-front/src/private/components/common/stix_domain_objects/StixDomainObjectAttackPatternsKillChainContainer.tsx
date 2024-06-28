@@ -1,22 +1,22 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import {
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$data,
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
-import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
+import {
+  StixDomainObjectAttackPatternsKillChainQuery,
+  StixDomainObjectAttackPatternsKillChainQuery$data,
+  StixDomainObjectAttackPatternsKillChainQuery$variables,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
+import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 interface StixDomainObjectAttackPatternsKillChainProps {
   helpers: UseLocalStorageHelpers;
-  queryRef: PreloadedQuery<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>;
+  queryRef: PreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>;
   entityLink: string;
-  queryPaginationOptions: StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
+  queryPaginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
   stixDomainObjectId: string;
   filters?: FilterGroup;
   searchTerm?: string;
@@ -31,136 +31,64 @@ interface StixDomainObjectAttackPatternsKillChainProps {
 const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
     fragment StixDomainObjectAttackPatternsKillChainContainer_data on Query
     @argumentDefinitions(
-        fromOrToId: { type: "[String]" }
-        elementWithTargetTypes: { type: "[String]" }
+        search: { type: "String" }
         first: { type: "Int", defaultValue: 25 }
-        filters: { type: "FilterGroup" }
         cursor: { type: "ID" }
+        filters: { type: "FilterGroup" }
     )
-    @refetchable(queryName: "StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsRefetchQuery") {
-        stixCoreRelationships(
-            fromOrToId: $fromOrToId
-            elementWithTargetTypes: $elementWithTargetTypes
+    @refetchable(queryName: "StixDomainObjectAttackPatternsKillChainRefetchQuery") {
+        attackPatterns(
+            search: $search
             first: $first
             after: $cursor
             filters: $filters
-        ) @connection(key: "Pagination_stixCoreRelationships") {
+        ) @connection(key: "Pagination_attackPatterns") {
             edges {
                 node {
                     id
+                    parent_types
+                    entity_type
+                    name
                     description
-                    start_time
-                    stop_time
-                    from {
-                        ... on BasicRelationship {
-                            id
-                            entity_type
-                        }
-                        ... on AttackPattern {
-                            id
-                            parent_types
-                            entity_type
-                            name
-                            description
-                            x_mitre_id
-                            x_mitre_platforms
-                            x_mitre_permissions_required
-                            x_mitre_detection
-                            isSubAttackPattern
-                            objectMarking {
+                    x_mitre_id
+                    x_mitre_platforms
+                    x_mitre_permissions_required
+                    x_mitre_detection
+                    isSubAttackPattern
+                    objectMarking {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                    coursesOfAction {
+                        edges {
+                            node {
                                 id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                            }
-                            coursesOfAction {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            parentAttackPatterns {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            subAttackPatterns {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            killChainPhases {
-                                id
-                                phase_name
-                                x_opencti_order
+                                name
+                                description
+                                x_mitre_id
                             }
                         }
                     }
-                    to {
-                        ... on BasicRelationship {
-                            id
-                            entity_type
-                        }
-                        ... on AttackPattern {
-                            id
-                            parent_types
-                            entity_type
-                            name
-                            description
-                            x_mitre_id
-                            x_mitre_platforms
-                            x_mitre_permissions_required
-                            x_mitre_detection
-                            isSubAttackPattern
-                            coursesOfAction {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            parentAttackPatterns {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            subAttackPatterns {
-                                edges {
-                                    node {
-                                        id
-                                        name
-                                        description
-                                        x_mitre_id
-                                    }
-                                }
-                            }
-                            killChainPhases {
+                    parentAttackPatterns {
+                        edges {
+                            node {
                                 id
-                                phase_name
-                                x_opencti_order
+                                name
+                                description
+                                x_mitre_id
+                            }
+                        }
+                    }
+                    subAttackPatterns {
+                        edges {
+                            node {
+                                id
+                                name
+                                description
+                                x_mitre_id
                             }
                         }
                     }
@@ -168,13 +96,6 @@ const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
                         id
                         phase_name
                         x_opencti_order
-                    }
-                    objectMarking {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
                     }
                 }
             }
@@ -197,11 +118,11 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   openExports,
   availableFilterKeys,
 }) => {
-  const dataPreloaded = usePreloadedQuery<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
-    stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  const dataPreloaded = usePreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>(
+    stixDomainObjectAttackPatternsKillChainQuery,
     queryRef,
   );
-  const data = useFragment<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$data>(
+  const data = useFragment<StixDomainObjectAttackPatternsKillChainQuery$data>(
     stixDomainObjectAttackPatternsKillChainContainerFragment,
     dataPreloaded,
   ) as StixDomainObjectAttackPatternsKillChainContainer_data$data;

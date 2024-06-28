@@ -1,12 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import {
-  StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
   StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery.graphql';
 import StixDomainObjectAttackPatternsKillChainContainer from '@components/common/stix_domain_objects/StixDomainObjectAttackPatternsKillChainContainer';
+import {
+  StixDomainObjectAttackPatternsKillChainQuery,
+  StixDomainObjectAttackPatternsKillChainQuery$variables,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery } from './StixDomainObjectAttackPatternsKillChain';
+import { stixDomainObjectAttackPatternsKillChainQuery } from './StixDomainObjectAttackPatternsKillChain';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
   emptyFilterGroup,
@@ -48,26 +51,34 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
     viewStorage,
     helpers,
     paginationOptions,
-  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables>(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<StixDomainObjectAttackPatternsKillChainQuery$variables>(LOCAL_STORAGE_KEY, {
     searchTerm: '',
     openExports: false,
     filters: emptyFilterGroup,
     view: 'matrix',
   });
   const { searchTerm, filters, view, openExports } = viewStorage;
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Attack-Pattern']);
   const contextFilters = {
     mode: 'and',
     filters: [
-      { key: 'elementWithTargetTypes', values: ['Attack-Pattern'] },
-      { key: 'fromOrToId', values: [stixDomainObjectId] },
+      { key: 'entity_type', values: ['Attack-Pattern'], mode: 'or', operator: 'eq' },
+      {
+        key: 'regardingOf',
+        values: [
+          { key: 'id', values: [stixDomainObjectId] },
+        ],
+      },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
-  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+    search: searchTerm } as unknown as StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery$variables;
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['stix-core-relationship']);
-  const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery>(
-    stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
+  const queryRef = useQueryLoading<StixDomainObjectAttackPatternsKillChainQuery>(
+    stixDomainObjectAttackPatternsKillChainQuery,
     { first: 500, ...queryPaginationOptions },
   );
   return (
