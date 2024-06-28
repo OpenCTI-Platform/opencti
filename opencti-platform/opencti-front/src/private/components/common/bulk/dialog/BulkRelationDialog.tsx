@@ -289,7 +289,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({ stixD
     <Box sx={{ height: '30px', display: 'flex', gap: '15px' }}>
       <Typography sx={{ width: `${toHeaderWidth}px` }}>{t_i18n('relationship_to')}</Typography>
       <Typography sx={{ width: `${entityTypeHeaderWidth}px` }}>{t_i18n('entity_type')}</Typography>
-      <Typography sx={{ width: `${entityNameHeaderWidth}px` }}>{t_i18n('Representative')}</Typography>
+      <Typography sx={{ width: `${entityNameHeaderWidth}px` }}>{t_i18n('Representation')}</Typography>
       <Typography sx={{ width: `${matchHeaderWidth}px` }}>{t_i18n('Match')}</Typography>
       <Box sx={{ width: '50px' }} />
     </Box>
