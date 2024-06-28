@@ -1,17 +1,17 @@
-import {describe, it, expect} from 'vitest';
-import {bundleProcess} from '../../../src/parser/csv-bundler';
-import {ADMIN_USER, testContext} from '../../utils/testQuery';
-import type {StixBundle, StixDomainObject} from '../../../src/types/stix-common';
+import { describe, it, expect } from 'vitest';
+import { bundleProcess } from '../../../src/parser/csv-bundler';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import type { StixBundle, StixDomainObject } from '../../../src/types/stix-common';
 import {
   indicatorsWithExternalReferencesCsvContent,
   indicatorsWithExternalReferencesCsvMapper
 } from '../../data/csv-bundler/external-references-constants';
-import type {CsvMapperParsed} from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import {indicatorsWithLabelsCsvContent, indicatorsWithLabelsCsvMapper} from '../../data/csv-bundler/labels-constants';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import { indicatorsWithLabelsCsvContent, indicatorsWithLabelsCsvMapper } from '../../data/csv-bundler/labels-constants';
 import {
   indicatorsWithKillChainPhasesCsvContent,
   indicatorsWithKillChainPhasesCsvMapper
-} from "../../data/csv-bundler/kill-chains-constants";
+} from '../../data/csv-bundler/kill-chains-constants';
 
 describe('CSV bundler', () => {
   describe('Embedded properties', () => {

@@ -1,4 +1,4 @@
-import type {CsvMapperParsed, CsvMapperRepresentation} from "../../../src/modules/internal/csvMapper/csvMapper-types";
+import type { CsvMapperParsed, CsvMapperRepresentation } from "../../../src/modules/internal/csvMapper/csvMapper-types";
 
 export const indicatorsWithKillChainPhasesCsvMapper: Partial<CsvMapperParsed> = {
   _index: "opencti_internal_objects-000001",
