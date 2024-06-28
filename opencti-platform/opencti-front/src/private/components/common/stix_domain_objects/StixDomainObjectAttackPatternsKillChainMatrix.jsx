@@ -16,10 +16,8 @@ class StixDomainObjectAttackPatternsKillChainMatrix extends Component {
     const {
       searchTerm,
       data,
-      handleChangeKillChain,
       handleToggleModeOnlyActive,
       handleToggleColorsReversed,
-      currentKillChain,
       currentColorsReversed,
       currentModeOnlyActive,
       handleAdd,
@@ -33,10 +31,8 @@ class StixDomainObjectAttackPatternsKillChainMatrix extends Component {
         attackPatterns={attackPatterns}
         searchTerm={searchTerm}
         marginRight={true}
-        handleChangeKillChain={handleChangeKillChain}
         handleToggleModeOnlyActive={handleToggleModeOnlyActive}
         handleToggleColorsReversed={handleToggleColorsReversed}
-        currentKillChain={currentKillChain}
         currentColorsReversed={currentColorsReversed}
         currentModeOnlyActive={currentModeOnlyActive}
         hideBar={true}
@@ -51,10 +47,8 @@ StixDomainObjectAttackPatternsKillChainMatrix.propTypes = {
   searchTerm: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  handleChangeKillChain: PropTypes.func,
   handleToggleModeOnlyActive: PropTypes.func,
   handleToggleColorsReversed: PropTypes.func,
-  currentKillChain: PropTypes.bool,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
   handleAdd: PropTypes.func,

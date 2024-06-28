@@ -24,10 +24,8 @@ class AttackPatternsMatrix extends Component {
       attackPatterns,
       marginRight,
       searchTerm,
-      handleChangeKillChain,
       handleToggleModeOnlyActive,
       handleToggleColorsReversed,
-      currentKillChain,
       currentColorsReversed,
       currentModeOnlyActive,
       hideBar,
@@ -53,10 +51,8 @@ class AttackPatternsMatrix extends Component {
                   attackPatterns={attackPatterns}
                   marginRight={marginRight}
                   searchTerm={searchTerm ?? ''}
-                  handleChangeKillChain={handleChangeKillChain}
                   handleToggleModeOnlyActive={handleToggleModeOnlyActive}
                   handleToggleColorsReversed={handleToggleColorsReversed}
-                  currentKillChain={currentKillChain}
                   currentColorsReversed={currentColorsReversed}
                   currentModeOnlyActive={currentModeOnlyActive}
                   hideBar={hideBar}
@@ -80,10 +76,8 @@ AttackPatternsMatrix.propTypes = {
   classes: PropTypes.object,
   attackPatterns: PropTypes.array,
   searchTerm: PropTypes.string,
-  handleChangeKillChain: PropTypes.func,
   handleToggleModeOnlyActive: PropTypes.func,
   handleToggleColorsReversed: PropTypes.func,
-  currentKillChain: PropTypes.bool,
   currentColorsReversed: PropTypes.bool,
   currentModeOnlyActive: PropTypes.bool,
   hideBar: PropTypes.bool,
